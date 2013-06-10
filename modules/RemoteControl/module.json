@@ -1,0 +1,12 @@
+{
+    "version": "1.0.0",
+    "actions": {
+        "action1": {
+            "reqs": ["pin", "string"],
+            "message": "Enter pin and message"
+        },
+        "action2": {
+            "data": "zzzzzzzzzzzz"
+        }
+    }
+}

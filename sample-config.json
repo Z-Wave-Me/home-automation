@@ -1,0 +1,45 @@
+{
+    "webapp": {
+        "host": "127.0.0.1",
+        "port": 8000
+    },
+    "network": {
+        "tickInterval": 1000,
+        "modulesDir": "/Users/gregor/Projects/Z-Wave/automation/modules",
+        "instances": [{
+            "id": "Z-Way",
+            "module": "ZWayGate",
+            "config": {
+                "ZWayAPI": "http://192.168.3.62:8083/ZWaveAPI"
+            }
+        }, {
+            "id": "MyRemote",
+            "module": "RemoteControl",
+            "config": {
+                "deviceId": "Remote4Button",
+                "zwayDeviceId": 2
+            }
+        }, {
+            "id": "PowerOutlet1",
+            "module": "PowerOutlet",
+            "config": {
+                "deviceId": "PowerOutlet1",
+                "zwayDeviceId": 4
+            }
+        }, {
+            "id": "EventLog",
+            "module": "EventLog",
+            "config": {
+                "exposedEvents": [
+                    "deviceStateChanged"
+                ],
+                "storagePeriod": 25200
+            }
+        }],
+        "enabledWidgets": [
+            "PowerOutlet1Widget"
+        ],
+        "enabledApps": [
+        ]
+    }
+}
