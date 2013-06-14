@@ -9,12 +9,6 @@ var AutomationModule = require("../../classes/AutomationModule");
 function EventLog (id, controller, config) {
     EventLog.super_.call(this, id, controller, config);
 
-    this.controller.eventlog = {};
-
-    var self = this;
-    this.controller.onAny(function () {
-        self.logEvent.apply(self, [this.event, arguments]);
-    });
 }
 
 // Module inheritance and setup
@@ -22,6 +16,16 @@ function EventLog (id, controller, config) {
 util.inherits(EventLog, AutomationModule);
 
 module.exports = exports = EventLog;
+
+EventLog.prototype.init = function (config) {
+    this.controller.registerDevice(this.config.deviceId, this);
+
+    var self = this;
+
+    this.controller.on('zway.update', function (dataPoint, value) {
+        self.onUpdate(dataPoint, value);
+    });
+};
 
 // Module methods
 

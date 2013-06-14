@@ -13,9 +13,8 @@ function AutomationController (config) {
     // this.tags = {};
 
     this.modules = {};
-    this.instances = [];
+    this.instances = {};
     this.devices = {};
-    this.actions = {};
     this.widgets = {};
     this.apps = {};
 
@@ -76,11 +75,19 @@ AutomationController.prototype.instantiateModules = function () {
     if (this.config.hasOwnProperty('instances')) {
         this.config.instances.forEach(function (item) {
             var moduleClass = self.modules[item.module];
-            var instance = new moduleClass(item.id, self, item.config);
-            self.instances.push(instance);
+            var instance = new moduleClass(item.id, self);
+            self.instances[item.id] = instance;
+            instance.init(item.config);
             self.emit('moduleInstanceStarted', item.id);
         });
     }
+};
+
+AutomationController.prototype.registerAction = function (instanceId, meta) {
+    console.log("registerAction", instanceId, meta);
+    var instance = this.instances[instanceId];
+    instance.actions[meta.id] = meta;
+    this.emit('actionRegistered', instanceId, meta.id);
 };
 
 AutomationController.prototype.getResource = function (name) {
@@ -94,13 +101,10 @@ AutomationController.prototype.registerDevice = function (deviceId, moduleInstan
     this.emit('deviceRegistered', deviceId);
 };
 
-AutomationController.prototype.registerAction = function (deviceId, meta) {
-    this.actions[deviceId] = meta;
-    this.emit('actionRegistered', deviceId, meta.name);
-};
-
 AutomationController.prototype.registerWidget = function (deviceId, meta) {
     this.widgets[deviceId] = meta;
+    console.log("IIIIIII", deviceId, this.devices[deviceId]);
+    // this.widgets[deviceId].moduleInstanceId = this.devices[deviceId].id;
     this.emit('widgetRegistered', deviceId);
 };
 

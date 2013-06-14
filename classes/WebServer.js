@@ -40,8 +40,23 @@ WebServer.prototype.setupWebapp = function () {
 
     app.get("/", this.dashboard);
     app.get("/api/ui.json", this.getUIMeta);
-
     app.get("/api/events.json", this.getEventLog);
+
+    app.get("/api/instances/", this.getInstancesList);
+    app.get("/api/instances/:instanceId", this.getInstanceMeta);
+
+    app.get("/api/instances/:instanceId/actions/", this.getInstanceActionsList);
+    app.get("/api/instances/:instanceId/actions/:actionId", this.getInstanceActionMeta);
+    app.post("/api/instances/:instanceId/actions/:actionId", this.runInstanceAction);
+
+    app.get("/api/widgets/", this.getWidgetsList);
+    app.get("/api/widgets/:widgetId", this.getWidgetMeta);
+
+    app.get("/api/devices/", this.getDevicesList);
+    app.get("/api/devices/:deviceId", this.getDeviceMeta);
+
+    app.get("/api/apps/", this.getApplicationsList);
+    app.get("/api/apps/:appId", this.getApplicationMeta);
 
     this.emit('webappReady');
 };
@@ -75,6 +90,9 @@ WebServer.prototype.getUIMeta = function (req, res) {
 
     reply.error = null;
     reply.data = {
+        // devices: ctrl.devices,
+        // instances: ctrl.instances,
+        actions: ctrl.actions,
         widgets: ctrl.widgets,
         enabledWidgets: ctrl.getEnabledWidgets()
     };
@@ -105,5 +123,69 @@ WebServer.prototype.getEventLog = function (req, res) {
         reply.data.events[timestamp] = ctrl.eventlog[timestamp];
     });
 
+    res.send(reply);
+};
+
+WebServer.prototype.getInstancesList = function (req, res) {
+    var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    reply.data = {};
+    ctrl.instances.forEach(function (instance) {
+        reply.data[instance.id] = {
+            id: instance.id,
+            actions: {}
+        };
+    });
+    reply.error = null;
+    res.send(reply);
+};
+
+WebServer.prototype.getInstanceMeta = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getInstanceActionsList = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getInstanceActionMeta = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.runInstanceAction = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getWidgetsList = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getWidgetMeta = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getDevicesList = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getDeviceMeta = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getApplicationsList = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getApplicationMeta = function (req, res) {
+    var reply = emptyApiReply();
     res.send(reply);
 };

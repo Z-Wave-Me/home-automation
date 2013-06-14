@@ -1,17 +1,21 @@
 var path = require("path");
 var fs = require("fs");
 
-AutomationModule = function (id, controller, config) {
+AutomationModule = function (id, controller) {
     this.id = id;
+    this.actions = {};
+    this.metrics = {};
+    this.config = {};
     this.controller = controller;
-    this.init(config);
 };
 
 module.exports = exports = AutomationModule;
 
 AutomationModule.prototype.init = function (config) {
-    // TODO: Apply default configuration patched with incomming options
-    this.config = config;
+    var self = this;
+    Object.keys(config).forEach(function (key) {
+        self.config[key] = config[key];
+    });
 };
 
 AutomationModule.prototype.getModuleBasePath = function () {

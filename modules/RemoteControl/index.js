@@ -4,29 +4,27 @@ var util = require("util");
 var path = require("path");
 var AutomationModule = require("../../classes/AutomationModule");
 
-// Concrete module constructor
+// Module inheritance and setup
 
 function RemoteControl (id, controller, config) {
     RemoteControl.super_.call(this, id, controller, config);
-
-    // TODO: Provide more valuable metrics
-    this.metrics = {
-        triggered: [false, false, false, false]
-    };
-
-    this.controller.registerDevice(this.config.deviceId, this);
-
-    var self = this;
-    this.controller.on('zway.update', function (dataPoint, value) {
-        self.onUpdate(dataPoint, value);
-    });
 }
-
-// Module inheritance and setup
 
 util.inherits(RemoteControl, AutomationModule);
 
 module.exports = exports = RemoteControl;
+
+RemoteControl.prototype.init = function (config) {
+    RemoteControl.super_.prototype.init.call(this, config);
+
+    this.controller.registerDevice(this.config.deviceId, this);
+
+    var self = this;
+
+    this.controller.on('zway.update', function (dataPoint, value) {
+        self.onUpdate(dataPoint, value);
+    });
+};
 
 RemoteControl.prototype.getModuleBasePath = function () {
     return path.resolve(__dirname);
@@ -56,7 +54,6 @@ RemoteControl.prototype.onUpdate = function (dataPoint, value) {
 
     if (triggeredButton!==null) {
         this.controller.emit("remote.buttonClick", this.config.deviceId, triggeredButton);
-        this.metrics.triggered[triggeredButton] = true;
-        console.log("remote.buttonClick", this.config.deviceId, triggeredButton);
+        console.log("remote.buttonClick", this.config.deviceId, triggeredButton+1);
     }
 };

@@ -4,19 +4,26 @@ var util = require("util");
 var path = require("path");
 var AutomationModule = require("../../classes/AutomationModule");
 
-// Concrete module constructor
+// Module inheritance and setup
 
 function PowerOutlet (id, controller, config) {
     PowerOutlet.super_.call(this, id, controller, config);
+}
 
-    this.metrics = {
-        state: null
-    };
+util.inherits(PowerOutlet, AutomationModule);
+
+module.exports = exports = PowerOutlet;
+
+PowerOutlet.prototype.init = function (config) {
+    PowerOutlet.super_.prototype.init.call(this, config);
+
+    this.metrics.state = null;
 
     this.controller.registerDevice(this.config.deviceId, this);
 
-    this.controller.registerAction(this.config.deviceId, {
-        name: "toggle",
+    this.controller.registerAction(this.id, {
+        id: "toggle",
+        deviceId: this.config.deviceId,
         args: null
     }, this.toggleAction);
 
@@ -26,21 +33,19 @@ function PowerOutlet (id, controller, config) {
         iconResFormat: "bulb_{state}",
         actions: ["toggle"],
         metrics: {
-            "state": "boolean"
+            "state": {
+                "type": "string",
+                "enum": ['on', 'off']
+            }
         }
     });
 
     var self = this;
+
     this.controller.on('zway.update', function (dataPoint, value) {
         self.onUpdate(dataPoint, value);
     });
-}
-
-// Module inheritance and setup
-
-util.inherits(PowerOutlet, AutomationModule);
-
-module.exports = exports = PowerOutlet;
+};
 
 PowerOutlet.prototype.getModuleBasePath = function () {
     return path.resolve(__dirname);
