@@ -1,5 +1,6 @@
 var path = require("path");
 var fs = require("fs");
+var async = require("async");
 
 AutomationModule = function (id, controller) {
     this.id = id;
@@ -20,6 +21,18 @@ AutomationModule.prototype.init = function (config) {
 
 AutomationModule.prototype.getModuleBasePath = function () {
     return ".";
+};
+
+AutomationModule.prototype.runAction = function (meta, args, callback) {
+    if (callback) {
+        callback(new Error("Not implemented yet"));
+    }
+};
+
+AutomationModule.prototype.runActionSync = function (meta, args, callback) {
+    async.series([function (callback) {
+        this.runAction(meta, args, callback);
+    }], callback);
 };
 
 AutomationModule.prototype.getResource = function (name) {
