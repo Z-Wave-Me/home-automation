@@ -6,8 +6,8 @@ var AutomationModule = require("../../classes/AutomationModule");
 
 // Module inheritance and setup
 
-function RemoteControl (id, controller, config) {
-    RemoteControl.super_.call(this, id, controller, config);
+function RemoteControl (id, controller) {
+    RemoteControl.super_.call(this, id, controller);
 }
 
 util.inherits(RemoteControl, AutomationModule);

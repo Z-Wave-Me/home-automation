@@ -1,7 +1,6 @@
 var http = require('http');
 var util = require('util');
 var EventEmitter2 = require('eventemitter2').EventEmitter2;
-// var events = require('events');
 var path = require('path');
 var express = require('express');
 var nunjucks = require('nunjucks');
@@ -31,7 +30,7 @@ WebServer.prototype.setupWebapp = function () {
     this.nunenv.express(app);
 
     app.use(express.favicon());
-    // app.use(express.logger('dev'));
+    app.use(express.logger('dev'));
     app.use(express.bodyParser());
     app.use(express.cookieParser());
     app.use(app.router);
@@ -130,11 +129,15 @@ WebServer.prototype.getInstancesList = function (req, res) {
     var reply = emptyApiReply();
     var ctrl = req.app.get('ctrl');
     reply.data = {};
-    ctrl.instances.forEach(function (instance) {
-        reply.data[instance.id] = {
-            id: instance.id,
+    Object.keys(ctrl.instances).forEach(function (instanceId) {
+        var instance = ctrl.instances[instanceId];
+        reply.data[instanceId] = {
+            id: instanceId,
             actions: {}
         };
+        Object.keys(instance.actions).forEach(function (actionId) {
+            reply.data[instanceId].actions[actionId] = instance.actions[actionId];
+        });
     });
     reply.error = null;
     res.send(reply);
@@ -142,22 +145,104 @@ WebServer.prototype.getInstancesList = function (req, res) {
 
 WebServer.prototype.getInstanceMeta = function (req, res) {
     var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    var instanceId = req.params.instanceId;
+
+    if (ctrl.instances.hasOwnProperty(instanceId)) {
+        var instance = ctrl.instances[instanceId];
+        reply.data = {
+            id: instanceId,
+            actions: {}
+        };
+        Object.keys(instance.actions).forEach(function (actionId) {
+            reply.data.actions[actionId] = instance.actions[actionId];
+        });
+        reply.error = null;
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Module instance not found (" + instanceId + ")";
+    }
+
     res.send(reply);
 };
 
 WebServer.prototype.getInstanceActionsList = function (req, res) {
     var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    var instanceId = req.params.instanceId;
+
+    if (ctrl.instances.hasOwnProperty(instanceId)) {
+        var instance = ctrl.instances[instanceId];
+        reply.data = {};
+        Object.keys(instance.actions).forEach(function (actionId) {
+            reply.data[actionId] = instance.actions[actionId];
+        });
+        reply.error = null;
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Module instance not found (" + instanceId + ")";
+    }
+
     res.send(reply);
 };
 
 WebServer.prototype.getInstanceActionMeta = function (req, res) {
     var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    var instanceId = req.params.instanceId;
+    var actionId = req.params.actionId;
+
+    if (ctrl.instances.hasOwnProperty(instanceId)) {
+        var instance = ctrl.instances[instanceId];
+
+        if (instance.actions.hasOwnProperty(actionId)) {
+            reply.data = instance.actions[actionId];
+            reply.error = null;
+        } else {
+            reply.error.code = 404;
+            reply.error.msg = "Module instance "+instanceId+" action not found (" + actionId + ")";
+        }
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Module instance not found (" + req.instanceId + ")";
+    }
+
     res.send(reply);
 };
 
 WebServer.prototype.runInstanceAction = function (req, res) {
     var reply = emptyApiReply();
-    res.send(reply);
+    var ctrl = req.app.get('ctrl');
+    var instanceId = req.params.instanceId;
+    var actionId = req.params.actionId;
+
+    if (ctrl.instances.hasOwnProperty(instanceId)) {
+        var instance = ctrl.instances[instanceId];
+        if (instance.actions.hasOwnProperty(actionId)) {
+            reply.error = null;
+
+            function replyCallback (err, res) {
+                if (err) {
+                    reply.error.code = err.code;
+                    reply.error.msg = err.message;
+                } else {
+                    reply.data = res;
+                }
+                res.send(reply);
+            }
+
+            var runner = "true" === req.query.async ? instance.runAction : instance.runActionSync;
+            runner(instance[actionId], req.body, replyCallback);
+        } else {
+            reply.error.code = 404;
+            reply.error.msg = "Module instance "+instanceId+" action not found (" + actionId + ")";
+            res.send(reply);
+        }
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Module instance not found (" + req.instanceId + ")";
+        res.send(reply);
+    }
 };
 
 WebServer.prototype.getWidgetsList = function (req, res) {

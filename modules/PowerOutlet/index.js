@@ -6,8 +6,8 @@ var AutomationModule = require("../../classes/AutomationModule");
 
 // Module inheritance and setup
 
-function PowerOutlet (id, controller, config) {
-    PowerOutlet.super_.call(this, id, controller, config);
+function PowerOutlet (id, controller) {
+    PowerOutlet.super_.call(this, id, controller);
 }
 
 util.inherits(PowerOutlet, AutomationModule);
@@ -24,7 +24,8 @@ PowerOutlet.prototype.init = function (config) {
     this.controller.registerAction(this.id, {
         id: "toggle",
         deviceId: this.config.deviceId,
-        args: null
+        args: null,
+        reqs: null
     }, this.toggleAction);
 
     this.controller.registerWidget(this.config.deviceId+"Widget", {

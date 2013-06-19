@@ -6,8 +6,8 @@ var AutomationModule = require("../../classes/AutomationModule");
 
 // Concrete module constructor
 
-function EventLog (id, controller, config) {
-    EventLog.super_.call(this, id, controller, config);
+function EventLog (id, controller) {
+    EventLog.super_.call(this, id, controller);
 
 }
 
@@ -18,16 +18,14 @@ util.inherits(EventLog, AutomationModule);
 module.exports = exports = EventLog;
 
 EventLog.prototype.init = function (config) {
-    this.controller.registerDevice(this.config.deviceId, this);
+    this.controller.eventlog = {};
 
-    var self = this;
-
-    this.controller.on('zway.update', function (dataPoint, value) {
-        self.onUpdate(dataPoint, value);
-    });
 };
 
 // Module methods
+
+// TODO: Add instance action to post messages
+// TODO: Refactor eventlog grabbing with inctance actions
 
 EventLog.prototype.logEvent = function (event) {
     if ("tick" !== event) {
