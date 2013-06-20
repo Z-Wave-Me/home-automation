@@ -83,10 +83,11 @@ AutomationController.prototype.instantiateModules = function () {
     }
 };
 
-AutomationController.prototype.registerAction = function (instanceId, meta) {
+AutomationController.prototype.registerAction = function (instanceId, meta, func) {
     console.log("registerAction", instanceId, meta);
     var instance = this.instances[instanceId];
     instance.actions[meta.id] = meta;
+    instance.actionFuncs[meta.id] = func;
     this.emit('actionRegistered', instanceId, meta.id);
 };
 

@@ -55,15 +55,11 @@ Will return list of the instance (identified by ${instanceId} variable) actions 
 
 Will return instance (identified by ${instanceId} variable) action (identified by ${adctionId}) metadata
 
-### POST /instances/${instanceId}/actions/${actionId}[?sync=false]
+### POST /instances/${instanceId}/actions/${actionId}
 
 Will perform instance action.
 
 Action payload comes in the form of POST-arguments (in the body).
-
-Depending on `sync` GET-argument (default: false) will either return action enqueuing result or action result itself.
-
-If action was enqueued, it will post event with execution results (if any) to the eventlog.
 
 ## Devices
 

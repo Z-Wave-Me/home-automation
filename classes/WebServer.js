@@ -216,23 +216,21 @@ WebServer.prototype.runInstanceAction = function (req, res) {
     var instanceId = req.params.instanceId;
     var actionId = req.params.actionId;
 
+    function replyCallback (err, res) {
+        if (err) {
+            reply.error.code = err.code;
+            reply.error.msg = err.message;
+        } else {
+            reply.data = res;
+        }
+        res.send(reply);
+    }
+
     if (ctrl.instances.hasOwnProperty(instanceId)) {
         var instance = ctrl.instances[instanceId];
         if (instance.actions.hasOwnProperty(actionId)) {
             reply.error = null;
-
-            function replyCallback (err, res) {
-                if (err) {
-                    reply.error.code = err.code;
-                    reply.error.msg = err.message;
-                } else {
-                    reply.data = res;
-                }
-                res.send(reply);
-            }
-
-            var runner = "true" === req.query.async ? instance.runAction : instance.runActionSync;
-            runner(instance[actionId], req.body, replyCallback);
+            instance.runAction(instance[actionId], req.body, replyCallback);
         } else {
             reply.error.code = 404;
             reply.error.msg = "Module instance "+instanceId+" action not found (" + actionId + ")";
@@ -245,22 +243,22 @@ WebServer.prototype.runInstanceAction = function (req, res) {
     }
 };
 
-WebServer.prototype.getWidgetsList = function (req, res) {
-    var reply = emptyApiReply();
-    res.send(reply);
-};
-
-WebServer.prototype.getWidgetMeta = function (req, res) {
-    var reply = emptyApiReply();
-    res.send(reply);
-};
-
 WebServer.prototype.getDevicesList = function (req, res) {
     var reply = emptyApiReply();
     res.send(reply);
 };
 
 WebServer.prototype.getDeviceMeta = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getWidgetsList = function (req, res) {
+    var reply = emptyApiReply();
+    res.send(reply);
+};
+
+WebServer.prototype.getWidgetMeta = function (req, res) {
     var reply = emptyApiReply();
     res.send(reply);
 };

@@ -8,7 +8,6 @@ var AutomationModule = require("../../classes/AutomationModule");
 
 function EventLog (id, controller) {
     EventLog.super_.call(this, id, controller);
-
 }
 
 // Module inheritance and setup
@@ -19,7 +18,6 @@ module.exports = exports = EventLog;
 
 EventLog.prototype.init = function (config) {
     this.controller.eventlog = {};
-
 };
 
 // Module methods
