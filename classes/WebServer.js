@@ -245,30 +245,84 @@ WebServer.prototype.runInstanceAction = function (req, res) {
 
 WebServer.prototype.getDevicesList = function (req, res) {
     var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    reply.data = {};
+    Object.keys(ctrl.devices).forEach(function (id) {
+        reply.data[id] = ctrl.devices[id].meta;
+    });
+    reply.error = null;
     res.send(reply);
 };
 
 WebServer.prototype.getDeviceMeta = function (req, res) {
     var reply = emptyApiReply();
+    var deviceId = req.params.deviceId;
+    var ctrl = req.app.get('ctrl');
+
+    if (ctrl.devices.hasOwnProperty(deviceId)) {
+        reply.data = ctrl.devices[instanceId].meta;
+        reply.error = null;
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Device not found (" + instanceId + ")";
+    }
+
     res.send(reply);
 };
 
 WebServer.prototype.getWidgetsList = function (req, res) {
     var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    var dashboardOnly = "true" === req.query.dashboard ? true : false;
+    reply.data = {};
+    Object.keys(ctrl.widgets).forEach(function (id) {
+        if (!dashboardOnly || (dashboardOnly && ctrl.devices[id].dashboard)) {
+            reply.data[id] = ctrl.widgets[id].meta;
+        }
+    });
+    reply.error = null;
     res.send(reply);
 };
 
 WebServer.prototype.getWidgetMeta = function (req, res) {
     var reply = emptyApiReply();
+    var widgetId = req.params.widgetId;
+    var ctrl = req.app.get('ctrl');
+
+    if (ctrl.widgets.hasOwnProperty(widgetId)) {
+        reply.data = ctrl.devices[widgetId].meta;
+        reply.error = null;
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Widget not found (" + widgetId + ")";
+    }
+
     res.send(reply);
 };
 
 WebServer.prototype.getApplicationsList = function (req, res) {
     var reply = emptyApiReply();
+    var ctrl = req.app.get('ctrl');
+    reply.data = {};
+    Object.keys(ctrl.apps).forEach(function (id) {
+        reply.data[id] = ctrl.apps[id].meta;
+    });
+    reply.error = null;
     res.send(reply);
 };
 
 WebServer.prototype.getApplicationMeta = function (req, res) {
     var reply = emptyApiReply();
+    var appId = req.params.appId;
+    var ctrl = req.app.get('ctrl');
+
+    if (ctrl.apps.hasOwnProperty(appId)) {
+        reply.data = ctrl.apps[appId].meta;
+        reply.error = null;
+    } else {
+        reply.error.code = 404;
+        reply.error.msg = "Application not found (" + appId + ")";
+    }
+
     res.send(reply);
 };
