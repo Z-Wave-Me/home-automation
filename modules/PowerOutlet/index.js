@@ -71,16 +71,20 @@ PowerOutlet.prototype.onUpdate = function (dataPoint, value) {
 
     if (triggeredState !== null) {
         this.metrics.state = triggeredState;
-        this.sendState(function (err) {
-            if (err) {
-                var msg = util.format("Cannot change device state", this.config.deviceId, this.metrics.state);
-                var error = new Error(msg);
-                this.controller.emit("error", error);
-                callback(error);
-            } else {
-                callback();
-            }
-        });
+        this.controller.emit("deviceStateChanged", devId, state);
+        this.controller.emit("powerOutlet.stateChanged", devId, state);
+        console.log("--- powerOutlet.stateChanged", devId, state);
+
+        // this.sendState(function (err) {
+        //     if (err) {
+        //         var msg = util.format("Cannot change device state", this.config.deviceId, this.metrics.state);
+        //         var error = new Error(msg);
+        //         this.controller.emit("error", error);
+        //         callback(error);
+        //     } else {
+        //         callback();
+        //     }
+        // });
     }
 };
 
@@ -90,10 +94,6 @@ PowerOutlet.prototype.sendState = function (callback) {
     console.log("--- sending new Power Outlet state to the device", devId, state);
 
     // TODO: Send new state to the device
-
-    this.controller.emit("deviceStateChanged", devId, state);
-    this.controller.emit("powerOutlet.stateChanged", devId, state);
-    console.log("--- powerOutlet.stateChanged", devId, state);
 
     callback(null, {
         deviceId: devId,
