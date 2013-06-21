@@ -23,8 +23,9 @@ AutomationModule.prototype.getModuleBasePath = function () {
     return ".";
 };
 
-AutomationModule.prototype.runAction = function (meta, args, callback) {
-    this.actionFuncs[meta.id](args, callback);
+AutomationModule.prototype.runAction = function (actionId, args, callback) {
+    // console.log("RARARA", this, actionId, args, callback);
+    this.actionFuncs[actionId].call(this, args, callback);
 };
 
 AutomationModule.prototype.getResource = function (name) {

@@ -216,12 +216,12 @@ WebServer.prototype.runInstanceAction = function (req, res) {
     var instanceId = req.params.instanceId;
     var actionId = req.params.actionId;
 
-    function replyCallback (err, res) {
+    function replyCallback (err, data) {
         if (err) {
             reply.error.code = err.code;
             reply.error.msg = err.message;
         } else {
-            reply.data = res;
+            reply.data = data;
         }
         res.send(reply);
     }
@@ -230,7 +230,7 @@ WebServer.prototype.runInstanceAction = function (req, res) {
         var instance = ctrl.instances[instanceId];
         if (instance.actions.hasOwnProperty(actionId)) {
             reply.error = null;
-            instance.runAction(instance[actionId], req.body, replyCallback);
+            instance.runAction(actionId, req.body, replyCallback);
         } else {
             reply.error.code = 404;
             reply.error.msg = "Module instance "+instanceId+" action not found (" + actionId + ")";
@@ -260,11 +260,11 @@ WebServer.prototype.getDeviceMeta = function (req, res) {
     var ctrl = req.app.get('ctrl');
 
     if (ctrl.devices.hasOwnProperty(deviceId)) {
-        reply.data = ctrl.devices[instanceId].meta;
+        reply.data = ctrl.devices[deviceId].meta;
         reply.error = null;
     } else {
         reply.error.code = 404;
-        reply.error.msg = "Device not found (" + instanceId + ")";
+        reply.error.msg = "Device not found (" + deviceId + ")";
     }
 
     res.send(reply);

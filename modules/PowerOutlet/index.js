@@ -60,7 +60,8 @@ PowerOutlet.prototype.getModuleInstanceMetrics = function () {
 
 PowerOutlet.prototype.onUpdate = function (dataPoint, value) {
     var triggeredState = null;
-    var deviceDataPoint = util.format("devices.%d", this.config.zwayDeviceId);
+    var devId = this.config.zwayDeviceId;
+    var deviceDataPoint = util.format("devices.%d", devId);
     var myDataPoint = deviceDataPoint + ".instances.0.commandClasses.37.data.level";
 
     if (myDataPoint === dataPoint && 255 === value.value) {
@@ -71,32 +72,25 @@ PowerOutlet.prototype.onUpdate = function (dataPoint, value) {
 
     if (triggeredState !== null) {
         this.metrics.state = triggeredState;
-        this.controller.emit("deviceStateChanged", devId, state);
-        this.controller.emit("powerOutlet.stateChanged", devId, state);
-        console.log("--- powerOutlet.stateChanged", devId, state);
-
-        // this.sendState(function (err) {
-        //     if (err) {
-        //         var msg = util.format("Cannot change device state", this.config.deviceId, this.metrics.state);
-        //         var error = new Error(msg);
-        //         this.controller.emit("error", error);
-        //         callback(error);
-        //     } else {
-        //         callback();
-        //     }
-        // });
+        this.controller.emit("deviceStateChanged", devId, triggeredState);
+        this.controller.emit("powerOutlet.stateChanged", devId, triggeredState);
+        console.log("--- powerOutlet.stateChanged", devId, triggeredState);
     }
 };
 
-PowerOutlet.prototype.sendState = function (callback) {
-    var devId = this.config.deviceId;
+PowerOutlet.prototype.setState = function (callback) {
+    var zdevId = this.config.zwayDeviceId;
     var state = this.metrics.state;
-    console.log("--- sending new Power Outlet state to the device", devId, state);
+    var myDataPoint = util.format("devices[%d].instances[0].commandClasses[37]", zdevId);
+    var stateValue = "on" === state ? 255 : 0;
 
-    // TODO: Send new state to the device
+    this.controller.emit('zway.setDataPoint', {
+        dataPoint: myDataPoint,
+        value: stateValue
+    })
 
     callback(null, {
-        deviceId: devId,
+        deviceId: this.config.deviceId,
         state: state
     });
 };
@@ -105,5 +99,5 @@ PowerOutlet.prototype.toggleAction = function (args, callback) {
     console.log("Toggle Power Outlet action triggered");
 
     this.metrics.state = "on" === this.metrics.state ? "off" : "on";
-    this.sendState(callback);
+    this.setState(callback);
 };
