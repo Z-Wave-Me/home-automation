@@ -33,6 +33,8 @@ PowerOutlet.prototype.init = function (config) {
         type: "switch",
         iconResFormat: "bulb_{state}",
         actions: ["toggle"],
+        device: this.config.deviceId,
+        instance: this.id,
         metrics: {
             "state": {
                 "type": "string",

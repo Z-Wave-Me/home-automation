@@ -89,12 +89,19 @@ WebServer.prototype.getUIMeta = function (req, res) {
 
     reply.error = null;
     reply.data = {
-        // devices: ctrl.devices,
-        // instances: ctrl.instances,
+        devices: {},
+        instances: {},
         actions: ctrl.actions,
         widgets: ctrl.widgets,
         enabledWidgets: ctrl.getEnabledWidgets()
     };
+
+    Object.keys(ctrl.instances).forEach(function (id) {
+        reply.data.instances[id] = {
+            id: id,
+            actions: ctrl.instances[id].actions
+        }
+    });
 
     res.send(reply);
 };

@@ -14,6 +14,10 @@ output += "</h4>\n        ";
 if(runtime.contextOrFrameLookup(context, frame, "mainAction")) {
 output += "\n            <button class=\"widgetAction\" data-action=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "mainAction"), env.autoesc);
+output += "\" data-instance=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "instance"), env.autoesc);
+output += "\" data-device=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "device"), env.autoesc);
 output += "\">";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "mainAction"), env.autoesc);
 output += "</button>\n        ";
