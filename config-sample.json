@@ -1,0 +1,21 @@
+{
+    "basePath": "/home/gregor/Projects/zway/automation",
+    "controller": {
+        "tickInterval": 1000,
+        "modulesPath": "/home/gregor/Projects/zway/automation/modules",
+        "modules": [
+            "EventLog",
+            "ZWaveGate"
+        ],
+        "instances": {
+            "EventLog" : {
+                "module": "EventLog",
+                "config": {}
+            },
+            "ZWave" : {
+                "module": "ZWaveGate",
+                "config": {}
+            }
+        }
+    }
+}
