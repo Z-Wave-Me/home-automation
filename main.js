@@ -23,7 +23,7 @@ function inherits (ctor, superCtor) {
 
 //--- Load configuration
 
-var config = loadJSON("./automation.json");
+var config = loadJSON("automation/config.json");
 
 config.libPath = config.basePath+"/lib";
 config.classesPath = config.basePath+"/classes";
