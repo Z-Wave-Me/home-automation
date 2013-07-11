@@ -2,3 +2,4 @@
 node_modules
 npm-debug.log
 config.json
+lib/_templates.js

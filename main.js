@@ -21,12 +21,17 @@ function inherits (ctor, superCtor) {
   });
 }
 
+// Object.prototype.isArray = function () {
+//     return this instanceof Array;
+// }
+
 //--- Load configuration
 
-var config = loadJSON("automation/config.json");
+var config = loadJSON("./automation/config.json");
 
 config.libPath = config.basePath+"/lib";
 config.classesPath = config.basePath+"/classes";
+config.resourcesPath = config.basePath+"/res";
 
 console.log("CFG", JSON.stringify(config, null, "  "));
 
@@ -69,7 +74,7 @@ controller.on('run', function () {
     console.log('ZWay Automation Controller started');
 
     //--- Initialize webserver
-    // executeFile(config.basePath+"/webserver.js");
+    executeFile(config.basePath+"/webserver.js");
 });
 
 //--- main
