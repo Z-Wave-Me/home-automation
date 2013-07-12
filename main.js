@@ -7,18 +7,18 @@ var console = {
     warn: debugPrint,
     error: debugPrint,
     debug: debugPrint
-}
+};
 
 function inherits (ctor, superCtor) {
-  ctor.super_ = superCtor;
-  ctor.prototype = Object.create(superCtor.prototype, {
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
     constructor: {
-      value: ctor,
-      enumerable: false,
-      writable: true,
-      configurable: true
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
     }
-  });
+    });
 }
 
 // Object.prototype.isArray = function () {
@@ -50,10 +50,6 @@ executeFile(config.classesPath+"/AutomationModule.js");
 
 var controller = new AutomationController(config.controller);
 
-controller.on('init', function () {
-    controller.run();
-});
-
 controller.on('error', function (err) {
     console.log("--- ERROR:", err.message);
 });
@@ -70,13 +66,17 @@ controller.on('widgetRegistered', function (id) {
     console.log("Widget registered", id);
 });
 
+controller.on('init', function () {
+    controller.run();
+});
+
 controller.on('run', function () {
     console.log('ZWay Automation Controller started');
-
-    //--- Initialize webserver
     executeFile(config.basePath+"/webserver.js");
 });
 
-//--- main
+// ----------------------------------------------------------------------------
+// --- main
+// ----------------------------------------------------------------------------
 
 controller.init();
