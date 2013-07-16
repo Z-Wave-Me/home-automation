@@ -4,14 +4,19 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
     this.zCommandClassId = 0x31;
     this.zScaleId = scaleId;
 
-    var zwayDeviceScale = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].data[this.zScaleId];
-    this.sensorTypeString = zwayDeviceScale.sensorTypeString;
-    this.scaleString = zwayDeviceScale.scaleString;
+    this.vDevType = "probe";
+
+    this.sensorTypeString = this._dics().sensorTypeString.value;
+    this.scaleString = this._dics().scaleString.value;
+
+    this.setMetricValue("probeTitle", this.sensorTypeString);
+    this.setMetricValue("scaleTitle", this.scaleString);
+
+    this.setMetricValue("level", this._dics().val.value);
 }
 
 inherits(ZWaveSensorMultilevelDevice, ZWaveDevice);
 
 ZWaveSensorMultilevelDevice.prototype.dataPoints = function () {
-    var zwayDeviceScale = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].data[this.zScaleId];
-    return [zwayDeviceScale.val];
+    return [this._dics().val];
 }

@@ -5,6 +5,10 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zInstanceId = zInstanceId;
     this.zCommandClassId = null;
     this.zScaleId = null;
+
+    this.vDevType = null;
+
+    // this.metrics["level"] = null;
 }
 
 inherits(ZWaveDevice, VirtualDevice);
@@ -34,4 +38,12 @@ ZWaveDevice.prototype.bindToDatapoints = function () {
 
 ZWaveDevice.prototype.handleDatapointUpdate = function (value, args) {
     this.setMetricValue("level", value);
+}
+
+ZWaveDevice.prototype._dic = function () {
+    return zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];
+}
+
+ZWaveDevice.prototype._dics = function () {
+    return this._dic().data[this.zScaleId];
 }

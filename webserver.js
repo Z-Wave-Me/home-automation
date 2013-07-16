@@ -60,7 +60,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     requestProcessorFunc.call(this);
 
     // Log request reply
-    var bodyLength = "string" === typeof this.res.body ? this.res.body.length : 0;
+    var bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
     console.log("[" + now.toISOString() + "]", request.method, url, this.res.status, bodyLength);
 
     // Return to the z-way-http
@@ -72,20 +72,66 @@ ZAutomationWebRequest.prototype.NotImplementedReply = function () {
     this.res.body = "Not implemented, yet";
 };
 
+ZAutomationWebRequest.prototype.NotFound = function () {
+    this.res = {
+        status: 404,
+        headers: {
+            "Content-Type": "text/plain; charset=utf-8"
+        },
+        body: "Not Found"
+    }
+};
+
 // ----------------------------------------------------------------------------
 // --- ZAutomationAPIWebRequest
 // ----------------------------------------------------------------------------
 
 function ZAutomationAPIWebRequest () {
     ZAutomationAPIWebRequest.super_.call(this);
-}
+
+    this.res = {
+        status: 200,
+        headers: {
+            "Content-Type": "application/json; charset=utf-8"
+        },
+        body: null
+    }
+};
 
 inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
+ZAutomationAPIWebRequest.prototype.listDevices = function () {
+    console.log("--- ZAutomationAPIWebRequest.listDevices");
+
+    var reply = {
+        error: null,
+        data: []
+    }
+
+
+    Object.keys(controller.devices).forEach(function (vDevId) {
+        var vDev = controller.devices[vDevId];
+        reply.data.push({
+            id: vDevId,
+            vDevType: vDev.vDevType,
+            metrics: vDev.metrics
+        });
+    });
+
+    this.res.body = JSON.stringify(reply);
+    // console.log("REPLY", this.res.body);
+};
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     console.log("--- ZAutomationAPIWebRequest.dispatchRequest", method, url);
-    return this.NotImplementedReply;
-}
+
+    var handlerFunc = this.NotFound;
+    if ("GET" === method && "/devices/" == url) {
+        handlerFunc = this.listDevices;
+    };
+
+    return handlerFunc;
+};
 
 // ----------------------------------------------------------------------------
 // --- ZAutomationResourceWebRequest

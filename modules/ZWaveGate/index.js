@@ -137,7 +137,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
                 var scaleId = parseInt(scaleId, 10);
                 if (!isNaN(scaleId)) {
                     console.log("Creating SensorMultilevel device for scale", scaleId);
-                    instanceDevices.push(new ZWaveSensorMultilevelDevice(deviceName+":"+scaleId, self.controller, deviceId, instanceId, scaleId));
+                    instanceDevices.push(new ZWaveSensorMultilevelDevice(deviceName+"-"+scaleId, self.controller, deviceId, instanceId, scaleId));
                 }
             });
         } else if (0x32 === commandClassId) {
