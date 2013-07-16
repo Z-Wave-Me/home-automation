@@ -1,14 +1,20 @@
 AutomationModule = function (id, controller) {
+    var self = this;
+
     this.id = id;
+    this.controller = controller;
+    this.meta = this.getMeta();
+
     this.actions = {};
     this.actionFuncs = {};
     this.metrics = {};
-    this.config = {};
-    this.controller = controller;
 
-    // Proxy EventEmitter.emit from the AutomationController
-    // FIX: This doesn't work. Find out why!
-    this.emit = this.controller.emit;
+    this.config = {};
+    if (this.meta.hasOwnProperty('defaults')) {
+        Object.keys(this.meta.defaults).forEach(function (key) {
+            self.config[key] = self.meta.defaults[key];
+        });
+    }
 };
 
 AutomationModule.prototype.init = function (config) {
@@ -18,23 +24,18 @@ AutomationModule.prototype.init = function (config) {
     });
 };
 
-AutomationModule.prototype.getModuleBasePath = function () {
-    return ".";
-};
-
 AutomationModule.prototype.runAction = function (actionId, args, callback) {
-    this.actionFuncs[actionId].call(this, args, callback);
-};
-
-AutomationModule.prototype.getResource = function (name) {
-    var resourceFilename = path.resolve(path.join(this.getModuleBasePath(), "resources", name));
-    return fs.existsSync(resourceFilename) ? resourceFilename : this.controller.getResource(name);
+    // Run action function with actionId on instance if exists
+    if (this.actionFuncs.hasOwnProperty(actionId)) {
+        this.actionFuncs[actionId].call(this, args, callback);
+    }
 };
 
 AutomationModule.prototype.getMeta = function () {
-    return loadJSON(this.getModuleBasePath()+"/module.json");
-};
+    if (!this.meta) {
+        console.log("Loading module metadata", this);
+        this.meta = loadJSON(this.moduleBasePath() + "/module.json");
+    }
 
-AutomationModule.prototype.getModuleInstanceMetrics = function () {
-    return null;
+    return this.meta;
 };

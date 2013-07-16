@@ -6,16 +6,6 @@ console.log("Setting web request handler");
 // var httpStatusCodeNames = loadJSON(config.libPath+"/httpStatusCodes.json");
 
 // ----------------------------------------------------------------------------
-// --- ZAutomationAPIWebRequest
-// ----------------------------------------------------------------------------
-
-function ZAutomationAPIWebRequest () {
-    ZAutomationAPIWebRequest.super_.call(this);
-}
-
-inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
-
-// ----------------------------------------------------------------------------
 // --- ZAutomationWebRequest
 // ----------------------------------------------------------------------------
 
@@ -81,6 +71,21 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
 ZAutomationWebRequest.prototype.NotImplementedReply = function () {
     this.res.body = "Not implemented, yet";
 };
+
+// ----------------------------------------------------------------------------
+// --- ZAutomationAPIWebRequest
+// ----------------------------------------------------------------------------
+
+function ZAutomationAPIWebRequest () {
+    ZAutomationAPIWebRequest.super_.call(this);
+}
+
+inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
+
+ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
+    console.log("--- ZAutomationAPIWebRequest.dispatchRequest", method, url);
+    return this.NotImplementedReply;
+}
 
 // ----------------------------------------------------------------------------
 // --- ZAutomationResourceWebRequest

@@ -10,15 +10,23 @@ var console = {
 };
 
 function inherits (ctor, superCtor) {
-    ctor.super_ = superCtor;
-    ctor.prototype = Object.create(superCtor.prototype, {
+  ctor.super_ = superCtor;
+  ctor.prototype = Object.create(superCtor.prototype, {
     constructor: {
-        value: ctor,
-        enumerable: false,
-        writable: true,
-        configurable: true
+      value: ctor,
+      enumerable: false,
+      writable: true,
+      configurable: true
     }
-    });
+  });
+}
+
+Array.prototype.has = function (value) {
+    return -1 != this.indexOf(value);
+}
+
+Object.prototype.hasKey = function (value) {
+    return -1 != Object.keys(this).indexOf(value);
 }
 
 // Object.prototype.isArray = function () {
@@ -45,10 +53,15 @@ executeFile(config.libPath + "/eventemitter2.js");
 
 executeFile(config.classesPath+"/AutomationController.js");
 executeFile(config.classesPath+"/AutomationModule.js");
+executeFile(config.classesPath+"/VirtualDevice.js");
 
 //--- Instantiate Automation Controller
 
 var controller = new AutomationController(config.controller);
+
+controller.on('init', function () {
+    controller.run();
+});
 
 controller.on('error', function (err) {
     console.log("--- ERROR:", err.message);
@@ -66,17 +79,13 @@ controller.on('widgetRegistered', function (id) {
     console.log("Widget registered", id);
 });
 
-controller.on('init', function () {
-    controller.run();
-});
-
 controller.on('run', function () {
     console.log('ZWay Automation Controller started');
+
+    //--- Initialize webserver
     executeFile(config.basePath+"/webserver.js");
 });
 
-// ----------------------------------------------------------------------------
-// --- main
-// ----------------------------------------------------------------------------
+//--- main
 
 controller.init();
