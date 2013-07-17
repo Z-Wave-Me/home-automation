@@ -46,7 +46,7 @@ function apiRequest (uri, callback, options) {
         });
     }
 
-    $.ajax(apiUrl+"/devices/", opts).done(function (reply, textStatus, jqXHR) {
+    $.ajax(apiUrl+uri, opts).done(function (reply, textStatus, jqXHR) {
         console.log("API REPLY", textStatus, reply);
 
         var err;
@@ -62,8 +62,9 @@ function apiRequest (uri, callback, options) {
         } else {
             if (!!callback) callback(null, reply.data);
         }
-    }).fail(function (jqXHR, textStatus, err) {
-        console.log('error', err.message);
+    }).fail(function (jqXHR, textStatus, error) {
+        var err = new Error(error);
+        console.log('error', err);
         if (!!callback) callback(err);
     });
 }
