@@ -25,13 +25,13 @@ function createVirtualDevicesWidgets () {
 
         if ("switch" === vDev.vDevType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.vDevType+")");
-            widget = new SwitchWidget("container", vDev);
+            widget = new SwitchWidget("mainRow", vDev);
         } else if ("multilevel" === vDev.vDevType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.vDevType+")");
-            widget = new MultilevelWidget("container", vDev);
+            widget = new MultilevelWidget("mainRow", vDev);
         } else if ("probe" === vDev.vDevType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.vDevType+")");
-            widget = new ProbeWidget("container", vDev);
+            widget = new ProbeWidget("mainRow", vDev);
         } else {
             console.log("ERROR", "Unknown virtual device type", vDev.vDevType);
         }
@@ -43,7 +43,19 @@ function createVirtualDevicesWidgets () {
     });
 }
 
+function handleWidgetCommand (event) {
+    event.preventDefault();
+    console.log($(this));
+
+    var device = $(this).data("vdev");
+    var commandId = $(this).data("command");
+
+    console.log("Widget command triggered", device, commandId);
+}
+
 $(document).ready(function () {
+    $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
+
     $.ajax(apiUrl+"/devices/", {
         method: 'GET'
     }).done(function (reply, textStatus, jqXHR) {

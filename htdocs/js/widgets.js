@@ -29,6 +29,7 @@ AbstractWidget.prototype.init = function () {
     var parent = document.getElementById(this.parentElementId);
     this.elem = document.createElement("div");
     this.elem.classList.add('dashboardWidgetSmall');
+    // this.elem.classList.add('span12');
     parent.appendChild(this.elem);
     this.updateWidgetUI();
 };
@@ -60,7 +61,12 @@ function SwitchWidget (parentElement, device) {
 inherits(SwitchWidget, AbstractWidget);
 
 SwitchWidget.prototype.updateWidgetUI = function () {
-    this.elem.innerHTML = this.widgetTitle + ": " + (255 === this.value ? "On" : "Off");
+    // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + (255 === this.value ? "On" : "Off") + "</div>";
+    this.elem.innerHTML = nunjucks.env.render("widgets/switch.html", {
+        vDev: this.device.id,
+        widgetTitle: this.widgetTitle,
+        metricValue: this.value
+    });
 }
 
 // ----------------------------------------------------------------------------
@@ -88,23 +94,24 @@ MultilevelWidget.prototype.updateWidgetUI = function () {
         valueString = this.value + "%";
     }
 
-    this.elem.innerHTML = this.widgetTitle + ": " + valueString;
+    // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + valueString + "</div>";
+    this.elem.innerHTML = nunjucks.env.render("widgets/multilevel.html", {
+        vDev: this.device.id,
+        widgetTitle: this.widgetTitle,
+        metricValue: this.value
+    });
 }
 
 // ----------------------------------------------------------------------------
 // --- Probe widget
 // ----------------------------------------------------------------------------
-// states:
-//     true: Triggered
-//     false: Not triggered
-// commands:
-//     enter: Update value
+// scales:
 // ----------------------------------------------------------------------------
 
 function ProbeWidget (parentElement, deviceId) {
     ProbeWidget.super_.apply(this, arguments);
 
-    this.widgetTitle = this.device.metrics.probeTitle + " probe";
+    this.widgetTitle = this.device.metrics.probeTitle;
 
     this.value = Math.floor(this.device.metrics.level * 10) / 10;
 }
@@ -112,5 +119,11 @@ function ProbeWidget (parentElement, deviceId) {
 inherits(ProbeWidget, AbstractWidget);
 
 ProbeWidget.prototype.updateWidgetUI = function () {
-    this.elem.innerHTML = this.widgetTitle + ": " + this.value + " " + this.device.metrics.scaleTitle;
+    // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + this.value + " " + this.device.metrics.scaleTitle  + "</div>";
+    this.elem.innerHTML = nunjucks.env.render("widgets/probe.html", {
+        vDev: this.device.id,
+        widgetTitle: this.widgetTitle,
+        scaleTitle: this.device.metrics.scaleTitle,
+        metricValue: this.value
+    });
 }
