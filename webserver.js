@@ -108,7 +108,6 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         data: []
     }
 
-
     Object.keys(controller.devices).forEach(function (vDevId) {
         var vDev = controller.devices[vDevId];
         reply.data.push({
@@ -122,12 +121,48 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
     // console.log("REPLY", this.res.body);
 };
 
+ZAutomationAPIWebRequest.prototype.exposeEvents = function () {
+    console.log("--- ZAutomationAPIWebRequest.exposeEvents");
+
+    var nowTS = Math.floor(new Date().getTime() / 1000);
+
+    var reply = {};
+
+    var eventLog = controller.moduleInstance("EventLog");
+
+    if (!eventLog) {
+        reply = {
+            error: {
+                code: 500,
+                message: "EventLog module doesn't instantiated"
+            },
+            data: null
+        }
+    } else {
+        reply = {
+            error: null,
+            data: {}
+        }
+
+        var since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
+
+        reply.data = {
+            updateTime: nowTS,
+            events: eventLog.exposedEvents(since)
+        };
+    }
+
+    this.res.body = JSON.stringify(reply);
+};
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     console.log("--- ZAutomationAPIWebRequest.dispatchRequest", method, url);
 
     var handlerFunc = this.NotFound;
     if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;
+    } else if ("GET" === method && "/events/" == url) {
+        handlerFunc = this.exposeEvents;
     };
 
     return handlerFunc;

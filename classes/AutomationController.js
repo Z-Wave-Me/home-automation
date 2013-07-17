@@ -69,6 +69,10 @@ AutomationController.prototype.instantiateModules = function () {
     }
 };
 
+AutomationController.prototype.moduleInstance = function (instanceId) {
+    return this.instances.hasOwnProperty(instanceId) ? this.instances[instanceId] : null;
+};
+
 AutomationController.prototype.registerAction = function (instanceId, meta, func) {
     console.log("registerAction", instanceId, meta);
     var instance = this.instances[instanceId];
