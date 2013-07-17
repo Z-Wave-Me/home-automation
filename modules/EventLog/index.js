@@ -46,3 +46,23 @@ EventLog.prototype.logEvent = function () {
 
     console.log("--- EVENT:", now.toISOString(), timestamp, eventId, JSON.stringify(args));
 };
+
+EventLog.prototype.exposedEvents = function (since) {
+    var self = this;
+    var since = since || 0;
+
+    var filteredKeys = Object.keys(this.eventLog).filter(function (timestamp) {
+        var timestamp = parseInt(timestamp, 10);
+        return timestamp >= since;
+    });
+    filteredKeys.sort();
+
+
+    // TODO: Events filtering (to split exposed and internal only events)
+    var result = {};
+    filteredKeys.forEach(function (key) {
+        result[key] = self.eventLog[key];
+    });
+
+    return result;
+}

@@ -57,7 +57,7 @@ output += "\" data-command=\"decrease\" class=\"widgetCommandButton btn\">-</a>\
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
 output += "\" data-command=\"increase\" class=\"widgetCommandButton btn\">+</a>\n        <a href=\"#\" data-vdev=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
-output += "\" data-command=\"full\"     class=\"widgetCommandButton btn\">Full</a>\n        <a href=\"#\" data-vdev=\"";
+output += "\" data-command=\"max\"      class=\"widgetCommandButton btn\">Max</a>\n        <a href=\"#\" data-vdev=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
 output += "\" data-command=\"on\"       class=\"widgetCommandButton btn ";
 if(0 < runtime.contextOrFrameLookup(context, frame, "metricValue")) {

@@ -1,22 +1,7 @@
-function qVar(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split('&');
-    for (var i = 0; i < vars.length; i++) {
-        var pair = vars[i].split('=');
-        if (decodeURIComponent(pair[0]) == variable) {
-            return decodeURIComponent(pair[1]);
-        }
-    }
-    return undefined;
-}
+// ----------------------------------------------------------------------------
+// --- Dashboard widgets handling routines
+// ----------------------------------------------------------------------------
 
-var DEBUG = qVar("debug") ? true : false;
-
-var apiPort = qVar("port") ? qVar("port") : 8083;
-var apiHost = qVar("host") ? qVar("host") : window.location.hostname;
-var apiUrl = "http://"+apiHost+":"+apiPort+"/ZAutomation/api";
-
-var virtualDevices = [];
 var dashboardWidgets = [];
 
 function createVirtualDevicesWidgets () {
@@ -43,32 +28,51 @@ function createVirtualDevicesWidgets () {
     });
 }
 
+function widgetByDeviceId (deviceId) {
+    var search = dashboardWidgets.filter(function (item) {
+        return item.device.id === deviceId;
+    });
+
+    return 1 === search.length ? search[0] : null;
+}
+
+// ----------------------------------------------------------------------------
+// --- Virtual devices handling routines
+// ----------------------------------------------------------------------------
+
+var virtualDevices = [];
+
 function handleWidgetCommand (event) {
     event.preventDefault();
     console.log($(this));
 
     var device = $(this).data("vdev");
     var commandId = $(this).data("command");
+    var widget = widgetByDeviceId(device);
 
-    console.log("Widget command triggered", device, commandId);
+    if (!!widget) {
+        console.log("Widget command triggered", device, commandId);
+        widget.performCommand(commandId);
+    } else {
+        console.log("ERROR", "Cannot find widget for vDev", device);
+    }
 }
 
+// ----------------------------------------------------------------------------
+// --- main
+// ----------------------------------------------------------------------------
+
 $(document).ready(function () {
+    // Event handlers
     $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
 
-    $.ajax(apiUrl+"/devices/", {
-        method: 'GET'
-    }).done(function (reply, textStatus, jqXHR) {
-        console.log("API REPLY", textStatus, reply);
-        if (typeof reply !== 'object') {
-            console.log('error', new Error("Non-object API reply"));
-        } else if (reply.error) {
-            console.log('error', new Error("API error " + reply.error.code + ": " +reply.error.msg));
+    // Load and instantiate widgets
+    apiRequest("/devices/", function (err, data) {
+        if (!!err) {
+            console.log("Cannot create vDev widgets:", err.message);
         } else {
-            virtualDevices = reply.data;
+            virtualDevices = data;
             createVirtualDevicesWidgets();
         }
-    }).fail(function (jqXHR, textStatus, err) {
-        console.log('error', err);
     });
 });

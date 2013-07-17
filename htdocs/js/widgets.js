@@ -1,20 +1,4 @@
 // ----------------------------------------------------------------------------
-// --- Prototypal inheritance support routine (from Node.JS)
-// ----------------------------------------------------------------------------
-
-function inherits (ctor, superCtor) {
-    ctor.super_ = superCtor;
-    ctor.prototype = Object.create(superCtor.prototype, {
-        constructor: {
-            value: ctor,
-            enumerable: false,
-            writable: true,
-            configurable: true
-        }
-    });
-}
-
-// ----------------------------------------------------------------------------
 // --- Abstract widget class
 // ----------------------------------------------------------------------------
 
@@ -23,13 +7,22 @@ function AbstractWidget (parentElement, device) {
     this.device = device;
 
     this.value = this.device.metrics.level;
+
+    var self = this;
+    events.on('metricUpdate.'+this.device.id, function (data) {
+        // console.log('--- metricUpdate.'+self.device.id, data[0], data[1]);
+        if ("level" === data[0]) {
+            self.setValue(data[1]);
+        } else {
+            console.log("Don't know how to handle", data[0], "metric update. Ignoring.");
+        }
+    });
+
 }
 
 AbstractWidget.prototype.init = function () {
     var parent = document.getElementById(this.parentElementId);
     this.elem = document.createElement("div");
-    this.elem.classList.add('dashboardWidgetSmall');
-    // this.elem.classList.add('span12');
     parent.appendChild(this.elem);
     this.updateWidgetUI();
 };
@@ -42,6 +35,14 @@ AbstractWidget.prototype.setValue = function (value, callback) {
 
 AbstractWidget.prototype.updateWidgetUI = function () {
     console.log("Don't know how to update widget UI", this);
+}
+
+AbstractWidget.prototype.commandApiUri = function (command) {
+    return "/devices/"+this.device.id+"/command/"+command;
+}
+
+AbstractWidget.prototype.performCommand = function (command) {
+    apiRequest(this.commandApiUri(command));
 }
 
 // ----------------------------------------------------------------------------
@@ -117,6 +118,12 @@ function ProbeWidget (parentElement, deviceId) {
 }
 
 inherits(ProbeWidget, AbstractWidget);
+
+ProbeWidget.prototype.setValue = function (value, callback) {
+    this.value = Math.floor(value * 10) / 10;
+    this.updateWidgetUI();
+    if (callback) callback(value);
+}
 
 ProbeWidget.prototype.updateWidgetUI = function () {
     // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + this.value + " " + this.device.metrics.scaleTitle  + "</div>";
