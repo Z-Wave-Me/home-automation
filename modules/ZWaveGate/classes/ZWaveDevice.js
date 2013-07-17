@@ -47,3 +47,20 @@ ZWaveDevice.prototype._dic = function () {
 ZWaveDevice.prototype._dics = function () {
     return this._dic().data[this.zScaleId];
 }
+
+ZWaveDevice.prototype.performCommand = function (command) {
+    var handled = ZWaveDevice.super_.prototype.performCommand.call(this, command);
+
+    // Stop command processing due to parent class already processed it
+    if (handled) return handled;
+
+    console.log("--- ZWaveDevice.performCommand continuing processing...");
+
+    if ("update" === command) {
+        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Get();
+        handled = true;
+    }
+
+    return handled;
+}
+

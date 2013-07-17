@@ -118,6 +118,7 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
     });
 
     this.res.status = 200;
+    this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
     // console.log("REPLY", this.res.body);
 };
@@ -154,18 +155,50 @@ ZAutomationAPIWebRequest.prototype.exposeEvents = function () {
     }
 
     this.res.status = 200;
+    this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
 };
+
+ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, commandId) {
+    var self = this;
+
+    return function () {
+        var reply = {
+            error: null,
+            data: !!controller.devices[vDevId].performCommand(commandId)
+        }
+
+        self.res.status = 200;
+        self.responseHeader("Content-Type", "application/json; charset=utf-8");
+        self.res.body = JSON.stringify(reply);
+    }
+}
 
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     console.log("--- ZAutomationAPIWebRequest.dispatchRequest", method, url);
 
+    // Default handler is NotFound
     var handlerFunc = this.NotFound;
+
+    // Test exact URIs
     if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;
     } else if ("GET" === method && "/events/" == url) {
         handlerFunc = this.exposeEvents;
     };
+
+    // Test regexp URIs
+
+    // --- Perform vDev command
+    var re = /\/devices\/(.+)\/command\/(.+)/;
+    var reTest = re.exec(url);
+    if (!!reTest) {
+        var vDevId = reTest[1];
+        var commandId = reTest[2];
+        if ("GET" === method && !!vDevId && !!commandId && controller.devices.hasOwnProperty(vDevId)) {
+            handlerFunc = this.performVDevCommandFunc(vDevId, commandId);
+        }
+    }
 
     return handlerFunc;
 };

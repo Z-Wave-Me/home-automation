@@ -37,14 +37,12 @@ AbstractWidget.prototype.updateWidgetUI = function () {
     console.log("Don't know how to update widget UI", this);
 }
 
+AbstractWidget.prototype.commandApiUri = function (command) {
+    return "/devices/"+this.device.id+"/command/"+command;
+}
+
 AbstractWidget.prototype.performCommand = function (command) {
-    if ("update" === command) {
-        apiRequest("/devices/"+this.device.id+"/update");
-    } else {
-        console.log("WARNING", "Abstract widget class cannot perform command", command);
-        return false;
-    }
-    return true;
+    apiRequest(this.commandApiUri(command));
 }
 
 // ----------------------------------------------------------------------------
@@ -70,13 +68,6 @@ SwitchWidget.prototype.updateWidgetUI = function () {
         widgetTitle: this.widgetTitle,
         metricValue: this.value
     });
-}
-
-SwitchWidget.prototype.performCommand = function (command) {
-    var handled = SwitchWidget.super_.prototype.performCommand.call(this, command);
-    if (!handled) {
-        console.log("SwitchWidget command handler continuing processing...");
-    }
 }
 
 // ----------------------------------------------------------------------------
