@@ -3,7 +3,7 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.zCommandClassId = 0x30;
 
-    this.vDevType = "probe";
+    this.deviceType = "probe";
 
     this.setMetricValue("level", this._dic().data.level);
 }

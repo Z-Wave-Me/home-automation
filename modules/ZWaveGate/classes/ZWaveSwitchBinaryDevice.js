@@ -3,7 +3,7 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.zCommandClassId = 0x25;
 
-    this.vDevType = "switch";
+    this.deviceType = "switch";
 
     this.setMetricValue("level", this._dic().data.level.value);
 }

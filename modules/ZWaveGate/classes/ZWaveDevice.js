@@ -6,7 +6,7 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = null;
     this.zScaleId = null;
 
-    this.vDevType = null;
+    this.deviceType = null;
 
     // this.metrics["level"] = null;
 }

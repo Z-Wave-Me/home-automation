@@ -4,7 +4,7 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = 0x32;
     this.zScaleId = scaleId;
 
-    this.vDevType = "probe";
+    this.deviceType = "probe";
 
     this.sensorTypeString = this._dics().sensorTypeString.value;
     this.scaleString = this._dics().scaleString.value;

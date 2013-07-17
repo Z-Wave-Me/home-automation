@@ -3,7 +3,7 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
 
     this.zCommandClassId = 0x26;
 
-    this.vDevType = "multilevel";
+    this.deviceType = "multilevel";
 
     this.setMetricValue("level", this._dic().data.level.value);
 }

@@ -1,6 +1,7 @@
 VirtualDevice = function (id, controller) {
     this.id = id;
     this.controller = controller;
+    this.deviceType = null;
     this.metrics = {};
 }
 

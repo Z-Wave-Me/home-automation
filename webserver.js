@@ -112,7 +112,7 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         var vDev = controller.devices[vDevId];
         reply.data.push({
             id: vDevId,
-            vDevType: vDev.vDevType,
+            deviceType: vDev.deviceType,
             metrics: vDev.metrics
         });
     });

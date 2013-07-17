@@ -1,11 +1,12 @@
 {
-    "basePath": "/home/gregor/Projects/zway/automation",
+    "basePath": "./automation",
     "controller": {
         "tickInterval": 1000,
-        "modulesPath": "/home/gregor/Projects/zway/automation/modules",
+        "modulesPath": "./automation/modules",
         "modules": [
             "EventLog",
-            "ZWaveGate"
+            "ZWaveGate",
+            "AutoOff"
         ],
         "instances": {
             "EventLog" : {
@@ -15,6 +16,13 @@
             "ZWave" : {
                 "module": "ZWaveGate",
                 "config": {}
+            },
+            "AutoOffTest1" : {
+                "module": "AutoOff",
+                "config": {
+                    "device": "ZWayAutoDevice_3-0",
+                    "timeout": 3
+                }
             }
         }
     }

@@ -8,17 +8,17 @@ function createVirtualDevicesWidgets () {
     virtualDevices.forEach(function (vDev) {
         var widget;
 
-        if ("switch" === vDev.vDevType) {
-            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.vDevType+")");
+        if ("switch" === vDev.deviceType) {
+            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
             widget = new SwitchWidget("mainRow", vDev);
-        } else if ("multilevel" === vDev.vDevType) {
-            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.vDevType+")");
+        } else if ("multilevel" === vDev.deviceType) {
+            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
             widget = new MultilevelWidget("mainRow", vDev);
-        } else if ("probe" === vDev.vDevType) {
-            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.vDevType+")");
+        } else if ("probe" === vDev.deviceType) {
+            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
             widget = new ProbeWidget("mainRow", vDev);
         } else {
-            console.log("ERROR", "Unknown virtual device type", vDev.vDevType);
+            console.log("ERROR", "Unknown virtual device type", vDev.deviceType);
         }
 
         if (widget) {

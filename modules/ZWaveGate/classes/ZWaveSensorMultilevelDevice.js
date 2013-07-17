@@ -4,7 +4,7 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
     this.zCommandClassId = 0x31;
     this.zScaleId = scaleId;
 
-    this.vDevType = "probe";
+    this.deviceType = "probe";
 
     this.sensorTypeString = this._dics().sensorTypeString.value;
     this.scaleString = this._dics().scaleString.value;
