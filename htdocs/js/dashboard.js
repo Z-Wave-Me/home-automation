@@ -28,29 +28,19 @@ function createVirtualDevicesWidgets () {
     });
 }
 
+function widgetByDeviceId (deviceId) {
+    var search = dashboardWidgets.filter(function (item) {
+        return item.device.id === deviceId;
+    });
+
+    return 1 === search.length ? search[0] : null;
+}
+
 // ----------------------------------------------------------------------------
 // --- Virtual devices handling routines
 // ----------------------------------------------------------------------------
 
 var virtualDevices = [];
-
-// function initializeVDevWidgets () {
-//     $.ajax(apiUrl+"/devices/", {
-//         method: 'GET'
-//     }).done(function (reply, textStatus, jqXHR) {
-//         console.log("API REPLY", textStatus, reply);
-//         if (typeof reply !== 'object') {
-//             console.log('error', new Error("Non-object API reply"));
-//         } else if (reply.error) {
-//             console.log('error', new Error("API error " + reply.error.code + ": " +reply.error.msg));
-//         } else {
-//             virtualDevices = reply.data;
-//             createVirtualDevicesWidgets();
-//         }
-//     }).fail(function (jqXHR, textStatus, err) {
-//         console.log('error', err);
-//     });
-// }
 
 function handleWidgetCommand (event) {
     event.preventDefault();
@@ -58,8 +48,14 @@ function handleWidgetCommand (event) {
 
     var device = $(this).data("vdev");
     var commandId = $(this).data("command");
+    var widget = widgetByDeviceId(device);
 
-    console.log("Widget command triggered", device, commandId);
+    if (!!widget) {
+        console.log("Widget command triggered", device, commandId);
+        widget.performCommand(commandId);
+    } else {
+        console.log("ERROR", "Cannot find widget for vDev", device);
+    }
 }
 
 // ----------------------------------------------------------------------------

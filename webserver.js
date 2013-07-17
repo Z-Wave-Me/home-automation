@@ -117,6 +117,7 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         });
     });
 
+    this.res.status = 200;
     this.res.body = JSON.stringify(reply);
     // console.log("REPLY", this.res.body);
 };
@@ -152,6 +153,7 @@ ZAutomationAPIWebRequest.prototype.exposeEvents = function () {
         };
     }
 
+    this.res.status = 200;
     this.res.body = JSON.stringify(reply);
 };
 

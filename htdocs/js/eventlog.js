@@ -7,7 +7,7 @@ var events = new EventEmitter2({
 });
 
 function requestEventLogUpdate () {
-    apiRequest("/eventsz/?since="+eventLogUpdateTime, function (err, data) {
+    apiRequest("/events/?since="+eventLogUpdateTime, function (err, data) {
         if (!!err) {
             eventLogUpdateTimerErrors++;
             console.log("Cannot grab event log:", eventLogUpdateTime, err.message, "(got", eventLogUpdateTimerErrors, "update failures)");
