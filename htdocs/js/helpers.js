@@ -91,6 +91,6 @@ function apiRequest (uri, callback, options) {
 
 var DEBUG = qVar("debug") ? true : false;
 
-var apiPort = qVar("port") ? qVar("port") : 8083;
+var apiPort = qVar("port") ? qVar("port") : window.location.port;
 var apiHost = qVar("host") ? qVar("host") : window.location.hostname;
 var apiUrl = "http://"+apiHost+":"+apiPort+"/ZAutomation/api";
