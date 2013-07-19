@@ -1,4 +1,4 @@
-# ZWay Automation Engine
+# ZWay Automation Engine v0.1.1
 
 ## Precompiling client-side templates
 

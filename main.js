@@ -1,4 +1,18 @@
-//--- Define global variables and helpers
+/******************************************************************************
+
+ ZAutomation Engine main executable
+ Version: 0.1.1
+ (c) ZWave.Me, 2013
+
+ -----------------------------------------------------------------------------
+ Author: Gregory Sitnin <sitnin@z-wave.me>
+ Description:
+     This is a main executable script which is loaded and executed solely
+     by the z-way-server daemon. The very magic starts here.
+
+******************************************************************************/
+
+ //--- Define global variables and helpers
 
 var window = global = this;
 
