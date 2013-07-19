@@ -1,8 +1,8 @@
-ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId) {
+ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
     ZWaveMeterDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
     this.zCommandClassId = 0x32;
-    this.zScaleId = scaleId;
+    this.zScaleId = zScaleId;
 
     this.deviceType = "probe";
 
