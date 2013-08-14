@@ -1,3 +1,15 @@
+/******************************************************************************
+
+ ZWave Gate Z-Way Home Automation module
+ Version: 1.0.0
+ (c) ZWave.Me, 2013
+
+ -----------------------------------------------------------------------------
+ Author: Gregory Sitnin <sitnin@z-wave.me>
+ Description:
+
+******************************************************************************/
+
 // Concrete module constructor
 
 function ZWaveGate (id, controller) {
@@ -32,13 +44,6 @@ ZWaveGate.prototype.init = function (config) {
         self.handleStructureChanges.apply(self, arguments);
     });
 
-    // !!! Switched off due to lack of corresponding event !!!!!!!!!!!!!!!!!!!!
-    // // Bind to the zway tree structure changes
-    // zway.bind(function(type, nodeId, instanceId, commandClassId) {
-    //     self.controller.emit("zway.structureUpdate", ZWAY_DEVICE_CHANGE_TYPES[type], nodeId, instanceId, commandClassId);
-    // }, 0xff); // 0x01 | 0x04 | 0x10
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     // Iterate zway.devices and emit xAdded events
     Object.keys(zway.devices).forEach(function (deviceId) {
         deviceId = parseInt(deviceId, 10);
@@ -48,7 +53,7 @@ ZWaveGate.prototype.init = function (config) {
         if (2 == device.data.basicType.value && 1 == device.data.specificType.value) {
             console.log("Device", deviceId, "is a Static PC Controller. Ignoring for now");
             return;
-        };
+        }
 
         // console.log("--- DEVICE", deviceId, "has", Object.keys(device.instances).length, "instances");
         self.controller.emit('zway.structureUpdate', ZWAY_DEVICE_CHANGE_TYPES[0x01], deviceId);
@@ -69,7 +74,7 @@ ZWaveGate.prototype.init = function (config) {
             });
         });
     });
-}
+};
 
 // Module methods
 
@@ -91,7 +96,7 @@ ZWaveGate.prototype.handleStructureChanges = function (changeType, device, insta
         // Bind to the device's command class datapoints
         // this.bindDataPointListeners(device, instance, commandClass);
     }
-}
+};
 
 ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     var self = this;
@@ -106,7 +111,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         if (0x25 === commandClassId && instanceCommandClasses.has("38")) {
             console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
             return;
-        };
+        }
 
         var deviceName = "ZWayAutoDevice_"+deviceId+"-"+instanceId;
 
@@ -134,7 +139,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         } else if (0x31 === commandClassId) {
             // Create SensorMultilevel widget
             Object.keys(instance.commandClasses[0x31].data).forEach(function (scaleId) {
-                var scaleId = parseInt(scaleId, 10);
+                scaleId = parseInt(scaleId, 10);
                 if (!isNaN(scaleId)) {
                     console.log("Creating SensorMultilevel device for scale", scaleId);
                     instanceDevices.push(new ZWaveSensorMultilevelDevice(deviceName+"-"+scaleId, self.controller, deviceId, instanceId, scaleId));
@@ -143,7 +148,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         } else if (0x32 === commandClassId) {
             // Create Meter widget
             Object.keys(instance.commandClasses[0x32].data).forEach(function (scaleId) {
-                var scaleId = parseInt(scaleId, 10);
+                scaleId = parseInt(scaleId, 10);
                 if (!isNaN(scaleId)) {
                     console.log("Creating Meter device for scale", scaleId);
                     instanceDevices.push(new ZWaveMeterDevice(deviceName+":"+scaleId, self.controller, deviceId, instanceId, scaleId));
@@ -163,7 +168,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         self.devices[device.id] = device;
         self.controller.devices[device.id] = device;
     });
-}
+};
 
 ZWaveGate.prototype.bindDataPointListeners = function (deviceId, instanceId, commandClassId) {
     var self = this;
@@ -174,7 +179,7 @@ ZWaveGate.prototype.bindDataPointListeners = function (deviceId, instanceId, com
         0x26: ["level"],
         0x30: ["level"],
         0x31: ["*.val"]
-    }
+    };
 
     if (knownCommandClasses.hasOwnProperty(commandClassId)) {
         console.log("Attaching to the new device instance command class", deviceId, instanceId, commandClassId);
@@ -192,7 +197,7 @@ ZWaveGate.prototype.bindDataPointListeners = function (deviceId, instanceId, com
                 Object.keys(zwayDev.data).forEach(function (key) {
                     key = parseInt(key, 10);
                     if (!isNaN(key)) {
-                        var hcArgs = {}
+                        var hcArgs = {};
                         hcArgs.sensorType = zwayDev.data[key].sensorTypeString.value;
                         zwayDev.data[key][dhPath[1]].bind(function (changeType, args) {
                             if (0x01 == changeType || 0x40 == changeType) {
@@ -204,4 +209,4 @@ ZWaveGate.prototype.bindDataPointListeners = function (deviceId, instanceId, com
             }
         });
     }
-}
+};
