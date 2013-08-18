@@ -4,7 +4,7 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zDeviceId = zDeviceId;
     this.zInstanceId = zInstanceId;
     this.zCommandClassId = null;
-    this.zScaleId = null;
+    this.zSubTree = null;
 
     this.deviceType = null;
 
@@ -24,11 +24,11 @@ ZWaveDevice.prototype.bindToDatapoints = function () {
 
     this.dataPoints().forEach(function (dataPoint) {
         dataPoint.bind(function (changeType, args) {
-            // Handle only "update" and "shawdow update" events
+            // Handle only "update" and "shadow update" events
             if (0x01 != changeType && 0x41 != changeType) return;
 
             // Emit generic event
-            self.controller.emit('zway.dataUpdate', self.zDeviceId, self.zInstanceId, self.zCommandClassId, self.zScaleId, this.value, args);
+            self.controller.emit('zway.dataUpdate', self.zDeviceId, self.zInstanceId, self.zCommandClassId, self.zSubTree, this.value, args);
 
             // Handle update event
             self.handleDatapointUpdate(this.value, args);
@@ -45,7 +45,7 @@ ZWaveDevice.prototype._dic = function () {
 }
 
 ZWaveDevice.prototype._dics = function () {
-    return this._dic().data[this.zScaleId];
+    return this._dic().data[this.zSubTreeKey];
 }
 
 ZWaveDevice.prototype.performCommand = function (command) {

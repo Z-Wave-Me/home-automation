@@ -1,8 +1,8 @@
-ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, scaleId) {
+ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, sensorTypeId) {
     ZWaveSensorMultilevelDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
     this.zCommandClassId = 0x31;
-    this.zScaleId = scaleId;
+    this.zSubTreeKey = sensorTypeId;
 
     this.deviceType = "probe";
 
