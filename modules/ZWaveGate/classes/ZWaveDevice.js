@@ -4,7 +4,7 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zDeviceId = zDeviceId;
     this.zInstanceId = zInstanceId;
     this.zCommandClassId = null;
-    this.zSubTree = null;
+    this.zSubTreeKey = null;
 
     this.deviceType = null;
 
