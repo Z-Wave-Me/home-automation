@@ -26,33 +26,6 @@ inherits(BatteryPolling, AutomationModule);
 
 _module = BatteryPolling;
 
-ZWaveBatteryLowLevelWarningWidget = function (id, controller, zDeviceId, zInstanceId) {
-    ZWaveBatteryLowLevelWarningWidget.super_.call(this, id, controller, zDeviceId, zInstanceId);
-
-    this.deviceType = "probe";
-
-    var listBatteryLow = [];
-    for (var id in zway.devices) {
-        if (zway.devices[id].Battery) {
-            if (zway.devices[id].Battery.data.level.value <= this.config.warningLevel) {
-                listBatteryLow.push(id);
-            }
-        }
-    }
-    if (listBatteryLow.length) {
-        this.setMetricValue("probeTitle", "Battery is empty in devices:" + listBatteryLow.toString());
-    } else {
-        this.setMetricValue("probeTitle", "Batteries are all OK");
-    }
-}
-
-inherits(ZWaveBatteryEmptyWarningWidget, ZWaveDevice);
-
-ZWaveBatteryEmptyWarningWidget.prototype.dataPoints = function () {
-    return [this._dics().level];
-}
-
-
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
@@ -60,15 +33,20 @@ ZWaveBatteryEmptyWarningWidget.prototype.dataPoints = function () {
 BatteryPolling.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     BatteryPolling.super_.prototype.init.call(this, config);
-    
+
+    this.controller.emit('core.addWidget', {
+        code: "batteryStatusWidget.js",
+        templates: "batteryStatusWidget.html"
+    });
+
     this.controller.emit("cron.addTask", "batteryPolling.poll", {
         minute: 0,
         hour: 0,
         weekDay: this.config.launchWeekDay,
         day: null,
-        month: null        
+        month: null
     });
-    
+
     // Setup event listener
     this.controller.on('batteryPolling.poll', function () {
       for (var id in zway.devices) {
