@@ -38,13 +38,13 @@ AutoOff.prototype.init = function (config) {
     AutoOff.super_.prototype.init.call(this, config);
 
     // Check VirtualDevice existence
-    if (!controller.devices.hasOwnProperty(this.config.device)) {
+    if (!this.controller.devices.hasOwnProperty(this.config.device)) {
         // Exit initializer due to lack of the device
         console.log("ERROR", "AutoOff Device", this.config.device, "doesn't exist.");
         return;
     }
 
-    var device = controller.devices[this.config.device];
+    var device = this.controller.devices[this.config.device];
 
     // Check if device is a switch
     if ("switch" !== device.deviceType) {

@@ -134,15 +134,20 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
             instanceDevices.push(new ZWaveSwitchMultilevelDevice(deviceName, self.controller, deviceId, instanceId));
         } else if (0x30 === commandClassId) {
             // Create SensorBinary widget
-            console.log("Creating SensorBinary device");
-            instanceDevices.push(new ZWaveSensorBinaryDevice(deviceName, self.controller, deviceId, instanceId));
+            Object.keys(instance.commandClasses[0x30].data).forEach(function (sensorTypeId) {
+                var sensorTypeId = parseInt(sensorTypeId, 10);
+                if (!isNaN(sensorTypeId)) {
+                    console.log("Creating SensorBinary device for sensor type id", sensorTypeId);
+                    instanceDevices.push(new ZWaveSensorBinaryDevice(deviceName+"-"+sensorTypeId, self.controller, deviceId, instanceId, sensorTypeId));
+                }
+            });
         } else if (0x31 === commandClassId) {
             // Create SensorMultilevel widget
-            Object.keys(instance.commandClasses[0x31].data).forEach(function (scaleId) {
-                scaleId = parseInt(scaleId, 10);
-                if (!isNaN(scaleId)) {
-                    console.log("Creating SensorMultilevel device for scale", scaleId);
-                    instanceDevices.push(new ZWaveSensorMultilevelDevice(deviceName+"-"+scaleId, self.controller, deviceId, instanceId, scaleId));
+            Object.keys(instance.commandClasses[0x31].data).forEach(function (sensorTypeId) {
+                var sensorTypeId = parseInt(sensorTypeId, 10);
+                if (!isNaN(sensorTypeId)) {
+                    console.log("Creating SensorMultilevel device for sensor type id", sensorTypeId);
+                    instanceDevices.push(new ZWaveSensorMultilevelDevice(deviceName+"-"+sensorTypeId, self.controller, deviceId, instanceId, sensorTypeId));
                 }
             });
         } else if (0x32 === commandClassId) {

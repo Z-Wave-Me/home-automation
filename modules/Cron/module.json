@@ -1,0 +1,7 @@
+{
+    "autoload": true,
+    "singleton": false,
+    "defaults": {},
+    "actions": {},
+    "metrics": {}
+}
