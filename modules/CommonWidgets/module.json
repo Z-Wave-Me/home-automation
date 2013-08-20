@@ -1,0 +1,13 @@
+{
+    "autoload": true,
+    "singleton": true,
+    "defaults": {
+    	"widgets": [
+    		"probe",
+    		"multilevel",
+    		"switch"
+    	]
+	},
+    "actions": {},
+    "metrics": {}
+}
