@@ -1,0 +1,11 @@
+{
+    "autoload": true,
+    "singleton": true,
+    "defaults": {},
+    "actions": {
+        "expose": {},
+        "hide": {},
+        "post": {}
+    },
+    "metrics": {}
+}

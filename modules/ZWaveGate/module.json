@@ -1,0 +1,12 @@
+{
+    "autoload": true,
+    "singleton": true,
+    "defaults": {
+        "createDevices": true
+    },
+    "actions": {
+        "set": {},
+        "get": {}
+    },
+    "metrics": {}
+}

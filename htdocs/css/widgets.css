@@ -1,0 +1,9 @@
+.smallWidget h1 {
+    font-size: 155%;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.refreshButton {
+    margin-top: 0.8em;
+}
