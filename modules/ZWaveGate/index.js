@@ -171,7 +171,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     instanceDevices.forEach(function (device) {
         device.bindToDatapoints();
         self.devices[device.id] = device;
-        self.controller.devices[device.id] = device;
+        self.controller.emit("devices.register", device);
     });
 };
 

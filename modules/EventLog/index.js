@@ -69,7 +69,6 @@ EventLog.prototype.exposedEvents = function (since) {
     });
     filteredKeys.sort();
 
-
     // TODO: Events filtering (to split exposed and internal only events)
     var result = {};
     filteredKeys.forEach(function (key) {
