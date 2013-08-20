@@ -26,6 +26,7 @@ inherits(BatteryPolling, AutomationModule);
 
 _module = BatteryPolling;
 
+/*
 ZWaveBatteryLowLevelWarningWidget = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveBatteryLowLevelWarningWidget.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
@@ -51,7 +52,7 @@ inherits(ZWaveBatteryEmptyWarningWidget, ZWaveDevice);
 ZWaveBatteryEmptyWarningWidget.prototype.dataPoints = function () {
     return [this._dics().level];
 }
-
+*/
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized

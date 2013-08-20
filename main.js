@@ -49,7 +49,7 @@ Object.prototype.hasKey = function (value) {
 
 //--- Load configuration
 
-var config = loadJSON("./automation/config.json");
+var config = loadJSON("./config.json");
 
 config.libPath = config.basePath+"/lib";
 config.classesPath = config.basePath+"/classes";

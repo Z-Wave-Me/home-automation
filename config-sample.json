@@ -1,8 +1,8 @@
 {
-    "basePath": "./automation",
+    "basePath": "./,
     "controller": {
         "tickInterval": 1000,
-        "modulesPath": "./automation/modules",
+        "modulesPath": "./modules",
         "modules": [
             "EventLog",
             "ZWaveGate",
