@@ -1,6 +1,6 @@
 /******************************************************************************
 
- AutoOff ZAutomation module
+ AutoOff Z-Way Home Automation module
  Version: 1.0.0
  (c) ZWave.Me, 2013
 
@@ -22,7 +22,7 @@ function AutoOff (id, controller) {
     AutoOff.super_.call(this, id, controller);
 
     // Create instance variables
-    this.timer;
+    this.timer = null;
 }
 
 inherits(AutoOff, AutomationModule);

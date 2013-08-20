@@ -1,7 +1,6 @@
 {
     "basePath": "./,
     "controller": {
-        "tickInterval": 1000,
         "modulesPath": "./modules",
         "modules": [
             "EventLog",
@@ -16,13 +15,6 @@
             "ZWave" : {
                 "module": "ZWaveGate",
                 "config": {}
-            },
-            "AutoOffTest1" : {
-                "module": "AutoOff",
-                "config": {
-                    "device": "ZWayAutoDevice_3-0",
-                    "timeout": 3
-                }
             }
         }
     }

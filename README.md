@@ -1,4 +1,4 @@
-# ZWay Automation Engine v0.1.1
+# Z-Way Home Automation Engine v0.1.1
 
 ## Precompiling client-side templates
 

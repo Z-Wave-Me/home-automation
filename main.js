@@ -1,6 +1,7 @@
 /******************************************************************************
 
- ZAutomation Engine main executable
+ Z-Way Home Automation Engine
+ main executable
  Version: 0.1.1
  (c) ZWave.Me, 2013
 
@@ -37,15 +38,11 @@ function inherits (ctor, superCtor) {
 
 Array.prototype.has = function (value) {
     return -1 != this.indexOf(value);
-}
+};
 
 Object.prototype.hasKey = function (value) {
     return -1 != Object.keys(this).indexOf(value);
-}
-
-// Object.prototype.isArray = function () {
-//     return this instanceof Array;
-// }
+};
 
 //--- Load configuration
 
@@ -79,18 +76,6 @@ controller.on('init', function () {
 
 controller.on('error', function (err) {
     console.log("--- ERROR:", err.message);
-});
-
-controller.on('deviceRegistered', function (id) {
-    console.log("Device registered", id);
-});
-
-controller.on('actionRegistered', function (id, name) {
-    console.log("Action registered", id, name);
-});
-
-controller.on('widgetRegistered', function (id) {
-    console.log("Widget registered", id);
 });
 
 controller.on('run', function () {

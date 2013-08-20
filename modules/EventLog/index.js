@@ -1,3 +1,15 @@
+/******************************************************************************
+
+ EventLog Z-Way Home Automation module
+ Version: 1.0.0
+ (c) ZWave.Me, 2013
+
+ -----------------------------------------------------------------------------
+ Author: Gregory Sitnin <sitnin@z-wave.me>
+ Description:
+
+******************************************************************************/
+
 // Automation Module constructor
 
 function EventLog (id, controller) {
@@ -40,7 +52,7 @@ EventLog.prototype.logEvent = function () {
 
     if (!this.eventLog.hasOwnProperty(timestamp)) {
         this.eventLog[timestamp] = [];
-    };
+    }
 
     this.eventLog[timestamp].push([eventId, args]);
 
@@ -49,10 +61,10 @@ EventLog.prototype.logEvent = function () {
 
 EventLog.prototype.exposedEvents = function (since) {
     var self = this;
-    var since = since || 0;
+    since = since || 0;
 
     var filteredKeys = Object.keys(this.eventLog).filter(function (timestamp) {
-        var timestamp = parseInt(timestamp, 10);
+        timestamp = parseInt(timestamp, 10);
         return timestamp >= since;
     });
     filteredKeys.sort();
@@ -65,4 +77,4 @@ EventLog.prototype.exposedEvents = function (since) {
     });
 
     return result;
-}
+};
