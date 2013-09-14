@@ -164,6 +164,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
             console.log("Creating Battery device");
             instanceDevices.push(new ZWaveBatteryDevice(deviceName, self.controller, deviceId, instanceId));
         } else {
+
             // console.log("Ignoring unhandled command class", commandClassId, "for device", deviceId+":"+instanceId);
         }
     });
@@ -171,7 +172,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     instanceDevices.forEach(function (device) {
         device.bindToDatapoints();
         self.devices[device.id] = device;
-        self.controller.devices[device.id] = device;
+        self.controller.emit("devices.register", device);
     });
 };
 
