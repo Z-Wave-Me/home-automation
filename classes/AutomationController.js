@@ -114,7 +114,7 @@ AutomationController.prototype.registerAction = function (instanceId, meta, func
     }
 };
 
-AutomationController.prototype.removeInstancee = function (id) {
+AutomationController.prototype.removeInstance = function (id) {
     delete this.instances[id];
     this.emit('core.instanceRemoved', id);
 };
