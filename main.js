@@ -56,8 +56,6 @@ function has_key (obj, key) {
 
 var config = loadJSON("./config.json");
 
-console.log("--- CONFIG", config);
-
 config.libPath = "lib";
 config.classesPath = "classes";
 config.resourcesPath = "res";

@@ -77,9 +77,11 @@ BatteryPolling.prototype.init = function (config) {
       }
     });
 
+    /*
     var widget = new ZWaveBatteryLowLevelWarningWidget("BatterLowLevelWidget", this.controller, 0, 0);
     widget.bindToDatapoints();
     this.controller.devices[widget.id] = widget;
+    */
 };
 
 // ----------------------------------------------------------------------------
