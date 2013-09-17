@@ -14,18 +14,18 @@ inherits(AutomationController, EventEmitter2);
 AutomationController.prototype.init = function () {
     var self = this;
 
-    this.on('instance.register', this.registerInstance);
-    this.on('instance.registerAction', this.registerAction);
-    this.on('instance.remove', this.removeInstance);
-    this.on('instance.list', this.listInstances);
+    this.on('core.registerInstance', this.onRegisterInstance);
+    this.on('core.registerAction', this.onRegisterAction);
+    this.on('core.removeInstance', this.onRemoveInstance);
+    this.on('core.listInstances', this.onListInstances);
 
-    this.on('devices.register', this.registerDevice);
-    this.on('devices.remove', this.removeDevice);
-    this.on('devices.list', this.listDevices);
+    this.on('core.registerDevice', this.onRegisterDevice);
+    this.on('core.removeDevice', this.onRemoveDevice);
+    this.on('core.listDevices', this.onListDevices);
 
-    this.on('widgets.register', this.registerWidget);
-    this.on('widgets.remove', this.removeWidget);
-    this.on('widgets.list', this.listWidgets);
+    this.on('core.registerWidget', this.onRegisterWidget);
+    this.on('core.removeWidget', this.onRemoveWidget);
+    this.on('core.listWidgets', this.onListWidgets);
 
     this.loadModules(function () {
         self.instantiateModules();
@@ -69,24 +69,41 @@ AutomationController.prototype.instantiateModules = function () {
     if (this.config.hasOwnProperty('instances')) {
         Object.keys(this.config.instances).forEach(function (instanceId) {
             var instanceDefs = self.config.instances[instanceId];
+            console.log("--- Instantiating module", instanceId, "from class", instanceDefs.module);
+
             var moduleClass = self.modules[instanceDefs.module];
             var instance = new moduleClass(instanceId, self);
-            self.emit('core.registerInstance', instanceId, instance);
             instance.init(instanceDefs.config);
+
+            self.emit('core.registerInstance', instance);
         });
     }
 };
 
 AutomationController.prototype.moduleInstance = function (instanceId) {
+    console.log("--- INST", Object.keys(this.instances));
     return this.instances.hasOwnProperty(instanceId) ? this.instances[instanceId] : null;
 };
 
 AutomationController.prototype.listInstances = function () {
-    // TODO: Construct proper list for exporting
-    this.emit('core.instancesList', this.instances);
+    var res = {};
+
+    Object.keys(this.instances).forEach(function (instanceId) {
+        res[instanceId] = this.instances[instanceId].meta;
+    });
+
+    return res;
 };
 
-AutomationController.prototype.registerInstance = function (instanceId, instance) {
+AutomationController.prototype.onListInstances = function () {
+    this.emit('core.instancesList', this.listInstances());
+};
+
+AutomationController.prototype.onRegisterInstance = function (instance) {
+    var instanceId = instance.id;
+
+    console.log("--- Trying to register module instance", instanceId);
+
     if (!this.modules.hasOwnProperty(instanceId)) {
         if (!!instance) {
             this.instances[instanceId] = instance;
@@ -100,51 +117,77 @@ AutomationController.prototype.registerInstance = function (instanceId, instance
 };
 
 // TODO: Refactor to the module instance's routine getActions()
-AutomationController.prototype.registerAction = function (instanceId, meta, func) {
-    console.log("registerAction", instanceId, meta);
+AutomationController.prototype.onRegisterAction = function (instanceId, actionMeta, actionFunc) {
+    console.log("registerAction", instanceId, actionMeta);
 
     var instance = this.moduleInstance(instanceId);
 
     if (!!instance) {
-        instance.actions[meta.id] = meta;
-        instance.actionFuncs[meta.id] = func;
-        this.emit('core.instanceActionRegistered', instanceId, meta.id);
+        instance.actions[actionMeta.id] = actionMeta;
+        instance.actionFuncs[actionMeta.id] = func;
+        this.emit('core.actionRegistered', instanceId, actionMeta.id);
     } else {
         this.emit('error', new Error("Can't find module instance "+instanceId));
     }
 };
 
-AutomationController.prototype.removeInstancee = function (id) {
+AutomationController.prototype.onRemoveInstance = function (id) {
     delete this.instances[id];
     this.emit('core.instanceRemoved', id);
 };
 
-AutomationController.prototype.listDevices = function () {
-    // TODO: Construct proper list for exporting
-    this.emit('core.devicesList', this.devices);
+AutomationController.prototype.onRegisterDevice = function (device) {
+    this.devices[device.id] = device;
+
+    this.emit('core.deviceRegistered', device.id);
 };
 
-AutomationController.prototype.registerDevice = function (deviceId, instance) {
-    this.devices[deviceId] = instance;
-    this.emit('core.deviceRegistered', deviceId);
-};
-
-AutomationController.prototype.removeDevice = function (id) {
+AutomationController.prototype.onRemoveDevice = function (id) {
     delete this.devices[id];
+
     this.emit('core.deviceRemoved', id);
 };
 
-AutomationController.prototype.listWidgets = function () {
-    // TODO: Construct proper list for exporting
-    this.emit('core.widgetsList', this.widgets);
+AutomationController.prototype.listDevices = function () {
+    var res = {};
+
+    Object.keys(this.devices).forEach(function (deviceId) {
+        res[deviceId] = {
+            deviceType: this.devices[deviceId].deviceType
+        }
+    });
+
+    return res;
 };
 
-AutomationController.prototype.registerWidget = function (meta) {
-    this.widgets[meta.id] = meta;
-    this.emit('core.widgetAdded', meta.id);
+AutomationController.prototype.onListDevices = function () {
+    this.emit('core.devicesList', this.listDevices());
 };
 
-AutomationController.prototype.removeWidget = function (id) {
-    delete this.widgets[id];
+AutomationController.prototype.onRegisterWidget = function (widget) {
+    this.widgets[widget.id] = widget;
+
+    this.emit('core.widgetRegistered', widget.id);
+};
+
+AutomationController.prototype.onRemoveWidget = function (id) {
+    delete this.widget[id];
+
     this.emit('core.widgetRemoved', id);
+};
+
+AutomationController.prototype.listWidgets = function () {
+    var res = {};
+
+    Object.keys(this.widgets).forEach(function (widgetId) {
+        res[widgetId] = {
+            widgetType: "unknown"
+        }
+    });
+
+    return res;
+}
+
+AutomationController.prototype.onListWidgets = function () {
+    this.emit('core.widgetsList', this.listWidgets());
 };

@@ -7,3 +7,5 @@ htdocs/js/_precompiled.js
 .SyncId
 .SyncIgnore
 .SyncTrash
+*.json
+

@@ -11,20 +11,14 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 inherits(ZWaveSwitchBinaryDevice, ZWaveDevice);
 
 ZWaveSwitchBinaryDevice.prototype.dataPoints = function () {
-    // var zwayDevice = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];
-    // return [zwayDevice.data.level];
     return [this._dic().data.level];
 }
 
 ZWaveSwitchBinaryDevice.prototype.performCommand = function (command) {
-    var handled = ZWaveSwitchBinaryDevice.super_.prototype.performCommand.call(this, command);
+    console.log("--- ZWaveSwitchBinaryDevice.performCommand processing...");
 
-    // Stop command processing due to parent class already processed it
-    if (handled) return handled;
+    var handled = true;
 
-    console.log("--- ZWaveSwitchBinaryDevice.performCommand continuing processing...");
-
-    handled = true;
     if ("on" === command) {
         zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(255);
     } else if ("off" === command) {
@@ -33,5 +27,5 @@ ZWaveSwitchBinaryDevice.prototype.performCommand = function (command) {
         handled = false;
     }
 
-    return handled;
+    return handled ? true : ZWaveSwitchBinaryDevice.super_.prototype.performCommand.call(this, command);
 }

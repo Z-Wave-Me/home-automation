@@ -25,38 +25,48 @@ var console = {
 };
 
 function inherits (ctor, superCtor) {
-  ctor.super_ = superCtor;
-  ctor.prototype = Object.create(superCtor.prototype, {
-    constructor: {
-      value: ctor,
-      enumerable: false,
-      writable: true,
-      configurable: true
-    }
-  });
+    ctor.super_ = superCtor;
+    ctor.prototype = Object.create(superCtor.prototype, {
+        constructor: {
+            value: ctor,
+            enumerable: false,
+            writable: true,
+            configurable: true
+        }
+    });
 }
 
-Array.prototype.has = function (value) {
-    return -1 != this.indexOf(value);
-};
+// Array.prototype.has = function (value) {
+//     return -1 != this.indexOf(value);
+// };
 
-Object.prototype.hasKey = function (value) {
-    return -1 != Object.keys(this).indexOf(value);
-};
+function in_array (array, value) {
+    return -1 != array.indexOf(value);
+}
+
+// Object.prototype.hasKey = function (value) {
+//     return -1 != Object.keys(this).indexOf(value);
+// };
+
+function has_key (obj, key) {
+    return -1 != Object.keys(obj).indexOf(key);
+}
 
 //--- Load configuration
 
-var config = loadJSON("./automation/config.json");
+var config = loadJSON("./config.json");
 
-config.libPath = config.basePath+"/lib";
-config.classesPath = config.basePath+"/classes";
-config.resourcesPath = config.basePath+"/res";
+console.log("--- CONFIG", config);
+
+config.libPath = "lib";
+config.classesPath = "classes";
+config.resourcesPath = "res";
 
 console.log("CFG", JSON.stringify(config, null, "  "));
 
 //--- Load constants & 3d-party dependencies
 
-executeFile(config.basePath+"/constants.js");
+executeFile("constants.js");
 
 executeFile(config.libPath + "/eventemitter2.js");
 
@@ -82,7 +92,7 @@ controller.on('run', function () {
     console.log('ZWay Automation Controller started');
 
     //--- Initialize webserver
-    executeFile(config.basePath+"/webserver.js");
+    executeFile("/webserver.js");
 });
 
 //--- main

@@ -39,3 +39,7 @@ AutomationModule.prototype.getMeta = function () {
 
     return this.meta;
 };
+
+AutomationModule.prototype.moduleBasePath = function () {
+    return global.confog.controller.modulesPath + "/AutomationModule";
+}

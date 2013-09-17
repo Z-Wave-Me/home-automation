@@ -91,7 +91,6 @@ ZWaveGate.prototype.handleStructureChanges = function (changeType, device, insta
         // Create ZWayDevice instance
         console.log("Creating device", device, "instance", instance, "virtual devices");
         this.createDevicesForInstance(device, instance);
-
     } else if ("CommandAdded" === changeType) {
         // Bind to the device's command class datapoints
         // this.bindDataPointListeners(device, instance, commandClass);
@@ -104,36 +103,42 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     var instanceCommandClasses = Object.keys(instance.commandClasses);
     var instanceDevices = [];
 
+    // if (in_array(instanceCommandClasses, "64") || in_array(instanceCommandClasses, "67")) {
+    //     var deviceName = "ZWayVDev_"+deviceId+"-"+instanceId+"-Thermostat";
+
+    //     // Do not recreate devices
+    //     if (has_key(self.devices, deviceName)) {
+    //         console.log("Device ", deviceName, "already exists. Won't recreate");
+    //         return;
+    //     }
+
+    //     console.log("Creating Thermostat device");
+    // }
+
     instanceCommandClasses.forEach(function (commandClassId) {
         commandClassId = parseInt(commandClassId, 10);
 
         // Ignore SwitchBinary if SwitchMultilevel exists
-        if (0x25 === commandClassId && instanceCommandClasses.has("38")) {
+        if (0x25 === commandClassId && in_array(instanceCommandClasses, "38")) {
             console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
             return;
         }
 
-        var deviceName = "ZWayAutoDevice_"+deviceId+"-"+instanceId;
+        var deviceName = "ZWayVDev_"+deviceId+"-"+instanceId;
 
         // Do not recreate devices
-        if (self.devices.hasKey(deviceName)) {
+        if (has_key(self.devices, deviceName)) {
             console.log("Device ", deviceName, "already exists. Won't recreate");
             return;
         }
 
-        // TODO: Thermostat
-        // TODO: Doorlock
-
         if (0x25 === commandClassId) {
-            // Create SwitchBinary widget
             console.log("Creating SwitchBinary device");
             instanceDevices.push(new ZWaveSwitchBinaryDevice(deviceName, self.controller, deviceId, instanceId));
         } else if (0x26 === commandClassId) {
-            // Create SwitchMultilevel widget
             console.log("Creating SwitchMultilevel device");
             instanceDevices.push(new ZWaveSwitchMultilevelDevice(deviceName, self.controller, deviceId, instanceId));
         } else if (0x30 === commandClassId) {
-            // Create SensorBinary widget
             Object.keys(instance.commandClasses[0x30].data).forEach(function (sensorTypeId) {
                 var sensorTypeId = parseInt(sensorTypeId, 10);
                 if (!isNaN(sensorTypeId)) {
@@ -142,7 +147,6 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
                 }
             });
         } else if (0x31 === commandClassId) {
-            // Create SensorMultilevel widget
             Object.keys(instance.commandClasses[0x31].data).forEach(function (sensorTypeId) {
                 var sensorTypeId = parseInt(sensorTypeId, 10);
                 if (!isNaN(sensorTypeId)) {
@@ -151,7 +155,6 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
                 }
             });
         } else if (0x32 === commandClassId) {
-            // Create Meter widget
             Object.keys(instance.commandClasses[0x32].data).forEach(function (scaleId) {
                 scaleId = parseInt(scaleId, 10);
                 if (!isNaN(scaleId)) {
@@ -160,19 +163,20 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
                 }
             });
         } else if (0x80 === commandClassId) {
-            // Create Battery widget
             console.log("Creating Battery device");
             instanceDevices.push(new ZWaveBatteryDevice(deviceName, self.controller, deviceId, instanceId));
-        } else {
-
-            // console.log("Ignoring unhandled command class", commandClassId, "for device", deviceId+":"+instanceId);
+        } else if (0x62 === commandClassId) {
+            console.log("Creating Doorlock device");
+            instanceDevices.push(new ZWaveDoorlockDevice(deviceName, self.controller, deviceId, instanceId));
+        } else if (0x44 === commandClassId) {
+            console.log("Creating FanMode device");
+            // instanceDevices.push(new ZWaveBatteryDevice(deviceName, self.controller, deviceId, instanceId));
         }
     });
 
     instanceDevices.forEach(function (device) {
         device.bindToDatapoints();
-        self.devices[device.id] = device;
-        self.controller.emit("devices.register", device);
+        self.controller.emit("core.registerDevice", device);
     });
 };
 

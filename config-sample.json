@@ -1,11 +1,10 @@
 {
-    "basePath": "./automation",
+    "basePath": "./,
     "controller": {
-        "modulesPath": "./automation/modules",
+        "modulesPath": "./modules",
         "modules": [
             "EventLog",
             "ZWaveGate",
-            "CommonWidgets",
             "AutoOff"
         ],
         "instances": {

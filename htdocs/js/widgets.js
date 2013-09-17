@@ -9,12 +9,11 @@ function AbstractWidget (parentElement, device) {
     this.value = this.device.metrics.level;
 
     var self = this;
-    events.on('metricUpdate.'+this.device.id, function (data) {
-        // console.log('--- metricUpdate.'+self.device.id, data[0], data[1]);
-        if ("level" === data[0]) {
-            self.setValue(data[1]);
+    events.on('device.metricUpdated', function (deviceId, name, value) {
+        if ("level" === name) {
+            self.setValue(value);
         } else {
-            console.log("Don't know how to handle", data[0], "metric update. Ignoring.");
+            console.log("Don't know how to handle", name, "metric update. Ignoring.");
         }
     });
 

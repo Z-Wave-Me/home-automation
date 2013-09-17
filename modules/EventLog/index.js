@@ -56,7 +56,9 @@ EventLog.prototype.logEvent = function () {
 
     this.eventLog[timestamp].push([eventId, args]);
 
-    console.log("--- EVENT:", now.toISOString(), timestamp, eventId, JSON.stringify(args));
+    if (this.config.debug) {
+        console.log("--- EVENT:", now.toISOString(), timestamp, eventId, JSON.stringify(args));
+    }
 };
 
 EventLog.prototype.exposedEvents = function (since) {

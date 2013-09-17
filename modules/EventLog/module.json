@@ -1,7 +1,9 @@
 {
     "autoload": true,
     "singleton": true,
-    "defaults": {},
+    "defaults": {
+    	"debug": false
+	},
     "actions": {
         "expose": {},
         "hide": {},

@@ -1,10 +1,5 @@
 console.log("Setting web request handler");
 
-// Disabled due to unnecessity
-// // Ported nunjucks and precompiled server-side templates
-// executeFile(config.libPath+"/nunjucks-patched.js");
-// executeFile(config.libPath+"/_templates.js");
-
 // ----------------------------------------------------------------------------
 // --- ZAutomationWebRequest
 // ----------------------------------------------------------------------------
@@ -108,6 +103,7 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         data: []
     }
 
+    console.log("--- CTRL VDEVS LIST", Object.keys(controller.devices));
     Object.keys(controller.devices).forEach(function (vDevId) {
         var vDev = controller.devices[vDevId];
         reply.data.push({
@@ -174,6 +170,19 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
     }
 }
 
+ZAutomationAPIWebRequest.prototype.listWidgets = function () {
+    console.log("--- ZAutomationAPIWebRequest.listWidgets");
+
+    var reply = {
+        error: null,
+        data: controller.widgets
+    }
+
+    this.res.status = 200;
+    this.responseHeader("Content-Type", "application/json; charset=utf-8");
+    this.res.body = JSON.stringify(reply);
+};
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     console.log("--- ZAutomationAPIWebRequest.dispatchRequest", method, url);
 
@@ -185,6 +194,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.listDevices;
     } else if ("GET" === method && "/events/" == url) {
         handlerFunc = this.exposeEvents;
+    } else if ("GET" === method && "/widgets/" == url) {
+        handlerFunc = this.listWidgets;
     };
 
     // Test regexp URIs
