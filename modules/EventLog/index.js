@@ -32,22 +32,22 @@ EventLog.prototype.init = function (config) {
     var self = this;
     this.controller.eventlog = {};
     this.controller.onAny(function () {
-        var newArgs = arguments.values();
+        var newArgs = get_values(arguments);
         newArgs.unshift(this.event);
         self.logEvent.apply(self, newArgs);
     });
 };
 
-Object.prototype.values = function () {
-    var self = this;
-    return Object.keys(this).map(function(key) { return self[key]; });
-};
+// Object.prototype.values = function () {
+//     var self = this;
+//     return Object.keys(this).map(function(key) { return self[key]; });
+// };
 
 EventLog.prototype.logEvent = function () {
     var now = new Date();
     var timestamp = Math.round(now.getTime() / 1000);
 
-    var args = arguments.values();
+    var args = get_values(arguments);
     var eventId = args.shift();
 
     if (!this.eventLog.hasOwnProperty(timestamp)) {

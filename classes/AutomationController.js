@@ -11,27 +11,32 @@ function AutomationController (config) {
 
 inherits(AutomationController, EventEmitter2);
 
+function wrap (self, func) {
+    return function () {
+        func.apply(self, arguments);
+    };
+}
+
 AutomationController.prototype.init = function () {
     var self = this;
 
-    this.on('core.registerInstance', this.onRegisterInstance);
-    this.on('core.registerAction', this.onRegisterAction);
-    this.on('core.removeInstance', this.onRemoveInstance);
-    this.on('core.listInstances', this.onListInstances);
+    // this.on('core.registerInstance', wrap(this, this.registerInstance));
+    // this.on('core.registerAction', wrap(this, this.registerAction));
+    // this.on('core.removeInstance', wrap(this, this.removeInstance));
+    this.on('core.listInstances', wrap(this, this.listInstances));
 
-    this.on('core.registerDevice', this.onRegisterDevice);
-    this.on('core.removeDevice', this.onRemoveDevice);
-    this.on('core.listDevices', this.onListDevices);
+    // this.on('core.registerDevice', wrap(this, this.registerDevice));
+    // this.on('core.removeDevice', wrap(this, this.removeDevice));
+    this.on('core.listDevices', wrap(this, this.listDevices));
 
-    this.on('core.registerWidget', this.onRegisterWidget);
-    this.on('core.removeWidget', this.onRemoveWidget);
-    this.on('core.listWidgets', this.onListWidgets);
+    // this.on('core.registerWidget', wrap(this, this.registerWidget));
+    // this.on('core.removeWidget', wrap(this, this.removeWidget));
+    this.on('core.listWidgets', wrap(this, this.ristWidgets));
 
     this.loadModules(function () {
         self.instantiateModules();
+        self.emit("init");
     });
-
-    this.emit("init");
 };
 
 AutomationController.prototype.run = function () {
@@ -75,7 +80,7 @@ AutomationController.prototype.instantiateModules = function () {
             var instance = new moduleClass(instanceId, self);
             instance.init(instanceDefs.config);
 
-            self.emit('core.registerInstance', instance);
+            self.registerInstance(instance);
         });
     }
 };
@@ -92,19 +97,16 @@ AutomationController.prototype.listInstances = function () {
         res[instanceId] = this.instances[instanceId].meta;
     });
 
+    this.emit('core.instancesList', res);
+
     return res;
 };
 
-AutomationController.prototype.onListInstances = function () {
-    this.emit('core.instancesList', this.listInstances());
-};
-
-AutomationController.prototype.onRegisterInstance = function (instance) {
+AutomationController.prototype.registerInstance = function (instance) {
     var instanceId = instance.id;
+    console.log("--Z Trying to register module instance", instanceId);
 
-    console.log("--- Trying to register module instance", instanceId);
-
-    if (!this.modules.hasOwnProperty(instanceId)) {
+    if (!this.instances.hasOwnProperty(instanceId)) {
         if (!!instance) {
             this.instances[instanceId] = instance;
             this.emit('core.instanceRegistered', instanceId);
@@ -117,7 +119,7 @@ AutomationController.prototype.onRegisterInstance = function (instance) {
 };
 
 // TODO: Refactor to the module instance's routine getActions()
-AutomationController.prototype.onRegisterAction = function (instanceId, actionMeta, actionFunc) {
+AutomationController.prototype.registerAction = function (instanceId, actionMeta, actionFunc) {
     console.log("registerAction", instanceId, actionMeta);
 
     var instance = this.moduleInstance(instanceId);
@@ -131,18 +133,18 @@ AutomationController.prototype.onRegisterAction = function (instanceId, actionMe
     }
 };
 
-AutomationController.prototype.onRemoveInstance = function (id) {
+AutomationController.prototype.removeInstance = function (id) {
     delete this.instances[id];
     this.emit('core.instanceRemoved', id);
 };
 
-AutomationController.prototype.onRegisterDevice = function (device) {
+AutomationController.prototype.registerDevice = function (device) {
     this.devices[device.id] = device;
 
     this.emit('core.deviceRegistered', device.id);
 };
 
-AutomationController.prototype.onRemoveDevice = function (id) {
+AutomationController.prototype.removeDevice = function (id) {
     delete this.devices[id];
 
     this.emit('core.deviceRemoved', id);
@@ -157,20 +159,18 @@ AutomationController.prototype.listDevices = function () {
         }
     });
 
+    this.emit('core.devicesList', res);
+
     return res;
 };
 
-AutomationController.prototype.onListDevices = function () {
-    this.emit('core.devicesList', this.listDevices());
-};
-
-AutomationController.prototype.onRegisterWidget = function (widget) {
+AutomationController.prototype.registerWidget = function (widget) {
     this.widgets[widget.id] = widget;
 
     this.emit('core.widgetRegistered', widget.id);
 };
 
-AutomationController.prototype.onRemoveWidget = function (id) {
+AutomationController.prototype.removeWidget = function (id) {
     delete this.widget[id];
 
     this.emit('core.widgetRemoved', id);
@@ -185,9 +185,7 @@ AutomationController.prototype.listWidgets = function () {
         }
     });
 
+    this.emit('core.widgetsList', res);
+
     return res;
 }
-
-AutomationController.prototype.onListWidgets = function () {
-    this.emit('core.widgetsList', this.listWidgets());
-};

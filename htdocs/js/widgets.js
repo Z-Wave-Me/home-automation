@@ -10,10 +10,13 @@ function AbstractWidget (parentElement, device) {
 
     var self = this;
     events.on('device.metricUpdated', function (deviceId, name, value) {
-        if ("level" === name) {
-            self.setValue(value);
-        } else {
-            console.log("Don't know how to handle", name, "metric update. Ignoring.");
+        // console.log("--- device.metricUpdated", deviceId, name, value);
+        if (self.device.id === deviceId) {
+            if ("level" === name) {
+                self.setValue(value);
+            } else {
+                // console.log("Don't know how to handle", name, "metric update. Ignoring.");
+            }
         }
     });
 
@@ -91,7 +94,7 @@ MultilevelWidget.prototype.updateWidgetUI = function () {
     } else if (0 === this.value) {
         valueString = "Off"
     } else {
-        valueString = this.value + "%";
+        valueString = Math.round(this.value) + "%";
     }
 
     // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + valueString + "</div>";

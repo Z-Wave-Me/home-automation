@@ -33,10 +33,10 @@ AutomationModule.prototype.runAction = function (actionId, args, callback) {
 
 AutomationModule.prototype.getMeta = function () {
     if (!this.meta) {
-        console.log("Loading module metadata", this);
-        this.meta = loadJSON(this.moduleBasePath() + "/module.json");
+        var filePath = this.moduleBasePath() + "/module.json";
+        console.log("Loading module metadata from", filePath);
+        this.meta = loadJSON(filePath);
     }
-
     return this.meta;
 };
 

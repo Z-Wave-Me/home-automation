@@ -52,6 +52,16 @@ function has_key (obj, key) {
     return -1 != Object.keys(obj).indexOf(key);
 }
 
+function get_values (obj) {
+    var res = [];
+
+    Object.keys(obj).forEach(function (key) {
+        res.push(obj[key]);
+    });
+
+    return res;
+}
+
 //--- Load configuration
 
 var config = loadJSON("./config.json");

@@ -47,7 +47,7 @@ function apiRequest (uri, callback, options) {
     }
 
     $.ajax(apiUrl+uri, opts).done(function (reply, textStatus, jqXHR) {
-        console.log("API REPLY", textStatus, reply);
+        // console.log("API REPLY", textStatus, reply);
 
         var err;
 

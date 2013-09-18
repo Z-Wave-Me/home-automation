@@ -18,7 +18,7 @@ function requestEventLogUpdate () {
         Object.keys(data.events).forEach(function (timestamp) {
             var chunk = data.events[timestamp];
             chunk.forEach(function (event) {
-                events.emit(event[0], event[1]);
+                events.emit.apply(events, [event[0]].concat(event[1]));
             });
         });
     });
