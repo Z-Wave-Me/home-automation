@@ -1,0 +1,5 @@
+{% extends "widgets/smallWidget.html" %}
+
+{% block content %}
+    <h1>{{widgetTitle}}: {% if metricValue %}Active{% else %}Inactive{% endif %}</h1>
+{% endblock %}

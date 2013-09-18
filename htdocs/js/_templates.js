@@ -1,5 +1,21 @@
 (function() {
 var templates = {};
+templates["modules/BatteryPolling/batteryStatusWidget.html"] = (function() {
+function root(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+return {
+root: root
+};
+
+})();
 templates["widgets/multilevel.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
@@ -22,7 +38,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = context.getSuper(env, "content", b_content, frame, runtime);
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
 output += "\n    ";
 if(99 == runtime.contextOrFrameLookup(context, frame, "metricValue")) {
 output += "\n        <h1>";
@@ -97,13 +113,57 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = context.getSuper(env, "content", b_content, frame, runtime);
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
 output += "\n    <h1>";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
 output += ": ";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "metricValue"), env.autoesc);
 output += " ";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "scaleTitle"), env.autoesc);
+output += "</h1>\n";
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+})();
+templates["widgets/sensor.html"] = (function() {
+function root(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+output += "\n";
+return parentTemplate.rootRenderFunc(env, context, frame, runtime);
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+function b_content(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+output += "\n    <h1>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
+output += ": ";
+if(runtime.contextOrFrameLookup(context, frame, "metricValue")) {
+output += "Active";
+}
+else {
+output += "Inactive";
+}
 output += "</h1>\n";
 return output;
 } catch (e) {
@@ -137,7 +197,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = context.getSuper(env, "content", b_content, frame, runtime);
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
 return output;
 } catch (e) {
   runtime.handleError(e, lineno, colno);
@@ -171,7 +231,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = context.getSuper(env, "content", b_content, frame, runtime);
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
 output += "\n    ";
 if(255 == runtime.contextOrFrameLookup(context, frame, "metricValue")) {
 output += "\n        <h1>";

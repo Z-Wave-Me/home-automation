@@ -11,6 +11,9 @@ function createVirtualDevicesWidgets () {
         if ("switch" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
             widget = new SwitchWidget("mainRow", vDev);
+        } else if ("sensor" === vDev.deviceType) {
+            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
+            widget = new SensorWidget("mainRow", vDev);
         } else if ("multilevel" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
             widget = new MultilevelWidget("mainRow", vDev);
