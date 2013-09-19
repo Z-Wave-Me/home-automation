@@ -7,6 +7,7 @@ function AbstractWidget (parentElement, device) {
     this.device = device;
 
     this.value = this.device.metrics.level;
+    this.metrics = this.device.metrics;
 
     var self = this;
     events.on('device.metricUpdated', function (deviceId, name, value) {
@@ -15,7 +16,7 @@ function AbstractWidget (parentElement, device) {
             if ("level" === name) {
                 self.setValue(value);
             } else {
-                // console.log("Don't know how to handle", name, "metric update. Ignoring.");
+                self.setMetricValue(name, value);
             }
         }
     });
@@ -33,6 +34,12 @@ AbstractWidget.prototype.setValue = function (value, callback) {
     this.value = value;
     this.updateWidgetUI();
     if (callback) callback(value);
+}
+
+AbstractWidget.prototype.setMetricValue = function (name, value, callback) {
+    this.metrics[name] = value;
+    this.updateWidgetUI();
+    if (callback) callback(name, value);
 }
 
 AbstractWidget.prototype.updateWidgetUI = function () {
@@ -164,5 +171,36 @@ SensorWidget.prototype.updateWidgetUI = function () {
         vDev: this.device.id,
         widgetTitle: this.widgetTitle,
         metricValue: this.value
+    });
+}
+
+// ----------------------------------------------------------------------------
+// --- Fan widget
+// ----------------------------------------------------------------------------
+// scales:
+// ----------------------------------------------------------------------------
+
+function FanWidget (parentElement, deviceId) {
+    FanWidget.super_.apply(this, arguments);
+
+    this.widgetTitle = this.device.metrics.probeTitle;
+
+    this.value = Math.floor(this.device.metrics.level * 10) / 10;
+}
+
+inherits(FanWidget, AbstractWidget);
+
+FanWidget.prototype.updateWidgetUI = function () {
+    var self = this;
+    var modesArray = [];
+    Object.keys(this.metrics.modes).forEach(function (key) {
+        modesArray.push(self.metrics.modes[key]);
+    });
+
+    this.elem.innerHTML = nunjucks.env.render("widgets/fan.html", {
+        vDev: this.device.id,
+        modes: modesArray,
+        currentMode: this.metrics.currentMode,
+        state: this.metrics.state
     });
 }

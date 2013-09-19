@@ -7,8 +7,7 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zSubTreeKey = null;
 
     this.deviceType = null;
-
-    // this.metrics["level"] = null;
+    this.deviceSubType = null;
 }
 
 inherits(ZWaveDevice, VirtualDevice);

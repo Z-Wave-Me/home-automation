@@ -24,6 +24,14 @@ function requestEventLogUpdate () {
     });
 }
 
-$(document).ready(function () {
+function startEventUpdates () {
     eventLogUpdateTimer = setInterval(requestEventLogUpdate, 1000);
+}
+
+function stopEventUpdates () {
+    clearInterval(eventLogUpdateTimer);
+}
+
+$(document).ready(function () {
+    startEventUpdates();
 });

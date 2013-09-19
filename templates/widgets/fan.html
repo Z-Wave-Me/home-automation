@@ -1,0 +1,23 @@
+{% extends "widgets/smallWidget.html" %}
+
+{% block content %}
+    {% if state %}
+        <h1>Fan: On</h1>
+    {% else %}
+        <h1>Fan: Off</h1>
+    {% endif %}
+
+    <div class="row">
+	    {% if state %}
+	        <div class="span1"><a href="#" data-vdev="{{vDev}}" data-command="off" class="widgetCommandButton btn btn-danger">Switch&nbsp;off</a></div>
+	    {% else %}
+	        <div class="span1"><a href="#" data-vdev="{{vDev}}" data-command="on" class="widgetCommandButton btn btn-success">Switch&nbsp;on</a></div>
+	    {% endif %}
+
+	    <div class="span1"><select data-vdev="{{vDev}}" data-command="setMode" class="widgetModeSelector">
+		    {% for mode in modes %}
+		    	<option value="{{mode.id}}">{{mode.title}}</option>
+		    {% endfor %}
+	    </select></div>
+	</div>
+{% endblock %}

@@ -5,6 +5,7 @@
 var dashboardWidgets = [];
 
 function createVirtualDevicesWidgets () {
+    console.log("--- Devies list", virtualDevices);
     virtualDevices.forEach(function (vDev) {
         var widget;
 
@@ -20,6 +21,9 @@ function createVirtualDevicesWidgets () {
         } else if ("probe" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
             widget = new ProbeWidget("mainRow", vDev);
+        } else if ("climate" === vDev.deviceType && "fan" === vDev.deviceSubType) {
+            console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+", "+vDev.deviceSubType+")");
+            widget = new FanWidget("mainRow", vDev);
         } else {
             console.log("ERROR", "Unknown virtual device type", vDev.deviceType);
         }
@@ -61,6 +65,26 @@ function handleWidgetCommand (event) {
     }
 }
 
+function handleWidgetModeChangeCommand (event) {
+    event.preventDefault();
+    console.log($(this));
+
+    console.log("ZZZZ", $(this));
+
+    var device = $(this).data("vdev");
+    var commandId = $(this).data("command");
+    var modeId = $(this).val();
+    var widget = widgetByDeviceId(device);
+
+
+    if (!!widget) {
+        console.log("Widget command triggered", device, commandId, modeId);
+        widget.performCommand(commandId, modeId);
+    } else {
+        console.log("ERROR", "Cannot find widget for vDev", device);
+    }
+}
+
 // ----------------------------------------------------------------------------
 // --- main
 // ----------------------------------------------------------------------------
@@ -68,6 +92,8 @@ function handleWidgetCommand (event) {
 $(document).ready(function () {
     // Event handlers
     $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
+
+    $(document).on('change', '.widgetModeSelector', handleWidgetModeChangeCommand);
 
     // Load and instantiate widgets
     apiRequest("/devices/", function (err, data) {

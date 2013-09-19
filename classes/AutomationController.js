@@ -86,7 +86,6 @@ AutomationController.prototype.instantiateModules = function () {
 };
 
 AutomationController.prototype.moduleInstance = function (instanceId) {
-    console.log("--- INST", Object.keys(this.instances));
     return this.instances.hasOwnProperty(instanceId) ? this.instances[instanceId] : null;
 };
 

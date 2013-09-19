@@ -103,12 +103,13 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         data: []
     }
 
-    console.log("--- CTRL VDEVS LIST", Object.keys(controller.devices));
+    // console.log("--- CTRL VDEVS LIST", Object.keys(controller.devices));
     Object.keys(controller.devices).forEach(function (vDevId) {
         var vDev = controller.devices[vDevId];
         reply.data.push({
             id: vDevId,
             deviceType: vDev.deviceType,
+            deviceSubType: vDev.deviceSubType,
             metrics: vDev.metrics
         });
     });
@@ -157,8 +158,13 @@ ZAutomationAPIWebRequest.prototype.exposeEvents = function () {
 
 ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, commandId) {
     var self = this;
+    var args1 = arguments;
 
     return function () {
+        var args2 = arguments;
+
+        console.log("--- !!!", JSON.stringify(args1), JSON.stringify(args2));
+
         var reply = {
             error: null,
             data: !!controller.devices[vDevId].performCommand(commandId)

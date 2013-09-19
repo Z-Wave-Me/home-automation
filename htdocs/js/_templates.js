@@ -16,6 +16,74 @@ root: root
 };
 
 })();
+templates["widgets/fan.html"] = (function() {
+function root(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+output += "\n";
+return parentTemplate.rootRenderFunc(env, context, frame, runtime);
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+function b_content(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+output += "\n    ";
+if(runtime.contextOrFrameLookup(context, frame, "state")) {
+output += "\n        <h1>Fan: On</h1>\n    ";
+}
+else {
+output += "\n        <h1>Fan: Off</h1>\n    ";
+}
+output += "\n\n    <div class=\"row\">\n\t    ";
+if(runtime.contextOrFrameLookup(context, frame, "state")) {
+output += "\n\t        <div class=\"span1\"><a href=\"#\" data-vdev=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "\" data-command=\"off\" class=\"widgetCommandButton btn btn-danger\">Switch&nbsp;off</a></div>\n\t    ";
+}
+else {
+output += "\n\t        <div class=\"span1\"><a href=\"#\" data-vdev=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "\" data-command=\"on\" class=\"widgetCommandButton btn btn-success\">Switch&nbsp;on</a></div>\n\t    ";
+}
+output += "\n\n\t    <div class=\"span1\"><select data-vdev=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "\" data-command=\"setMode\" class=\"widgetModeSelector\">\n\t\t    ";
+frame = frame.push();
+var t_3 = runtime.contextOrFrameLookup(context, frame, "modes");
+if(t_3) {for(var t_2=0; t_2 < t_3.length; t_2++) {
+var t_4 = t_3[t_2];
+frame.set("mode", t_4);
+output += "\n\t\t    \t<option value=\"";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"id", env.autoesc), env.autoesc);
+output += "\">";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"title", env.autoesc), env.autoesc);
+output += "</option>\n\t\t    ";
+}
+}frame = frame.pop();
+output += "\n\t    </select></div>\n\t</div>\n";
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+})();
 templates["widgets/multilevel.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
