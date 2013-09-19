@@ -9,4 +9,4 @@ htdocs/js/_precompiled.js
 .SyncTrash
 *.json
 
-CommonWidgets
+modules/CommonWidgets
