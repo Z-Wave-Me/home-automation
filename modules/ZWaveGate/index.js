@@ -27,6 +27,7 @@ function ZWaveGate (id, controller) {
     executeFile(this.moduleBasePath()+"/classes/ZWaveSensorMultilevelDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveMeterDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveBatteryDevice.js");
+    executeFile(this.moduleBasePath()+"/classes/ZWaveFanModeDevice.js");
 }
 
 // Module inheritance and setup
@@ -170,7 +171,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
             instanceDevices.push(new ZWaveDoorlockDevice(deviceName, self.controller, deviceId, instanceId));
         } else if (0x44 === commandClassId) {
             console.log("Creating FanMode device");
-            // instanceDevices.push(new ZWaveBatteryDevice(deviceName, self.controller, deviceId, instanceId));
+            instanceDevices.push(new ZWaveFanModeDevice(deviceName, self.controller, deviceId, instanceId));
         }
     });
 

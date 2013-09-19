@@ -48,6 +48,19 @@ ZWaveDevice.prototype._dics = function () {
     return this._dic().data[this.zSubTreeKey];
 }
 
+ZWaveDevice.prototype._subTreeKeys = function () {
+    var res = [];
+
+    Object.keys(this._dic().data).forEach(function (key) {
+        var _k = parseInt(key, 10);
+        if (!isNaN(_k)) {
+            res.push(_k);
+        }
+    });
+
+    return res;
+}
+
 ZWaveDevice.prototype.performCommand = function (command) {
     var handled = ZWaveDevice.super_.prototype.performCommand.call(this, command);
 
