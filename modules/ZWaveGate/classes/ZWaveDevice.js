@@ -1,9 +1,14 @@
-/*** ZWaveDevice class module *************************************************
+/*** Z-Wave Virtual Device abstract class module ******************************
 
 Version: 1.0.0
+
 -------------------------------------------------------------------------------
+
 Author: Gregory Sitnin <sitnin@z-wave.me>
+
 Copyright: (c) ZWave.Me, 2013
+
+Description: This module is a base class for all Z-Wave virtual device classes
 
 ******************************************************************************/
 

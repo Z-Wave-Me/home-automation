@@ -1,3 +1,15 @@
+/*** ZWaveThermostatDevice.js *************************************************
+
+Version: 1.0.0
+
+-------------------------------------------------------------------------------
+
+Author: Gregory Sitnin <sitnin@z-wave.me>
+
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
+
 ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveThermostatDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
@@ -6,13 +18,9 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.deviceType = "climate";
     this.deviceSubType = "thermostat";
 
-    this.setMetricValue("type", this.deviceType);
-    this.setMetricValue("subType", this.deviceSubType);
-
     this.modes = this.assembleModes();
     this.setMetricValue("modes", this.modes);
     this.setMetricValue("currentMode", this._dic().data.mode.value);
-    this.setMetricValue("state", this._dic().data.on.value);
 }
 
 inherits(ZWaveThermostatDevice, ZWaveDevice);

@@ -1,3 +1,15 @@
+/*** ZWaveFanModeDevice.js ****************************************************
+
+Version: 1.0.0
+
+-------------------------------------------------------------------------------
+
+Author: Gregory Sitnin <sitnin@z-wave.me>
+
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
+
 ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveFanModeDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
@@ -5,9 +17,6 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "climate";
     this.deviceSubType = "fan";
-
-    this.setMetricValue("type", this.deviceType);
-    this.setMetricValue("subType", this.deviceSubType);
 
     this.modes = this.assembleModes();
     this.setMetricValue("modes", this.modes);
