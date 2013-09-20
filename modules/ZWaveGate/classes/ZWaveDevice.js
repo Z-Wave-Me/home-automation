@@ -53,6 +53,10 @@ ZWaveDevice.prototype.handleDatapointUpdate = function (value, args) {
     this.setMetricValue("level", value);
 }
 
+ZWaveDevice.prototype._di = function () {
+    return zway.devices[this.zDeviceId].instances[this.zInstanceId];
+}
+
 ZWaveDevice.prototype._dic = function () {
     return zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];
 }
