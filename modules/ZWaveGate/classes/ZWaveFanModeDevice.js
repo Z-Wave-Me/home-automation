@@ -53,22 +53,22 @@ ZWaveFanModeDevice.prototype.assembleModes = function () {
     return res;
 }
 
-ZWaveFanModeDevice.prototype.performCommand = function (command, modeId) {
+ZWaveFanModeDevice.prototype.performCommand = function (command, args) {
     console.log("--- ZWaveFanModeDevice.performCommand processing...");
 
     var handled = true;
 
     if ("on" === command) {
-        this._dic().Set(255, this.metrics.currentMode);
+        this._dic().Set(true, this.metrics.currentMode);
     } else if ("off" === command) {
-        this._dic().Set(0, this.metrics.currentMode);
+        this._dic().Set(false, this.metrics.currentMode);
     } else if ("setMode" === command) {
-        var _modeId = parseInt(modeId, 10);
+        var _modeId = parseInt(args["mode"], 10);
         if (!isNaN(_modeId)) {
             this._dic().Set(this.metrics.state, _modeId);
         } else {
             handled = false;
-            this.controller.emit("core.error", "Invalid mode id ["+modeId+"]");
+            this.controller.emit("core.error", "Invalid mode id ["+_modeId+"]");
         }
     } else {
         handled = false;

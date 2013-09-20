@@ -50,8 +50,10 @@ AbstractWidget.prototype.commandApiUri = function (command) {
     return "/devices/"+this.device.id+"/command/"+command;
 }
 
-AbstractWidget.prototype.performCommand = function (command) {
-    apiRequest(this.commandApiUri(command));
+AbstractWidget.prototype.performCommand = function (command, args) {
+    apiRequest(this.commandApiUri(command), null, {
+        data: args
+    });
 }
 
 // ----------------------------------------------------------------------------
@@ -196,6 +198,8 @@ FanWidget.prototype.updateWidgetUI = function () {
     Object.keys(this.metrics.modes).forEach(function (key) {
         modesArray.push(self.metrics.modes[key]);
     });
+
+    console.log("--- METR", this.metrics);
 
     this.elem.innerHTML = nunjucks.env.render("widgets/fan.html", {
         vDev: this.device.id,

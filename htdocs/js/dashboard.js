@@ -69,8 +69,6 @@ function handleWidgetModeChangeCommand (event) {
     event.preventDefault();
     console.log($(this));
 
-    console.log("ZZZZ", $(this));
-
     var device = $(this).data("vdev");
     var commandId = $(this).data("command");
     var modeId = $(this).val();
@@ -79,7 +77,9 @@ function handleWidgetModeChangeCommand (event) {
 
     if (!!widget) {
         console.log("Widget command triggered", device, commandId, modeId);
-        widget.performCommand(commandId, modeId);
+        widget.performCommand(commandId, {
+            mode: modeId
+        });
     } else {
         console.log("ERROR", "Cannot find widget for vDev", device);
     }

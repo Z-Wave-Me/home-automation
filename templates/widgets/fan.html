@@ -16,7 +16,9 @@
 
 	    <div class="span1"><select data-vdev="{{vDev}}" data-command="setMode" class="widgetModeSelector">
 		    {% for mode in modes %}
-		    	<option value="{{mode.id}}">{{mode.title}}</option>
+		    	<option value="{{mode.id}}"
+		    		{% if currentMode==mode.id %}selected="yes"{% endif %}
+		    	>{{mode.title}}</option>
 		    {% endfor %}
 	    </select></div>
 	</div>

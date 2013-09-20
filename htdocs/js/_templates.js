@@ -67,7 +67,11 @@ var t_4 = t_3[t_2];
 frame.set("mode", t_4);
 output += "\n\t\t    \t<option value=\"";
 output += runtime.suppressValue(runtime.memberLookup((t_4),"id", env.autoesc), env.autoesc);
-output += "\">";
+output += "\"\n\t\t    \t\t";
+if(runtime.contextOrFrameLookup(context, frame, "currentMode") == runtime.memberLookup((t_4),"id", env.autoesc)) {
+output += "selected=\"yes\"";
+}
+output += "\n\t\t    \t>";
 output += runtime.suppressValue(runtime.memberLookup((t_4),"title", env.autoesc), env.autoesc);
 output += "</option>\n\t\t    ";
 }
