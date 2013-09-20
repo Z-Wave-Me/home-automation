@@ -1,0 +1,27 @@
+{% extends "widgets/smallWidget.html" %}
+
+{% block content %}
+    {% if hasSensor %}
+        <h1>Thermostat: {{level}}{{scaleTitle}}</h1>
+    {% else %}
+        <h1>Thermostat</h1>
+    {% endif %}
+
+    <div><select data-vdev="{{vDev}}" data-command="setMode" class="widgetModeSelector">
+	    {% for mode in modes %}
+	    	<option value="{{mode.id}}"
+	    		{% if currentMode==mode.id %}selected="yes"{% endif %}
+	    	>{{mode.title}}</option>
+	    {% endfor %}
+    </select></div>
+
+    {% if modes[currentModeIndex].target %}
+    <div><select data-vdev="{{vDev}}" data-command="setTarget" class="widgetModeTargetSelector">
+	    {% for t in possibleTargets %}
+	    	<option value="{{t}}"
+	    		{% if modes[currentModeIndex].target==t %}selected="yes"{% endif %}
+	    	>{{t}}</option>
+	    {% endfor %}
+    </select></div>
+    {% endif %}
+{% endblock %}

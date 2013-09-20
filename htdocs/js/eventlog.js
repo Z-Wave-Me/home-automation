@@ -3,7 +3,8 @@ var eventLogUpdateTimerErrors = 0;
 var eventLogUpdateTime = 0;
 
 var events = new EventEmitter2({
-    wildcard: true
+    wildcard: true,
+    maxListeners: 100
 });
 
 function requestEventLogUpdate () {

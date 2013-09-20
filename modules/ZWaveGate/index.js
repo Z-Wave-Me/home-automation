@@ -25,6 +25,7 @@ function ZWaveGate (id, controller) {
     executeFile(this.moduleBasePath()+"/classes/ZWaveMeterDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveBatteryDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveFanModeDevice.js");
+    executeFile(this.moduleBasePath()+"/classes/ZWaveThermostatDevice.js");
 }
 
 // Module inheritance and setup
@@ -100,18 +101,16 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     var instance = zway.devices[deviceId].instances[instanceId];
     var instanceCommandClasses = Object.keys(instance.commandClasses);
     var instanceDevices = [];
+    var deviceName = null;
 
-    // if (in_array(instanceCommandClasses, "64") || in_array(instanceCommandClasses, "67")) {
-    //     var deviceName = "ZWayVDev_"+deviceId+"-"+instanceId+"-Thermostat";
+    if (in_array(instanceCommandClasses, "64") || in_array(instanceCommandClasses, "67")) {
+        deviceName = "ZWayVDev_"+deviceId+":"+instanceId+":Thermostat";
 
-    //     // Do not recreate devices
-    //     if (has_key(self.devices, deviceName)) {
-    //         console.log("Device ", deviceName, "already exists. Won't recreate");
-    //         return;
-    //     }
+        if (self.controller.deviceExists(deviceName)) return;
 
-    //     console.log("Creating Thermostat device");
-    // }
+        console.log("Creating Thermostat device");
+        instanceDevices.push(new ZWaveThermostatDevice(deviceName, self.controller, deviceId, instanceId));
+    }
 
     instanceCommandClasses.forEach(function (commandClassId) {
         commandClassId = parseInt(commandClassId, 10);
@@ -122,15 +121,10 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
             return;
         }
 
-        var deviceName = "ZWayVDev_"+deviceId+":"+instanceId;
+        var deviceName = "ZWayVDev_"+deviceId+":"+instanceId+":"+commandClassId;
 
         // Do not recreate devices
-        if (has_key(self.devices, deviceName)) {
-            console.log("Device ", deviceName, "already exists. Won't recreate");
-            return;
-        }
-
-        deviceName += ":"+commandClassId;
+        if (self.controller.deviceExists(deviceName)) return;
 
         if (0x25 === commandClassId) {
             console.log("Creating SwitchBinary device");

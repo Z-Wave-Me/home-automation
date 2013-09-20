@@ -57,8 +57,8 @@ ZWaveDevice.prototype._di = function () {
     return zway.devices[this.zDeviceId].instances[this.zInstanceId];
 }
 
-ZWaveDevice.prototype._dic = function () {
-    return zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];
+ZWaveDevice.prototype._dic = function (commandClassId) {
+    return zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[!!commandClassId ? commandClassId : this.zCommandClassId];
 }
 
 ZWaveDevice.prototype._dics = function () {
@@ -68,9 +68,7 @@ ZWaveDevice.prototype._dics = function () {
 ZWaveDevice.prototype._subTreeKeys = function (commandClassId) {
     var res = [];
 
-    var _dataTree = !!commandClassId ? this._di().commandClasses[commandClassId].data : this._dic().data;
-
-    Object.keys(_dataTree).forEach(function (key) {
+    Object.keys(this._dic(commandClassId).data).forEach(function (key) {
         var _k = parseInt(key, 10);
         if (!isNaN(_k)) {
             res.push(_k);
