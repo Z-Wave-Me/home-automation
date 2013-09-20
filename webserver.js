@@ -165,16 +165,13 @@ ZAutomationAPIWebRequest.prototype.exposeEvents = function () {
 
 ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, commandId) {
     var self = this;
-    var args1 = arguments;
 
     return function () {
-        var args2 = arguments;
-
-        console.log("--- !!!", JSON.stringify(args1), JSON.stringify(args2));
+        console.log("--- !!!", JSON.stringify(this));
 
         var reply = {
             error: null,
-            data: !!controller.devices[vDevId].performCommand(commandId)
+            data: !!controller.devices[vDevId].performCommand(commandId, self.req.query)
         }
 
         self.res.status = 200;
