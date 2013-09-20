@@ -92,7 +92,6 @@ function handleWidgetModeChangeCommand (event) {
 $(document).ready(function () {
     // Event handlers
     $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
-
     $(document).on('change', '.widgetModeSelector', handleWidgetModeChangeCommand);
 
     // Load and instantiate widgets

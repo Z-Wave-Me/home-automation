@@ -199,8 +199,6 @@ FanWidget.prototype.updateWidgetUI = function () {
         modesArray.push(self.metrics.modes[key]);
     });
 
-    console.log("--- METR", this.metrics);
-
     this.elem.innerHTML = nunjucks.env.render("widgets/fan.html", {
         vDev: this.device.id,
         modes: modesArray,

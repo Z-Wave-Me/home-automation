@@ -70,22 +70,6 @@ function apiRequest (uri, callback, options) {
 }
 
 // ----------------------------------------------------------------------------
-// --- Core class extenders
-// ----------------------------------------------------------------------------
-// TODO: Resolve nunjucks conflict with prototyping
-
-// Object.prototype.patchWith = function (patch) {
-//     var self = this;
-
-//     // patch should be an object
-//     if ("object" === typeof patch) {
-//         Object.keys(patch).forEach(function (key) {
-//             self[key] = patch[key];
-//         });
-//     }
-// }
-
-// ----------------------------------------------------------------------------
 // --- Global variables construction and setup
 // ----------------------------------------------------------------------------
 
