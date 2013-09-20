@@ -2,7 +2,8 @@
     "autoload": true,
     "singleton": true,
     "defaults": {
-        "createDevices": true
+        "createDevices": true,
+        "basicsEnabled": false
     },
     "actions": {
         "set": {},
