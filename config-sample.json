@@ -1,11 +1,12 @@
 {
-    "basePath": "./,
     "controller": {
-        "modulesPath": "./modules",
         "modules": [
             "EventLog",
             "ZWaveGate",
-            "AutoOff"
+            "Cron",
+            "BatteryPolling",
+            "AutoOff",
+            "CustomUserCode"
         ],
         "instances": {
             "EventLog" : {
