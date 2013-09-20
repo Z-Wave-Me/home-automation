@@ -1,3 +1,12 @@
+/*** Z-Way HA Controller class module *****************************************
+
+Version: 1.0.0
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
+
 function AutomationController (config) {
     AutomationController.super_.call(this);
 
@@ -52,13 +61,13 @@ AutomationController.prototype.loadModules = function (callback) {
 
     this.config.modules.forEach(function (moduleClassName) {
         // Load module class
-        var moduleFilename = self.config.modulesPath + "/" + moduleClassName + "/index.js";
+        var moduleFilename = "modules/" + moduleClassName + "/index.js";
         console.log("Loading module " + moduleClassName + " from " + moduleFilename);
         executeFile(moduleFilename);
 
         // Monkey-patch module with basePath method
         _module.prototype.moduleBasePath = function () {
-            return self.config.modulesPath + "/" + moduleClassName;
+            return "modules/" + moduleClassName;
         };
 
         // Grab _module and clear it out
@@ -103,7 +112,6 @@ AutomationController.prototype.listInstances = function () {
 
 AutomationController.prototype.registerInstance = function (instance) {
     var instanceId = instance.id;
-    console.log("--Z Trying to register module instance", instanceId);
 
     if (!this.instances.hasOwnProperty(instanceId)) {
         if (!!instance) {

@@ -1,13 +1,11 @@
-/******************************************************************************
+/*** Z-Way Home Automation Engine global constants ****************************
 
- Z-Way Home Automation Engine
- global constants
- Version: 0.1.1
- (c) ZWave.Me, 2013
+Version: 0.1.2
+(c) ZWave.Me, 2013
 
- -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me>
- Description:
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+
 
 ******************************************************************************/
 

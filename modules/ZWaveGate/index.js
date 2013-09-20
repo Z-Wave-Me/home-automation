@@ -1,12 +1,9 @@
-/******************************************************************************
+/*** ZWave Gate module ********************************************************
 
- ZWave Gate Z-Way Home Automation module
- Version: 1.0.0
- (c) ZWave.Me, 2013
-
- -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me>
- Description:
+Version: 1.0.0
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
@@ -80,7 +77,7 @@ ZWaveGate.prototype.init = function (config) {
 // Module methods
 
 ZWaveGate.prototype.handleStructureChanges = function (changeType, device, instance, commandClass) {
-    console.log("--- handleStructureChanges", changeType, device, instance, commandClass);
+    // console.log("--- handleStructureChanges", changeType, device, instance, commandClass);
 
     if ("InstanceAdded" === changeType) {
         // Ignore instance 0 for multiinstance devices

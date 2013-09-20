@@ -1,19 +1,18 @@
-/******************************************************************************
+/*** Z-Way Home Automation Engine main executable *****************************
 
- Z-Way Home Automation Engine
- main executable
- Version: 0.1.1
- (c) ZWave.Me, 2013
+Version: 0.1.2
+(c) ZWave.Me, 2013
 
- -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me>
- Description:
-     This is a main executable script which is loaded and executed solely
-     by the z-way-server daemon. The very magic starts here.
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+
+Description:
+  This is a main executable script which is loaded and executed solely
+  by the z-way-server daemon. The very magic starts here.
 
 ******************************************************************************/
 
- //--- Define global variables and helpers
+//--- Define global variables and helpers
 
 var window = global = this;
 
@@ -64,13 +63,13 @@ function get_values (obj) {
 
 //--- Load configuration
 
-var config = loadJSON("./config.json");
+var config = loadJSON("config.json");
 
 config.libPath = "lib";
 config.classesPath = "classes";
 config.resourcesPath = "res";
 
-console.log("CFG", JSON.stringify(config, null, "  "));
+// console.log("CFG", JSON.stringify(config, null, "  "));
 
 //--- Load constants & 3d-party dependencies
 
@@ -100,7 +99,7 @@ controller.on('run', function () {
     console.log('ZWay Automation Controller started');
 
     //--- Initialize webserver
-    executeFile("/webserver.js");
+    executeFile("webserver.js");
 });
 
 //--- main

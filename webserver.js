@@ -1,4 +1,11 @@
-console.log("Setting web request handler");
+/*** Main Automation webserver module *****************************************
+
+Version:
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
 
 // ----------------------------------------------------------------------------
 // --- ZAutomationWebRequest
@@ -223,5 +230,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 // ----------------------------------------------------------------------------
 // --- main
 // ----------------------------------------------------------------------------
+
+console.log("Setting web request handlers");
 
 var api = new ZAutomationAPIWebRequest().handlerFunc();

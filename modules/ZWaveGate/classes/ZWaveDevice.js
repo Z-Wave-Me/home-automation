@@ -1,3 +1,12 @@
+/*** ZWaveDevice class module *************************************************
+
+Version: 1.0.0
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
+
 ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveDevice.super_.call(this, id, controller);
 
