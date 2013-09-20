@@ -40,7 +40,7 @@ AutomationController.prototype.init = function () {
 
     // this.on('core.registerWidget', wrap(this, this.registerWidget));
     // this.on('core.removeWidget', wrap(this, this.removeWidget));
-    this.on('core.listWidgets', wrap(this, this.ristWidgets));
+    // this.on('core.listWidgets', wrap(this, this.ristWidgets));
 
     this.loadModules(function () {
         self.instantiateModules();
@@ -171,28 +171,32 @@ AutomationController.prototype.listDevices = function () {
     return res;
 };
 
-AutomationController.prototype.registerWidget = function (widget) {
-    this.widgets[widget.id] = widget;
-
-    this.emit('core.widgetRegistered', widget.id);
-};
-
-AutomationController.prototype.removeWidget = function (id) {
-    delete this.widget[id];
-
-    this.emit('core.widgetRemoved', id);
-};
-
-AutomationController.prototype.listWidgets = function () {
-    var res = {};
-
-    Object.keys(this.widgets).forEach(function (widgetId) {
-        res[widgetId] = {
-            widgetType: "unknown"
-        }
-    });
-
-    this.emit('core.widgetsList', res);
-
-    return res;
+AutomationController.prototype.deviceExists = function (vDevId) {
+    return Object.keys(this.devices).indexOf(vDevId) >= 0;
 }
+
+// AutomationController.prototype.registerWidget = function (widget) {
+//     this.widgets[widget.id] = widget;
+
+//     this.emit('core.widgetRegistered', widget.id);
+// };
+
+// AutomationController.prototype.removeWidget = function (id) {
+//     delete this.widget[id];
+
+//     this.emit('core.widgetRemoved', id);
+// };
+
+// AutomationController.prototype.listWidgets = function () {
+//     var res = {};
+
+//     Object.keys(this.widgets).forEach(function (widgetId) {
+//         res[widgetId] = {
+//             widgetType: "unknown"
+//         }
+//     });
+
+//     this.emit('core.widgetsList', res);
+
+//     return res;
+// }
