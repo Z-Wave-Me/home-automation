@@ -5,28 +5,39 @@
 var dashboardWidgets = [];
 
 function createVirtualDevicesWidgets () {
-    console.log("--- Devies list", virtualDevices);
+    console.log("--- Devices list", virtualDevices);
+
+    // if (virtualDevices.length > 0) {
+    //     $("#mainContainer").html("");
+    // }
+
     virtualDevices.forEach(function (vDev) {
         var widget;
 
+        var rowId = "row"+(dashboardWidgets.length % 4);
+        if ($('#'+rowId).length == 0) {
+            console.log($("#mainContainer"));
+            $("#mainContainer").append('<div class="row" id="'+rowId+'"></div>');
+        }
+
         if ("switch" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
-            widget = new SwitchWidget("mainRow", vDev);
+            widget = new SwitchWidget(rowId, vDev);
         } else if ("sensor" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
-            widget = new SensorWidget("mainRow", vDev);
+            widget = new SensorWidget(rowId, vDev);
         } else if ("multilevel" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
-            widget = new MultilevelWidget("mainRow", vDev);
+            widget = new MultilevelWidget(rowId, vDev);
         } else if ("probe" === vDev.deviceType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+")");
-            widget = new ProbeWidget("mainRow", vDev);
+            widget = new ProbeWidget(rowId, vDev);
         } else if ("climate" === vDev.deviceType && "fan" === vDev.deviceSubType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+", "+vDev.deviceSubType+")");
-            widget = new FanWidget("mainRow", vDev);
+            widget = new FanWidget(rowId, vDev);
         } else if ("climate" === vDev.deviceType && "thermostat" === vDev.deviceSubType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+", "+vDev.deviceSubType+")");
-            widget = new ThermostatWidget("mainRow", vDev);
+            widget = new ThermostatWidget(rowId, vDev);
         } else {
             console.log("ERROR", "Unknown virtual device type", vDev.deviceType);
         }
