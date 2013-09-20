@@ -65,10 +65,12 @@ ZWaveDevice.prototype._dics = function () {
     return this._dic().data[this.zSubTreeKey];
 }
 
-ZWaveDevice.prototype._subTreeKeys = function () {
+ZWaveDevice.prototype._subTreeKeys = function (commandClassId) {
     var res = [];
 
-    Object.keys(this._dic().data).forEach(function (key) {
+    var _dataTree = !!commandClassId ? this._di().commandClasses[commandClassId].data : this._dic().data;
+
+    Object.keys(_dataTree).forEach(function (key) {
         var _k = parseInt(key, 10);
         if (!isNaN(_k)) {
             res.push(_k);
