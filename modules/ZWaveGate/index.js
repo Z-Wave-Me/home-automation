@@ -18,6 +18,8 @@ function ZWaveGate (id, controller) {
     executeFile(this.moduleBasePath()+"/classes/ZWaveDevice.js");
 
     // Load exact device classes
+    executeFile(this.moduleBasePath()+"/classes/ZWaveBasicDevice.js");
+
     executeFile(this.moduleBasePath()+"/classes/ZWaveSwitchBinaryDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveSwitchMultilevelDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveSensorBinaryDevice.js");
@@ -42,6 +44,14 @@ ZWaveGate.prototype.init = function (config) {
     this.controller.on('zway.structureUpdate', function () {
         self.handleStructureChanges.apply(self, arguments);
     });
+
+    // If basicsEnabled, instantiate ZWaveBasic module
+    if (this.config.basicsEnabled) {
+        console.log("Creating Basic device");
+        var vDevBasic = new ZWaveBasicDevice("ZWayVDev_Basic", self.controller);
+        vDevBasic.bindToDatapoints();
+        this.controller.registerDevice(vDevBasic);
+    }
 
     // Iterate zway.devices and emit xAdded events
     Object.keys(zway.devices).forEach(function (deviceId) {
@@ -174,43 +184,43 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     });
 };
 
-ZWaveGate.prototype.bindDataPointListeners = function (deviceId, instanceId, commandClassId) {
-    var self = this;
+// ZWaveGate.prototype.bindDataPointListeners = function (deviceId, instanceId, commandClassId) {
+//     var self = this;
 
-    var knownCommandClasses = {
-        0x20: ["level", "mylevel"],
-        0x25: ["level"],
-        0x26: ["level"],
-        0x30: ["level"],
-        0x31: ["*.val"]
-    };
+//     var knownCommandClasses = {
+//         0x20: ["level", "mylevel"],
+//         0x25: ["level"],
+//         0x26: ["level"],
+//         0x30: ["level"],
+//         0x31: ["*.val"]
+//     };
 
-    if (knownCommandClasses.hasOwnProperty(commandClassId)) {
-        console.log("Attaching to the new device instance command class", deviceId, instanceId, commandClassId);
-        var dataHolders = knownCommandClasses[commandClassId];
-        dataHolders.forEach(function (dataHolder) {
-            var zwayDev = zway.devices[deviceId].instances[instanceId].commandClasses[commandClassId];
-            var dhPath = dataHolder.split(".");
-            if (1 === dhPath.length) {
-                zwayDev.data[dataHolder].bind(function (changeType, args) {
-                    if (0x01 == changeType || 0x40 == changeType) {
-                        self.controller.emit('zway.dataUpdate', deviceId, instanceId, commandClassId, dataHolder, this.value, args);
-                    }
-                });
-            } else {
-                Object.keys(zwayDev.data).forEach(function (key) {
-                    key = parseInt(key, 10);
-                    if (!isNaN(key)) {
-                        var hcArgs = {};
-                        hcArgs.sensorType = zwayDev.data[key].sensorTypeString.value;
-                        zwayDev.data[key][dhPath[1]].bind(function (changeType, args) {
-                            if (0x01 == changeType || 0x40 == changeType) {
-                                self.controller.emit('zway.dataUpdate', deviceId, instanceId, commandClassId, key+"."+dhPath[1], this.value, args);
-                            }
-                        }, hcArgs);
-                    }
-                });
-            }
-        });
-    }
-};
+//     if (knownCommandClasses.hasOwnProperty(commandClassId)) {
+//         console.log("Attaching to the new device instance command class", deviceId, instanceId, commandClassId);
+//         var dataHolders = knownCommandClasses[commandClassId];
+//         dataHolders.forEach(function (dataHolder) {
+//             var zwayDev = zway.devices[deviceId].instances[instanceId].commandClasses[commandClassId];
+//             var dhPath = dataHolder.split(".");
+//             if (1 === dhPath.length) {
+//                 zwayDev.data[dataHolder].bind(function (changeType, args) {
+//                     if (0x01 == changeType || 0x40 == changeType) {
+//                         self.controller.emit('zway.dataUpdate', deviceId, instanceId, commandClassId, dataHolder, this.value, args);
+//                     }
+//                 });
+//             } else {
+//                 Object.keys(zwayDev.data).forEach(function (key) {
+//                     key = parseInt(key, 10);
+//                     if (!isNaN(key)) {
+//                         var hcArgs = {};
+//                         hcArgs.sensorType = zwayDev.data[key].sensorTypeString.value;
+//                         zwayDev.data[key][dhPath[1]].bind(function (changeType, args) {
+//                             if (0x01 == changeType || 0x40 == changeType) {
+//                                 self.controller.emit('zway.dataUpdate', deviceId, instanceId, commandClassId, key+"."+dhPath[1], this.value, args);
+//                             }
+//                         }, hcArgs);
+//                     }
+//                 });
+//             }
+//         });
+//     }
+// };

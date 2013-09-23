@@ -1,11 +1,13 @@
 {
-    "basePath": "./,
     "controller": {
-        "modulesPath": "./modules",
         "modules": [
             "EventLog",
             "ZWaveGate",
-            "AutoOff"
+            "Cron",
+            "BatteryPolling",
+            "AutoOff",
+            "CustomUserCode",
+            "BasicReactions"
         ],
         "instances": {
             "EventLog" : {
@@ -14,7 +16,36 @@
             },
             "ZWave" : {
                 "module": "ZWaveGate",
-                "config": {}
+                "config": {
+                    "basicsEnabled": true
+                }
+            },
+            "BasicReactor": {
+                "module": "BasicReactions",
+                "config": {
+                    "map": [
+                        {
+                            "channel": 1,
+                            "level": 255,
+                            "reactions": {
+                                "tempOn": {
+                                    "vDev": "ZWayVDev_6:0:38",
+                                    "timeout": 5
+                                }
+                            }
+                        },
+                        {
+                            "channel": 3,
+                            "level": 255,
+                            "reactions": {
+                                "tempOn": {
+                                    "vDev": "ZWayVDev_3:0:37",
+                                    "timeout": 3
+                                }
+                            }
+                        }
+                    ]
+                }
             }
         }
     }

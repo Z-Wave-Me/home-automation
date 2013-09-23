@@ -32,10 +32,11 @@ ZWaveDevice.prototype.dataPoints = function () {
 
 ZWaveDevice.prototype.bindToDatapoints = function () {
     var self = this;
+    var _dpList = this.dataPoints();
 
-    console.log("VirtualDevice", this.id, "binding to", this.dataPoints().length, "datapoints");
+    console.log("VirtualDevice", this.id, "binding to", _dpList.length, "datapoints");
 
-    this.dataPoints().forEach(function (dataPoint) {
+    _dpList.forEach(function (dataPoint) {
         dataPoint.bind(function (changeType, args) {
             // Handle only "update" and "shadow update" events
             if (0x01 != changeType && 0x41 != changeType) return;
@@ -79,18 +80,15 @@ ZWaveDevice.prototype._subTreeKeys = function (commandClassId) {
 }
 
 ZWaveDevice.prototype.performCommand = function (command) {
-    var handled = ZWaveDevice.super_.prototype.performCommand.call(this, command);
+    console.log("--- ZWaveDevice.performCommand processing...");
 
-    // Stop command processing due to parent class already processed it
-    if (handled) return handled;
-
-    console.log("--- ZWaveDevice.performCommand continuing processing...");
-
+    var handled = true;
     if ("update" === command) {
         zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Get();
-        handled = true;
+    } else {
+        handled = false;
     }
 
-    return handled;
+    return handled ? true : ZWaveDevice.super_.prototype.performCommand.call(this, command);
 }
 
