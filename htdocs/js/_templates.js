@@ -254,9 +254,11 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-output += "<div class=\"span4 smallWidget\">\n    <div class=\"well\">\n        <div class=\"pull-right\"><a href=\"#\" class=\"widgetCommandButton btn btn-mini refreshButton\" data-vdev=\"";
+output += "<div class=\"span4 smallWidget\">\n    <div class=\"well\" style=\"height: 100%\">\n        <div class=\"pull-right\"><a href=\"#\" class=\"widgetCommandButton btn btn-mini refreshButton\" data-vdev=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
-output += "\" data-command=\"update\"><i class=\"icon-refresh\"></i></a></div>\n        ";
+output += "\" data-command=\"update\"><i class=\"icon-refresh\"></i></a></div>\n\t    <div class=\"vDevId\">vDev ID: <b>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "</b></div>\n        ";
 output += context.getBlock("content")(env, context, frame, runtime);
 output += "\n    </div>\n</div>\n";
 return output;
