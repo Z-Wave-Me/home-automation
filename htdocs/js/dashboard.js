@@ -14,7 +14,7 @@ function createVirtualDevicesWidgets () {
     virtualDevices.forEach(function (vDev) {
         var widget;
 
-        var rowId = "row"+(dashboardWidgets.length % 4);
+        var rowId = "row"+(Math.floor(dashboardWidgets.length/3));
         if ($('#'+rowId).length == 0) {
             console.log($("#mainContainer"));
             $("#mainContainer").append('<div class="row" id="'+rowId+'"></div>');
