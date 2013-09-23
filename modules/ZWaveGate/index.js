@@ -18,6 +18,8 @@ function ZWaveGate (id, controller) {
     executeFile(this.moduleBasePath()+"/classes/ZWaveDevice.js");
 
     // Load exact device classes
+    executeFile(this.moduleBasePath()+"/classes/ZWaveBasicDevice.js");
+
     executeFile(this.moduleBasePath()+"/classes/ZWaveSwitchBinaryDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveSwitchMultilevelDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveSensorBinaryDevice.js");
@@ -42,6 +44,14 @@ ZWaveGate.prototype.init = function (config) {
     this.controller.on('zway.structureUpdate', function () {
         self.handleStructureChanges.apply(self, arguments);
     });
+
+    // If basicsEnabled, instantiate ZWaveBasic module
+    if (this.config.basicsEnabled) {
+        console.log("Creating Basic device");
+        var vDevBasic = new ZWaveBasicDevice("ZWayVDev_Basic", self.controller);
+        vDevBasic.bindToDatapoints();
+        this.controller.registerDevice(vDevBasic);
+    }
 
     // Iterate zway.devices and emit xAdded events
     Object.keys(zway.devices).forEach(function (deviceId) {
