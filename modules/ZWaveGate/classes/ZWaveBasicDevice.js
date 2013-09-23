@@ -27,7 +27,7 @@ inherits(ZWaveBasicDevice, ZWaveDevice);
 
 ZWaveBasicDevice.prototype.onUpdate = function (deviceId, instanceId, commandClassId, subTreeId, value, args) {
 	if (deviceId != this.zDeviceId || commandClassId != 32) return;
-	console.log("--- Basic update", instanceId, value);
+	this.controller.emit("zway.basic", instanceId, value);
 }
 
 ZWaveBasicDevice.prototype.bindToDatapoints = function () {
