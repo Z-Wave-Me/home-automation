@@ -1,0 +1,9 @@
+{
+    "autoload": false,
+    "singleton": false,
+    "defaults": {
+	"map": []
+    },
+    "actions": {},
+    "metrics": {}
+}
