@@ -3,7 +3,7 @@
     "singleton": true,
     "defaults": {
         "createDevices": true,
-        "basicsEnabled": false
+        "basicsEnabled": true
     },
     "actions": {
         "set": {},

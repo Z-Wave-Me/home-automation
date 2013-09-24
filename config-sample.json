@@ -16,9 +16,7 @@
             },
             "ZWave" : {
                 "module": "ZWaveGate",
-                "config": {
-                    "basicsEnabled": true
-                }
+                "config": {}
             },
             "BasicReactor": {
                 "module": "BasicReactions",
