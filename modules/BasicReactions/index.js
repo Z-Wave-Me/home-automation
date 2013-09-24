@@ -60,6 +60,13 @@ BasicReactions.prototype.onBasic = function (channel, level) {
 	workingMaps.forEach(function (item) {
 		Object.keys(item.reactions).forEach(function (reactionType) {
 			var reaction = item.reactions[reactionType];
+
+			if (!has_key(self.controller.devices, reaction.vDev)) {
+				console.error("Error: Unknown vDev ID ["+reaction.vDev+"]");
+				self.controller.emit('core.error', "Unknown vDev ID ["+reaction.vDev+"]");
+				return;
+			}
+
 			var device = self.controller.devices[reaction.vDev];
 
 			if ("tempOn" === reactionType) {
