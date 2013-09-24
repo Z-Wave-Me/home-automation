@@ -1,3 +1,12 @@
+/*** Z-Way HA Virtual Device base class ***************************************
+
+Version: 1.0.0
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
+
 VirtualDevice = function (id, controller) {
     this.id = id;
     this.controller = controller;

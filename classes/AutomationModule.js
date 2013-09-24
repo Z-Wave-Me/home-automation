@@ -1,3 +1,12 @@
+/*** Z-Way HA Automation module base class ************************************
+
+Version: 1.0.0
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Copyright: (c) ZWave.Me, 2013
+
+******************************************************************************/
+
 AutomationModule = function (id, controller) {
     var self = this;
 
