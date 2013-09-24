@@ -1,12 +1,10 @@
-/******************************************************************************
+/*** EventLog Z-Way Home Automation module ************************************
 
- EventLog Z-Way Home Automation module
- Version: 1.0.0
- (c) ZWave.Me, 2013
-
- -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me>
- Description:
+Version: 1.0.0
+(c) ZWave.Me, 2013
+-------------------------------------------------------------------------------
+Author: Gregory Sitnin <sitnin@z-wave.me>
+Description: Creates and manages system event bus
 
 ******************************************************************************/
 

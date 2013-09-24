@@ -10,11 +10,11 @@
             "BasicReactions"
         ],
         "instances": {
-            "EventLog" : {
+            "EventLog": {
                 "module": "EventLog",
                 "config": {}
             },
-            "ZWave" : {
+            "ZWave": {
                 "module": "ZWaveGate",
                 "config": {}
             },

@@ -1,30 +1,31 @@
-/******************************************************************************
+/*** Cron ZAutomation module **************************************************
 
- Cron ZAutomation module
- Version: 1.0.0
- (c) ZWave.Me, 2013
+Version: 1.0.0
+(c) ZWave.Me, 2013
+-------------------------------------------------------------------------------
+Authors:
+   Serguei Poltorak <ps@z-wave.me>
+   Gregory Sitnin <sitnin@z-wave.me>
 
- -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me> and Serguei Poltorak <ps@z-wave.me>
- Description:
-     This modules impements Unix cron like scheduler.
+Description:
+   This modules impements Unix cron like scheduler.
 
- Emits:
-   - [any event asked by other modules]
- 
- Listens:
-   - cron.addTask
-     - String: emitted event name
-     - Object: task schedule
-       - Mixed (null = any; [from, to, divider]; Number = exact): minute
-       - Mixed: hour
-       - Mixed: weekDay
-       - Mixed: day
-       - Mixed: month
-     - Mixed (null; Array): eventArguments
-   - cron.removeTask
-     - String: emitted event name to be removed
- 
+Emits:
+  - [any event asked by other modules]
+
+Listens:
+  - cron.addTask
+    - String: emitted event name
+    - Object: task schedule
+      - Mixed (null = any; [from, to, divider]; Number = exact): minute
+      - Mixed: hour
+      - Mixed: weekDay
+      - Mixed: day
+      - Mixed: month
+    - Mixed (null; Array): eventArguments
+  - cron.removeTask
+    - String: emitted event name to be removed
+
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -92,18 +93,18 @@ Cron.prototype.init = function (config) {
       }
       self.schedules[eventName].push([self.renderSchedule(schedule), eventArgs]);
     });
-    
+
     this.controller.on('cron.removeTask', function (eventName) {
       delete self.schedules[eventName];
     });
-    
+
     this.timer = setInterval(function () {
         var date = new Date();
         var timestamp = Math.floor(date.getTime() / 1000);
-        
+
         if (self.lastFired === timestamp)
             return; // this minute is already handled
-            
+
         self.lastFired = timestamp;
         var curTime = {
             minute: date.getMinutes(),
@@ -112,13 +113,13 @@ Cron.prototype.init = function (config) {
             weekDay: date.getDay(), // NOTE! Sunday is 0. Handle this in the UI!!!! !@#%^&
             month: date.getMonth()
         };
-        
+
         Object.keys(self.schedules).forEach(function (eventName) {
             var schedules_arr = self.schedules[eventName];
-            
+
             schedules_arr.forEach(function (schedule_pair) {
                 var flag = true;
-                
+
                 var keys = ["minute", "hour", "day", "weekDay", "month"];
                 for (var k = 0; k < keys.length; k++) {
                     if (-1 === schedule_pair[0][keys[k]].indexOf(curTime[keys[k]])) {
@@ -126,7 +127,7 @@ Cron.prototype.init = function (config) {
                         break;
                     }
                 }
-                
+
                 if (flag) {
                     self.controller.emit.apply(self.controller, [eventName].concat(schedule_pair[1]));
                 }
@@ -141,7 +142,7 @@ Cron.prototype.init = function (config) {
 
 Cron.prototype.renderTimeRange = function (range, bounds, shift) {
     var r = [], f, t, s;
-    
+
     if (range === null) {
         f = bounds.from;
         t = bounds.to;
@@ -163,22 +164,22 @@ Cron.prototype.renderTimeRange = function (range, bounds, shift) {
         t = range[1] - shift;
         s = range[2];
     }
-    
+
     for (var n = f; n <= t; n+=s) {
         r.push(n);
     }
-    
+
     return r;
 };
 
 Cron.prototype.renderSchedule = function (schedule) {
     var renderedSchedule = {};
-    
+
     var self = this;
-    
+
     ["minute", "hour", "day", "weekDay", "month"].forEach(function(key) {
         renderedSchedule[key] = self.renderTimeRange(schedule[key], self.bounds[key], self.shift[key]);
     });
-    
+
     return renderedSchedule;
 };

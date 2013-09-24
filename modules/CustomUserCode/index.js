@@ -1,13 +1,12 @@
-/******************************************************************************
+/*** CustomUserCode ZAutomation module ****************************************
 
- CustomUserCode ZAutomation module
- Version: 1.0.0
- (c) ZWave.Me, 2013
+Version: 1.0.0
+(c) ZWave.Me, 2013
 
- -----------------------------------------------------------------------------
- Author: Poltorak Serguei <ps@z-wave.me>
- Description:
-     This module executes custom JS code listed in configuration parameters.
+-------------------------------------------------------------------------------
+Author: Poltorak Serguei <ps@z-wave.me>
+Description:
+    This module executes custom JS code listed in configuration parameters.
 
 ******************************************************************************/
 
@@ -31,7 +30,7 @@ _module = CustomUserCode;
 CustomUserCode.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     CustomUserCode.super_.prototype.init.call(this, config);
-        
+
     this.config.customCodeFiles.forEach(function (file) {
       var stat = fs.stat(file);
       if (stat && stat.type == "file") {
@@ -40,7 +39,7 @@ CustomUserCode.prototype.init = function (config) {
         console.log("File " + file + " not found");
       }
     });
-    
+
 };
 
 // ----------------------------------------------------------------------------
