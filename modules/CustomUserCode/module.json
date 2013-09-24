@@ -1,0 +1,9 @@
+{
+    "autoload": true,
+    "singleton": true,
+    "defaults": {
+	"customCodeFiles": [ ]
+    },
+    "actions": {},
+    "metrics": {}
+}

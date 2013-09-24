@@ -1,0 +1,19 @@
+.smallWidget {
+	height: 10em;
+	margin-bottom: 5em;
+}
+
+.smallWidget h1 {
+    font-size: 155%;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.refreshButton {
+    margin-top: 0.8em;
+}
+
+.vDevId {
+	font-size: 75%;
+	color: gray;
+}
