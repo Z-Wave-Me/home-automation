@@ -1,23 +1,6 @@
 {
     "controller": {
-        "modules": [
-            "EventLog",
-            "ZWaveGate",
-            "Cron",
-            "BatteryPolling",
-            "AutoOff",
-            "CustomUserCode",
-            "BasicReactions"
-        ],
         "instances": {
-            "EventLog": {
-                "module": "EventLog",
-                "config": {}
-            },
-            "ZWave": {
-                "module": "ZWaveGate",
-                "config": {}
-            },
             "BasicReactor": {
                 "module": "BasicReactions",
                 "config": {
