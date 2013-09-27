@@ -16,6 +16,7 @@ ZWaveBasicDevice = function (id, controller) {
     this.deviceType = "system";
     this.zDeviceId = zway.controller.data.nodeId.value;
     this.zCommandClassId = 32;
+    this.caps = ["zway", "zwayVirtual"];
 
 	var self = this;
     this.controller.on('zway.dataUpdate', function () {
