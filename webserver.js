@@ -174,8 +174,12 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
 ZAutomationAPIWebRequest.prototype.listWidgets = function () {
     var reply = {
         error: null,
-        data: controller.widgets
+        data: []
     }
+
+    Object.keys(controller.widgets).forEach(function (id) {
+        reply.data.push(controller.widgets[id]);
+    });
 
     this.res.status = 200;
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
