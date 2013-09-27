@@ -3,7 +3,5 @@
     "singleton": false,
     "defaults": {
         "timeout": 5
-    },
-    "actions": {},
-    "metrics": {}
+    }
 }

@@ -3,11 +3,5 @@
     "singleton": true,
     "defaults": {
     	"debug": false
-	},
-    "actions": {
-        "expose": {},
-        "hide": {},
-        "post": {}
-    },
-    "metrics": {}
+	}
 }
