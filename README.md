@@ -9,4 +9,4 @@ Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home
 ## Precompiling client-side templates
 
     $ cd /path/to/automationFolder
-    $ nunjucks-precompile ./templates/ > ./htdocs/js/_templates.js
+    $ nunjucks-precompile ./templates/ > ./htdocs/_templates.js

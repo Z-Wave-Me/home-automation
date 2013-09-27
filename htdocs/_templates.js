@@ -1,28 +1,12 @@
 (function() {
 var templates = {};
-templates["modules/BatteryPolling/batteryStatusWidget.html"] = (function() {
+templates["CommonWidgets/fan.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
 var colno = null;
 var output = "";
 try {
-return output;
-} catch (e) {
-  runtime.handleError(e, lineno, colno);
-}
-}
-return {
-root: root
-};
-
-})();
-templates["widgets/fan.html"] = (function() {
-function root(env, context, frame, runtime) {
-var lineno = null;
-var colno = null;
-var output = "";
-try {
-var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
 for(var t_1 in parentTemplate.blocks) {
 context.addBlock(t_1, parentTemplate.blocks[t_1]);
 }
@@ -88,13 +72,13 @@ root: root
 };
 
 })();
-templates["widgets/multilevel.html"] = (function() {
+templates["CommonWidgets/multilevel.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
 var colno = null;
 var output = "";
 try {
-var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
 for(var t_1 in parentTemplate.blocks) {
 context.addBlock(t_1, parentTemplate.blocks[t_1]);
 }
@@ -163,13 +147,13 @@ root: root
 };
 
 })();
-templates["widgets/probe.html"] = (function() {
+templates["CommonWidgets/probe.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
 var colno = null;
 var output = "";
 try {
-var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
 for(var t_1 in parentTemplate.blocks) {
 context.addBlock(t_1, parentTemplate.blocks[t_1]);
 }
@@ -204,13 +188,13 @@ root: root
 };
 
 })();
-templates["widgets/sensor.html"] = (function() {
+templates["CommonWidgets/sensor.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
 var colno = null;
 var output = "";
 try {
-var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
 for(var t_1 in parentTemplate.blocks) {
 context.addBlock(t_1, parentTemplate.blocks[t_1]);
 }
@@ -248,48 +232,13 @@ root: root
 };
 
 })();
-templates["widgets/smallWidget.html"] = (function() {
+templates["CommonWidgets/switch.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
 var colno = null;
 var output = "";
 try {
-output += "<div class=\"span4 smallWidget\">\n    <div class=\"well\" style=\"height: 100%\">\n        <div class=\"pull-right\"><a href=\"#\" class=\"widgetCommandButton btn btn-mini refreshButton\" data-vdev=\"";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
-output += "\" data-command=\"update\"><i class=\"icon-refresh\"></i></a></div>\n\t    <div class=\"vDevId\">vDev ID: <b>";
-output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
-output += "</b></div>\n        ";
-output += context.getBlock("content")(env, context, frame, runtime);
-output += "\n    </div>\n</div>\n";
-return output;
-} catch (e) {
-  runtime.handleError(e, lineno, colno);
-}
-}
-function b_content(env, context, frame, runtime) {
-var lineno = null;
-var colno = null;
-var output = "";
-try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
-return output;
-} catch (e) {
-  runtime.handleError(e, lineno, colno);
-}
-}
-return {
-b_content: b_content,
-root: root
-};
-
-})();
-templates["widgets/switch.html"] = (function() {
-function root(env, context, frame, runtime) {
-var lineno = null;
-var colno = null;
-var output = "";
-try {
-var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
 for(var t_1 in parentTemplate.blocks) {
 context.addBlock(t_1, parentTemplate.blocks[t_1]);
 }
@@ -333,13 +282,13 @@ root: root
 };
 
 })();
-templates["widgets/thermostat.html"] = (function() {
+templates["CommonWidgets/thermostat.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
 var colno = null;
 var output = "";
 try {
-var parentTemplate = env.getTemplate("widgets/smallWidget.html", true);
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
 for(var t_1 in parentTemplate.blocks) {
 context.addBlock(t_1, parentTemplate.blocks[t_1]);
 }
@@ -409,6 +358,41 @@ output += "</option>\n\t    ";
 output += "\n    </select></div>\n    ";
 }
 output += "\n";
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+})();
+templates["shared/smallWidget.html"] = (function() {
+function root(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+output += "<div class=\"span4 smallWidget\">\n    <div class=\"well\" style=\"height: 100%\">\n        <div class=\"pull-right\"><a href=\"#\" class=\"widgetCommandButton btn btn-mini refreshButton\" data-vdev=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "\" data-command=\"update\"><i class=\"icon-refresh\"></i></a></div>\n\t    <div class=\"vDevId\">vDev ID: <b>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "</b></div>\n        ";
+output += context.getBlock("content")(env, context, frame, runtime);
+output += "\n    </div>\n</div>\n";
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+function b_content(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
 return output;
 } catch (e) {
   runtime.handleError(e, lineno, colno);

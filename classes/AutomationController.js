@@ -31,18 +31,9 @@ function wrap (self, func) {
 AutomationController.prototype.init = function () {
     var self = this;
 
-    // this.on('core.registerInstance', wrap(this, this.registerInstance));
-    // this.on('core.registerAction', wrap(this, this.registerAction));
-    // this.on('core.removeInstance', wrap(this, this.removeInstance));
     this.on('core.listInstances', wrap(this, this.listInstances));
-
-    // this.on('core.registerDevice', wrap(this, this.registerDevice));
-    // this.on('core.removeDevice', wrap(this, this.removeDevice));
     this.on('core.listDevices', wrap(this, this.listDevices));
-
-    // this.on('core.registerWidget', wrap(this, this.registerWidget));
-    // this.on('core.removeWidget', wrap(this, this.removeWidget));
-    // this.on('core.listWidgets', wrap(this, this.ristWidgets));
+    this.on('core.listWidgets', wrap(this, this.ristWidgets));
 
     this.loadModules(function () {
         self.instantiateModules();
@@ -59,6 +50,7 @@ AutomationController.prototype.stop = function () {
 };
 
 AutomationController.prototype.loadModules = function (callback) {
+    console.log("--- Loading ZAutomation classes");
     var self = this;
 
     fs.list("modules/").forEach(function (moduleClassName) {
@@ -114,6 +106,8 @@ AutomationController.prototype.loadModules = function (callback) {
 };
 
 AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, config) {
+    console.log("Instantiating module", instanceId, "from class", instanceClass);
+
     var self = this;
     var moduleClass = self.modules[instanceClass];
 
@@ -136,16 +130,15 @@ AutomationController.prototype.instantiateModule = function (instanceId, instanc
 AutomationController.prototype.instantiateModules = function () {
     var self = this;
 
+    console.log("--- Automatic modules instantiation");
     this._autoLoadModules.forEach(function (moduleClassName) {
-        console.log("--- Auto-instantiating module", moduleClassName, "from class", moduleClassName);
         self.instantiateModule(moduleClassName, moduleClassName);
     });
 
+    console.log("--- User configured modules instantiation");
     if (this.config.hasOwnProperty('instances')) {
         Object.keys(this.config.instances).forEach(function (instanceId) {
             var instanceDefs = self.config.instances[instanceId];
-            console.log("--- Instantiating module", instanceId, "from class", instanceDefs.module);
-
             self.instantiateModule(instanceId, instanceDefs.module, instanceDefs.config);
         });
     }
@@ -232,28 +225,27 @@ AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
 }
 
-// AutomationController.prototype.registerWidget = function (widget) {
-//     this.widgets[widget.id] = widget;
+AutomationController.prototype.registerWidget = function (widget) {
+    this.widgets[widget.id] = widget;
+    this.emit('core.widgetRegistered', widget.id);
+};
 
-//     this.emit('core.widgetRegistered', widget.id);
-// };
+AutomationController.prototype.removeWidget = function (id) {
+    delete this.widget[id];
 
-// AutomationController.prototype.removeWidget = function (id) {
-//     delete this.widget[id];
+    this.emit('core.widgetRemoved', id);
+};
 
-//     this.emit('core.widgetRemoved', id);
-// };
+AutomationController.prototype.listWidgets = function () {
+    var res = {};
 
-// AutomationController.prototype.listWidgets = function () {
-//     var res = {};
+    Object.keys(this.widgets).forEach(function (widgetId) {
+        res[widgetId] = {
+            widgetType: "unknown"
+        }
+    });
 
-//     Object.keys(this.widgets).forEach(function (widgetId) {
-//         res[widgetId] = {
-//             widgetType: "unknown"
-//         }
-//     });
+    this.emit('core.widgetsList', res);
 
-//     this.emit('core.widgetsList', res);
-
-//     return res;
-// }
+    return res;
+}

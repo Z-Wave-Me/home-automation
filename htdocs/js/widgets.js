@@ -11,7 +11,6 @@ function AbstractWidget (parentElement, device) {
 
     var self = this;
     events.on('device.metricUpdated', function (deviceId, name, value) {
-        // console.log("--- device.metricUpdated", deviceId, name, value);
         if (self.device.id === deviceId) {
             if ("level" === name) {
                 self.setValue(value);
@@ -57,194 +56,96 @@ AbstractWidget.prototype.performCommand = function (command, args) {
 }
 
 // ----------------------------------------------------------------------------
-// --- Switch widget
-// ----------------------------------------------------------------------------
-// states: on, off
+// --- Shared Widgets UI handlers
 // ----------------------------------------------------------------------------
 
-function SwitchWidget (parentElement, device) {
-    SwitchWidget.super_.apply(this, arguments);
+function handleWidgetCommand (event) {
+    event.preventDefault();
+    console.log($(this));
 
-    this.widgetTitle = "Switch";
+    var device = $(this).data("vdev");
+    var commandId = $(this).data("command");
+    var widget = widgetByDeviceId(device);
 
-    this.value = this.device.metrics.level;
-}
-
-inherits(SwitchWidget, AbstractWidget);
-
-SwitchWidget.prototype.updateWidgetUI = function () {
-    // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + (255 === this.value ? "On" : "Off") + "</div>";
-    this.elem.innerHTML = nunjucks.env.render("widgets/switch.html", {
-        vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
-        metricValue: this.value
-    });
-}
-
-// ----------------------------------------------------------------------------
-// --- Multilevel widget
-// ----------------------------------------------------------------------------
-// states: 0-99 %
-// ----------------------------------------------------------------------------
-
-function MultilevelWidget (parentElement, deviceId) {
-    MultilevelWidget.super_.apply(this, arguments);
-
-    this.widgetTitle = "Dimmer";
-}
-
-inherits(MultilevelWidget, AbstractWidget);
-
-MultilevelWidget.prototype.updateWidgetUI = function () {
-    var valueString="";
-
-    if (this.value >= 99) {
-        valueString = "Full"
-    } else if (0 === this.value) {
-        valueString = "Off"
+    if (!!widget) {
+        console.log("Widget command triggered", device, commandId);
+        widget.performCommand(commandId);
     } else {
-        valueString = Math.round(this.value) + "%";
+        console.log("ERROR", "Cannot find widget for vDev", device);
     }
+}
 
-    // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + valueString + "</div>";
-    this.elem.innerHTML = nunjucks.env.render("widgets/multilevel.html", {
-        vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
-        metricValue: this.value
-    });
+function handleWidgetModeChangeCommand (event) {
+    event.preventDefault();
+    console.log($(this));
+
+    var device = $(this).data("vdev");
+    var commandId = $(this).data("command");
+    var modeId = $(this).val();
+    var widget = widgetByDeviceId(device);
+
+
+    if (!!widget) {
+        console.log("Widget command triggered", device, commandId, modeId);
+        widget.performCommand(commandId, {
+            mode: modeId
+        });
+    } else {
+        console.log("ERROR", "Cannot find widget for vDev", device);
+    }
+}
+
+function handleWidgetModeTargetChangeCommand (event) {
+    event.preventDefault();
+    console.log($(this));
+
+    var device = $(this).data("vdev");
+    var commandId = $(this).data("command");
+    var target = $(this).val();
+    var widget = widgetByDeviceId(device);
+
+
+    if (!!widget) {
+        console.log("Widget command triggered", device, commandId, target);
+        widget.performCommand(commandId, {
+            target: target
+        });
+    } else {
+        console.log("ERROR", "Cannot find widget for vDev", device);
+    }
 }
 
 // ----------------------------------------------------------------------------
-// --- Probe widget
-// ----------------------------------------------------------------------------
-// scales:
+// --- Additional routines
 // ----------------------------------------------------------------------------
 
-function ProbeWidget (parentElement, deviceId) {
-    ProbeWidget.super_.apply(this, arguments);
-
-    this.widgetTitle = this.device.metrics.probeTitle;
-
-    this.value = Math.floor(this.device.metrics.level * 10) / 10;
-}
-
-inherits(ProbeWidget, AbstractWidget);
-
-ProbeWidget.prototype.setValue = function (value, callback) {
-    this.value = Math.floor(value * 10) / 10;
-    this.updateWidgetUI();
-    if (callback) callback(value);
-}
-
-ProbeWidget.prototype.updateWidgetUI = function () {
-    // this.elem.innerHTML = "<div class=well>" + this.widgetTitle + ": " + this.value + " " + this.device.metrics.scaleTitle  + "</div>";
-    this.elem.innerHTML = nunjucks.env.render("widgets/probe.html", {
-        vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
-        scaleTitle: this.device.metrics.scaleTitle,
-        metricValue: this.value
-    });
-}
-
-// ----------------------------------------------------------------------------
-// --- Sensor widget
-// ----------------------------------------------------------------------------
-// scales:
-// ----------------------------------------------------------------------------
-
-function SensorWidget (parentElement, deviceId) {
-    SensorWidget.super_.apply(this, arguments);
-
-    this.widgetTitle = this.device.metrics.probeTitle;
-
-    this.value = Math.floor(this.device.metrics.level * 10) / 10;
-}
-
-inherits(SensorWidget, AbstractWidget);
-
-SensorWidget.prototype.setValue = function (value, callback) {
-    this.value = !!value;
-    this.updateWidgetUI();
-    if (callback) callback(value);
-}
-
-SensorWidget.prototype.updateWidgetUI = function () {
-    this.elem.innerHTML = nunjucks.env.render("widgets/sensor.html", {
-        vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
-        metricValue: this.value
-    });
-}
-
-// ----------------------------------------------------------------------------
-// --- Fan widget
-// ----------------------------------------------------------------------------
-// scales:
-// ----------------------------------------------------------------------------
-
-function FanWidget (parentElement, deviceId) {
-    FanWidget.super_.apply(this, arguments);
-
-    this.widgetTitle = this.device.metrics.probeTitle;
-
-    this.value = Math.floor(this.device.metrics.level * 10) / 10;
-}
-
-inherits(FanWidget, AbstractWidget);
-
-FanWidget.prototype.updateWidgetUI = function () {
-    var self = this;
-    var modesArray = [];
-    Object.keys(this.metrics.modes).forEach(function (key) {
-        modesArray.push(self.metrics.modes[key]);
+function widgetByDeviceId (deviceId) {
+    var search = dashboardWidgets.filter(function (item) {
+        return item.device.id === deviceId;
     });
 
-    this.elem.innerHTML = nunjucks.env.render("widgets/fan.html", {
-        vDev: this.device.id,
-        modes: modesArray,
-        currentMode: this.metrics.currentMode,
-        state: this.metrics.state
-    });
+    return 1 === search.length ? search[0] : null;
 }
 
 // ----------------------------------------------------------------------------
-// --- Thermostat widget
-// ----------------------------------------------------------------------------
-// scales:
+// --- Registered widgets loader
 // ----------------------------------------------------------------------------
 
-function ThermostatWidget (parentElement, deviceId) {
-    FanWidget.super_.apply(this, arguments);
+$(document).ready(function () {
+    // Event handlers
+    $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
+    $(document).on('change', '.widgetModeSelector', handleWidgetModeChangeCommand);
+    $(document).on('change', '.widgetModeTargetSelector', handleWidgetModeTargetChangeCommand);
 
-    this.widgetTitle = this.device.metrics.probeTitle;
+    apiRequest("/widgets/", function (err, data) {
+        if (!!err) {
+            console.log("Cannot load widgets list:", err.message);
+        } else {
+            data.forEach(function (meta) {
+                $.getScript("modules/"+meta.code);
+            });
 
-    this.value = Math.floor(this.device.metrics.level * 10) / 10;
-}
-
-inherits(ThermostatWidget, AbstractWidget);
-
-ThermostatWidget.prototype.currentModeIndex = function () {
-    for (var index in this.metrics.modes) {
-        if (this.metrics.modes[index].id == this.metrics.currentMode) {
-            return index;
+            events.emit("widgetClassesLoaded");
         }
-    }
-
-    return null;
-}
-
-ThermostatWidget.prototype.updateWidgetUI = function () {
-    var self = this;
-    var _pT = [];
-    for (var i=5; i<35; i++) _pT.push(i);
-
-    this.elem.innerHTML = nunjucks.env.render("widgets/thermostat.html", {
-        vDev: this.device.id,
-        modes: this.metrics["modes"],
-        currentMode: this.metrics.currentMode,
-        currentModeIndex: this.currentModeIndex(),
-        level: this.metrics["level"],
-        scaleTitle: this.metrics["scaleTitle"],
-        possibleTargets: _pT
     });
-}
+});

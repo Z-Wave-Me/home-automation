@@ -2,14 +2,11 @@
 // --- Dashboard widgets handling routines
 // ----------------------------------------------------------------------------
 
+var virtualDevices = [];
 var dashboardWidgets = [];
 
 function createVirtualDevicesWidgets () {
     console.log("--- Devices list", virtualDevices);
-
-    // if (virtualDevices.length > 0) {
-    //     $("#mainContainer").html("");
-    // }
 
     virtualDevices.forEach(function (vDev) {
         var widget;
@@ -49,93 +46,20 @@ function createVirtualDevicesWidgets () {
     });
 }
 
-function widgetByDeviceId (deviceId) {
-    var search = dashboardWidgets.filter(function (item) {
-        return item.device.id === deviceId;
-    });
-
-    return 1 === search.length ? search[0] : null;
-}
-
-// ----------------------------------------------------------------------------
-// --- Virtual devices handling routines
-// ----------------------------------------------------------------------------
-
-var virtualDevices = [];
-
-function handleWidgetCommand (event) {
-    event.preventDefault();
-    console.log($(this));
-
-    var device = $(this).data("vdev");
-    var commandId = $(this).data("command");
-    var widget = widgetByDeviceId(device);
-
-    if (!!widget) {
-        console.log("Widget command triggered", device, commandId);
-        widget.performCommand(commandId);
-    } else {
-        console.log("ERROR", "Cannot find widget for vDev", device);
-    }
-}
-
-function handleWidgetModeChangeCommand (event) {
-    event.preventDefault();
-    console.log($(this));
-
-    var device = $(this).data("vdev");
-    var commandId = $(this).data("command");
-    var modeId = $(this).val();
-    var widget = widgetByDeviceId(device);
-
-
-    if (!!widget) {
-        console.log("Widget command triggered", device, commandId, modeId);
-        widget.performCommand(commandId, {
-            mode: modeId
-        });
-    } else {
-        console.log("ERROR", "Cannot find widget for vDev", device);
-    }
-}
-
-function handleWidgetModeTargetChangeCommand (event) {
-    event.preventDefault();
-    console.log($(this));
-
-    var device = $(this).data("vdev");
-    var commandId = $(this).data("command");
-    var target = $(this).val();
-    var widget = widgetByDeviceId(device);
-
-
-    if (!!widget) {
-        console.log("Widget command triggered", device, commandId, target);
-        widget.performCommand(commandId, {
-            target: target
-        });
-    } else {
-        console.log("ERROR", "Cannot find widget for vDev", device);
-    }
-}
-
 // ----------------------------------------------------------------------------
 // --- main
 // ----------------------------------------------------------------------------
 
 $(document).ready(function () {
-    // Event handlers
-    $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
-    $(document).on('change', '.widgetModeSelector', handleWidgetModeChangeCommand);
-    $(document).on('change', '.widgetModeTargetSelector', handleWidgetModeTargetChangeCommand);
-
-    // Load and instantiate widgets
-    apiRequest("/devices/", function (err, data) {
-        if (!!err) {
-            console.log("Cannot create vDev widgets:", err.message);
-        } else {
-            virtualDevices = data;
-            createVirtualDevicesWidgets();
-        }
+    events.on("widgetClassesLoaded", function () {
+        // Load and instantiate widgets
+        apiRequest("/devices/", function (err, data) {
+            if (!!err) {
+                console.log("Cannot create vDev widgets:", err.message);
+            } else {
+                virtualDevices = data;
+                createVirtualDevicesWidgets();
+            }
+        });
     });
 });
