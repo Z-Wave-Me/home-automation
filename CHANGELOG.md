@@ -10,6 +10,8 @@
 
 * Introduced `caps` property to the Virtual Device which allows to list device capabilities.
 
+* Widgets moved to the new CommonWidgets module. Creation and registering custom widgets made possible.
+
 # Release 1.0.0
 
 (initial)
