@@ -16,6 +16,8 @@ function AutomationController (config) {
     this.instances = {};
     this.devices = {};
     this.widgets = {};
+    this._autoLoadModules = [];
+    this._loadedSingletons = [];
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -59,9 +61,29 @@ AutomationController.prototype.stop = function () {
 AutomationController.prototype.loadModules = function (callback) {
     var self = this;
 
-    this.config.modules.forEach(function (moduleClassName) {
-        // Load module class
+    fs.list("modules/").forEach(function (moduleClassName) {
+        var moduleMetaFilename = "modules/" + moduleClassName + "/module.json";
+        var _st = fs.stat(moduleMetaFilename);
+        if ("file" !== _st.type || 2 > _st.size) {
+            console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
+            return;
+        }
+
+        var moduleMeta = loadJSON(moduleMetaFilename);
+        if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
+
+        if (moduleMeta.hasOwnProperty("autoload") && !!moduleMeta["autoload"]) {
+            var _priority = moduleMeta.hasOwnProperty("autoloadPriority") ? moduleMeta["autoloadPriority"] : 1000;
+            self._autoLoadModules.push([_priority, moduleClassName]);
+        }
+
         var moduleFilename = "modules/" + moduleClassName + "/index.js";
+        _st = fs.stat(moduleFilename);
+        if ("file" !== _st.type || 2 > _st.size) {
+            console.log("ERROR: Cannot stat module", moduleFilename);
+            return;
+        }
+
         console.log("Loading module " + moduleClassName + " from " + moduleFilename);
         executeFile(moduleFilename);
 
@@ -75,21 +97,56 @@ AutomationController.prototype.loadModules = function (callback) {
         _module = undefined;
     });
 
+    // Sort and clarify automatically loaded modules list
+    this._autoLoadModules = this._autoLoadModules.sort(function (a, b) {
+        if (a[0] < b[0]) {
+            return -1;
+        } else if (a[0] > b[0]) {
+            return 1;
+        }
+
+        return 0;
+    }).map(function (item) {
+        return item[1];
+    });
+
     if (callback) callback();
+};
+
+AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, config) {
+    var self = this;
+    var moduleClass = self.modules[instanceClass];
+
+    var instance = new moduleClass(instanceId, self);
+    instance.getMeta();
+
+    if (instance.meta["singleton"]) {
+        if (in_array(this._loadedSingletons, instanceClass)) {
+            console.log("WARNING: Module", instanceId, "is a singleton and already has been instantiated. Skipping.");
+            return;
+        }
+
+        this._loadedSingletons.push(instanceClass);
+    }
+
+    instance.init(config || {});
+    self.registerInstance(instance);
 };
 
 AutomationController.prototype.instantiateModules = function () {
     var self = this;
+
+    this._autoLoadModules.forEach(function (moduleClassName) {
+        console.log("--- Auto-instantiating module", moduleClassName, "from class", moduleClassName);
+        self.instantiateModule(moduleClassName, moduleClassName);
+    });
+
     if (this.config.hasOwnProperty('instances')) {
         Object.keys(this.config.instances).forEach(function (instanceId) {
             var instanceDefs = self.config.instances[instanceId];
             console.log("--- Instantiating module", instanceId, "from class", instanceDefs.module);
 
-            var moduleClass = self.modules[instanceDefs.module];
-            var instance = new moduleClass(instanceId, self);
-            instance.init(instanceDefs.config);
-
-            self.registerInstance(instance);
+            self.instantiateModule(instanceId, instanceDefs.module, instanceDefs.config);
         });
     }
 };

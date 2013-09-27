@@ -22,6 +22,7 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = null;
     this.deviceSubType = null;
+    this.caps = ["zway", "zwayDirect"];
 }
 
 inherits(ZWaveDevice, VirtualDevice);

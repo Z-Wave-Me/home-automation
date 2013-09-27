@@ -63,10 +63,8 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
 
     // Log request reply
     var bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
-    console.log("[" + now.toISOString() + "]", request.method, url, this.res.status, bodyLength);
 
     // Return to the z-way-http
-    // console.log("REPLY", JSON.stringify(this.res, null, "  "));
     return this.res;
 }
 
@@ -103,33 +101,28 @@ function ZAutomationAPIWebRequest () {
 inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
 ZAutomationAPIWebRequest.prototype.listDevices = function () {
-    console.log("--- ZAutomationAPIWebRequest.listDevices");
-
     var reply = {
         error: null,
         data: []
     }
 
-    // console.log("--- CTRL VDEVS LIST", Object.keys(controller.devices));
     Object.keys(controller.devices).forEach(function (vDevId) {
         var vDev = controller.devices[vDevId];
         reply.data.push({
             id: vDevId,
             deviceType: vDev.deviceType,
             deviceSubType: vDev.deviceSubType,
-            metrics: vDev.metrics
+            metrics: vDev.metrics,
+            caps: vDev.caps
         });
     });
 
     this.res.status = 200;
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
-    // console.log("REPLY", this.res.body);
 };
 
 ZAutomationAPIWebRequest.prototype.exposeEvents = function () {
-    console.log("--- ZAutomationAPIWebRequest.exposeEvents");
-
     var nowTS = Math.floor(new Date().getTime() / 1000);
 
     var reply = {};
@@ -167,8 +160,6 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
     var self = this;
 
     return function () {
-        console.log("--- !!!", JSON.stringify(this));
-
         var reply = {
             error: null,
             data: !!controller.devices[vDevId].performCommand(commandId, self.req.query)
@@ -181,8 +172,6 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
 }
 
 ZAutomationAPIWebRequest.prototype.listWidgets = function () {
-    console.log("--- ZAutomationAPIWebRequest.listWidgets");
-
     var reply = {
         error: null,
         data: controller.widgets
@@ -194,8 +183,6 @@ ZAutomationAPIWebRequest.prototype.listWidgets = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
-    console.log("--- ZAutomationAPIWebRequest.dispatchRequest", method, url);
-
     // Default handler is NotFound
     var handlerFunc = this.NotFound;
 

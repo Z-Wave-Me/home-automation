@@ -4,7 +4,5 @@
     "defaults": {
         "launchWeekDay": 0,
 	"warningLevel": 20
-    },
-    "actions": {},
-    "metrics": {}
+    }
 }

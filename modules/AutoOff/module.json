@@ -1,9 +1,7 @@
 {
-    "autoload": true,
+    "autoload": false,
     "singleton": false,
     "defaults": {
         "timeout": 5
-    },
-    "actions": {},
-    "metrics": {}
+    }
 }

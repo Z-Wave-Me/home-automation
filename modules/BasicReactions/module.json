@@ -3,7 +3,5 @@
     "singleton": false,
     "defaults": {
 		"map": []
-    },
-    "actions": {},
-    "metrics": {}
+    }
 }

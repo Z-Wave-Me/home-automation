@@ -12,6 +12,7 @@ VirtualDevice = function (id, controller) {
     this.controller = controller;
     this.deviceType = null;
     this.metrics = {};
+    this.caps = [];
 };
 
 VirtualDevice.prototype.setMetricValue = function (name, value) {

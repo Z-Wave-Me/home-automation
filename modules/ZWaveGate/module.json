@@ -1,13 +1,9 @@
 {
     "autoload": true,
+    "autoloadPriority": 100,
     "singleton": true,
     "defaults": {
         "createDevices": true,
         "basicsEnabled": true
-    },
-    "actions": {
-        "set": {},
-        "get": {}
-    },
-    "metrics": {}
+    }
 }
