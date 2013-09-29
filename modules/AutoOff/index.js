@@ -57,8 +57,8 @@ AutoOff.prototype.init = function (config) {
     var self = this;
 
     // Setup metric update event listener
-    this.controller.on('metricUpdate.'+this.config.device, function (metric, value) {
-        if ("level" === metric) {
+    this.controller.on('device.metricUpdated', function (deviceId, metric, value) {
+        if (self.config.device === deviceId && "level" === metric) {
             if (self.timer) {
                 // Timer is set, so we destroy it
                 clearTimeout(self.timer);
@@ -69,7 +69,7 @@ AutoOff.prototype.init = function (config) {
                 self.timer = setTimeout(function () {
                     // Timeout fired, so we send "off" command to the virtual device
                     // (every switch device should handle it)
-                    device.performCommand("off");
+                    self.controller.devices[deviceId].performCommand("off");
                     // And clearing out this.timer variable
                     self.timer = null;
                 }, self.config.timeout*1000);
