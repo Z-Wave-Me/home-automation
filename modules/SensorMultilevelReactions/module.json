@@ -1,7 +1,7 @@
 {
     "autoload": false,
-    "singleton": true,
+    "singleton": false,
     "defaults": {
-	"customCodeFiles": [ ]
+		"map": []
     }
 }

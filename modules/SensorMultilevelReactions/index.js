@@ -1,37 +1,30 @@
-/*** BasicReactions HA module *************************************************
+/*** SensorMultilevelReactions HA module *************************************************
 
 Version: 1.0.0
 -------------------------------------------------------------------------------
-Author: Gregory Sitnin <sitnin@z-wave.me>
+Author: Poltorak Serguei <ps@z-wave.me>
 Copyright: (c) Z-Wave.Me, 2013
-Description: Configurable reactions on zway.basic events
+Description: Configurable reactions on sensor multilevel reports events
 
 ******************************************************************************/
 
 /* Config examples:
     "map": [
         {
-            "reaction": "on",
-            "level": 255,
-            "channel": 10
+            "reaction": "on", // valid are "on" or "off"
+            "vDev": "ZWayVDev_16:0:48:1",
+            "min": 30,
+            "max": 70,
             "vDevAction": "ZWayVDev_17:0:37",
-            "timeout": 3
-            }
-        },
-        {
-            "reaction": "off",
-            "level": 255,
-            "channel": 10
-            "vDevAction": "ZWayVDev_17:0:37",
-            "timeout": 0 // in that case no auto-on function will be enabled
-            }
+            "timeout": 3 // if 0, no auto-off/on function will be enabled
         },
         {
             "reaction": "onOff",
-            "channel": 10
+            "vDev": "ZWayVDev_16:0:48:1",
+            "min": 30,
+            "max": 70,
             "vDevAction": "ZWayVDev_17:0:37",
-            "invert": false
-            }
+            "invert": true
         }
     ]
 */
@@ -40,50 +33,51 @@ Description: Configurable reactions on zway.basic events
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function BasicReactions (id, controller) {
+function SensorMultilevelReactions (id, controller) {
     // Call superconstructor first (AutomationModule)
-    BasicReactions.super_.call(this, id, controller);
+    SensorMultilevelReactions.super_.call(this, id, controller);
 
     // Create instance variables
     this.map = [];
     this.activeTimers = {};
 }
 
-inherits(BasicReactions, AutomationModule);
+inherits(SensorMultilevelReactions, AutomationModule);
 
-_module = BasicReactions;
+_module = SensorMultilevelReactions;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-BasicReactions.prototype.init = function (config) {
+SensorMultilevelReactions.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
-    BasicReactions.super_.prototype.init.call(this, config);
+    SensorMultilevelReactions.super_.prototype.init.call(this, config);
 
     this.map = config.map;
 
     var self = this;
-    this.controller.on('zway.basic', function () {
-    	return self.onBasic.apply(self, arguments);
+
+    this.controller.on('device.metricUpdated', function () {
+    	return self.onUpdate.apply(self, arguments);
     });
 
-    console.log("Basic Reactions module enabled with", this.map.length, "reactions");
+    console.log("SensorMultilevel Reactions module enabled with", this.map.length, "reactions");
 };
 
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-BasicReactions.prototype.getReactions = function (channel) {
+SensorMultilevelReactions.prototype.getReactions = function (deviceId) {
 	return this.map.filter(function (item) {
-		return item.channel === channel;
+		return item.vDev === deviceId;
 	});
 }
 
-BasicReactions.prototype.onBasic = function (channel, level) {
+SensorMultilevelReactions.prototype.onUpdate = function (vDev, dataHolder, level) {
 	var self = this;
-	var workingMaps = this.getReactions(channel);
+	var workingMaps = this.getReactions(vDev);
 
 	workingMaps.forEach(function (item) {
                 if (!has_key(self.controller.devices, item.vDevAction)) {
@@ -93,14 +87,16 @@ BasicReactions.prototype.onBasic = function (channel, level) {
                 }
 
                 var device = self.controller.devices[item.vDevAction];
+                
+                var inInterval = level >= item.min && level <= item.max;
 
                 if ("onOff" === item.reaction) {
-                        device.performCommand(((level ? true : false) ^ item.invert) ? "on" : "off");
-                } else if (("on" === item.reaction || "off" === item.reaction) && (item.level ? true : false) === level) {
+                        device.performCommand((inInterval ^ item.invert) ? "on" : "off");
+                } else if (("on" === item.reaction || "off" === item.reaction) && inInterval) {
                         device.performCommand(item.reaction);
                         
                         if (item.timeout) {
-                                var timerId = "BasicReactions:" + vDev + ":" + item.vDevAction;
+                                var timerId = "SensorMultilevelReactions:" + vDev + ":" + item.vDevAction;
 
                                 if (!!self.activeTimers[timerId]) {
                                         clearTimeout(self.activeTimers[timerId]);
@@ -114,7 +110,7 @@ BasicReactions.prototype.onBasic = function (channel, level) {
                                 }, item.timeout * 1000);
                         }
                 } else {
-                        self.controller.emit('core.error', "Unknown Basic reaction type ["+item.reaction+"]");
+                        self.controller.emit('core.error', "Unknown sensor SensorMultilevel raction type ["+item.reaction+"]");
                 }
 	});
 }
