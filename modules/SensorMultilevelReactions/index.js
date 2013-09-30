@@ -1,4 +1,4 @@
-/*** SensorMultilevelReactions HA module *************************************************
+/*** SensorMultilevelReactions HA module **************************************
 
 Version: 1.0.0
 -------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ Description: Configurable reactions on sensor multilevel reports events
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function SensorMultilevelReactions (id, controller) {
+function SensorMultilevelReactions(id, controller) {
     // Call superconstructor first (AutomationModule)
     SensorMultilevelReactions.super_.call(this, id, controller);
 
@@ -50,7 +50,7 @@ _module = SensorMultilevelReactions;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-SensorMultilevelReactions.prototype.init = function (config) {
+SensorMultilevelReactions.prototype.init = function(config) {
     // Call superclass' init (this will process config argument and so on)
     SensorMultilevelReactions.super_.prototype.init.call(this, config);
 
@@ -58,8 +58,8 @@ SensorMultilevelReactions.prototype.init = function (config) {
 
     var self = this;
 
-    this.controller.on('device.metricUpdated', function () {
-    	return self.onUpdate.apply(self, arguments);
+    this.controller.on('device.metricUpdated', function() {
+        return self.onUpdate.apply(self, arguments);
     });
 
     console.log("SensorMultilevel Reactions module enabled with", this.map.length, "reactions");
@@ -69,48 +69,47 @@ SensorMultilevelReactions.prototype.init = function (config) {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-SensorMultilevelReactions.prototype.getReactions = function (deviceId) {
-	return this.map.filter(function (item) {
-		return item.vDev === deviceId;
-	});
-}
+SensorMultilevelReactions.prototype.getReactions = function(deviceId) {
+    return this.map.filter(function(item) {
+        return item.vDev === deviceId;
+    });
+};
 
-SensorMultilevelReactions.prototype.onUpdate = function (vDev, dataHolder, level) {
-	var self = this;
-	var workingMaps = this.getReactions(vDev);
+SensorMultilevelReactions.prototype.onUpdate = function(vDev, dataHolder, level) {
+    var self = this;
+    var workingMaps = this.getReactions(vDev);
 
-	workingMaps.forEach(function (item) {
-                if (!has_key(self.controller.devices, item.vDevAction)) {
-                        console.error("Error: Unknown vDev ID ["+item.vDevAction+"]");
-                        self.controller.emit('core.error', "Unknown vDev ID ["+item.vDevAction+"]");
-                        return;
+    workingMaps.forEach(function(item) {
+        if (!has_key(self.controller.devices, item.vDevAction)) {
+            console.error("Error: Unknown vDev ID [" + item.vDevAction + "]");
+            self.controller.emit('core.error', "Unknown vDev ID [" + item.vDevAction + "]");
+            return;
+        }
+
+        var device = self.controller.devices[item.vDevAction];
+
+        var inInterval = level >= item.min && level <= item.max;
+
+        if ("onOff" === item.reaction) {
+            device.performCommand((inInterval ^ item.invert) ? "on" : "off");
+        } else if (("on" === item.reaction || "off" === item.reaction) && inInterval) {
+            device.performCommand(item.reaction);
+
+            if (item.timeout) {
+                var timerId = "SensorMultilevelReactions:" + vDev + ":" + item.vDevAction;
+
+                if ( !! self.activeTimers[timerId]) {
+                    clearTimeout(self.activeTimers[timerId]);
+                    delete self.activeTimers[timerId];
                 }
 
-                var device = self.controller.devices[item.vDevAction];
-                
-                var inInterval = level >= item.min && level <= item.max;
-
-                if ("onOff" === item.reaction) {
-                        device.performCommand((inInterval ^ item.invert) ? "on" : "off");
-                } else if (("on" === item.reaction || "off" === item.reaction) && inInterval) {
-                        device.performCommand(item.reaction);
-                        
-                        if (item.timeout) {
-                                var timerId = "SensorMultilevelReactions:" + vDev + ":" + item.vDevAction;
-
-                                if (!!self.activeTimers[timerId]) {
-                                        clearTimeout(self.activeTimers[timerId]);
-                                        delete self.activeTimers[timerId];
-                                };
-
-
-                                self.activeTimers[timerId] = setTimeout(function () {
-                                        delete self.activeTimers[timerId];
-                                        device.performCommand(item.reaction === "on" ? "off" : "on");
-                                }, item.timeout * 1000);
-                        }
-                } else {
-                        self.controller.emit('core.error', "Unknown sensor SensorMultilevel raction type ["+item.reaction+"]");
-                }
-	});
-}
+                self.activeTimers[timerId] = setTimeout(function() {
+                    delete self.activeTimers[timerId];
+                    device.performCommand(item.reaction === "on" ? "off" : "on");
+                }, item.timeout * 1000);
+            }
+        } else {
+            self.controller.emit('core.error', "Unknown sensor SensorMultilevel raction type [" + item.reaction + "]");
+        }
+    });
+};

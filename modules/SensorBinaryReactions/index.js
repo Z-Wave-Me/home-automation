@@ -1,4 +1,4 @@
-/*** SensorBinaryReactions HA module *************************************************
+/*** SensorBinaryReactions HA module ******************************************
 
 Version: 1.0.0
 -------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ Description: Configurable reactions on binary reports events
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function SensorBinaryReactions (id, controller) {
+function SensorBinaryReactions(id, controller) {
     // Call superconstructor first (AutomationModule)
     SensorBinaryReactions.super_.call(this, id, controller);
 
@@ -57,7 +57,7 @@ _module = SensorBinaryReactions;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-SensorBinaryReactions.prototype.init = function (config) {
+SensorBinaryReactions.prototype.init = function(config) {
     // Call superclass' init (this will process config argument and so on)
     SensorBinaryReactions.super_.prototype.init.call(this, config);
 
@@ -65,8 +65,8 @@ SensorBinaryReactions.prototype.init = function (config) {
 
     var self = this;
 
-    this.controller.on('device.metricUpdated', function () {
-    	return self.onUpdate.apply(self, arguments);
+    this.controller.on('device.metricUpdated', function() {
+        return self.onUpdate.apply(self, arguments);
     });
 
     console.log("SensorBinary Reactions module enabled with", this.map.length, "reactions");
@@ -76,46 +76,45 @@ SensorBinaryReactions.prototype.init = function (config) {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-SensorBinaryReactions.prototype.getReactions = function (deviceId) {
-	return this.map.filter(function (item) {
-		return item.vDev === deviceId;
-	});
-}
+SensorBinaryReactions.prototype.getReactions = function(deviceId) {
+    return this.map.filter(function(item) {
+        return item.vDev === deviceId;
+    });
+};
 
-SensorBinaryReactions.prototype.onUpdate = function (vDev, dataHolder, level) {
-	var self = this;
-	var workingMaps = this.getReactions(vDev);
+SensorBinaryReactions.prototype.onUpdate = function(vDev, dataHolder, level) {
+    var self = this;
+    var workingMaps = this.getReactions(vDev);
 
-	workingMaps.forEach(function (item) {
-                if (!has_key(self.controller.devices, item.vDevAction)) {
-                        console.error("Error: Unknown vDev ID ["+item.vDevAction+"]");
-                        self.controller.emit('core.error', "Unknown vDev ID ["+item.vDevAction+"]");
-                        return;
+    workingMaps.forEach(function(item) {
+        if (!has_key(self.controller.devices, item.vDevAction)) {
+            console.error("Error: Unknown vDev ID [" + item.vDevAction + "]");
+            self.controller.emit('core.error', "Unknown vDev ID [" + item.vDevAction + "]");
+            return;
+        }
+
+        var device = self.controller.devices[item.vDevAction];
+
+        if ("onOff" === item.reaction) {
+            device.performCommand(((level ? true : false) ^ item.invert) ? "on" : "off");
+        } else if (("on" === item.reaction || "off" === item.reaction) && (item.level ? true : false) === level) {
+            device.performCommand(item.reaction);
+
+            if (item.timeout) {
+                var timerId = "SensorBinaryReactions:" + vDev + ":" + item.vDevAction;
+
+                if ( !! self.activeTimers[timerId]) {
+                    clearTimeout(self.activeTimers[timerId]);
+                    delete self.activeTimers[timerId];
                 }
 
-                var device = self.controller.devices[item.vDevAction];
-
-                if ("onOff" === item.reaction) {
-                        device.performCommand(((level ? true : false) ^ item.invert) ? "on" : "off");
-                } else if (("on" === item.reaction || "off" === item.reaction) && (item.level ? true : false) === level) {
-                        device.performCommand(item.reaction);
-                        
-                        if (item.timeout) {
-                                var timerId = "SensorBinaryReactions:" + vDev + ":" + item.vDevAction;
-
-                                if (!!self.activeTimers[timerId]) {
-                                        clearTimeout(self.activeTimers[timerId]);
-                                        delete self.activeTimers[timerId];
-                                };
-
-
-                                self.activeTimers[timerId] = setTimeout(function () {
-                                        delete self.activeTimers[timerId];
-                                        device.performCommand(item.reaction === "on" ? "off" : "on");
-                                }, item.timeout * 1000);
-                        }
-                } else {
-                        self.controller.emit('core.error', "Unknown SensorBinary reaction type ["+item.reaction+"]");
-                }
-	});
-}
+                self.activeTimers[timerId] = setTimeout(function() {
+                    delete self.activeTimers[timerId];
+                    device.performCommand(item.reaction === "on" ? "off" : "on");
+                }, item.timeout * 1000);
+            }
+        } else {
+            self.controller.emit('core.error', "Unknown SensorBinary reaction type [" + item.reaction + "]");
+        }
+    });
+};
