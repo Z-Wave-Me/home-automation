@@ -1,13 +1,11 @@
 /*** BatteryPolling Z-Way HA module *******************************************
 
 Version: 1.0.0
-(c) ZWave.Me, 2013
+(c) Z-Wave.Me, 2013
 -----------------------------------------------------------------------------
 Author: Gregory Sitnin <sitnin@z-wave.me>
 Description:
-    This module listens given VirtualDevice (which MUSt be typed as switch)
-    level metric update events and switches off device after configured
-    timeout if this device has been switched on.
+    This module periodically requests all batery devices for battery level report
 
 ******************************************************************************/
 

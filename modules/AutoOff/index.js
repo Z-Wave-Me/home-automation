@@ -2,7 +2,7 @@
 
  AutoOff Z-Way Home Automation module
  Version: 1.0.0
- (c) ZWave.Me, 2013
+ (c) Z-Wave.Me, 2013
 
  -----------------------------------------------------------------------------
  Author: Gregory Sitnin <sitnin@z-wave.me>

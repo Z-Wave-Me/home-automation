@@ -1,7 +1,7 @@
 /*** Cron ZAutomation module **************************************************
 
 Version: 1.0.0
-(c) ZWave.Me, 2013
+(c) Z-Wave.Me, 2013
 -------------------------------------------------------------------------------
 Authors:
    Serguei Poltorak <ps@z-wave.me>
@@ -100,12 +100,12 @@ Cron.prototype.init = function (config) {
 
     this.timer = setInterval(function () {
         var date = new Date();
-        var timestamp = Math.floor(date.getTime() / 1000);
+        var timestampMin = Math.floor(date.getTime() / 60000);
 
-        if (self.lastFired === timestamp)
+        if (self.lastFired === timestampMin)
             return; // this minute is already handled
 
-        self.lastFired = timestamp;
+        self.lastFired = timestampMin;
         var curTime = {
             minute: date.getMinutes(),
             hour: date.getHours(),

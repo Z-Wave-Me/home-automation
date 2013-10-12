@@ -1,7 +1,7 @@
 /*** CustomUserCode ZAutomation module ****************************************
 
 Version: 1.0.0
-(c) ZWave.Me, 2013
+(c) Z-Wave.Me, 2013
 
 -------------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
