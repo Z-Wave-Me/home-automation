@@ -43,10 +43,6 @@ function in_array (array, value) {
     return -1 != array.indexOf(value);
 }
 
-// Object.prototype.hasKey = function (value) {
-//     return -1 != Object.keys(this).indexOf(value);
-// };
-
 function has_key (obj, key) {
     return -1 != Object.keys(obj).indexOf(key);
 }
@@ -63,45 +59,54 @@ function get_values (obj) {
 
 //--- Load configuration
 
-var config = loadJSON("config.json");
 
-config.libPath = "lib";
-config.classesPath = "classes";
-config.resourcesPath = "res";
+var config;
+try {
+    config = loadJSON("config.json");
+} catch (ex) {
+    console.log("Error loading config.json:", ex.message);
+}
 
-// console.log("CFG", JSON.stringify(config, null, "  "));
+if (!config) {
+    console.log("Can't read config.json or it's broken.");
+    console.log("Please, provide correct config.json (look at the config-sample.json for reference) and restart service.");
+    console.log("ZAutomation engine not started.");
+} else {
+    config.libPath = "lib";
+    config.classesPath = "classes";
+    config.resourcesPath = "res";
 
-//--- Load constants & 3d-party dependencies
+    //--- Load constants & 3d-party dependencies
 
-executeFile("constants.js");
+    executeFile("constants.js");
+    executeFile(config.libPath + "/eventemitter2.js");
 
-executeFile(config.libPath + "/eventemitter2.js");
+    //--- Load Automation subsystem classes
 
-//--- Load Automation subsystem classes
+    executeFile(config.classesPath+"/AutomationController.js");
+    executeFile(config.classesPath+"/AutomationModule.js");
+    executeFile(config.classesPath+"/VirtualDevice.js");
 
-executeFile(config.classesPath+"/AutomationController.js");
-executeFile(config.classesPath+"/AutomationModule.js");
-executeFile(config.classesPath+"/VirtualDevice.js");
+    //--- Instantiate Automation Controller
 
-//--- Instantiate Automation Controller
+    var controller = new AutomationController(config.controller, config["vdevInfo"] || {});
 
-var controller = new AutomationController(config.controller);
+    controller.on('init', function () {
+        controller.run();
+    });
 
-controller.on('init', function () {
-    controller.run();
-});
+    controller.on('error', function (err) {
+        console.log("--- ERROR:", err.message);
+    });
 
-controller.on('error', function (err) {
-    console.log("--- ERROR:", err.message);
-});
+    controller.on('run', function () {
+        console.log('ZWay Automation Controller started');
 
-controller.on('run', function () {
-    console.log('ZWay Automation Controller started');
+        //--- Initialize webserver
+        executeFile("webserver.js");
+    });
 
-    //--- Initialize webserver
-    executeFile("webserver.js");
-});
+    //--- main
 
-//--- main
-
-controller.init();
+    controller.init();
+}

@@ -29,6 +29,10 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
 
 inherits(ZWaveMeterDevice, ZWaveDevice);
 
+// ZWaveMeterDevice.prototype.defaultDeviceName = function () {
+//     return "Probe";
+// }
+
 ZWaveMeterDevice.prototype.dataPoints = function () {
     return [this._dics().val];
 }

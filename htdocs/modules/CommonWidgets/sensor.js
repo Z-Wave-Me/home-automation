@@ -7,7 +7,7 @@
 function SensorWidget (parentElement, deviceId) {
     SensorWidget.super_.apply(this, arguments);
 
-    this.widgetTitle = this.device.metrics.probeTitle;
+    this.widgetTitle = this.metrics.probeTitle;
 
     this.value = Math.floor(this.device.metrics.level * 10) / 10;
 }
@@ -23,7 +23,7 @@ SensorWidget.prototype.setValue = function (value, callback) {
 SensorWidget.prototype.updateWidgetUI = function () {
     this.elem.innerHTML = nunjucks.env.render("CommonWidgets/sensor.html", {
         vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
+        widgetTitle: this.metrics["title"] || this.widgetTitle,
         metricValue: this.value
     });
 }

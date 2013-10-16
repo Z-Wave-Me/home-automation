@@ -7,9 +7,7 @@
 function FanWidget (parentElement, deviceId) {
     FanWidget.super_.apply(this, arguments);
 
-    this.widgetTitle = this.device.metrics.probeTitle;
-
-    this.value = Math.floor(this.device.metrics.level * 10) / 10;
+    this.value = Math.floor(this.metrics.level * 10) / 10;
 }
 
 inherits(FanWidget, AbstractWidget);
@@ -24,6 +22,7 @@ FanWidget.prototype.updateWidgetUI = function () {
     this.elem.innerHTML = nunjucks.env.render("CommonWidgets/fan.html", {
         vDev: this.device.id,
         modes: modesArray,
+        widgetTitle: this.metrics["title"] || "Fan",
         currentMode: this.metrics.currentMode,
         state: this.metrics.state
     });

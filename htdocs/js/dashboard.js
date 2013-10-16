@@ -13,7 +13,6 @@ function createVirtualDevicesWidgets () {
 
         var rowId = "row"+(Math.floor(dashboardWidgets.length/3));
         if ($('#'+rowId).length == 0) {
-            console.log($("#mainContainer"));
             $("#mainContainer").append('<div class="row" id="'+rowId+'"></div>');
         }
 
@@ -36,7 +35,7 @@ function createVirtualDevicesWidgets () {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+", "+vDev.deviceSubType+")");
             widget = new ThermostatWidget(rowId, vDev);
         } else {
-            console.log("ERROR", "Unknown virtual device type", vDev.deviceType);
+            console.log("WARNING", "Unknown virtual device type", vDev.deviceType);
         }
 
         if (widget) {

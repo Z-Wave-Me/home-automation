@@ -7,9 +7,7 @@
 function ThermostatWidget (parentElement, deviceId) {
     FanWidget.super_.apply(this, arguments);
 
-    this.widgetTitle = this.device.metrics.probeTitle;
-
-    this.value = Math.floor(this.device.metrics.level * 10) / 10;
+    this.value = Math.floor(this.metrics.level * 10) / 10;
 }
 
 inherits(ThermostatWidget, AbstractWidget);
@@ -31,6 +29,7 @@ ThermostatWidget.prototype.updateWidgetUI = function () {
 
     this.elem.innerHTML = nunjucks.env.render("CommonWidgets/thermostat.html", {
         vDev: this.device.id,
+        widgetTitle: this.metrics["title"] || "Thermostat",
         modes: this.metrics["modes"],
         currentMode: this.metrics.currentMode,
         currentModeIndex: this.currentModeIndex(),

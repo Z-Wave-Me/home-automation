@@ -1,11 +1,7 @@
 {% extends "shared/smallWidget.html" %}
 
 {% block content %}
-    {% if state %}
-        <h1>Fan: On</h1>
-    {% else %}
-        <h1>Fan: Off</h1>
-    {% endif %}
+    <h1>{{widgetTitle}}: {% if state %}On{% else %}Off{% endif %}</h1>
 
     <div class="row">
 	    {% if state %}

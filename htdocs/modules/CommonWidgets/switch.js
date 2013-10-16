@@ -7,9 +7,7 @@
 function SwitchWidget (parentElement, device) {
     SwitchWidget.super_.apply(this, arguments);
 
-    this.widgetTitle = "Switch";
-
-    this.value = this.device.metrics.level;
+    this.value = this.metrics.level;
 }
 
 inherits(SwitchWidget, AbstractWidget);
@@ -17,7 +15,7 @@ inherits(SwitchWidget, AbstractWidget);
 SwitchWidget.prototype.updateWidgetUI = function () {
     this.elem.innerHTML = nunjucks.env.render("CommonWidgets/switch.html", {
         vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
+        widgetTitle: this.metrics["title"] || "Switch",
         metricValue: this.value
     });
 }

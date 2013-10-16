@@ -7,7 +7,7 @@
 function ProbeWidget (parentElement, deviceId) {
     ProbeWidget.super_.apply(this, arguments);
 
-    this.widgetTitle = this.device.metrics.probeTitle;
+    this.widgetTitle = this.metrics.probeTitle;
 
     this.value = Math.floor(this.device.metrics.level * 10) / 10;
 }
@@ -23,8 +23,8 @@ ProbeWidget.prototype.setValue = function (value, callback) {
 ProbeWidget.prototype.updateWidgetUI = function () {
     this.elem.innerHTML = nunjucks.env.render("CommonWidgets/probe.html", {
         vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
-        scaleTitle: this.device.metrics.scaleTitle,
+        widgetTitle: this.metrics["title"] || this.widgetTitle,
+        scaleTitle: this.metrics.scaleTitle,
         metricValue: this.value
     });
 }

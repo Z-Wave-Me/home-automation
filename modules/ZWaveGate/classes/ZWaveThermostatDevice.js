@@ -34,6 +34,10 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveThermostatDevice, ZWaveDevice);
 
+// ZWaveThermostatDevice.prototype.defaultDeviceTitle = function () {
+//     return "Thermostat";
+// }
+
 ZWaveThermostatDevice.prototype.currentMode = function () {
     if (this.modeAvailable) {
         return this._dic(64).data.mode.value;

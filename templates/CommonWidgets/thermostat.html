@@ -1,11 +1,7 @@
 {% extends "shared/smallWidget.html" %}
 
 {% block content %}
-    {% if hasSensor %}
-        <h1>Thermostat: {{level}}{{scaleTitle}}</h1>
-    {% else %}
-        <h1>Thermostat</h1>
-    {% endif %}
+    <h1>{{widgetTitle}}{% if hasSensor %}: {{level}}{{scaleTitle}}{% endif %}</h1>
 
     <div><select data-vdev="{{vDev}}" data-command="setMode" class="widgetModeSelector">
 	    {% for mode in modes %}

@@ -1,4 +1,4 @@
-# Release 1.0.1
+# Release 1.0.1 (in progress)
 
 * Removed `actions` and `metrics` properties from the `module.json` of all modules.
 
@@ -11,6 +11,16 @@
 * Introduced `caps` property to the Virtual Device which allows to list device capabilities.
 
 * Widgets moved to the new CommonWidgets module. Creation and registering custom widgets made possible.
+
+* Module's templates and htdocs folders now resides in ./templates/<ModuleName> and ./htdocs/modules/<ModuleName>
+
+* `config.json` existence checking on startup
+
+* New configuration setting `vdevInfo` allows to set human-readable device names and tags
+
+* Introduced `VirtualDevice.defaultDeviceTitle` method
+
+* Widget's htdocs and Module's templates moded outside of the module's folder (for all modules)
 
 # Release 1.0.0
 

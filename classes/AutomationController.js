@@ -7,7 +7,7 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-function AutomationController (config) {
+function AutomationController (config, vdevInfo) {
     AutomationController.super_.call(this);
 
     this.config = config;
@@ -18,6 +18,7 @@ function AutomationController (config) {
     this.widgets = {};
     this._autoLoadModules = [];
     this._loadedSingletons = [];
+    this.vdevInfo = vdevInfo;
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -248,4 +249,8 @@ AutomationController.prototype.listWidgets = function () {
     this.emit('core.widgetsList', res);
 
     return res;
+}
+
+AutomationController.prototype.getVdevInfo = function (id) {
+    return this.vdevInfo[id];
 }

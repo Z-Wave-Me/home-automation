@@ -61,7 +61,6 @@ AbstractWidget.prototype.performCommand = function (command, args) {
 
 function handleWidgetCommand (event) {
     event.preventDefault();
-    console.log($(this));
 
     var device = $(this).data("vdev");
     var commandId = $(this).data("command");
@@ -97,7 +96,6 @@ function handleWidgetModeChangeCommand (event) {
 
 function handleWidgetModeTargetChangeCommand (event) {
     event.preventDefault();
-    console.log($(this));
 
     var device = $(this).data("vdev");
     var commandId = $(this).data("command");

@@ -22,6 +22,10 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
 
 inherits(ZWaveSwitchMultilevelDevice, ZWaveDevice);
 
+// ZWaveSwitchMultilevelDevice.prototype.defaultDeviceName = function () {
+//     return "Multilevel switch";
+// }
+
 ZWaveSwitchMultilevelDevice.prototype.dataPoints = function () {
     // var zwayDeviceScale = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].data[this.zScaleId];
     return [this._dic().data.level];

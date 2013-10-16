@@ -25,6 +25,10 @@ ZWaveBatteryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveBatteryDevice, ZWaveDevice);
 
+// ZWaveBatteryDevice.prototype.defaultDeviceName = function () {
+// 	return "Battery";
+// }
+
 ZWaveBatteryDevice.prototype.dataPoints = function () {
     // var zwayDevice = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];
     return [this._dic().data.last];

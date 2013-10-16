@@ -22,6 +22,10 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveSwitchBinaryDevice, ZWaveDevice);
 
+// ZWaveSwitchBinaryDevice.prototype.defaultDeviceName = function () {
+//     return "Switch";
+// }
+
 ZWaveSwitchBinaryDevice.prototype.dataPoints = function () {
     return [this._dic().data.level];
 }

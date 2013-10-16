@@ -1,5 +1,21 @@
 (function() {
 var templates = {};
+templates["BatteryPolling/batteryStatus.html"] = (function() {
+function root(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+return {
+root: root
+};
+
+})();
 templates["CommonWidgets/fan.html"] = (function() {
 function root(env, context, frame, runtime) {
 var lineno = null;
@@ -23,14 +39,16 @@ var colno = null;
 var output = "";
 try {
 var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
-output += "\n    ";
+output += "\n    <h1>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
+output += ": ";
 if(runtime.contextOrFrameLookup(context, frame, "state")) {
-output += "\n        <h1>Fan: On</h1>\n    ";
+output += "On";
 }
 else {
-output += "\n        <h1>Fan: Off</h1>\n    ";
+output += "Off";
 }
-output += "\n\n    <div class=\"row\">\n\t    ";
+output += "</h1>\n\n    <div class=\"row\">\n\t    ";
 if(runtime.contextOrFrameLookup(context, frame, "state")) {
 output += "\n\t        <div class=\"span1\"><a href=\"#\" data-vdev=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
@@ -305,17 +323,14 @@ var colno = null;
 var output = "";
 try {
 var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
-output += "\n    ";
+output += "\n    <h1>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
 if(runtime.contextOrFrameLookup(context, frame, "hasSensor")) {
-output += "\n        <h1>Thermostat: ";
+output += ": ";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "level"), env.autoesc);
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "scaleTitle"), env.autoesc);
-output += "</h1>\n    ";
 }
-else {
-output += "\n        <h1>Thermostat</h1>\n    ";
-}
-output += "\n\n    <div><select data-vdev=\"";
+output += "</h1>\n\n    <div><select data-vdev=\"";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
 output += "\" data-command=\"setMode\" class=\"widgetModeSelector\">\n\t    ";
 frame = frame.push();

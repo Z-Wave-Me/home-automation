@@ -6,8 +6,6 @@
 
 function MultilevelWidget (parentElement, deviceId) {
     MultilevelWidget.super_.apply(this, arguments);
-
-    this.widgetTitle = "Dimmer";
 }
 
 inherits(MultilevelWidget, AbstractWidget);
@@ -25,7 +23,7 @@ MultilevelWidget.prototype.updateWidgetUI = function () {
 
     this.elem.innerHTML = nunjucks.env.render("CommonWidgets/multilevel.html", {
         vDev: this.device.id,
-        widgetTitle: this.widgetTitle,
+        widgetTitle: this.metrics["title"] || "Dimmer",
         metricValue: this.value
     });
 }

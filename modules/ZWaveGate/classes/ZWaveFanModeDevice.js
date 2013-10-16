@@ -26,6 +26,10 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveFanModeDevice, ZWaveDevice);
 
+// ZWaveFanModeDevice.prototype.defaultDeviceName = function () {
+//     return "Fan mode";
+// }
+
 ZWaveFanModeDevice.prototype.bindToDatapoints = function () {
     var self = this;
 

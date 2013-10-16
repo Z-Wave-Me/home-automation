@@ -22,9 +22,13 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveDoorlockDevice, ZWaveDevice);
 
-ZWaveDoorlockDevice.prototype.dataPoints = function () {
-    return [this._dic().data.level];
+ZWaveDoorlockDevice.prototype.defaultDeviceName = function () {
+    return "Doorlock";
 }
+
+// ZWaveDoorlockDevice.prototype.dataPoints = function () {
+//     return [this._dic().data.level];
+// }
 
 ZWaveDoorlockDevice.prototype.performCommand = function (command) {
     var handled = false;
