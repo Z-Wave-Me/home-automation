@@ -125,6 +125,14 @@ function widgetByDeviceId (deviceId) {
     return 1 === search.length ? search[0] : null;
 }
 
+var widgetClasses = {};
+
+// TODO: Remove mock before release!
+function findCustomWidgetClass (vDev) {
+    var className = widgetClasses[vDev.deviceSubType];
+    return !!className ? eval(className) : null;
+}
+
 // ----------------------------------------------------------------------------
 // --- Registered widgets loader
 // ----------------------------------------------------------------------------
@@ -140,7 +148,9 @@ $(document).ready(function () {
             console.log("Cannot load widgets list:", err.message);
         } else {
             data.forEach(function (meta) {
+                console.log("Loading widget meta", meta);
                 $.getScript("modules/"+meta.code);
+                widgetClasses[meta.id] = meta.className;
             });
 
             events.emit("widgetClassesLoaded");

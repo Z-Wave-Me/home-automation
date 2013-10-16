@@ -1,0 +1,9 @@
+{% extends "shared/smallWidget.html" %}
+
+{% block content %}
+    <h1>Batteries</h1>
+
+    {% for report in reports %}
+    	<div><b>{{report.title}}</b>: {{report.level}}%</div>
+    {% endfor %}
+{% endblock %}

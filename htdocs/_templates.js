@@ -6,12 +6,44 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+output += "\n";
+return parentTemplate.rootRenderFunc(env, context, frame, runtime);
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+function b_content(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+output += "\n    <h1>Batteries</h1>\n\n    ";
+frame = frame.push();
+var t_3 = runtime.contextOrFrameLookup(context, frame, "reports");
+if(t_3) {for(var t_2=0; t_2 < t_3.length; t_2++) {
+var t_4 = t_3[t_2];
+frame.set("report", t_4);
+output += "\n    \t<div><b>";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"title", env.autoesc), env.autoesc);
+output += "</b>: ";
+output += runtime.suppressValue(runtime.memberLookup((t_4),"level", env.autoesc), env.autoesc);
+output += "%</div>\n    ";
+}
+}frame = frame.pop();
+output += "\n";
 return output;
 } catch (e) {
   runtime.handleError(e, lineno, colno);
 }
 }
 return {
+b_content: b_content,
 root: root
 };
 

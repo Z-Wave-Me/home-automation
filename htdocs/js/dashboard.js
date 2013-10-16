@@ -34,8 +34,17 @@ function createVirtualDevicesWidgets () {
         } else if ("climate" === vDev.deviceType && "thermostat" === vDev.deviceSubType) {
             console.log("Creating vDev Widget for device", vDev.id, "("+vDev.deviceType+", "+vDev.deviceSubType+")");
             widget = new ThermostatWidget(rowId, vDev);
+        } else if (vDev.caps.indexOf("customWidget") > -1) {
+            console.log("Creating custom widget for device", vDev.id, "("+vDev.deviceType+", "+vDev.deviceSubType+")");
+            var widgetClass = findCustomWidgetClass(vDev);
+            if (widgetClass) {
+                widget = new widgetClass(rowId, vDev);
+            } else {
+                console.log("ERROR", "Cannot find widget class for device", vDev.id);
+            }
         } else {
-            console.log("WARNING", "Unknown virtual device type", vDev.deviceType);
+            console.log("---", vDev.caps.indexOf("customWidget"));
+            console.log("WARNING", "Unknown virtual device type", vDev.deviceType, "and subtype (caps)", vDev.deviceSubType, vDev.caps);
         }
 
         if (widget) {

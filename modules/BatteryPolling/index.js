@@ -27,8 +27,25 @@ _module = BatteryPolling;
 // ----------------------------------------------------------------------------
 
 BatteryPolling.prototype.init = function (config) {
-    // Call superclass' init (this will process config argument and so on)
     BatteryPolling.super_.prototype.init.call(this, config);
+
+    var self = this;
+
+    executeFile(this.moduleBasePath()+"/BatteryPollingDevice.js");
+    this.vdev = new BatteryPollingDevice("BatteryPolling", this.controller);
+    this.controller.registerDevice(this.vdev);
+
+    this.batIds = this.scanForBatteries();
+
+    this.controller.registerWidget({
+        id: "batteryPolling",
+        className: "BatteryStatusWidget",
+        code: "BatteryPolling/batteryStatus.js",
+        mainUI: "BatteryPolling/batteryStatus.html",
+        settingsUI: "BatteryPolling/batteryStatusSettings.html"
+    });
+
+    self.vdev.setMetricValue("reports", self.transformToReports());
 
     this.controller.emit("cron.addTask", "batteryPolling.poll", {
         minute: 0,
@@ -38,11 +55,17 @@ BatteryPolling.prototype.init = function (config) {
         month: null
     });
 
-    // Setup event listener
+    // Setup event listeners
+    this.controller.on('device.metricUpdated', function (vdevId, name, value) {
+        var pos = self.batIds.indexOf(vdevId);
+        if (pos > -1 && name === "level") {
+            self.vdev.setMetricValue("reports", self.transformToReports());
+        }
+    });
+
+    // TODO: Refactor to device.update command
     this.controller.on('batteryPolling.poll', function () {
-      for (var id in zway.devices) {
-       zway.devices[id].Battery && zway.devices[id].Battery.Get();
-      }
+        self.vdev.performCommand("update");
     });
 };
 
@@ -50,3 +73,35 @@ BatteryPolling.prototype.init = function (config) {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
+BatteryPolling.prototype.scanForBatteries = function () {
+    var self = this;
+    return Object.keys(this.controller.devices).filter(function (vdevId) {
+        var vdev = self.controller.devices[vdevId];
+        return vdev.deviceType === "probe" && vdev.deviceSubType === "battery";
+    }).map(function (item) {
+        return item;
+    });
+}
+
+// BatteryPolling.prototype.collectLevels = function () {
+//     var self = this;
+//     this.batIds.forEach(function (vdevId) {
+//         self.batLevels[vdevId] = self.controller.devices[vdevId].getMetricValue("level");
+//     });
+// }
+
+BatteryPolling.prototype.transformToReports = function () {
+    var self = this;
+    var res = [];
+
+    this.batIds.forEach(function (vdevId) {
+        var vdev = self.controller.devices[vdevId];
+        res.push({
+            id: vdevId,
+            level: vdev.getMetricValue("level"),
+            title: vdev.getMetricValue("title")
+        })
+    });
+
+    return res;
+}

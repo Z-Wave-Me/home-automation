@@ -22,6 +22,12 @@
 
 * Widget's htdocs and Module's templates moded outside of the module's folder (for all modules)
 
+* Introduced .caps vDev's property which contains device extended capabilities tags (take a look at BatterPolling module)
+
+* Introduced className property in the widget's meta-description which allows to set custom widget className (essential to custom widgets)
+
+* UI is now capable of showing widgets created and registered by the customer
+
 # Release 1.0.0
 
 (initial)
