@@ -18,6 +18,10 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
 
     this.deviceType = "probe";
 
+    this.widgetClass = "SwitchWidget";
+
+    this.widgetClass = "ProbeWidget";
+
     this.sensorTypeString = this._dics().sensorTypeString.value;
     this.scaleString = this._dics().scaleString.value;
 

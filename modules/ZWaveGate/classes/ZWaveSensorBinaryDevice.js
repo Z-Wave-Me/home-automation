@@ -18,6 +18,8 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sens
 
     this.deviceType = "sensor";
 
+    this.widgetClass = "SensorWidget";
+
     this.sensorTypeString = this._dics().sensorTypeString.value;
 
     this.setMetricValue("probeTitle", this.sensorTypeString);

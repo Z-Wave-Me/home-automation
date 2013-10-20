@@ -16,6 +16,8 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.deviceType = "climate";
     this.deviceSubType = "thermostat";
 
+    this.widgetClass = "ThermostatWidget";
+
     this.sensorAvailable = Object.keys(this._di().commandClasses).indexOf("49") >= 0 && Object.keys(this._dic(49).data).indexOf("1") >= 0;
     this.modeAvailable = Object.keys(this._di().commandClasses).indexOf("64") >= 0;
     this.setPointAvailable = Object.keys(this._di().commandClasses).indexOf("67") >= 0;

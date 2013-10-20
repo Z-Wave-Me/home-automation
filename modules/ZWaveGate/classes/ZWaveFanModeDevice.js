@@ -18,6 +18,8 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.deviceType = "climate";
     this.deviceSubType = "fan";
 
+    this.widgetClass = "FanWidget";
+
     this.modes = this.assembleModes();
     this.setMetricValue("modes", this.modes);
     this.setMetricValue("currentMode", this._dic().data.mode.value);
