@@ -16,6 +16,7 @@ function AutomationController (config, vdevInfo) {
     this.instances = {};
     this.devices = {};
     this.widgets = {};
+    this.widgetClasses = {};
     this._autoLoadModules = [];
     this._loadedSingletons = [];
     this.vdevInfo = vdevInfo;
@@ -231,23 +232,19 @@ AutomationController.prototype.registerWidget = function (widget) {
     this.emit('core.widgetRegistered', widget.id);
 };
 
-AutomationController.prototype.removeWidget = function (id) {
-    delete this.widget[id];
+AutomationController.prototype.registerWidgetClass = function (meta) {
+    this.widgetClasses[meta.className] = meta;
+    this.emit('core.widgetClassRegistered', meta.className);
+};
+
+AutomationController.prototype.removeWidgetClass = function (id) {
+    delete this.widgetClasses[id];
 
     this.emit('core.widgetRemoved', id);
 };
 
-AutomationController.prototype.listWidgets = function () {
-    var res = {};
-
-    Object.keys(this.widgets).forEach(function (widgetId) {
-        res[widgetId] = {
-            widgetType: "unknown"
-        }
-    });
-
-    this.emit('core.widgetsList', res);
-
+AutomationController.prototype.listWidgetClasses = function () {
+    this.emit('core.widgetsList', this.widgetClasses);
     return res;
 }
 
