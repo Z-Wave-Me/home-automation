@@ -139,18 +139,28 @@ function findCustomWidgetClass (vDev) {
 
 $(document).ready(function () {
     // Event handlers
+    console.log("--- Setting global widget event handlers...");
     $(document).on('click', '.widgetCommandButton', handleWidgetCommand);
     $(document).on('change', '.widgetModeSelector', handleWidgetModeChangeCommand);
     $(document).on('change', '.widgetModeTargetSelector', handleWidgetModeTargetChangeCommand);
 
+    console.log("--- Loading widget classes...");
     apiRequest("/widgets/", function (err, data) {
         if (!!err) {
-            console.log("Cannot load widgets list:", err.message);
+            console.log("Cannot load widget classes list:", err.message);
         } else {
-            data.forEach(function (meta) {
-                console.log("Loading widget meta", meta);
-                $.getScript("modules/"+meta.code);
-                widgetClasses[meta.id] = meta.className;
+            Object.keys(data).forEach(function (widgetClassName) {
+                var meta = data[widgetClassName];
+
+                console.log("Loading widget class", meta.className);
+                $.getScript("modules/"+meta.code, function (script, textStatus, jqXHR) {
+                    if (window.hasOwnProperty(meta.className)) {
+                        widgetClasses[meta.className] = meta;
+                        widgetClasses[meta.className].cls = window[meta.className];
+                    } else {
+                        console.error("Cannot find widget class", meta.className, "after code is loaded.");
+                    }
+                });
             });
 
             events.emit("widgetClassesLoaded");

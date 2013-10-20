@@ -1,3 +1,5 @@
+console.log("--- Initiating event bus...");
+
 var eventLogUpdateTimer;
 var eventLogUpdateTimerErrors = 0;
 var eventLogUpdateTime = 0;
