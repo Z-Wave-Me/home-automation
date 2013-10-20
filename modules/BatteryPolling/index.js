@@ -37,12 +37,10 @@ BatteryPolling.prototype.init = function (config) {
 
     this.batIds = this.scanForBatteries();
 
-    this.controller.registerWidget({
-        id: "batteryPolling",
+    this.controller.registerWidgetClass({
         className: "BatteryStatusWidget",
         code: "BatteryPolling/batteryStatus.js",
-        mainUI: "BatteryPolling/batteryStatus.html",
-        settingsUI: "BatteryPolling/batteryStatusSettings.html"
+        mainUI: "BatteryPolling/batteryStatus.html"
     });
 
     self.vdev.setMetricValue("reports", self.transformToReports());
