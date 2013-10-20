@@ -15,6 +15,7 @@ VirtualDevice = function (id, controller) {
     this.metrics = {};
     this.caps = [];
     this.tags = [];
+    this.widgetClass = null;
 
     this.updateFromVdevInfo();
     if (!this.getMetricValue("title")) {

@@ -28,6 +28,12 @@
 
 * UI is now capable of showing widgets created and registered by the customer
 
+* Renamed AutomationController.widget* to AutomationController.widgetClass* and changed widget subsystem behaviour to resolve ambiguity
+
+* /ZAutomation/api/widgets/ now replies with widget classes definitions instead of widgets itself. Latter exists and creates only on the client-side, but exact widget's class names described in a vDevs.
+
+* UI Dashboard refactored according to widgets subsystem changes
+
 # Release 1.0.0
 
 (initial)

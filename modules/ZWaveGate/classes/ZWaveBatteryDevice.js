@@ -18,6 +18,8 @@ ZWaveBatteryDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.deviceType = "probe";
     this.deviceSubType = "battery";
 
+    this.widgetClass = "ProbeWidget";
+
     this.setMetricValue("probeTitle", "Battery");
     this.setMetricValue("scaleTitle", "%");
 

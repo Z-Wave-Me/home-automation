@@ -113,7 +113,8 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
             deviceType: vDev.deviceType,
             deviceSubType: vDev.deviceSubType,
             metrics: vDev.metrics,
-            caps: vDev.caps
+            caps: vDev.caps,
+            widgetClass: vDev.widgetClass
         });
     });
 
@@ -171,15 +172,12 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
     }
 }
 
-ZAutomationAPIWebRequest.prototype.listWidgets = function () {
+// TODO: (Maybe) Filter classes in case of extra information can be stored in the controller
+ZAutomationAPIWebRequest.prototype.listWidgetClasses = function () {
     var reply = {
         error: null,
-        data: []
+        data: controller.widgetClasses
     }
-
-    Object.keys(controller.widgets).forEach(function (id) {
-        reply.data.push(controller.widgets[id]);
-    });
 
     this.res.status = 200;
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
@@ -196,7 +194,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     } else if ("GET" === method && "/events/" == url) {
         handlerFunc = this.exposeEvents;
     } else if ("GET" === method && "/widgets/" == url) {
-        handlerFunc = this.listWidgets;
+        handlerFunc = this.listWidgetClasses;
     };
 
     // Test regexp URIs

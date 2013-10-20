@@ -15,42 +15,30 @@ Description: This module registers common widgets library
 function CommonWidgets (id, controller) {
     CommonWidgets.super_.call(this, id, controller);
 
-    this.widgets = {
-        "sensor": {
-            code: "sensor.js",
-            class: "FanWidget",
-            mainUI: "sensor.html",
-            settingsUI: "sensorSettings.html"
-        },
-        "fan": {
+    this.widgetClasses = {
+        "FanWidget": {
             code: "fan.js",
-            class: "FanWidget",
-            mainUI: "fan.html",
-            settingsUI: "fanSettings.html"
+            mainUI: "fan.html"
         },
-        "multilevel": {
+        "MultilevelWidget": {
             code: "multilevel.js",
-            class: "FanWidget",
-            mainUI: "multilevel.html",
-            settingsUI: "multilevelSettings.html"
+            mainUI: "multilevel.html"
         },
-        "probe": {
+        "ProbeWidget": {
             code: "probe.js",
-            class: "FanWidget",
-            mainUI: "sensor.html",
-            settingsUI: "sensorSettings.html"
+            mainUI: "probe.html"
         },
-        "switch": {
+        "SensorWidget": {
+            code: "sensor.js",
+            mainUI: "sensor.html"
+        },
+        "SwitchWidget": {
             code: "switch.js",
-            class: "FanWidget",
-            mainUI: "switch.html",
-            settingsUI: "switchSettings.html"
+            mainUI: "switch.html"
         },
-        "thermostat": {
+        "ThermostatWidget": {
             code: "thermostat.js",
-            class: "FanWidget",
-            mainUI: "thermostat.html",
-            settingsUI: "thermostatSettings.html"
+            mainUI: "thermostat.html"
         }
     };
 }
@@ -68,15 +56,14 @@ CommonWidgets.prototype.init = function (config) {
 
     var self = this;
 
-    Object.keys(this.widgets).forEach(function (id) {
-        var widget = self.widgets[id];
+    Object.keys(this.widgetClasses).forEach(function (id) {
+        var widget = self.widgetClasses[id];
         var meta = {
-            id: id,
+            className: id,
             code: "CommonWidgets/"+widget.code,
-            mainUI: "CommonWidgets/"+widget.mainUI,
-            settingsUI: "CommonWidgets/"+widget.settingsUI
+            mainUI: "CommonWidgets/"+widget.mainUI
         }
 
-        self.controller.registerWidget(meta);
+        self.controller.registerWidgetClass(meta);
     });
 };

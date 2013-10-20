@@ -15,7 +15,8 @@ BatteryPollingDevice = function (id, controller) {
 
     this.deviceType = "virtual";
     this.deviceSubType = "batteryPolling";
-    this.caps = ["customWidget"];
+
+    this.widgetClass = "BatteryStatusWidget";
 }
 
 inherits(BatteryPollingDevice, VirtualDevice);
