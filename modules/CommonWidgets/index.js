@@ -39,6 +39,10 @@ function CommonWidgets (id, controller) {
         "ThermostatWidget": {
             code: "thermostat.js",
             mainUI: "thermostat.html"
+        },
+        "DoorlockWidget": {
+            code: "doorlock.js",
+            mainUI: "doorlock.html"
         }
     };
 }

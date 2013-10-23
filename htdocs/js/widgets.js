@@ -11,6 +11,7 @@ function AbstractWidget (parentElement, device) {
 
     var self = this;
     events.on('device.metricUpdated', function (deviceId, name, value) {
+        // console.log("--- device.metricUpdated", deviceId, name, value);
         if (self.device.id === deviceId) {
             if ("level" === name) {
                 self.setValue(value);

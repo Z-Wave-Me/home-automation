@@ -22,11 +22,11 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    <h1>Batteries</h1>\n\n    ";
 frame = frame.push();
 var t_3 = runtime.contextOrFrameLookup(context, frame, "reports");
-if(t_3) {for(var t_2=0; t_2 < t_3.length; t_2++) {
+if(t_3 !== undefined) {for(var t_2=0; t_2 < t_3.length; t_2++) {
 var t_4 = t_3[t_2];
 frame.set("report", t_4);
 output += "\n    \t<div><b>";
@@ -36,6 +36,56 @@ output += runtime.suppressValue(runtime.memberLookup((t_4),"level", env.autoesc)
 output += "%</div>\n    ";
 }
 }frame = frame.pop();
+output += "\n";
+return output;
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+return {
+b_content: b_content,
+root: root
+};
+
+})();
+templates["CommonWidgets/doorlock.html"] = (function() {
+function root(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var parentTemplate = env.getTemplate("shared/smallWidget.html", true);
+for(var t_1 in parentTemplate.blocks) {
+context.addBlock(t_1, parentTemplate.blocks[t_1]);
+}
+output += "\n\n";
+output += "\n";
+return parentTemplate.rootRenderFunc(env, context, frame, runtime);
+} catch (e) {
+  runtime.handleError(e, lineno, colno);
+}
+}
+function b_content(env, context, frame, runtime) {
+var lineno = null;
+var colno = null;
+var output = "";
+try {
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
+output += "\n    ";
+if(255 == runtime.contextOrFrameLookup(context, frame, "mode")) {
+output += "\n        <h1>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
+output += ": Closed</h1>\n        <div class=\"\"><a href=\"#\" data-vdev=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "\" data-command=\"open\" class=\"widgetCommandButton btn btn-danger\">Open</a></div>\n    ";
+}
+else {
+output += "\n        <h1>";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
+output += ": Opened</h1>\n        <div class=\"\"><a href=\"#\" data-vdev=\"";
+output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vDev"), env.autoesc);
+output += "\" data-command=\"close\" class=\"widgetCommandButton btn btn-success\">Close</a></div>\n    ";
+}
 output += "\n";
 return output;
 } catch (e) {
@@ -70,7 +120,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    <h1>";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
 output += ": ";
@@ -96,7 +146,7 @@ output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vD
 output += "\" data-command=\"setMode\" class=\"widgetModeSelector\">\n\t\t    ";
 frame = frame.push();
 var t_3 = runtime.contextOrFrameLookup(context, frame, "modes");
-if(t_3) {for(var t_2=0; t_2 < t_3.length; t_2++) {
+if(t_3 !== undefined) {for(var t_2=0; t_2 < t_3.length; t_2++) {
 var t_4 = t_3[t_2];
 frame.set("mode", t_4);
 output += "\n\t\t    \t<option value=\"";
@@ -144,7 +194,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    ";
 if(99 == runtime.contextOrFrameLookup(context, frame, "metricValue")) {
 output += "\n        <h1>";
@@ -219,7 +269,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    <h1>";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
 output += ": ";
@@ -260,7 +310,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    <h1>";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
 output += ": ";
@@ -304,7 +354,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    ";
 if(255 == runtime.contextOrFrameLookup(context, frame, "metricValue")) {
 output += "\n        <h1>";
@@ -354,7 +404,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 output += "\n    <h1>";
 output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "widgetTitle"), env.autoesc);
 if(runtime.contextOrFrameLookup(context, frame, "hasSensor")) {
@@ -367,7 +417,7 @@ output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vD
 output += "\" data-command=\"setMode\" class=\"widgetModeSelector\">\n\t    ";
 frame = frame.push();
 var t_3 = runtime.contextOrFrameLookup(context, frame, "modes");
-if(t_3) {for(var t_2=0; t_2 < t_3.length; t_2++) {
+if(t_3 !== undefined) {for(var t_2=0; t_2 < t_3.length; t_2++) {
 var t_4 = t_3[t_2];
 frame.set("mode", t_4);
 output += "\n\t    \t<option value=\"";
@@ -388,7 +438,7 @@ output += runtime.suppressValue(runtime.contextOrFrameLookup(context, frame, "vD
 output += "\" data-command=\"setTarget\" class=\"widgetModeTargetSelector\">\n\t    ";
 frame = frame.push();
 var t_6 = runtime.contextOrFrameLookup(context, frame, "possibleTargets");
-if(t_6) {for(var t_5=0; t_5 < t_6.length; t_5++) {
+if(t_6 !== undefined) {for(var t_5=0; t_5 < t_6.length; t_5++) {
 var t_7 = t_6[t_5];
 frame.set("t", t_7);
 output += "\n\t    \t<option value=\"";
@@ -439,7 +489,7 @@ var lineno = null;
 var colno = null;
 var output = "";
 try {
-var l_super = runtime.markSafe(context.getSuper(env, "content", b_content, frame, runtime));
+var l_super = context.getSuper(env, "content", b_content, frame, runtime);
 return output;
 } catch (e) {
   runtime.handleError(e, lineno, colno);
