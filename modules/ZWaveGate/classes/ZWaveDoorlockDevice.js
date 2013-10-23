@@ -13,13 +13,13 @@ Copyright: (c) ZWave.Me, 2013
 ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveDoorlockDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
-    this.zCommandClassId = 0x25;
+    this.zCommandClassId = 0x62;
 
     this.deviceType = "doorlock";
 
     this.widgetClass = "SwitchWidget";
 
-    this.setMetricValue("level", this._dic().data.level.value);
+    this.setMetricValue("level", this._dic().data.mode.value);
 }
 
 inherits(ZWaveDoorlockDevice, ZWaveDevice);

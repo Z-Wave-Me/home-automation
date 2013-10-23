@@ -28,6 +28,7 @@ function ZWaveGate (id, controller) {
     executeFile(this.moduleBasePath()+"/classes/ZWaveBatteryDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveFanModeDevice.js");
     executeFile(this.moduleBasePath()+"/classes/ZWaveThermostatDevice.js");
+    executeFile(this.moduleBasePath()+"/classes/ZWaveDoorlockDevice.js");
 }
 
 // Module inheritance and setup
