@@ -34,6 +34,8 @@
 
 * UI Dashboard refactored according to widgets subsystem changes
 
+* Fixed bug with loading ZWaveDoorlockDevice
+
 # Release 1.0.0
 
 (initial)
