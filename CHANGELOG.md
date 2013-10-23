@@ -34,7 +34,9 @@
 
 * UI Dashboard refactored according to widgets subsystem changes
 
-* Fixed bug with loading ZWaveDoorlockDevice
+* Fixed bug with loading ZWaveDoorlockDevice. DoorlockWidget implemented.
+
+* Introduced iconBase VDev metric
 
 # Release 1.0.0
 

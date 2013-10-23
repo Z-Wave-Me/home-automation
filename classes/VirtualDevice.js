@@ -17,6 +17,8 @@ VirtualDevice = function (id, controller) {
     this.tags = [];
     this.widgetClass = null;
 
+    this.metrics["iconBase"] = "unknown";
+
     this.updateFromVdevInfo();
     if (!this.getMetricValue("title")) {
         this.setMetricValue("title", this.defaultDeviceTitle());
