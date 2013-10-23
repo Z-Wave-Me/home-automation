@@ -17,6 +17,7 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sens
     this.zSubTreeKey = sensorTypeId;
 
     this.deviceType = "sensor";
+	this.resetIconBase();
 
     this.widgetClass = "SensorWidget";
 

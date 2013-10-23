@@ -16,6 +16,7 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
     this.zCommandClassId = 0x26;
 
     this.deviceType = "multilevel";
+    this.resetIconBase();
 
     this.widgetClass = "MultilevelWidget";
 

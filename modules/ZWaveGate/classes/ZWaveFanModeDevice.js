@@ -17,6 +17,7 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "climate";
     this.deviceSubType = "fan";
+    this.resetIconBase();
 
     this.widgetClass = "FanWidget";
 

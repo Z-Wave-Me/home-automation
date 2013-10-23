@@ -17,6 +17,7 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
     this.zSubTreeKey = zScaleId;
 
     this.deviceType = "probe";
+    this.resetIconBase();
 
     this.widgetClass = "SwitchWidget";
 

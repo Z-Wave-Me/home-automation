@@ -15,6 +15,7 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "climate";
     this.deviceSubType = "thermostat";
+    this.resetIconBase();
 
     this.widgetClass = "ThermostatWidget";
 

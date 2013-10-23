@@ -36,7 +36,7 @@
 
 * Fixed bug with loading ZWaveDoorlockDevice. DoorlockWidget implemented.
 
-* Introduced iconBase VDev metric
+* Introduced iconBase VDev metric and VirtualDevice.resetIconBase() method to reset iconBase to type/subtype
 
 # Release 1.0.0
 

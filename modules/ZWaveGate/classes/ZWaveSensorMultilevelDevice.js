@@ -17,6 +17,7 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
     this.zSubTreeKey = sensorTypeId;
 
     this.deviceType = "probe";
+    this.resetIconBase();
 
     this.widgetClass = "ProbeWidget";
 
