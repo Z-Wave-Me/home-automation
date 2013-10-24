@@ -47,7 +47,7 @@ ZWaveDevice.prototype.bindToDatapoints = function () {
             if (0x01 != changeType && 0x41 != changeType) return;
 
             // Emit generic event
-            self.controller.emit('zway.dataUpdate', self.zDeviceId, self.zInstanceId, self.zCommandClassId, self.zSubTree, this.value, args);
+            self.controller.emit('zway.dataUpdate', self.zDeviceId, self.zInstanceId, self.zCommandClassId, self.zSubTreeKey, this.value, args);
 
             // Handle update event
             self.handleDatapointUpdate(this.value, args);
