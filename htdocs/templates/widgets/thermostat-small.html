@@ -1,0 +1,23 @@
+<div class="widget-small clear" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite small-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget ">
+        <div class="container-icon">
+            <div class="icon-base <%= metrics.iconBase %><% if (deviceSubType) { print(' ' + deviceSubType); } %>"></div>
+        </div>
+        <div class="content">Thermostat
+            <span class="select-field">
+                <select>
+                    <% _.each(metrics.modes, function(mode) { %>
+                        <% if (mode.id == metrics.currentMode ) { %>
+                            <option selected value="<%= mode.id %>"><%= mode.title %></option>
+                        <% } else { %>
+                            <option value="<%= mode.id %>"><%= mode.title %></option>
+                        <% } %>
+                    <%  }); %>
+                </select>
+            </span>
+        </div>
+    </div>
+</div>

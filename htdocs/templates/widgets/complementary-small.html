@@ -1,0 +1,14 @@
+<div class="widget-small clear" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite small-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget">
+        <div class="container-icon">
+            <div class="icon-base <%= metrics.iconBase %> <% if (deviceSubType && deviceSubType != metrics.iconBase) { print(' ' + deviceSubType); } %>"></div>
+        </div>
+        <div class="content"><span class="text">Complementary</span>
+            <progress class="progress-bar" progress-bar-id="0" value="<%= metrics.level %>" min="0" max="100"></progress>
+            <input class="input-range hidden" type="range" min="0" max="100" value="<%= metrics.level %>" step="1">
+        </div>
+    </div>
+</div>
