@@ -34,7 +34,7 @@ define([
                     position = { top: relY, left: relX };
 
                 // Popup initialization
-                ModalHelper.popup($modal, forbidClose, fillScreenOpacity);
+                //ModalHelper.popup($modal, forbidClose, fillScreenOpacity);
             });
 
             //ModalHelper
