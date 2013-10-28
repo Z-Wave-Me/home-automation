@@ -521,58 +521,94 @@ input[type='range']::-moz-focusring {
   .battery { background-position: -0px -252px; width: 16px; line-height: 8px; height: 8px; }
 
 
-.icon-base {
+.full-base {
   .border-widget-sprite;
   background: url('../img/widgets/full-sprite.png') no-repeat;
   display: inline-block;
   vertical-align: middle;
 }
 
-.battery-focus { background-position: -0px -0px; width: 42px; height: 42px; }
-.flood-focus { background-position: -0px -42px; width: 42px; height: 42px; }
-.cooling-focus { background-position: -0px -84px; width: 42px; height: 42px; }
-.switch-focus { background-position: -0px -126px; width: 42px; height: 42px; }
-.temperature-focus { background-position: -0px -168px; width: 42px; height: 42px; }
-.window-focus { background-position: -0px -210px; width: 42px; height: 42px; }
-.co-focus { background-position: -0px -252px; width: 42px; height: 42px; }
-.meter-focus { background-position: -0px -294px; width: 42px; height: 42px; }
-.smoke-focus { background-position: -0px -336px; width: 42px; height: 42px; }
-.gas-focus { background-position: -0px -378px; width: 42px; height: 42px; }
-.thermostat-focus { background-position: -0px -420px; width: 42px; height: 42px; }
-.media-focus { background-position: -0px -462px; width: 42px; height: 42px; }
-.light-focus { background-position: -0px -504px; width: 42px; height: 42px; }
-.luminosity-focus { background-position: -0px -546px; width: 42px; height: 42px; }
-.heating-focus { background-position: -0px -588px; width: 42px; height: 42px; }
-.humidity-focus { background-position: -0px -630px; width: 42px; height: 42px; }
-.battery-low-focus { background-position: -0px -672px; width: 42px; height: 42px; }
-.motion-focus { background-position: -0px -714px; width: 42px; height: 42px; }
-.battery-critical-focus { background-position: -0px -756px; width: 42px; height: 42px; }
-.blinds-focus { background-position: -0px -798px; width: 42px; height: 42px; }
-.door-focus { background-position: -0px -840px; width: 42px; height: 42px; }
-.fan-focus { background-position: -0px -882px; width: 42px; height: 42px; }
-.energy-focus { background-position: -0px -924px; width: 42px; height: 42px; }
-.water-focus { background-position: -0px -966px; width: 42px; height: 42px; }
-.switch { background-position: -0px -1008px; width: 36px; height: 36px; }
-.gas { background-position: -0px -1044px; width: 36px; height: 36px; }
-.heating { background-position: -0px -1080px; width: 36px; height: 36px; }
-.motion { background-position: -0px -1116px; width: 36px; height: 36px; }
-.meter { background-position: -0px -1152px; width: 36px; height: 36px; }
-.smoke { background-position: -0px -1188px; width: 36px; height: 36px; }
-.door, .doorlock { background-position: -0px -1224px; width: 36px; height: 36px; }
-.battery,.battery_battery { background-position: -0px -1260px; width: 36px; height: 36px; }
-.temperature { background-position: -0px -1296px; width: 36px; height: 36px; }
-.co { background-position: -0px -1332px; width: 36px; height: 36px; }
-.battery-critical { background-position: -0px -1368px; width: 36px; height: 36px; }
-.humidity { background-position: -0px -1404px; width: 36px; height: 36px; }
-.media { background-position: -0px -1440px; width: 36px; height: 36px; }
-.blinds { background-position: -0px -1476px; width: 36px; height: 36px; }
-.light, .multilevel { background-position: -0px -1512px; width: 36px; height: 36px; }
-.thermostat, .thermostat_thermostat { background-position: -0px -1548px; width: 36px; height: 36px; }
-.luminosity { background-position: -0px -1584px; width: 36px; height: 36px; }
-.battery-low { background-position: -0px -1620px; width: 36px; height: 36px; }
-.window { background-position: -0px -1656px; width: 36px; height: 36px; }
-.fan, .fan_fan{ background-position: -0px -1692px; width: 36px; height: 36px; }
-.water { background-position: -0px -1728px; width: 36px; height: 36px; }
-.cooling { background-position: -0px -1764px; width: 36px; height: 36px; }
-.flood { background-position: -0px -1800px; width: 36px; height: 36px; }
-.energy { background-position: -0px -1836px; width: 36px; height: 36px; }
+.full-base.battery-focus { background-position: -0px -0px; width: 42px; height: 42px; }
+.full-base.flood-focus { background-position: -0px -42px; width: 42px; height: 42px; }
+.full-base.cooling-focus { background-position: -0px -84px; width: 42px; height: 42px; }
+.full-base.switch-focus { background-position: -0px -126px; width: 42px; height: 42px; }
+.full-base.temperature-focus { background-position: -0px -168px; width: 42px; height: 42px; }
+.full-base.window-focus { background-position: -0px -210px; width: 42px; height: 42px; }
+.full-base.co-focus { background-position: -0px -252px; width: 42px; height: 42px; }
+.full-base.meter-focus { background-position: -0px -294px; width: 42px; height: 42px; }
+.full-base.smoke-focus { background-position: -0px -336px; width: 42px; height: 42px; }
+.full-base.gas-focus { background-position: -0px -378px; width: 42px; height: 42px; }
+.full-base.thermostat-focus { background-position: -0px -420px; width: 42px; height: 42px; }
+.full-base.media-focus { background-position: -0px -462px; width: 42px; height: 42px; }
+.full-base.light-focus { background-position: -0px -504px; width: 42px; height: 42px; }
+.full-base.luminosity-focus { background-position: -0px -546px; width: 42px; height: 42px; }
+.full-base.heating-focus { background-position: -0px -588px; width: 42px; height: 42px; }
+.full-base.humidity-focus { background-position: -0px -630px; width: 42px; height: 42px; }
+.full-base.battery-low-focus { background-position: -0px -672px; width: 42px; height: 42px; }
+.full-base.motion-focus { background-position: -0px -714px; width: 42px; height: 42px; }
+.full-base.battery-critical-focus { background-position: -0px -756px; width: 42px; height: 42px; }
+.full-base.blinds-focus { background-position: -0px -798px; width: 42px; height: 42px; }
+.full-base.door-focus { background-position: -0px -840px; width: 42px; height: 42px; }
+.full-base.fan-focus { background-position: -0px -882px; width: 42px; height: 42px; }
+.full-base.energy-focus { background-position: -0px -924px; width: 42px; height: 42px; }
+.full-base.water-focus { background-position: -0px -966px; width: 42px; height: 42px; }
+.full-base.switch { background-position: -0px -1008px; width: 36px; height: 36px; }
+.full-base.gas { background-position: -0px -1044px; width: 36px; height: 36px; }
+.full-base.heating { background-position: -0px -1080px; width: 36px; height: 36px; }
+.full-base.motion { background-position: -0px -1116px; width: 36px; height: 36px; }
+.full-base.meter { background-position: -0px -1152px; width: 36px; height: 36px; }
+.full-base.smoke { background-position: -0px -1188px; width: 36px; height: 36px; }
+.full-base.door, .full-base.doorlock { background-position: -0px -1224px; width: 36px; height: 36px; }
+.full-base.battery,.full-base.battery { background-position: -0px -1260px; width: 36px; height: 36px; }
+.full-base.temperature { background-position: -0px -1296px; width: 36px; height: 36px; }
+.full-base.co { background-position: -0px -1332px; width: 36px; height: 36px; }
+.full-base.battery-critical { background-position: -0px -1368px; width: 36px; height: 36px; }
+.full-base.humidity { background-position: -0px -1404px; width: 36px; height: 36px; }
+.full-base.media { background-position: -0px -1440px; width: 36px; height: 36px; }
+.full-base.blinds { background-position: -0px -1476px; width: 36px; height: 36px; }
+.full-base.light, .full-base.multilevel { background-position: -0px -1512px; width: 36px; height: 36px; }
+.full-base.thermostat, .full-base.thermostat_thermostat { background-position: -0px -1548px; width: 36px; height: 36px; }
+.full-base.luminosity { background-position: -0px -1584px; width: 36px; height: 36px; }
+.full-base.battery-low { background-position: -0px -1620px; width: 36px; height: 36px; }
+.full-base.window { background-position: -0px -1656px; width: 36px; height: 36px; }
+.full-base.fan, .full-base.fan_fan{ background-position: -0px -1692px; width: 36px; height: 36px; }
+.full-base.water { background-position: -0px -1728px; width: 36px; height: 36px; }
+.full-base.cooling { background-position: -0px -1764px; width: 36px; height: 36px; }
+.full-base.flood { background-position: -0px -1800px; width: 36px; height: 36px; }
+.full-base.energy { background-position: -0px -1836px; width: 36px; height: 36px; }
+
+
+.icon-base {
+  .border-widget-sprite;
+  background: url('../img/widgets/widget-icon.png') no-repeat;
+  display: inline-block;
+  vertical-align: middle;
+}
+.battery {
+  .border-widget-sprite;
+  background: url('../img/widgets/full-sprite.png') no-repeat;
+  display: inline-block;
+  vertical-align: middle;
+  background-position: -0px -1260px; width: 36px; height: 36px;
+}
+.heating { background-position: -0px -0px; width: 30px; height: 30px; }
+.motion { background-position: -30px -0px; width: 30px; height: 30px; }
+.energy, .Electric { background-position: -60px -0px; width: 30px; height: 30px; }
+.water { background-position: -90px -0px; width: 30px; height: 30px; }
+.gas { background-position: -0px -30px; width: 30px; height: 30px; }
+.switch,.binary { background-position: -30px -30px; width: 30px; height: 30px; }
+.smoke { background-position: -60px -30px; width: 30px; height: 30px; }
+.door, .doorlock { background-position: -90px -30px; width: 30px; height: 30px; }
+.meter { background-position: -0px -60px; width: 30px; height: 30px; }
+.window { background-position: -30px -60px; width: 30px; height: 30px; }
+.light { background-position: -60px -60px; width: 30px; height: 30px; }
+.media { background-position: -90px -60px; width: 30px; height: 30px; }
+.blinds { background-position: -0px -90px; width: 30px; height: 30px; }
+.cooling { background-position: -30px -90px; width: 30px; height: 30px; }
+.co { background-position: -60px -90px; width: 30px; height: 30px; }
+.fan { background-position: -90px -90px; width: 30px; height: 30px; }
+.flood { background-position: -0px -120px; width: 30px; height: 30px; }
+.thermostat, .thermostat_thermostat{ background-position: -30px -120px; width: 30px; height: 30px; }
+.luminosity { background-position: -60px -120px; width: 30px; height: 30px; }
+.humidity { background-position: -90px -120px; width: 30px; height: 30px; }
+.temperature { background-position: -0px -150px; width: 30px; height: 30px; }

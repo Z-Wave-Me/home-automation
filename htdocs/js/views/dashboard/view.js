@@ -44,14 +44,14 @@ define([
                 that.renderWidget(model, replace);
             });
 
-            //setInterval(function () {
+            setInterval(function () {
                 that.Events.fetch({
                     update: true,
                     success: function(model, response, options){
                         that.Events.updateTime = response.data.updateTime;
                     }
                 });
-            //}, 1000);
+            }, 1000);
         },
         renderWidget: function(model, replace){
             var that = this;
@@ -59,12 +59,12 @@ define([
                 that.renderProbe(model, replace);
             } else if (model.get('deviceType') === "climate" && model.get('deviceSubType') === "fan") {
                 that.renderFan(model, replace);
-            } else if (model.get('deviceType') === "doorlock") {
-                that.renderDoorlock(model, replace);
-            } else if (model.get('deviceType') === "multilevel") {
+            } else if (model.get('deviceType') === "switch" && model.get('deviceSubType') === "multilevel") {
                 that.renderMultilevel(model, replace);
             } else if (model.get('deviceType') === "climate" && model.get('deviceSubType') === "thermostat") {
                 that.renderThermostat(model, replace)
+            } else if (model.get('deviceType') === "doorlock") {
+                that.renderDoorlock(model, replace);
             } else if (model.get('deviceType') === "switch") {
                 that.renderSwitch(model, replace);
             } else {

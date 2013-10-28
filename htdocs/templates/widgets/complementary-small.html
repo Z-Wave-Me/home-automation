@@ -4,7 +4,7 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %> <% if (deviceSubType && deviceSubType != metrics.iconBase) { print(' ' + deviceSubType); } %>"></div>
+            <div class="icon-base light <%= metrics.iconBase %>  <%= metrics.scaleTitle %> <% if (deviceSubType && deviceSubType != metrics.iconBase) { print(' ' + deviceSubType); } %>"></div>
         </div>
         <div class="content"><span class="text">Complementary</span>
             <progress class="progress-bar" progress-bar-id="0" value="<%= metrics.level %>" min="0" max="100"></progress>
