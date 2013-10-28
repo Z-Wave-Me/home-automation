@@ -109,6 +109,7 @@ ZWaveGate.prototype.handleStructureChanges = function (changeType, device, insta
 };
 
 ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
+    console.log("--- createDevicesForInstance("+deviceId+", "+instanceId+")");
     var self = this;
     var instance = zway.devices[deviceId].instances[instanceId];
     var instanceCommandClasses = Object.keys(instance.commandClasses);
@@ -121,7 +122,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         if (self.controller.deviceExists(deviceName)) return;
 
         console.log("Creating Thermostat device");
-        instanceDevices.push();
+        instanceDevices.push(new ZWaveThermostatDevice(deviceName, self.controller, deviceId, instanceId));
     }
 
     instanceCommandClasses.forEach(function (commandClassId) {
@@ -181,6 +182,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     });
 
     instanceDevices.forEach(function (device) {
+        console.log("--- Initializing device", device.id);
         device.init();
         device.bindToDatapoints();
         self.controller.registerDevice(device);
