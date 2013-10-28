@@ -17,7 +17,6 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sens
     this.zSubTreeKey = sensorTypeId;
 
     this.deviceType = "sensor";
-	this.resetIconBase();
 
     this.widgetClass = "SensorWidget";
 
@@ -30,9 +29,9 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sens
 
 inherits(ZWaveSensorBinaryDevice, ZWaveDevice);
 
-// ZWaveSensorBinaryDevice.prototype.defaultDeviceName = function () {
-//     return "Sensor";
-// }
+ZWaveSensorBinaryDevice.prototype.deviceTitle = function () {
+    return this.sensorTypeString+" Sensor";
+}
 
 ZWaveSensorBinaryDevice.prototype.dataPoints = function () {
     return [this._dics().level];

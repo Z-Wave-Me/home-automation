@@ -15,7 +15,6 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "climate";
     this.deviceSubType = "thermostat";
-    this.resetIconBase();
 
     this.widgetClass = "ThermostatWidget";
 
@@ -37,9 +36,9 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveThermostatDevice, ZWaveDevice);
 
-// ZWaveThermostatDevice.prototype.defaultDeviceTitle = function () {
-//     return "Thermostat";
-// }
+ZWaveThermostatDevice.prototype.deviceTitle = function () {
+    return "Thermostat";
+}
 
 ZWaveThermostatDevice.prototype.currentMode = function () {
     if (this.modeAvailable) {
@@ -173,4 +172,9 @@ ZWaveThermostatDevice.prototype.performCommand = function (command, args) {
     }
 
     return handled ? true : ZWaveThermostatDevice.super_.prototype.performCommand.call(this, command);
+}
+
+
+ZWaveThermostatDevice.prototype.deviceIconBase = function () {
+    return "thermostat";
 }

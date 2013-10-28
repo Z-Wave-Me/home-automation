@@ -16,7 +16,6 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = 0x62;
 
     this.deviceType = "doorlock";
-    this.resetIconBase();
 
     this.widgetClass = "DoorlockWidget";
 
@@ -25,7 +24,7 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveDoorlockDevice, ZWaveDevice);
 
-ZWaveDoorlockDevice.prototype.defaultDeviceName = function () {
+ZWaveDoorlockDevice.prototype.deviceTitle = function () {
     return "Doorlock";
 }
 
@@ -57,5 +56,10 @@ ZWaveDoorlockDevice.prototype.performCommand = function (command) {
     }
 
     return handled ? true : ZWaveDoorlockDevice.super_.prototype.performCommand.call(this, command);
+}
+
+
+ZWaveDoorlockDevice.prototype.deviceIconBase = function () {
+    return "door";
 }
 

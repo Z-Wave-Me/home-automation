@@ -17,9 +17,6 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
     this.zSubTreeKey = zScaleId;
 
     this.deviceType = "probe";
-    this.resetIconBase();
-
-    this.widgetClass = "SwitchWidget";
 
     this.widgetClass = "ProbeWidget";
 
@@ -34,9 +31,9 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
 
 inherits(ZWaveMeterDevice, ZWaveDevice);
 
-// ZWaveMeterDevice.prototype.defaultDeviceName = function () {
-//     return "Probe";
-// }
+ZWaveMeterDevice.prototype.deviceTitle = function () {
+    return this.sensorTypeString+" Probe";
+}
 
 ZWaveMeterDevice.prototype.dataPoints = function () {
     return [this._dics().val];
