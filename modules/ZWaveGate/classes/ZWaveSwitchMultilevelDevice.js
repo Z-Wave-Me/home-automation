@@ -64,7 +64,7 @@ ZWaveSwitchMultilevelDevice.prototype.performCommand = function (command, args) 
             newVal = Math.round(newVal/10)*10;
         }
     } else if ("exact" === command) {
-        newVal = args["level"];
+        newVal = parseInt(args["level"], 10);
         if (newVal < 0) newVal = 0;
         if (0 !== newVal%10) {
             newVal = Math.round(newVal/10)*10;
