@@ -51,8 +51,6 @@ define([
         refreshWidgets: function(){
             var that = this;
             that.Events.forEach(function(event){
-                log(event.get('metrics'))
-                log(that.Devices.get(event.get('id')).get('metrics'))
                 var device =  that.Devices.get(event.get('id'));
                 var metrics =  _.extend(device.get('metrics'), event.get('metrics'));
                 device.set({metrics:metrics});
@@ -103,7 +101,6 @@ define([
             if (!replace) {
                 that.$el.append($FanTmp);
             } else {
-                log('replace')
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $FanTmp );
             }
         },
@@ -151,6 +148,9 @@ define([
                     $text.toggleClass('hidden');
                     $progress.val($range.val()).toggleClass('hidden');
                     $range.toggleClass('hidden');
+                    Apis.devices.command(model.get('id'), 'exact', {level:$range.val()}, function(json){
+                        //log(json);
+                    })
                 });
 
             if (!replace) {
@@ -197,7 +197,6 @@ define([
             if (!replace) {
                 that.$el.append($SwitchTmp);
             } else {
-                log('replace')
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $SwitchTmp );
             }
         }
