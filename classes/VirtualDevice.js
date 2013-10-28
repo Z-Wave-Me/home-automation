@@ -20,10 +20,10 @@ VirtualDevice = function (id, controller) {
 
 
 VirtualDevice.prototype.init = function () {
-    this.metrics = {
-        "iconBase": this.deviceIconBase(),
-        "title": this.deviceTitle()
-    };
+    console.log("--- VDev init("+this.id+")");
+
+    this.metrics["title"] = this.deviceTitle();
+    this.metrics["iconBase"] = this.deviceIconBase();
 
     this.updateFromVdevInfo();
 };
