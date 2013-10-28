@@ -78,3 +78,7 @@ ZWaveSwitchMultilevelDevice.prototype.performCommand = function (command, args) 
 
     return handled;
 }
+
+ZWaveSwitchMultilevelDevice.prototype.deviceIconBase = function () {
+    return "multilevel";
+}

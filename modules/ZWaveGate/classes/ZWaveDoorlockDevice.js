@@ -58,3 +58,8 @@ ZWaveDoorlockDevice.prototype.performCommand = function (command) {
     return handled ? true : ZWaveDoorlockDevice.super_.prototype.performCommand.call(this, command);
 }
 
+
+ZWaveDoorlockDevice.prototype.deviceIconBase = function () {
+    return "door";
+}
+

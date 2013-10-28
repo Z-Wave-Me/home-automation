@@ -36,3 +36,7 @@ ZWaveBatteryDevice.prototype.dataPoints = function () {
     // var zwayDevice = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];
     return [this._dic().data.last];
 }
+
+ZWaveBatteryDevice.prototype.deviceIconBase = function () {
+    return "battery";
+}

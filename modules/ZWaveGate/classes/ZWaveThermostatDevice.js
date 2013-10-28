@@ -173,3 +173,8 @@ ZWaveThermostatDevice.prototype.performCommand = function (command, args) {
 
     return handled ? true : ZWaveThermostatDevice.super_.prototype.performCommand.call(this, command);
 }
+
+
+ZWaveThermostatDevice.prototype.deviceIconBase = function () {
+    return "thermostat";
+}

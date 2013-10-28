@@ -91,3 +91,8 @@ ZWaveFanModeDevice.prototype.performCommand = function (command, args) {
 
     return handled ? true : ZWaveFanModeDevice.super_.prototype.performCommand.call(this, command);
 }
+
+
+ZWaveFanModeDevice.prototype.deviceIconBase = function () {
+    return "fan";
+}
