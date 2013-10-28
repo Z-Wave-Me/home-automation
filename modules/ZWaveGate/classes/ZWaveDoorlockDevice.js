@@ -16,7 +16,6 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = 0x62;
 
     this.deviceType = "doorlock";
-    this.resetIconBase();
 
     this.widgetClass = "DoorlockWidget";
 
