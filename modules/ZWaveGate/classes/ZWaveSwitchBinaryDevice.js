@@ -16,6 +16,7 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = 0x25;
 
     this.deviceType = "switch";
+    this.deviceSubType = "binary";
 
     this.widgetClass = "SwitchWidget";
 
