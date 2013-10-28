@@ -23,6 +23,8 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.setPointAvailable = Object.keys(this._di().commandClasses).indexOf("67") >= 0;
 
     this.setMetricValue("hasSensor", this.sensorAvailable);
+    this.setMetricValue("hasMode", this.modeAvailable);
+    this.setMetricValue("hasSetPoint", this.setPointAvailable);
 
     this.modes = this.assembleModes();
     this.setMetricValue("modes", this.modes);
