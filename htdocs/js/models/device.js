@@ -9,6 +9,7 @@ define([
             deviceSubType: null,
             deviceType: null,
             id: null,
+            lock: true,
             metrics: {}
         },
 

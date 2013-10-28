@@ -31,9 +31,11 @@ define([
             _.each(response.data.events, function(eventsTimestamp){
                 for (var key in eventsTimestamp) {
                     if (eventsTimestamp[key][0] == 'device.metricUpdated') {
+                        var metrics = {};
+                            metrics[_.rest(eventsTimestamp[key][1])[0]] = _.rest(eventsTimestamp[key][1])[1];
                         var event = {
                             eventType: eventsTimestamp[key][0],
-                            metrics: _.rest(eventsTimestamp[key][1]),
+                            metrics: metrics,
                             id: eventsTimestamp[key][1][0],
                             timestamp: key
                         };

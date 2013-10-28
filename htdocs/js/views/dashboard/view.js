@@ -15,7 +15,7 @@ define([
     var DashboardView = Marionette.View.extend({
         el: '#widgets-region.widgets',
         initialize: function(){
-            _.bindAll(this, 'render', 'renderWidgets');
+            _.bindAll(this, 'render', 'renderWidgets', 'refreshWidgets');
             var that = this
             that.Devices = new Devices();
             that.Events = new Events();
@@ -25,25 +25,12 @@ define([
             });
 
             that.Events.on('sync', function(){
-                log(this)
-            });
-
-            that.Devices.on('change', function(model){
-                that.renderWidget(model, true);
+                that.refreshWidgets();
             });
         },
         render: function() {
             var that = this;
-            that.Devices.fetch({update: true});
-        },
-        renderWidgets: function(replace) {
-            var that = this;
-
-            // Type: probe / SubType: null
-            that.Devices.forEach(function(model){
-                that.renderWidget(model, replace);
-            });
-
+            that.Devices.fetch();
             setInterval(function () {
                 that.Events.fetch({
                     update: true,
@@ -52,6 +39,25 @@ define([
                     }
                 });
             }, 1000);
+        },
+        renderWidgets: function(replace) {
+            var that = this;
+
+            // Type: probe / SubType: null
+            that.Devices.forEach(function(model){
+                that.renderWidget(model, replace);
+            });
+        },
+        refreshWidgets: function(){
+            var that = this;
+            that.Events.forEach(function(event){
+                log(event.get('metrics'))
+                log(that.Devices.get(event.get('id')).get('metrics'))
+                var device =  that.Devices.get(event.get('id'));
+                var metrics =  _.extend(device.get('metrics'), event.get('metrics'));
+                device.set({metrics:metrics});
+                that.renderWidget(device, true);
+            })
         },
         renderWidget: function(model, replace){
             var that = this;
@@ -77,7 +83,7 @@ define([
             if (!replace) {
                 that.$el.append($ProbeTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"').replaceWith( $ProbeTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ProbeTmp );
             }
         },
         renderFan: function(model, replace){
@@ -97,7 +103,8 @@ define([
             if (!replace) {
                 that.$el.append($FanTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"').replaceWith( $FanTmp );
+                log('replace')
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $FanTmp );
             }
         },
         renderDoorlock: function(model, replace) {
@@ -120,7 +127,7 @@ define([
             if (!replace) {
                 that.$el.append($DoorLockTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"').replaceWith( $DoorLockTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $DoorLockTmp );
             }
         },
         renderMultilevel: function(model, replace){
@@ -149,7 +156,7 @@ define([
             if (!replace) {
                 that.$el.append($ComplementaryTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"').replaceWith( $ComplementaryTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ComplementaryTmp );
             }
         },
         renderThermostat: function(model, replace) {
@@ -167,7 +174,7 @@ define([
             if (!replace) {
                 that.$el.append($ThermostatTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"').replaceWith( $ThermostatTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ThermostatTmp );
             }
         },
         renderSwitch: function(model, replace){
@@ -190,7 +197,8 @@ define([
             if (!replace) {
                 that.$el.append($SwitchTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"').replaceWith( $SwitchTmp );
+                log('replace')
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $SwitchTmp );
             }
         }
 
