@@ -15,9 +15,8 @@ function AbstractWidget (parentElement, device) {
         if (self.device.id === deviceId) {
             if ("level" === name) {
                 self.setValue(value);
-            } else {
-                self.setMetricValue(name, value);
             }
+            self.setMetricValue(name, value);
         }
     });
 
@@ -27,7 +26,6 @@ AbstractWidget.prototype.init = function () {
     var parent = document.getElementById(this.parentElementId);
     this.elem = document.createElement("div");
     parent.appendChild(this.elem);
-    this.updateWidgetUI();
 };
 
 AbstractWidget.prototype.setValue = function (value, callback) {

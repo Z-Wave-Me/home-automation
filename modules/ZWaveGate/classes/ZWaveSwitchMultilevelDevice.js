@@ -15,8 +15,8 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
 
     this.zCommandClassId = 0x26;
 
-    this.deviceType = "multilevel";
-    this.resetIconBase();
+    this.deviceType = "switch";
+    this.deviceSubType = "multilevel";
 
     this.widgetClass = "MultilevelWidget";
 
@@ -25,17 +25,17 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
 
 inherits(ZWaveSwitchMultilevelDevice, ZWaveDevice);
 
-// ZWaveSwitchMultilevelDevice.prototype.defaultDeviceName = function () {
-//     return "Multilevel switch";
-// }
+ZWaveSwitchMultilevelDevice.prototype.deviceTitle = function () {
+    return "Dimmer";
+}
 
 ZWaveSwitchMultilevelDevice.prototype.dataPoints = function () {
     // var zwayDeviceScale = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].data[this.zScaleId];
     return [this._dic().data.level];
 }
 
-ZWaveSwitchMultilevelDevice.prototype.performCommand = function (command) {
-    var handled = ZWaveSwitchMultilevelDevice.super_.prototype.performCommand.call(this, command);
+ZWaveSwitchMultilevelDevice.prototype.performCommand = function (command, args) {
+    var handled = ZWaveSwitchMultilevelDevice.super_.prototype.performCommand.call(this, command, args);
 
     // Stop command processing due to parent class already processed it
     if (handled) return handled;
@@ -59,6 +59,12 @@ ZWaveSwitchMultilevelDevice.prototype.performCommand = function (command) {
         if (newVal > 99) newVal = 99;
     } else if ("decrease" === command) {
         newVal = this.metrics.level-10;
+        if (newVal < 0) newVal = 0;
+        if (0 !== newVal%10) {
+            newVal = Math.round(newVal/10)*10;
+        }
+    } else if ("exact" === command) {
+        newVal = parseInt(args["level"], 10);
         if (newVal < 0) newVal = 0;
         if (0 !== newVal%10) {
             newVal = Math.round(newVal/10)*10;

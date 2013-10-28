@@ -33,6 +33,7 @@ BatteryPolling.prototype.init = function (config) {
 
     executeFile(this.moduleBasePath()+"/BatteryPollingDevice.js");
     this.vdev = new BatteryPollingDevice("BatteryPolling", this.controller);
+    this.vdev.init();
     this.controller.registerDevice(this.vdev);
 
     this.batIds = this.scanForBatteries();

@@ -17,7 +17,6 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
     this.zSubTreeKey = sensorTypeId;
 
     this.deviceType = "probe";
-    this.resetIconBase();
 
     this.widgetClass = "ProbeWidget";
 
@@ -32,9 +31,9 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
 
 inherits(ZWaveSensorMultilevelDevice, ZWaveDevice);
 
-// ZWaveSensorMultilevelDevice.prototype.defaultDeviceName = function () {
-//     return "Probe";
-// }
+ZWaveSensorMultilevelDevice.prototype.deviceTitle = function () {
+    return this.sensorTypeString+" Sensor";
+}
 
 ZWaveSensorMultilevelDevice.prototype.dataPoints = function () {
     return [this._dics().val];

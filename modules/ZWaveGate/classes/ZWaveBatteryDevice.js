@@ -17,9 +17,7 @@ ZWaveBatteryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "probe";
     this.deviceSubType = "battery";
-    this.resetIconBase();
 
-    this.resetIconBase();
     this.widgetClass = "ProbeWidget";
 
     this.setMetricValue("probeTitle", "Battery");
@@ -30,9 +28,9 @@ ZWaveBatteryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveBatteryDevice, ZWaveDevice);
 
-// ZWaveBatteryDevice.prototype.defaultDeviceName = function () {
-// 	return "Battery";
-// }
+ZWaveBatteryDevice.prototype.deviceTitle = function () {
+    return "Battery ("+this.zDeviceId+")";
+}
 
 ZWaveBatteryDevice.prototype.dataPoints = function () {
     // var zwayDevice = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId];

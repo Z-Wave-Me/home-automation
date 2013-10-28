@@ -18,7 +18,11 @@
 
 * New configuration setting `vdevInfo` allows to set human-readable device names and tags
 
-* Introduced `VirtualDevice.defaultDeviceTitle` method
+* Introduced iconBase VDev metric
+
+* Introduced `VirtualDevice.deviceTitle` & `VirtualDevice.deviceIconBase` methods
+
+* VirtualDevice now requires `init()` to be called after instantiation
 
 * Widget's htdocs and Module's templates moded outside of the module's folder (for all modules)
 
@@ -36,7 +40,9 @@
 
 * Fixed bug with loading ZWaveDoorlockDevice. DoorlockWidget implemented.
 
-* Introduced iconBase VDev metric and VirtualDevice.resetIconBase() method to reset iconBase to type/subtype
+* Added `exact` command to the MultilevelSwitch
+
+* SwitchBinary & SwitchMultilevel now has equal deviceType (switch) and different deviceSubTypes
 
 # Release 1.0.0
 

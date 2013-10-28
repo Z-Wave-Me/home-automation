@@ -23,8 +23,12 @@ function createVirtualDevicesWidgets () {
             console.error("Class", vDev.widgetClass, "doesn't exist");
         } else {
             var widget = new WidgetClass(rowId, vDev);
-            dashboardWidgets.push(widget);
-            widget.init();
+            if (widget) {
+                dashboardWidgets.push(widget);
+                // console.log("--! INIT", widget.metrics);
+                widget.init();
+                widget.updateWidgetUI();
+            }
         }
     });
 }
