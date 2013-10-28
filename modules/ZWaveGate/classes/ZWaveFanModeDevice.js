@@ -17,7 +17,6 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "climate";
     this.deviceSubType = "fan";
-    this.resetIconBase();
 
     this.widgetClass = "FanWidget";
 
@@ -29,9 +28,9 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveFanModeDevice, ZWaveDevice);
 
-// ZWaveFanModeDevice.prototype.defaultDeviceName = function () {
-//     return "Fan mode";
-// }
+ZWaveFanModeDevice.prototype.deviceTitle = function () {
+    return "Fan";
+}
 
 ZWaveFanModeDevice.prototype.bindToDatapoints = function () {
     var self = this;

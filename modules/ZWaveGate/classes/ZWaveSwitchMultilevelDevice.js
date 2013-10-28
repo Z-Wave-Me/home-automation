@@ -16,8 +16,6 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
     this.zCommandClassId = 0x26;
 
     this.deviceType = "multilevel";
-    this.resetIconBase();
-
     this.widgetClass = "MultilevelWidget";
 
     this.setMetricValue("level", this._dic().data.level.value);
@@ -25,9 +23,9 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
 
 inherits(ZWaveSwitchMultilevelDevice, ZWaveDevice);
 
-// ZWaveSwitchMultilevelDevice.prototype.defaultDeviceName = function () {
-//     return "Multilevel switch";
-// }
+ZWaveSwitchMultilevelDevice.prototype.deviceTitle = function () {
+    return "Dimmer";
+}
 
 ZWaveSwitchMultilevelDevice.prototype.dataPoints = function () {
     // var zwayDeviceScale = zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].data[this.zScaleId];

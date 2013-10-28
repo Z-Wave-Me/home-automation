@@ -21,6 +21,10 @@ BatteryPollingDevice = function (id, controller) {
 
 inherits(BatteryPollingDevice, VirtualDevice);
 
+BatteryPollingDevice.prototype.deviceTitle = function () {
+    return "Battery health"
+}
+
 BatteryPollingDevice.prototype.performCommand = function (command) {
     console.log("--- BatteryPollingDevice.performCommand processing...");
 

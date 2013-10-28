@@ -16,7 +16,6 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = 0x25;
 
     this.deviceType = "switch";
-    this.resetIconBase();
 
     this.widgetClass = "SwitchWidget";
 
@@ -25,9 +24,9 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveSwitchBinaryDevice, ZWaveDevice);
 
-// ZWaveSwitchBinaryDevice.prototype.defaultDeviceName = function () {
-//     return "Switch";
-// }
+ZWaveSwitchBinaryDevice.prototype.deviceTitle = function () {
+    return "Switch";
+}
 
 ZWaveSwitchBinaryDevice.prototype.dataPoints = function () {
     return [this._dic().data.level];

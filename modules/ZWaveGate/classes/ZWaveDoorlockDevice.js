@@ -25,7 +25,7 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveDoorlockDevice, ZWaveDevice);
 
-ZWaveDoorlockDevice.prototype.defaultDeviceName = function () {
+ZWaveDoorlockDevice.prototype.deviceTitle = function () {
     return "Doorlock";
 }
 

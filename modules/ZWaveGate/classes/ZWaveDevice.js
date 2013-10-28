@@ -27,8 +27,8 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveDevice, VirtualDevice);
 
-ZWaveDevice.prototype.defaultDeviceTitle = function () {
-    return !!this.deviceSubType ? this.deviceType + "/" + this.deviceSubType : this.deviceType;
+ZWaveDevice.prototype.deviceIconBase = function () {
+    return "zwave";
 }
 
 ZWaveDevice.prototype.dataPoints = function () {

@@ -18,7 +18,7 @@
 
 * New configuration setting `vdevInfo` allows to set human-readable device names and tags
 
-* Introduced `VirtualDevice.defaultDeviceTitle` method
+* Introduced `VirtualDevice.deviceTitle` & `VirtualDevice.deviceIconBase` methods
 
 * Widget's htdocs and Module's templates moded outside of the module's folder (for all modules)
 
@@ -36,7 +36,7 @@
 
 * Fixed bug with loading ZWaveDoorlockDevice. DoorlockWidget implemented.
 
-* Introduced iconBase VDev metric and VirtualDevice.resetIconBase() method to reset iconBase to type/subtype
+* Introduced iconBase VDev metric
 
 # Release 1.0.0
 

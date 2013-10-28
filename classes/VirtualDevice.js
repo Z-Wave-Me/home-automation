@@ -12,22 +12,27 @@ VirtualDevice = function (id, controller) {
     this.controller = controller;
     this.deviceType = null;
     this.deviceSubType = null;
-    this.metrics = {
-        "iconBase": "unknown",
-        "title": this.defaultDeviceTitle()
-    };
+    this.metrics = {};
     this.caps = [];
     this.tags = [];
     this.widgetClass = null;
+};
+
+
+VirtualDevice.prototype.init = function () {
+    this.metrics = {
+        "iconBase": this.deviceIconBase(),
+        "title": this.deviceTitle()
+    };
 
     this.updateFromVdevInfo();
 };
 
-VirtualDevice.prototype.defaultDeviceTitle = function () {
+VirtualDevice.prototype.deviceTitle = function () {
     return this.id;
 };
 
-VirtualDevice.prototype.resetIconBase = function () {
+VirtualDevice.prototype.deviceIconBase = function () {
     return this.metrics.iconBase = !!this.deviceSubType ? this.deviceSubType+"_"+this.deviceSubType : this.deviceType;
 };
 
