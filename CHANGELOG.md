@@ -42,6 +42,8 @@
 
 * Added `exact` command to the MultilevelSwitch
 
+* SwitchBinary & SwitchMultilevel now has equal deviceType (switch) and different deviceSubTypes
+
 # Release 1.0.0
 
 (initial)
