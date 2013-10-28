@@ -54,19 +54,18 @@ VirtualDevice.prototype.updateFromVdevInfo = function () {
 
     var info = this.controller.getVdevInfo(this.id);
     if (!!info) {
-        // update title
-        if (info.title) {
-            this.setMetricValue("title", info.title);
-        }
-
-        // update tags list
-        if (info.tags && Array.isArray(info.tags)) {
-            info.tags.forEach(function (tag) {
-                if (!in_array(self.tags, tag)) {
-                    self.tags.push(tag);
-                }
-            });
-            this.controller.emit("device.tagsUpdated", this.id, this.tags);
-        }
+        Object.keys(info).forEach(function (key) {
+            var value = info[key];
+            if ("tags" === key && Array.isArray(value)) {
+                value.forEach(function (tag) {
+                    if (!in_array(self.tags, tag)) {
+                        self.tags.push(tag);
+                    }
+                });
+                self.controller.emit("device.tagsUpdated", this.id, this.tags);
+            } else {
+                self.setMetricValue(key, info[key]);
+            }
+        });
     }
 };
