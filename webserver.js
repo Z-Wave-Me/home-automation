@@ -163,7 +163,7 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
     return function () {
         var reply = {
             error: null,
-            data: !!controller.devices[vDevId].performCommand(commandId, self.req.query)
+            data: !!controller.devices[vDevId].performCommand.call(controller.devices[vDevId], commandId, self.req.query)
         }
 
         self.res.status = 200;
