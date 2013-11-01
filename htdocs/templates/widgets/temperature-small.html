@@ -1,0 +1,15 @@
+<div class="widget-small clear" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite small-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget ">
+        <div class="container-icon">
+            <div class="tools-sprite temp"></div>
+        </div>
+        <div class="content">Temperature
+            <span class="temperature-field">
+                <nobr><%= Math.round(metrics.level) %> <%= metrics.scaleTitle %></nobr>
+            </span>
+        </div>
+    </div>
+</div>
