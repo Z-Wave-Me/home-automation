@@ -53,13 +53,25 @@ define([
         Backbone.sync = bbSync;
         addJqueryMethod();
         preFilterAjax();
-        var startingUrl = "/";
-        // Browsers without pushState (IE) need the root/page url in the hash
-        if (!(window.history && window.history.pushState)) {
-            window.location.hash = window.location.pathname.replace(startingUrl, '');
-            startingUrl = window.location.pathname;
+        var suffix_pattern = new RegExp('\/?' + config.history_root + '\/?','i');
+
+        // if IE
+        if (!Modernizr.history) {
+
+            // initialize router/Backbone.history, but turn off route parsing,
+            // since non-window.history parsing will look for a hash, and not finding one,
+            // will break our shit.
+            Backbone.history.start({ silent: true, hashChange: true });
+
+            // convert any post-# elements to a standard URL to be parsed by our router
+            var subroute = window.location.hash.replace('#', '/').split('?')[0],
+                route = window.location.pathname.replace(suffix_pattern, '') + subroute;
+
+            Backbone.history.loadUrl(route);
+        } else {
+            Backbone.history.start({ pushState: true, silent: true });
+            Backbone.history.loadUrl(Backbone.history.getFragment().replace(suffix_pattern, '').split('?')[0]);
         }
-        Backbone.history.start({ root: startingUrl });
     });
 
     addJqueryMethod =  function() {
