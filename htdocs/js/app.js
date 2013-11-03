@@ -53,7 +53,13 @@ define([
         Backbone.sync = bbSync;
         addJqueryMethod();
         preFilterAjax();
-        Backbone.history.start({ pushState: Modernizr.history });
+        var startingUrl = "/";
+        // Browsers without pushState (IE) need the root/page url in the hash
+        if (!(window.history && window.history.pushState)) {
+            window.location.hash = window.location.pathname.replace(startingUrl, '');
+            startingUrl = window.location.pathname;
+        }
+        Backbone.history.start({ root: startingUrl });
     });
 
     addJqueryMethod =  function() {
