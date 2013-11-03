@@ -1,16 +1,14 @@
 .popover {
   position: absolute;
-  color: #dee3e6;
   top: 0;
   left: 0;
   z-index: 1010;
-  min-width: 276px;
+  min-width: 310px;
   padding: 1px;
   text-align: left;
   white-space: normal;
-  background-color: #293032;
-  border: 2px solid #bbbcbf;
-  border: 1px solid rgba(187, 188, 191, 0.3);
+  background-color: #fff;
+  border: 2px solid @green;
   -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
   background-clip: padding-box;
@@ -28,8 +26,8 @@
   }
 
   .popover-content {
-    padding: 14px 14px;
-    color: #dee3e6;
+    padding: 0px 10px;
+    font-size: 12px;
   }
   .arrow,
   .arrow:after {
@@ -85,14 +83,14 @@
     bottom: -11px;
     left: 50%;
     margin-left: -11px;
-    border-top-color: #293032;
+    border-top-color: @green;
     border-top-color: rgba(187, 188, 191, 0.25);
     border-bottom-width: 0;
   }
   .arrow:after {
     bottom: 1px;
     margin-left: -10px;
-    border-top-color: #293032;
+    border-top-color: @green;
     border-bottom-width: 0;
     content: " ";
   }
@@ -127,14 +125,14 @@
     top: -11px;
     left: 50%;
     margin-left: -11px;
-    border-bottom-color: #293032;
+    border-bottom-color: @green;
     border-bottom-color: rgba(187, 188, 191, 0.25);
     border-top-width: 0;
   }
   .arrow:after {
     top: 1px;
     margin-left: -10px;
-    border-bottom-color: #293032;
+    border-bottom-color: @green;
     border-top-width: 0;
     content: " ";
   }
@@ -294,5 +292,26 @@
     .col-lg-offset-2 {
       margin-left: 16.666666666666664%;
     }
+  }
+}
+
+.events-container {
+  width: 100%;
+  float: left;
+  display: block;
+  .event-item {
+    display: block;
+    float: left;
+    width: 90%;
+    font-size: 12px;
+    padding-left: 21px;
+    background: url('http://zwave.localhost/public/img/widgets/tools-sprite.png') no-repeat;
+    display: inline-block;
+    vertical-align: middle;
+    background-position: 0px -209px;
+    height: 16px;
+    vertical-align: middle;
+    line-height: 16px;
+    margin: 5px 0;
   }
 }

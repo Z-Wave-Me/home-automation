@@ -29,12 +29,13 @@ define([
                     forbidClose = true;
 
                 // Popup position
-                var relX = e.pageX - 280 + "px",
-                    relY = e.pageY - 130 + "px",
+                var relX = "64.7%",
+                    relY = "7.8%",
                     position = { top: relY, left: relX };
 
                 // Popup initialization
-                //ModalHelper.popup($modal, forbidClose, fillScreenOpacity);
+                $modal.find('.arrow').css({'left': '17%' });
+                ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
             //ModalHelper

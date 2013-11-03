@@ -53,7 +53,7 @@ define([
         Backbone.sync = bbSync;
         addJqueryMethod();
         preFilterAjax();
-        Backbone.history.start();
+        Backbone.history.start({pushState: true});
     });
 
     addJqueryMethod =  function() {
@@ -86,6 +86,7 @@ define([
         $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
             // Your server goes below
             var apiUrl = "http://"+apiHost+":"+apiPort+"/ZAutomation/api" + options.url;
+
             options.url = apiUrl;
             options.crossDomain ={
                 crossDomain: true

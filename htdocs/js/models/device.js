@@ -1,6 +1,7 @@
 define([
     //libs
-    'backbone'
+    'backbone',
+    'crossdomain'
 ], function(Backbone) {
 
     return Backbone.Model.extend({

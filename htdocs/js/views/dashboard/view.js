@@ -105,8 +105,8 @@ define([
             }
         },
         renderDoorlock: function(model, replace) {
-            var that = this;
-            var $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
+            var that = this,
+                $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
             $DoorLockTmp.find('.action').on('click', function(e){
                 var $button = $(this);
                 e.preventDefault();
@@ -128,12 +128,12 @@ define([
             }
         },
         renderMultilevel: function(model, replace){
-            var that = this;
-            var $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON()));
+            var that = this,
+                $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON()));
 
-            var $range = $ComplementaryTmp.find('.input-range');
-            var $progress =  $ComplementaryTmp.find('.progress-bar');
-            var $text =  $ComplementaryTmp.find('.text');
+            var $range = $ComplementaryTmp.find('.input-range'),
+                $progress =  $ComplementaryTmp.find('.progress-bar'),
+                $text =  $ComplementaryTmp.find('.text');
 
             $progress.on('mouseover', function(){
                 $progress.toggleClass('hidden');
@@ -160,8 +160,9 @@ define([
             }
         },
         renderThermostat: function(model, replace) {
-            var that = this;
-            var $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
+            var that = this,
+                $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
+
             $ThermostatTmp.find(".select-field select").on('change', function(){
 
                 var params = $(this).val() != -1 ? {mode: $(this).val()} : {},
@@ -178,12 +179,14 @@ define([
             }
         },
         renderSwitch: function(model, replace){
-            var that = this;
-            var $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
+            var that = this,
+                $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
             $SwitchTmp.find('.action').on('click', function(e){
-                var $button = $(this);
                 e.preventDefault();
-                var command = !$button.hasClass('active') ? 'on' : 'off';
+
+                var $button = $(this),
+                    command = !$button.hasClass('active') ? 'on' : 'off';
+
                 Apis.devices.command(model.get('id'), command, {}, function(json){
                     //log(json);
                     $button
