@@ -53,7 +53,6 @@ define([
         Backbone.sync = bbSync;
         addJqueryMethod();
         preFilterAjax();
-        var suffix_pattern = new RegExp('\/?' + config.history_root + '\/?','i');
 
         // if IE
         if (!Modernizr.history) {
@@ -65,12 +64,12 @@ define([
 
             // convert any post-# elements to a standard URL to be parsed by our router
             var subroute = window.location.hash.replace('#', '/').split('?')[0],
-                route = window.location.pathname.replace(suffix_pattern, '') + subroute;
+                route = window.location.pathname + subroute;
 
             Backbone.history.loadUrl(route);
         } else {
             Backbone.history.start({ pushState: true, silent: true });
-            Backbone.history.loadUrl(Backbone.history.getFragment().replace(suffix_pattern, '').split('?')[0]);
+            Backbone.history.loadUrl(Backbone.history.getFragment().split('?')[0]);
         }
     });
 
