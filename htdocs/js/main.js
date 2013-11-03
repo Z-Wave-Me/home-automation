@@ -5,7 +5,6 @@ requirejs.config({
     baseUrl: "js",
     paths : {
         backbone : 'libs/backbone.marionette/backbone',
-        crossdomain: "libs/backbone.marionette/Backbone.CrossDomain",
         underscore : 'libs/backbone.marionette/underscore-min',
         jquery : 'libs/backbone.marionette/jquery',
         'jquery-cookie' : 'libs/backbone.marionette/jquery.cookie',
@@ -48,7 +47,7 @@ requirejs.config({
     urlArgs: "v=" + vers
 })
 
-define(['app', 'routers/appRouter', "crossdomain"], function(App, appRouter) {
+define(['app', 'routers/appRouter'], function(App, appRouter) {
     App.addInitializer(function() {
         App.Router = new appRouter;
         return App.vent.trigger("routing:started");

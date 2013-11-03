@@ -1,8 +1,7 @@
 define([
     //libs
     'backbone',
-    'models/device',
-    'crossdomain'
+    'models/device'
 ], function(Backbone, DeviceM) {
 
     var DevicesCollection =  Backbone.Collection.extend({
