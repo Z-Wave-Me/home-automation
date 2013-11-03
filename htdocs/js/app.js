@@ -53,7 +53,7 @@ define([
         Backbone.sync = bbSync;
         addJqueryMethod();
         preFilterAjax();
-        Backbone.history.start({pushState: true});
+        Backbone.history.start();
     });
 
     addJqueryMethod =  function() {
