@@ -1,10 +1,12 @@
 function log(msg) {
+    'use strict';
     if (console) {
         console.log(msg);
     }
 }
 
 function stringify(x) {
+    'use strict';
     if (JSON.stringify) {
         return JSON.stringify(x, null, '\t');
     }
@@ -12,28 +14,32 @@ function stringify(x) {
     return '[?]';
 }
 
-function trim(str){
+function trim(str) {
+    'use strict';
     return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 }
 
 function colorScheme(dataColor) {
-
-    var colorClass = new Array();
-    colorClass['4187C8'] = 'blue';
-    colorClass['72C147'] = 'green';
-    colorClass['FFCD39'] = 'yellow';
-    colorClass['EA782A'] = 'orange';
-    colorClass['EA442A'] = 'red';
+    'use strict';
+    var colorClass =  {
+        '4187C8' : 'blue',
+        '72C147' : 'green',
+        'FFCD39' : 'yellow',
+        'EA782A' : 'orange',
+        'EA442A' : 'red'
+    };
 
     return colorClass[dataColor];
 }
 
 function getTimeStamp() {
+    'use strict';
     return (new Date().toISOString());
 }
 
 
 function isLocalStorageAvailable() {
+    'use strict';
     try {
         return 'localStorage' in window && window['localStorage'] !== null;
     } catch (e) {
@@ -42,19 +48,25 @@ function isLocalStorageAvailable() {
 }
 
 function isFileSystemApiAvailable() {
+    'use strict';
+    var result;
     if (window.File && window.FileReader && window.FileList && window.Blob) {
-        return true;
+        result = true;
     } else {
-        return false;
+        result = false;
     }
+    return result;
 }
 
 function qVar(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split('&');
-    for (var i = 0; i < vars.length; i++) {
-        var pair = vars[i].split('=');
-        if (decodeURIComponent(pair[0]) == variable) {
+    'use strict';
+    var query = window.location.search.substring(1),
+        vars = query.split('&'),
+        i,
+        pair;
+    for (i = 0; i < vars.length; i += 1) {
+        pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) === variable) {
             return decodeURIComponent(pair[1]);
         }
     }
@@ -62,5 +74,6 @@ function qVar(variable) {
 }
 
 function capitaliseFirstLetter(string){
+    'use strict';
     return string.charAt(0).toUpperCase() + string.slice(1);
 }

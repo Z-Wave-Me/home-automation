@@ -1,7 +1,6 @@
 define([
-    //libs
     'backbone'
-], function(Backbone) {
+], function (Backbone) {
     "use strict";
 
     function request(url, method, data, success, failure) {
@@ -10,12 +9,12 @@ define([
             type: method,
             dataType: 'json',
             data: data,
-            success: function(json) {
+            success: function (json) {
                 if (typeof success === 'function') {
                     success(json);
                 }
             },
-            error: function(){
+            error: function () {
                 if (typeof failure === 'function') {
                     failure();
                 }
@@ -26,8 +25,8 @@ define([
     var Apis = { request: request };
 
     Apis.devices = {
-        command: function(id, command, params, callback) {
-            var params = !params ? {} : params;
+        command: function (id, command, params, callback) {
+            params = !params ? {} : params;
             request('/devices/' + id + '/' + 'command/' + command, 'get', params, callback);
         }
     };

@@ -1,11 +1,11 @@
 define([
     //libs
     'backbone'
-], function(Backbone) {
+], function (Backbone) {
+    'use strict';
+    var Device =  Backbone.Model.extend({
 
-    return Backbone.Model.extend({
-
-        defaults:{
+        defaults: {
             deviceSubType: null,
             deviceType: null,
             id: null,
@@ -20,12 +20,12 @@ define([
             'delete': '/devices/'
         },
 
-        url: function(){
+        url: function () {
             var url = '';
             return url;
         },
 
-        sync: function(method, model, options) {
+        sync: function (method, model, options) {
             options = options || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
@@ -38,4 +38,6 @@ define([
             });
         }
     });
+
+    return Device;
 });

@@ -1,11 +1,11 @@
 define([
     //libs
     'backbone'
-], function(Backbone) {
+], function (Backbone) {
+    'use strict';
+    var Event = Backbone.Model.extend({
 
-    return Backbone.Model.extend({
-
-        defaults:{
+        defaults: {
             id: null
         },
 
@@ -16,12 +16,12 @@ define([
             'delete': '/events/'
         },
 
-        url: function(){
+        url: function () {
             var url = this.updateTime !== undefined ? '?since=' + this.updateTime : '?since=0';
             return url;
         },
 
-        sync: function(method, model, options) {
+        sync: function (method, model, options) {
             options = options || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
@@ -34,4 +34,6 @@ define([
             });
         }
     });
+
+    return Event;
 });

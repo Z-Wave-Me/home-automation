@@ -10,54 +10,54 @@ define([
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
     "text!templates/widgets/switch-small.html"
-], function(App, Apis, Marionette, Devices, Events, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch){
+], function (App, Apis, Marionette, Devices, Events, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
     var DashboardView = Marionette.View.extend({
         el: '#widgets-region.widgets',
-        initialize: function(){
+        initialize: function () {
             _.bindAll(this, 'render', 'renderWidgets', 'refreshWidgets');
-            var that = this
+            var that = this;
             that.Devices = new Devices();
             that.Events = new Events();
 
-            that.Devices.on('sync', function(){
+            that.Devices.on('sync', function () {
                 that.renderWidgets(false);
             });
 
-            that.Events.on('sync', function(){
+            that.Events.on('sync', function () {
                 that.refreshWidgets();
             });
         },
-        render: function() {
+        render: function () {
             var that = this;
             that.Devices.fetch();
             setInterval(function () {
                 that.Events.fetch({
                     update: true,
-                    success: function(model, response, options){
+                    success: function (model, response, options) {
                         that.Events.updateTime = response.data.updateTime;
                     }
                 });
             }, 1000);
         },
-        renderWidgets: function(replace) {
+        renderWidgets: function (replace) {
             var that = this;
 
             // Type: probe / SubType: null
-            that.Devices.forEach(function(model){
+            that.Devices.forEach(function (model) {
                 that.renderWidget(model, replace);
             });
         },
-        refreshWidgets: function(){
+        refreshWidgets: function () {
             var that = this;
-            that.Events.forEach(function(event){
-                var device =  that.Devices.get(event.get('id'));
-                var metrics =  _.extend(device.get('metrics'), event.get('metrics'));
-                device.set({metrics:metrics});
+            that.Events.forEach(function (event) {
+                var device =  that.Devices.get(event.get('id')),
+                    metrics =  _.extend(device.get('metrics'), event.get('metrics'));
+                device.set({ metrics: metrics });
                 that.renderWidget(device, true);
-            })
+            });
         },
-        renderWidget: function(model, replace){
+        renderWidget: function (model, replace) {
             var that = this;
             if (model.get('deviceType') === "probe") {
                 that.renderProbe(model, replace);
@@ -66,52 +66,52 @@ define([
             } else if (model.get('deviceType') === "switch" && model.get('deviceSubType') === "multilevel") {
                 that.renderMultilevel(model, replace);
             } else if (model.get('deviceType') === "climate" && model.get('deviceSubType') === "thermostat") {
-                that.renderThermostat(model, replace)
+                that.renderThermostat(model, replace);
             } else if (model.get('deviceType') === "doorlock") {
                 that.renderDoorlock(model, replace);
             } else if (model.get('deviceType') === "switch") {
                 that.renderSwitch(model, replace);
             } else {
-                log(model)
+                log(model);
             }
         },
-        renderProbe: function(model, replace){
-            var that = this;
-            var $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
+        renderProbe: function (model, replace) {
+            var that = this,
+                $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
             if (!replace) {
                 that.$el.append($ProbeTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ProbeTmp );
             }
         },
-        renderFan: function(model, replace){
-            var that = this;
-            var $FanTmp = $(_.template(templateFan, model.toJSON()));
+        renderFan: function (model, replace) {
+            var that = this,
+                $FanTmp = $(_.template(templateFan, model.toJSON()));
 
-            $FanTmp.find(".select-field select").on('change', function(){
+            $FanTmp.find(".select-field select").on('change', function () {
 
-                var params = $(this).val() != -1 ? {mode: $(this).val()} : {},
-                    command = $(this).val() != -1 ? 'setMode' : 'off';
+                var params = $(this).val() !== -1 ? {mode: $(this).val()} : {},
+                    command = $(this).val() !== -1 ? 'setMode' : 'off';
 
-                Apis.devices.command(model.get('id'), command, params, function(json){
+                Apis.devices.command(model.get('id'), command, params, function (json) {
                     //log(json);
-                })
+                });
             });
 
             if (!replace) {
                 that.$el.append($FanTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $FanTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($FanTmp);
             }
         },
-        renderDoorlock: function(model, replace) {
+        renderDoorlock: function (model, replace) {
             var that = this,
                 $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
-            $DoorLockTmp.find('.action').on('click', function(e){
-                var $button = $(this);
+            $DoorLockTmp.find('.action').on('click', function (e) {
                 e.preventDefault();
-                var command = !$button.hasClass('active') ? 'open' : 'closed';
-                Apis.devices.command(model.get('id'), command, {}, function(json){
+                var $button = $(this),
+                    command = !$button.hasClass('active') ? 'open' : 'closed';
+                Apis.devices.command(model.get('id'), command, {}, function (json) {
                     //log(json);
                     $button
                         .toggleClass('active')
@@ -119,58 +119,57 @@ define([
                         .children()
                         .toggleClass('active')
                         .find('.text').text(command.toUpperCase());
-                })
+                });
             });
             if (!replace) {
                 that.$el.append($DoorLockTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $DoorLockTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($DoorLockTmp);
             }
         },
-        renderMultilevel: function(model, replace){
+        renderMultilevel: function (model, replace) {
             var that = this,
-                $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON()));
-
-            var $range = $ComplementaryTmp.find('.input-range'),
+                $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON())),
+                $range = $ComplementaryTmp.find('.input-range'),
                 $progress =  $ComplementaryTmp.find('.progress-bar'),
                 $text =  $ComplementaryTmp.find('.text');
 
-            $progress.on('mouseover', function(){
+            $progress.on('mouseover', function () {
                 $progress.toggleClass('hidden');
                 $text.toggleClass('hidden');
                 $range.toggleClass('hidden');
                 $range.doVisibleRange();
             });
 
-            $range.on('change', function() {
+            $range.on('change', function () {
                 $range.doVisibleRange();
-            }).on('mouseout', function(){
-                    $text.toggleClass('hidden');
-                    $progress.val($range.val()).toggleClass('hidden');
-                    $range.toggleClass('hidden');
-                    Apis.devices.command(model.get('id'), 'exact', {level:$range.val()}, function(json){
-                        //log(json);
-                    })
+            }).on('mouseout', function () {
+                $text.toggleClass('hidden');
+                $progress.val($range.val()).toggleClass('hidden');
+                $range.toggleClass('hidden');
+                Apis.devices.command(model.get('id'), 'exact', {level: $range.val()}, function (json) {
+                    //log(json);
                 });
+            });
 
             if (!replace) {
                 that.$el.append($ComplementaryTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ComplementaryTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ComplementaryTmp);
             }
         },
-        renderThermostat: function(model, replace) {
+        renderThermostat: function (model, replace) {
             var that = this,
                 $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
 
-            $ThermostatTmp.find(".select-field select").on('change', function(){
+            $ThermostatTmp.find(".select-field select").on('change', function () {
 
-                var params = $(this).val() != -1 ? {mode: $(this).val()} : {},
-                    command = $(this).val() != -1 ? 'setMode' : 'off';
+                var params = $(this).val() !== -1 ? {mode: $(this).val()} : {},
+                    command = $(this).val() !== -1 ? 'setMode' : 'off';
 
-                Apis.devices.command(model.get('id'), command, params, function(json){
+                Apis.devices.command(model.get('id'), command, params, function (json) {
                     //log(json);
-                })
+                });
             });
             if (!replace) {
                 that.$el.append($ThermostatTmp);
@@ -178,29 +177,28 @@ define([
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ThermostatTmp );
             }
         },
-        renderSwitch: function(model, replace){
+        renderSwitch: function (model, replace) {
             var that = this,
                 $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
-            $SwitchTmp.find('.action').on('click', function(e){
+            $SwitchTmp.find('.action').on('click', function (e) {
                 e.preventDefault();
 
                 var $button = $(this),
                     command = !$button.hasClass('active') ? 'on' : 'off';
 
-                Apis.devices.command(model.get('id'), command, {}, function(json){
-                    //log(json);
+                Apis.devices.command(model.get('id'), command, {}, function () {
                     $button
                         .toggleClass('active')
                         .attr('title', capitaliseFirstLetter(command))
                         .children()
                         .toggleClass('active')
                         .find('.text').text(command.toUpperCase());
-                })
+                });
             });
             if (!replace) {
                 that.$el.append($SwitchTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $SwitchTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);
             }
         }
 

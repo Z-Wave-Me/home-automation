@@ -1,5 +1,4 @@
 var vers = 1;
-'use strict';
 
 requirejs.config({
     baseUrl: "js",
@@ -45,11 +44,12 @@ requirejs.config({
         }
     },
     urlArgs: "v=" + vers
-})
+});
 
-define(['app', 'routers/appRouter'], function(App, appRouter) {
-    App.addInitializer(function() {
-        App.Router = new appRouter;
+define(['app', 'routers/appRouter'], function(App, AppRouter) {
+    'use strict';
+    App.addInitializer(function () {
+        App.Router = new AppRouter();
         return App.vent.trigger("routing:started");
     });
     return App.start();

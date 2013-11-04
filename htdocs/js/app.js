@@ -3,26 +3,25 @@ define([
     'backbone',
     'layout',
     'helpers/bb-sync'
-], function(Marionette, Backbone, Layout, bbSync) {
+], function (Marionette, Backbone, Layout, bbSync) {
     'use strict';
     var App,
         addJqueryMethod,
         preFilterAjax,
         ReplaceRegion,
-        layout = new Layout();
-
-    var apiPort = '10483',
+        layout = new Layout(),
+        apiPort = '10483',
         apiHost = 'mskoff.z-wave.me';
 
     App = new Backbone.Marionette.Application();
     App.vars = {
-        apiPort : qVar("port") ? qVar("port") : window.location.port,
-        apiHost : qVar("host") ? qVar("host") : window.location.hostname
+        apiPort : qVar("port") || window.location.port,
+        apiHost : qVar("host") || window.location.hostname
     };
 
 
     ReplaceRegion = Marionette.Region.extend({
-        open: function(view){
+        open: function (view) {
             this.$el.replaceWith(view.el);
         }
     });
@@ -73,7 +72,7 @@ define([
         }
     });
 
-    addJqueryMethod =  function() {
+    addJqueryMethod =  function () {
         $.fn.serializeObject = function () {
             var o = {},
                 a = this.serializeArray();
@@ -90,22 +89,22 @@ define([
             return o;
         };
 
-        $.fn.doVisibleRange = function() {
-            return this.each(function() {
-                var $this = $(this);
-                var value = ($this.val() - $this.attr('min'))/($this.attr('max') - $this.attr('min'));
+        $.fn.doVisibleRange = function () {
+            return this.each(function () {
+                var $this = $(this),
+                    value = ($this.val() - $this.attr('min')) / ($this.attr('max') - $this.attr('min'));
                 $this.css('background-image', '-webkit-gradient(linear,left top,  right top, color-stop(' + value + ', rgb( 64, 232, 240 )), color-stop(' + value + ', rgb( 190, 190, 190 )))');
             });
         };
     };
 
-    preFilterAjax = function() {
+    preFilterAjax = function () {
         $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
             // Your server goes below
-            var apiUrl = "http://"+apiHost+":"+apiPort+"/ZAutomation/api" + options.url;
+            var apiUrl = "http://" + apiHost + ":" + apiPort + "/ZAutomation/api" + options.url;
 
             options.url = apiUrl;
-            options.crossDomain ={
+            options.crossDomain = {
                 crossDomain: true
             };
 

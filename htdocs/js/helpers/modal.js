@@ -4,20 +4,32 @@ define([
 ], function (Backbone) {
     "use strict";
 
-
-
-    var fillScreenCss = {
-        'background': '#000000', 'opacity': '0.9', 'filter': 'alpha(opacity=90)', 'position': 'absolute', 'top': '0', 'left': '0', 'min-width': '100%', 'z-index': '1000'
+    var fillScreenCss, fillScreenCssTransparent;
+    fillScreenCss = {
+        'background': '#000000',
+        'opacity': '0.9',
+        'filter': 'alpha(opacity=90)',
+        'position': 'absolute',
+        'top': '0',
+        'left': '0',
+        'min-width': '100%',
+        'z-index': '1000'
+    };
+    fillScreenCssTransparent = {
+        'background': '#000000',
+        'opacity': '0',
+        'filter': 'alpha(opacity=0)',
+        'position': 'absolute',
+        'top': '0',
+        'left': '0',
+        'min-width': '100%',
+        'z-index': '1000'
     };
 
-    var fillScreenCssTransparent = {
-        'background': '#000000', 'opacity': '0', 'filter': 'alpha(opacity=0)', 'position': 'absolute', 'top': '0', 'left': '0', 'min-width': '100%', 'z-index': '1000'
-    };
+    $.fn.exists = function () { return (this.length > 0); };
 
-    jQuery.fn.exists = function() { return (this.length > 0); };
-
-    jQuery.fn.center = function () {
-        this.css("position","absolute");
+    $.fn.center = function () {
+        this.css("position", "absolute");
         this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) +
             $(window).scrollTop()) + "px");
         this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
@@ -25,7 +37,7 @@ define([
         return this;
     }
 
-    jQuery.fn.top = function () {
+    $.fn.top = function () {
         this.css("position","absolute");
         this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 5) +
             $(window).scrollTop()) + "px");
@@ -91,7 +103,6 @@ define([
 
         $popup.show();
         $popup.trigger('show');
-
     };
 
 

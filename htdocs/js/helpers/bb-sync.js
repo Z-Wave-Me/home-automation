@@ -3,12 +3,12 @@ define([
 ], function (Backbone) {
     "use strict";
 
-    var toParam = function(obj, prefix) {
+    var toParam = function (obj, prefix) {
         log(">>>>>>>>>>> " + prefix + ": " + JSON.stringify(obj));
-        var out = [], prop, val;
+        var out = [], prop, val, res;
 
         if (!prefix) {
-            prefix = "";
+            prefix = '';
         }
 
         for (prop in obj) {
@@ -20,12 +20,12 @@ define([
                     } else if (typeof val === "function") {
                         // do nothing
                     } else if (typeof val === "object") {
-                        var res = toParam(val, prefix + prop + ".");
+                        res = toParam(val, prefix + prop + ".");
                         if (res) {
                             out.push(res);
                         }
                     } else {
-                        out.push(prefix + "" + prop + "=" + obj[prop]);
+                        out.push(prefix + prop + "=" + obj[prop]);
                     }
                 }
             }
@@ -35,7 +35,8 @@ define([
         return out.join('&');
     };
 
-    return function(method, model, options) {
+    return function (method, model, options) {
+        var val, methodMap, type, params;
         log('<- SYNC ->');
         log(JSON.stringify(options));
 
@@ -44,19 +45,24 @@ define([
         }
 
         var getValue = function (object, prop) {
-            if (!(object && object[prop])) return null;
-            return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+            var val;
+            if (!(object && object[prop])) {
+                val = null;
+            } else {
+                val = _.isFunction(object[prop]) ? object[prop]() : object[prop];
+            }
+            return val;
         };
 
         //var methodMap = { 'create': 'POST', 'update': 'PUT', 'delete': 'DELETE', 'read': 'GET' };
-        var methodMap = { 'create': 'GET', 'update': 'GET', 'delete': 'GET', 'read': 'GET' };
-        var type = methodMap[method];
+        methodMap = { 'create': 'GET', 'update': 'GET', 'delete': 'GET', 'read': 'GET' };
+        type = methodMap[method];
 
         // Default options, unless specified.
         options || (options = {});
 
         // Default JSON-request options.
-        var params = {type: type, dataType: 'json'};
+        params = {type: type, dataType: 'json'};
 
         // Ensure that we have a URL.
         if (!options.url) {
@@ -69,7 +75,7 @@ define([
          */
 
         // Ensure that we have the appropriate request data.
-        if (!options.data && model && (method == 'create' || method == 'update')) {
+        if (!options.data && model && (method === 'create' || method === 'update')) {
             // params.contentType = 'application/json';
 //            params.data = $.param(model.toJSON());
             params.data = toParam(model.toJSON());
@@ -85,7 +91,9 @@ define([
         // And an `X-HTTP-Method-Override` header.
         if (Backbone.emulateHTTP) {
             if (type === 'PUT' || type === 'DELETE') {
-                if (Backbone.emulateJSON) params.data._method = type;
+                if (Backbone.emulateJSON) {
+                    params.data._method = type;
+                }
                 params.type = 'POST';
                 params.beforeSend = function (xhr) {
                     xhr.setRequestHeader('X-HTTP-Method-Override', type);

@@ -2,8 +2,8 @@ define([
     //libs
     'backbone',
     'models/device'
-], function(Backbone, DeviceM) {
-
+], function (Backbone, DeviceM) {
+    'use strict';
     var DevicesCollection =  Backbone.Collection.extend({
         // model reference
         model: DeviceM,
@@ -14,24 +14,24 @@ define([
             'delete': '/devices/'
         },
 
-        url: function(){
+        url: function () {
             var url = this.id !== undefined ? '/' + this.id : '';
             return url;
         },
 
-        sync: function(method, model, options) {
+        sync: function (method, model, options) {
             options = options || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
             Backbone.sync(method, model, options);
         },
 
-        parse: function(response, xhr) {
+        parse: function (response, xhr) {
             return response.data;
         },
 
-        initialize: function() {
-           log('init devices')
+        initialize: function () {
+           log('init devices');
         }
 
     });

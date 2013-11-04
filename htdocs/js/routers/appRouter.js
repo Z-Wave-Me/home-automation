@@ -1,21 +1,27 @@
-define(['marionette', '../app', '../layout', 'backbone', '../views/dashboard/view'], function(Marionette, App, Layout, Backbone, Dasboard) {
+define([
+    'marionette',
+    '../app',
+    '../layout',
+    'backbone',
+    '../views/dashboard/view'
+], function (Marionette, App, Layout, Backbone, Dasboard) {
     'use strict';
     var appRouter, routerController, layout = new Layout();
     routerController = {
-        showDashboard: function() {
+        showDashboard: function () {
             var DashboardView = new Dasboard();
-            App.widgetsRegion.show(DashboardView)
+            App.widgetsRegion.show(DashboardView);
         },
-        showApplications: function() {
-            log('show applications')
+        showApplications: function () {
+            log('show applications');
         },
-        showWidgets: function() {
-            log('show widgets')
+        showWidgets: function () {
+            log('show widgets');
         }
     };
 
     appRouter = Marionette.AppRouter.extend({
-        initialize: function() {
+        initialize: function () {
             layout.clear();
         },
         appRoutes: {
