@@ -10,8 +10,8 @@ define([
         preFilterAjax,
         ReplaceRegion,
         layout = new Layout(),
-        apiPort = '10483',
-        apiHost = 'mskoff.z-wave.me';
+        apiPort = window.location.port,
+        apiHost = window.location.hostname;
 
     App = new Backbone.Marionette.Application();
     App.vars = {
