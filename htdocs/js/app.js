@@ -52,23 +52,10 @@ define([
         Backbone.sync = bbSync;
         addJqueryMethod();
         preFilterAjax();
-
-        // if IE
         if (!Modernizr.history) {
-
-            // initialize router/Backbone.history, but turn off route parsing,
-            // since non-window.history parsing will look for a hash, and not finding one,
-            // will break our shit.
-            Backbone.history.start({ silent: true, hashChange: true });
-
-            // convert any post-# elements to a standard URL to be parsed by our router
-            var subroute = window.location.hash.replace('#', '/').split('?')[0],
-                route = window.location.pathname + subroute;
-
-            Backbone.history.loadUrl(route);
+            Backbone.history.start({ pushState: Modernizr.history });
         } else {
-            Backbone.history.start({ pushState: true, silent: true });
-            Backbone.history.loadUrl(Backbone.history.getFragment().split('?')[0]);
+            Backbone.history.start();
         }
     });
 

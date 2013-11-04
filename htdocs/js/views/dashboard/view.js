@@ -52,7 +52,7 @@ define([
             var that = this;
             that.Events.forEach(function (event) {
                 var device =  that.Devices.get(event.get('id')),
-                    metrics =  _.extend(device.get('metrics'), event.get('metrics'));
+                    metrics = _.extend(device.get('metrics'), event.get('metrics'));
                 device.set({ metrics: metrics });
                 that.renderWidget(device, true);
             });
@@ -81,7 +81,7 @@ define([
             if (!replace) {
                 that.$el.append($ProbeTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ProbeTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ProbeTmp);
             }
         },
         renderFan: function (model, replace) {
