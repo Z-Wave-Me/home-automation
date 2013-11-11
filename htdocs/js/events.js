@@ -1,3 +1,5 @@
-/**
- * Created by r3b on 11/11/13.
- */
+define([
+    'backbone'
+], function(Backbone){
+    return _.extend({}, Backbone.Events);
+});

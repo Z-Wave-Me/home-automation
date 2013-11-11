@@ -4,7 +4,7 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %> <% if (deviceSubType && deviceSubType != metrics.iconBase) { print(' ' + deviceSubType); } %>"></div>
+            <div class="icon-base <%= metrics.iconBase %> <% if (!metrics.iconBase) { print(deviceSubType); } %>"></div>
         </div>
         <div class="content">Switch
             <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('On'); } else { print('Off'); }%>">

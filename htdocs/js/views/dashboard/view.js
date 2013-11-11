@@ -1,7 +1,6 @@
 define([
-    "app",
     "helpers/apis",
-    "marionette",
+    "backbone",
     "collections/devices",
     "collections/events",
     "text!templates/widgets/probe-small.html",
@@ -10,10 +9,10 @@ define([
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
     "text!templates/widgets/switch-small.html"
-], function (App, Apis, Marionette, Devices, Events, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
+], function (Apis, Backbone, Devices, Events, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
-    var DashboardView = Marionette.View.extend({
-        el: '#widgets-region.widgets',
+    var DashboardView = Backbone.View.extend({
+        el: '.widgets',
         initialize: function () {
             _.bindAll(this, 'render', 'renderWidgets', 'refreshWidgets');
             var that = this;
@@ -27,10 +26,7 @@ define([
             that.Events.on('sync', function () {
                 that.refreshWidgets();
             });
-        },
-        render: function () {
-            var that = this;
-            that.Devices.fetch();
+
             setInterval(function () {
                 that.Events.fetch({
                     update: true,
@@ -40,10 +36,16 @@ define([
                 });
             }, 1000);
         },
+        render: function () {
+            var that = this;
+            that.Devices.fetch({
+                success: function () {
+                    that.renderWidgets(true);
+                }
+            });
+        },
         renderWidgets: function (replace) {
             var that = this;
-
-            // Type: probe / SubType: null
             that.Devices.forEach(function (model) {
                 that.renderWidget(model, replace);
             });
@@ -174,7 +176,7 @@ define([
             if (!replace) {
                 that.$el.append($ThermostatTmp);
             } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith( $ThermostatTmp );
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ThermostatTmp);
             }
         },
         renderSwitch: function (model, replace) {

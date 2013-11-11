@@ -28,6 +28,7 @@ define([
 
         parse: function (response) {
             var events = [];
+            this.updateTime = response.data.updateTime;
             _.each(response.data.events, function (eventsTimestamp) {
                 var key, event, metrics = {};
                 for (key in eventsTimestamp) {
@@ -47,7 +48,7 @@ define([
         },
 
         initialize: function () {
-           log('init devices');
+           log('init events');
         }
 
     });

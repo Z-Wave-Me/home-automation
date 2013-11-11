@@ -1,11 +1,11 @@
 define([
     "app",
     "helpers/apis",
-    "marionette",
+    "backbone",
     "collections/devices"
-], function (App, Apis, Marionette, Devices) {
+], function (App, Apis, Backbone, Devices) {
     'use strict';
-    var DevicesView = Marionette.View.extend({
+    var WidgetsView = Backbone.View.extend({
         el: '#widgets-region.widgets',
         initialize: function () {
             _.bindAll(this, 'render');
@@ -13,8 +13,9 @@ define([
         },
         render: function () {
             var that = this;
-            log('devices');
+            log('WidgetsView');
         }
     });
 
-    return DevicesView;
+    return WidgetsView;
+});

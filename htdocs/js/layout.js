@@ -1,14 +1,13 @@
 define([
-    'marionette',
     'backbone',
     'helpers/modal',
     'text!templates/layout/header.html',
     'text!templates/layout/main.html',
     'text!templates/layout/footer.html',
     'text!templates/popups/event-menu.html'
-], function (Marionette, Backbone, ModalHelper, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl) {
+], function (Backbone, ModalHelper, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl) {
     'use strict';
-    var AppLayout = Backbone.Marionette.Layout.extend({
+    var AppLayout = Backbone.View.extend({
         el: "#body",
         templateHeader: _.template(HeaderTpl, {}),
         templateMain: _.template(MainTpl, {}),
@@ -38,7 +37,6 @@ define([
 
         render: function () {
             var that = this;
-            that.activateCurrentNav();
             this.$el.html(that.$header).append(that.$main).append(that.$footer);
         },
         clear: function () {
@@ -46,11 +44,6 @@ define([
             that.$header.remove();
             that.$main.remove();
             that.$footer.remove();
-        },
-        activateCurrentNav : function () {
-            var hash = window.location.hash.match(/(?:[a-z]+){2}/);
-            $('.top-nav').find("a").removeClass("active");
-            $('.top-nav a[href*="' + hash + '"]:first').addClass('active');
         }
     });
 
