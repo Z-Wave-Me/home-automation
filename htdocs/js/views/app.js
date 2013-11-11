@@ -1,7 +1,7 @@
 define([
     'marionette',
     'backbone',
-    'layout',
+    '../layout',
     'helpers/bb-sync'
 ], function (Marionette, Backbone, Layout, bbSync) {
     'use strict';
@@ -43,8 +43,8 @@ define([
         },
         widgetsRegion: {
             selector: "#widgets-region",
-            regionType: ReplaceRegion
-
+            regionType: ReplaceRegion,
+            anotherRegion: "#main-region"
         }
     });
 
