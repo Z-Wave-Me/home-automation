@@ -20,14 +20,13 @@ define([
             that.Events = new Events();
 
             that.Devices.on('sync', function () {
-                that.renderWidgets(false);
+                that.renderWidgets();
             });
 
             that.Events.on('sync', function () {
                 that.refreshWidgets();
             });
 
-            /*
             setInterval(function () {
                 that.Events.fetch({
                     update: true,
@@ -36,7 +35,6 @@ define([
                     }
                 });
             }, 1000);
-            */
         },
         render: function () {
             var that = this;
