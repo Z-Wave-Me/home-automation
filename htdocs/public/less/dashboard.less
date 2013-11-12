@@ -1,11 +1,29 @@
 .widgets {
   margin: 10.7% auto 3% auto;
   width: 94%;
-  height: 100%;
-  overflow: hidden;
+  height: auto;
+  overflow-y: auto;
+}
+
+@media only screen and (min-width: 480px) {
+  .widgets {
+    margin: 2.7% auto 2% auto;
+    max-height: 220px;
+    padding: 0;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  .widgets {
+    margin: 4.7% auto 3% auto;
+    max-height: 360px;
+    padding-right: 1%;
+  }
 }
 
 
 @media only screen and (min-width: 1140px) {
-
+  .widgets {
+    max-height: 480px;
+  }
 }

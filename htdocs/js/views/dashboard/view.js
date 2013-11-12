@@ -27,6 +27,7 @@ define([
                 that.refreshWidgets();
             });
 
+            /*
             setInterval(function () {
                 that.Events.fetch({
                     update: true,
@@ -35,19 +36,20 @@ define([
                     }
                 });
             }, 1000);
+            */
         },
         render: function () {
             var that = this;
             that.Devices.fetch({
                 success: function () {
-                    that.renderWidgets(true);
+                    that.renderWidgets();
                 }
             });
         },
-        renderWidgets: function (replace) {
+        renderWidgets: function () {
             var that = this;
             that.Devices.forEach(function (model) {
-                that.renderWidget(model, replace);
+                that.renderWidget(model);
             });
         },
         refreshWidgets: function () {
@@ -56,11 +58,12 @@ define([
                 var device =  that.Devices.get(event.get('id')),
                     metrics = _.extend(device.get('metrics'), event.get('metrics'));
                 device.set({ metrics: metrics });
-                that.renderWidget(device, true);
+                that.renderWidget(device);
             });
         },
-        renderWidget: function (model, replace) {
-            var that = this;
+        renderWidget: function (model) {
+            var that = this,
+                replace = $('#widgets-region').children().size() === that.Devices.size() ? true : false;
             if (model.get('deviceType') === "probe") {
                 that.renderProbe(model, replace);
             } else if (model.get('deviceType') === "climate" && model.get('deviceSubType') === "fan") {

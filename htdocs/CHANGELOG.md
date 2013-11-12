@@ -10,9 +10,13 @@
 
 * Restructuring .js files and directories
 
-* Cosmetics code for views applications
+* Cosmetics code for views of application
 
 * Remove old libraries
+
+* Update to latest version of Backbone (+Underscore)
+
+* Add support for 480x*,768x* screen resolution
 
 # Release 1.0.0
 

@@ -3,7 +3,7 @@ var vers = 1;
 requirejs.config({
     baseUrl: "js",
     paths : {
-        backbone : 'libs/backbone/backbone',
+        backbone : 'libs/backbone/backbone-min',
         underscore : 'libs/backbone/underscore-min',
         jquery : 'libs/vendor/jquery-2.0.3.min',
         'jquery-cookie' : 'libs/vendor/jquery.cookie',

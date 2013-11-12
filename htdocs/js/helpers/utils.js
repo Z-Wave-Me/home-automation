@@ -21,7 +21,7 @@ define([
     };
 
     Utils.activateCurrentNav = function () {
-        var hash = window.location.hash.match(/(?:[a-z]+){2}/);
+        var hash = window.location.hash.length > 0 ? window.location.hash.match(/(?:[a-z]+){2}/) : 'dashboard';
         $('.top-nav').find("a").removeClass("active");
         $('.top-nav a[href*="' + hash + '"]:first').addClass('active');
     };
