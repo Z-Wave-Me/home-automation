@@ -21,11 +21,30 @@ ZWaveDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zSubTreeKey = null;
 
     this.deviceType = null;
-    this.deviceSubType = null;
-    this.caps = ["zway", "zwayDirect"];
+
+    this._dataPointBindings = [];
 }
 
 inherits(ZWaveDevice, VirtualDevice);
+
+ZWaveDevice.prototype.destroy = function () {
+    console.log("--- ZWaveDevice destroy("+this.id+")");
+    ZWaveDevice.super_.prototype.destroy.call(this);
+
+    this.unbindDataPoints();
+};
+
+ZWaveDevice.prototype.unbindDataPoints = function () {
+    console.log("--- ZWaveDevice unbindDataPoints("+this.id+")");
+    this._dataPointBindings.forEach(function (binding) {
+        // console.log("--- UNBIND", binding);
+        binding[0].unbind[binding[1]];
+    });
+};
+
+ZWaveDevice.prototype.bindAndRemember = function (dataPoint, func) {
+    this._dataPointBindings.push([dataPoint, dataPoint.bind(func)]);
+};
 
 ZWaveDevice.prototype.deviceIconBase = function () {
     return "zwave";
@@ -42,7 +61,7 @@ ZWaveDevice.prototype.bindToDatapoints = function () {
     console.log("VirtualDevice", this.id, "binding to", _dpList.length, "datapoints");
 
     _dpList.forEach(function (dataPoint) {
-        dataPoint.bind(function (changeType, args) {
+        var dpRec = [dataPoint, dataPoint.bind(function (changeType, args) {
             // Handle only "update" and "shadow update" events
             if (0x01 != changeType && 0x41 != changeType) return;
 
@@ -51,7 +70,8 @@ ZWaveDevice.prototype.bindToDatapoints = function () {
 
             // Handle update event
             self.handleDatapointUpdate(this.value, args);
-        });
+        })];
+        self._dataPointBindings.push(dpRec);
     });
 };
 

@@ -7,19 +7,24 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-function AutomationController (config, vdevInfo) {
+function AutomationController () {
     AutomationController.super_.call(this);
 
-    this.config = config;
+    this.config = config.controller || {};
+    this.locations = config.locations || {};
+    this.vdevInfo = config.vdevInfo || {};
+
+    console.log(JSON.stringify(config, null, "  "));
 
     this.modules = {};
     this.instances = {};
     this.devices = {};
-    this.widgets = {};
-    this.widgetClasses = {};
+
+    this.notifications = [];
+    this.lastStructureChangeTime = 0;
+
     this._autoLoadModules = [];
     this._loadedSingletons = [];
-    this.vdevInfo = vdevInfo;
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -33,22 +38,67 @@ function wrap (self, func) {
 AutomationController.prototype.init = function () {
     var self = this;
 
-    this.on('core.listInstances', wrap(this, this.listInstances));
-    this.on('core.listDevices', wrap(this, this.listDevices));
-    this.on('core.listWidgets', wrap(this, this.ristWidgets));
-
     this.loadModules(function () {
-        self.instantiateModules();
-        self.emit("init");
+        self.emit("core.init");
     });
 };
 
-AutomationController.prototype.run = function () {
-    this.emit("run");
+AutomationController.prototype.saveConfig = function () {
+    var cfgObject = {
+        "controller": this.config,
+        "vdevInfo": this.vdevInfo,
+        "locations": this.locations
+    }
+
+    saveObject("config.json", cfgObject);
+};
+
+AutomationController.prototype.start = function () {
+    // Restore persistent data
+    this.loadNotifications();
+
+    // Run all modules
+    console.log("Loading modules...");
+    this.instantiateModules();
+
+    // Run webserver
+    console.log("Starting webserver...");
+    api = new ZAutomationAPIWebRequest().handlerFunc();
+
+    // Notify core
+    this.emit("core.start");
 };
 
 AutomationController.prototype.stop = function () {
-    this.emit("stop");
+    // Remove API webserver
+    console.log("Stopping webserver...");
+    api = null;
+
+    var self = this;
+
+    // Clean devices
+    console.log("Stopping devices...");
+    Object.keys(this.devices).forEach(function (id) {
+        var vdev = self.devices[id];
+        vdev.destroy();
+        delete self.devices[id];
+    });
+
+    // Clean modules
+    console.log("Stopping modules...");
+    Object.keys(this.instances).forEach(function (instanceId) {
+        self.removeInstance(instanceId);
+    });
+    this._loadedSingletons = [];
+
+    // Notify core
+    this.emit("core.stop");
+};
+
+AutomationController.prototype.restart = function () {
+    this.stop();
+    this.start();
+    this.addNotification("warning", "Automation Controller is restarted");
 };
 
 AutomationController.prototype.loadModules = function (callback) {
@@ -87,7 +137,10 @@ AutomationController.prototype.loadModules = function (callback) {
         };
 
         // Grab _module and clear it out
-        self.modules[moduleClassName] = _module;
+        self.modules[moduleClassName] = {
+            meta: moduleMeta,
+            classRef: _module
+        };
         _module = undefined;
     });
 
@@ -107,14 +160,13 @@ AutomationController.prototype.loadModules = function (callback) {
     if (callback) callback();
 };
 
-AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, config) {
+AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, instanceConfig) {
     console.log("Instantiating module", instanceId, "from class", instanceClass);
 
     var self = this;
-    var moduleClass = self.modules[instanceClass];
+    var moduleClass = self.modules[instanceClass].classRef;
 
     var instance = new moduleClass(instanceId, self);
-    instance.getMeta();
 
     if (instance.meta["singleton"]) {
         if (in_array(this._loadedSingletons, instanceClass)) {
@@ -125,8 +177,11 @@ AutomationController.prototype.instantiateModule = function (instanceId, instanc
         this._loadedSingletons.push(instanceClass);
     }
 
-    instance.init(config || {});
+    instance.init(instanceConfig);
+
     self.registerInstance(instance);
+
+    return instance;
 };
 
 AutomationController.prototype.instantiateModules = function () {
@@ -138,11 +193,13 @@ AutomationController.prototype.instantiateModules = function () {
     });
 
     console.log("--- User configured modules instantiation");
-    if (this.config.hasOwnProperty('instances')) {
+    if (this.config.hasOwnProperty('instances') && Object.keys(this.config.instances).length > 0) {
         Object.keys(this.config.instances).forEach(function (instanceId) {
             var instanceDefs = self.config.instances[instanceId];
             self.instantiateModule(instanceId, instanceDefs.module, instanceDefs.config);
         });
+    } else {
+        console.log("--! No user-configured instances found");
     }
 };
 
@@ -150,104 +207,181 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
     return this.instances.hasOwnProperty(instanceId) ? this.instances[instanceId] : null;
 };
 
-AutomationController.prototype.listInstances = function () {
-    var res = {};
-
-    Object.keys(this.instances).forEach(function (instanceId) {
-        res[instanceId] = this.instances[instanceId].meta;
-    });
-
-    this.emit('core.instancesList', res);
-
-    return res;
-};
-
 AutomationController.prototype.registerInstance = function (instance) {
-    var instanceId = instance.id;
+    if (!!instance) {
+        var instanceId = instance.id;
 
-    if (!this.instances.hasOwnProperty(instanceId)) {
-        if (!!instance) {
+        if (!this.instances.hasOwnProperty(instanceId)) {
             this.instances[instanceId] = instance;
             this.emit('core.instanceRegistered', instanceId);
         } else {
-            this.emit('error', new Error("Can't register empty module instance "+instanceId));
+            this.emit('core.error', new Error("Can't register module instance "+instanceId+" twice"));
         }
     } else {
-        this.emit('error', new Error("Can't register module instance "+instanceId+" twice"));
+        this.emit('core.error', new Error("Can't register empty module instance "+instanceId));
     }
 };
 
-// TODO: Refactor to the module instance's routine getActions()
-AutomationController.prototype.registerAction = function (instanceId, actionMeta, actionFunc) {
-    console.log("registerAction", instanceId, actionMeta);
+AutomationController.prototype.createInstance = function (id, className, config) {
+    var instance = this.instantiateModule(id, className, config);
+    if (!!instance) {
+        if (!this.config.hasOwnProperty("instances")) {
+            this.config.instances = {};
+        }
+        this.config.instances[id] = {
+            module: className,
+            config: config
+        };
+        this.saveConfig();
+        this.emit('core.instanceCreated', id);
+        return true;
+    } else {
+        this.emit('core.error', new Error("Cannot create module "+className+" instance with id "+id));
+        return false;
+    }
+};
 
-    var instance = this.moduleInstance(instanceId);
+AutomationController.prototype.reconfigureInstance = function (id, config) {
+    var instance = this.instances[id];
 
     if (!!instance) {
-        instance.actions[actionMeta.id] = actionMeta;
-        instance.actionFuncs[actionMeta.id] = func;
-        this.emit('core.actionRegistered', instanceId, actionMeta.id);
+        instance.stop();
+        instance.init(config);
+
+        this.emit('core.instanceReconfigured', id);
+        return true;
     } else {
-        this.emit('error', new Error("Can't find module instance "+instanceId));
+        this.emit('core.error', new Error("Cannot reconfigure module "+className+" instance with id "+id));
+        return false;
     }
 };
 
 AutomationController.prototype.removeInstance = function (id) {
+    var instance = this.instances[id];
+    var instanceClass = instance.toJSON()["module"];
+
+    instance.saveConfig();
+    instance.stop();
+
+    if (instance.meta["singleton"]) {
+        var pos = this._loadedSingletons.indexOf(instanceClass);
+        if (pos >= 0) {
+            this._loadedSingletons.splice(pos, 1);
+        }
+    }
+
     delete this.instances[id];
-    this.emit('core.instanceRemoved', id);
+
+    this.emit('core.instanceStopped', id);
+};
+
+AutomationController.prototype.deleteInstance = function (id) {
+    this.removeInstance(id);
+
+    delete this.config.instances[id];
+    this.saveConfig();
+
+    this.emit('core.instanceDeleted', id);
 };
 
 AutomationController.prototype.registerDevice = function (device) {
     this.devices[device.id] = device;
+    this.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
 
     this.emit('core.deviceRegistered', device.id);
 };
 
 AutomationController.prototype.removeDevice = function (id) {
+    var vdev = this.devices[id];
+
+    vdev.destroy();
     delete this.devices[id];
 
+    this.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
+
     this.emit('core.deviceRemoved', id);
-};
-
-AutomationController.prototype.listDevices = function () {
-    var res = {};
-
-    Object.keys(this.devices).forEach(function (deviceId) {
-        res[deviceId] = {
-            deviceType: this.devices[deviceId].deviceType
-        }
-    });
-
-    this.emit('core.devicesList', res);
-
-    return res;
 };
 
 AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
 }
 
-AutomationController.prototype.registerWidget = function (widget) {
-    this.widgets[widget.id] = widget;
-    this.emit('core.widgetRegistered', widget.id);
-};
-
-AutomationController.prototype.registerWidgetClass = function (meta) {
-    this.widgetClasses[meta.className] = meta;
-    this.emit('core.widgetClassRegistered', meta.className);
-};
-
-AutomationController.prototype.removeWidgetClass = function (id) {
-    delete this.widgetClasses[id];
-
-    this.emit('core.widgetRemoved', id);
-};
-
-AutomationController.prototype.listWidgetClasses = function () {
-    this.emit('core.widgetsList', this.widgetClasses);
-    return res;
-}
-
 AutomationController.prototype.getVdevInfo = function (id) {
     return this.vdevInfo[id];
 }
+
+AutomationController.prototype.saveNotifications = function () {
+    saveObject("notifications", this.notifications);
+}
+
+AutomationController.prototype.loadNotifications = function () {
+    this.notifications = loadObject("notifications") || [];
+}
+
+AutomationController.prototype.addNotification = function (severity, message) {
+    var now = new Date();
+    var ts = Math.round(now.getTime() / 1000);
+    var id = now.getTime().toString();
+    this.notifications.push([id, ts, severity, message]);
+    this.saveNotifications();
+}
+
+AutomationController.prototype.deleteNotifications = function (ids) {
+    this.notifications = this.notifications.filter(function (item) {
+        return ids.indexOf(item[0]) === -1;
+    });
+    this.saveNotifications();
+}
+
+AutomationController.prototype.addLocation = function (id, title) {
+    if (!this.locations.hasOwnProperty(id)) {
+        this.locations[id] = {
+            id: id,
+            title: title
+        }
+        this.saveConfig();
+        this.emit('location.added', id);
+    } else {
+        this.emit('core.error', new Error("Cannot add location "+id+" - already exists"));
+    }
+};
+
+AutomationController.prototype.removeLocation = function (id) {
+    var self = this;
+
+    if (this.locations.hasOwnProperty(id)) {
+        var loc = this.locations[id];
+        Object.keys(this.devices).forEach(function (vdevId) {
+            var vdev = self.devices[vdevId];
+            if (vdev.location === id) {
+                vdev.location = null;
+            }
+        });
+        delete this.locations[id];
+        this.saveConfig();
+        this.emit('location.removed', id);
+    } else {
+        this.emit('core.error', new Error("Cannot remove location "+id+" - doesn't exist"));
+    }
+};
+
+AutomationController.prototype.updateLocation = function (id, title) {
+    if (this.locations.hasOwnProperty(id)) {
+        this.locations[id].title = title;
+        this.saveConfig();
+        this.emit('location.updated', id);
+    } else {
+        this.emit('core.error', new Error("Cannot update location "+id+" - doesn't exist"));
+    }
+};
+
+AutomationController.prototype.listNotifications = function (since) {
+    var self = this;
+    since = since || 0;
+
+    var filteredNotifications = this.notifications.filter(function (notification) {
+        return notification[1] >= since;
+    });
+
+    return filteredNotifications;
+};

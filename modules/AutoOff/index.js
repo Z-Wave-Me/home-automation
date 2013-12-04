@@ -78,6 +78,13 @@ AutoOff.prototype.init = function (config) {
     });
 };
 
+AutoOff.prototype.stop = function () {
+    console.log("--- AutoOff.stop()");
+    AutoOff.super_.prototype.stop.call(this);
+
+    clearInterval(this.timer);
+};
+
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

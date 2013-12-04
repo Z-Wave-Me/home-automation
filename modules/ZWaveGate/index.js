@@ -42,9 +42,10 @@ ZWaveGate.prototype.init = function (config) {
 
     var self = this;
 
-    this.controller.on('zway.structureUpdate', function () {
+    this.onStructureUpdate = function () {
         self.handleStructureChanges.apply(self, arguments);
-    });
+    };
+    this.controller.on('zway.structureUpdate', this.onStructureUpdate);
 
     // If basicsEnabled, instantiate ZWaveBasic module
     if (this.config.basicsEnabled) {
@@ -85,6 +86,13 @@ ZWaveGate.prototype.init = function (config) {
             });
         });
     });
+};
+
+ZWaveGate.prototype.stop = function () {
+    console.log("--- ZWaveGate.stop()");
+    ZWaveGate.super_.prototype.stop.call(this);
+
+    this.controller.off('zway.structureUpdate', this.onStructureUpdate);
 };
 
 // Module methods
@@ -131,6 +139,13 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         // Ignore SwitchBinary if SwitchMultilevel exists
         if (0x25 === commandClassId && in_array(instanceCommandClasses, "38")) {
             console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
+            return;
+        }
+
+        // Ignore incomplete interview on CC
+        var zwayDev = zway.devices[deviceId].instances[instanceId].commandClasses[commandClassId];
+        if (!zwayDev.data.interviewDone) {
+            console.log("Incomplete interview on", deviceId, instanceId, commandClassId, ". Ignoring CC");
             return;
         }
 
