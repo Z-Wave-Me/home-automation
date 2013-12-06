@@ -31,7 +31,7 @@ ZWaveDoorlockDevice.prototype.deviceTitle = function () {
 ZWaveDoorlockDevice.prototype.bindToDatapoints = function () {
     var self = this;
 
-    this._dic().data.mode.bind(function (changeType, args) {
+    this.bindAndRemember(this._dic().data.mode, function (changeType, args) {
         // Handle only "update" and "phantom update" events
         if (0x01 != changeType && 0x40 != changeType) return;
 

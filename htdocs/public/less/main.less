@@ -345,13 +345,27 @@ input[type='range']::-moz-focusring {
    ========================================================================== */
 
 @media only screen and (min-width: 480px) {
-
+  .wrapper {
+    margin: 0 auto;
+    background: #192226  url(../img/bg/dashboard.png) no-repeat;
+    min-height: 220px;
+    -moz-background-size:100% auto;
+    -webkit-background-size:100% auto;
+    background-size:100% auto;
+  }
+  .main {
+    padding: 10px 0 0 0;
+  }
   .oldie {
     nav {
       a {
         margin: 0 0.7%;
       }
     }
+  }
+  .title {
+    float: left;
+    margin-top: 2.65%;
   }
   nav {
     width: 37.5%;
@@ -380,39 +394,49 @@ input[type='range']::-moz-focusring {
         width: 18%;
       }
     }
-  }
-  .right-nav {
-    width: 26%;
-    margin-right: 1.3%;
-    margin-left: 1.7%;
-    ul {
+    &.top-nav {
+      width: 100%;
+      display: block;
+      float: left;
+      ul {
+        width: 80%;
+        margin: 0 auto;
+      }
+    }
+    &.right-nav {
       float: right;
-      li {
-        a {
-          width: 100%;
-          display: block;
-          padding-right: 18%;
-          font-size: 11px;
-          font-family: "Helvetica Neue";
-          color: rgb( 140, 151, 156 );
-          text-align: left;
-          cursor: pointer;
-          &.active {
-            color: @green;
-          }
-          .tools-sprite {
-            margin: 0px 6px 3px 0px;
-          }
-        }
-        &:first-child {
+      width: 60%;
+      margin-right: 1.3%;
+      margin-left: 1.7%;
+      ul {
+        float: right;
+        li {
           a {
-            padding-right: 36%;
+            width: 100%;
+            display: block;
+            padding-right: 18%;
+            font-size: 11px;
+            font-family: "Helvetica Neue";
+            color: rgb( 140, 151, 156 );
+            text-align: left;
+            cursor: pointer;
+            &.active {
+              color: @green;
+            }
+            .tools-sprite {
+              margin: 0px 6px 3px 0px;
+            }
           }
-        }
+          &:first-child {
+            a {
+              padding-right: 36%;
+            }
+          }
 
-        &:last-child {
-          a {
-            padding-right: 0;
+          &:last-child {
+            a {
+              padding-right: 0;
+            }
           }
         }
       }
@@ -421,14 +445,40 @@ input[type='range']::-moz-focusring {
 }
 
 @media only screen and (min-width: 768px) {
+  .wrapper {
+    margin: 0 auto;
+    background: #192226  url(../img/bg/dashboard.png) no-repeat;
+    min-height: 450px;
+    -moz-background-size:100% auto;
+    -webkit-background-size:100% auto;
+    background-size:100% auto;
+  }
+  .title {
+    margin-top: 13px;
+  }
   nav {
     float: right;
     width: 37.5%;
+    &.top-nav {
+      width: 100%;
+      ul {
+        width: 50%;
+        margin: 0 auto;
+        display: block;
+      }
+    }
+    &.right-nav {
+      width: 40%;
+      float: right;
+      margin-right: 1.3%;
+      margin-left: 1.7%;
+    }
   }
   .header-container,.main aside {
     height: 51px;
   }
   .main {
+    padding: 10px 0;
     article {
       float: left;
       width: 57%;
@@ -449,17 +499,98 @@ input[type='range']::-moz-focusring {
       Maximal Width
      =============== */
 
+  .main {
+    padding: 30px 0;
+  }
+
+  .title {
+    margin-top: 13px;
+  }
+
   .wrapper {
     width: 1026px; /* 1140px - 10% for margins */
     margin: 0 auto;
     background: #192226  url(../img/bg/dashboard.png) no-repeat;
     min-height: 590px;
+    -moz-background-size:100% auto;
+    -webkit-background-size:100% auto;
+    background-size:100% auto;
   }
   .header-box {
     height: 51px;
   }
   nav {
-    height: 51px;
+    width: 37.5%;
+    float: left;
+    margin: 0 auto;
+    ul {
+      li {
+        display: inline;
+      }
+    }
+    a {
+      float: left;
+      padding: 14px 3.2% 10px 3.2%;
+      width: 27%;
+      margin-bottom: 0;
+    }
+    li:first-child {
+      a {
+        width: 24.5%;
+        margin-left: 0;
+      }
+    }
+    li:last-child {
+      a {
+        margin-right: 0;
+        width: 18%;
+      }
+    }
+    &.right-nav {
+      width: 26%;
+      margin-right: 1.3%;
+      margin-left: 1.7%;
+      ul {
+        float: right;
+        li {
+          a {
+            width: 100%;
+            display: block;
+            padding-right: 18%;
+            font-size: 11px;
+            font-family: "Helvetica Neue";
+            color: rgb( 140, 151, 156 );
+            text-align: left;
+            cursor: pointer;
+            &.active {
+              color: @green;
+            }
+            .tools-sprite {
+              margin: 0px 6px 3px 0px;
+            }
+          }
+          &:first-child {
+            a {
+              padding-right: 36%;
+            }
+          }
+
+          &:last-child {
+            a {
+              padding-right: 0;
+            }
+          }
+        }
+      }
+    }
+    &.top-nav {
+      width: 37.5%;
+      float: none;
+      margin: 0 auto;
+      ul {
+        width: 100%;
+      }
+    }
   }
   .footer-container {
     width: 1026px;

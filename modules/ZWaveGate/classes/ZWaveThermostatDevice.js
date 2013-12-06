@@ -13,14 +13,13 @@ Copyright: (c) ZWave.Me, 2013
 ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveThermostatDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
-    this.deviceType = "climate";
-    this.deviceSubType = "thermostat";
+    this.deviceType = "thermostat";
 
-    this.widgetClass = "ThermostatWidget";
+    var CCs = this._di().commandClasses;
 
-    this.sensorAvailable = Object.keys(this._di().commandClasses).indexOf("49") >= 0 && Object.keys(this._dic(49).data).indexOf("1") >= 0;
-    this.modeAvailable = Object.keys(this._di().commandClasses).indexOf("64") >= 0;
-    this.setPointAvailable = Object.keys(this._di().commandClasses).indexOf("67") >= 0;
+    this.sensorAvailable = Object.keys(CCs).indexOf("49") >= 0 && Object.keys(this._dic(49).data).indexOf("1") >= 0 && this._dic(49).data.interviewDone;
+    this.modeAvailable = Object.keys(CCs).indexOf("64") >= 0 && this._dic(64).data.interviewDone;
+    this.setPointAvailable = Object.keys(CCs).indexOf("67") >= 0 && this._dic(67).data.interviewDone;
 
     this.setMetricValue("hasSensor", this.sensorAvailable);
     this.setMetricValue("hasMode", this.modeAvailable);
@@ -98,7 +97,7 @@ ZWaveThermostatDevice.prototype.bindToDatapoints = function () {
     var self = this;
 
     if (this.sensorAvailable) {
-        this._dic(49).data.bind(function (changeType, args) {
+        this.bindAndRemember(this._dic(49).data, function (changeType, args) {
             // Handle only "update" and "phantom update" events
             if (0x01 != changeType && 0x40 != changeType) return;
             // Handle update event
@@ -109,7 +108,7 @@ ZWaveThermostatDevice.prototype.bindToDatapoints = function () {
     }
 
     if (this.modeAvailable) {
-        this._dic(64).data.mode.bind(function (changeType, args) {
+        this.bindAndRemember(this._dic(64).data.mode, function (changeType, args) {
             // Handle only "update" and "phantom update" events
             if (0x01 != changeType && 0x40 != changeType) return;
             // Handle update event
@@ -118,7 +117,7 @@ ZWaveThermostatDevice.prototype.bindToDatapoints = function () {
             self.controller.emit('zway.dataUpdate', self.zDeviceId, self.zInstanceId, self.zCommandClassId, "mode", this.value);
         });
         self._subTreeKeys(67).forEach(function (setPointId) {
-            self._dic(67).data[setPointId].bind(function (changeType, args) {
+            self.bindAndRemember(self._dic(67).data[setPointId], function (changeType, args) {
                 // Handle only "update" and "phantom update" events
                 if (0x01 != changeType && 0x40 != changeType) return;
                 // Handle update event
@@ -130,7 +129,7 @@ ZWaveThermostatDevice.prototype.bindToDatapoints = function () {
             });
         });
     } else {
-        self._dic(67).data[this._subTreeKeys(67)[0]].bind(function (changeType, args) {
+        self.bindAndRemember(self._dic(67).data[this._subTreeKeys(67)[0]], function (changeType, args) {
             // Handle only "update" and "phantom update" events
             if (0x01 != changeType && 0x40 != changeType) return;
             // Handle update event

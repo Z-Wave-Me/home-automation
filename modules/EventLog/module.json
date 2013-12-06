@@ -1,5 +1,5 @@
 {
-    "autoload": true,
+    "autoload": false,
     "autoloadPriority": 10,
     "singleton": true,
     "defaults": {

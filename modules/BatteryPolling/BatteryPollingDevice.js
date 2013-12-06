@@ -13,10 +13,7 @@ Copyright: (c) ZWave.Me, 2013
 BatteryPollingDevice = function (id, controller) {
     BatteryPollingDevice.super_.call(this, id, controller);
 
-    this.deviceType = "virtual";
-    this.deviceSubType = "batteryPolling";
-
-    this.widgetClass = "BatteryStatusWidget";
+    this.deviceType = "batteryPolling";
 }
 
 inherits(BatteryPollingDevice, VirtualDevice);

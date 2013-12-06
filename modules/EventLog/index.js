@@ -29,17 +29,19 @@ EventLog.prototype.init = function (config) {
 
     var self = this;
     this.controller.eventlog = {};
-    this.controller.onAny(function () {
+
+    this.onAnyHandler = function () {
         var newArgs = get_values(arguments);
         newArgs.unshift(this.event);
         self.logEvent.apply(self, newArgs);
-    });
+    }
+
+    this.controller.onAny(this.onAnyHandler);
 };
 
-// Object.prototype.values = function () {
-//     var self = this;
-//     return Object.keys(this).map(function(key) { return self[key]; });
-// };
+EventLog.prototype.stop = function () {
+    this.controller.offAny(this.onAnyHandler);
+}
 
 EventLog.prototype.logEvent = function () {
     var now = new Date();
@@ -52,7 +54,8 @@ EventLog.prototype.logEvent = function () {
         this.eventLog[timestamp] = [];
     }
 
-    this.eventLog[timestamp].push([eventId, args]);
+    // Disable event logging (for possible module deletion)
+    // this.eventLog[timestamp].push([eventId, args]);
 
     if (this.config.debug) {
         console.log("--- EVENT:", now.toISOString(), timestamp, eventId, JSON.stringify(args));

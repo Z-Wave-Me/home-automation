@@ -1,6 +1,5 @@
 define([
-    'backbone',
-    'marionette'
+    'backbone'
 ], function (Backbone) {
     "use strict";
 
@@ -25,26 +24,6 @@ define([
         'min-width': '100%',
         'z-index': '1000'
     };
-
-    $.fn.exists = function () { return (this.length > 0); };
-
-    $.fn.center = function () {
-        this.css("position", "absolute");
-        this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) +
-            $(window).scrollTop()) + "px");
-        this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
-            $(window).scrollLeft()) + "px");
-        return this;
-    }
-
-    $.fn.top = function () {
-        this.css("position","absolute");
-        this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 5) +
-            $(window).scrollTop()) + "px");
-        this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
-            $(window).scrollLeft()) + "px");
-        return this;
-    }
 
     function hideAllPopups(quick) {
 

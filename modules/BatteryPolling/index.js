@@ -27,22 +27,18 @@ _module = BatteryPolling;
 // ----------------------------------------------------------------------------
 
 BatteryPolling.prototype.init = function (config) {
+    // console.log("--- FFFFF");
     BatteryPolling.super_.prototype.init.call(this, config);
 
     var self = this;
 
+    // console.log("--- GGGGG");
     executeFile(this.moduleBasePath()+"/BatteryPollingDevice.js");
     this.vdev = new BatteryPollingDevice("BatteryPolling", this.controller);
     this.vdev.init();
     this.controller.registerDevice(this.vdev);
 
     this.batIds = this.scanForBatteries();
-
-    this.controller.registerWidgetClass({
-        className: "BatteryStatusWidget",
-        code: "BatteryPolling/batteryStatus.js",
-        mainUI: "BatteryPolling/batteryStatus.html"
-    });
 
     self.vdev.setMetricValue("reports", self.transformToReports());
 
@@ -55,17 +51,27 @@ BatteryPolling.prototype.init = function (config) {
     });
 
     // Setup event listeners
-    this.controller.on('device.metricUpdated', function (vdevId, name, value) {
+    this.onMetricUpdated = function (vdevId, name, value) {
         var pos = self.batIds.indexOf(vdevId);
         if (pos > -1 && name === "level") {
             self.vdev.setMetricValue("reports", self.transformToReports());
         }
-    });
+    };
+    this.controller.on('device.metricUpdated', this.onMetricUpdated);
 
     // TODO: Refactor to device.update command
-    this.controller.on('batteryPolling.poll', function () {
+    this.onPoll = function () {
         self.vdev.performCommand("update");
-    });
+    };
+    this.controller.on('batteryPolling.poll', this.onPoll);
+};
+
+BatteryPolling.prototype.stop = function () {
+    console.log("--- BatteryPolling.stop()");
+    BatteryPolling.super_.prototype.stop.call(this);
+
+    this.controller.off('device.metricUpdated', this.onMetricUpdated);
+    this.controller.off('batteryPolling.poll', this.onPoll);
 };
 
 // ----------------------------------------------------------------------------
@@ -76,18 +82,11 @@ BatteryPolling.prototype.scanForBatteries = function () {
     var self = this;
     return Object.keys(this.controller.devices).filter(function (vdevId) {
         var vdev = self.controller.devices[vdevId];
-        return vdev.deviceType === "probe" && vdev.deviceSubType === "battery";
+        return vdev.deviceType === "battery";
     }).map(function (item) {
         return item;
     });
 }
-
-// BatteryPolling.prototype.collectLevels = function () {
-//     var self = this;
-//     this.batIds.forEach(function (vdevId) {
-//         self.batLevels[vdevId] = self.controller.devices[vdevId].getMetricValue("level");
-//     });
-// }
 
 BatteryPolling.prototype.transformToReports = function () {
     var self = this;
@@ -95,6 +94,7 @@ BatteryPolling.prototype.transformToReports = function () {
 
     this.batIds.forEach(function (vdevId) {
         var vdev = self.controller.devices[vdevId];
+
         res.push({
             id: vdevId,
             level: vdev.getMetricValue("level"),

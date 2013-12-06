@@ -72,6 +72,18 @@ SensorBinaryReactions.prototype.init = function(config) {
     console.log("SensorBinary Reactions module enabled with", this.map.length, "reactions");
 };
 
+SensorBinaryReactions.prototype.stop = function () {
+    console.log("--- SensorBinaryReactions.stop()");
+    SensorBinaryReactions.super_.prototype.stop.call(this);
+
+    var self = this;
+
+    Object.keys(this.activeTimers).forEach(function (timerId) {
+        clearTimeout(self.activeTimers[timerId]);
+        delete self.activeTimers[timerId];
+    });
+};
+
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

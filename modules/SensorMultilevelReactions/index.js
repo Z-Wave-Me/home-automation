@@ -65,6 +65,18 @@ SensorMultilevelReactions.prototype.init = function(config) {
     console.log("SensorMultilevel Reactions module enabled with", this.map.length, "reactions");
 };
 
+SensorMultilevelReactions.prototype.stop = function () {
+    console.log("--- SensorMultilevelReactions.stop()");
+    SensorMultilevelReactions.super_.prototype.stop.call(this);
+
+    var self = this;
+
+    Object.keys(this.activeTimers).forEach(function (timerId) {
+        clearTimeout(self.activeTimers[timerId]);
+        delete self.activeTimers[timerId];
+    });
+};
+
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

@@ -10,3 +10,5 @@ htdocs/js/_precompiled.js
 
 zwayTree.json
 ha-*.json
+storage/*
+!storage/.keep

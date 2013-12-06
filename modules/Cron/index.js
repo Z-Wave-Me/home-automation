@@ -136,6 +136,13 @@ Cron.prototype.init = function (config) {
     }, 1000);
 };
 
+Cron.prototype.stop = function () {
+    console.log("--- Cron.stop()");
+    Cron.super_.prototype.stop.call(this);
+
+    clearInterval(this.timer);
+};
+
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

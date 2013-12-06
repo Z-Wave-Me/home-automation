@@ -1,6 +1,0 @@
-{
-    "autoload": true,
-    "autoloadPriority": 900,
-    "singleton": true,
-    "defaults": {}
-}

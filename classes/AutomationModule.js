@@ -19,18 +19,66 @@ AutomationModule = function (id, controller) {
     this.metrics = {};
 
     this.config = {};
-    if (this.meta.hasOwnProperty('defaults')) {
+};
+
+AutomationModule.prototype.defaultConfig = function (config) {
+    var result = {};
+
+    var self = this;
+    if (this.meta.hasOwnProperty("defaults") && "object" === typeof this.meta.defaults) {
         Object.keys(this.meta.defaults).forEach(function (key) {
-            self.config[key] = self.meta.defaults[key];
+            result[key] = self.meta.defaults[key];
         });
+    }
+
+    if (!!config) {
+        Object.keys(config).forEach(function (key) {
+            result[key] = config[key];
+        });
+    }
+
+    return result;
+}
+
+AutomationModule.prototype.init = function (config) {
+    if (!!config) {
+        this.config = this.defaultConfig(config);
+        this.saveConfig();
+    } else {
+        this.loadConfig();
     }
 };
 
-AutomationModule.prototype.init = function (config) {
+AutomationModule.prototype.stop = function () {
+    // Virtual destructor
+};
+
+AutomationModule.prototype.loadConfig = function () {
     var self = this;
-    Object.keys(config).forEach(function (key) {
-        self.config[key] = config[key];
-    });
+    var cfg = loadObject("cfg"+this.id);
+    if ("object" === typeof cfg) {
+        Object.keys(cfg).forEach(function (key) {
+            self.config[key] = cfg[key];
+        });
+    };
+};
+
+AutomationModule.prototype.saveConfig = function () {
+    saveObject("cfg"+this.id, this.config);
+};
+
+// This method returns JSON representation
+AutomationModule.prototype.toJSON = function () {
+    function getClassName(obj) {
+        if (typeof obj != "object" || obj === null) return false;
+        return /(\w+)\(/.exec(obj.constructor.toString())[1];
+    };
+
+    return {
+        module: getClassName(this),
+        id: this.id,
+        config: this.config
+    };
 };
 
 AutomationModule.prototype.runAction = function (actionId, args, callback) {
@@ -47,7 +95,3 @@ AutomationModule.prototype.getMeta = function () {
     }
     return this.meta;
 };
-
-AutomationModule.prototype.moduleBasePath = function () {
-    return global.confog.controller.modulesPath + "/AutomationModule";
-}

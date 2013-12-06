@@ -35,10 +35,6 @@ function inherits (ctor, superCtor) {
     });
 }
 
-// Array.prototype.has = function (value) {
-//     return -1 != this.indexOf(value);
-// };
-
 function in_array (array, value) {
     return -1 != array.indexOf(value);
 }
@@ -62,7 +58,12 @@ function get_values (obj) {
 
 var config;
 try {
-    config = loadJSON("config.json");
+    // config = loadJSON("config.json");
+    config = loadObject("config.json") || {
+        "controller": {},
+        "vdevInfo": {},
+        "locations": {}
+    };
 } catch (ex) {
     console.log("Error loading config.json:", ex.message);
 }
@@ -86,27 +87,32 @@ if (!config) {
     executeFile(config.classesPath+"/AutomationController.js");
     executeFile(config.classesPath+"/AutomationModule.js");
     executeFile(config.classesPath+"/VirtualDevice.js");
+    executeFile("webserver.js");
 
     //--- Instantiate Automation Controller
 
-    var controller = new AutomationController(config.controller, config["vdevInfo"] || {});
+    var api = null;
+    var controller = new AutomationController(config);
 
-    controller.on('init', function () {
-        controller.run();
+    controller.on('core.init', function () {
+        console.log('Starting ZWay Automation webserver');
     });
 
-    controller.on('error', function (err) {
+    controller.on('core.start', function () {
+        console.log('ZWay Automation started');
+    });
+
+    controller.on('core.stop', function () {
+        console.log('ZWay Automation stopped');
+    });
+
+    controller.on('core.error', function (err) {
         console.log("--- ERROR:", err.message);
-    });
-
-    controller.on('run', function () {
-        console.log('ZWay Automation Controller started');
-
-        //--- Initialize webserver
-        executeFile("webserver.js");
+        controller.addNotification("error", err.message);
     });
 
     //--- main
 
     controller.init();
+    controller.start();
 }

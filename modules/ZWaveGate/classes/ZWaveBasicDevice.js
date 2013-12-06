@@ -16,7 +16,6 @@ ZWaveBasicDevice = function (id, controller) {
     this.deviceType = "system";
     this.zDeviceId = zway.controller.data.nodeId.value;
     this.zCommandClassId = 32;
-    this.caps = ["zway", "zwayVirtual"];
 
 	var self = this;
     this.controller.on('zway.dataUpdate', function () {
@@ -51,7 +50,7 @@ ZWaveBasicDevice.prototype.bindToDatapoints = function () {
 			return;
 		}
 
-        _instance.commandClasses[self.zCommandClassId].data.level.bind(function (changeType, args) {
+		self.bindAndRemember(_instance.commandClasses[self.zCommandClassId].data.level, function (changeType, args) {
             // Handle only "update" and "shadow update" events
             if (0x01 != changeType && 0x41 != changeType) return;
 
