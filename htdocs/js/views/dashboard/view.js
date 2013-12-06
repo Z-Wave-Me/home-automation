@@ -2,38 +2,23 @@ define([
     "helpers/apis",
     "backbone",
     "collections/devices",
-    "collections/events",
     "text!templates/widgets/probe-small.html",
     "text!templates/widgets/fan-small.html",
     "text!templates/widgets/doorlock-small.html",
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
     "text!templates/widgets/switch-small.html"
-], function (Apis, Backbone, Devices, Events, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
+], function (Apis, Backbone, Devices, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
     var DashboardView = Backbone.View.extend({
         el: '.widgets',
         initialize: function () {
-            _.bindAll(this, 'render', 'renderWidgets', 'refreshWidgets');
+            _.bindAll(this, 'render', 'renderWidgets');
+
             var that = this;
             that.Devices = new Devices();
-            that.Events = new Events();
-
-            that.Devices.on('sync', function () {
-                that.renderWidgets();
-            });
-
-            that.Events.on('sync', function () {
-                that.refreshWidgets();
-            });
-
             setInterval(function () {
-                that.Events.fetch({
-                    update: true,
-                    success: function (model, response, options) {
-                        that.Events.updateTime = response.data.updateTime;
-                    }
-                });
+                that.Devices.fetch();
             }, 1000);
         },
         render: function () {
@@ -46,48 +31,41 @@ define([
         },
         renderWidgets: function () {
             var that = this;
-            that.Devices.forEach(function (model) {
+            that.Devices.each(function (model) {
+                model.on('change', function () {
+                    that.renderWidget(model);
+                });
                 that.renderWidget(model);
             });
         },
-        refreshWidgets: function () {
-            var that = this;
-            that.Events.forEach(function (event) {
-                var device =  that.Devices.get(event.get('id')),
-                    metrics = _.extend(device.get('metrics'), event.get('metrics'));
-                device.set({ metrics: metrics });
-                that.renderWidget(device);
-            });
-        },
         renderWidget: function (model) {
-            var that = this,
-                replace = $('#widgets-region').children().size() === that.Devices.size() ? true : false;
-            if (model.get('deviceType') === "probe") {
-                that.renderProbe(model, replace);
-            } else if (model.get('deviceType') === "climate" && model.get('deviceSubType') === "fan") {
-                that.renderFan(model, replace);
-            } else if (model.get('deviceType') === "switch" && model.get('deviceSubType') === "multilevel") {
-                that.renderMultilevel(model, replace);
-            } else if (model.get('deviceType') === "climate" && model.get('deviceSubType') === "thermostat") {
-                that.renderThermostat(model, replace);
+            var that = this;
+            if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
+                that.renderProbe(model);
+            } else if (model.get('deviceType') === "fan") {
+                that.renderFan(model);
+            } else if (model.get('deviceType') === "switchMultilevel") {
+                that.renderMultilevel(model);
+            } else if (model.get('deviceType') === "thermostat") {
+                that.renderThermostat(model);
             } else if (model.get('deviceType') === "doorlock") {
-                that.renderDoorlock(model, replace);
-            } else if (model.get('deviceType') === "switch") {
-                that.renderSwitch(model, replace);
+                that.renderDoorlock(model);
+            } else if (model.get('deviceType') === "switchBinary") {
+                that.renderSwitch(model);
             } else {
                 log(model);
             }
         },
-        renderProbe: function (model, replace) {
+        renderProbe: function (model) {
             var that = this,
                 $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
-            if (!replace) {
+            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
                 that.$el.append($ProbeTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ProbeTmp);
             }
         },
-        renderFan: function (model, replace) {
+        renderFan: function (model) {
             var that = this,
                 $FanTmp = $(_.template(templateFan, model.toJSON()));
 
@@ -101,15 +79,16 @@ define([
                 });
             });
 
-            if (!replace) {
+            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
                 that.$el.append($FanTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($FanTmp);
             }
         },
-        renderDoorlock: function (model, replace) {
+        renderDoorlock: function (model) {
             var that = this,
                 $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
+
             $DoorLockTmp.find('.action').on('click', function (e) {
                 e.preventDefault();
                 var $button = $(this),
@@ -124,13 +103,13 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
-            if (!replace) {
+            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
                 that.$el.append($DoorLockTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($DoorLockTmp);
             }
         },
-        renderMultilevel: function (model, replace) {
+        renderMultilevel: function (model) {
             var that = this,
                 $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON())),
                 $range = $ComplementaryTmp.find('.input-range'),
@@ -155,13 +134,13 @@ define([
                 });
             });
 
-            if (!replace) {
+            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
                 that.$el.append($ComplementaryTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ComplementaryTmp);
             }
         },
-        renderThermostat: function (model, replace) {
+        renderThermostat: function (model) {
             var that = this,
                 $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
 
@@ -174,13 +153,13 @@ define([
                     //log(json);
                 });
             });
-            if (!replace) {
+            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
                 that.$el.append($ThermostatTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ThermostatTmp);
             }
         },
-        renderSwitch: function (model, replace) {
+        renderSwitch: function (model) {
             var that = this,
                 $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
             $SwitchTmp.find('.action').on('click', function (e) {
@@ -198,7 +177,7 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
-            if (!replace) {
+            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
                 that.$el.append($SwitchTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);

@@ -23,11 +23,16 @@ define([
             options = options || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
+            if (this.updateTime !== undefined) {
+                options.data = {since: this.updateTime};
+            }
+
             Backbone.sync(method, model, options);
         },
 
         parse: function (response, xhr) {
-            return response.data;
+            this.updateTime = response.data.updateTime;
+            return response.data.devices;
         },
 
         initialize: function () {

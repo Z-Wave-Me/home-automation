@@ -58,6 +58,26 @@ define([
                     $this.css('background-image', '-webkit-gradient(linear,left top,  right top, color-stop(' + value + ', rgb( 64, 232, 240 )), color-stop(' + value + ', rgb( 190, 190, 190 )))');
                 });
             };
+
+            $.fn.exists = function () { return (this.length > 0); };
+
+            $.fn.center = function () {
+                this.css("position", "absolute");
+                this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) +
+                    $(window).scrollTop()) + "px");
+                this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
+                    $(window).scrollLeft()) + "px");
+                return this;
+            }
+
+            $.fn.top = function () {
+                this.css("position","absolute");
+                this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 5) +
+                    $(window).scrollTop()) + "px");
+                this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
+                    $(window).scrollLeft()) + "px");
+                return this;
+            }
         },
         preFilterAjax: function () {
             var that = this;
