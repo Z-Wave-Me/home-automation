@@ -278,7 +278,8 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             error: null,
             data: null
         },
-        reqObj;
+        reqObj,
+        MethodIsNotImplemented = false;
 
     if (this.req.method === 'GET') {
         title = this.req.query.title;
@@ -291,10 +292,10 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
 
         title = reqObj.title;
     } else {
-        return this.NotImplementedReply;
+        MethodIsNotImplemented = true;
     }
 
-    if (!!title) {
+    if (!!title && !NotImplemented) {
         if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
             reply.error = "Location " + id + " already exists";
@@ -306,14 +307,17 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             reply.data.id = id;
             reply.data.title = title;
         }
-    } else {
+    } else if (!NotImplemented) {
         this.res.status = 500;
         reply.error = "Arguments title are required";
     }
 
-
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
+    if (MethodIsNotImplemented) {
+        return this.NotImplementedReply;
+    } else {
+        this.responseHeader("Content-Type", "application/json; charset=utf-8");
+        this.res.body = JSON.stringify(reply);
+    }
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function () {
