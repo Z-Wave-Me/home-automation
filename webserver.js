@@ -271,13 +271,12 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         reply = {
             error: null,
             data: null
-        };
+        },
+        reqObj;
 
     if (this.method === 'GET') {
-        id = this.req.query.id;
         title = this.req.query.title;
     } else { // POST
-        var reqObj;
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {
@@ -285,12 +284,15 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         }
 
         if (Array.isArray(reqObj) && reqObj.length > 0) {
-            id = reqObj.id || 0;
             title = reqObj.title || 0;
+        } else {
+            title = 0;
         }
     }
 
-    if (!!id && !!title && id.length > 0 && title.length > 0) {
+    id = this.req.query.id || reqObj.id || Math.floor((1 + Math.random()) * 0x10000);
+
+    if (!!title) {
         if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
             reply.error = "Location "+id+" already exists";
