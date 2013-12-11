@@ -313,7 +313,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
     }
 
     if (MethodIsNotImplemented) {
-        return this.NotImplementedReply;
+        this.NotImplementedReply() ;
     } else {
         this.responseHeader("Content-Type", "application/json; charset=utf-8");
         this.res.body = JSON.stringify(reply);
