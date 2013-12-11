@@ -319,10 +319,14 @@ AutomationController.prototype.loadNotifications = function () {
 }
 
 AutomationController.prototype.addNotification = function (severity, message) {
-    var now = new Date();
-    var ts = Math.round(now.getTime() / 1000);
-    var id = now.getTime().toString();
-    this.notifications.push([id, ts, severity, message]);
+    var now = new Date(),
+        notice = {
+        id: now.getTime().toString(),
+        timestamp: Math.round(now.getTime() / 1000),
+        level: severity,
+        message: message
+    };
+    this.notifications.push(notice);
     this.saveNotifications();
 }
 
