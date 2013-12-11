@@ -20,7 +20,7 @@ function AutomationController () {
     this.instances = {};
     this.devices = {};
 
-    this.notifications = {};
+    this.notifications = [];
     this.lastStructureChangeTime = 0;
 
     this._autoLoadModules = [];
@@ -315,19 +315,22 @@ AutomationController.prototype.saveNotifications = function () {
 }
 
 AutomationController.prototype.loadNotifications = function () {
-    this.notifications = loadObject("notifications") || {};
+    //this.notifications = loadObject("notifications") || {};
 }
 
 AutomationController.prototype.addNotification = function (severity, message) {
     var now = new Date(),
-        id = now.getTime().toString();
+        id = now.getTime().toString(),
+        notice;
 
-    this.notifications[id] = {
+    notice = {
         id: now.getTime().toString(),
         timestamp: Math.round(now.getTime() / 1000),
         level: severity,
         message: message
     };
+
+    this.notifications.push(notice);
 
     this.saveNotifications();
 }
@@ -384,11 +387,8 @@ AutomationController.prototype.updateLocation = function (id, title) {
 AutomationController.prototype.listNotifications = function (since) {
     var self = this;
     since = since || 0;
-    this.notifications.forEach(function(notification) {
-        console.log(JSON.stringify(notification));
-    });
     var filteredNotifications = this.notifications.filter(function (notification) {
-        return notification[1] >= since;
+        return notification.id >= since;
     });
 
     return filteredNotifications;
