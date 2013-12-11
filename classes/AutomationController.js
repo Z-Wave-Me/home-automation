@@ -384,9 +384,10 @@ AutomationController.prototype.updateLocation = function (id, title) {
 AutomationController.prototype.listNotifications = function (since) {
     var self = this;
     since = since || 0;
-    console.log(JSON.stringify(this.notifications));
-    var filteredNotifications = this.notifications.filter(function (notification) {
+    this.notifications.forEach(function(notification) {
         console.log(JSON.stringify(notification));
+    });
+    var filteredNotifications = this.notifications.filter(function (notification) {
         return notification[1] >= since;
     });
 
