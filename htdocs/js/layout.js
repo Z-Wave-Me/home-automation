@@ -42,7 +42,10 @@ define([
                 $eventsContainer = $modal.find('.events-container');
 
                 that.Notifications.forEach(function (event) {
-                    $template = $(_.template(EventTmp, event.toJSON()));
+                    event = event.toJSON();
+                    event.timeDate = new Date(event.timestamp);
+                    event.timeDate = event.timeDate.getDate() + "/" + (event.timeDate.getMonth() + 1) + "/" + (event.timeDate.getYear() - 100) + " - " + event.timeDate.getHours() + ":" + event.timeDate.getMinutes();
+                    $template = $(_.template(EventTmp, event));
                     $eventsContainer.append($template);
                 });
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);

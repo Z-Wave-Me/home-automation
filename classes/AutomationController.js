@@ -334,7 +334,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
 }
 
 AutomationController.prototype.deleteNotifications = function (ids) {
-    this.notifications.filter(this.notifications, function (notification) {
+    this.notifications.filter(function (notification) {
         return ids.indexOf(notification.id) === -1;
     });
     this.saveNotifications();
