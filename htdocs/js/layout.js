@@ -50,10 +50,11 @@ define([
                     $template.find('.read').on('click', function () {
                         var $this = $(this);
                         $this.off();
-                        $template.slideUp('fast');
                         model.save({mark: true}, {
+                            silent: true,
                             success: function () {
                                 this.Notifications.remove(model);
+                                $template.slideUp('fast');
                             }
                         });
                     });
