@@ -315,14 +315,11 @@ AutomationController.prototype.saveNotifications = function () {
 }
 
 AutomationController.prototype.loadNotifications = function () {
-    saveObject("notifications", "");
     this.notifications = loadObject("notifications") || {};
 }
 
 AutomationController.prototype.addNotification = function (severity, message) {
-    var now = new Date(),
-        id = now.getTime().toString(),
-        notice;
+    var now = new Date(), notice;
 
     notice = {
         id: now.getTime().toString(),
@@ -337,11 +334,11 @@ AutomationController.prototype.addNotification = function (severity, message) {
 }
 
 AutomationController.prototype.deleteNotifications = function (ids) {
-    this.notifications = this.notifications.filter(function (item) {
-        return ids.indexOf(item[0]) === -1;
+    this.notifications.filter(this.notifications, function (notification) {
+        return ids.indexOf(notification.id) === -1;
     });
     this.saveNotifications();
-}
+};
 
 AutomationController.prototype.addLocation = function (id, title) {
     if (!this.locations.hasOwnProperty(id)) {
