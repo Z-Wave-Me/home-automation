@@ -300,9 +300,10 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             this.res.status = 200;
             controller.addLocation(id, title);
             reply.status = "OK";
-            reply.data = reply.data || {};
-            reply.data.id = id;
-            reply.data.title = title;
+            reply.data =  {
+                id: id,
+                title: title
+            };
         }
     } else {
         this.res.status = 500;
@@ -381,7 +382,11 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function () {
         } else {
             this.res.status = 200;
             controller.updateLocation(id, title);
-            reply.data = "OK";
+            reply.data = {
+                id: id,
+                title: title
+            };
+            reply.status = "OK";
         }
     } else {
         this.res.status = 500;
