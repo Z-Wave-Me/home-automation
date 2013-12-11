@@ -275,6 +275,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         reqObj;
 
 
+    console.log(id);
+    console.log(this.req.body)
+
     if (this.method === 'GET') {
         title = this.req.query.title;
     } else if (this.method === 'POST') { // POST
@@ -289,8 +292,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         return this.NotImplementedReply;
     }
 
-    console.log(title)
-    console.log(id)
+    console.log(title);
+
+
 
     if (!!title) {
         if (controller.locations.hasOwnProperty(id)) {
