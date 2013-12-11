@@ -46,7 +46,9 @@
 }
 
 .popover-content {
-  padding: 9px 14px;
+  float: left;
+  display: block;
+  padding: 5px 10px;
 }
 
 .popover .arrow,
@@ -137,4 +139,32 @@
 }
 
 .popover-events {
+  max-width: 300px;
+  .event-item {
+    display: block;
+    float: left;
+    width: 100%;
+    font-size: 13px;
+    line-height: 15px;
+    text-align: left;
+    .time-field {
+      font-weight: bold;
+      margin-right: 5px;
+    }
+    &.debug {
+      .time-field {
+        color: @gray;
+      }
+    }
+    &.warning {
+      .time-field {
+        color: @green;
+      }
+    }
+    &.error {
+      .time-field {
+        color: @nice-blue;
+      }
+    }
+  }
 }

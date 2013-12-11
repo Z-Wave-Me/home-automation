@@ -323,7 +323,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
 
     notice = {
         id: now.getTime().toString(),
-        timestamp: Math.round(now.getTime() / 1000),
+        timestamp: now.toString(),
         level: severity,
         message: message
     };

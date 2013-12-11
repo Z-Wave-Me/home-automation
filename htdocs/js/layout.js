@@ -4,8 +4,9 @@ define([
     'text!templates/layout/header.html',
     'text!templates/layout/main.html',
     'text!templates/layout/footer.html',
-    'text!templates/popups/event-menu.html'
-], function (Backbone, ModalHelper, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl) {
+    'text!templates/popups/event-menu.html',
+    'text!templates/popups/_event.html'
+], function (Backbone, ModalHelper, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl, EventTmp) {
     'use strict';
     var AppLayout = Backbone.View.extend({
         el: "#body",
@@ -14,11 +15,14 @@ define([
         templateFooter: _.template(FooterTpl, {}),
 
         initialize: function () {
-            var that = this;
+            var that = this, $ok, $warning, $eventsContainer, $template;
             _.bindAll(this, 'render', 'clear', 'update');
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
+
+            $ok = that.$header.find('.events-ok');
+            $warning = that.$header.find('.events-warning');
 
             that.$header.find('.events-menu').on('click', function (e) {
                 // Events menu
@@ -30,13 +34,30 @@ define([
                     position = { top: relY, left: relX };
 
                 // Popup initialization
-                $modal.find('.arrow').css({'left': '17%' });
+                if (!that.Notifications.length) {
+                    $modal.find('.arrow').css({'left': '17%' });
+                } else {
+                    $modal.find('.arrow').css({'left': '7%' });
+                }
+                $eventsContainer = $modal.find('.events-container');
+
+                that.Notifications.forEach(function (event) {
+                    $template = $(_.template(EventTmp, event.toJSON()));
+                    $eventsContainer.append($template);
+                });
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
             that.Notifications = window.App.Notifications;
-            that.listenTo(that.Notifications, 'add change', function (model) {
-                log(model)
+            that.listenTo(that.Notifications, 'all', function () {
+                if (that.Notifications.length) {
+                    $ok.addClass('hidden');
+                    $warning.removeClass('hidden');
+                    $warning.find('.count').text(that.Notifications.size());
+                } else {
+                    $ok.removeClass('hidden');
+                    $warning.addClass('hidden');
+                }
             });
         },
 
@@ -46,7 +67,7 @@ define([
         },
         update: function () {
             var that = this,
-                hash = window.location.hash.match(/(?:[a-z]+){2}/)[0];
+                hash = window.location.hash.match(/(?:[a-z]+){2}/) ? window.location.hash.match(/(?:[a-z]+){2}/)[0] : '';
             if (hash === 'widgets') {
                 that.$header.find('.header-box-sub-nav-rooms').removeClass('hidden');
                 that.$header.find('.header-box-sub-nav').removeClass('hidden');
@@ -60,7 +81,7 @@ define([
             that.$header.remove();
             that.$main.remove();
             that.$footer.remove();
-        }
+        },
     });
 
     return AppLayout;

@@ -35,6 +35,14 @@ define([
             return response.data.notifications;
         },
 
+        groupCount: function () {
+            return {
+                debug: this.where({level: 'debug'}).length,
+                error: this.where({level: 'error'}).length,
+                warning: this.where({level: 'warning'}).length
+            };
+        },
+
         initialize: function () {
            log('Init notifications');
         }
