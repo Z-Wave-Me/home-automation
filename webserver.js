@@ -289,21 +289,12 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         return this.NotImplementedReply;
     }
 
-    id = this.req.query.id || reqObj.id;
+    id = this.req.query.id || reqObj.id || Math.floor((1 + Math.random()) * 0x10000);
 
     if (!!title) {
-        if (controller.locations.hasOwnProperty(id) && (this.req.query.id || reqObj.id)) {
+        if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
             reply.error = "Location "+id+" already exists";
-        } else if (controller.locations.hasOwnProperty(id) && (!this.req.query.id || !reqObj.id)) {
-            while (id > 0){
-                id = Math.floor((1 + Math.random()) * 0x10000);
-                if (controller.locations.hasOwnProperty(id)) {
-                    id = 0;
-                } else {
-                    break;
-                }
-            }
         } else {
             this.res.status = 200;
             controller.addLocation(id, title);
