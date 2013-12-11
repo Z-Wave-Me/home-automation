@@ -296,7 +296,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         } else {
             this.res.status = 200;
             controller.addLocation(id, title);
-            reply.data = "OK";
+            reply.status = "OK";
+            reply.data.id = id;
+            reply.data.title = title;
         }
     } else {
         this.res.status = 500;
