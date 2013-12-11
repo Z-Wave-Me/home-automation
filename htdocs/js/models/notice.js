@@ -13,7 +13,7 @@ define([
             'read': '/notifications/',
             'create': '/notifications/',
             'update': '/notifications/',
-            'delete': '/notifications/'
+            'delete': '/notifications/markRead'
         },
 
         url: function () {
