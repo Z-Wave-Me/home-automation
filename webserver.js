@@ -314,17 +314,29 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function () {
-    var id = this.req.query.id;
+    var id,
+        reply = {
+            error: null,
+            data: null
+        },
+        reqObj;
 
-    var reply = {
-        error: null,
-        data: null
+    if (this.req.method === 'GET') {
+        id = this.req.query.id;
+    } else if (this.req.method === 'DELETE') { // DELETE
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
+
+        id = reqObj.id;
     }
 
     if (!!id) {
         if (!controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
-            reply.error = "Location "+id+" doesn't exist";
+            reply.error = "Location " + id + " doesn't exist";
         } else {
             this.res.status = 200;
             controller.removeLocation(id);
@@ -340,12 +352,26 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.updateLocation = function () {
-    var id = this.req.query.id;
-    var title = this.req.query.title;
+    var id,
+        title,
+        reply = {
+            error: null,
+            data: null
+        },
+        reqObj;
 
-    var reply = {
-        error: null,
-        data: null
+    if (this.req.method === 'GET') {
+        id = this.req.query.id;
+        title = this.req.query.title;
+    } else if (this.req.method === 'PUT') { // DELETE
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
+
+        id = reqObj.id;
+        title = reqObj.title;
     }
 
     if (!!id && !!title && title.length > 0) {
