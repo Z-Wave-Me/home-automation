@@ -200,7 +200,7 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
     if (Array.isArray(reqObj) && reqObj.length > 0) {
         this.res.status = 200;
         controller.deleteNotifications(reqObj);
-    } else if ("object" === typeof reqObj) {
+    } else if (this.req.method === 'PUT') {
         this.res.status = 200;
         controller.deleteNotifications([reqObj.id]);
     } else if (Array.isArray(reqObj) && reqObj.length < 1) {
@@ -705,7 +705,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.statusReport;
     } else if ("GET" === method && "/notifications/" == url) {
         handlerFunc = this.exposeNotifications;
-    } else if (("POST" === method && "/notifications/markRead" == url)  || ("DELETE" === method && "/notifications/" == url)) {
+    } else if (("POST" === method && "/notifications/markRead" == url)  || ("PUT" === method && "/notifications/" == url)) {
         handlerFunc = this.markNotificationsRead;
     } else if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;

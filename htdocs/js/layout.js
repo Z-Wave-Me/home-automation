@@ -51,7 +51,11 @@ define([
                         var $this = $(this);
                         $this.off();
                         $template.slideUp('fast');
-                        model.destroy();
+                        model.save({mark: true}, {
+                            success: function () {
+                                this.Notifications.remove(model);
+                            }
+                        });
                     });
 
                     $eventsContainer.append($template);

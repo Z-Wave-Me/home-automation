@@ -325,7 +325,8 @@ AutomationController.prototype.addNotification = function (severity, message) {
         id: now.getTime().toString(),
         timestamp: now.toISOString(),
         level: severity,
-        message: message
+        message: message,
+        mark: false
     };
 
     this.notifications.push(notice);
