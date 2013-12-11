@@ -289,6 +289,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         return this.NotImplementedReply;
     }
 
+    console.log(title)
+    console.log(id)
+
     if (!!title) {
         if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
