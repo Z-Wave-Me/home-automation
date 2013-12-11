@@ -691,8 +691,6 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.listInstances;
     } else if (("POST" === method || "PUT" === method) && "/instances/" == url) {
         handlerFunc = this.createInstance;
-    } else {
-        this.NotImplementedReply();
     };
 
     // ---------- Test regexp URIs --------------------------------------------
