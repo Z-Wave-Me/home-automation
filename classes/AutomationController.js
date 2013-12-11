@@ -386,6 +386,7 @@ AutomationController.prototype.listNotifications = function (since) {
     since = since || 0;
 
     var filteredNotifications = this.notifications.filter(function (notification) {
+        console.log(notification);
         return notification[1] >= since;
     });
 
