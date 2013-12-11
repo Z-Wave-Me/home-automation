@@ -295,7 +295,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         MethodIsNotImplemented = true;
     }
 
-    if (!!title && !NotImplemented) {
+    if (!!title && !MethodIsNotImplemented) {
         if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
             reply.error = "Location " + id + " already exists";
@@ -307,7 +307,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             reply.data.id = id;
             reply.data.title = title;
         }
-    } else if (!NotImplemented) {
+    } else if (!MethodIsNotImplemented) {
         this.res.status = 500;
         reply.error = "Arguments title are required";
     }
