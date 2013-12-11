@@ -266,12 +266,28 @@ ZAutomationAPIWebRequest.prototype.listLocations = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.addLocation = function () {
-    var id = this.req.query.id;
-    var title = this.req.query.title;
+    var id,
+        title,
+        reply = {
+            error: null,
+            data: null
+        };
 
-    var reply = {
-        error: null,
-        data: null
+    if (this.method === 'GET') {
+        id = this.req.query.id;
+        title = this.req.query.title;
+    } else { // POST
+        var reqObj;
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
+
+        if (Array.isArray(reqObj) && reqObj.length > 0) {
+            id = reqObj.id || 0;
+            title = reqObj.title || 0;
+        }
     }
 
     if (!!id && !!title && id.length > 0 && title.length > 0) {
@@ -287,6 +303,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         this.res.status = 500;
         reply.error = "Arguments id & title are required";
     }
+
 
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
