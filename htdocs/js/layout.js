@@ -41,11 +41,19 @@ define([
                 }
                 $eventsContainer = $modal.find('.events-container');
 
-                that.Notifications.forEach(function (event) {
-                    event = event.toJSON();
-                    event.timeDate = new Date(event.timestamp);
-                    event.timeDate = event.timeDate.getDate() + "/" + (event.timeDate.getMonth() + 1) + "/" + (event.timeDate.getYear() - 100) + " - " + event.timeDate.getHours() + ":" + event.timeDate.getMinutes();
-                    $template = $(_.template(EventTmp, event));
+                that.Notifications.forEach(function (notice) {
+                    notice = event.toJSON();
+                    notice.timeDate = new Date(notice.timestamp);
+                    notice.timeDate = notice.timeDate.getDate() + "/" + (notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
+                    $template = $(_.template(EventTmp, notice));
+
+                    $template.find('.hide').on('click', function () {
+                        var $this = $(this);
+                        $this.slideUp('fast', function () {
+                            notice.destroy();
+                        });
+                    });
+
                     $eventsContainer.append($template);
                 });
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);

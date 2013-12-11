@@ -200,6 +200,9 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
     if (Array.isArray(reqObj) && reqObj.length > 0) {
         this.res.status = 200;
         controller.deleteNotifications(reqObj);
+    } else if ("object" === typeof reqObj) {
+        this.res.status = 200;
+        controller.deleteNotifications(reqObj.id);
     } else if (Array.isArray(reqObj) && reqObj.length < 1) {
         this.res.status = 500;
         reply.error = "Payload must an array with at least one id";
