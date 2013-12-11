@@ -278,8 +278,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             error: null,
             data: null
         },
-        reqObj,
-        MethodIsNotImplemented = false;
+        reqObj;
 
     if (this.req.method === 'GET') {
         title = this.req.query.title;
@@ -291,11 +290,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         }
 
         title = reqObj.title;
-    } else {
-        MethodIsNotImplemented = true;
     }
 
-    if (!!title && !MethodIsNotImplemented) {
+    if (!!title) {
         if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
             reply.error = "Location " + id + " already exists";
@@ -307,17 +304,13 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             reply.data.id = id;
             reply.data.title = title;
         }
-    } else if (!MethodIsNotImplemented) {
+    } else {
         this.res.status = 500;
         reply.error = "Arguments title are required";
     }
 
-    if (MethodIsNotImplemented) {
-        this.NotImplementedReply() ;
-    } else {
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
-        this.res.body = JSON.stringify(reply);
-    }
+    this.responseHeader("Content-Type", "application/json; charset=utf-8");
+    this.res.body = JSON.stringify(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function () {
@@ -698,6 +691,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.listInstances;
     } else if (("POST" === method || "PUT" === method) && "/instances/" == url) {
         handlerFunc = this.createInstance;
+    } else {
+        this.NotImplementedReply();
     };
 
     // ---------- Test regexp URIs --------------------------------------------
