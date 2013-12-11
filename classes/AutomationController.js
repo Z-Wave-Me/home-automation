@@ -315,7 +315,8 @@ AutomationController.prototype.saveNotifications = function () {
 }
 
 AutomationController.prototype.loadNotifications = function () {
-    //this.notifications = loadObject("notifications") || {};
+    saveObject("notifications", "");
+    this.notifications = loadObject("notifications") || {};
 }
 
 AutomationController.prototype.addNotification = function (severity, message) {
