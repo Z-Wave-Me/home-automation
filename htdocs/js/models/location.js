@@ -3,21 +3,17 @@ define([
     'backbone'
 ], function (Backbone) {
     'use strict';
-    var Device =  Backbone.Model.extend({
+    var Location =  Backbone.Model.extend({
 
         defaults: {
-            deviceSubType: null,
-            deviceType: null,
-            id: null,
-            lock: true,
-            metrics: {}
+            title: null
         },
 
         methodToURL: {
-            'read': '/devices/',
-            'create': '/devices/',
-            'update': '/devices/',
-            'delete': '/devices/'
+            'read': '/locations/',
+            'create': '/locations/',
+            'update': '/locations/',
+            'delete': '/locations/'
         },
 
         url: function () {
@@ -39,5 +35,5 @@ define([
         }
     });
 
-    return Device;
+    return Location;
 });

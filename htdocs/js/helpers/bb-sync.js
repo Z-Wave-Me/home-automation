@@ -55,7 +55,7 @@ define([
         };
 
         //var methodMap = { 'create': 'POST', 'update': 'PUT', 'delete': 'DELETE', 'read': 'GET' };
-        methodMap = { 'create': 'GET', 'update': 'GET', 'delete': 'GET', 'read': 'GET' };
+        methodMap = { 'create': 'POST', 'update': 'PUT', 'delete': 'GET', 'read': 'GET' };
         type = methodMap[method];
 
         // Default options, unless specified.

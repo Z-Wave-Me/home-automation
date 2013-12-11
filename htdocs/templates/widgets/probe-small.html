@@ -4,10 +4,9 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-
-            <div class="icon-base <%= metrics.iconBase %> <% if( metrics.scaleTitle == 'kWh' && metrics.scaleTitle == 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
+            <div class="icon-base <%= metrics.iconBase %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
         </div>
-        <div class="content"><%= metrics.probeTitle %>
+        <div class="content"><%= metrics.title %>
             <span class="temperature-field">
                 <nobr><%= Math.round(metrics.level) %> <%= metrics.scaleTitle %></nobr>
             </span>

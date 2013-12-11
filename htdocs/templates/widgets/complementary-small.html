@@ -4,9 +4,9 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base light <%= metrics.iconBase %>  <%= metrics.scaleTitle %> <% if (deviceSubType && deviceSubType != metrics.iconBase) { print(' ' + deviceSubType); } %>"></div>
+            <div class="icon-base light <%= metrics.iconBase %>  <%= metrics.scaleTitle %>"></div>
         </div>
-        <div class="content"><span class="text">Complementary</span>
+        <div class="content"><span class="text"><%= metrics.title %></span>
             <progress class="progress-bar" progress-bar-id="0" value="<%= metrics.level %>" min="0" max="100"></progress>
             <input class="input-range hidden" type="range" min="0" max="100" value="<%= metrics.level %>" step="1">
         </div>

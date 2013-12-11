@@ -1,30 +1,30 @@
 define([
     'backbone',
     'helpers/bb-sync',
-    'layout'
-], function (Backbone, bbSync, Layout) {
+    'collections/devices',
+    'collections/locations'
+], function (Backbone, bbSync, Devices, Locations) {
     'use strict';
     return Backbone.View.extend({
         el: 'body',
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax');
+            _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
             that.apiPort = '10483';
             that.apiHost = 'mskoff.z-wave.me';
-            that.Layout = new Layout();
 
             that.vars = {
                 apiPort : qVar("port") || window.location.port,
                 apiHost : qVar("host") || window.location.hostname
             };
 
+            that.buildStructure();
             Backbone.sync = bbSync;
             that.addJqueryMethod();
             that.preFilterAjax();
-            that.Layout.render();
         },
         render: function () {
             log('Render app.js...');
@@ -68,7 +68,7 @@ define([
                 this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
                     $(window).scrollLeft()) + "px");
                 return this;
-            }
+            };
 
             $.fn.top = function () {
                 this.css("position","absolute");
@@ -77,7 +77,7 @@ define([
                 this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
                     $(window).scrollLeft()) + "px");
                 return this;
-            }
+            };
         },
         preFilterAjax: function () {
             var that = this;
@@ -90,6 +90,16 @@ define([
                     crossDomain: true
                 };
             });
+        },
+        buildStructure: function () {
+            if (!window.App) {
+                window.App = {
+                    Devices: new Devices(),
+                    Locations: new Locations(),
+                    Tags: {},
+                    Notifications: {}
+                };
+            }
         }
     });
 });

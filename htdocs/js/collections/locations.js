@@ -1,17 +1,17 @@
 define([
     //libs
     'backbone',
-    'models/device'
-], function (Backbone, DeviceM) {
+    'models/location'
+], function (Backbone, LocationM) {
     'use strict';
-    var DevicesCollection =  Backbone.Collection.extend({
+    var LocationsCollection =  Backbone.Collection.extend({
         // model reference
-        model: DeviceM,
+        model: LocationM,
         methodToURL: {
-            'read': '/devices/',
-            'create': '/devices/',
-            'update': '/devices/',
-            'delete': '/devices/'
+            'read': '/locations/',
+            'create': '/locations/',
+            'update': '/locations/',
+            'delete': '/locations/'
         },
 
         url: function () {
@@ -41,6 +41,6 @@ define([
 
     });
 
-    return DevicesCollection;
+    return LocationsCollection;
 
 });

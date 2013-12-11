@@ -658,17 +658,17 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.restartController;
     } else if ("GET" === method && "/locations/" == url) {
         handlerFunc = this.listLocations;
-    } else if ("GET" === method && "/locations/add" == url) {
+    } else if (("GET" === method && "/locations/add" == url) || ("POST" === method && "/locations/" == url)) {
         handlerFunc = this.addLocation;
-    } else if ("GET" === method && "/locations/remove" == url) {
+    } else if (("GET" === method && "/locations/remove" == url) || ("DELETE" === method && "/locations/" == url)) {
         handlerFunc = this.removeLocation;
-    } else if ("GET" === method && "/locations/update" == url) {
+    } else if (("GET" === method && "/locations/update" == url) || ("PUT" === method && "/locations/" == url)) {
         handlerFunc = this.updateLocation;
     } else if ("GET" === method && "/modules/" == url) {
         handlerFunc = this.listModules;
     } else if ("GET" === method && "/instances/" == url) {
         handlerFunc = this.listInstances;
-    } else if ("PUT" === method && "/instances/" == url) {
+    } else if (("POST" === method || "PUT" === method) && "/instances/" == url) {
         handlerFunc = this.createInstance;
     };
 

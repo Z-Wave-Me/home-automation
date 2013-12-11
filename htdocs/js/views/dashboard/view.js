@@ -1,29 +1,25 @@
+/* global: _, $, define */
 define([
     "helpers/apis",
     "backbone",
-    "collections/devices",
     "text!templates/widgets/probe-small.html",
     "text!templates/widgets/fan-small.html",
     "text!templates/widgets/doorlock-small.html",
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
     "text!templates/widgets/switch-small.html"
-], function (Apis, Backbone, Devices, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
+], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
     var DashboardView = Backbone.View.extend({
         el: '.widgets',
         initialize: function () {
-            _.bindAll(this, 'render', 'renderWidgets');
+            _.bindAll(this, 'render', 'isExistWidget');
 
             var that = this;
-            that.Devices = new Devices();
+            that.Devices = window.App.Devices;
 
-            that.Devices.on('change', function (model) {
-                that.renderWidget(model, true);
-            });
-
-            that.Devices.on('add', function (model) {
-                that.renderWidget(model, false);
+            that.listenTo(that.Devices, 'add change sync', function (model) {
+                that.renderWidget(model);
             });
 
             setInterval(function () {
@@ -35,42 +31,39 @@ define([
         },
         render: function () {
             var that = this;
-            that.Devices.fetch();
-        },
-        renderWidgets: function () {
-            var that = this;
-            that.Devices.each(function (model) {
-                that.renderWidget(model, false);
+            that.Devices.fetch({
+                remove: false,
+                merge: true
             });
         },
-        renderWidget: function (model, replace) {
+        renderWidget: function (model) {
             var that = this;
             if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
-                that.renderProbe(model, replace);
+                that.renderProbe(model);
             } else if (model.get('deviceType') === "fan") {
-                that.renderFan(model, replace);
+                that.renderFan(model);
             } else if (model.get('deviceType') === "switchMultilevel") {
-                that.renderMultilevel(model, replace);
+                that.renderMultilevel(model);
             } else if (model.get('deviceType') === "thermostat") {
-                that.renderThermostat(model, replace);
+                that.renderThermostat(model);
             } else if (model.get('deviceType') === "doorlock") {
-                that.renderDoorlock(model, replace);
+                that.renderDoorlock(model);
             } else if (model.get('deviceType') === "switchBinary") {
-                that.renderSwitch(model, replace);
+                that.renderSwitch(model);
             } else {
                 log(model);
             }
         },
-        renderProbe: function (model, replace) {
+        renderProbe: function (model) {
             var that = this,
                 $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
-            if (!replace) {
+            if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($ProbeTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ProbeTmp);
             }
         },
-        renderFan: function (model, replace) {
+        renderFan: function (model) {
             var that = this,
                 $FanTmp = $(_.template(templateFan, model.toJSON()));
 
@@ -84,13 +77,13 @@ define([
                 });
             });
 
-            if (!replace) {
+            if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($FanTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($FanTmp);
             }
         },
-        renderDoorlock: function (model, replace) {
+        renderDoorlock: function (model) {
             var that = this,
                 $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
 
@@ -108,13 +101,13 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
-            if (!replace) {
+            if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($DoorLockTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($DoorLockTmp);
             }
         },
-        renderMultilevel: function (model, replace) {
+        renderMultilevel: function (model) {
             var that = this,
                 $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON())),
                 $range = $ComplementaryTmp.find('.input-range'),
@@ -139,13 +132,13 @@ define([
                 });
             });
 
-            if (!replace) {
+            if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($ComplementaryTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ComplementaryTmp);
             }
         },
-        renderThermostat: function (model, replace) {
+        renderThermostat: function (model) {
             var that = this,
                 $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
 
@@ -158,15 +151,16 @@ define([
                     //log(json);
                 });
             });
-            if (!replace) {
+            if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($ThermostatTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ThermostatTmp);
             }
         },
-        renderSwitch: function (model, replace) {
+        renderSwitch: function (model) {
             var that = this,
                 $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
+
             $SwitchTmp.find('.action').on('click', function (e) {
                 e.preventDefault();
 
@@ -182,11 +176,14 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
-            if (!replace) {
+            if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($SwitchTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);
             }
+        },
+        isExistWidget: function (id) {
+            return $('div[data-widget-id="' + id + '"]').exists();
         }
 
     });

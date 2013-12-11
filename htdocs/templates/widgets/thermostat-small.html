@@ -4,9 +4,9 @@
     </div>
     <div class="content-widget ">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %><% if (deviceSubType) { print(' ' + deviceSubType); } %>"></div>
+            <div class="icon-base <%= metrics.iconBase %>"></div>
         </div>
-        <div class="content">Thermostat
+        <div class="content"><%= metrics.title %>
             <span class="select-field">
                 <select>
                     <% _.each(metrics.modes, function(mode) { %>

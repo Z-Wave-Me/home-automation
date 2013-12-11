@@ -4,9 +4,9 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %> <% if (!metrics.iconBase) { print(deviceSubType); } %>"></div>
+            <div class="icon-base <%= metrics.iconBase %> <%= deviceType %>"></div>
         </div>
-        <div class="content">Switch
+        <div class="content"><%= metrics.title %>
             <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('On'); } else { print('Off'); }%>">
                 <span class="switch-door <% if (metrics.level > 0) { print(' active'); } %>">
                     <span class="bubble"></span>

@@ -1,5 +1,4 @@
 define([
-    "app",
     "helpers/apis",
     "backbone",
     "collections/devices"
@@ -13,7 +12,6 @@ define([
         },
         render: function () {
             var that = this;
-            log('WidgetsView');
         }
     });
 

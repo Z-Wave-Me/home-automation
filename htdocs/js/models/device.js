@@ -6,9 +6,7 @@ define([
     var Device =  Backbone.Model.extend({
 
         defaults: {
-            deviceSubType: null,
             deviceType: null,
-            id: null,
             lock: true,
             metrics: {}
         },

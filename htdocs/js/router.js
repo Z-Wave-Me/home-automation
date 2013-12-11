@@ -1,8 +1,9 @@
 define([
     'backbone',
     'vm',
-    'helpers/utils'
-], function (Backbone, Vm, Utils) {
+    'helpers/utils',
+    'layout'
+], function (Backbone, Vm, Utils, Layout) {
     'use strict';
     var AppRouter = Backbone.Router.extend({
             routes: {
@@ -14,12 +15,15 @@ define([
         }),
         initialize = function (options) {
             var appView = options.appView,
-                router = new AppRouter(options);
+                router = new AppRouter(options),
+                layout = new Layout();
+
+            layout.render();
 
             router.on('all', function () {
                 Utils.activateCurrentNav();
+                layout.update();
             });
-
 
             function register(route, path, name) {
                 router.on(route, function (arg1, arg2) {

@@ -15,7 +15,7 @@ define([
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'clear');
+            _.bindAll(this, 'render', 'clear', 'update');
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
@@ -38,6 +38,9 @@ define([
         render: function () {
             var that = this;
             this.$el.html(that.$header).append(that.$main).append(that.$footer);
+        },
+        update: function () {
+            log('update');
         },
         clear: function () {
             var that = this;
