@@ -274,6 +274,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         },
         reqObj;
 
+    console.log(this.req.body);
+    console.log(JSON.parse(this.req.body));
+
     if (this.method === 'GET') {
         title = this.req.query.title;
     } else { // POST
