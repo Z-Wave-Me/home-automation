@@ -274,31 +274,36 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         },
         reqObj;
 
-    console.log(this.req.body);
-    console.log(JSON.parse(this.req.body));
 
     if (this.method === 'GET') {
         title = this.req.query.title;
-    } else { // POST
+    } else if (this.method === 'POST') { // POST
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {
             reply.error = ex.message;
         }
 
-        if (reqObj.length > 0) {
-            title = reqObj.title || 0;
-        } else {
-            title = 0;
-        }
+        title = reqObj.title || 0;
+    } else {
+        return this.NotImplementedReply;
     }
 
-    id = this.req.query.id || reqObj.id || Math.floor((1 + Math.random()) * 0x10000);
+    id = this.req.query.id || reqObj.id;
 
     if (!!title) {
-        if (controller.locations.hasOwnProperty(id)) {
+        if (controller.locations.hasOwnProperty(id) && (this.req.query.id || reqObj.id)) {
             this.res.status = 500;
             reply.error = "Location "+id+" already exists";
+        } else if (controller.locations.hasOwnProperty(id) && (!this.req.query.id || !reqObj.id)) {
+            while (id > 0){
+                id = Math.floor((1 + Math.random()) * 0x10000);
+                if (controller.locations.hasOwnProperty(id)) {
+                    id = 0;
+                } else {
+                    break;
+                }
+            }
         } else {
             this.res.status = 200;
             controller.addLocation(id, title);
