@@ -283,7 +283,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             reply.error = ex.message;
         }
 
-        if (Array.isArray(reqObj) && reqObj.length > 0) {
+        if (reqObj.length > 0) {
             title = reqObj.title || 0;
         } else {
             title = 0;
