@@ -266,7 +266,7 @@ ZAutomationAPIWebRequest.prototype.listLocations = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.addLocation = function () {
-    var id,
+    var id = Object.keys(controller.locations).length + 1,
         title,
         reply = {
             error: null,
@@ -288,8 +288,6 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
     } else {
         return this.NotImplementedReply;
     }
-
-    id = this.req.query.id || reqObj.id || Math.floor((1 + Math.random()) * 0x10000);
 
     if (!!title) {
         if (controller.locations.hasOwnProperty(id)) {
