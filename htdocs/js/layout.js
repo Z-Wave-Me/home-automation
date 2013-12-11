@@ -20,7 +20,7 @@ define([
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
 
-            that.$header.find('.events-menu').on('click', function (e){
+            that.$header.find('.events-menu').on('click', function (e) {
                 // Events menu
                 var $modal = $(_.template(EventMenuTpl, {})),
                     fillScreenOpacity = true,
@@ -33,6 +33,11 @@ define([
                 $modal.find('.arrow').css({'left': '17%' });
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
+
+            that.Notifications = window.App.Notifications;
+            that.listenTo(that.Notifications, 'add change', function (model) {
+                log(model)
+            });
         },
 
         render: function () {
@@ -40,7 +45,15 @@ define([
             this.$el.html(that.$header).append(that.$main).append(that.$footer);
         },
         update: function () {
-            log('update');
+            var that = this,
+                hash = window.location.hash.match(/(?:[a-z]+){2}/)[0];
+            if (hash === 'widgets') {
+                that.$header.find('.header-box-sub-nav-rooms').removeClass('hidden');
+                that.$header.find('.header-box-sub-nav').removeClass('hidden');
+            } else {
+                that.$header.find('.header-box-sub-nav-rooms').addClass('hidden');
+                that.$header.find(".header-box-sub-nav").addClass('hidden');
+            }
         },
         clear: function () {
             var that = this;

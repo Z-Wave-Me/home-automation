@@ -3,17 +3,17 @@ define([
     'backbone'
 ], function (Backbone) {
     'use strict';
-    var Location =  Backbone.Model.extend({
+    var Notice =  Backbone.Model.extend({
 
-        defaults: {
-            title: null
-        },
+        //defaults: {
+        //    title: null
+        //},
 
         methodToURL: {
-            'read': '/locations/',
-            'create': '/locations/',
-            'update': '/locations/',
-            'delete': '/locations/'
+            'read': '/notifications/',
+            'create': '/notifications/',
+            'update': '/notifications/',
+            'delete': '/notifications/'
         },
 
         url: function () {
@@ -35,5 +35,5 @@ define([
         }
     });
 
-    return Location;
+    return Notice;
 });

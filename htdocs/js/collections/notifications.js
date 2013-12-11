@@ -1,17 +1,17 @@
 define([
     //libs
     'backbone',
-    'models/location'
-], function (Backbone, LocationM) {
+    'models/notice'
+], function (Backbone, NoticeM) {
     'use strict';
-    var LocationsCollection =  Backbone.Collection.extend({
+    var NotificationsCollection =  Backbone.Collection.extend({
         // model reference
-        model: LocationM,
+        model: NoticeM,
         methodToURL: {
-            'read': '/locations/',
-            'create': '/locations/',
-            'update': '/locations/',
-            'delete': '/locations/'
+            'read': '/notifications/',
+            'create': '/notifications/',
+            'update': '/notifications/',
+            'delete': '/notifications/'
         },
 
         url: function () {
@@ -36,11 +36,11 @@ define([
         },
 
         initialize: function () {
-           log('Init locations');
+           log('Init notifications');
         }
 
     });
 
-    return LocationsCollection;
+    return NotificationsCollection;
 
 });

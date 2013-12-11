@@ -13,28 +13,18 @@ define([
     var DashboardView = Backbone.View.extend({
         el: '.widgets',
         initialize: function () {
-            _.bindAll(this, 'render', 'isExistWidget');
-
+            _.bindAll(this, 'render', 'isExistWidget', 'renderWidget');
             var that = this;
             that.Devices = window.App.Devices;
 
-            that.listenTo(that.Devices, 'add change sync', function (model) {
+            that.listenTo(that.Devices, 'add change', function (model) {
                 that.renderWidget(model);
             });
 
-            setInterval(function () {
-                that.Devices.fetch({
-                    remove: false,
-                    merge: true
-                });
-            }, 1000);
+            that.Devices = window.App.Devices;
         },
         render: function () {
             var that = this;
-            that.Devices.fetch({
-                remove: false,
-                merge: true
-            });
         },
         renderWidget: function (model) {
             var that = this;
@@ -51,7 +41,7 @@ define([
             } else if (model.get('deviceType') === "switchBinary") {
                 that.renderSwitch(model);
             } else {
-                log(model);
+                //log(model);
             }
         },
         renderProbe: function (model) {

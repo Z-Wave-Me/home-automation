@@ -2,8 +2,9 @@ define([
     'backbone',
     'helpers/bb-sync',
     'collections/devices',
-    'collections/locations'
-], function (Backbone, bbSync, Devices, Locations) {
+    'collections/locations',
+    'collections/notifications'
+], function (Backbone, bbSync, Devices, Locations, Notifications) {
     'use strict';
     return Backbone.View.extend({
         el: 'body',
@@ -21,10 +22,10 @@ define([
                 apiHost : qVar("host") || window.location.hostname
             };
 
+            that.preFilterAjax();
             that.buildStructure();
             Backbone.sync = bbSync;
             that.addJqueryMethod();
-            that.preFilterAjax();
         },
         render: function () {
             log('Render app.js...');
@@ -97,9 +98,26 @@ define([
                     Devices: new Devices(),
                     Locations: new Locations(),
                     Tags: {},
-                    Notifications: {}
+                    Notifications: new Notifications()
                 };
             }
+
+            setInterval(function () {
+                window.App.Devices.fetch({
+                    remove: false,
+                    merge: true
+                });
+
+                window.App.Notifications.fetch({
+                    remove: false,
+                    merge: true
+                });
+            }, 1000);
+
+            window.App.Locations.fetch({
+                remove: false,
+                merge: true
+            });
         }
     });
 });

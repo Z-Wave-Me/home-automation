@@ -36,7 +36,7 @@ define([
         },
 
         initialize: function () {
-           log('init devices');
+           log('Init locations');
         }
 
     });
