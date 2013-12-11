@@ -202,7 +202,7 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
         controller.deleteNotifications(reqObj);
     } else if ("object" === typeof reqObj) {
         this.res.status = 200;
-        controller.deleteNotifications(reqObj.id);
+        controller.deleteNotifications([reqObj.id]);
     } else if (Array.isArray(reqObj) && reqObj.length < 1) {
         this.res.status = 500;
         reply.error = "Payload must an array with at least one id";
@@ -705,7 +705,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.statusReport;
     } else if ("GET" === method && "/notifications/" == url) {
         handlerFunc = this.exposeNotifications;
-    } else if (("POST" === method && "/notifications/markRead" == url)  || ("DELETE" === method && "/notifications/markRead" == url)) {
+    } else if (("POST" === method && "/notifications/markRead" == url)  || ("DELETE" === method && "/notifications/" == url)) {
         handlerFunc = this.markNotificationsRead;
     } else if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;

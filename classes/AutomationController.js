@@ -334,7 +334,6 @@ AutomationController.prototype.addNotification = function (severity, message) {
 }
 
 AutomationController.prototype.deleteNotifications = function (ids) {
-    ids = Array.isArray(ids) ? ids : [ids];
     this.notifications.filter(function (notification) {
         return ids.indexOf(notification.id) === -1;
     });
