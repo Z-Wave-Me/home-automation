@@ -70,7 +70,13 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
 }
 
 ZAutomationWebRequest.prototype.NotImplementedReply = function () {
-    this.res.body = "Not implemented, yet";
+    this.res = {
+        status: 501,
+        body : "Not implemented, yet",
+        headers: {
+            "Content-Type": "text/plain; charset=utf-8"
+        }
+    };
 };
 
 ZAutomationWebRequest.prototype.NotFound = function () {
@@ -274,42 +280,35 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         },
         reqObj;
 
-
-    console.log(id);
-    console.log(this.req.body)
-
-    if (this.method === 'GET') {
+    if (this.req.method === 'GET') {
         title = this.req.query.title;
-    } else if (this.method === 'POST') { // POST
+    } else if (this.req.method === 'POST') { // POST
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {
             reply.error = ex.message;
         }
 
-        title = reqObj.title || 0;
+        title = reqObj.title;
     } else {
         return this.NotImplementedReply;
     }
 
-    console.log(title);
-
-
-
     if (!!title) {
         if (controller.locations.hasOwnProperty(id)) {
             this.res.status = 500;
-            reply.error = "Location "+id+" already exists";
+            reply.error = "Location " + id + " already exists";
         } else {
             this.res.status = 200;
             controller.addLocation(id, title);
             reply.status = "OK";
+            reply.data = reply.data || {};
             reply.data.id = id;
             reply.data.title = title;
         }
     } else {
         this.res.status = 500;
-        reply.error = "Arguments id & title are required";
+        reply.error = "Arguments title are required";
     }
 
 
