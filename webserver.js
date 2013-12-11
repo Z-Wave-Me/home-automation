@@ -705,7 +705,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.statusReport;
     } else if ("GET" === method && "/notifications/" == url) {
         handlerFunc = this.exposeNotifications;
-    } else if ("POST" === method && "/notifications/markRead" == url) {
+    } else if (("POST" === method && "/notifications/markRead" == url)  || ("DELETE" === method && "/notifications/markRead" == url)) {
         handlerFunc = this.markNotificationsRead;
     } else if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;

@@ -41,17 +41,17 @@ define([
                 }
                 $eventsContainer = $modal.find('.events-container');
 
-                that.Notifications.forEach(function (notice) {
-                    notice = event.toJSON();
+                that.Notifications.forEach(function (model) {
+                    var notice = model.toJSON();
                     notice.timeDate = new Date(notice.timestamp);
                     notice.timeDate = notice.timeDate.getDate() + "/" + (notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
                     $template = $(_.template(EventTmp, notice));
 
-                    $template.find('.hide').on('click', function () {
+                    $template.find('.read').on('click', function () {
                         var $this = $(this);
-                        $this.slideUp('fast', function () {
-                            notice.destroy();
-                        });
+                        $this.off();
+                        $template.slideUp('fast');
+                        model.destroy();
                     });
 
                     $eventsContainer.append($template);
