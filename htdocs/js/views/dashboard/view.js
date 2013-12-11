@@ -17,55 +17,60 @@ define([
 
             var that = this;
             that.Devices = new Devices();
+
+            that.Devices.on('change', function (model) {
+                that.renderWidget(model, true);
+            });
+
+            that.Devices.on('add', function (model) {
+                that.renderWidget(model, false);
+            });
+
             setInterval(function () {
-                that.Devices.fetch();
+                that.Devices.fetch({
+                    remove: false,
+                    merge: true
+                });
             }, 1000);
         },
         render: function () {
             var that = this;
-            that.Devices.fetch({
-                success: function () {
-                    that.renderWidgets();
-                }
-            });
+            that.Devices.fetch();
         },
         renderWidgets: function () {
             var that = this;
             that.Devices.each(function (model) {
-                model.on('change', function () {
-                    that.renderWidget(model);
-                });
-                that.renderWidget(model);
+                that.renderWidget(model, false);
             });
         },
-        renderWidget: function (model) {
+        renderWidget: function (model, replace) {
             var that = this;
             if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
-                that.renderProbe(model);
+                that.renderProbe(model, replace);
             } else if (model.get('deviceType') === "fan") {
-                that.renderFan(model);
+                that.renderFan(model, replace);
             } else if (model.get('deviceType') === "switchMultilevel") {
-                that.renderMultilevel(model);
+                that.renderMultilevel(model, replace);
             } else if (model.get('deviceType') === "thermostat") {
-                that.renderThermostat(model);
+                that.renderThermostat(model, replace);
             } else if (model.get('deviceType') === "doorlock") {
-                that.renderDoorlock(model);
+                that.renderDoorlock(model, replace);
             } else if (model.get('deviceType') === "switchBinary") {
-                that.renderSwitch(model);
+                that.renderSwitch(model, replace);
             } else {
                 log(model);
             }
         },
-        renderProbe: function (model) {
+        renderProbe: function (model, replace) {
             var that = this,
                 $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
-            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
+            if (!replace) {
                 that.$el.append($ProbeTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ProbeTmp);
             }
         },
-        renderFan: function (model) {
+        renderFan: function (model, replace) {
             var that = this,
                 $FanTmp = $(_.template(templateFan, model.toJSON()));
 
@@ -79,13 +84,13 @@ define([
                 });
             });
 
-            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
+            if (!replace) {
                 that.$el.append($FanTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($FanTmp);
             }
         },
-        renderDoorlock: function (model) {
+        renderDoorlock: function (model, replace) {
             var that = this,
                 $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
 
@@ -103,13 +108,13 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
-            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
+            if (!replace) {
                 that.$el.append($DoorLockTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($DoorLockTmp);
             }
         },
-        renderMultilevel: function (model) {
+        renderMultilevel: function (model, replace) {
             var that = this,
                 $ComplementaryTmp = $(_.template(templateComplementary, model.toJSON())),
                 $range = $ComplementaryTmp.find('.input-range'),
@@ -134,13 +139,13 @@ define([
                 });
             });
 
-            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
+            if (!replace) {
                 that.$el.append($ComplementaryTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ComplementaryTmp);
             }
         },
-        renderThermostat: function (model) {
+        renderThermostat: function (model, replace) {
             var that = this,
                 $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
 
@@ -153,13 +158,13 @@ define([
                     //log(json);
                 });
             });
-            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
+            if (!replace) {
                 that.$el.append($ThermostatTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ThermostatTmp);
             }
         },
-        renderSwitch: function (model) {
+        renderSwitch: function (model, replace) {
             var that = this,
                 $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
             $SwitchTmp.find('.action').on('click', function (e) {
@@ -177,7 +182,7 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
-            if (!$('div[data-widget-id="' + model.get('id') + '"]').exists()) {
+            if (!replace) {
                 that.$el.append($SwitchTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);
