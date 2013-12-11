@@ -169,7 +169,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function () {
     var reply = {
         error: null,
         data: {}
-    }
+    };
 
     var since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
     since = isNaN(since) ? 0 : since;

@@ -20,7 +20,7 @@ function AutomationController () {
     this.instances = {};
     this.devices = {};
 
-    this.notifications = [];
+    this.notifications = {};
     this.lastStructureChangeTime = 0;
 
     this._autoLoadModules = [];
@@ -315,18 +315,20 @@ AutomationController.prototype.saveNotifications = function () {
 }
 
 AutomationController.prototype.loadNotifications = function () {
-    this.notifications = loadObject("notifications") || [];
+    this.notifications = loadObject("notifications") || {};
 }
 
 AutomationController.prototype.addNotification = function (severity, message) {
     var now = new Date(),
-        notice = {
+        id = now.getTime().toString();
+
+    this.notifications[id] = {
         id: now.getTime().toString(),
         timestamp: Math.round(now.getTime() / 1000),
         level: severity,
         message: message
     };
-    this.notifications.push(notice);
+
     this.saveNotifications();
 }
 
