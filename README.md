@@ -5,8 +5,3 @@
 Documentation: https://github.com/Z-Wave-Me/home-automation/wiki
 
 Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home-automation/issues
-
-## Precompiling client-side templates
-
-    $ cd /path/to/automationFolder
-    $ nunjucks-precompile ./templates/ > ./htdocs/_templates.js
