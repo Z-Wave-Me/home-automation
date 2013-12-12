@@ -12,3 +12,5 @@ zwayTree.json
 ha-*.json
 storage/*
 !storage/.keep
+.idea/
+.idea
