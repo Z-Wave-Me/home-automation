@@ -270,9 +270,6 @@ ZAutomationAPIWebRequest.prototype.listLocations = function () {
     }
 
     this.res.status = 200;
-    this.responseHeader('Access-Control-Allow-Origin', '*');
-    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
 };
@@ -303,7 +300,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             this.res.status = 500;
             reply.error = "Location " + id + " already exists";
         } else {
-            this.res.status = 200;
+            this.res.status = this.req.method === 'POST' ? 201 : 200;
             controller.addLocation(id, title);
             reply.status = "OK";
             reply.data =  {
@@ -316,9 +313,6 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         reply.error = "Arguments title are required";
     }
 
-    this.responseHeader('Access-Control-Allow-Origin', '*');
-    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
 };
