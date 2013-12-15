@@ -348,7 +348,10 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
     }
 
     if (!!id) {
-        if (!controller.locations.hasOwnProperty(id)) {
+        var location = this.locations.filter(function (location) {
+            return location.id === id;
+        });
+        if (!location.length) {
             this.res.status = 500;
             reply.error = "Location " + id + " doesn't exist";
         } else {
