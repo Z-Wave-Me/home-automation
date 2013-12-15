@@ -348,7 +348,7 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
     }
 
     if (!!id) {
-        var location = this.locations.filter(function (location) {
+        var location = controller.locations.filter(function (location) {
             return location.id === id;
         });
         if (!location.length) {
