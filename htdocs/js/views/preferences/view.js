@@ -10,11 +10,10 @@ define([
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'renderList', 'renderRooms');
+            _.bindAll(this, 'render', 'renderList', 'renderRooms', 'addRoom');
             // Default collections and models
             that.Locations = window.App.Locations;
             that.Devices = window.App.Devices;
-
 
             // Jquery cached objects
             that.$preferencesButton = that.$el.find('.preferences-button');
@@ -28,10 +27,14 @@ define([
             that.$buttonContainer = that.$template.find('.footer-button');
             that.$buttonContainer.hide();
             that.$contentContainer = that.$template.find('.content-body');
+
+            that.listenTo(that.Locations, 'add', function (model) {
+                that.addRoom(model);
+            });
         },
 
         render: function () {
-            var that = this;
+            var that = this, $location;
             that.$preferencesButton.on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -54,6 +57,11 @@ define([
                     that.$template.find('.right-content-container').animate({opacity: 1}, 'fast');
                 });
 
+                that.Locations.fetch({
+                    remove: false,
+                    merge: true
+                });
+
                 ModalHelper.popup(that.$template, true, true);
             });
         },
@@ -64,43 +72,28 @@ define([
             }
         },
         renderRooms: function () {
-            var that = this, $newRoomTmp, $roomItem, location, $location;
+            var that = this, $newRoomTmp, location;
             that.$leftSidebar.show();
             that.$roomsListContainer.show();
             that.$buttonContainer.show();
-            that.$roomsListContainer.find('li').off().on('click', function () {
-                that.$roomsListContainer.find('li').removeClass('active');
-                $(this).addClass('active');
-            });
 
-            that.Locations.fetch({
-                remove: false,
-                merge: true,
-                success: function (models) {
-                    log(models)
-                    models.each(function (location) {
-                        $location = $("<li>" + location.get('title') + "</li>");
-                        that.$roomsListContainer.find('.rooms-list').append($location);
-                    });
-                }
+            that.$roomsListContainer.find('.rooms-list').empty();
+
+            that.Locations.each(function (model) {
+                that.addRoom(model);
             });
 
             that.$buttonContainer.find('.add-button').off().on('click', function () {
+                that.$roomsListContainer.find('li').removeClass('active');
                 $newRoomTmp = $(_.template(NewRoomTmp, {}));
-                $roomItem = $("<li class='active'>Undefined</li>");
                 $newRoomTmp.find('.button-group').on('click', function (e) {
                     e.preventDefault();
                     if ($(this).hasClass('create-button')) {
-                        $roomItem.html($newRoomTmp.find('#inputNameText').val());
                         location = new Location();
                         location.save({title: $newRoomTmp.find('#inputNameText').val()}, {
-                            success: function () {
-                                log('success');
+                            success: function (model) {
+                                that.Locations.add(model);
                             }
-                        });
-                    } else {
-                        $roomItem.hide('fast', function () {
-                            $(this).remove();
                         });
                     }
                     $newRoomTmp.hide('fast', function () {
@@ -114,6 +107,33 @@ define([
                 that.$roomsListContainer.find('.rooms-list').append($roomItem);
                 $newRoomTmp.show('fast');
                 that.creating = true;
+            });
+
+            that.$buttonContainer.find('.remove-button').off().on('click', function () {
+                that.Locations.get(that.activeRoom).destroy({
+                    success: function () {
+
+                    }
+                });
+            });
+        },
+        addRoom: function (model) {
+            var that = this, $location;
+
+            that.listenTo(model, 'destroy', function () {
+                $location.hide('fast', function () {
+                    $location.prev().click();
+                    $location.remove();
+                });
+            });
+
+            $location = $("<li>" + model.get('title') + "</li>");
+            that.$roomsListContainer.find('.rooms-list').append($location);
+
+            $location.off().on('click', function () {
+                that.activeRoom = model.get('id');
+                that.$roomsListContainer.find('li').removeClass('active');
+                $location.addClass('active');
             });
         }
     });

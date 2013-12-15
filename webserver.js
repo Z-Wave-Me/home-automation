@@ -136,7 +136,7 @@ ZAutomationAPIWebRequest.prototype.CORSRequest = function () {
     this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
     this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
     this.res.status = 200;
-}
+};
 
 
 ZAutomationAPIWebRequest.prototype.listDevices = function () {
@@ -325,7 +325,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
     this.res.body = JSON.stringify(reply);
 };
 
-ZAutomationAPIWebRequest.prototype.removeLocation = function () {
+ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
     var id,
         reply = {
             error: null,
@@ -342,7 +342,7 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function () {
             reply.error = ex.message;
         }
 
-        id = reqObj.id;
+        id = reqObj.id || locationId;
     }
 
     if (!!id) {
@@ -773,6 +773,18 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
             var vDevId = reTest[1];
             if ("GET" === method && !!vDevId && controller.devices.hasOwnProperty(vDevId)) {
                 handlerFunc = this.removeVDevLocationFunc(vDevId);
+            }
+        }
+    }
+
+    // --- Remove location
+    if (handlerFunc === this.NotFound) {
+        re = /\/locations\/(.+)/;
+        reTest = re.exec(url);
+        if (!!reTest) {
+            var locationId = reTest[1];
+            if (("DELETE" === method || "PUT" === method) && locationId) {
+                handlerFunc = this.removeLocation(locationId);
             }
         }
     }

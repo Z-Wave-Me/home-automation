@@ -17,7 +17,7 @@ define([
         },
 
         url: function () {
-            var url = '';
+            var url = !this.isNew() ? this.get('id') : '';
             return url;
         },
 
