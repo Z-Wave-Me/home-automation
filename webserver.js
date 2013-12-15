@@ -335,14 +335,16 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
 
     if (this.req.method === 'GET') {
         id = this.req.query.id;
-    } else if (this.req.method === 'DELETE') {
+    } else if (this.req.method === 'DELETE' && locationId === undefined) {
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {
             reply.error = ex.message;
         }
 
-        id = reqObj.id || locationId;
+        id = reqObj.id;
+    } else if (locationId !== undefined) {
+        id = locationId;
     }
 
     if (!!id) {
@@ -783,8 +785,10 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         reTest = re.exec(url);
         if (!!reTest) {
             var locationId = reTest[1];
-            if (("DELETE" === method || "PUT" === method) && locationId) {
+            if ("DELETE" === method && locationId) {
                 handlerFunc = this.removeLocation(locationId);
+            } else if ("PUT" === method && locationId) {
+                handlerFunc = this.updateLocation(locationId);
             }
         }
     }
