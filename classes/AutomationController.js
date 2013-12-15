@@ -11,8 +11,7 @@ function AutomationController () {
     AutomationController.super_.call(this);
 
     this.config = config.controller || {};
-    //this.locations = config.locations || [];
-    this.locations = [];
+    this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
 
     console.log(JSON.stringify(config, null, "  "));
