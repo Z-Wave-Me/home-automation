@@ -131,6 +131,14 @@ ZAutomationAPIWebRequest.prototype.statusReport = function () {
     this.res.body = JSON.stringify(reply);
 };
 
+ZAutomationAPIWebRequest.prototype.CORSRequest = function () {
+    this.responseHeader('Access-Control-Allow-Origin', '*');
+    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
+    this.res.status = 200;
+}
+
+
 ZAutomationAPIWebRequest.prototype.listDevices = function () {
     var nowTS = Math.floor(new Date().getTime() / 1000);
     var reply = {
@@ -725,6 +733,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.listInstances;
     } else if (("POST" === method || "PUT" === method) && "/instances/" == url) {
         handlerFunc = this.createInstance;
+    } else if ("OPTIONS" === method) {
+        handlerFunc = this.CORSRequest;
     };
 
     // ---------- Test regexp URIs --------------------------------------------
