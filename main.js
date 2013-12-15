@@ -99,12 +99,10 @@ if (!config) {
     });
 
     controller.on('core.start', function () {
-        controller.addNotification("debug", 'ZWay Automation started');
         console.log('ZWay Automation started');
     });
 
     controller.on('core.stop', function () {
-        controller.addNotification("debug", 'ZWay Automation stopped');
         console.log('ZWay Automation stopped');
     });
 

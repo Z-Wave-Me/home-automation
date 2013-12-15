@@ -197,7 +197,7 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
         reply.error = ex.message;
     }
 
-    if (Array.isArray(reqObj) && reqObj.length > 0) {
+    if (Array.isArray(reqObj) && reqObj.length > 0 && this.req.method !== 'PUT') {
         this.res.status = 200;
         controller.deleteNotifications(reqObj);
     } else if (this.req.method === 'PUT') {
@@ -327,7 +327,7 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function () {
 
     if (this.req.method === 'GET') {
         id = this.req.query.id;
-    } else if (this.req.method === 'DELETE') { // DELETE
+    } else if (this.req.method === 'DELETE') {
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {

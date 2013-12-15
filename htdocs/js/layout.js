@@ -1,12 +1,13 @@
 define([
     'backbone',
     'helpers/modal',
+    'views/preferences/view',
     'text!templates/layout/header.html',
     'text!templates/layout/main.html',
     'text!templates/layout/footer.html',
     'text!templates/popups/event-menu.html',
     'text!templates/popups/_event.html'
-], function (Backbone, ModalHelper, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl, EventTmp) {
+], function (Backbone, ModalHelper, PreferencesView, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl, EventTmp) {
     'use strict';
     var AppLayout = Backbone.View.extend({
         el: "#body",
@@ -75,6 +76,8 @@ define([
                     $warning.addClass('hidden');
                 }
             });
+            that.PreferencesView = new PreferencesView({el: that.$header[0]});
+            that.PreferencesView.render();
         },
 
         render: function () {
@@ -97,7 +100,7 @@ define([
             that.$header.remove();
             that.$main.remove();
             that.$footer.remove();
-        },
+        }
     });
 
     return AppLayout;
