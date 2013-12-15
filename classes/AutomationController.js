@@ -11,7 +11,8 @@ function AutomationController () {
     AutomationController.super_.call(this);
 
     this.config = config.controller || {};
-    this.locations = config.locations || {};
+    //this.locations = config.locations || [];
+    this.locations = [];
     this.vdevInfo = config.vdevInfo || {};
 
     console.log(JSON.stringify(config, null, "  "));
@@ -342,30 +343,36 @@ AutomationController.prototype.deleteNotifications = function (ids) {
 };
 
 AutomationController.prototype.addLocation = function (id, title) {
-    if (!this.locations.hasOwnProperty(id)) {
-        this.locations[id] = {
+    var isExist = this.locations.filter(function (location) {
+        return location.id === id;
+    });
+    if (!isExist.length) {
+        this.locations.push({
             id: id,
             title: title
-        }
+        });
         this.saveConfig();
         this.emit('location.added', id);
     } else {
-        this.emit('core.error', new Error("Cannot add location "+id+" - already exists"));
+        this.emit('core.error', new Error("Cannot add location " + id + " - already exists"));
     }
 };
 
 AutomationController.prototype.removeLocation = function (id) {
     var self = this;
-
-    if (this.locations.hasOwnProperty(id)) {
-        var loc = this.locations[id];
+    var location = this.locations.filter(function (location) {
+        return location.id === id;
+    });
+    if (location) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
-            if (vdev.location === id) {
+            if (vdev.location === location.id) {
                 vdev.location = null;
             }
         });
-        delete this.locations[id];
+        this.locations.filter(function (location) {
+            return location.id === id;
+        });
         this.saveConfig();
         this.emit('location.removed', id);
     } else {
@@ -374,8 +381,11 @@ AutomationController.prototype.removeLocation = function (id) {
 };
 
 AutomationController.prototype.updateLocation = function (id, title) {
-    if (this.locations.hasOwnProperty(id)) {
-        this.locations[id].title = title;
+    var location = this.locations.filter(function (location) {
+        return location.id === id;
+    });
+    if (location) {
+        location.title = title;
         this.saveConfig();
         this.emit('location.updated', id);
     } else {

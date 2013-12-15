@@ -12,13 +12,9 @@ define([
             var that = this;
             _.bindAll(this, 'render', 'renderList', 'renderRooms');
             // Default collections and models
-            that.Locations = App.Locations;
-            that.Devices = App.Devices;
+            that.Locations = window.App.Locations;
+            that.Devices = window.App.Devices;
 
-            that.Locations.fetch({
-                remove: false,
-                merge: true
-            });
 
             // Jquery cached objects
             that.$preferencesButton = that.$el.find('.preferences-button');
@@ -68,13 +64,25 @@ define([
             }
         },
         renderRooms: function () {
-            var that = this, $newRoomTmp, $roomItem, location;
+            var that = this, $newRoomTmp, $roomItem, location, $location;
             that.$leftSidebar.show();
             that.$roomsListContainer.show();
             that.$buttonContainer.show();
             that.$roomsListContainer.find('li').off().on('click', function () {
                 that.$roomsListContainer.find('li').removeClass('active');
                 $(this).addClass('active');
+            });
+
+            that.Locations.fetch({
+                remove: false,
+                merge: true,
+                success: function (models) {
+                    log(models)
+                    models.each(function (location) {
+                        $location = $("<li>" + location.get('title') + "</li>");
+                        that.$roomsListContainer.find('.rooms-list').append($location);
+                    });
+                }
             });
 
             that.$buttonContainer.find('.add-button').off().on('click', function () {

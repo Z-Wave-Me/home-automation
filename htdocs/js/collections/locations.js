@@ -33,7 +33,7 @@ define([
 
         parse: function (response, xhr) {
             this.updateTime = response.data.updateTime;
-            return response.data.devices;
+            return response.data;
         },
 
         initialize: function () {

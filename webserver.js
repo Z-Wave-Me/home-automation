@@ -275,7 +275,7 @@ ZAutomationAPIWebRequest.prototype.listLocations = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.addLocation = function () {
-    var id = Object.keys(controller.locations).length + 1,
+    var id = controller.locations.length + 1,
         title,
         reply = {
             error: null,
