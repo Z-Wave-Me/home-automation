@@ -270,6 +270,9 @@ ZAutomationAPIWebRequest.prototype.listLocations = function () {
     }
 
     this.res.status = 200;
+    this.responseHeader('Access-Control-Allow-Origin', '*');
+    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
 };
@@ -313,6 +316,9 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         reply.error = "Arguments title are required";
     }
 
+    this.responseHeader('Access-Control-Allow-Origin', '*');
+    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
 };

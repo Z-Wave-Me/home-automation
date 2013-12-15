@@ -37,7 +37,7 @@ define([
 
         // Ensure that we have the appropriate request data.
         if (!options.data && model && (method === 'create' || method === 'update')) {
-            params.contentType = 'application/json; charset=utf-8';
+            params.contentType = 'application/json';
             params.data = stringify(model.toJSON());
         }
 
