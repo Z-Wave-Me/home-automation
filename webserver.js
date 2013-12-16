@@ -183,7 +183,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
     return function () {
         that.res.status = 200;
         since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
-        redeemed = that.req.query.hasOwnProperty("redeemed") ? that.req.query.redeemed : 0;
+        redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
         since = isNaN(since) ? 0 : since;
         redeemed = isNaN(redeemed) ? 0 : redeemed;
         notifications = controller.listNotifications(since);
@@ -195,12 +195,12 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
         }
 
 
-        if (!id && (String(true) === redeemed || !redeemed)) {
+        if (!id && redeemed) {
             reply.data = {
                 updateTime: nowTS,
                 notifications: notifications
             };
-        } else if (!id && (String(true) !== redeemed || redeemed)) {
+        } else if (!id && redeemed) {
             notifications = notifications.filter(function (notification) {
                 return !notification.redeemed;
             });
