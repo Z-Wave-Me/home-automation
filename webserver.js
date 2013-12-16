@@ -398,7 +398,7 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
         if (this.req.method === 'GET') {
             id = this.req.query.id;
             title = this.req.query.title;
-        } else if (this.req.method === 'PUT' && locationId !== undefined) { // DELETE
+        } else if (this.req.method === 'PUT' && locationId === undefined) { // DELETE
             try {
                 reqObj = JSON.parse(this.req.body);
             } catch (ex) {
@@ -407,23 +407,20 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
 
             id = reqObj.id;
             title = reqObj.title;
-        } else if (this.req.method === 'PUT' && locationId === undefined) {
+        } else if (this.req.method === 'PUT' && locationId !== undefined) {
             id = locationId;
         }
 
         if (!!id && !!title && title.length > 0) {
             this.res.status = 200;
-            controller.updateLocation(id, title, function (status) {
-                if (status) {
+            controller.updateLocation(id, title, function (data) {
+                if (data) {
                     that.res.status = 200;
-                    reply.data = {
-                        id: id,
-                        title: title
-                    };
+                    reply.data = data
                     reply.status = "OK";
                 } else {
                     that.res.status = 404;
-                    reply.error = "Location "+id+" doesn't exist";
+                    reply.error = "Location " + id + " doesn't exist";
                 }
             });
         } else {

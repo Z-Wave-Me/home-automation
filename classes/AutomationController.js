@@ -384,7 +384,7 @@ AutomationController.prototype.updateLocation = function (id, title, callback) {
     if (locations.length > 0) {
         this.locations.indexOf(locations[0]).title = title;
         this.saveConfig();
-        callback(true);
+        callback(this.locations.indexOf(locations[0]));
         this.emit('location.updated', id);
     } else {
         callback(false);
