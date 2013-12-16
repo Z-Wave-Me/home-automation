@@ -341,20 +341,14 @@ AutomationController.prototype.deleteNotifications = function (ids) {
     this.saveNotifications();
 };
 
-AutomationController.prototype.addLocation = function (id, title) {
-    var isExist = this.locations.filter(function (location) {
-        return location.id === id;
+AutomationController.prototype.addLocation = function (title) {
+    var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
+    this.locations.push({
+        id: id,
+        title: title
     });
-    if (!isExist.length) {
-        this.locations.push({
-            id: id,
-            title: title
-        });
-        this.saveConfig();
-        this.emit('location.added', id);
-    } else {
-        this.emit('core.error', new Error("Cannot add location " + id + " - already exists"));
-    }
+    this.saveConfig();
+    this.emit('location.added', id);
 };
 
 AutomationController.prototype.removeLocation = function (id) {

@@ -304,18 +304,13 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
     }
 
     if (!!title) {
-        if (controller.locations.hasOwnProperty(id)) {
-            this.res.status = 500;
-            reply.error = "Location " + id + " already exists";
-        } else {
-            this.res.status = this.req.method === 'POST' ? 201 : 200;
-            controller.addLocation(id, title);
-            reply.status = "OK";
-            reply.data =  {
-                id: id,
-                title: title
-            };
-        }
+        this.res.status = this.req.method === 'POST' ? 201 : 200;
+        controller.addLocation(title);
+        reply.status = "OK";
+        reply.data =  {
+            id: id,
+            title: title
+        };
     } else {
         this.res.status = 500;
         reply.error = "Arguments title are required";
@@ -350,6 +345,8 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
 
         if (!!id) {
             var location = controller.locations.filter(function (location) {
+                console.log(location)
+                console.log(id);
                 return location.id === id;
             });
             if (!location.length) {
