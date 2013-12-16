@@ -791,7 +791,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (!!reTest) {
             var locationId = reTest[1];
             if ("DELETE" === method && locationId) {
-                handlerFunc = this.removeLocation;
+                handlerFunc = this.removeLocation(locationId);
             }
         }
     }
