@@ -365,50 +365,54 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
 };
 
 ZAutomationAPIWebRequest.prototype.updateLocation = function () {
-    var id,
-        title,
-        reply = {
-            error: null,
-            data: null
-        },
-        reqObj;
+    var that = this;
 
-    if (this.req.method === 'GET') {
-        id = this.req.query.id;
-        title = this.req.query.title;
-    } else if (this.req.method === 'PUT') { // DELETE
-        try {
-            reqObj = JSON.parse(this.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
+    return function () {
+        var id,
+            title,
+            reply = {
+                error: null,
+                data: null
+            },
+            reqObj;
+
+        if (this.req.method === 'GET') {
+            id = this.req.query.id;
+            title = this.req.query.title;
+        } else if (this.req.method === 'PUT') { // DELETE
+            try {
+                reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
+            }
+
+            id = reqObj.id;
+            title = reqObj.title;
         }
 
-        id = reqObj.id;
-        title = reqObj.title;
-    }
+        if (!!id && !!title && title.length > 0) {
+            this.res.status = 200;
+            controller.updateLocation(id, title, function (status) {
+                if (status) {
+                    that.res.status = 200;
+                    reply.data = {
+                        id: id,
+                        title: title
+                    };
+                    reply.status = "OK";
+                } else {
+                    that.res.status = 404;
+                    reply.error = "Location "+id+" doesn't exist";
+                }
+            });
+        } else {
+            this.res.status = 500;
+            reply.error = "Arguments id & title are required";
+        }
 
-    if (!!id && !!title && title.length > 0) {
-        this.res.status = 200;
-        controller.updateLocation(id, title, function (status) {
-            if (status) {
-                this.res.status = 200;
-                reply.data = {
-                    id: id,
-                    title: title
-                };
-                reply.status = "OK";
-            } else {
-                this.res.status = 404;
-                reply.error = "Location "+id+" doesn't exist";
-            }
-        });
-    } else {
-        this.res.status = 500;
-        reply.error = "Arguments id & title are required";
+        this.responseHeader("Content-Type", "application/json; charset=utf-8");
+        this.res.body = JSON.stringify(reply);
     }
-
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.setVDevLocationFunc = function (vDevId) {
@@ -780,7 +784,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 
-    // --- Remove location
+    // --- Remove and Update location
     if (handlerFunc === this.NotFound) {
         re = /\/locations\/(.+)/;
         reTest = re.exec(url);
@@ -788,6 +792,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
             var locationId = parseInt(reTest[1]);
             if ("DELETE" === method && locationId) {
                 handlerFunc = this.removeLocation(locationId);
+            } else if ("PUT" === method && locationId) {
+                handlerFunc = this.updateLocation(locationId);
             }
         }
     }
