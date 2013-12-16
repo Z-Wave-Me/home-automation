@@ -388,18 +388,20 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function () {
     }
 
     if (!!id && !!title && title.length > 0) {
-        if (!controller.locations.hasOwnProperty(id)) {
-            this.res.status = 500;
-            reply.error = "Location "+id+" doesn't exist";
-        } else {
-            this.res.status = 200;
-            controller.updateLocation(id, title);
-            reply.data = {
-                id: id,
-                title: title
-            };
-            reply.status = "OK";
-        }
+        this.res.status = 200;
+        controller.updateLocation(id, title, function (status) {
+            if (status) {
+                this.res.status = 200;
+                reply.data = {
+                    id: id,
+                    title: title
+                };
+                reply.status = "OK";
+            } else {
+                this.res.status = 404;
+                reply.error = "Location "+id+" doesn't exist";
+            }
+        });
     } else {
         this.res.status = 500;
         reply.error = "Arguments id & title are required";

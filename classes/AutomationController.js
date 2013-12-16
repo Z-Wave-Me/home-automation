@@ -335,7 +335,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
 }
 
 AutomationController.prototype.deleteNotifications = function (ids) {
-    this.notifications.filter(function (notification) {
+    this.notifications = this.notifications.filter(function (notification) {
         return ids.indexOf(notification.id) === -1;
     });
     this.saveNotifications();
@@ -377,15 +377,17 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title) {
+AutomationController.prototype.updateLocation = function (id, title, callback) {
     var location = this.locations.filter(function (location) {
         return location.id === id;
     });
-    if (location) {
-        location.title = title;
+    if (location.length > 0) {
+        this.locations.indexOf(location[0]).title = title;
         this.saveConfig();
+        callback(true);
         this.emit('location.updated', id);
     } else {
+        callback(false);
         this.emit('core.error', new Error("Cannot update location "+id+" - doesn't exist"));
     }
 };
