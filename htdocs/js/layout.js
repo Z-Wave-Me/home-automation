@@ -16,54 +16,45 @@ define([
         templateFooter: _.template(FooterTpl, {}),
 
         initialize: function () {
-            var that = this, $ok, $warning, $eventsContainer, $template;
-            _.bindAll(this, 'render', 'clear', 'update');
+            var that = this, $ok, $warning, $modal, fillScreenOpacity,
+                forbidClose, relX, relY, position;
+            _.bindAll(this, 'render', 'clear', 'update', 'addEventToList');
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
 
             $ok = that.$header.find('.events-ok');
             $warning = that.$header.find('.events-warning');
+            that.Notifications = App.Notifications;
+            that.deleted = [];
+
+            that.listenTo(that.Notifications, 'add', function (model) {
+                that.addEventToList(model);
+            });
+
+            $modal = $(_.template(EventMenuTpl, {}));
+            fillScreenOpacity = true;
+            forbidClose = true;
+            relX = "64.7%";
+            relY = "7.8%";
+            position = { top: relY, left: relX };
+
+            // Popup initialization
+            if (!that.Notifications.length) {
+                $modal.find('.arrow').css({'left': '17%' });
+            } else {
+                $modal.find('.arrow').css({'left': '7%' });
+            }
+            that.$eventsContainer = $modal.find('.events-container');
+
+            that.Notifications.each(function (model) {
+                var isExist = _.find(that.deleted, function (notice) { return notice.id === model.id; });
+                if (!model.get('redeemed') && !isExist) {
+                    that.addEventToList(model);
+                }
+            });
 
             that.$header.find('.events-menu').on('click', function (e) {
-                // Events menu
-                var $modal = $(_.template(EventMenuTpl, {})),
-                    fillScreenOpacity = true,
-                    forbidClose = true,
-                    relX = "64.7%",
-                    relY = "7.8%",
-                    position = { top: relY, left: relX };
-
-                // Popup initialization
-                if (!that.Notifications.length) {
-                    $modal.find('.arrow').css({'left': '17%' });
-                } else {
-                    $modal.find('.arrow').css({'left': '7%' });
-                }
-                $eventsContainer = $modal.find('.events-container');
-
-                that.Notifications.forEach(function (model) {
-                    var notice = model.toJSON();
-                    notice.timeDate = new Date(notice.timestamp);
-                    notice.timeDate = notice.timeDate.getDate() + "/" + (notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
-                    $template = $(_.template(EventTmp, notice));
-
-                    $template.find('.read').on('click', function () {
-                        var $this = $(this);
-                        $this.off();
-                        model.save({redeemed: true}, {
-                            success: function () {
-                                that.Notifications.remove(model);
-                                $template.slideUp('fast');
-                                if (!that.Notifications.length) {
-                                    ModalHelper.hideAll();
-                                }
-                            }
-                        });
-                    });
-
-                    $eventsContainer.append($template);
-                });
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
@@ -80,6 +71,31 @@ define([
             });
             that.PreferencesView = new PreferencesView({el: that.$header[0]});
             that.PreferencesView.render();
+        },
+
+        addEventToList: function (model) {
+            var notice = model.toJSON(), $template, that = this;
+            if (that.$eventsContainer.exists()) {
+                notice.timeDate = new Date(notice.timestamp);
+                notice.timeDate = notice.timeDate.getDate() + "/" + (notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
+                $template = $(_.template(EventTmp, notice));
+
+                that.listenTo(model, 'remove', function () {
+                    $template.slideUp('fast');
+                    model.save({redeemed: true});
+                    if (!that.Notifications.length) {
+                        ModalHelper.hideAll();
+                    }
+                });
+
+                $template.find('.read').off().on('click', function () {
+                    that.deleted.push(model);
+                    that.Notifications.remove(model);
+
+                });
+
+                that.$eventsContainer.append($template);
+            }
         },
 
         render: function () {

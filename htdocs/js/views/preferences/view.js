@@ -27,6 +27,7 @@ define([
             that.$buttonContainer = that.$template.find('.footer-button');
             that.$buttonContainer.hide();
             that.$contentContainer = that.$template.find('.content-body');
+            that.$template.find('.back-button').hide();
 
             that.listenTo(that.Locations, 'add', function (model) {
                 that.addRoom(model);
@@ -44,6 +45,10 @@ define([
                 that.$template.find('.back-button').on('click', function () {
                     that.$template.find('.left-content-container').animate({'margin-left': '0%', opacity: 1}, 'fast');
                     that.$template.find('.right-content-container').animate({opacity: 0}, 'fast');
+                    that.$buttonContainer.hide();
+                    that.$template.find('.back-button').hide('fast');
+                    that.$topmenu.hide();
+                    that.$template.find('.title').text('Menu');
                 });
 
                 that.$template.find('.close-button').on('click', function () {
@@ -53,6 +58,7 @@ define([
 
                 that.$template.find('.menu-container li').on('click', function () {
                     that.renderList($(this).attr('data-menu'));
+                    that.$template.find('.back-button').show('fast');
                     that.$template.find('.left-content-container').animate({'margin-left': '-50%', opacity: 0}, 'fast');
                     that.$template.find('.right-content-container').animate({opacity: 1}, 'fast');
                 });
@@ -67,7 +73,16 @@ define([
         },
         renderList: function (type) {
             var that = this;
+            that.$template.find('.title').text(type.capitalize());
             if (type === 'rooms') {
+                that.$topmenu.show().find('li').off().on('click', function () {
+                    var $this = $(this);
+                    that.$topmenu.find('li').removeClass('active');
+                    $this.addClass('active');
+                    that.$template.find('.form-horizontal').hide('fast', function () {
+                        that.$template.find('.' + $this.attr('data-type') + '-tab').show('fast');
+                    });
+                });
                 that.renderRooms();
             }
         },
@@ -163,8 +178,15 @@ define([
                     });
                 });
 
-                that.$contentContainer.html($template);
-                $template.show('fast');
+                if ($('.room').exists()) {
+                    $('.room').hide('fast', function () {
+                        that.$contentContainer.html($template);
+                        $template.show('fast');
+                    });
+                } else {
+                    that.$contentContainer.html($template);
+                    $template.show('fast');
+                }
             });
 
             that.$roomsListContainer.find('.rooms-list').append($location);

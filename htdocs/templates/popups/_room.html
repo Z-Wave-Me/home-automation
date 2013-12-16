@@ -1,5 +1,5 @@
 <div class="room <% if (typeof id  !== 'undefined') { print('created'); } %>">
-    <form class="form-horizontal" role="form">
+    <form class="form-horizontal general-tab" role="form">
         <div class="form-group">
             <label for="inputNameText" class="control-label">Name:</label>
             <div class="input-group">
@@ -24,6 +24,12 @@
             <button class="button-group edit-button">edit</button>
             <button class="button-group save-button">save</button>
             <button class="button-group cancel-button">cancel</button>
+        </div>
+    </form>
+    <form class="form-horizontal devices-tab" role="form">
+        <div class="button-container show footer-button">
+            <span class="button add-button">+</span>
+            <span class="button remove-button">-</span>
         </div>
     </form>
 </div>
