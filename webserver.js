@@ -172,7 +172,8 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.exposeNotifications = function () {
-    var nowTS = Math.floor(new Date().getTime() / 1000);
+    var nowTS = Math.floor(new Date().getTime() / 1000),
+        notifications;
 
     var reply = {
         error: null,
@@ -180,12 +181,25 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function () {
     };
 
     var since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
+    var redeemed = this.req.query.hasOwnProperty("redeemed") ? this.req.query.redeemed : false
     since = isNaN(since) ? 0 : since;
+    notifications = controller.listNotifications(since)
 
-    reply.data = {
-        updateTime: nowTS,
-        notifications: controller.listNotifications(since)
-    };
+    if (String(true) === redeemed || !redeemed) {
+        reply.data = {
+            updateTime: nowTS,
+            notifications: notifications
+        };
+    } else {
+        notifications = notifications.filter(function (notification) {
+            return !notification.redeemed;
+        });
+        reply.data = {
+            updateTime: nowTS,
+            notifications: notifications
+        };
+    }
+
 
     this.res.status = 200;
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
@@ -194,11 +208,11 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function () {
 
 ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
     var reply = {
-        error: null,
-        data: "OK"
-    }
+            error: null,
+            data: "OK"
+        },
+        reqObj;
 
-    var reqObj;
     try {
         reqObj = JSON.parse(this.req.body);
     } catch (ex) {
@@ -741,7 +755,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     } else if ("GET" === method && "/notifications/" == url) {
         handlerFunc = this.exposeNotifications;
     } else if (("POST" === method && "/notifications/markRead" == url)  || ("PUT" === method && "/notifications/" == url)) {
-        handlerFunc = this.markNotificationsRead;
+        handlerFunc = this.markNotificationsRead();
     } else if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;
     } else if ("GET" === method && "/restart" == url) {
