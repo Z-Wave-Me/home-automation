@@ -353,13 +353,13 @@ AutomationController.prototype.addLocation = function (title) {
 
 AutomationController.prototype.removeLocation = function (id, callback) {
     var self = this;
-    var location = this.locations.filter(function (location) {
+    var locations = this.locations.filter(function (location) {
         return location.id === id;
     });
-    if (!!location.length) {
+    if (!!locations.length) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
-            if (vdev.location === location.id) {
+            if (vdev.location === id) {
                 vdev.location = null;
             }
         });
