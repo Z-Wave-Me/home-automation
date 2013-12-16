@@ -188,7 +188,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
         notifications = controller.listNotifications(since)
 
         if (notificationId !== undefined) {
-            id = notificationId;
+            id = notificationId || null;
         } else {
             id = that.req.query.hasOwnProperty("id") ? parseInt(that.req.query.id) : 0;
         }
