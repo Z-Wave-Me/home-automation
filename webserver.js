@@ -272,25 +272,24 @@ ZAutomationAPIWebRequest.prototype.restartController = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.listLocations = function (locationId) {
-    var that = this, reply, locations;
+    var that = this,
+        locations,
+        reply = {
+            data: null,
+            error: null
+        };
 
     that.res.status = 200;
 
     return function () {
         if (locationId === undefined) {
-            reply = {
-                error: null,
-                data: controller.locations
-            }
+            reply.data = controller.locations;
         } else {
             locations = controller.locations.filter(function (location) {
                 location.id === locationId;
             });
             if (locations.length > 0) {
-                reply = {
-                    error: null,
-                    data: locations[0]
-                }
+                reply.data = locations[0];
             } else {
                 that.res.status = 404;
                 reply.error = "Location " + locationId + " doesn't exist";
