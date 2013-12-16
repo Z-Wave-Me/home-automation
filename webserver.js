@@ -344,19 +344,15 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
         }
 
         if (!!id) {
-            var location = controller.locations.filter(function (location) {
-                console.log(location)
-                console.log(id);
-                return location.id === id;
+            controller.removeLocation(id, function (result) {
+                if (result) {
+                    this.res.status = 200;
+                    reply.data = "OK";
+                } else {
+                    this.res.status = 404;
+                    reply.error = "Location " + id + " doesn't exist";
+                }
             });
-            if (!location.length) {
-                this.res.status = 500;
-                reply.error = "Location " + id + " doesn't exist";
-            } else {
-                this.res.status = 200;
-                controller.removeLocation(id);
-                reply.data = "OK";
-            }
         } else {
             this.res.status = 500;
             reply.error = "Argument id is required";

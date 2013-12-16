@@ -351,12 +351,12 @@ AutomationController.prototype.addLocation = function (title) {
     this.emit('location.added', id);
 };
 
-AutomationController.prototype.removeLocation = function (id) {
+AutomationController.prototype.removeLocation = function (id, callback) {
     var self = this;
     var location = this.locations.filter(function (location) {
         return location.id === id;
     });
-    if (location.length) {
+    if (!!location.length) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
             if (vdev.location === location.id) {
@@ -367,8 +367,10 @@ AutomationController.prototype.removeLocation = function (id) {
             return location.id === id;
         });
         this.saveConfig();
+        callback(true);
         this.emit('location.removed', id);
     } else {
+        callback(false);
         this.emit('core.error', new Error("Cannot remove location "+id+" - doesn't exist"));
     }
 };
