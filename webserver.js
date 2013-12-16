@@ -308,35 +308,38 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             error: null,
             data: null
         },
-        reqObj;
+        reqObj,
+        that = this;
 
-    if (this.req.method === 'GET') {
-        title = this.req.query.title;
-    } else if (this.req.method === 'POST') { // POST
-        try {
-            reqObj = JSON.parse(this.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
+    return function () {
+        if (that.req.method === 'GET') {
+            title = that.req.query.title;
+        } else if (that.req.method === 'POST') { // POST
+            try {
+                reqObj = JSON.parse(that.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
+            }
+
+            title = reqObj.title;
         }
 
-        title = reqObj.title;
+        if (!!title) {
+            that.res.status = that.req.method === 'POST' ? 201 : 200;
+            controller.addLocation(title);
+            reply.status = "OK";
+            reply.data =  {
+                id: id,
+                title: title
+            };
+        } else {
+            that.res.status = 500;
+            reply.error = "Arguments title are required";
+        }
     }
 
-    if (!!title) {
-        this.res.status = this.req.method === 'POST' ? 201 : 200;
-        controller.addLocation(title);
-        reply.status = "OK";
-        reply.data =  {
-            id: id,
-            title: title
-        };
-    } else {
-        this.res.status = 500;
-        reply.error = "Arguments title are required";
-    }
-
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
+    that.responseHeader("Content-Type", "application/json; charset=utf-8");
+    that.res.body = JSON.stringify(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
@@ -350,16 +353,16 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
             },
             reqObj;
 
-        if (this.req.method === 'GET') {
-            id = this.req.query.id;
-        } else if (this.req.method === 'DELETE' && locationId === undefined) {
+        if (that.req.method === 'GET') {
+            id = that.req.query.id;
+        } else if (that.req.method === 'DELETE' && locationId === undefined) {
             try {
-                reqObj = JSON.parse(this.req.body);
+                reqObj = JSON.parse(that.req.body);
             } catch (ex) {
                 reply.error = ex.message;
             }
             id = reqObj.id;
-        } else if (this.req.method === 'DELETE' && locationId !== undefined) {
+        } else if (that.req.method === 'DELETE' && locationId !== undefined) {
             id = locationId;
         }
 
@@ -374,12 +377,12 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
                 }
             });
         } else {
-            this.res.status = 500;
+            that.res.status = 500;
             reply.error = "Argument id is required";
         }
 
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
-        this.res.body = JSON.stringify(reply);
+        that.responseHeader("Content-Type", "application/json; charset=utf-8");
+        that.res.body = JSON.stringify(reply);
     }
 };
 
@@ -395,12 +398,12 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
             },
             reqObj;
 
-        if (this.req.method === 'GET') {
-            id = this.req.query.id;
-            title = this.req.query.title;
-        } else if (this.req.method === 'PUT') {
+        if (that.req.method === 'GET') {
+            id = that.req.query.id;
+            title = that.req.query.title;
+        } else if (that.req.method === 'PUT') {
             try {
-                reqObj = JSON.parse(this.req.body);
+                reqObj = JSON.parse(that.req.body);
             } catch (ex) {
                 reply.error = ex.message;
             }
@@ -409,7 +412,7 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
         }
 
         if (!!id && !!title && title.length > 0) {
-            this.res.status = 200;
+            that.res.status = 200;
             controller.updateLocation(id, title, function (data) {
                 if (data) {
                     that.res.status = 200;
@@ -421,12 +424,12 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
                 }
             });
         } else {
-            this.res.status = 500;
+            that.res.status = 500;
             reply.error = "Arguments id & title are required";
         }
 
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
-        this.res.body = JSON.stringify(reply);
+        that.responseHeader("Content-Type", "application/json; charset=utf-8");
+        that.res.body = JSON.stringify(reply);
     }
 };
 
