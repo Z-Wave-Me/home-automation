@@ -326,45 +326,48 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
-    var id,
-        reply = {
-            error: null,
-            data: null
-        },
-        reqObj;
 
-    if (this.req.method === 'GET') {
-        id = this.req.query.id;
-    } else if (this.req.method === 'DELETE' && locationId === undefined) {
-        try {
-            reqObj = JSON.parse(this.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
+    return function () {
+        var id,
+            reply = {
+                error: null,
+                data: null
+            },
+            reqObj;
+
+        if (this.req.method === 'GET') {
+            id = this.req.query.id;
+        } else if (this.req.method === 'DELETE' && locationId === undefined) {
+            try {
+                reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
+            }
+            id = reqObj.id;
+        } else if (this.req.method === 'DELETE' && locationId !== undefined) {
+            id = locationId;
         }
-        id = reqObj.id;
-    } else if (this.req.method === 'DELETE' && locationId !== undefined) {
-        id = locationId;
-    }
 
-    if (!!id) {
-        var location = controller.locations.filter(function (location) {
-            return location.id === id;
-        });
-        if (!location.length) {
-            this.res.status = 500;
-            reply.error = "Location " + id + " doesn't exist";
+        if (!!id) {
+            var location = controller.locations.filter(function (location) {
+                return location.id === id;
+            });
+            if (!location.length) {
+                this.res.status = 500;
+                reply.error = "Location " + id + " doesn't exist";
+            } else {
+                this.res.status = 200;
+                controller.removeLocation(id);
+                reply.data = "OK";
+            }
         } else {
-            this.res.status = 200;
-            controller.removeLocation(id);
-            reply.data = "OK";
+            this.res.status = 500;
+            reply.error = "Argument id is required";
         }
-    } else {
-        this.res.status = 500;
-        reply.error = "Argument id is required";
-    }
 
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
+        this.responseHeader("Content-Type", "application/json; charset=utf-8");
+        this.res.body = JSON.stringify(reply);
+    }
 };
 
 ZAutomationAPIWebRequest.prototype.updateLocation = function () {
@@ -788,7 +791,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (!!reTest) {
             var locationId = reTest[1];
             if ("DELETE" === method && locationId) {
-                handlerFunc = this.removeLocation(locationId);
+                handlerFunc = this.removeLocation;
             }
         }
     }
