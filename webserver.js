@@ -190,7 +190,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
         if (notificationId !== undefined) {
             id = notificationId;
         } else {
-            id = that.req.query.hasOwnProperty("id") ? that.req.query.id : 0;
+            id = that.req.query.hasOwnProperty("id") ? parseInt(that.req.query.id) : 0;
         }
 
 
@@ -217,6 +217,9 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
                 reply.error = "Notification " + notificationId + " doesn't exist";
                 that.res.status = 404;
             }
+        } else {
+            reply.error = "Argument id is required";
+            that.res.status = 404;
         }
 
         that.responseHeader("Content-Type", "application/json; charset=utf-8");
