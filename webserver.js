@@ -273,7 +273,6 @@ ZAutomationAPIWebRequest.prototype.restartController = function () {
 
 ZAutomationAPIWebRequest.prototype.listLocations = function (locationId) {
     var that = this,
-        locations,
         reply = {
             data: null,
             error: null
@@ -285,9 +284,10 @@ ZAutomationAPIWebRequest.prototype.listLocations = function (locationId) {
         if (locationId === undefined) {
             reply.data = controller.locations;
         } else {
-            locations = controller.locations.filter(function (location) {
-                location.id === locationId;
+            var locations = controller.locations.filter(function(location) {
+                return location.id === locationId;
             });
+
             if (locations.length > 0) {
                 reply.data = locations[0];
             } else {
@@ -748,7 +748,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     } else if ("GET" === method && "/restart" == url) {
         handlerFunc = this.restartController;
     } else if ("GET" === method && "/locations/" == url) {
-        handlerFunc = this.listLocations;
+        handlerFunc = this.listLocations();
     } else if (("GET" === method && "/locations/add" == url) || ("POST" === method && "/locations/" == url)) {
         handlerFunc = this.addLocation;
     } else if (("GET" === method && "/locations/remove" == url) || ("DELETE" === method && "/locations/" == url)) {
