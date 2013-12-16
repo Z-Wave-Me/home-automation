@@ -209,7 +209,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
             };
         } else if (id) {
             notifications = notifications.filter(function (notification) {
-                return notification.id === id;
+                return parseInt(notification.id) === id;
             });
             if (notifications.length > 0) {
                 reply.data = notifications[0];

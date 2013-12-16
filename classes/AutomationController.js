@@ -322,7 +322,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
     var now = new Date(), notice;
 
     notice = {
-        id: now.getTime().toString(),
+        id: now.getTime(),
         timestamp: now.toISOString(),
         level: severity,
         message: message,
