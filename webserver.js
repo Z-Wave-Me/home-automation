@@ -321,6 +321,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
+    var that = this;
 
     return function () {
         var id,
@@ -346,10 +347,10 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
         if (!!id) {
             controller.removeLocation(id, function (result) {
                 if (result) {
-                    this.res.status = 200;
+                    that.res.status = 200;
                     reply.data = "OK";
                 } else {
-                    this.res.status = 404;
+                    that.res.status = 404;
                     reply.error = "Location " + id + " doesn't exist";
                 }
             });
