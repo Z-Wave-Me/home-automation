@@ -356,16 +356,18 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     var locations = this.locations.filter(function (location) {
         return location.id === id;
     });
-    if (!!locations.length) {
+    if (locations.length > 0) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
             if (vdev.location === id) {
                 vdev.location = null;
             }
         });
-        this.locations.filter(function (location) {
-            return location.id === id;
+
+        this.locations = this.locations.filter(function (location) {
+            return location.id !== id;
         });
+
         this.saveConfig();
         callback(true);
         this.emit('location.removed', id);

@@ -783,7 +783,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         re = /\/locations\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
-            var locationId = reTest[1];
+            var locationId = parseInt(reTest[1]);
             if ("DELETE" === method && locationId) {
                 handlerFunc = this.removeLocation(locationId);
             }
