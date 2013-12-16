@@ -401,7 +401,7 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
             reqObj;
 
         if (that.req.method === 'GET') {
-            id = that.req.query.id;
+            id = parseInt(that.req.query.id);
             title = that.req.query.title;
         } else if (that.req.method === 'PUT') {
             try {
