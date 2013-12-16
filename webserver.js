@@ -183,9 +183,10 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
     return function () {
         that.res.status = 200;
         since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
-        redeemed = that.req.query.hasOwnProperty("redeemed") ? that.req.query.redeemed : false
+        redeemed = that.req.query.hasOwnProperty("redeemed") ? that.req.query.redeemed : 0;
         since = isNaN(since) ? 0 : since;
-        notifications = controller.listNotifications(since)
+        redeemed = isNaN(redeemed) ? 0 : redeemed;
+        notifications = controller.listNotifications(since);
 
         if (notificationId !== undefined) {
             id = notificationId || null;
@@ -876,9 +877,9 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         reTest = re.exec(url);
         if (!!reTest) {
             var notificationId = parseInt(reTest[1]);
-            if ("PUT" === method && locationId) {
+            if ("PUT" === method && notificationId) {
                 handlerFunc = this.markNotificationsRead(notificationId);
-            } else if ("GET" === method && locationId) {
+            } else if ("GET" === method && notificationId) {
                 handlerFunc = this.exposeNotifications(notificationId);
             }
         }
