@@ -325,13 +325,16 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
         }
 
         if (!!title) {
-            that.res.status = that.req.method === 'POST' ? 201 : 200;
-            controller.addLocation(title);
-            reply.status = "OK";
-            reply.data =  {
-                id: id,
-                title: title
-            };
+            controller.addLocation(title, function (data) {
+                if (data) {
+                    that.res.status = that.req.method === 'POST' ? 201 : 200;
+                    reply.data = data;
+                    reply.status = "OK";
+                } else {
+                    that.res.status = 500;
+                    reply.error = "Unknown error. Location doesn't created";
+                }
+            });
         } else {
             that.res.status = 500;
             reply.error = "Arguments title are required";
