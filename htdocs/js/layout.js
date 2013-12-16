@@ -51,11 +51,13 @@ define([
                     $template.find('.read').on('click', function () {
                         var $this = $(this);
                         $this.off();
-                        model.save({mark: true}, {
-                            silent: true,
+                        model.save({redeemed: true}, {
                             success: function () {
-                                this.Notifications.remove(model);
+                                that.Notifications.remove(model);
                                 $template.slideUp('fast');
+                                if (!that.Notifications.length) {
+                                    ModalHelper.hideAll();
+                                }
                             }
                         });
                     });

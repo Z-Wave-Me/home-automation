@@ -34,7 +34,7 @@ define([
         },
 
         render: function () {
-            var that = this, $location;
+            var that = this;
             that.$preferencesButton.on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
