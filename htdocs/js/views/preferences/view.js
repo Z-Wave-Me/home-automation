@@ -3,8 +3,8 @@ define([
     'helpers/modal',
     'models/location',
     'text!templates/popups/preferences-menu.html',
-    'text!templates/popups/_new_room.html'
-], function (Backbone, ModalHelper, Location, PreferencesPopupTmp, NewRoomTmp) {
+    'text!templates/popups/_room.html'
+], function (Backbone, ModalHelper, Location, PreferencesPopupTmp, RoomTmp) {
     'use strict';
     var PreferencesView = Backbone.View.extend({
 
@@ -85,7 +85,7 @@ define([
 
             that.$buttonContainer.find('.add-button').off().on('click', function () {
                 that.$roomsListContainer.find('li').removeClass('active');
-                $newRoomTmp = $(_.template(NewRoomTmp, {}));
+                $newRoomTmp = $(_.template(RoomTmp, {}));
                 $newRoomTmp.find('.button-group').on('click', function (e) {
                     e.preventDefault();
                     if ($(this).hasClass('create-button')) {
@@ -99,26 +99,25 @@ define([
                     $newRoomTmp.hide('fast', function () {
                         $newRoomTmp.remove();
                     });
-                    that.creating = false;
                 });
 
                 that.$contentContainer.html($newRoomTmp);
                 that.$roomsListContainer.find('li').removeClass('.active');
-                that.$roomsListContainer.find('.rooms-list').append($roomItem);
                 $newRoomTmp.show('fast');
-                that.creating = true;
             });
 
             that.$buttonContainer.find('.remove-button').off().on('click', function () {
-                that.Locations.get(that.activeRoom).destroy({
-                    success: function () {
-
-                    }
-                });
+                that.Locations.get(that.activeRoom).destroy();
             });
         },
         addRoom: function (model) {
-            var that = this, $location;
+            var that = this, $location, $template;
+
+            $location = $("<li>" + model.get('title') + "</li>");
+
+            that.listenTo(model, 'change:title', function () {
+                $location.text(model.get('title'));
+            });
 
             that.listenTo(model, 'destroy', function () {
                 $location.hide('fast', function () {
@@ -127,14 +126,48 @@ define([
                 });
             });
 
-            $location = $("<li>" + model.get('title') + "</li>");
-            that.$roomsListContainer.find('.rooms-list').append($location);
 
             $location.off().on('click', function () {
                 that.activeRoom = model.get('id');
                 that.$roomsListContainer.find('li').removeClass('active');
                 $location.addClass('active');
+                $template = $(_.template(RoomTmp, model.toJSON()));
+
+                $template.find('.save-button').on('click', function (e) {
+                    e.preventDefault();
+                    model.save({title: $template.find('#inputNameText').val()}, {
+                        success: function () {
+                            $template.find('.edit-button').show();
+                            $template.find('.name-location').text(model.get('title')).show();
+                            $template.find('#inputNameText').val(model.get('title')).hide();
+                            $template.find('.save-button').hide();
+                            $template.find('.cancel-button').hide();
+                        }
+                    });
+                });
+
+                $template.find('.edit-button').on('click', function (e) {
+                    e.preventDefault();
+                    var $this = $(this);
+                    $template.find('.name-location').hide();
+                    $template.find('#inputNameText').show();
+                    $template.find('.save-button').show();
+                    $this.hide();
+                    $template.find('.cancel-button').show('fast').off().on('click', function (e) {
+                        e.preventDefault();
+                        $template.find('.name-location').text(model.get('title')).show();
+                        $template.find('#inputNameText').val(model.get('title')).hide();
+                        $template.find('.save-button').hide();
+                        $template.find('.cancel-button').hide();
+                        $this.show();
+                    });
+                });
+
+                that.$contentContainer.html($template);
+                $template.show('fast');
             });
+
+            that.$roomsListContainer.find('.rooms-list').append($location);
         }
     });
 

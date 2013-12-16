@@ -355,7 +355,7 @@ AutomationController.prototype.addLocation = function (title, callback) {
             title: title
         };
         this.locations.push(location);
-        callback(location)
+        callback(location);
         this.saveConfig();
         this.emit('location.added', id);
     }

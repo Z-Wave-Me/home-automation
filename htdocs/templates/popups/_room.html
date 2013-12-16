@@ -1,9 +1,10 @@
-<div class="new-room">
+<div class="room <% if (typeof id  !== 'undefined') { print('created'); } %>">
     <form class="form-horizontal" role="form">
         <div class="form-group">
             <label for="inputNameText" class="control-label">Name:</label>
             <div class="input-group">
-                <input type="text" class="form-control" id="inputNameText" placeholder="Name">
+                <span class="name-location"><% if (typeof title  !== 'undefined') { print(title); } %></span>
+                <input type="text" class="form-control" id="inputNameText" value="<% if (typeof(title) !== 'undefined') { print(title); } %>" placeholder="Name">
             </div>
         </div>
         <div class="form-group">
@@ -20,6 +21,8 @@
         </div>
         <div class="form-group">
             <button class="button-group create-button">create</button>
+            <button class="button-group edit-button">edit</button>
+            <button class="button-group save-button">save</button>
             <button class="button-group cancel-button">cancel</button>
         </div>
     </form>

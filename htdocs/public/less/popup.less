@@ -371,8 +371,28 @@
       float: left;
       font-size: 13px;
     }
-    .new-room {
+    .room {
       display: none;
+      .edit-button {
+        display: none;
+      }
+      &.created {
+        .form-control {
+          display: none;
+        }
+        .create-button {
+          display: none;
+        }
+        .edit-button {
+          display: inline-block;
+        }
+        .cancel-button {
+          display: none;
+        }
+        .save-button {
+          display: none;
+        }
+      }
     }
     .menu-list {
       display: block;
