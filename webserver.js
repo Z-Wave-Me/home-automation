@@ -398,17 +398,14 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
         if (this.req.method === 'GET') {
             id = this.req.query.id;
             title = this.req.query.title;
-        } else if (this.req.method === 'PUT' && locationId === undefined) { // DELETE
+        } else if (this.req.method === 'PUT') {
             try {
                 reqObj = JSON.parse(this.req.body);
             } catch (ex) {
                 reply.error = ex.message;
             }
-
-            id = reqObj.id;
+            id = locationId || reqObj.id;
             title = reqObj.title;
-        } else if (this.req.method === 'PUT' && locationId !== undefined) {
-            id = locationId;
         }
 
         if (!!id && !!title && title.length > 0) {
