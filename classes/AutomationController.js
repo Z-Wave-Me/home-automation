@@ -335,17 +335,18 @@ AutomationController.prototype.addNotification = function (severity, message) {
 }
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
+    var that = this;
     ids = Array.isArray(ids) ? ids : [ids];
 
 
     if (removeNotification) {
-        this.notifications = this.notifications.filter(function (notification) {
+        that.notifications = that.notifications.filter(function (notification) {
             return ids.indexOf(parseInt(notification.id)) === -1;
         });
     } else {
-        this.notifications.forEach(function (notification) {
+        that.notifications.forEach(function (notification) {
             if (ids.indexOf(parseInt(notification.id)) !== -1) {
-                this.notifications[this.notifications.indexOf(notification)].redeemed = true;
+                that.notifications[that.notifications.indexOf(notification)].redeemed = true;
             }
         });
     }
