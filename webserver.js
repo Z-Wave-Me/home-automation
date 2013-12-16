@@ -194,12 +194,12 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
         }
 
 
-        if (notificationId === undefined && (String(true) === redeemed || !redeemed)) {
+        if (!id && (String(true) === redeemed || !redeemed)) {
             reply.data = {
                 updateTime: nowTS,
                 notifications: notifications
             };
-        } else if (notificationId === undefined && (String(true) !== redeemed || redeemed)) {
+        } else if (!id && (String(true) !== redeemed || redeemed)) {
             notifications = notifications.filter(function (notification) {
                 return !notification.redeemed;
             });
@@ -207,7 +207,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
                 updateTime: nowTS,
                 notifications: notifications
             };
-        } else if (notificationId !== undefined) {
+        } else if (id) {
             notifications = notifications.filter(function (notification) {
                 return notification.id === id;
             });
@@ -781,7 +781,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     if ("GET" === method && "/status" == url) {
         handlerFunc = this.statusReport;
     } else if ("GET" === method && "/notifications/" == url) {
-        handlerFunc = this.exposeNotifications;
+        handlerFunc = this.exposeNotifications();
     } else if (("GET" === method && "/notifications/markRead" == url)  || ("PUT" === method && "/notifications/" == url)) {
         handlerFunc = this.markNotificationsRead();
     } else if ("GET" === method && "/devices/" == url) {
