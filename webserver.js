@@ -236,10 +236,10 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificatio
         reqObj,
         that = this,
         id,
-        removeNotication;
+        removeNotification;
 
     return function () {
-        removeNotication = that.req.query.hasOwnProperty("removeNotication") ? that.req.query.removeNotication : false;
+        removeNotification = that.req.query.hasOwnProperty("removeNotication") ? that.req.query.removeNotification : false;
         if (that.req.method === 'PUT' || that.req.method === 'POST') {
             try {
                 reqObj = JSON.parse(this.req.body);
@@ -249,7 +249,7 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificatio
             if (that.req.method === 'POST') {
                 id = Array.isArray(reqObj) ? reqObj : [reqObj];
             } else {
-                id = notificationId !== undefined ? notificationId : parseInt(reqObj.id);
+                id = notificationId !== undefined ?  parseInt(notificationId): parseInt(reqObj.id);
             }
         } else if (that.req.method === 'GET') {
             id = that.req.query.hasOwnProperty("id") ? parseInt(that.req.query.hasOwnProperty("id")) : 0;
@@ -266,7 +266,7 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificatio
                     that.res.status = 500;
                     reply.error = "Unknown error.";
                 }
-            }, removeNotication);
+            }, removeNotification);
         } else {
             that.res.status = 404;
             reply.error = "Notification " + notificationId + " doesn't exist";
