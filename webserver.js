@@ -224,7 +224,7 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
     }
 };
 
-ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
+ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificationId) {
     var reply = {
             error: null,
             data: "OK"
@@ -252,6 +252,16 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
     } else {
         this.res.status = 500;
     }
+
+    this.responseHeader("Content-Type", "application/json; charset=utf-8");
+    this.res.body = JSON.stringify(reply);
+};
+
+ZAutomationAPIWebRequest.prototype.removeNotifications = function (notificationId) {
+    var reply = {
+            error: null,
+            data: "OK"
+        };
 
     this.responseHeader("Content-Type", "application/json; charset=utf-8");
     this.res.body = JSON.stringify(reply);
