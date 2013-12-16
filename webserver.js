@@ -277,7 +277,7 @@ ZAutomationAPIWebRequest.prototype.listLocations = function (locationId) {
     that.res.status = 200;
 
     return function () {
-        if (locationId !== undefined) {
+        if (locationId === undefined) {
             reply = {
                 error: null,
                 data: controller.locations
