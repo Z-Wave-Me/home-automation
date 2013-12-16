@@ -356,7 +356,7 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
             reqObj;
 
         if (that.req.method === 'GET') {
-            id = that.req.query.id;
+            id = parseInt(that.req.query.id);
         } else if (that.req.method === 'DELETE' && locationId === undefined) {
             try {
                 reqObj = JSON.parse(that.req.body);
