@@ -341,14 +341,24 @@ AutomationController.prototype.deleteNotifications = function (ids) {
     this.saveNotifications();
 };
 
-AutomationController.prototype.addLocation = function (title) {
+AutomationController.prototype.addLocation = function (title, callback) {
     var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
-    this.locations.push({
-        id: id,
-        title: title
+    var locations = this.locations.filter(function (location) {
+        return location.id === id;
     });
-    this.saveConfig();
-    this.emit('location.added', id);
+
+    if (locations > 0) {
+        callback(false)
+    } else {
+        var location = {
+            id: id,
+            title: title
+        };
+        this.locations.push(location);
+        this.saveConfig();
+        this.emit('location.added', id);
+        callback(location)
+    }
 };
 
 AutomationController.prototype.removeLocation = function (id, callback) {
