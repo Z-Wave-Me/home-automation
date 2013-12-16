@@ -347,7 +347,7 @@ AutomationController.prototype.addLocation = function (title, callback) {
         return location.id === id;
     });
 
-    if (locations > 0) {
+    if (locations.length > 0) {
         callback(false)
     } else {
         var location = {
@@ -355,9 +355,9 @@ AutomationController.prototype.addLocation = function (title, callback) {
             title: title
         };
         this.locations.push(location);
+        callback(location)
         this.saveConfig();
         this.emit('location.added', id);
-        callback(location)
     }
 };
 

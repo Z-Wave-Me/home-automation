@@ -302,8 +302,7 @@ ZAutomationAPIWebRequest.prototype.listLocations = function (locationId) {
 };
 
 ZAutomationAPIWebRequest.prototype.addLocation = function () {
-    var id = controller.locations.length + 1,
-        title,
+    var title,
         reply = {
             error: null,
             data: null
@@ -330,6 +329,7 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
                     that.res.status = that.req.method === 'POST' ? 201 : 200;
                     reply.data = data;
                     reply.status = "OK";
+                    that.res.body = JSON.stringify(reply);
                 } else {
                     that.res.status = 500;
                     reply.error = "Unknown error. Location doesn't created";
@@ -342,7 +342,6 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
     }
 
     that.responseHeader("Content-Type", "application/json; charset=utf-8");
-    that.res.body = JSON.stringify(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
