@@ -271,15 +271,35 @@ ZAutomationAPIWebRequest.prototype.restartController = function () {
     this.res.body = JSON.stringify(reply);
 };
 
-ZAutomationAPIWebRequest.prototype.listLocations = function () {
-    reply = {
-        error: null,
-        data: controller.locations
-    }
+ZAutomationAPIWebRequest.prototype.listLocations = function (locationId) {
+    var that = this, reply, locations;
 
-    this.res.status = 200;
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
+    that.res.status = 200;
+
+    return function () {
+        if (locationId !== undefined) {
+            reply = {
+                error: null,
+                data: controller.locations
+            }
+        } else {
+            locations = controller.locations.filter(function (location) {
+                location.id === locationId;
+            });
+            if (locations.length > 0) {
+                reply = {
+                    error: null,
+                    data: locations[0]
+                }
+            } else {
+                that.res.status = 404;
+                reply.error = "Location " + locationId + " doesn't exist";
+            }
+        }
+
+        that.responseHeader("Content-Type", "application/json; charset=utf-8");
+        that.res.body = JSON.stringify(reply);
+    }
 };
 
 ZAutomationAPIWebRequest.prototype.addLocation = function () {
@@ -364,7 +384,7 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
     }
 };
 
-ZAutomationAPIWebRequest.prototype.updateLocation = function () {
+ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
     var that = this;
 
     return function () {
@@ -379,7 +399,7 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function () {
         if (this.req.method === 'GET') {
             id = this.req.query.id;
             title = this.req.query.title;
-        } else if (this.req.method === 'PUT') { // DELETE
+        } else if (this.req.method === 'PUT' && locationId !== undefined) { // DELETE
             try {
                 reqObj = JSON.parse(this.req.body);
             } catch (ex) {
@@ -388,6 +408,8 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function () {
 
             id = reqObj.id;
             title = reqObj.title;
+        } else if (this.req.method === 'PUT' && locationId === undefined) {
+            id = locationId;
         }
 
         if (!!id && !!title && title.length > 0) {
@@ -794,6 +816,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 handlerFunc = this.removeLocation(locationId);
             } else if ("PUT" === method && locationId) {
                 handlerFunc = this.updateLocation(locationId);
+            } else if ("GET" === method && locationId) {
+                handlerFunc = this.listLocations(locationId);
             }
         }
     }

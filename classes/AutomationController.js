@@ -378,11 +378,11 @@ AutomationController.prototype.removeLocation = function (id, callback) {
 };
 
 AutomationController.prototype.updateLocation = function (id, title, callback) {
-    var location = this.locations.filter(function (location) {
+    var locations = this.locations.filter(function (location) {
         return location.id === id;
     });
-    if (location.length > 0) {
-        this.locations.indexOf(location[0]).title = title;
+    if (locations.length > 0) {
+        this.locations.indexOf(locations[0]).title = title;
         this.saveConfig();
         callback(true);
         this.emit('location.updated', id);
