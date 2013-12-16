@@ -340,11 +340,11 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
 
     if (removeNotication) {
         this.notifications = this.notifications.filter(function (notification) {
-            return ids.indexOf(notification.id) === -1;
+            return ids.indexOf(parseInt(notification.id)) === -1;
         });
     } else {
         this.notifications.forEach(function (notification) {
-            if (ids.indexOf(notification.id) !== -1) {
+            if (ids.indexOf(parseInt(notification.id)) !== -1) {
                 this.notifications[this.notifications.indexOf(notification)].redeemed = true;
             }
         });

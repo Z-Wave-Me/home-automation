@@ -272,16 +272,6 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificatio
     }
 };
 
-ZAutomationAPIWebRequest.prototype.removeNotifications = function (notificationId) {
-    var reply = {
-            error: null,
-            data: "OK"
-        };
-
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
-};
-
 ZAutomationAPIWebRequest.prototype.getVDevFunc = function (vDevId) {
     var self = this;
 
@@ -883,9 +873,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         reTest = re.exec(url);
         if (!!reTest) {
             var notificationId = parseInt(reTest[1]);
-            if ("DELETE" === method && locationId) {
-                handlerFunc = this.removeNotifications(notificationId);
-            } else if ("PUT" === method && locationId) {
+            if ("PUT" === method && locationId) {
                 handlerFunc = this.markNotificationsRead(notificationId);
             } else if ("GET" === method && locationId) {
                 handlerFunc = this.exposeNotifications(notificationId);
