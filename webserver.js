@@ -229,32 +229,47 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificatio
             error: null,
             data: "OK"
         },
-        reqObj;
+        reqObj,
+        that = this,
+        id,
+        removeNotication;
 
-    try {
-        reqObj = JSON.parse(this.req.body);
-    } catch (ex) {
-        reply.error = ex.message;
+    return function () {
+        removeNotication = that.req.query.hasOwnProperty("removeNotication") ? that.req.query.removeNotication : false;
+        if (that.req.method === 'PUT' || that.req.method === 'POST') {
+            try {
+                reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
+            }
+            if (that.req.method === 'POST') {
+                id = Array.isArray(reqObj) ? reqObj : [reqObj];
+            } else {
+                id = notificationId !== undefined ? notificationId : parseInt(reqObj.id);
+            }
+        } else if (that.req.method === 'GET') {
+            id = that.req.query.hasOwnProperty("id") ? parseInt(that.req.query.hasOwnProperty("id")) : 0;
+        }
+
+        if (id) {
+            controller.deleteNotifications(id, function (status) {
+                if (status) {
+                    that.res.status = 200;
+                } else if (!status && Array.isArray(id)) {
+                    that.res.status = 500;
+                    reply.error = "Payload must an array with at least one id or must be and array of strings.";
+                } else {
+                    that.res.status = 500;
+                    reply.error = "Unknown error.";
+                }
+            }, removeNotication);
+        } else {
+            that.res.status = 404;
+            reply.error = "Notification " + notificationId + " doesn't exist";
+        }
+        that.responseHeader("Content-Type", "application/json; charset=utf-8");
+        that.res.body = JSON.stringify(reply);
     }
-
-    if (Array.isArray(reqObj) && reqObj.length > 0 && this.req.method !== 'PUT') {
-        this.res.status = 200;
-        controller.deleteNotifications(reqObj);
-    } else if (this.req.method === 'PUT') {
-        this.res.status = 200;
-        controller.deleteNotifications([reqObj.id]);
-    } else if (Array.isArray(reqObj) && reqObj.length < 1) {
-        this.res.status = 500;
-        reply.error = "Payload must an array with at least one id";
-    } else if (!Array.isArray(reqObj)) {
-        this.res.status = 500;
-        reply.error = "Payload must be and array of strings";
-    } else {
-        this.res.status = 500;
-    }
-
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.removeNotifications = function (notificationId) {

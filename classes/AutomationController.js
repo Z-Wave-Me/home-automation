@@ -334,10 +334,23 @@ AutomationController.prototype.addNotification = function (severity, message) {
     this.saveNotifications();
 }
 
-AutomationController.prototype.deleteNotifications = function (ids) {
-    this.notifications = this.notifications.filter(function (notification) {
-        return ids.indexOf(notification.id) === -1;
-    });
+AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotication) {
+    ids = Array.isArray(ids) ? ids : [ids];
+
+
+    if (removeNotication) {
+        this.notifications = this.notifications.filter(function (notification) {
+            return ids.indexOf(notification.id) === -1;
+        });
+    } else {
+        this.notifications.forEach(function (notification) {
+            if (ids.indexOf(notification.id) !== -1) {
+                this.notifications[this.notifications.indexOf(notification)].redeemed = true;
+            }
+        });
+    }
+
+    callback(true);
     this.saveNotifications();
 };
 
