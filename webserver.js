@@ -171,39 +171,57 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
     this.res.body = JSON.stringify(reply);
 };
 
-ZAutomationAPIWebRequest.prototype.exposeNotifications = function () {
+ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationId) {
     var nowTS = Math.floor(new Date().getTime() / 1000),
-        notifications;
+        notifications,
+        reply = {
+            error: null,
+            data: null
+        }, id, since, redeemed, that = this;
 
-    var reply = {
-        error: null,
-        data: {}
-    };
 
-    var since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
-    var redeemed = this.req.query.hasOwnProperty("redeemed") ? this.req.query.redeemed : false
-    since = isNaN(since) ? 0 : since;
-    notifications = controller.listNotifications(since)
+    return function () {
+        that.res.status = 200;
+        since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
+        redeemed = that.req.query.hasOwnProperty("redeemed") ? that.req.query.redeemed : false
+        since = isNaN(since) ? 0 : since;
+        notifications = controller.listNotifications(since)
 
-    if (String(true) === redeemed || !redeemed) {
-        reply.data = {
-            updateTime: nowTS,
-            notifications: notifications
-        };
-    } else {
-        notifications = notifications.filter(function (notification) {
-            return !notification.redeemed;
-        });
-        reply.data = {
-            updateTime: nowTS,
-            notifications: notifications
-        };
+        if (notificationId !== undefined) {
+            id = notificationId;
+        } else {
+            id = that.req.query.hasOwnProperty("id") ? that.req.query.id : 0;
+        }
+
+
+        if (notificationId === undefined && (String(true) === redeemed || !redeemed)) {
+            reply.data = {
+                updateTime: nowTS,
+                notifications: notifications
+            };
+        } else if (notificationId === undefined && (String(true) !== redeemed || redeemed)) {
+            notifications = notifications.filter(function (notification) {
+                return !notification.redeemed;
+            });
+            reply.data = {
+                updateTime: nowTS,
+                notifications: notifications
+            };
+        } else if (notificationId !== undefined) {
+            notifications = notifications.filter(function (notification) {
+                return notification.id === id;
+            });
+            if (notifications.length > 0) {
+                reply.data = notifications[0];
+            } else {
+                reply.error = "Notification " + notificationId + " doesn't exist";
+                that.res.status = 404;
+            }
+        }
+
+        that.responseHeader("Content-Type", "application/json; charset=utf-8");
+        that.res.body = JSON.stringify(reply);
     }
-
-
-    this.res.status = 200;
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.markNotificationsRead = function () {
@@ -754,7 +772,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.statusReport;
     } else if ("GET" === method && "/notifications/" == url) {
         handlerFunc = this.exposeNotifications;
-    } else if (("POST" === method && "/notifications/markRead" == url)  || ("PUT" === method && "/notifications/" == url)) {
+    } else if (("GET" === method && "/notifications/markRead" == url)  || ("PUT" === method && "/notifications/" == url)) {
         handlerFunc = this.markNotificationsRead();
     } else if ("GET" === method && "/devices/" == url) {
         handlerFunc = this.listDevices;
@@ -830,6 +848,22 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 handlerFunc = this.updateLocation(locationId);
             } else if ("GET" === method && locationId) {
                 handlerFunc = this.listLocations(locationId);
+            }
+        }
+    }
+
+    // --- Remove and Update notifications
+    if (handlerFunc === this.NotFound) {
+        re = /\/notifications\/(.+)/;
+        reTest = re.exec(url);
+        if (!!reTest) {
+            var notificationId = parseInt(reTest[1]);
+            if ("DELETE" === method && locationId) {
+                handlerFunc = this.removeNotifications(notificationId);
+            } else if ("PUT" === method && locationId) {
+                handlerFunc = this.markNotificationsRead(notificationId);
+            } else if ("GET" === method && locationId) {
+                handlerFunc = this.exposeNotifications(notificationId);
             }
         }
     }
