@@ -194,13 +194,12 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
             id = that.req.query.hasOwnProperty("id") ? parseInt(that.req.query.id) : 0;
         }
 
-
         if (!id && redeemed) {
             reply.data = {
                 updateTime: nowTS,
                 notifications: notifications
             };
-        } else if (!id && redeemed) {
+        } else if (!id && !redeemed) {
             notifications = notifications.filter(function (notification) {
                 return !notification.redeemed;
             });
