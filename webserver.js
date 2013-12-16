@@ -341,9 +341,8 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
         } catch (ex) {
             reply.error = ex.message;
         }
-
         id = reqObj.id;
-    } else if (locationId !== undefined) {
+    } else if (this.req.method === 'DELETE' && locationId !== undefined) {
         id = locationId;
     }
 
@@ -790,8 +789,6 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
             var locationId = reTest[1];
             if ("DELETE" === method && locationId) {
                 handlerFunc = this.removeLocation(locationId);
-            } else if ("PUT" === method && locationId) {
-                handlerFunc = this.updateLocation(locationId);
             }
         }
     }
