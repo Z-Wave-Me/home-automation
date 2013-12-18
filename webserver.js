@@ -304,15 +304,15 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
         data: null
     };
 
-    if (self.req.method === 'PUT') {
-        try {
-            reqObj = JSON.parse(this.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
-        }
-    }
-
     return function () {
+        if (self.req.method === 'PUT') {
+            try {
+                reqObj = JSON.parse(self.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
+            }
+        }
+
         if (controller.devices.hasOwnProperty(vDevId)) {
             self.res.status = 200;
             controller.devices[vDevId].setVDevObject(reqObj);
