@@ -33,10 +33,6 @@ define([
                 log("ERROR: " + err);
             });
         },
-
-        parse: function (response) {
-            return response.data;
-        }
     });
 
     return Notice;
