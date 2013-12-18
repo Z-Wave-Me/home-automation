@@ -45,9 +45,9 @@ VirtualDevice.prototype.setMetricValue = function (name, value) {
     this.controller.emit("device.metricUpdated", this.id, name, value);
 };
 
-VirtualDevice.prototype.setVDevObject = function (object) {
+VirtualDevice.prototype.setVDevObject = function (id, object) {
     var excludeProp = ['deviceType', 'updateTime', 'id'],
-        info = this.controller.getVdevInfo(this.id),
+        info = this.controller.getVdevInfo(id),
         changedParams = [];
 
     this.updateTime = Math.floor(new Date().getTime() / 1000);
