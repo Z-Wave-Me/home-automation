@@ -132,14 +132,14 @@ define([
 
             json.devicesCurrent = [];
             json.devicesAvalaible = [];
-
             that.Devices.each(function (device) {
-                if (device.get('location') === that.activeRoom) {
+                if (device.get('location') === model.get('id')) {
                     json.devicesCurrent.push(device.toJSON());
                 } else {
                     json.devicesAvalaible.push(device.toJSON());
                 }
             });
+            json.countCurrent = json.devicesCurrent.length;
 
             $location = $("<li>" + model.get('title') + "</li>");
 
@@ -157,9 +157,14 @@ define([
 
             $location.off().on('click', function () {
                 that.activeRoom = model.get('id');
+
                 that.$roomsListContainer.find('li').removeClass('active');
                 $location.addClass('active');
                 $template = $(_.template(RoomTmp, json));
+
+                that.listenTo(model, 'change:counter', function () {
+                    $template.find('.get-devices').text(model.get('counter') + ' devices');
+                });
 
                 $template.find('.save-button').on('click', function (e) {
                     e.preventDefault();
@@ -194,13 +199,18 @@ define([
                 $template.find('.list-devices-column').dragsort({ dragSelector: "li", dragEnd: function () {
                     var $this = $(this),
                         id = $this.attr('data-id'),
-                        listType = $this.parent().attr('data-type-list');
+                        listType = $this.parents(1).attr('data-type-list');
 
                     if (listType === 'all') {
-                        //remove location from device
+                        that.Devices.get(id).save({
+                           "location": null
+                        });
                     } else {
-                        //add location from device
+                        that.Devices.get(id).save({
+                           "location": that.activeRoom
+                        });
                     }
+                    model.set({counter: that.Devices.where({location: that.activeRoom}).length});
                 }, dragBetween: true, placeHolderTemplate: "<li></li>" });
 
 
