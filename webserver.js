@@ -305,13 +305,12 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
     };
 
     return function () {
-        if (self.req.method === 'PUT') {
-            try {
-                reqObj = JSON.parse(self.req.body);
-            } catch (ex) {
-                reply.error = ex.message;
-            }
+        try {
+            reqObj = JSON.parse(self.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
         }
+
 
         if (controller.devices.hasOwnProperty(vDevId)) {
             self.res.status = 200;
@@ -322,9 +321,9 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
             reply.error = "Device " + vDevId + " doesn't exist";
         }
 
-        this.res.status = 200;
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
-        this.res.body = JSON.stringify(reply);
+        self.res.status = 200;
+        self.responseHeader("Content-Type", "application/json; charset=utf-8");
+        self.res.body = JSON.stringify(reply);
     }
 }
 
@@ -961,7 +960,6 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
-            var commandId = reTest[2];
             if ("GET" === method && !!vDevId) {
                 handlerFunc = this.getVDevFunc(vDevId);
             } else if ("PUT" === method && !!vDevId) {
