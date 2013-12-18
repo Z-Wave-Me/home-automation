@@ -16,7 +16,8 @@ define([
 
             that.apiPort = '10483';
             that.apiHost = 'mskoff.z-wave.me';
-
+            //that.apiPort = '8083';
+            //that.apiHost = 'localhost';
             that.vars = {
                 apiPort : qVar("port") || window.location.port,
                 apiHost : qVar("host") || window.location.hostname

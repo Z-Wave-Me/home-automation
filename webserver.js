@@ -308,6 +308,29 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
     }
 }
 
+ZAutomationAPIWebRequest.prototype.getVDevInfoFunc = function (vDevId) {
+    var self = this, reply;
+
+    return function () {
+        reply = {
+            error: null,
+            data: null
+        }
+
+        if (controller.devices[vDevId]) {
+            reply.data = controller.devices[vDevId];
+            self.res.status = 200;
+        } else {
+            reply.error = "Device " + vDevId + " not found";
+            self.res.status = 404;
+        }
+
+        self.responseHeader("Content-Type", "application/json; charset=utf-8");
+        self.res.body = JSON.stringify(reply);
+    }
+}
+
+
 ZAutomationAPIWebRequest.prototype.restartController = function () {
     reply = {
         error: null,
@@ -816,6 +839,18 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // ---------- Test regexp URIs --------------------------------------------
     var re, reTest;
+
+    // --- Get vDev info
+    if (handlerFunc === this.NotFound) {
+        re = /\/devices\/(.+)/;
+        reTest = re.exec(url);
+        if (!!reTest) {
+            var vDevId = reTest[1];
+            if ("GET" === method && !!vDevId) {
+                handlerFunc = this.getVDevInfoFunc(vDevId);
+            }
+        }
+    }
 
     // --- Perform vDev command
     if (handlerFunc === this.NotFound) {

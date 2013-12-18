@@ -27,9 +27,30 @@
         </div>
     </form>
     <form class="form-horizontal devices-tab" role="form">
-        <div class="button-container show footer-button">
-            <span class="button add-button">+</span>
-            <span class="button remove-button">-</span>
+        <div class="current-devices">
+            <ul class="list-devices-column" data-type-list="current">
+                <% if (typeof devicesCurrent  !== 'undefined') { %>
+                    <% _.each(devicesCurrent, function (device) { %>
+                        <li class="device" title="<%= device.metrics.title %>" data-id="<%= device.id %>">
+                            <span class="icon-device <%= device.metrics.iconBase %>"></span>
+                            <span class="title-device"><%= device.metrics.title %></span>
+                        </li>
+                    <% }); %>
+                <% } %>
+            </ul>
         </div>
+        <div class="container-devices">
+            <ul class="list-devices-column last" data-type-list="all">
+                <% if (typeof devicesCurrent  !== 'undefined') { %>
+                    <% _.each(devicesAvalaible, function (device) { %>
+                        <li class="device" title="<%= device.metrics.title %>" data-id="<%= device.id %>">
+                            <span class="icon-device <%= device.metrics.iconBase %>"></span>
+                            <span class="title-device"><%= device.metrics.title %></span>
+                        </li>
+                    <% }); %>
+                <% } %>
+            </ul>
+        </div>
+
     </form>
 </div>

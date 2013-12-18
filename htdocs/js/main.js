@@ -6,7 +6,8 @@ requirejs.config({
         backbone : 'libs/backbone/backbone-min',
         underscore : 'libs/backbone/underscore-min',
         jquery : 'libs/vendor/jquery-2.0.3.min',
-        'jquery-cookie' : 'libs/vendor/jquery.cookie',
+        cookie : 'libs/vendor/jquery.cookie',
+        dragsort : 'libs/vendor/jquery.dragsort',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
     },
@@ -14,9 +15,13 @@ requirejs.config({
         jquery : {
             exports : '$'
         },
-        'jquery-cookie' : {
+        cookie : {
             deps: ['jquery'],
             exports : '$.cookie'
+        },
+        dragsort : {
+            deps: ['jquery'],
+            exports : '$.dragsort'
         },
         underscore : {
             exports : '_'

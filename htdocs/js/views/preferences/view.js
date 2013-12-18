@@ -3,7 +3,8 @@ define([
     'helpers/modal',
     'models/location',
     'text!templates/popups/preferences-menu.html',
-    'text!templates/popups/_room.html'
+    'text!templates/popups/_room.html',
+    'dragsort'
 ], function (Backbone, ModalHelper, Location, PreferencesPopupTmp, RoomTmp) {
     'use strict';
     var PreferencesView = Backbone.View.extend({
@@ -126,7 +127,19 @@ define([
             });
         },
         addRoom: function (model) {
-            var that = this, $location, $template;
+            var that = this, $location, $template,
+                json = model.toJSON();
+
+            json.devicesCurrent = [];
+            json.devicesAvalaible = [];
+
+            that.Devices.each(function (device) {
+                if (device.get('location') === that.activeRoom) {
+                    json.devicesCurrent.push(device.toJSON());
+                } else {
+                    json.devicesAvalaible.push(device.toJSON());
+                }
+            });
 
             $location = $("<li>" + model.get('title') + "</li>");
 
@@ -146,7 +159,7 @@ define([
                 that.activeRoom = model.get('id');
                 that.$roomsListContainer.find('li').removeClass('active');
                 $location.addClass('active');
-                $template = $(_.template(RoomTmp, model.toJSON()));
+                $template = $(_.template(RoomTmp, json));
 
                 $template.find('.save-button').on('click', function (e) {
                     e.preventDefault();
@@ -177,6 +190,19 @@ define([
                         $this.show();
                     });
                 });
+
+                $template.find('.list-devices-column').dragsort({ dragSelector: "li", dragEnd: function () {
+                    var $this = $(this),
+                        id = $this.attr('data-id'),
+                        listType = $this.parent().attr('data-type-list');
+
+                    if (listType === 'all') {
+                        //remove location from device
+                    } else {
+                        //add location from device
+                    }
+                }, dragBetween: true, placeHolderTemplate: "<li></li>" });
+
 
                 if ($('.room').exists()) {
                     $('.room').hide('fast', function () {

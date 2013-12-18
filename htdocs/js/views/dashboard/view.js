@@ -160,7 +160,7 @@ define([
                 Apis.devices.command(model.get('id'), command, {}, function () {
                     $button
                         .toggleClass('active')
-                        .attr('title', capitaliseFirstLetter(command))
+                        .attr('title', command.capitalize())
                         .children()
                         .toggleClass('active')
                         .find('.text').text(command.toUpperCase());

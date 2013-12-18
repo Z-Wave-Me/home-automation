@@ -427,7 +427,7 @@
     }
   }
   .form-horizontal {
-    width: 50%;
+    width: 73%;
     margin: 0 auto;
     display: inline-block;
     text-align: center;
@@ -435,7 +435,70 @@
     height: 100%;
     min-height: 250px;
     vertical-align: middle;
-    margin-top: 80px;
+    margin-top: 40px;
+    &.devices-tab {
+      display: none;
+      float: left;
+      .list-devices-column {
+        overflow-y: scroll;
+        display: inline-block;
+        float: left;
+        width: 25%;
+        list-style-type: none;
+        height: 275px;
+        padding: 0;
+        margin: 0;
+        border: 1px solid #d3d3d3;
+        .device {
+          display: block;
+          background-color: #e6e6e6;
+          font-weight: normal;
+          color: #555;
+          width: 115px;
+          margin: 5px auto;
+          text-align: center;
+          border: 1px solid #d3d3d3;
+          vertical-align: top;
+          cursor: pointer;
+          height: 27px;
+          line-height: 27px;
+          font-size: 11px;
+          .icon-device {
+            display: block;
+            float: left;
+            width: 27px;
+            height: 27px;
+            background-size: 27px;
+          }
+          .title-device {
+            display: block;
+            float: left;
+            width: 68px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+          &:hover {
+            opacity: 0.6;
+          }
+        }
+      }
+      .container-devices {
+        .device {
+          float: left;
+          margin-left: 6px;
+        }
+      }
+      .current-devices {
+        .device {
+        }
+      }
+      .last {
+        width: 71.3%;
+        padding: 0;
+        margin-left: 2%;
+      }
+    }
   }
   .form-group {
     vertical-align: middle;
