@@ -314,7 +314,7 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
 
         if (controller.devices.hasOwnProperty(vDevId)) {
             self.res.status = 200;
-            controller.devices[vDevId].setVDevObject(reqObj);
+            controller.devices[vDevId].setVDevObject(vDevId, reqObj);
             reply.data = controller.getVdevInfo(vDevId);
         } else {
             self.res.status = 404;

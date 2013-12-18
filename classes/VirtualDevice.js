@@ -47,19 +47,18 @@ VirtualDevice.prototype.setMetricValue = function (name, value) {
 
 VirtualDevice.prototype.setVDevObject = function (id, object) {
     var excludeProp = ['deviceType', 'updateTime', 'id'],
-        info = this.controller.getVdevInfo(id),
-        changedParams = [];
+        self = this;
 
     this.updateTime = Math.floor(new Date().getTime() / 1000);
 
-    Object.keys(object).forEach(function (prop) {
-        if (info.hasOwnProperty(prop) && excludeProp.indexOf(prop) === -1) {
-            info[prop] = object[prop];
-            changedParams.push(prop);
+    Object.keys(object).forEach(function (key) {
+        if (excludeProp.indexOf(key) === -1 && self.hasOwnProperty(key)) {
+            self[key] = object[key];
+            self.controller.emit("device.valueUpdate", self.id, key, object[key]);
         }
     });
-    this.controller.saveConfig();
-    this.controller.emit("device.objectUpdate", this.id, changedParams);
+
+    self.controller.saveConfig();
 };
 
 VirtualDevice.prototype.getMetricValue = function (name) {
