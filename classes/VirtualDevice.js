@@ -45,6 +45,19 @@ VirtualDevice.prototype.setMetricValue = function (name, value) {
     this.controller.emit("device.metricUpdated", this.id, name, value);
 };
 
+VirtualDevice.prototype.setVDevObject = function (object) {
+    this.updateTime = Math.floor(new Date().getTime() / 1000);
+    this.changedParams = [];
+    Object.keys(object).forEach(function (prop) {
+        if (this.hasOwnProperty(prop) && prop !== 'id') {
+            this[prop] = object[prop];
+            this.changedParams.push(prop);
+        }
+    });
+    this.controller.saveConfig();
+    this.controller.emit("device.objectUpdate", this.id, this.changedParams);
+};
+
 VirtualDevice.prototype.getMetricValue = function (name) {
     return this.metrics[name];
 };

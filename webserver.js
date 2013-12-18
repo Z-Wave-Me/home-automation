@@ -299,15 +299,27 @@ ZAutomationAPIWebRequest.prototype.getVDevFunc = function (vDevId) {
 }
 
 ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
-    var self = this;
+    var self = this, reqObj, reply = {
+        error: null,
+        data: null
+    };
+
+    if (self.req.method === 'PUT') {
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
+    }
 
     return function () {
-        var reply = {
-            error: null,
-            data: {
-                meta: self._vdevMetaOnly(controller.devices[vDevId]),
-                info: controller.getVdevInfo(vDevId)
-            }
+        if (controller.devices.hasOwnProperty(vDevId)) {
+            self.res.status = 200;
+            controller.devices[vDevId].setVDevObject(reqObj);
+            reply.data = controller.getVdevInfo(vDevId);
+        } else {
+            self.res.status = 404;
+            reply.error = "Device " + vDevId + " doesn't exist";
         }
 
         this.res.status = 200;

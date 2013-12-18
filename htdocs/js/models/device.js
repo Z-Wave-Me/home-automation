@@ -19,7 +19,7 @@ define([
         },
 
         url: function () {
-            var url = '';
+            var url = !this.isNew() ? this.get('id') : '';
             return url;
         },
 
@@ -34,6 +34,9 @@ define([
             this.bind('error', function (model, err) {
                 log("ERROR: " + err);
             });
+        },
+        parse: function (response) {
+            return response.data;
         }
     });
 

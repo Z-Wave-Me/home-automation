@@ -32,6 +32,10 @@ define([
             this.bind('error', function (model, err) {
                 log("ERROR: " + err);
             });
+        },
+
+        parse: function (response) {
+            return response.data;
         }
     });
 
