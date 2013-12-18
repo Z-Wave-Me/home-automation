@@ -53,7 +53,7 @@ VirtualDevice.prototype.setVDevObject = function (object) {
     this.updateTime = Math.floor(new Date().getTime() / 1000);
 
     Object.keys(object).forEach(function (prop) {
-        if (this.hasOwnProperty(prop) && excludeProp.indexOf(prop) === -1) {
+        if (info.hasOwnProperty(prop) && excludeProp.indexOf(prop) === -1) {
             info[prop] = object[prop];
             changedParams.push(prop);
         }
