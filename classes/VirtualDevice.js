@@ -49,12 +49,10 @@ VirtualDevice.prototype.setVDevObject = function (object) {
     var excludeProp = ['deviceType', 'updateTime', 'id'];
     this.updateTime = Math.floor(new Date().getTime() / 1000);
     this.changedParams = [];
-    console.log(JSON.stringify(object));
     Object.keys(object).forEach(function (prop) {
-        if (this.hasOwnProperty(prop) && excludeProp.indexOf(prop).length === -1) {
+        if (this.hasOwnProperty(prop) && excludeProp.indexOf(prop) === -1) {
             this[prop] = object[prop];
             this.changedParams.push(prop);
-            console.log(prop);
         }
     });
     this.controller.saveConfig();
