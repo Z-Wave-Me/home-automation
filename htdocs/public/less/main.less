@@ -170,15 +170,30 @@ nav {
 }
 
 .header-box-sub-nav {
+  text-align: center;
   .header-box;
   background-color: #eee;
   height: 36px;
   nav {
-    width: 19%;
-    float: none;
-    margin: 0 auto;
     height: 36px;
+    display: inline-block;
+    text-align: center;
+    width: auto;
+    float: none;
+    .menu {
+      width: 100%;
+      .room-item-nav {
+        text-overflow: clip;
+        overflow: hidden;
+        width: 100%;
+        float: left;
+        display: block;
+      }
+    }
     li {
+      display: block;
+      float: left;
+      margin: 0 5px;
       a {
         color: @dark-green;
         font-weight: bold;
@@ -220,10 +235,13 @@ nav {
 }
 
 .header-box-sub-nav-rooms {
+  text-align: center;
   .header-box-sub-nav;
   background-color: #c3c9cc;
+  text-align: center;
   height: 26px;
   nav {
+    float: none;
     height: 26px;
     li {
       a {

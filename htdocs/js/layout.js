@@ -116,16 +116,16 @@ define([
             var that = this,
                 $template;
 
-            $template = $('<li><a data-id="' + location.get('id') + '" class="room-item" href="#">' + location.get('title') + '</a></li>');
+            $template = $('<li><a data-id="' + location.get('id') + '" class="room-item-nav" href="/">' + location.get('title') + '</a></li>');
 
             that.listenTo(location, 'destroy', function () {
                 $template.off().hide('fast');
             });
 
-            $template.find('.room-item').on('click', function (e) {
+            $template.find('.room-item-nav').on('click', function (e) {
                 e.preventDefault();
-                that.$header.find('.room-item').removeClass('active');
-                $template.find('.room-item').addClass('active');
+                that.$header.find('.room-item-nav').removeClass('active');
+                $template.find('.room-item-nav').addClass('active');
                 that.Locations.activeRoom = location.id;
                 that.Locations.trigger('filter');
             });

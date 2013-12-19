@@ -7,8 +7,11 @@
             <div class="icon-base <%= metrics.iconBase %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
         </div>
         <div class="content"><%= metrics.title %>
-            <span class="temperature-field">
-                <nobr><%= Math.round(metrics.level) %> <%= metrics.scaleTitle %></nobr>
+            <span class="value-field">
+                <nobr class="probe-value"><%= Math.round(metrics.level) %> <%= metrics.scaleTitle %></nobr>
+                <div class="preference-button">
+
+                </div>
             </span>
         </div>
     </div>

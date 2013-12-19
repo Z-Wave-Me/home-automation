@@ -11,11 +11,12 @@ Copyright: (c) ZWave.Me, 2013
 // --- ZAutomationWebRequest
 // ----------------------------------------------------------------------------
 
-function ZAutomationWebRequest () {
+function ZAutomationWebRequest() {
     this.req = {};
     this.res = {
         status: 501,
         headers: {
+            "api-version": "1.0.1",
             "Content-Type": "text/plain; charset=utf-8"
         },
         body: null
@@ -238,7 +239,7 @@ ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificatio
         removeNotification;
 
     return function () {
-        removeNotification = that.req.query.hasOwnProperty("removeNotication") ? that.req.query.removeNotification : false;
+        removeNotification = that.req.query.hasOwnProperty("removeNotification") ? that.req.query.removeNotification : false;
         if (that.req.method === 'PUT' || that.req.method === 'POST') {
             try {
                 reqObj = JSON.parse(this.req.body);
@@ -455,8 +456,8 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
         if (!!id) {
             controller.removeLocation(id, function (result) {
                 if (result) {
-                    that.res.status = 200;
-                    reply.data = "OK";
+                    that.res.status = 204;
+                    reply = null;
                 } else {
                     that.res.status = 404;
                     reply.error = "Location " + id + " doesn't exist";
