@@ -213,6 +213,9 @@ define([
                     model.set({counter: that.Devices.where({location: that.activeRoom}).length});
                 }, dragBetween: true, placeHolderTemplate: "<li></li>" });
 
+                that.$topmenu.find('li').removeClass('active');
+                that.$topmenu.find('li:first').addClass('active');
+
                 if ($('.room').exists()) {
                     $('.room').hide('fast', function () {
                         that.$contentContainer.html($template);
