@@ -56,6 +56,7 @@ define([
             });
 
             that.$header.find('.events-menu').on('click', function (e) {
+                e.preventDefault();
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
@@ -64,8 +65,6 @@ define([
                 that.Locations.activeRoom = 'all';
                 that.Locations.trigger('filter');
             });
-
-
 
             that.Notifications = window.App.Notifications;
             that.listenTo(that.Notifications, 'all', function () {

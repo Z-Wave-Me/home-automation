@@ -65,11 +65,11 @@ define([
             $template = $(_.template(template, json));
 
             that.listenTo(device, 'show', function () {
-                $template.slideDown('fast');
+                $template.removeClass('show').addClass('show').slideDown('fast');
             });
 
             that.listenTo(device, 'hide', function () {
-                $template.slideUp('fast');
+                $template.removeClass('show').slideUp('fast');
             });
 
             if (!that.isExistWidget(device.get('id'))) {

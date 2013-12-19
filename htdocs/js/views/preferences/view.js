@@ -102,6 +102,14 @@ define([
             that.$buttonContainer.find('.add-button').off().on('click', function () {
                 that.$roomsListContainer.find('li').removeClass('active');
                 $newRoomTmp = $(_.template(RoomTmp, {}));
+
+                $newRoomTmp.find('.create-button').on('keyup', function (e) {
+                    if (e.which === 13) {
+                        e.preventDefault();
+                        $newRoomTmp.find('.create-button').click();
+                    }
+                });
+
                 $newRoomTmp.find('.button-group').on('click', function (e) {
                     e.preventDefault();
                     if ($(this).hasClass('create-button')) {
@@ -161,6 +169,14 @@ define([
                 that.$roomsListContainer.find('li').removeClass('active');
                 $location.addClass('active');
                 $template = $(_.template(RoomTmp, json));
+
+
+                $template.on('keyup', function (e) {
+                    if (e.which === 13) {
+                        e.preventDefault();
+                        $template.find('.save-button').click();
+                    }
+                });
 
                 that.listenTo(model, 'change:counter', function () {
                     $template.find('.get-devices').text(model.get('counter') + ' devices');

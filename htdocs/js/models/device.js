@@ -35,6 +35,10 @@ define([
                 log("ERROR: " + err);
             });
         },
+        parse: function (response, xhr) {
+            return response.data || response;
+        }
+
     });
 
     return Device;

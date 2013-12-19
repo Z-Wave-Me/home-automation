@@ -17,7 +17,7 @@
             <label class="control-label">Devices:</label>
             <div class="input-group">
                 <% if (typeof countCurrent  !== 'undefined') { %>
-                    <button class="button-group get-devices"><% if (countCurrent === 1) { print(countCurrent + ' device'); } else { print(countCurrent + ' devices'); }  %></button>
+                    <button class="button-group get-devices"><%= countCurrent %> devices</button>
                 <% } %>
             </div>
         </div>
@@ -29,6 +29,18 @@
         </div>
     </form>
     <form class="form-horizontal devices-tab" role="form">
+        <div class="container-devices">
+            <ul class="list-devices-column first" data-type-list="all">
+                <% if (typeof devicesAvalaible  !== 'undefined') { %>
+                    <% _.each(devicesAvalaible, function (device) { %>
+                        <li class="device" title="<%= device.metrics.title %>" data-id="<%= device.id %>">
+                            <span class="icon-device <%= device.metrics.iconBase %>"></span>
+                            <span class="title-device"><%= device.metrics.title %></span>
+                        </li>
+                    <% }); %>
+                <% } %>
+            </ul>
+        </div>
         <div class="current-devices">
             <ul class="list-devices-column" data-type-list="current">
                 <% if (typeof devicesCurrent  !== 'undefined') { %>
@@ -41,18 +53,5 @@
                 <% } %>
             </ul>
         </div>
-        <div class="container-devices">
-            <ul class="list-devices-column last" data-type-list="all">
-                <% if (typeof devicesAvalaible  !== 'undefined') { %>
-                    <% _.each(devicesAvalaible, function (device) { %>
-                        <li class="device" title="<%= device.metrics.title %>" data-id="<%= device.id %>">
-                            <span class="icon-device <%= device.metrics.iconBase %>"></span>
-                            <span class="title-device"><%= device.metrics.title %></span>
-                        </li>
-                    <% }); %>
-                <% } %>
-            </ul>
-        </div>
-
     </form>
 </div>
