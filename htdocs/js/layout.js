@@ -18,14 +18,15 @@ define([
         initialize: function () {
             var that = this, $ok, $warning, $modal, fillScreenOpacity,
                 forbidClose, relX, relY, position;
-            _.bindAll(this, 'render', 'clear', 'update', 'addEventToList');
+            _.bindAll(this, 'render', 'clear', 'update', 'addEventToList', 'addRoomToFilter');
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
 
             $ok = that.$header.find('.events-ok');
             $warning = that.$header.find('.events-warning');
-            that.Notifications = App.Notifications;
+            that.Notifications = window.App.Notifications;
+            that.Locations = window.App.Locations;
             that.deleted = [];
 
             that.listenTo(that.Notifications, 'add', function (model) {
@@ -58,6 +59,14 @@ define([
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
+            that.$header.find('.all-rooms-visible').on('click', function (e) {
+                e.preventDefault();
+                that.Locations.activeRoom = 'all';
+                that.Locations.trigger('filter');
+            });
+
+
+
             that.Notifications = window.App.Notifications;
             that.listenTo(that.Notifications, 'all', function () {
                 if (that.Notifications.length) {
@@ -69,8 +78,13 @@ define([
                     $warning.addClass('hidden');
                 }
             });
+
             that.PreferencesView = new PreferencesView({el: that.$header[0]});
             that.PreferencesView.render();
+
+            that.listenTo(that.Locations, 'add', function (location) {
+                that.addRoomToFilter(location);
+            });
         },
 
         addEventToList: function (model) {
@@ -98,6 +112,27 @@ define([
             }
         },
 
+        addRoomToFilter: function (location) {
+            var that = this,
+                $template;
+
+            $template = $('<li><a data-id="' + location.get('id') + '" class="room-item" href="#">' + location.get('title') + '</a></li>');
+
+            that.listenTo(location, 'destroy', function () {
+                $template.off().hide('fast');
+            });
+
+            $template.find('.room-item').on('click', function (e) {
+                e.preventDefault();
+                that.$header.find('.room-item').removeClass('active');
+                $template.find('.room-item').addClass('active');
+                that.Locations.activeRoom = location.id;
+                that.Locations.trigger('filter');
+            });
+
+            that.$header.find('.menu-room-filter').append($template);
+        },
+
         render: function () {
             var that = this;
             this.$el.html(that.$header).append(that.$main).append(that.$footer);
@@ -106,11 +141,11 @@ define([
             var that = this,
                 hash = window.location.hash.match(/(?:[a-z]+){2}/) ? window.location.hash.match(/(?:[a-z]+){2}/)[0] : '';
             if (hash === 'widgets') {
-                that.$header.find('.header-box-sub-nav-rooms').removeClass('hidden');
-                that.$header.find('.header-box-sub-nav').removeClass('hidden');
+                that.$header.find('.header-box-sub-nav-rooms').removeClass('hidden').hide().slideDown('fast');
+                that.$header.find('.header-box-sub-nav').removeClass('hidden').hide().slideDown('fast');
             } else {
-                that.$header.find('.header-box-sub-nav-rooms').addClass('hidden');
-                that.$header.find(".header-box-sub-nav").addClass('hidden');
+                that.$header.find('.header-box-sub-nav-rooms').hide().slideUp('fast');
+                that.$header.find(".header-box-sub-nav").hide().slideUp('fast');
             }
         },
         clear: function () {

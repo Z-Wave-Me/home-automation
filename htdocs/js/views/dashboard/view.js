@@ -11,7 +11,7 @@ define([
 ], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
     var DashboardView = Backbone.View.extend({
-        el: '.widgets',
+        el: '#devices-container',
         initialize: function () {
             _.bindAll(this, 'render', 'isExistWidget', 'renderWidget');
             var that = this;
@@ -25,6 +25,12 @@ define([
         },
         render: function () {
             var that = this;
+            if (that.Devices.length > 0) {
+                that.$el.empty();
+                that.Devices.each(function (device) {
+                    that.renderWidget(device);
+                });
+            }
         },
         renderWidget: function (model) {
             var that = this;
@@ -175,7 +181,6 @@ define([
         isExistWidget: function (id) {
             return $('div[data-widget-id="' + id + '"]').exists();
         }
-
     });
 
     return DashboardView;
