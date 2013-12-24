@@ -12,7 +12,6 @@ Copyright: (c) ZWave.Me, 2013
 // ----------------------------------------------------------------------------
 
 function ZAutomationWebRequest() {
-    var self = this;
     this.req = {};
     this.res = {
         status: 501,
@@ -23,9 +22,7 @@ function ZAutomationWebRequest() {
         body: null
     };
     this.router = new Router();
-    this.router.route('GET', '/v1/locations/:id', function (id) {
-        self.listLocations(id);
-    });
+    this.router.route('GET', '/posts/:postId/post/:id', function(id) { console.log(id); });
 }
 
 ZAutomationWebRequest.prototype.handlerFunc = function () {
@@ -65,9 +62,8 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     this.req.body = request.body || "";
 
     // Get and run request processor func
-    //var requestProcessorFunc = this.dispatchRequest(request.method, url);
-    this.router.navigate(request.method, url);
-    //requestProcessorFunc.call(this);
+    var requestProcessorFunc = this.dispatchRequest(request.method, url);
+    requestProcessorFunc.call(this);
 
     // Log request reply
     var bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
@@ -902,7 +898,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 handlerFunc = this.removeLocation(locationId);
             } else if ("PUT" === method && locationId) {
                 handlerFunc = this.updateLocation(locationId);
-            } else if ("GETs" === method && locationId) {
+            } else if ("GET" === method && locationId) {
                 handlerFunc = this.listLocations(locationId);
             }
         }
@@ -1008,7 +1004,6 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 
-    this.router.navigate(method, url);
     // --- Proceed to checkout =)
     return handlerFunc;
 };
