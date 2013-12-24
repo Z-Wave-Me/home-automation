@@ -8,10 +8,10 @@ define([
         // model reference
         model: NoticeM,
         methodToURL: {
-            'read': '/notifications/',
-            'create': '/notifications/',
-            'update': '/notifications/',
-            'delete': '/notifications/'
+            'read': '/notifications',
+            'create': '/notifications',
+            'update': '/notifications',
+            'delete': '/notifications'
         },
 
         url: function () {

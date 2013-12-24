@@ -8,10 +8,10 @@ define([
         // model reference
         model: LocationM,
         methodToURL: {
-            'read': '/locations/',
-            'create': '/locations/',
-            'update': '/locations/',
-            'delete': '/locations/'
+            'read': '/locations',
+            'create': '/locations',
+            'update': '/locations',
+            'delete': '/locations'
         },
 
         url: function () {

@@ -322,10 +322,11 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
             reply.error = "Device " + vDevId + " doesn't exist";
         }
 
-        self.res.status = 200;
-        self.responseHeader("Content-Type", "application/json; charset=utf-8");
-        self.res.body = JSON.stringify(reply);
+
     }
+
+    self.responseHeader("Content-Type", "application/json; charset=utf-8");
+    self.res.body = JSON.stringify(reply);
 }
 
 ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, commandId) {

@@ -8,10 +8,10 @@ define([
         // model reference
         model: DeviceM,
         methodToURL: {
-            'read': '/devices/',
-            'create': '/devices/',
-            'update': '/devices/',
-            'delete': '/devices/'
+            'read': '/devices',
+            'create': '/devices',
+            'update': '/devices',
+            'delete': '/devices'
         },
 
         url: function () {
