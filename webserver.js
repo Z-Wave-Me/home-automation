@@ -313,15 +313,15 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
         }
 
         if (controller.devices.hasOwnProperty(vDevId)) {
-            self.res.status = 200;
+            this.res.status = 200;
             controller.devices[vDevId].setVDevObject(vDevId, reqObj);
             reply.data = controller.getVdevInfo(vDevId);
         } else {
-            self.res.status = 404;
+            this.res.status = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
         }
-        self.responseHeader("Content-Type", "application/json; charset=utf-8");
-        self.res.body = JSON.stringify(reply);
+        this.responseHeader("Content-Type", "application/json; charset=utf-8");
+        this.res.body = JSON.stringify(reply);
     }
 }
 

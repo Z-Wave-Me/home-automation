@@ -413,7 +413,7 @@ AutomationController.prototype.updateLocation = function (id, title, callback) {
     });
     if (locations.length > 0) {
         this.locations[this.locations.indexOf(locations[0])].title = title;
-        callback(locations);
+        callback(this.locations[this.locations.indexOf(locations[0])]);
         this.saveConfig();
         this.emit('location.updated', id);
     } else {
