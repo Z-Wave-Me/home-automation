@@ -22,7 +22,7 @@ function ZAutomationWebRequest() {
         body: null
     };
     this.router = new Router();
-    this.router.route('GET', '/posts/:postId/post/:id', function (id) { console.log(id); });
+    this.router.route('GET', '/v1/locations/:id', this.listLocations);
 }
 
 ZAutomationWebRequest.prototype.handlerFunc = function () {
@@ -898,7 +898,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 handlerFunc = this.removeLocation(locationId);
             } else if ("PUT" === method && locationId) {
                 handlerFunc = this.updateLocation(locationId);
-            } else if ("GET" === method && locationId) {
+            } else if ("GETs" === method && locationId) {
                 handlerFunc = this.listLocations(locationId);
             }
         }
