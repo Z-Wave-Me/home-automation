@@ -12,6 +12,7 @@ Copyright: (c) ZWave.Me, 2013
 // ----------------------------------------------------------------------------
 
 function ZAutomationWebRequest() {
+    var self = this;
     this.req = {};
     this.res = {
         status: 501,
@@ -23,7 +24,7 @@ function ZAutomationWebRequest() {
     };
     this.router = new Router();
     this.router.route('GET', '/v1/locations/:id', function (id) {
-        this.listLocations(id);
+        self.listLocations(id);
     });
 }
 
