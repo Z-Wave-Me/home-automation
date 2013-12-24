@@ -22,7 +22,9 @@ function ZAutomationWebRequest() {
         body: null
     };
     this.router = new Router();
-    this.router.route('GET', '/v1/locations/:id', this.listLocations);
+    this.router.route('GET', '/v1/locations/:id', function (id) {
+        this.listLocations(id);
+    });
 }
 
 ZAutomationWebRequest.prototype.handlerFunc = function () {
