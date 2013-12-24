@@ -21,6 +21,8 @@ function ZAutomationWebRequest() {
         },
         body: null
     };
+    this.router = new Router();
+    this.router.route('GET', '/posts/:postId/post/:id', function (id) { console.log(id); });
 }
 
 ZAutomationWebRequest.prototype.handlerFunc = function () {
@@ -1002,6 +1004,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 
+    this.router.navigate(method, url);
     // --- Proceed to checkout =)
     return handlerFunc;
 };

@@ -82,6 +82,10 @@ if (!config) {
     executeFile("constants.js");
     executeFile(config.libPath + "/eventemitter2.js");
 
+    //--- Load router
+
+    executeFile(config.libPath + "/Router.js");
+
     //--- Load Automation subsystem classes
 
     executeFile(config.classesPath+"/AutomationController.js");
