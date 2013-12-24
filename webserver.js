@@ -312,7 +312,6 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
             reply.error = ex.message;
         }
 
-
         if (controller.devices.hasOwnProperty(vDevId)) {
             self.res.status = 200;
             controller.devices[vDevId].setVDevObject(vDevId, reqObj);
@@ -321,12 +320,9 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
             self.res.status = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
         }
-
-
+        self.responseHeader("Content-Type", "application/json; charset=utf-8");
+        self.res.body = JSON.stringify(reply);
     }
-
-    self.responseHeader("Content-Type", "application/json; charset=utf-8");
-    self.res.body = JSON.stringify(reply);
 }
 
 ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, commandId) {
@@ -475,7 +471,6 @@ ZAutomationAPIWebRequest.prototype.removeLocation = function (locationId) {
 };
 
 ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
-    var that = this;
 
     return function () {
         var id,
@@ -486,12 +481,12 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
             },
             reqObj;
 
-        if (that.req.method === 'GET') {
-            id = parseInt(that.req.query.id);
-            title = that.req.query.title;
-        } else if (that.req.method === 'PUT') {
+        if (this.req.method === 'GET') {
+            id = parseInt(this.req.query.id);
+            title = this.req.query.title;
+        } else if (this.req.method === 'PUT') {
             try {
-                reqObj = JSON.parse(that.req.body);
+                reqObj = JSON.parse(this.req.body);
             } catch (ex) {
                 reply.error = ex.message;
             }
@@ -500,24 +495,24 @@ ZAutomationAPIWebRequest.prototype.updateLocation = function (locationId) {
         }
 
         if (!!id && !!title && title.length > 0) {
-            that.res.status = 200;
+            this.res.status = 200;
             controller.updateLocation(id, title, function (data) {
                 if (data) {
-                    that.res.status = 200;
+                    this.res.status = 200;
                     reply.data = data
                     reply.status = "OK";
                 } else {
-                    that.res.status = 404;
+                    this.res.status = 404;
                     reply.error = "Location " + id + " doesn't exist";
                 }
             });
         } else {
-            that.res.status = 500;
+            this.res.status = 500;
             reply.error = "Arguments id & title are required";
         }
 
-        that.responseHeader("Content-Type", "application/json; charset=utf-8");
-        that.res.body = JSON.stringify(reply);
+        this.responseHeader("Content-Type", "application/json; charset=utf-8");
+        this.res.body = JSON.stringify(reply);
     }
 };
 
@@ -798,7 +793,7 @@ ZAutomationAPIWebRequest.prototype.deleteInstanceFunc = function (instanceId) {
         this.res.status = 500;
         this.responseHeader("Content-Type", "application/json; charset=utf-8");
 
-        reply = {
+        var reply = {
             error: null,
             data: null
         }
@@ -808,7 +803,8 @@ ZAutomationAPIWebRequest.prototype.deleteInstanceFunc = function (instanceId) {
             this.res.status = 404;
             reply.error = "Instance " + instanceId + " not found";
         } else {
-            this.res.status = 202;
+            this.res.status = 204;
+            reply = null;
             controller.deleteInstance(instanceId);
         }
 
