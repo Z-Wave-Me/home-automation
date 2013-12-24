@@ -320,8 +320,8 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
             this.res.status = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
         }
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
-        this.res.body = JSON.stringify(reply);
+        self.responseHeader("Content-Type", "application/json; charset=utf-8");
+        self.res.body = JSON.stringify(reply);
     }
 }
 
@@ -952,7 +952,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 
-    // --- Get VDev meta
+    // --- Get and Set VDev meta
     if (handlerFunc === this.NotFound) {
         re = /\/v1\/devices\/(.+)/;
         reTest = re.exec(url);
