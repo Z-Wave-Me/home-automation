@@ -823,27 +823,27 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     if ("GET" === method && "/status" == url) {
         handlerFunc = this.statusReport;
-    } else if ("GET" === method && "/notifications/" == url) {
+    } else if ("GET" === method && "/v1/notifications/" == url) {
         handlerFunc = this.exposeNotifications();
-    } else if (("GET" === method && "/notifications/markRead" == url)  || ("PUT" === method && "/notifications/" == url)) {
+    } else if (("GET" === method && "/v1/notifications/markRead" == url)  || ("PUT" === method && "/v1/notifications/" == url)) {
         handlerFunc = this.markNotificationsRead();
-    } else if ("GET" === method && "/devices/" == url) {
+    } else if ("GET" === method && "/v1/devices/" == url) {
         handlerFunc = this.listDevices;
-    } else if ("GET" === method && "/restart" == url) {
+    } else if ("GET" === method && "/v1/restart" == url) {
         handlerFunc = this.restartController;
-    } else if ("GET" === method && "/locations/" == url) {
+    } else if ("GET" === method && "/v1/locations/" == url) {
         handlerFunc = this.listLocations();
-    } else if (("GET" === method && "/locations/add" == url) || ("POST" === method && "/locations/" == url)) {
+    } else if (("GET" === method && "/v1/locations/add" == url) || ("POST" === method && "/v1/locations/" == url)) {
         handlerFunc = this.addLocation();
-    } else if (("GET" === method && "/locations/remove" == url) || ("DELETE" === method && "/locations/" == url)) {
+    } else if (("GET" === method && "/v1/locations/remove" == url) || ("DELETE" === method && "/v1/locations/" == url)) {
         handlerFunc = this.removeLocation();
-    } else if (("GET" === method && "/locations/update" == url) || ("PUT" === method && "/locations/" == url)) {
+    } else if (("GET" === method && "/v1/locations/update" == url) || ("PUT" === method && "/v1/locations/" == url)) {
         handlerFunc = this.updateLocation();
-    } else if ("GET" === method && "/modules/" == url) {
+    } else if ("GET" === method && "/v1/modules/" == url) {
         handlerFunc = this.listModules;
-    } else if ("GET" === method && "/instances/" == url) {
+    } else if ("GET" === method && "/v1/instances/" == url) {
         handlerFunc = this.listInstances;
-    } else if (("POST" === method || "PUT" === method) && "/instances/" == url) {
+    } else if (("POST" === method || "PUT" === method) && "/v1/instances/" == url) {
         handlerFunc = this.createInstance;
     } else if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
@@ -854,7 +854,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Perform vDev command
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)\/command\/(.+)/;
+        re = /\/v1\/devices\/(.+)\/command\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -867,7 +867,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Set vDev location
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)\/setLocation/;
+        re = /\/v1\/devices\/(.+)\/setLocation/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -879,7 +879,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Remove vDev location
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)\/removeLocation/;
+        re = /\/v1\/devices\/(.+)\/removeLocation/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -891,7 +891,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Remove and Update location
     if (handlerFunc === this.NotFound) {
-        re = /\/locations\/(.+)/;
+        re = /\/v1\/locations\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var locationId = parseInt(reTest[1]);
@@ -907,7 +907,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Remove and Update notifications
     if (handlerFunc === this.NotFound) {
-        re = /\/notifications\/(.+)/;
+        re = /\/v1\/notifications\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var notificationId = parseInt(reTest[1]);
@@ -921,7 +921,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Set vDev title
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)\/setTitle/;
+        re = /\/v1\/devices\/(.+)\/setTitle/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -933,7 +933,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Add tag to the vDev
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)\/addTag/;
+        re = /\/v1\/devices\/(.+)\/addTag/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -945,7 +945,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Remove tag from the vDev
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)\/removeTag/;
+        re = /\/v1\/devices\/(.+)\/removeTag/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -957,7 +957,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Get VDev meta
     if (handlerFunc === this.NotFound) {
-        re = /\/devices\/(.+)/;
+        re = /\/v1\/devices\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var vDevId = reTest[1];
@@ -971,7 +971,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Get instance config
     if (handlerFunc === this.NotFound) {
-        re = /\/instances\/(.+)/;
+        re = /\/v1\/instances\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var instanceId = reTest[1];
@@ -983,7 +983,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Update instance config
     if (handlerFunc === this.NotFound) {
-        re = /\/instances\/(.+)/;
+        re = /\/v1\/instances\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var instanceId = reTest[1];
@@ -995,7 +995,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     // --- Delete instance
     if (handlerFunc === this.NotFound) {
-        re = /\/instances\/(.+)/;
+        re = /\/v1\/instances\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
             var instanceId = reTest[1];

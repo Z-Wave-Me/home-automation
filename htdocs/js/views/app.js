@@ -85,7 +85,7 @@ define([
             var that = this;
             $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
                 // Your server goes below
-                var apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api" + options.url;
+                var apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api/v1" + options.url;
 
                 options.url = apiUrl;
                 options.crossDomain = {
