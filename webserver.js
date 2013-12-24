@@ -65,8 +65,9 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     this.req.body = request.body || "";
 
     // Get and run request processor func
-    var requestProcessorFunc = this.dispatchRequest(request.method, url);
-    requestProcessorFunc.call(this);
+    //var requestProcessorFunc = this.dispatchRequest(request.method, url);
+    this.router.navigate(request.method, url);
+    //requestProcessorFunc.call(this);
 
     // Log request reply
     var bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
