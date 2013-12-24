@@ -823,27 +823,27 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     if ("GET" === method && "/status" == url) {
         handlerFunc = this.statusReport;
-    } else if ("GET" === method && "/v1/notifications/" == url) {
+    } else if ("GET" === method && "/v1/notifications" == url) {
         handlerFunc = this.exposeNotifications();
-    } else if (("GET" === method && "/v1/notifications/markRead" == url)  || ("PUT" === method && "/v1/notifications/" == url)) {
+    } else if ("GET" === method && "/v1/notifications/markRead" == url) {
         handlerFunc = this.markNotificationsRead();
-    } else if ("GET" === method && "/v1/devices/" == url) {
+    } else if ("GET" === method && "/v1/devices" == url) {
         handlerFunc = this.listDevices;
     } else if ("GET" === method && "/v1/restart" == url) {
         handlerFunc = this.restartController;
-    } else if ("GET" === method && "/v1/locations/" == url) {
+    } else if ("GET" === method && "/v1/locations" == url) {
         handlerFunc = this.listLocations();
-    } else if (("GET" === method && "/v1/locations/add" == url) || ("POST" === method && "/v1/locations/" == url)) {
+    } else if ("GET" === method && "/v1/locations/add" == url) {
         handlerFunc = this.addLocation();
-    } else if (("GET" === method && "/v1/locations/remove" == url) || ("DELETE" === method && "/v1/locations/" == url)) {
+    } else if ("GET" === method && "/v1/locations/remove" == url) {
         handlerFunc = this.removeLocation();
-    } else if (("GET" === method && "/v1/locations/update" == url) || ("PUT" === method && "/v1/locations/" == url)) {
+    } else if ("GET" === method && "/v1/locations/update" == url) {
         handlerFunc = this.updateLocation();
-    } else if ("GET" === method && "/v1/modules/" == url) {
+    } else if ("GET" === method && "/v1/modules" == url) {
         handlerFunc = this.listModules;
-    } else if ("GET" === method && "/v1/instances/" == url) {
+    } else if ("GET" === method && "/v1/instances" == url) {
         handlerFunc = this.listInstances;
-    } else if (("POST" === method || "PUT" === method) && "/v1/instances/" == url) {
+    } else if (("POST" === method || "PUT" === method) && "/v1/instances" == url) {
         handlerFunc = this.createInstance;
     } else if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
