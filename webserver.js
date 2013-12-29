@@ -41,11 +41,57 @@ ZAutomationWebRequest.prototype.responseHeader = function (name, value) {
     }
 }
 
-ZAutomationWebRequest.prototype.initResponse = function (code, contentType) {
-    this.res.status = code;
+ZAutomationWebRequest.prototype.initResponse = function (response) {
+    var that = this,
+        reply,
+        version = "1.0.1",
+        httpCode = {
+            200: "200 OK",
+            201: "201 Created",
+            204: "204 No Content",
+            304: "304 Not Modified",
+            400: "400 Bad Request",
+            401: "401 Unauthorized",
+            403: "403 Forbidden",
+            404: "404 Not Found",
+            405: "405 Method Not Allowed",
+            501: "501 Not Implemented",
+            500: "500 Internal server error"
+        };
 
-    if (!!contentType)
-        this.responseHeader("Content-Type", contentType);
+    response.data = response.data || null;
+    response.error = response.error || null;
+    response.code = response.code || null;
+    response.contentType = response.contentType || "application/json; charset=utf-8";
+    response.message = response.message || null;
+
+    if (that.req.query.hasOwnProperty('suppress_response_code')) {
+        if (String(that.req.query.suppress_response_code) === 'true') {
+            response.code = '200';
+        }
+    } else {
+        if (!!response.data && that.req.method !== 'DELETE') {
+            response.code = response.code || 200;
+        } else {
+            response.code = response.code || 204;
+            response.data = '204 No Content';
+        }
+    }
+
+    reply = {
+        data: response.data,
+        code: httpCode[response.code],
+        message: response.message,
+        error: response.error
+    };
+
+    that.res = {
+        body : JSON.stringify(reply),
+        headers: {
+            "Content-Type": response.contentType,
+            "API-version": version
+        }
+    };
 }
 
 ZAutomationWebRequest.prototype.dispatchRequest = function (method, url) {
@@ -169,9 +215,9 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         }
     });
 
-    this.res.status = 200;
-    this.responseHeader("Content-Type", "application/json; charset=utf-8");
-    this.res.body = JSON.stringify(reply);
+    this.initResponse({
+       data: JSON.stringify(reply)
+    });
 };
 
 ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationId) {
@@ -219,6 +265,9 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
             } else {
                 reply.error = "Notification " + notificationId + " doesn't exist";
                 that.res.status = 404;
+                that.initResponse({
+                    code: 404,
+                });
             }
         } else {
             reply.error = "Argument id is required";
@@ -392,11 +441,13 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             data: null
         },
         reqObj,
+        icon,
         that = this;
 
     return function () {
         if (that.req.method === 'GET') {
-            title = that.req.query.title;
+            title = title;
+            icon = that.req.query.hasOwnProperty('icon') ? that.req.query.icon : null;
         } else if (that.req.method === 'POST') { // POST
             try {
                 reqObj = JSON.parse(that.req.body);
@@ -405,10 +456,11 @@ ZAutomationAPIWebRequest.prototype.addLocation = function () {
             }
 
             title = reqObj.title;
+            icon = reqObj.hasOwnProperty('icon') ? reqObj.icon : null;
         }
 
         if (!!title) {
-            controller.addLocation(title, function (data) {
+            controller.addLocation(title, icon, function (data) {
                 if (data) {
                     that.res.status = that.req.method === 'POST' ? 201 : 200;
                     reply.data = data;

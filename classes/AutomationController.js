@@ -361,7 +361,7 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
     this.saveNotifications();
 };
 
-AutomationController.prototype.addLocation = function (title, callback) {
+AutomationController.prototype.addLocation = function (title, icon, callback) {
     var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
         return location.id === id;
@@ -372,7 +372,8 @@ AutomationController.prototype.addLocation = function (title, callback) {
     } else {
         var location = {
             id: id,
-            title: title
+            title: title,
+            icon: icon
         };
         this.locations.push(location);
         callback(location);
