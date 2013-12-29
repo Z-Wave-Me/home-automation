@@ -86,6 +86,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
     };
 
     that.res = {
+        status: response.code,
         body : JSON.stringify(reply),
         headers: {
             "Content-Type": response.contentType,
