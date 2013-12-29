@@ -102,17 +102,19 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
             if (Array.isArray(response.data)) {
                 data = [];
                 collection.forEach(function (model) {
+                    object = {};
                     Object.keys(model).forEach(function (key) {
                         if (fields.indexOf(key)) {
-                            object[key] = response.data.key;
+                            object[key] = model[key];
                         }
                     });
+                    data.push(object);
                 });
-                data.push(object);
-                object = {};
+
             } else {
                 data = {};
-                Object.keys(response.data).forEach(function (key) {
+                object = {};
+                Object.keys(collection).forEach(function (key) {
                     if (fields.indexOf(key)) {
                         data[key] = response.data.key;
                     }
@@ -120,13 +122,12 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
             }
 
             if (!!mainKey) {
-                response.data[mainKey] = collection;
+                response.data[mainKey] = data;
             } else {
                 response.data = data;
             }
         }
     }
-
 
     reply = {
         data: response.data,
