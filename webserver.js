@@ -45,6 +45,9 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
     var that = this,
         reply,
         version = "1.0.1",
+        fields,
+        object = {},
+        data = [],
         httpCode = {
             200: "200 OK",
             201: "201 Created",
@@ -65,6 +68,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
     response.contentType = response.contentType || "application/json; charset=utf-8";
     response.message = response.message || null;
 
+    // code
     if (that.req.query.hasOwnProperty('suppress_response_code')) {
         if (String(that.req.query.suppress_response_code) === 'true') {
             response.code = '200';
@@ -77,6 +81,31 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
             response.data = '204 No Content';
         }
     }
+
+    // field
+    if (!!response.data && that.req.query.hasOwnProperty('fields')) {
+        fields = that.req.query.fields.split(',');
+        if (Array.isArray(response.data)) {
+            response.data.forEach(function (model) {
+                Object.keys(model).forEach(function (key) {
+                    if (fields.indexOf(key)) {
+                        object[key] = response.data.key;
+                    }
+                });
+            });
+            data.push(object);
+            object = {};
+        } else {
+            data = {};
+            Object.keys(response.data).forEach(function (key) {
+                if (fields.indexOf(key)) {
+                    data[key] = response.data.key;
+                }
+            });
+            response.data = data;
+        }
+    }
+
 
     reply = {
         data: response.data,
