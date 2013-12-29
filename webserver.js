@@ -216,13 +216,7 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         }
     });
 
-    this.initResponse({
-        data: {
-            structureChanged: false,
-            updateTime: nowTS,
-            devices: []
-        }
-    });
+    this.initResponse(reply);
 };
 
 ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationId) {
@@ -270,9 +264,6 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function (notificationI
             } else {
                 reply.error = "Notification " + notificationId + " doesn't exist";
                 that.res.status = 404;
-                that.initResponse({
-                    code: 404,
-                });
             }
         } else {
             reply.error = "Argument id is required";
