@@ -88,40 +88,42 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
     // field
     if (!!response.data && that.req.query.hasOwnProperty('fields')) {
         fields = that.req.query.fields.split(',');
-        excludeFields = ['devices', 'notifications'];
-        mainKey = null;
-        collection = response.data;
-        excludeFields.forEach(function (field) {
-            if (response.data.hasOwnProperty(field)) {
-                mainKey = field;
-                collection = response.data[field];
-            }
-        });
-
-        if (Array.isArray(response.data)) {
-            data = [];
-            collection.forEach(function (model) {
-                Object.keys(model).forEach(function (key) {
-                    if (fields.indexOf(key)) {
-                        object[key] = response.data.key;
-                    }
-                });
-            });
-            data.push(object);
-            object = {};
-        } else {
-            data = {};
-            Object.keys(response.data).forEach(function (key) {
-                if (fields.indexOf(key)) {
-                    data[key] = response.data.key;
+        if (fields.length) {
+            excludeFields = ['devices', 'notifications'];
+            mainKey = null;
+            collection = response.data;
+            excludeFields.forEach(function (field) {
+                if (response.data.hasOwnProperty(field)) {
+                    mainKey = field;
+                    collection = response.data[field];
                 }
             });
-        }
 
-        if (!!mainKey) {
-            response.data[mainKey] = collection;
-        } else {
-            response.data = collection;
+            if (Array.isArray(response.data)) {
+                data = [];
+                collection.forEach(function (model) {
+                    Object.keys(model).forEach(function (key) {
+                        if (fields.indexOf(key)) {
+                            object[key] = response.data.key;
+                        }
+                    });
+                });
+                data.push(object);
+                object = {};
+            } else {
+                data = {};
+                Object.keys(response.data).forEach(function (key) {
+                    if (fields.indexOf(key)) {
+                        data[key] = response.data.key;
+                    }
+                });
+            }
+
+            if (!!mainKey) {
+                response.data[mainKey] = collection;
+            } else {
+                response.data = data;
+            }
         }
     }
 
