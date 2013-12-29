@@ -216,7 +216,11 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
     });
 
     this.initResponse({
-       data: JSON.stringify(reply)
+        data: {
+            structureChanged: false,
+            updateTime: nowTS,
+            devices: []
+        }
     });
 };
 
