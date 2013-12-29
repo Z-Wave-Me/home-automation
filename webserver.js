@@ -47,7 +47,10 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         version = "1.0.1",
         fields,
         object = {},
-        data = [],
+        data,
+        collection,
+        mainKey,
+        excludeFields,
         httpCode = {
             200: "200 OK",
             201: "201 Created",
@@ -85,8 +88,19 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
     // field
     if (!!response.data && that.req.query.hasOwnProperty('fields')) {
         fields = that.req.query.fields.split(',');
+        excludeFields = ['devices', 'notifications'];
+        mainKey = null;
+        collection = response.data;
+        excludeFields.forEach(function (field) {
+            if (response.data.hasOwnProperty(field)) {
+                mainKey = field;
+                collection = response.data[field];
+            }
+        });
+
         if (Array.isArray(response.data)) {
-            response.data.forEach(function (model) {
+            data = [];
+            collection.forEach(function (model) {
                 Object.keys(model).forEach(function (key) {
                     if (fields.indexOf(key)) {
                         object[key] = response.data.key;
@@ -102,7 +116,12 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
                     data[key] = response.data.key;
                 }
             });
-            response.data = data;
+        }
+
+        if (!!mainKey) {
+            response.data[mainKey] = collection;
+        } else {
+            response.data = collection;
         }
     }
 
