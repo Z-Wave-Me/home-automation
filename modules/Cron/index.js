@@ -109,7 +109,7 @@ Cron.prototype.init = function (config) {
         var curTime = {
             minute: date.getMinutes(),
             hour: date.getHours(),
-            day: date.getDate(),
+            day: date.getDate() - 1,
             weekDay: date.getDay(), // NOTE! Sunday is 0. Handle this in the UI!!!! !@#%^&
             month: date.getMonth()
         };
