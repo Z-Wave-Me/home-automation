@@ -31,6 +31,36 @@ define([
         }
     };
 
+    Apis.uploadFile = function (file, callback, progress) {
+        log('Uploading file!');
+
+        var formData = new FormData();
+        formData.append('file', file, 'file' + file.type);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "http://" + App.API.HOST + ':' + App.API.PORT + '/ZAutomation/storage', true);
+        xhr.setRequestHeader("Content-Type", "multipart/form-data");
+        xhr.onload = function (e) {
+            if (this.status === 200 || this.status === 201) {
+                callback(this);
+            } else {
+                log('Error: Status Code is not 200/201');
+            }
+        };
+        if (progress) {
+            xhr.addEventListener('progress', progress, false);
+            if (xhr.upload) {
+                xhr.upload.onprogress = progress;
+            }
+        } else {
+            log('No Progress');
+        }
+
+        xhr.send(formData);
+
+        return xhr; // returning the object because we may want to abort it manually later
+    };
+
 
     return Apis;
 });

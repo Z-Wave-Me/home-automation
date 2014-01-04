@@ -12,14 +12,14 @@ define([
         },
 
         methodToURL: {
-            'read': '/devices/',
-            'create': '/devices/',
-            'update': '/devices/',
-            'delete': '/devices/'
+            'read': '/devices',
+            'create': '/devices',
+            'update': '/devices',
+            'delete': '/devices'
         },
 
         url: function () {
-            var url = !this.isNew() ? this.get('id') : '';
+            var url = !this.isNew() ? '/' + this.get('id') : '';
             return url;
         },
 

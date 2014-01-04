@@ -48,7 +48,7 @@ AutomationController.prototype.saveConfig = function () {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
         "locations": this.locations
-    }
+    };
 
     saveObject("config.json", cfgObject);
 };
@@ -65,6 +65,10 @@ AutomationController.prototype.start = function () {
     console.log("Starting webserver...");
     api = new ZAutomationAPIWebRequest().handlerFunc();
 
+    // Run storage
+    console.log("Starting storage...");
+    storage = new ZAutomationStorageWebRequest().handlerFunc();
+
     // Notify core
     this.emit("core.start");
 };
@@ -73,6 +77,7 @@ AutomationController.prototype.stop = function () {
     // Remove API webserver
     console.log("Stopping webserver...");
     api = null;
+    storage = null;
 
     var self = this;
 
@@ -328,7 +333,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
     var now = new Date(), notice;
 
     notice = {
-        id: now.getTime(),
+        id: Math.floor(new Date().getTime() / 1000),
         timestamp: now.toISOString(),
         level: severity,
         message: message,
@@ -431,4 +436,12 @@ AutomationController.prototype.listNotifications = function (since) {
     });
 
     return filteredNotifications;
+};
+
+AutomationController.prototype.getNotification = function (id) {
+    var filteredNotifications = this.notifications.filter(function (notification) {
+        return parseInt(notification.id) === parseInt(id);
+    });
+
+    return filteredNotifications[0] || null;
 };

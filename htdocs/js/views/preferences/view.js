@@ -1,11 +1,12 @@
 define([
     'backbone',
     'helpers/modal',
+    'helpers/apis',
     'models/location',
     'text!templates/popups/preferences-menu.html',
     'text!templates/popups/_room.html',
     'dragsort'
-], function (Backbone, ModalHelper, Location, PreferencesPopupTmp, RoomTmp) {
+], function (Backbone, ModalHelper, Apis, Location, PreferencesPopupTmp, RoomTmp) {
     'use strict';
     var PreferencesView = Backbone.View.extend({
 
@@ -192,6 +193,18 @@ define([
                             $template.find('.save-button').hide();
                             $template.find('.cancel-button').hide();
                         }
+                    });
+                });
+
+                $template.find('.icon-container').on('click', function () {
+                    $template.find('.get-file').click();
+                });
+
+                $template.find('.get-file').on('change', function (e) {
+                    var file = e.target.files[0];
+                    log(e)
+                    Apis.uploadFile(file, function (t) {
+                       log(t);
                     });
                 });
 

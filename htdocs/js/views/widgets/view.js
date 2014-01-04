@@ -61,7 +61,7 @@ define([
                 json = device.toJSON(),
                 $template;
 
-            json.clear = true;
+            json.clear = false;
             $template = $(_.template(template, json));
 
             that.listenTo(device, 'show', function () {

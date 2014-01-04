@@ -217,9 +217,6 @@
         color: rgb( 68, 68, 68 );
         font-weight: bold;
         margin-right: 3%;
-        .probe-value {
-          display: none;
-        }
       }
       .value-field {
         .status-field;
@@ -342,6 +339,14 @@
       margin-top: 0.6%;
     }
   }
+  &.unclear {
+    .value-field {
+      display: none;
+    }
+    .preference-button {
+      display: block;
+    }
+  }
 }
 
 .widget.clear,
@@ -356,8 +361,11 @@
     width: 96%;
     margin-left: 4%;
   }
-  .probe-value {
-    display: inline;
+  .value-field {
+    display: block;
+  }
+  .preference-button {
+    display: none;
   }
 }
 

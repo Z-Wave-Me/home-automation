@@ -32,8 +32,7 @@ define([
         },
 
         parse: function (response, xhr) {
-            this.updateTime = response.data.updateTime;
-            return response.data;
+            return response.data || response;
         },
 
         initialize: function () {

@@ -62,7 +62,7 @@ try {
     config = loadObject("config.json") || {
         "controller": {},
         "vdevInfo": {},
-        "locations": {}
+        "locations": []
     };
 } catch (ex) {
     console.log("Error loading config.json:", ex.message);
@@ -83,19 +83,21 @@ if (!config) {
     executeFile(config.libPath + "/eventemitter2.js");
 
     //--- Load router
-
-    executeFile(config.libPath + "/Router.js");
+    //executeFile(config.libPath + "/Router.js");
 
     //--- Load Automation subsystem classes
 
-    executeFile(config.classesPath+"/AutomationController.js");
-    executeFile(config.classesPath+"/AutomationModule.js");
-    executeFile(config.classesPath+"/VirtualDevice.js");
+    executeFile(config.classesPath + "/AutomationController.js");
+    executeFile(config.classesPath + "/AutomationModule.js");
+    executeFile(config.classesPath + "/VirtualDevice.js");
+    executeFile("request.js");
     executeFile("webserver.js");
+    executeFile("storage.js");
 
     //--- Instantiate Automation Controller
 
     var api = null;
+    var storage = null;
     var controller = new AutomationController(config);
 
     controller.on('core.init', function () {

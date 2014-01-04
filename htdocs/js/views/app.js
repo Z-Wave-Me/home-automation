@@ -14,10 +14,10 @@ define([
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = '10483';
-            that.apiHost = 'mskoff.z-wave.me';
-            //that.apiPort = '8083';
-            //that.apiHost = 'localhost';
+            //that.apiPort = '10483';
+            //that.apiHost = 'mskoff.z-wave.me';
+            that.apiPort = '8083';
+            that.apiHost = 'localhost';
             that.vars = {
                 apiPort : qVar("port") || window.location.port,
                 apiHost : qVar("host") || window.location.hostname
@@ -85,9 +85,9 @@ define([
             var that = this;
             $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
                 // Your server goes below
-                var apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api/v1" + options.url;
+                that.apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api/v1" + options.url;
 
-                options.url = apiUrl;
+                options.url = that.apiUrl;
                 options.crossDomain = {
                     crossDomain: true
                 };
@@ -99,7 +99,12 @@ define([
                     Devices: new Devices(),
                     Locations: new Locations(),
                     Tags: {},
-                    Notifications: new Notifications()
+                    Notifications: new Notifications(),
+                    API: {
+                        HOST: this.apiHost,
+                        PORT: this.apiPort,
+                        URL: this.apiUrl
+                    }
                 };
             }
 
