@@ -13,6 +13,7 @@ function AutomationController () {
     this.config = config.controller || {};
     this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
+    this.files = files || {};
 
     console.log(JSON.stringify(config, null, "  "));
 
@@ -51,6 +52,11 @@ AutomationController.prototype.saveConfig = function () {
     };
 
     saveObject("config.json", cfgObject);
+};
+
+
+AutomationController.prototype.saveFiles = function () {
+    saveObject("files.json", this.files);
 };
 
 AutomationController.prototype.start = function () {
@@ -444,4 +450,28 @@ AutomationController.prototype.getNotification = function (id) {
     });
 
     return filteredNotifications[0] || null;
+};
+
+
+AutomationController.prototype.pullFile = function (id) {
+    var file;
+    if (this.files.hasOwnProperty(id)) {
+        file = this.files[id];
+        file["blob"] = loadObject(id);
+    } else {
+        file = null;
+    }
+    return file;
+};
+
+AutomationController.prototype.pushFile = function (file, callback) {
+    var id = String((new Date()).getTime());
+    this.files[id] = {
+        name: file.name,
+        type: file.type,
+        id: id
+    }
+    this.saveFiles();
+    saveObject(id, file);
+    callback(this.files[id]);
 };

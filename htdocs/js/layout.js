@@ -18,7 +18,7 @@ define([
         initialize: function () {
             var that = this, $ok, $warning, $modal, fillScreenOpacity,
                 forbidClose, relX, relY, position;
-            _.bindAll(this, 'render', 'clear', 'update', 'addEventToList', 'addRoomToFilter');
+            _.bindAll(this, 'render', 'clear', 'update', 'addEventToList', 'addRoomToFilter', 'addTypeToFilter');
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
@@ -27,7 +27,13 @@ define([
             $warning = that.$header.find('.events-warning');
             that.Notifications = window.App.Notifications;
             that.Locations = window.App.Locations;
+            that.Devices = window.App.Devices;
             that.deleted = [];
+            window.App.filters = {
+                locations: true,
+                types: false,
+                tags: false
+            };
 
             that.listenTo(that.Notifications, 'add', function (model) {
                 that.addEventToList(model);
@@ -60,12 +66,6 @@ define([
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
-            that.$header.find('.all-rooms-visible').on('click', function (e) {
-                e.preventDefault();
-                that.Locations.activeRoom = 'all';
-                that.Locations.trigger('filter');
-            });
-
             that.Notifications = window.App.Notifications;
             that.listenTo(that.Notifications, 'all', function () {
                 if (that.Notifications.length) {
@@ -78,12 +78,20 @@ define([
                 }
             });
 
+            that.listenTo(that.Locations, 'add', function (location) {
+                if (window.App.filters.locations) {
+                    that.addRoomToFilter(location);
+                }
+            });
+
+            that.listenTo(that.Locations, 'sync', function () {
+                if (window.App.filters.locations) {
+                    that.$el.find('.sub-nav').find('.rooms-filter').click();
+                }
+            });
+
             that.PreferencesView = new PreferencesView({el: that.$header[0]});
             that.PreferencesView.render();
-
-            that.listenTo(that.Locations, 'add', function (location) {
-                that.addRoomToFilter(location);
-            });
         },
 
         addEventToList: function (model) {
@@ -115,26 +123,134 @@ define([
             var that = this,
                 $template;
 
-            $template = $('<li><a data-id="' + location.get('id') + '" class="room-item-nav" href="/">' + location.get('title') + '</a></li>');
+            $template = $('<li><a data-id="' + location.get('id') + '" class="item-nav" href="/">' + location.get('title') + '</a></li>');
 
             that.listenTo(location, 'destroy', function () {
                 $template.off().hide('fast');
             });
 
-            $template.find('.room-item-nav').on('click', function (e) {
+            $template.find('.item-nav').on('click', function (e) {
                 e.preventDefault();
-                that.$header.find('.room-item-nav').removeClass('active');
-                $template.find('.room-item-nav').addClass('active');
+                that.$header.find('.item-nav').removeClass('active');
+                $template.find('.item-nav').addClass('active');
                 that.Locations.activeRoom = location.id;
                 that.Locations.trigger('filter');
             });
 
-            that.$header.find('.menu-room-filter').append($template);
+            that.$header.find('.menu-filter').append($template);
+        },
+
+        addTypeToFilter: function (type) {
+            var that = this,
+                $template;
+
+            $template = $('<li><a data-id="' + type + '" class="item-nav" href="/">' + type + '</a></li>');
+
+            //that.listenTo(that.Devices, 'destroy', function () {
+            //    $template.off().hide('fast');
+            //});
+
+            $template.find('.item-nav').on('click', function (e) {
+                e.preventDefault();
+                that.$header.find('.item-nav').removeClass('active');
+                $template.find('.item-nav').addClass('active');
+                that.Devices.activeType = type;
+                that.Devices.trigger('filter');
+            });
+
+            that.$header.find('.menu-filter').append($template);
+        },
+
+        addTagToFilter: function (tag) {
+            var that = this,
+                $template;
+
+            $template = $('<li><a data-id="' + tag + '" class="item-nav" href="/">' + tag + '</a></li>');
+
+            //that.listenTo(that.Devices, 'destroy', function () {
+            //    $template.off().hide('fast');
+            //});
+
+            $template.find('.item-nav').on('click', function (e) {
+                e.preventDefault();
+                that.$header.find('.item-nav').removeClass('active');
+                $template.find('.item-nav').addClass('active');
+                that.Devices.activeTag = tag;
+                that.Devices.trigger('filter');
+            });
+
+            that.$header.find('.menu-filter').append($template);
         },
 
         render: function () {
             var that = this;
-            this.$el.html(that.$header).append(that.$main).append(that.$footer);
+            that.$el.html(that.$header).append(that.$main).append(that.$footer);
+
+            // activation filters
+            that.$el.find('.sub-nav').find('a').on('click', function (e) {
+                e.preventDefault();
+                var $this = $(this),
+                    type = $this.attr('data-type'),
+                    $allTemplate = $(_.template('<li><a data-target="all" class="item-nav all-visible active" href="/">All</a></li>', {}));
+
+                $this.parent().parent().find('a').removeClass('active');
+                $this.addClass('active');
+                that.$header.find('.menu-filter').empty();
+
+
+                if (type === 'types') {
+                    _.each(_.uniq(that.Devices.pluck('deviceType')), function (type) {
+                        that.addTypeToFilter(type);
+                    });
+                    $allTemplate.on('click', function (e) {
+                        e.preventDefault();
+                        that.Devices.activeType = 'all';
+                        that.Devices.trigger('filter');
+                        that.$header.find('.item-nav').removeClass('active');
+                        $allTemplate.find('.item-nav').addClass('active');
+                    });
+                    window.App.filters = {
+                        tags: false,
+                        locations: false,
+                        types: true
+                    };
+                } else if (type === 'rooms') {
+                    that.Locations.each(function (location) {
+                        that.addRoomToFilter(location);
+                    });
+                    $allTemplate.on('click', function (e) {
+                        e.preventDefault();
+                        that.Locations.activeRoom = 'all';
+                        that.Locations.trigger('filter');
+                        that.$header.find('.item-nav').removeClass('active');
+                        $allTemplate.find('.item-nav').addClass('active');
+                    });
+                    window.App.filters = {
+                        tags: false,
+                        locations: true,
+                        types: false
+                    };
+                } else if (type === 'tags') {
+                    _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
+                        that.addTagToFilter(type);
+                    });
+                    $allTemplate.on('click', function (e) {
+                        e.preventDefault();
+                        that.Devices.activeTag = 'all';
+                        that.Devices.trigger('filter');
+                        that.$header.find('.item-nav').removeClass('active');
+                        $allTemplate.find('.item-nav').addClass('active');
+                    });
+                    window.App.filters = {
+                        tags: true,
+                        locations: false,
+                        types: false
+                    };
+                }
+
+                that.$header.find('.menu-filter').prepend($allTemplate);
+                $allTemplate.click();
+            });
         },
         update: function () {
             var that = this,

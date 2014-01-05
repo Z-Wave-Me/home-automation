@@ -19,10 +19,30 @@ define([
 
             that.listenTo(that.Locations, 'filter', function () {
                 that.Devices.each(function (device) {
-                    if (that.Locations.activeRoom === 'all' || that.Locations.activeRoom === device.get('location')) {
-                        device.trigger('show');
-                    } else {
-                        device.trigger('hide');
+                    if (window.App.filters.locations) {
+                        if (that.Locations.activeRoom === 'all' || that.Locations.activeRoom === device.get('location')) {
+                            device.trigger('show');
+                        } else {
+                            device.trigger('hide');
+                        }
+                    }
+                });
+            });
+
+            that.listenTo(that.Devices, 'filter', function () {
+                that.Devices.each(function (device) {
+                    if (window.App.filters.types) {
+                        if (that.Devices.activeType === 'all' || that.Devices.activeType === device.get('deviceType')) {
+                            device.trigger('show');
+                        } else {
+                            device.trigger('hide');
+                        }
+                    } else if (window.App.filters.tags) {
+                        if (that.Devices.activeTag === 'all' || that.Devices.activeTag.indexOf(device.get('tags')) !== -1) {
+                            device.trigger('show');
+                        } else {
+                            device.trigger('hide');
+                        }
                     }
                 });
             });
@@ -61,15 +81,14 @@ define([
                 json = device.toJSON(),
                 $template;
 
-            json.clear = false;
             $template = $(_.template(template, json));
 
             that.listenTo(device, 'show', function () {
-                $template.removeClass('show').addClass('show').slideDown('fast');
+                $template.removeClass('show').addClass('show').show('fast');
             });
 
             that.listenTo(device, 'hide', function () {
-                $template.removeClass('show').slideUp('fast');
+                $template.removeClass('show').hide('fast');
             });
 
             if (!that.isExistWidget(device.get('id'))) {

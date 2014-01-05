@@ -34,31 +34,42 @@ define([
     Apis.uploadFile = function (file, callback, progress) {
         log('Uploading file!');
 
-        var formData = new FormData();
-        formData.append('file', file, 'file' + file.type);
 
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', "http://" + App.API.HOST + ':' + App.API.PORT + '/ZAutomation/storage', true);
-        xhr.setRequestHeader("Content-Type", "multipart/form-data");
-        xhr.onload = function (e) {
-            if (this.status === 200 || this.status === 201) {
-                callback(this);
+        var reader = new FileReader(),
+            data = {
+                type: file.type,
+                name: file.name
+            },
+            xhr = new XMLHttpRequest();
+
+        reader.onload = function (e) {
+            data.file = e.target.result;
+            xhr.open('POST', "http://" + App.API.HOST + ':' + App.API.PORT + '/ZAutomation/storage', true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onload = function (e) {
+                if (this.status === 200 || this.status === 201) {
+                    callback(this);
+                } else {
+                    log('Error: Status Code is not 200/201');
+                }
+            };
+
+            if (progress) {
+                xhr.addEventListener('progress', progress, false);
+                if (xhr.upload) {
+                    xhr.upload.onprogress = progress;
+                }
             } else {
-                log('Error: Status Code is not 200/201');
+                log('No Progress');
             }
-        };
-        if (progress) {
-            xhr.addEventListener('progress', progress, false);
-            if (xhr.upload) {
-                xhr.upload.onprogress = progress;
-            }
-        } else {
-            log('No Progress');
+
+            xhr.send(stringify(data));
+
+            return xhr; // returning the object because we may want to abort it manually later
         }
 
-        xhr.send(formData);
-
-        return xhr; // returning the object because we may want to abort it manually later
+        // Read in the image file as a data URL.
+        reader.readAsBinaryString(file);
     };
 
 

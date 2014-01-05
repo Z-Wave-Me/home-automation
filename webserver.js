@@ -143,8 +143,6 @@ ZAutomationAPIWebRequest.prototype.getNotificationFunc = function (notificationI
     }
 }
 
-
-
 ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificationId) {
     var reply = {
             error: null,
@@ -232,7 +230,7 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
         if (controller.devices.hasOwnProperty(vDevId)) {
             reply.code = 200;
             controller.devices[vDevId].setVDevObject(vDevId, reqObj);
-            reply.data = controller.getVdevInfo(vDevId);
+            reply.data = self._vdevMetaOnly(controller.devices[vDevId]);
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";

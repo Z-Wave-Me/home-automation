@@ -5,17 +5,20 @@ define([
     'models/location',
     'text!templates/popups/preferences-menu.html',
     'text!templates/popups/_room.html',
-    'dragsort'
-], function (Backbone, ModalHelper, Apis, Location, PreferencesPopupTmp, RoomTmp) {
+    'text!templates/popups/_widget.html',
+    'dragsort',
+    'magicsuggest'
+], function (Backbone, ModalHelper, Apis, Location, PreferencesPopupTmp, RoomTmp, WidgetTmp, TagTmp) {
     'use strict';
     var PreferencesView = Backbone.View.extend({
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'renderList', 'renderRooms', 'addRoom');
+            _.bindAll(this, 'render', 'renderList', 'renderRooms', 'addRoom', 'renderWidgets', 'addDevice');
             // Default collections and models
             that.Locations = window.App.Locations;
             that.Devices = window.App.Devices;
+            that.type = null;
 
             // Jquery cached objects
             that.$preferencesButton = that.$el.find('.preferences-button');
@@ -24,20 +27,23 @@ define([
             that.$topmenu.hide();
             that.$leftSidebar = that.$template.find('.left-sidebar');
             that.$leftSidebar.hide();
-            that.$roomsListContainer = that.$template.find('.rooms-list-container');
-            that.$roomsListContainer.hide();
+            that.$ListContainer = that.$template.find('.list-container');
+            that.$ListContainer.hide();
             that.$buttonContainer = that.$template.find('.footer-button');
             that.$buttonContainer.hide();
             that.$contentContainer = that.$template.find('.content-body');
             that.$template.find('.back-button').hide();
 
             that.listenTo(that.Locations, 'add', function (model) {
-                that.addRoom(model);
+                if (that.type === 'rooms') {
+                    that.addRoom(model);
+                }
             });
         },
 
         render: function () {
             var that = this;
+
             that.$preferencesButton.on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -76,6 +82,15 @@ define([
         renderList: function (type) {
             var that = this;
             that.$template.find('.title').text(type.capitalize());
+
+            // hide containers
+            that.$leftSidebar.hide();
+            that.$ListContainer.hide();
+            that.$buttonContainer.hide();
+            that.$contentContainer.empty();
+            that.$ListContainer.find('.items-list').empty();
+            that.type = type;
+
             if (type === 'rooms') {
                 that.$topmenu.show().find('li').off().on('click', function () {
                     var $this = $(this);
@@ -86,22 +101,78 @@ define([
                     });
                 });
                 that.renderRooms();
+            } else if (type === 'widgets') {
+                that.renderWidgets();
             }
+        },
+        renderWidgets: function () {
+            var that = this;
+            that.$leftSidebar.show();
+            that.$ListContainer.show();
+            that.Devices.each(function (device) {
+                that.addDevice(device);
+            });
+        },
+        addDevice: function (device) {
+            var that = this,
+                $device = $("<li>" + device.get('metrics').title + "</li>"),
+                $deviceTmp,
+                avalaibleTags = that.getTags(),
+                tags = device.get('tags'),
+                ms;
+
+            $device.on('click', function () {
+                that.$ListContainer.find('li').removeClass('active');
+                $device.addClass('active');
+                $deviceTmp = $(_.template(WidgetTmp, device.toJSON()));
+
+                ms = $deviceTmp.find('#ms-gmail').magicSuggest({
+                    width: 250,
+                    highlight: true,
+                    data: avalaibleTags,
+                    value: tags
+                });
+
+                $(ms).on('beforerender', function () {
+                    log('beforerender')
+                    $(ms).setValue(tags);
+                });
+
+                $(ms).on('blur', function () {
+                    log('blur')
+                    device.save({tags:this.getValue()})
+                });
+
+                $deviceTmp.hide();
+                that.$contentContainer.html($deviceTmp);
+                that.$ListContainer.find('li').removeClass('.active');
+                $deviceTmp.show('fast');
+            });
+
+            // append
+            that.$ListContainer.find('li').removeClass('.active');
+            $device.hide();
+            that.$ListContainer.find('.items-list').append($device);
+            $device.show('fast');
+        },
+        addTag: function (tag, device) {
+            var that = this,
+                $tag = $(_.template(TagTmp, {title: tag}));
         },
         renderRooms: function () {
             var that = this, $newRoomTmp, location;
             that.$leftSidebar.show();
-            that.$roomsListContainer.show();
+            that.$ListContainer.show();
             that.$buttonContainer.show();
 
-            that.$roomsListContainer.find('.rooms-list').empty();
+            that.$ListContainer.find('.item-list').empty();
 
             that.Locations.each(function (model) {
                 that.addRoom(model);
             });
 
             that.$buttonContainer.find('.add-button').off().on('click', function () {
-                that.$roomsListContainer.find('li').removeClass('active');
+                that.$ListContainer.find('li').removeClass('active');
                 $newRoomTmp = $(_.template(RoomTmp, {}));
 
                 $newRoomTmp.find('.create-button').on('keyup', function (e) {
@@ -127,7 +198,7 @@ define([
                 });
 
                 that.$contentContainer.html($newRoomTmp);
-                that.$roomsListContainer.find('li').removeClass('.active');
+                that.$ListContainer.find('li').removeClass('.active');
                 $newRoomTmp.show('fast');
             });
 
@@ -167,7 +238,7 @@ define([
             $location.off().on('click', function () {
                 that.activeRoom = model.get('id');
 
-                that.$roomsListContainer.find('li').removeClass('active');
+                that.$ListContainer.find('li').removeClass('active');
                 $location.addClass('active');
                 $template = $(_.template(RoomTmp, json));
 
@@ -232,11 +303,11 @@ define([
 
                     if (listType === 'all') {
                         that.Devices.get(id).save({
-                           "location": null
+                            "location": null
                         });
                     } else {
                         that.Devices.get(id).save({
-                           "location": that.activeRoom
+                            "location": that.activeRoom
                         });
                     }
                     model.set({counter: that.Devices.where({location: that.activeRoom}).length});
@@ -256,7 +327,11 @@ define([
                 }
             });
 
-            that.$roomsListContainer.find('.rooms-list').append($location);
+            that.$ListContainer.find('.items-list').append($location);
+        },
+        getTags: function () {
+            var that = this;
+            return _.uniq(_.flatten(that.Devices.pluck('tags')));
         }
     });
 

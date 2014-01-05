@@ -168,7 +168,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         data: data,
         code: httpCode[response.code],
         message: response.message,
-        error: response.error,
+        error: response.error
     };
 
     if (pager) {

@@ -43,42 +43,47 @@ ZAutomationStorageWebRequest.prototype.uploadFileFunc = function () {
                 error: null,
                 data: null,
                 code: 200,
-                message: "OK: Storage"
+                message: null
             },
-            reqObj;
+            reqObj,
+            that = this;
 
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {
+            reqObj = {};
             reply.error = ex.message;
         }
 
-        console.log(JSON.stringify(Object.keys(reqObj)));
-        reply.data = reqObj;
-        this.initResponse(reply);
+        controller.pushFile(reqObj.file, function (fileObj) {
+            reply.data = fileObj;
+            that.initResponse(reply);
+        })
     }
 };
 
 ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
-    var reply = {
-        error: null,
-        data: "OK: get File" + fileId,
-        code: 200
-    }
-
-    this.initResponse(reply);
-};
-
-ZAutomationStorageWebRequest.prototype.CORSRequest = function () {
     return function () {
-        this.responseHeader('Access-Control-Allow-Origin', '*');
-        this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-        this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
-        this.res.status = 200;
+        var reply = {
+                error: null,
+                data: "OK: get File" + fileId,
+                code: 200
+            },
+            file = controller.pullFile(fileId);
+
+        if (file) {
+            reply.data = file;
+        } else {
+            reply.code = 404;
+            reply.error = "File " + fileId + " doesn't exist";
+        }
+
+        this.initResponse(reply);
     }
 };
 
 ZAutomationStorageWebRequest.prototype.dispatchRequest = function (method, url) {
+
     // Default handler is NotFound
     var handlerFunc = this.NotFound;
 

@@ -56,16 +56,16 @@ function get_values (obj) {
 //--- Load configuration
 
 
-var config;
+var config, files;
 try {
-    // config = loadJSON("config.json");
     config = loadObject("config.json") || {
         "controller": {},
         "vdevInfo": {},
         "locations": []
     };
+    files = loadObject("files.json") || {};
 } catch (ex) {
-    console.log("Error loading config.json:", ex.message);
+    console.log("Error loading config.json or files.json:", ex.message);
 }
 
 if (!config) {
