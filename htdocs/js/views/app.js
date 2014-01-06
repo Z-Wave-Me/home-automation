@@ -17,7 +17,7 @@ define([
 
 
             //localServer = false;
-            if (window.location.host.indexOf('localhost') !== -1 || localServer) {
+            if (window.location.host.indexOf('localhost') !== -1 && localServer) {
                 that.apiPort = '8083';
                 that.apiHost = 'localhost';
             } else {
