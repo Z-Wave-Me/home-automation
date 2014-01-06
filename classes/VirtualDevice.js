@@ -15,6 +15,10 @@ VirtualDevice = function (id, controller) {
     this.tags = [];
     this.location = null;
     this.updateTime = 0;
+    this.position = {
+        x: 0,
+        y: 0
+    };
 };
 
 
