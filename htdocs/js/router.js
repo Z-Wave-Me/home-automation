@@ -21,8 +21,8 @@ define([
             layout.render();
 
             router.on('all', function () {
-                Utils.activateCurrentNav();
                 layout.update();
+                Utils.activateCurrentNav();
             });
 
             function register(route, path, name) {
