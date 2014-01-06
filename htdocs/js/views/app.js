@@ -10,14 +10,20 @@ define([
         el: 'body',
 
         initialize: function () {
-            var that = this;
+            var that = this,
+                localServer = true;
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            //that.apiPort = '10483';
-            //that.apiHost = 'mskoff.z-wave.me';
-            that.apiPort = '8083';
-            that.apiHost = 'localhost';
+
+            localServer = false;
+            if (window.location.host.indexOf('localhost') && localServer) {
+                that.apiPort = '8083';
+                that.apiHost = 'localhost';
+            } else {
+                that.apiPort = '10483';
+                that.apiHost = 'mskoff.z-wave.me';
+            }
             that.vars = {
                 apiPort : qVar("port") || window.location.port,
                 apiHost : qVar("host") || window.location.hostname

@@ -31,7 +31,7 @@ ZAutomationStorageWebRequest.prototype.statusReport = function () {
             error: null,
             data: "OK",
             code: 200
-        }
+        };
 
         this.initResponse(reply);
     }
@@ -45,20 +45,15 @@ ZAutomationStorageWebRequest.prototype.uploadFileFunc = function () {
                 code: 200,
                 message: null
             },
-            reqObj,
+            //reqObj = new FormData(this.req.body),
             that = this;
 
-        try {
-            reqObj = JSON.parse(this.req.body);
-        } catch (ex) {
-            reqObj = {};
-            reply.error = ex.message;
-        }
 
-        controller.pushFile(reqObj.file, function (fileObj) {
-            reply.data = fileObj;
-            that.initResponse(reply);
-        })
+        //console.log(JSON.stringify(Object.keys(reqObj)));
+        //controller.pushFile(reqObj.file, function (fileObj) {
+        //    reply.data = fileObj;
+        //    that.initResponse(reply);
+        //})
     }
 };
 
@@ -88,7 +83,6 @@ ZAutomationStorageWebRequest.prototype.dispatchRequest = function (method, url) 
     var handlerFunc = this.NotFound;
 
     // ---------- Test exact URIs ---------------------------------------------
-
     if ("GET" === method && "/status" === url) {
         handlerFunc = this.statusReport();
     } else if ("POST" === method && "" === url) {
