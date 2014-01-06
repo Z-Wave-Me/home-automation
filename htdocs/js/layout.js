@@ -257,6 +257,15 @@ define([
                 that.$header.find('.menu-filter').prepend($allTemplate);
                 $allTemplate.click();
             });
+            that.$footer.find('.footer-bar').off().on('click', function () {
+                var $this = $(this);
+                $this.toggleClass('active');
+                if ($this.hasClass('active')) {
+                    that.Devices.trigger('settings');
+                } else {
+                    that.Devices.trigger('normal');
+                }
+            });
         },
         update: function () {
             var that = this,
