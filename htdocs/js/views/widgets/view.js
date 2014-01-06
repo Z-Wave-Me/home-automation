@@ -38,7 +38,7 @@ define([
                             device.trigger('hide');
                         }
                     } else if (window.App.filters.tags) {
-                        if (that.Devices.activeTag === 'all' || that.Devices.activeTag.indexOf(device.get('tags')) !== -1) {
+                        if (that.Devices.activeTag === 'all' || device.get('tags').indexOf(that.Devices.activeTag) !== -1) {
                             device.trigger('show');
                         } else {
                             device.trigger('hide');
