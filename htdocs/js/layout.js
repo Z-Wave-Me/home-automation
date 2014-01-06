@@ -90,6 +90,13 @@ define([
                 }
             });
 
+            that.listenTo(that.Devices, 'change:tags', function () {
+                that.$header.find('.menu-filter').empty();
+                _.each(_.without(_.uniq(_.flatten(that.Devices.pluck('tags'))), 'sensor'), function (type) {
+                    that.addTagToFilter(type);
+                });
+            });
+
             that.PreferencesView = new PreferencesView({el: that.$header[0]});
             that.PreferencesView.render();
         },
@@ -231,7 +238,7 @@ define([
                         types: false
                     };
                 } else if (type === 'tags') {
-                    _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
+                    _.each(_.without(_.uniq(_.flatten(that.Devices.pluck('tags'))), 'sensor'), function (type) {
                         that.addTagToFilter(type);
                     });
                     $allTemplate.on('click', function (e) {

@@ -870,26 +870,10 @@
                         (cfg.editable === true ? '' : ' ms-ctn-readonly'),
                     style: cfg.style
                 }).width(w);
-                //ms.container.focus($.proxy(handlers._onFocus, this));
-                //ms.container.blur($.proxy(handlers._onFocus, this));
-                //ms.container.keydown($.proxy(handlers._onKeyDown, this));
-                //ms.container.keyup($.proxy(handlers._onKeyUp, this));
-
-                ms.container.on('focus', function () {
-                    $.proxy(handlers._onFocus, this);
-                });
-
-                ms.container.on('blur', function () {
-                    $.proxy(handlers._onBlur, this);
-                });
-
-                ms.container.on('keydown', function () {
-                    $.proxy(handlers._onKeyDown, this);
-                });
-
-                ms.container.on('keyup', function () {
-                    $.proxy(handlers._onKeyUp, this);
-                });
+                ms.container.focus($.proxy(handlers._onFocus, this));
+                ms.container.blur($.proxy(handlers._onBlur, this));
+                ms.container.keydown($.proxy(handlers._onKeyDown, this));
+                ms.container.keyup($.proxy(handlers._onKeyUp, this));
 
                 // holds the input field
                 ms.input = $('<input/>', $.extend({
@@ -1192,7 +1176,8 @@
                 if(ms.input.val() === '' && _selection.length === 0) {
                     ms.input.addClass(cfg.emptyTextCls);
                     ms.input.val(cfg.emptyText);
-                } else if(ms.input.val() !== '' && cfg.allowFreeEntries === false) {
+                }
+                else if(ms.input.val() !== '' && cfg.allowFreeEntries === false) {
                     ms.empty();
                     self._updateHelper('');
                 }

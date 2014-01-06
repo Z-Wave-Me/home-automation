@@ -126,6 +126,11 @@ define([
                 $device.addClass('active');
                 $deviceTmp = $(_.template(WidgetTmp, device.toJSON()));
 
+                $deviceTmp.hide();
+                that.$contentContainer.html($deviceTmp);
+                that.$ListContainer.find('li').removeClass('.active');
+                $deviceTmp.show('fast');
+
                 ms = $deviceTmp.find('#ms-gmail').magicSuggest({
                     width: 250,
                     highlight: true,
@@ -134,19 +139,16 @@ define([
                 });
 
                 $(ms).on('beforerender', function () {
-                    log('beforerender')
+                    log('afterrender')
                     $(ms).setValue(tags);
                 });
 
                 $(ms).on('blur', function () {
-                    log('blur')
-                    device.save({tags:this.getValue()})
+                    device.save({tags: this.getValue()});
+                    this.setValue(this.getValue());
+                    avalaibleTags = that.getTags();
+                    tags = this.getValue();
                 });
-
-                $deviceTmp.hide();
-                that.$contentContainer.html($deviceTmp);
-                that.$ListContainer.find('li').removeClass('.active');
-                $deviceTmp.show('fast');
             });
 
             // append
@@ -273,7 +275,6 @@ define([
 
                 $template.find('.get-file').on('change', function (e) {
                     var file = e.target.files[0];
-                    log(e)
                     Apis.uploadFile(file, function (t) {
                        log(t);
                     });
