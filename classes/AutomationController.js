@@ -347,7 +347,6 @@ AutomationController.prototype.addNotification = function (severity, message) {
     };
 
     this.notifications.push(notice);
-
     this.saveNotifications();
 }
 

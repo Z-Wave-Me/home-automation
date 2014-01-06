@@ -47,6 +47,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         object = {},
         data,
         mainKey = null,
+        date = new Date(),
         subPaths = ['notifications', 'devices'],
         tempData,
         pager = null,
@@ -180,7 +181,8 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         body : JSON.stringify(reply),
         headers: {
             "Content-Type": response.contentType,
-            "API-version": version
+            "API-version": version,
+            "Date": date.toUTCString()
         }
     };
 }

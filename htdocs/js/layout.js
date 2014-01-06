@@ -91,7 +91,6 @@ define([
             });
 
             that.listenTo(that.Devices, 'change:tags', function () {
-                that.$header.find('.menu-filter').empty();
                 _.each(_.without(_.uniq(_.flatten(that.Devices.pluck('tags'))), 'sensor'), function (type) {
                     that.addTagToFilter(type);
                 });
