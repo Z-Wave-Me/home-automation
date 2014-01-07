@@ -312,7 +312,7 @@ define([
                         });
                     }
                     model.set({counter: that.Devices.where({location: that.activeRoom}).length});
-                }, dragBetween: true, placeHolderTemplate: "<li></li>" });
+                }, dragBetween: true, placeHolderTemplate: "<li class='device drop-template'></li>" });
 
                 that.$topmenu.find('li').removeClass('active');
                 that.$topmenu.find('li:first').addClass('active');
