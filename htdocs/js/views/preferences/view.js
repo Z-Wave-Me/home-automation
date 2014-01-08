@@ -157,10 +157,6 @@ define([
             that.$ListContainer.find('.items-list').append($device);
             $device.show('fast');
         },
-        addTag: function (tag, device) {
-            var that = this,
-                $tag = $(_.template(TagTmp, {title: tag}));
-        },
         renderRooms: function () {
             var that = this, $newRoomTmp, location;
             that.$leftSidebar.show();

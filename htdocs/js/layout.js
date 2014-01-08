@@ -171,7 +171,7 @@ define([
             var that = this,
                 $template;
 
-            $template = $('<li><a data-id="' + tag + '" class="item-nav" href="/">' + tag + '</a></li>');
+            $template = $('<li class="tag-container"><a data-id="' + tag + '" class="item-nav" href="/">' + tag + '</a></li>');
 
             //that.listenTo(that.Devices, 'destroy', function () {
             //    $template.off().hide('fast');
@@ -185,7 +185,9 @@ define([
                 that.Devices.trigger('filter');
             });
 
-            that.$header.find('.menu-filter').append($template);
+            if (!$('li.tag-container a[data-id="' + tag + '"]').exists()) {
+                that.$header.find('.menu-filter').append($template);
+            }
         },
 
         render: function () {
