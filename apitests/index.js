@@ -254,7 +254,7 @@ describe("ZAutomation API", function () {
 
                 // Response body id a correct API reply in JSON form without an error
                 var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
-                obj.should.have.keys("error", "data", "code", "message");
+                obj.should.have.keys("error", "data", "code", "message", "pager");
                 should.strictEqual(obj.error, null);
 
                 // Content tests
@@ -280,7 +280,7 @@ describe("ZAutomation API", function () {
 
                 // Response body id a correct API reply in JSON form without an error
                 var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
-                obj.should.have.keys("error", "data", "code", "message");
+                obj.should.have.keys("error", "data", "code", "message", "pager");
                 should.strictEqual(obj.error, null);
 
                 // Content tests
@@ -295,7 +295,7 @@ describe("ZAutomation API", function () {
         });
 
         it("marks notifications read", function (done) {
-            request.get(apiUrl+"/notifications", function (error, response, body) {
+            request.put(apiUrl+"/notifications", function (error, response, body) {
                 if (error || response.statusCode !== 200) {
                     done(new Error (error || response.statusCode));
                     return;
@@ -387,7 +387,7 @@ describe("ZAutomation API", function () {
 
                 // Response body id a correct API reply in JSON form without an error
                 var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
-                obj.should.have.keys("error", "data", "code", "message");
+                obj.should.have.keys("error", "data", "code", "message", "pager");
                 should.strictEqual(obj.error, null);
 
                 // Content tests
@@ -415,7 +415,7 @@ describe("ZAutomation API", function () {
 
                 // Response body id a correct API reply in JSON form without an error
                 var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
-                obj.should.have.keys("error", "data", "code", "message");
+                obj.should.have.keys("error", "data", "code", "message", "pager");
                 should.strictEqual(obj.error, null);
 
                 // Content tests

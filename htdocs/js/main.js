@@ -9,6 +9,7 @@ requirejs.config({
         cookie : 'libs/vendor/jquery.cookie',
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
+        drags: 'libs/vendor/jquery.draggable',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
     },
@@ -27,6 +28,10 @@ requirejs.config({
         magicsuggest: {
             deps: ['jquery'],
             exports: '$.magicsuggest'
+        },
+        drags: {
+            deps: ['jquery'],
+            exporst: '$.drags'
         },
         underscore : {
             exports : '_'

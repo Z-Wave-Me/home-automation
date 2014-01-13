@@ -7,29 +7,28 @@ define([
     "text!templates/widgets/doorlock-small.html",
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
-    "text!templates/widgets/switch-small.html"
+    "text!templates/widgets/switch-small.html",
+    'drags'
 ], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
     var DashboardView = Backbone.View.extend({
         el: '#devices-container',
         initialize: function () {
-            _.bindAll(this, 'render', 'isExistWidget', 'renderWidget', 'settingsWidget');
+            _.bindAll(this, 'render', 'isExistWidget', 'renderWidget');
             var that = this;
             that.Devices = window.App.Devices;
             that.activeMode = false;
 
             that.listenTo(that.Devices, 'add change', function (model) {
                 that.renderWidget(model);
+                if (that.activeMode) {
+                    that.$el.find('.widget-small').toggleClass('clear');
+                }
             });
 
             that.listenTo(that.Devices, 'settings normal', function () {
                 that.activeMode = !that.activeMode;
                 that.$el.find('.widget-small').toggleClass('clear');
-                //if (that.activeMode) {
-
-                //} else {
-
-                //}
             });
         },
         render: function () {
@@ -43,6 +42,9 @@ define([
         },
         renderWidget: function (model) {
             var that = this;
+            if (model.get('tags').indexOf('dashboard') === -1) {
+                return;
+            }
             if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
                 that.renderProbe(model);
             } else if (model.get('deviceType') === "fan") {
@@ -58,6 +60,14 @@ define([
             } else {
                 //log(model);
             }
+            that.$el.find('.widget-small').off().drags({
+                handle: '.border-widget',
+                onMouseUp: function (position) {
+                    console.log(position);
+                },
+                container: '.widgets',
+                containerType: 'parent'
+            });
         },
         renderProbe: function (model) {
             var that = this,
@@ -87,7 +97,6 @@ define([
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($FanTmp);
             }
-            that.settingsWidget($FanTmp);
         },
         renderDoorlock: function (model) {
             var that = this,
@@ -101,10 +110,11 @@ define([
                     //log(json);
                     $button
                         .toggleClass('active')
-                        .attr('title', capitaliseFirstLetter(command))
+                        .attr('title', command.capitalize())
                         .children()
                         .toggleClass('active')
-                        .find('.text').text(command.toUpperCase());
+                        .find('.text')
+                        .text(command.toUpperCase());
                 });
             });
             if (!that.isExistWidget(model.get('id'))) {
@@ -112,7 +122,6 @@ define([
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($DoorLockTmp);
             }
-            that.settingsWidget($DoorLockTmp);
         },
         renderMultilevel: function (model) {
             var that = this,
@@ -144,7 +153,6 @@ define([
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ComplementaryTmp);
             }
-            that.settingsWidget($ComplementaryTmp);
         },
         renderThermostat: function (model) {
             var that = this,
@@ -164,7 +172,6 @@ define([
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ThermostatTmp);
             }
-            that.settingsWidget($ThermostatTmp);
         },
         renderSwitch: function (model) {
             var that = this,
@@ -190,13 +197,6 @@ define([
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);
             }
-            that.settingsWidget($SwitchTmp);
-        },
-        settingsWidget: function ($widget) {
-            var that = this;
-            $widget.find('.small-border').on('click', function () {
-                log('123');
-            });
         },
         isExistWidget: function (id) {
             return $('div[data-widget-id="' + id + '"]').exists();

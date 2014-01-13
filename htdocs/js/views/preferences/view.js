@@ -146,8 +146,8 @@ define([
                 $(ms).on('blur', function () {
                     device.save({tags: this.getValue()});
                     this.setValue(this.getValue());
-                    avalaibleTags = that.getTags();
                     tags = this.getValue();
+                    avalaibleTags = that.getTags();
                 });
             });
 
