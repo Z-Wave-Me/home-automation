@@ -21,9 +21,6 @@ define([
 
             that.listenTo(that.Devices, 'add change', function (model) {
                 that.renderWidget(model);
-                if (that.activeMode) {
-                    that.$el.find('.widget-small').toggleClass('clear');
-                }
             });
 
             that.listenTo(that.Devices, 'settings normal', function () {
@@ -62,8 +59,8 @@ define([
             }
             that.$el.find('.widget-small').off().drags({
                 handle: '.border-widget',
-                onMouseUp: function (position) {
-                    console.log(position);
+                onMouseUp: function (offset, position) {
+                    model.save({position: position});
                 },
                 container: '.widgets',
                 containerType: 'parent'
@@ -72,6 +69,15 @@ define([
         renderProbe: function (model) {
             var that = this,
                 $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
+
+            $ProbeTmp.css(model.get('position'));
+
+            if (that.activeMode) {
+                $ProbeTmp.removeClass('clear');
+            } else {
+                $ProbeTmp.addClass('clear');
+            }
+
             if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($ProbeTmp);
             } else {
@@ -81,6 +87,14 @@ define([
         renderFan: function (model) {
             var that = this,
                 $FanTmp = $(_.template(templateFan, model.toJSON()));
+
+            $FanTmp.css(model.get('position'));
+
+            if (that.activeMode) {
+                $FanTmp.removeClass('clear');
+            } else {
+                $FanTmp.addClass('clear');
+            }
 
             $FanTmp.find(".select-field select").on('change', function () {
 
@@ -101,6 +115,14 @@ define([
         renderDoorlock: function (model) {
             var that = this,
                 $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
+
+            $DoorLockTmp.css(model.get('position'));
+
+            if (that.activeMode) {
+                $DoorLockTmp.removeClass('clear');
+            } else {
+                $DoorLockTmp.addClass('clear');
+            }
 
             $DoorLockTmp.find('.action').on('click', function (e) {
                 e.preventDefault();
@@ -130,6 +152,14 @@ define([
                 $progress =  $ComplementaryTmp.find('.progress-bar'),
                 $text =  $ComplementaryTmp.find('.text');
 
+            $ComplementaryTmp.css(model.get('position'));
+
+            if (that.activeMode) {
+                $ComplementaryTmp.removeClass('clear');
+            } else {
+                $ComplementaryTmp.addClass('clear');
+            }
+
             $progress.on('mouseover', function () {
                 $progress.toggleClass('hidden');
                 $text.toggleClass('hidden');
@@ -158,6 +188,14 @@ define([
             var that = this,
                 $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
 
+            $ThermostatTmp.css(model.get('position'));
+
+            if (that.activeMode) {
+                $ThermostatTmp.removeClass('clear');
+            } else {
+                $ThermostatTmp.addClass('clear');
+            }
+
             $ThermostatTmp.find(".select-field select").on('change', function () {
 
                 var params = $(this).val() !== -1 ? {mode: $(this).val()} : {},
@@ -176,6 +214,14 @@ define([
         renderSwitch: function (model) {
             var that = this,
                 $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
+
+            $SwitchTmp.css(model.get('position'));
+
+            if (that.activeMode) {
+                $SwitchTmp.removeClass('clear');
+            } else {
+                $SwitchTmp.addClass('clear');
+            }
 
             $SwitchTmp.find('.action').on('click', function (e) {
                 e.preventDefault();

@@ -32,7 +32,8 @@ ZAutomationAPIWebRequest.prototype._vdevMetaOnly = function (vDev) {
         metrics: vDev.metrics,
         tags: vDev.tags,
         location: vDev.location,
-        updateTime: vDev.updateTime
+        updateTime: vDev.updateTime,
+        position: vDev.position
     }
 }
 

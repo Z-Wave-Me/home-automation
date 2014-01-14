@@ -25,7 +25,8 @@
 
         var $selected = null,
             $elements = (opt.handle === "") ? this : this.find(opt.handle),
-            position = {};
+            position = {},
+            containerPosition;
 
         $elements.css('cursor', opt.cursor).on("mousedown", function (e) {
             if (opt.handle === "") {
@@ -39,12 +40,13 @@
                 drg_w = $selected.outerWidth(),
                 pos_y = $selected.offset().top + drg_h - e.pageY,
                 pos_x = $selected.offset().left + drg_w - e.pageX,
-                containerPosition = opt.container ? $(opt.container).offset() : null,
                 containerWidth = opt.container ? $(opt.container).width() : null,
                 selectedPosition = $selected.position(),
                 selectedWidth = $selected.width(),
                 left,
                 top;
+
+            containerPosition = opt.container ? $(opt.container).offset() : null;
 
             if (!!(opt.onMouseDown && opt.onMouseDown.constructor && opt.onMouseDown.call && opt.onMouseDown.apply)) {
                 opt.onMouseDown({
@@ -63,38 +65,54 @@
             $(document).on("mousemove", function (e) {
                 var rightBorder = containerPosition.left + containerWidth;
 
-                left = e.pageX + pos_x - drg_w - selectedWidth + containerPosition.left/2;
-                top = e.pageY + pos_y - drg_h - selectedPosition.top/2 - containerPosition.top;
+                //left = e.pageX + pos_x - drg_w - selectedWidth + containerPosition.left/2;
+                //top = e.pageY + pos_y - drg_h - selectedPosition.top/2 - containerPosition.top;
+
+                top = e.pageY + pos_y - drg_h;
+                left = e.pageX + pos_x - drg_w;
 
                 position = {
                     left: left,
                     top: top
                 };
 
-                $selected.css(position);
+                $selected.offset(position);
+
                 if (!!(opt.onMouseDown && opt.onMouseDown.constructor && opt.onMouseDown.call && opt.onMouseDown.apply)) {
-                    opt.onMovable(position);
+                    var positionCss = {
+                        top: $selected.offset().top - containerPosition.top,
+                        left: $selected.offset().left - containerPosition.left
+                    };
+                    opt.onMouseUp(position, positionCss);
                 }
             }).on("mouseup", function () {
                 $(this).off("mousemove"); // Unbind events from document
+
                 if ($selected !== null) {
                     $selected.removeClass(opt.draggableClass);
                     selectedPosition = null;
                     selectedWidth = null;
                     $selected = null;
                 }
-                if (!!(opt.onMouseUp && opt.onMouseUp.constructor && opt.onMouseUp.call && opt.onMouseUp.apply)) {
-                    opt.onMouseUp(position);
-                }
             });
             e.preventDefault(); // disable selection
         }).on("mouseup", function () {
+
             if (opt.handle === "") {
                 $selected.removeClass(opt.draggableClass);
             } else {
                 $selected.removeClass(opt.draggableClass)
                     .find(opt.handle).removeClass(opt.activeHandleClass);
             }
+
+            if (!!(opt.onMouseUp && opt.onMouseUp.constructor && opt.onMouseUp.call && opt.onMouseUp.apply)) {
+                var positionCss = {
+                    top: $selected.offset().top - containerPosition.top,
+                    left: $selected.offset().left - containerPosition.left
+                };
+                opt.onMouseUp(position, positionCss);
+            }
+
             $selected = null;
         });
 

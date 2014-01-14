@@ -16,8 +16,8 @@ VirtualDevice = function (id, controller) {
     this.location = null;
     this.updateTime = 0;
     this.position = {
-        x: 0,
-        y: 0
+        top: 0,
+        left: 0
     };
 };
 

@@ -144,7 +144,22 @@ define([
                 });
 
                 $(ms).on('blur', function () {
-                    device.save({tags: this.getValue()});
+                    var savedParam;
+                    if (this.getValue().indexOf('dashboard') === -1) {
+                        savedParam = {
+                            tags: this.getValue(),
+                            position: {
+                                top: 0,
+                                left: 0
+                            }
+                        };
+                    } else {
+                        savedParam = {
+                            tags: this.getValue()
+                        };
+                    }
+
+                    device.save(savedParam);
                     this.setValue(this.getValue());
                     tags = this.getValue();
                     avalaibleTags = that.getTags();
