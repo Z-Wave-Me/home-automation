@@ -342,8 +342,13 @@ define([
             that.$ListContainer.find('.items-list').append($location);
         },
         getTags: function () {
-            var that = this;
-            return _.uniq(_.flatten(that.Devices.pluck('tags')));
+            var that = this,
+                tags = _.uniq(_.flatten(that.Devices.pluck('tags')));
+
+            if (tags.indexOf('tags') === -1) {
+                tags.push('dashboard');
+            }
+            return tags;
         }
     });
 
