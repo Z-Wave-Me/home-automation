@@ -108,7 +108,7 @@
             if (!!(opt.onMouseUp && opt.onMouseUp.constructor && opt.onMouseUp.call && opt.onMouseUp.apply)) {
                 var positionCss = {
                     top: $selected.offset().top - containerPosition.top,
-                    left: $selected.offset().left - containerPosition.left - 11
+                    left: $selected.offset().left - containerPosition.left - 9
                 };
                 opt.onMouseUp(position, positionCss);
             }
