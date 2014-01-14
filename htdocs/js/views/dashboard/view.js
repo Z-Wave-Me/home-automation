@@ -33,6 +33,9 @@ define([
             if (that.Devices.length > 0) {
                 that.$el.empty();
                 that.Devices.each(function (device) {
+                    var position = device.get('position');
+                    position['z-index'] = parseInt(device.cid);
+                    device.set({position: position});
                     that.renderWidget(device);
                 });
             }
