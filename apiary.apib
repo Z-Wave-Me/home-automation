@@ -4,6 +4,27 @@ HOST: http://mskoff.z-wave.me:10483/ZAutomation/api
 # Z-Way API
 Locations API is a *short texts saving* service similar to its physical paper presence on your table.
 
+
++ Allow get parameters
+    + suppress_response_codes (optional, boolean) ... If this parameter is present, all responses will be returned with a 200 OK status code - even errors. This parameter exists to accommodate Flash and JavaScript applications running in browsers that intercept all non-200 responses. If used, it’s then the job of the client to determine error states by parsing the response body. Use with caution, as those error messages may change.
+    + pagination (optional, boolean) ... If this parameter is present, all response of the lists (Devices, Notifications) will be included pagination  
+    + limit (optional, number) ... If this parameter is present, then set limit models per page, else set default 10 models per page
+    + offset (options, number) ... If this parameter is present, then set start point models in page, else set default offset 0.
+    + fields (options, string) ... example: nameField1,nameField2,...
+
++ Status codes,
+        200: "200 OK",
+        201: "201 Created",
+        204: "204 No Content",
+        304: "304 Not Modified",
+        400: "400 Bad Request",
+        401: "401 Unauthorized",
+        403: "403 Forbidden",
+        404: "404 Not Found",
+        405: "405 Method Not Allowed",
+        501: "501 Not Implemented",
+        500: "500 Internal server error"
+
 # Group Locations
 Locations related resources of the **Locations API**
 
@@ -137,7 +158,7 @@ Profiles related resources of the **Profiles API**
 + Parameters
     + name (required, string, `Default`) ... `name` of the profile.
     + description (optional, string, `description`) ... `description` of the profile.
-    + active (optional, boolen, false) ... `show in dashboard` of the dashboard
+    + active (optional, boolean, false) ... `show in dashboard` of the dashboard
 
 + Response 201 (application/json)
 
@@ -299,7 +320,7 @@ Locations related resources of the **Notifications API**
 ### List all Notification  [GET]
 
 + Parameters
-    + redeemed = `false` (optional, boolen, `?redeemed=true`) ... if `redeemed` eq true - include redeemed notifications
+    + redeemed = `false` (optional, boolean, `?redeemed=true`) ... if `redeemed` eq true - include redeemed notifications
     + since (optional, integer, `?since=1387881635`) ... `updateTime` of the Notifications.
 
 + Response 200 (application/json)
