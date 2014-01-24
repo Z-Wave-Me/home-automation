@@ -717,6 +717,141 @@ ZAutomationAPIWebRequest.prototype.deleteInstanceFunc = function (instanceId) {
     }
 };
 
+// Dashobard
+
+ZAutomationAPIWebRequest.prototype.listProfiles = function (profileId) {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            profiles,
+            profile;
+
+        if (profileId === undefined) {
+            profiles = controller.getListProfiles();
+            if (!Array.isArray(profiles)) {
+                reply.error = "Unknown error.";
+            } else {
+                reply.code = 200;
+                reply.data = profiles;
+            }
+        } else {
+            profile = controller.getProfile(profileId);
+            if (profile && profile !== null && profile.id) {
+                reply.code = 200;
+                reply.data = profile;
+            } else {
+                reply.code = 404;
+                reply.error = "Dashboard " + profile.id + " doesn't exist";
+            }
+        }
+
+        this.initResponse(reply);
+    }
+};
+
+ZAutomationAPIWebRequest.prototype.createProfile = function () {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj,
+            profile;
+
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
+
+        if (reqObj.hasOwnProperty('name')) {
+            profile = controller.createProfile(reqObj);
+            if (profile !== undefined && profile.id !== undefined) {
+                reply.data = profile;
+                reply.code = 201;
+            } else {
+                reply.code = 500;
+                reply.error = "Profile didn't created";
+            }
+        } else {
+            reply.code = 500;
+            reply.error = "Argument name is required";
+        }
+
+        this.initResponse(reply);
+    }
+};
+
+
+ZAutomationAPIWebRequest.prototype.updateProfile = function (profileId) {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj,
+            profile;
+
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
+
+        if (reqObj.hasOwnProperty('name') || reqObj.hasOwnProperty('description') || reqObj.hasOwnProperty('active') || reqObj.hasOwnProperty('widgets')) {
+            profile = controller.updateProfile(reqObj, profileId);
+            if (profile !== undefined && profile.id !== undefined) {
+                reply.data = profile;
+                reply.code = 200;
+            } else {
+                reply.code = 500;
+                reply.error = "Object (profile) didn't created";
+            }
+        } else {
+            reply.code = 500;
+            reply.error = "Argument description, active, id, widgets is required";
+        }
+
+        this.initResponse(reply);
+    }
+};
+
+ZAutomationAPIWebRequest.prototype.removeProfile = function (profileId) {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            profile;
+
+        if (profileId) {
+            profile = controller.getProfile(profileId);
+            if (profile) {
+                controller.removeProfile(profileId);
+                reply.data = null;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = "Object (profile) " + profileId + " didn't created";
+            }
+        } else {
+            reply.code = 500;
+            reply.error = "Argument id widgets is required";
+        }
+
+        this.initResponse(reply);
+    }
+};
+
+
+
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     // Default handler is NotFound
     var handlerFunc = this.NotFound;
@@ -735,6 +870,10 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.restartController;
     } else if ("GET" === method && "/v1/locations" == url) {
         handlerFunc = this.listLocations();
+    } else if ("GET" === method && "/v1/profiles" == url) {
+        handlerFunc = this.listProfiles();
+    } else if (("POST" === method) && "/v1/profiles" == url) {
+        handlerFunc = this.createProfile();
     } else if (("GET" === method && "/v1/locations/add" == url) || ("POST" === method && "/v1/locations" == url)) {
         handlerFunc = this.addLocation();
     } else if ("GET" === method && "/v1/locations/remove" == url) {
@@ -829,6 +968,23 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
             var vDevId = reTest[1];
             if ("GET" === method && !!vDevId && controller.devices.hasOwnProperty(vDevId)) {
                 handlerFunc = this.setVDevTitleFunc(vDevId);
+            }
+        }
+    }
+
+
+    // --- Remove and Update location
+    if (handlerFunc === this.NotFound) {
+        re = /\/v1\/profiles\/(.+)/;
+        reTest = re.exec(url);
+        if (!!reTest) {
+            var profileId = parseInt(reTest[1]);
+            if ("DELETE" === method && profileId) {
+                handlerFunc = this.removeProfile(profileId);
+            } else if ("PUT" === method && profileId) {
+                handlerFunc = this.updateProfile(profileId);
+            } else if ("GET" === method && profileId) {
+                handlerFunc = this.listProfiles(profileId);
             }
         }
     }

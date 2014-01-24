@@ -3,21 +3,24 @@ define([
     'helpers/modal',
     'helpers/apis',
     'models/location',
+    'models/profile',
     'text!templates/popups/preferences-menu.html',
     'text!templates/popups/_room.html',
     'text!templates/popups/_widget.html',
+    'text!templates/popups/_profile.html',
     'dragsort',
     'magicsuggest'
-], function (Backbone, ModalHelper, Apis, Location, PreferencesPopupTmp, RoomTmp, WidgetTmp, TagTmp) {
+], function (Backbone, ModalHelper, Apis, Location, Profile, PreferencesPopupTmp, RoomTmp, WidgetTmp, ProfileTmp, TagTmp) {
     'use strict';
     var PreferencesView = Backbone.View.extend({
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'renderList', 'renderRooms', 'addRoom', 'renderWidgets', 'addDevice');
+            _.bindAll(this, 'render', 'renderList', 'renderRooms', 'addRoom', 'renderWidgets', 'addDevice', 'addProfile');
             // Default collections and models
             that.Locations = window.App.Locations;
             that.Devices = window.App.Devices;
+            that.Profiles = window.App.Profiles;
             that.type = null;
 
             // Jquery cached objects
@@ -37,6 +40,12 @@ define([
             that.listenTo(that.Locations, 'add', function (model) {
                 if (that.type === 'rooms') {
                     that.addRoom(model);
+                }
+            });
+
+            that.listenTo(that.Profiles, 'add', function (model) {
+                if (that.type === 'general') {
+                    that.addProfile(model);
                 }
             });
         },
@@ -103,10 +112,13 @@ define([
                 that.renderRooms();
             } else if (type === 'widgets') {
                 that.renderWidgets();
+            } else if (type === 'general') {
+                that.renderProfiles();
             }
         },
         renderWidgets: function () {
             var that = this;
+            that.$leftSidebar.find('.title-sidebar').text('Widgets');
             that.$leftSidebar.show();
             that.$ListContainer.show();
             that.Devices.each(function (device) {
@@ -119,17 +131,37 @@ define([
                 $deviceTmp,
                 avalaibleTags = that.getTags(),
                 tags = device.get('tags'),
-                ms;
+                ms,
+                profile,
+                widgets,
+                active = _.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === device.id; }) === undefined;
 
             $device.on('click', function () {
                 that.$ListContainer.find('li').removeClass('active');
                 $device.addClass('active');
-                $deviceTmp = $(_.template(WidgetTmp, device.toJSON()));
+                $deviceTmp = $(_.template(WidgetTmp, {device: device.toJSON(), widget: active}));
 
                 $deviceTmp.hide();
                 that.$contentContainer.html($deviceTmp);
                 that.$ListContainer.find('li').removeClass('.active');
                 $deviceTmp.show('fast');
+
+                $deviceTmp.find('.input-dashboard').on('change', function () {
+                    profile = that.Profiles.findWhere({active: true});
+                    widgets = profile.get('widgets');
+                    if ($(this).prop('checked')) {
+                        widgets.push({
+                            id: device.get('id'),
+                            position: {x: null, y: null}
+                        });
+                    } else {
+                        widgets = widgets.filter(function (widget) {
+                            return widget.id !== device.id;
+                        });
+                    }
+                    profile.save({widgets: widgets});
+                    window.App.Devices.trigger('refresh');
+                });
 
                 ms = $deviceTmp.find('#ms-gmail').magicSuggest({
                     width: 250,
@@ -172,8 +204,68 @@ define([
             that.$ListContainer.find('.items-list').append($device);
             $device.show('fast');
         },
+        renderProfiles: function () {
+            var that = this,
+                $newProfile,
+                profile;
+
+            that.$leftSidebar.find('.title-sidebar').text('Profiles');
+            that.$leftSidebar.show();
+            that.$ListContainer.show();
+            that.$buttonContainer.show();
+
+            that.Profiles.each(function (model) {
+                that.addProfile(model);
+            });
+
+            that.$buttonContainer.find('.add-button').off().on('click', function () {
+                that.$ListContainer.find('li').removeClass('active');
+                $newProfile = $(_.template(ProfileTmp, {}));
+
+                $newProfile.find('.create-button').on('keyup', function (e) {
+                    if (e.which === 13) {
+                        e.preventDefault();
+                        $newProfile.find('.create-button').click();
+                    }
+                });
+
+                $newProfile.find('.button-group').on('click', function (e) {
+                    e.preventDefault();
+                    if ($(this).hasClass('create-button')) {
+                        if ($newProfile.find('#inputActive').prop('checked')) {
+                            that.Profiles.where({active: true}).forEach(function (model) {
+                                model.save({active: false});
+                            });
+                        }
+                        profile = new Profile();
+                        profile.save({
+                            name: $newProfile.find('#inputNameProfile').val(),
+                            description: $newProfile.find('#inputDescriptionsText').val(),
+                            active: $newProfile.find('#inputActive').prop('checked')
+                        }, {
+                            success: function (model) {
+                                that.Profiles.add(model);
+                            }
+                        });
+                    }
+
+                    $newProfile.hide('fast', function () {
+                        $newProfile.remove();
+                    });
+                });
+
+                that.$contentContainer.html($newProfile);
+                that.$ListContainer.find('li').removeClass('.active');
+                $newProfile.show('fast');
+            });
+
+            that.$buttonContainer.find('.remove-button').off().on('click', function () {
+                that.Profiles.get(that.activeProfile).destroy();
+            });
+        },
         renderRooms: function () {
             var that = this, $newRoomTmp, location;
+            that.$leftSidebar.find('.title-sidebar').text('Rooms');
             that.$leftSidebar.show();
             that.$ListContainer.show();
             that.$buttonContainer.show();
@@ -340,6 +432,89 @@ define([
             });
 
             that.$ListContainer.find('.items-list').append($location);
+        },
+        addProfile: function (model) {
+            var that = this,
+                $profile = $("<li>" + model.get('name') + "</li>"),
+                $template;
+
+            that.listenTo(model, 'change:name', function () {
+                $profile.text(model.get('name'));
+            });
+
+            that.listenTo(model, 'destroy', function () {
+                $profile.hide('fast', function () {
+                    $profile.prev().click();
+                    $profile.remove();
+                });
+            });
+
+            $profile.off().on('click', function () {
+                that.activeProfile = model.get('id');
+
+                that.$ListContainer.find('li').removeClass('active');
+                $profile.addClass('active');
+                $template = $(_.template(ProfileTmp, model.toJSON()));
+
+
+                $template.find('.edit-button').on('click', function (e) {
+                    e.preventDefault();
+                    var $this = $(this);
+                    $template.find('.name-profile').hide();
+                    $template.find('#inputNameProfile').show();
+                    $template.find('.description-profile').hide();
+                    $template.find('#inputDescriptionsText').show();
+                    $template.find('#inputActive').removeAttr("disabled");
+                    $this.hide();
+
+                    $template.find('.save-button').show('fast').off().on('click', function (e) {
+                        e.preventDefault();
+                        if ($template.find('#inputActive').prop('checked')) {
+                            that.Profiles.where({active: true}).forEach(function (model) {
+                                model.save({active: false});
+                            });
+                        }
+                        model.save({
+                            name: $template.find('#inputNameProfile').val(),
+                            description: $template.find('#inputDescriptionsText').val(),
+                            active: $template.find('#inputActive').prop('checked')
+                        });
+                        $template.find('.edit-button').show();
+                        $template.find('.name-profile').text(model.get('name')).show();
+                        $template.find('#inputNameProfile').val(model.get('name')).hide();
+                        $template.find('.description-profile').text(model.get('description')).show();
+                        $template.find('#inputDescriptionsText').val(model.get('description')).hide();
+                        $template.find('#inputActive').attr("disabled", "disabled");
+                        $template.find('.save-button').hide();
+                        $template.find('.cancel-button').hide();
+                    });
+
+                    $template.find('.cancel-button').show('fast').off().on('click', function (e) {
+                        e.preventDefault();
+                        $template.find('.name-profile').text(model.get('name')).show();
+                        $template.find('#inputNameProfile').val(model.get('name')).hide();
+                        $template.find('.description-profile').text(model.get('description')).show();
+                        $template.find('#inputDescriptionsText').val(model.get('description')).hide();
+                        $template.find('#inputActive').attr("disabled", "disabled");
+                        $template.find('.save-button').hide();
+                        $template.find('.cancel-button').hide();
+                        $this.show();
+                    });
+                }).show();
+
+
+                if ($('.profile, .room').exists()) {
+                    $('.profile, .room').hide('fast', function () {
+                        that.$contentContainer.html($template);
+                        $template.show('fast');
+                    });
+                } else {
+                    that.$contentContainer.html($template);
+                    $template.show('fast');
+                }
+            });
+
+            that.$ListContainer.find('.items-list').append($profile);
         },
         getTags: function () {
             var that = this,

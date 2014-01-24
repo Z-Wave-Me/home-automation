@@ -27,6 +27,10 @@ define([
                 that.activeMode = !that.activeMode;
                 that.$el.find('.widget-small').toggleClass('clear');
             });
+
+            that.listenTo(that.Devices, 'refresh', function () {
+                that.render();
+            });
         },
         render: function () {
             var that = this;
@@ -42,7 +46,7 @@ define([
         },
         renderWidget: function (model) {
             var that = this;
-            if (model.get('tags').indexOf('dashboard') === -1) {
+            if (_.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }) === undefined) {
                 return;
             }
             if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {

@@ -573,4 +573,43 @@
       height: auto;
     }
   }
+  .profile {
+    .form-control {
+      display: block;
+    }
+    &.created {
+      .form-control {
+        display: none;
+      }
+    }
+    .control-label {
+      width: 100px;
+    }
+    .form-control {
+      width: 200px;
+      &.checkbox-form {
+        width: auto;
+        height: auto;
+        vertical-align: middle;
+        display: inline-block;
+      }
+    }
+    .input-group {
+      &.checkbox-group {
+        display: inline-block;
+        line-height: 26px;
+        vertical-align: middle;
+
+      }
+    }
+    .button-group {
+      .input-group {
+        float: left;
+        margin-left: 110px;
+      }
+    }
+    #inputDescriptionsText {
+      height: 100px;
+    }
+  }
 }

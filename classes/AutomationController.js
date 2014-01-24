@@ -12,6 +12,7 @@ function AutomationController () {
 
     this.config = config.controller || {};
     this.locations = config.locations || [];
+    this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
     this.files = files || {};
 
@@ -48,7 +49,8 @@ AutomationController.prototype.saveConfig = function () {
     var cfgObject = {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
-        "locations": this.locations
+        "locations": this.locations,
+        "profiles" : this.profiles
     };
 
     saveObject("config.json", cfgObject);
@@ -451,6 +453,78 @@ AutomationController.prototype.getNotification = function (id) {
     return filteredNotifications[0] || null;
 };
 
+AutomationController.prototype.getListProfiles = function () {
+    if (this.profiles.length === 0) {
+        this.profiles.push({
+            id: 1,
+            name: 'Default',
+            description: 'This is default profile. Default profile created automatically.',
+            widgets: [],
+            active: true
+        })
+    }
+    return this.profiles;
+};
+
+AutomationController.prototype.getProfile = function (id) {
+    var profile = this.profiles.filter(function (profile) {
+        return profile.id === parseInt(id);
+    });
+
+    return profile[0] || null;
+};
+
+AutomationController.prototype.createProfile = function (object) {
+    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
+        profile;
+
+    profile = {
+        id: id,
+        name: object.name,
+        description: object.description,
+        widgets: [],
+        active: object.active
+    }
+
+    this.profiles.push(profile);
+    this.saveConfig();
+    return profile;
+};
+
+AutomationController.prototype.updateProfile = function (object, id) {
+    var profile = this.profiles.filter(function (profile) {
+            return profile.id === parseInt(id);
+        }),
+        index;
+
+    if (profile.length) {
+        index = this.profiles.indexOf(profile[0]);
+
+        if (object.hasOwnProperty('name')) {
+            this.profiles[index].name = object.name;
+        }
+        if (object.hasOwnProperty('description')) {
+            this.profiles[index].description = object.description;
+        }
+        if (object.hasOwnProperty('widgets')) {
+            this.profiles[index].widgets = object.widgets;
+        }
+        if (object.hasOwnProperty('active')) {
+            this.profiles[index].active = object.active;
+        }
+    }
+
+    this.saveConfig();
+    return this.profiles[index];
+};
+
+AutomationController.prototype.removeProfile = function (id) {
+    this.profiles = this.profiles.filter(function (profile) {
+        return profile.id !== parseInt(id);
+    });
+
+    this.saveConfig();
+};
 
 AutomationController.prototype.pullFile = function (id) {
     var file;
