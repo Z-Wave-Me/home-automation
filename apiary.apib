@@ -12,16 +12,20 @@ Locations related resources of the **Locations API**
 
 + Response 200 (application/json)
 
-        {"data":[
-            {"id":6,"title":"Garage"},
-            {"id":7,"title":"Hall"},
-            {"id":8,"title":"Kids"},
-            {"id":9,"title":"Kitchen"},
-            {"id":10,"title":"Bedroom"},
-            {"id":11,"title":"name123"},
-            {"id":12,"title":"test"}
-        ],
-        "error":null}
+        {
+            "data":[
+                {"id":6,"title":"Garage"},
+                {"id":7,"title":"Hall"},
+                {"id":8,"title":"Kids"},
+                {"id":9,"title":"Kitchen"},
+                {"id":10,"title":"Bedroom"},
+                {"id":11,"title":"name123"},
+                {"id":12,"title":"test"}
+            ],
+            "error": null,
+            "code": "200 OK",
+            "message" null,
+        }
         
 ### Create a Location [POST]
 + Request (application/json)
@@ -108,8 +112,118 @@ EmulateHTTP
     + method (required, string, `method=DELETE`) ... Numeric `id` of the Location to perform action with.
     + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
 
+# Group Profiles
+Profiles related resources of the **Profiles API**
+
+## Profiles Collection [/v1/profiles]
+### List all Locations [GET]
+
++ Response 200 (application/json)
+
+        [{
+            "data":[
+                "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+            ],
+            "error": null,
+            "message": null,
+            "code": "200 OK"
+        }]
+        
+### Create a Profile [POST]
++ Request (application/json)
+
+        { "name": "Default", "Description": "descriptions", "active": false, "widgets": []}
+
++ Parameters
+    + name (required, string, `Default`) ... `name` of the profile.
+    + description (optional, string, `description`) ... `description` of the profile.
+    + active (optional, boolen, false) ... `show in dashboard` of the dashboard
+
++ Response 201 (application/json)
+
+    + Body
+
+        {
+            "data":[
+                "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+            ],
+            "error": null,
+            "message": null,
+            "code": "200 OK"
+        }
+
+## Profile [/v1/profiles/{id}]
+A single Location object with all its details
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
+
+### Retrieve a Profile [GET]
+
++ Request (application/json)
+
+        
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "data":[
+                    "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+                ],
+                "error": null,
+                "message": null,
+                "code": "200 OK"
+            }
+            
+### Update a Profile [PUT]
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "data":[
+                    "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+                ],
+                "error": null,
+                "message": null,
+                "code": "200 OK"
+            }
+
+### Remove a Profile [DELETE]
++ Response 204
+
+## Location [/v1/locations/{?id}]
+EmulateHTTP
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+### Update a Location [GET]
+
++ Response 200 (application/json)
+
+    + Body
+    
+            { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+
++ Parameters
+    + method (required, string, `method=PUT`) ... Numeric `id` of the Location to perform action with.
+    + title (optional, string, `title=Garage`) ... `title` of the location.
+    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
+
+### Remove a Location [GET]
+
++ Response 204
+
++ Parameters
+    + method (required, string, `method=DELETE`) ... Numeric `id` of the Location to perform action with.
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+
 # Group Devices
-Locations related resources of the **Devices API**
+Devices related resources of the **Devices API**
 
 ## Devices Collection [/v1/devices{?since}]
 ### List all Devices  [GET]
