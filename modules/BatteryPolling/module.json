@@ -1,8 +1,62 @@
 {
+    "id": 2,
     "autoload": false,
     "singleton": true,
     "defaults": {
         "launchWeekDay": 0,
-	"warningLevel": 20
+	    "warningLevel": 20
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "launchWeekDay": {
+                "type": "number",
+                "required": true,
+                "minimum": 0,
+                "maximum": 6
+            },
+            "warningLevel": {
+                "type": "number",
+                "required": true,
+                "minimum": 0,
+                "maximum": 99
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "launchWeekDay": {
+                "type": "number",
+                "label": "launchWeekDay",
+                "focus": false,
+                "validate": true,
+                "disabled": false,
+                "showMessages": true,
+                "size": 40,
+                "helper": "Enter weekday (0-6)"
+            },
+            "warningLevel": {
+                "type": "number",
+                "label": "warningLevel",
+                "focus": false,
+                "validate": true,
+                "disabled": false,
+                "showMessages": true,
+                "size": 40,
+                "helper": "Enter warning level"
+            }
+        },
+        "focus": true,
+        "type": "object",
+        "validate": true,
+        "disabled": false,
+        "showMessages": true,
+        "collapsible": true,
+        "legendStyle": "button"
+    },
+    "params": {
+        "launchWeekDay": 0,
+        "warningLevel": 20
     }
 }

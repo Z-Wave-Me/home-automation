@@ -14,13 +14,14 @@ function AutomationController () {
     this.locations = config.locations || [];
     this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
+    this.instances = config.instances || [];
     this.files = files || {};
 
     console.log(JSON.stringify(config, null, "  "));
 
     this.modules = {};
-    this.instances = {};
     this.devices = {};
+    this.schemas = schemas || [];
 
     this.notifications = [];
     this.lastStructureChangeTime = 0;
@@ -50,10 +51,12 @@ AutomationController.prototype.saveConfig = function () {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
         "locations": this.locations,
-        "profiles" : this.profiles
+        "profiles": this.profiles,
+        "instances": this.instances
     };
 
     saveObject("config.json", cfgObject);
+    saveObject("schemas.json", this.schemas);
 };
 
 
@@ -176,10 +179,9 @@ AutomationController.prototype.loadModules = function (callback) {
 AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, instanceConfig) {
     console.log("Instantiating module", instanceId, "from class", instanceClass);
 
-    var self = this;
-    var moduleClass = self.modules[instanceClass].classRef;
-
-    var instance = new moduleClass(instanceId, self);
+    var self = this,
+        moduleClass = self.modules[instanceClass].classRef,
+        instance = new moduleClass(instanceId, self);
 
     if (instance.meta["singleton"]) {
         if (in_array(this._loadedSingletons, instanceClass)) {
@@ -200,12 +202,12 @@ AutomationController.prototype.instantiateModule = function (instanceId, instanc
 AutomationController.prototype.instantiateModules = function () {
     var self = this;
 
-    console.log("--- Automatic modules instantiation");
+    console.log("--- Automatic modules instantiation ---");
     this._autoLoadModules.forEach(function (moduleClassName) {
         self.instantiateModule(moduleClassName, moduleClassName);
     });
 
-    console.log("--- User configured modules instantiation");
+    console.log("--- User configured modules instantiation ---");
     if (this.config.hasOwnProperty('instances') && Object.keys(this.config.instances).length > 0) {
         Object.keys(this.config.instances).forEach(function (instanceId) {
             var instanceDefs = self.config.instances[instanceId];
@@ -228,28 +230,33 @@ AutomationController.prototype.registerInstance = function (instance) {
             this.instances[instanceId] = instance;
             this.emit('core.instanceRegistered', instanceId);
         } else {
-            this.emit('core.error', new Error("Can't register module instance "+instanceId+" twice"));
+            this.emit('core.error', new Error("Can't register module instance " + instanceId + " twice"));
         }
     } else {
-        this.emit('core.error', new Error("Can't register empty module instance "+instanceId));
+        this.emit('core.error', new Error("Can't register empty module instance " + instanceId));
     }
 };
 
-AutomationController.prototype.createInstance = function (id, className, config) {
-    var instance = this.instantiateModule(id, className, config);
-    if (!!instance) {
-        if (!this.config.hasOwnProperty("instances")) {
-            this.config.instances = {};
-        }
-        this.config.instances[id] = {
-            module: className,
-            config: config
+AutomationController.prototype.createInstance = function (moduleId, params) {
+    //var instance = this.instantiateModule(id, className, config),
+    var id = this.instances.length ? this.instances[this.instances.length - 1].id + 1 : 1,
+        instance = null,
+        module = _.find(this.modules, function (module) { return module.meta.id === moduleId; });
+
+    if (!!module) {
+
+        instance = {
+            id: id,
+            moduleId: moduleId,
+            params: params
         };
+
+        this.instances.push(instance);
         this.saveConfig();
         this.emit('core.instanceCreated', id);
-        return true;
+        return instance;
     } else {
-        this.emit('core.error', new Error("Cannot create module "+className+" instance with id "+id));
+        this.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
         return false;
     }
 };
@@ -437,7 +444,7 @@ AutomationController.prototype.updateLocation = function (id, title, callback) {
 
 AutomationController.prototype.listNotifications = function (since) {
     var self = this;
-    since = since || 0;
+    since = parseInt(since) || 0;
     var filteredNotifications = this.notifications.filter(function (notification) {
         return notification.id >= since;
     });
@@ -481,9 +488,9 @@ AutomationController.prototype.createProfile = function (object) {
     profile = {
         id: id,
         name: object.name,
-        description: object.description,
-        widgets: [],
-        active: object.active
+        description: object.description || null,
+        widgets: object.widgets || [],
+        active: object.active || false
     }
 
     this.profiles.push(profile);
@@ -526,9 +533,85 @@ AutomationController.prototype.removeProfile = function (id) {
     this.saveConfig();
 };
 
+// Schemas
+
+AutomationController.prototype.getListSchemas = function (id) {
+    var result = null;
+    id = id || null;
+    if (id) {
+        result = this.schemas.filter(function (schema) {
+            return schema.id === parseInt(id);
+        })[0];
+    } else {
+        result = this.schemas;
+    }
+    return result;
+};
+
+AutomationController.prototype.createSchema = function (object) {
+    var id = this.schemas.length ? this.schemas[this.schemas.length - 1].id + 1 : 1,
+        schema;
+
+    schema = {
+        id: id,
+        title: object.title,
+        schema: object.schema
+    }
+
+    this.schemas.push(schema);
+    this.saveConfig();
+    return schema;
+};
+
+AutomationController.prototype.updateSchema = function (object, id) {
+    var result = null,
+        index,
+        schema;
+    id = id || null;
+
+
+    if (id) {
+        schema = this.schemas.filter(function (sch) {
+            return sch.id === parseInt(id);
+        });
+
+
+        if (schema.length) {
+            index = this.schemas.indexOf(schema[0]);
+
+            if (object.hasOwnProperty('title')) {
+                this.schemas[index].title = object.title;
+            }
+            if (object.hasOwnProperty('schema')) {
+                this.schemas[index].schema = object.schema;
+            }
+
+            result = this.schemas[index];
+        } else {
+            result = null;
+        }
+    } else {
+        result = null;
+    }
+
+    this.saveConfig();
+    return result;
+};
+
+
+AutomationController.prototype.removeSchema = function (id) {
+    id = id || null;
+
+    this.schemas = this.schemas.filter(function (schema) {
+        return schema.id !== parseInt(id);
+    });
+
+    this.saveConfig();
+};
+
 AutomationController.prototype.pullFile = function (id) {
     var file;
-    if (this.files.hasOwnProperty(id)) {
+    if (this.files.hasOwnProperty('id')) {
         file = this.files[id];
         file["blob"] = loadObject(id);
     } else {

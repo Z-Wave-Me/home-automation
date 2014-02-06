@@ -22,10 +22,7 @@ define([
         sync: function (method, model, options) {
             options = options || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
-
-            if (this.updateTime !== undefined) {
-                options.data = {since: this.updateTime};
-            }
+            options.data = {since: this.updateTime || Math.floor(new Date().getTime() / 1000)};
 
             Backbone.sync(method, model, options);
         },

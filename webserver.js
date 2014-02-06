@@ -34,7 +34,7 @@ ZAutomationAPIWebRequest.prototype._vdevMetaOnly = function (vDev) {
         location: vDev.location,
         updateTime: vDev.updateTime,
         position: vDev.position
-    }
+    };
 }
 
 ZAutomationAPIWebRequest.prototype.statusReport = function () {
@@ -578,13 +578,16 @@ ZAutomationAPIWebRequest.prototype.removeVDevTagFunc = function (vDevId) {
 
 ZAutomationAPIWebRequest.prototype.listModules = function () {
     var reply = {
-        error: null,
-        data: {},
-        code: 200
-    }
+            error: null,
+            data: [],
+            code: 200
+        },
+        module = null;
 
     Object.keys(controller.modules).forEach(function (className) {
-        reply.data[className] = controller.modules[className].meta;
+        module = controller.modules[className].meta;
+        module.className = className;
+        reply.data.push(module);
     });
 
     this.initResponse(reply);
@@ -592,13 +595,11 @@ ZAutomationAPIWebRequest.prototype.listModules = function () {
 
 
 ZAutomationAPIWebRequest.prototype.listInstances = function () {
-    reply = {
+    var reply = {
         error: null,
-        data: Object.keys(controller.instances).map(function (instanceId) {
-            return controller.instances[instanceId].toJSON();
-        }),
+        data: controller.instances,
         code: 200
-    }
+    };
 
     this.initResponse(reply);
 };
@@ -611,27 +612,22 @@ ZAutomationAPIWebRequest.prototype.createInstance = function () {
                 data: null,
                 code: 500
             },
-            reqObj,
-            that = this;
+            reqObj = this.req.reqObj,
+            that = this,
+            instance;
 
-        try {
-            reqObj = JSON.parse(that.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
-        }
-
-        if ("object" === typeof reqObj) {
-            if (controller.instances.hasOwnProperty(reqObj.id)) {
-                reply.code = 500;
-                reply.error = "Module " + reqObj.id + " already exists";
+        if (!controller.modules.hasOwnProperty(reqObj.moduleId)) {
+            instance = controller.createInstance(reqObj.moduleId, reqObj.params);
+            if (instance) {
+                reply.code = 201;
+                reply.data = instance
             } else {
-                if (controller.createInstance(reqObj.id, reqObj.module, reqObj.config)) {
-                    reply.code = 201;
-                } else {
-                    reply.code = 500;
-                    reply.error = "Cannot instantiate module " + reqObj.id;
-                }
+                reply.code = 500;
+                reply.error = "Cannot instantiate module " + reqObj.id;
             }
+        } else {
+            reply.code = 500;
+            reply.error = "Module " + reqObj.moduleId + " isn't exists";
         }
 
         that.initResponse(reply)
@@ -835,7 +831,7 @@ ZAutomationAPIWebRequest.prototype.removeProfile = function (profileId) {
             if (profile) {
                 controller.removeProfile(profileId);
                 reply.data = null;
-                reply.code = 200;
+                reply.code = 204;
             } else {
                 reply.code = 404;
                 reply.error = "Object (profile) " + profileId + " didn't created";
@@ -849,8 +845,133 @@ ZAutomationAPIWebRequest.prototype.removeProfile = function (profileId) {
     }
 };
 
+// Shemas
+
+ZAutomationAPIWebRequest.prototype.listSchemas = function () {
+    var reply = {
+        error: null,
+        data: null,
+        code: 500
+    }, schemas;
 
 
+    schemas = controller.getListSchemas()
+    if (Array.isArray(schemas)) {
+        reply.data = schemas;
+        reply.code = 200;
+    }
+
+    this.initResponse(reply);
+};
+
+ZAutomationAPIWebRequest.prototype.getSchema = function (schemaId) {
+   return function () {
+       var reply = {
+           error: null,
+           data: null,
+           code: 500
+       }, schema;
+
+       schema = controller.getListSchemas(schemaId);
+       if (schema && schema.hasOwnProperty('id')) {
+           reply.data = schema;
+           reply.code = 200;
+       } else {
+           reply.code = 404;
+           reply.error = "Schema " + schemaId + " doesn't exist";
+       }
+
+       this.initResponse(reply);
+   }
+};
+
+ZAutomationAPIWebRequest.prototype.createSchema = function () {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj = this.req.reqObj,
+            schema;
+
+
+        if (reqObj.hasOwnProperty('title') && reqObj.hasOwnProperty('schema')) {
+            schema = controller.createSchema(reqObj);
+            if (schema !== undefined && schema.id !== undefined) {
+                reply.data = schema;
+                reply.code = 201;
+            } else {
+                reply.code = 500;
+                reply.error = "Object (profile) didn't created";
+            }
+        } else {
+            reply.code = 500;
+            reply.error = "Argument title and schema is required";
+        }
+
+        this.initResponse(reply);
+    }
+};
+
+ZAutomationAPIWebRequest.prototype.updateSchema = function (schemaId) {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj = this.req.reqObj,
+            schema;
+
+
+        if (reqObj.hasOwnProperty('title') || reqObj.hasOwnProperty('schema')) {
+            schema = controller.updateSchema(reqObj, schemaId);
+            if (schema !== undefined && schema.id !== undefined) {
+                reply.data = schema;
+                reply.code = 200;
+            } else {
+                reply.code = 500;
+                reply.error = "Object (schema) didn't created";
+            }
+        } else {
+            reply.code = 500;
+            reply.error = "Argument title or schema is required";
+        }
+
+        this.initResponse(reply);
+    }
+};
+
+
+ZAutomationAPIWebRequest.prototype.deleteSchema = function (schemaId) {
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            schema;
+
+
+        if (schemaId) {
+            schema = controller.getListSchemas(schemaId);
+            if (schema && schema.hasOwnProperty('id')) {
+                controller.removeSchema(schemaId);
+                reply.code = 204;
+                reply.data = null;
+            } else {
+                reply.code = 404;
+                reply.error = "Object (schema) didn't created";
+            }
+        } else {
+            reply.code = 500;
+            reply.error = "Argument schemaId is required";
+        }
+
+        this.initResponse(reply);
+    }
+};
 
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     // Default handler is NotFound
@@ -886,6 +1007,10 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.listInstances;
     } else if (("POST" === method) && "/v1/instances" == url) {
         handlerFunc = this.createInstance();
+    } else if ("GET" === method && "/v1/schemas" == url) {
+        handlerFunc = this.listSchemas;
+    } else if ("POST" === method && "/v1/schemas" == url) {
+        handlerFunc = this.createSchema();
     } else if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
     };
@@ -973,7 +1098,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     }
 
 
-    // --- Remove and Update location
+    // --- Remove and Update profiles
     if (handlerFunc === this.NotFound) {
         re = /\/v1\/profiles\/(.+)/;
         reTest = re.exec(url);
@@ -985,6 +1110,22 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 handlerFunc = this.updateProfile(profileId);
             } else if ("GET" === method && profileId) {
                 handlerFunc = this.listProfiles(profileId);
+            }
+        }
+    }
+
+    // --- Remove and Update schemas
+    if (handlerFunc === this.NotFound) {
+        re = /\/v1\/schemas\/(.+)/;
+        reTest = re.exec(url);
+        if (!!reTest) {
+            var schemaId = parseInt(reTest[1]);
+            if ("DELETE" === method && schemaId) {
+                handlerFunc = this.deleteSchema(schemaId);
+            } else if ("PUT" === method && schemaId) {
+                handlerFunc = this.updateSchema(schemaId);
+            } else if ("GET" === method && schemaId) {
+                handlerFunc = this.getSchema(schemaId);
             }
         }
     }

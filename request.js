@@ -154,21 +154,22 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         data = response.data;
     }
 
-    if (that.req.query.hasOwnProperty('suppress_response_code') && String(that.req.query.suppress_response_code) === 'true') {
+    if (that.req.query.hasOwnProperty('suppress_response_codes') && String(that.req.query.suppress_response_code) === 'true') {
         response.code = '200';
     } else {
         if (!!data) {
             response.code = response.code || 200;
-        } else if (that.req.method === 'DELETE') {
+        } else if (that.req.method === 'DELETE' || !data) {
             response.code = response.code || 204;
-            response.data = '204 No Content';
+            response.data = null;
+            response.message = '204 No Content';
         }
     }
 
     reply = {
         data: data,
-        code: httpCode[response.code],
-        message: response.message,
+        code: response.code,
+        message: httpCode[response.code],
         error: response.error
     };
 
@@ -192,20 +193,58 @@ ZAutomationWebRequest.prototype.dispatchRequest = function (method, url) {
 }
 
 ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
-    var now = new Date();
+    var now = new Date(),
+        requestProcessorFunc,
+        bodyLength,
+        response = {
+            data: null,
+            error: null,
+            code: 200,
+            message: null
+        };
 
     // Fill internal structures
     this.req.url = url;
     this.req.method = request.method;
     this.req.query = request.query;
     this.req.body = request.body || "";
+    this.emulateHTTP = false;
+    this.emulateHTTPMethod = null;
+    //
 
-    // Get and run request processor func
-    var requestProcessorFunc = this.dispatchRequest(request.method, url);
-    requestProcessorFunc.call(this);
+    if (['PUT', 'POST'].indexOf(this.req.method) !== -1) {
+        try {
+            this.req.reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            response.code = 500;
+            response.error = "JSON Parse Error [Syntax Error]";
+        }
+    }
+
+    if (this.req.method === 'GET') {
+        if (this.req.query.hasOwnProperty('method')) {
+            this.emulateHTTP = true;
+            this.emulateHTTPMethod = this.req.query.method;
+        }
+    }
+
+    //if (this.emulateHTTPMethod) {
+
+    //} else {
+
+    //}
+
+    if (response.error === null) {
+        // Get and run request processor func
+        requestProcessorFunc = this.dispatchRequest(request.method, url);
+        requestProcessorFunc.call(this);
+    } else {
+        this.initResponse(response);
+    }
+
 
     // Log request reply
-    var bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
+    bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
 
     // Return to the z-way-http
     return this.res;

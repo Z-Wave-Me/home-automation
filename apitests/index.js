@@ -32,7 +32,214 @@ describe("ZAutomation API", function () {
                 Object.keys(obj.data).length.should.be.above(3);
 
                 // Everything is OK
+                if (obj.data.length) {
+                    request.get(apiUrl + "/modules/" + obj.data[0].id, function (error, response, body) {
+                        if (error || response.statusCode !== 200) {
+                            done(new Error (error || response.statusCode));
+                            return;
+                        }
+
+                        // Response has correct mime-type
+                        response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                        // Response body id a correct API reply in JSON form without an error
+                        var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+                        obj.should.have.keys("error", "data", "message", "data");
+                        should.strictEqual(obj.error, null);
+
+                        // Content tests
+                        obj.data.should.be.instanceOf(Object);
+                        Object.keys(obj.data).length.should.be.above(3);
+                        done();
+                    });
+                } else {
+                    // Everything is OK
+                    done();
+                }
+            });
+        });
+
+
+    });
+
+    describe("/schemas", function () {
+        var schemaId;
+        it("return schemas list", function (done) {
+            request.get(apiUrl + "/schemas", function (error, response, body) {
+                if (error || response.statusCode !== 200) {
+                    done(new Error (error || response.statusCode));
+                    return;
+                }
+
+                // Response has correct mime-type
+                response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                // Response body id a correct API reply in JSON form without an error
+                var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+                obj.should.have.keys("error", "data", "message", "code");
+                should.strictEqual(obj.error, null);
+
+                // Content tests
+                obj.data.should.be.instanceOf(Array);
+                //Object.keys(obj.data).length.should.be.above(3);
+
                 done();
+            });
+        });
+
+        it("add schema model", function (done) {
+            request.post(apiUrl + "/schemas", {
+                json: {
+                    "title": "title",
+                    "schema": {
+                        "title": "User Feedback",
+                        "description": "What do you think about Alpaca?",
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": "Name"
+                            },
+                            "ranking": {
+                                "type": "string",
+                                "title": "Ranking",
+                                "enum": ['excellent', 'not too shabby', 'alpaca built my hotrod']
+                            }
+                        }
+                    }
+                }
+            }, function (error, response, reply) {
+                if (error || response.statusCode !== 201) {
+                    done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
+                    return;
+                }
+
+                // Response has correct mime-type
+                response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                // Response body id a correct API reply in JSON form without an error
+                reply.should.have.keys("error", "data", "code", "message");
+                should.strictEqual(reply.error, null);
+
+                // Content tests
+                schemaId = reply.data.id;
+                request.get(apiUrl + "/schemas/" + reply.data.id, function (error, response, body) {
+                    if (error || response.statusCode !== 200) {
+                        done(new Error (error || response.statusCode));
+                        return;
+                    }
+
+                    // Response has correct mime-type
+                    response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                    // Response body id a correct API reply in JSON form without an error
+                    var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+                    obj.should.have.keys("error", "data", "code", "message");
+                    should.strictEqual(obj.error, null);
+
+                    // Content tests
+                    obj.data.should.be.instanceOf(Object);
+
+                    // Everything is OK
+                    done();
+                });
+            });
+        });
+
+        it("update schema model", function (done) {
+            request.put(apiUrl + "/schemas/" + schemaId, {
+                json: {
+                    "title": "title2",
+                    "schema": {
+                        "title": "title2",
+                        "description": "What do you think about Alpaca?",
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": "Name"
+                            },
+                            "ranking": {
+                                "type": "string",
+                                "title": "Ranking",
+                                "enum": ['excellent', 'not too shabby', 'alpaca built my hotrod']
+                            }
+                        }
+                    }
+                }
+            }, function (error, response, reply) {
+                if (error || response.statusCode !== 200) {
+                    done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
+                    return;
+                }
+
+                // Response has correct mime-type
+                response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                // Response body id a correct API reply in JSON form without an error
+                reply.should.have.keys("error", "data", "code", "message");
+                should.strictEqual(reply.error, null);
+
+                // Content tests
+                request.get(apiUrl + "/schemas/" + schemaId, function (error, response, body) {
+                    if (error || response.statusCode !== 200) {
+                        done(new Error (error || response.statusCode));
+                        return;
+                    }
+
+                    // Response has correct mime-type
+                    response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                    // Response body id a correct API reply in JSON form without an error
+                    var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+                    obj.should.have.keys("error", "data", "message", "code");
+                    should.strictEqual(obj.error, null);
+
+                    // Content tests
+                    obj.data.should.be.instanceOf(Object);
+                    obj.data.should.have.keys("id", "title", "schema");
+                    assert.equal(obj.data.title, "title2");
+                    assert.equal(obj.data.schema.title, "title2");
+
+                    // Everything is OK
+                    done();
+                });
+            });
+        });
+
+        it("remove schema list", function (done) {
+            request.del(apiUrl + "/schemas/" + schemaId, {}, function (error, response, reply) {
+                if (error || response.statusCode !== 204) {
+                    done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
+                    return;
+                }
+
+                // // Response has correct mime-type
+                response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                // // Response body id a correct API reply in JSON form without an error
+                //reply.should.have.keys("error", "data", "message", "code");
+                //should.strictEqual(reply.error, null);
+
+                // Content tests
+                request.get(apiUrl + "/schemas/" + schemaId, function (error, response, body) {
+                    if (error || response.statusCode !== 404) {
+                        done(new Error (error || response.statusCode));
+                        return;
+                    }
+
+                    // Response has correct mime-type
+                    response.should.have.header("content-type", "application/json; charset=utf-8");
+
+                    // Response body id a correct API reply in JSON form without an error
+                    var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+                    obj.should.have.keys("error", "data", "message", "code");
+
+                    should.strictEqual(obj.data, null);
+
+                    // Everything is OK
+                    done();
+                });
             });
         });
     });
@@ -118,8 +325,8 @@ describe("ZAutomation API", function () {
 
                     // Everything is OK
                     done();
-                })
-            })
+                });
+            });
         });
 
         it("exposes instance config", function (done) {
@@ -193,7 +400,7 @@ describe("ZAutomation API", function () {
         });
 
         it("deletes instance", function (done) {
-            request.del(apiUrl+"/instances/TestBatteryPolling", {}, function (error, response, reply) {
+            request.del(apiUrl + "/instances/TestBatteryPolling", {}, function (error, response, reply) {
                 if (error || response.statusCode !== 202) {
                     done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
                     return;

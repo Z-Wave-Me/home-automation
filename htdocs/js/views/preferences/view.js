@@ -4,13 +4,14 @@ define([
     'helpers/apis',
     'models/location',
     'models/profile',
+    'views/preferences/modulesView',
     'text!templates/popups/preferences-menu.html',
     'text!templates/popups/_room.html',
     'text!templates/popups/_widget.html',
     'text!templates/popups/_profile.html',
     'dragsort',
     'magicsuggest'
-], function (Backbone, ModalHelper, Apis, Location, Profile, PreferencesPopupTmp, RoomTmp, WidgetTmp, ProfileTmp, TagTmp) {
+], function (Backbone, ModalHelper, Apis, Location, Profile, ModulesView, PreferencesPopupTmp, RoomTmp, WidgetTmp, ProfileTmp, TagTmp) {
     'use strict';
     var PreferencesView = Backbone.View.extend({
 
@@ -21,12 +22,14 @@ define([
             that.Locations = window.App.Locations;
             that.Devices = window.App.Devices;
             that.Profiles = window.App.Profiles;
+            that.modulesView = new ModulesView();
             that.type = null;
 
             // Jquery cached objects
             that.$preferencesButton = that.$el.find('.preferences-button');
             that.$template = $(_.template(PreferencesPopupTmp, {}));
             that.$topmenu = that.$template.find('.top-menu');
+            that.$modulesMenu = that.$template.find('.modules-menu');
             that.$topmenu.hide();
             that.$leftSidebar = that.$template.find('.left-sidebar');
             that.$leftSidebar.hide();
@@ -37,6 +40,7 @@ define([
             that.$contentContainer = that.$template.find('.content-body');
             that.$template.find('.back-button').hide();
 
+            // listen
             that.listenTo(that.Locations, 'add', function (model) {
                 if (that.type === 'rooms') {
                     that.addRoom(model);
@@ -65,6 +69,7 @@ define([
                     that.$buttonContainer.hide();
                     that.$template.find('.back-button').hide('fast');
                     that.$topmenu.hide();
+                    that.$modulesMenu.hide();
                     that.$template.find('.title').text('Menu');
                 });
 
@@ -114,6 +119,24 @@ define([
                 that.renderWidgets();
             } else if (type === 'general') {
                 that.renderProfiles();
+            } else if (type === 'modules') {
+                that.$modulesMenu.show().find('li').off().on('click', function () {
+                    var $this = $(this);
+                    that.$modulesMenu.find('li').removeClass('active');
+
+                    if (!$this.hasClass('active')) {
+                        if ($this.attr('data-type') === 'modules') {
+                            that.modulesView.renderModules();
+                        } else {
+                            that.modulesView.renderInstances();
+                        }
+                    }
+
+                    $this.addClass('active');
+                });
+                that.modulesView.setElement(that.$template[0]);
+                that.modulesView.render();
+                that.modulesView.renderInstances();
             }
         },
         renderWidgets: function () {
@@ -150,10 +173,12 @@ define([
                     profile = that.Profiles.findWhere({active: true});
                     widgets = profile.get('widgets');
                     if ($(this).prop('checked')) {
-                        widgets.push({
-                            id: device.get('id'),
-                            position: {x: null, y: null}
-                        });
+                        if (!_.any(widgets, function (widget) { return widget.id === device.id; })) {
+                            widgets.push({
+                                id: device.get('id'),
+                                position: {x: null, y: null}
+                            });
+                        }
                     } else {
                         widgets = widgets.filter(function (widget) {
                             return widget.id !== device.id;

@@ -56,7 +56,7 @@ function get_values (obj) {
 //--- Load configuration
 
 
-var config, files;
+var config, files, templates, schemas, modules;
 try {
     config = loadObject("config.json") || {
         "controller": {},
@@ -64,6 +64,7 @@ try {
         "locations": []
     };
     files = loadObject("files.json") || {};
+    schemas = loadObject("schemas.json") || [];
 } catch (ex) {
     console.log("Error loading config.json or files.json:", ex.message);
 }
@@ -81,6 +82,7 @@ if (!config) {
 
     executeFile("constants.js");
     executeFile(config.libPath + "/eventemitter2.js");
+    executeFile(config.libPath + "/underscore-min.js");
 
     //--- Load router
     //executeFile(config.libPath + "/Router.js");

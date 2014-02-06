@@ -4,8 +4,10 @@ define([
     'collections/devices',
     'collections/locations',
     'collections/notifications',
-    'collections/profiles'
-], function (Backbone, bbSync, Devices, Locations, Notifications, Profiles) {
+    'collections/profiles',
+    'collections/modules',
+    'collections/instances'
+], function (Backbone, bbSync, Devices, Locations, Notifications, Profiles, Modules, Instances) {
     'use strict';
     return Backbone.View.extend({
         el: 'body',
@@ -108,6 +110,8 @@ define([
                     Tags: {},
                     Notifications: new Notifications(),
                     Profiles: new Profiles(),
+                    Modules: new Modules(),
+                    Instances: new Instances(),
                     API: {
                         HOST: this.apiHost,
                         PORT: this.apiPort,
@@ -134,6 +138,16 @@ define([
             });
 
             window.App.Profiles.fetch({
+                remove: false,
+                merge: true
+            });
+
+            window.App.Modules.fetch({
+                remove: false,
+                merge: true
+            });
+
+            window.App.Instances.fetch({
                 remove: false,
                 merge: true
             });

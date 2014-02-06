@@ -10,6 +10,7 @@ requirejs.config({
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         drags: 'libs/vendor/jquery.draggable',
+        alpaca: 'libs/alpaca/alpaca-full.min',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
     },
@@ -39,6 +40,9 @@ requirejs.config({
         backbone : {
             deps : ['jquery', 'underscore'],
             exports : 'Backbone'
+        },
+        alpaca: {
+            deps: ['jquery']
         }
     },
     urlArgs: "v=" + vers
