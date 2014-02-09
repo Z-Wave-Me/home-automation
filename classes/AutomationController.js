@@ -208,7 +208,7 @@ AutomationController.prototype.instantiateModules = function () {
     console.log("--- Automatic modules instantiation ---");
     self._autoLoadModules.forEach(function (moduleClassName) {
         module = _.find(self.modules, function (module) { return module.className === moduleClassName; });
-        if (!!module) {
+        if (!!module && !_.any(self.instances, function (model) { return model.moduleId === module.meta.id; })) {
             self.createInstance(module.meta.id, module.meta.defaults);
         }
     });
@@ -258,7 +258,7 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
             id: id,
             moduleId: moduleId,
             params: params,
-            userView: module.userView
+            userView: module.meta.userView
         };
 
         this.instances.push(instance);

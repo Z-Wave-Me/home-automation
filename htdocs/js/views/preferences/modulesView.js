@@ -102,7 +102,7 @@ define([
                 $schema;
 
             $schema = $(_.template(SchemaTmp, {
-                modules: that.Modules.toJSON()
+                modules: that.Modules.where({created: false})
             }));
 
             $schema.find('.selectModules').on('change', function () {

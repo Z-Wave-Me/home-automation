@@ -588,6 +588,11 @@ ZAutomationAPIWebRequest.prototype.listModules = function () {
         module = controller.modules[className].meta;
         if (module.hasOwnProperty('userView') && module.userView)  {
             module.className = className;
+            if (module['singleton'] && _.any(controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+                module.created = true;
+            } else {
+                module.created = false;
+            }
             reply.data.push(module);
         }
     });
@@ -599,7 +604,7 @@ ZAutomationAPIWebRequest.prototype.listModules = function () {
 ZAutomationAPIWebRequest.prototype.listInstances = function () {
     var reply = {
         error: null,
-        data: controller.instances,
+        data: _.filter(controller.instances, function (instance) { return instance.userView; }),
         code: 200
     };
 
