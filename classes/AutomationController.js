@@ -228,14 +228,13 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
 };
 
 AutomationController.prototype.registerInstance = function (instance) {
-    console.log(JSON.stringify(instance));
     var self = this;
 
     if (!!instance) {
         var instanceId = instance.id,
-            instance = self.registerInstances.hasOwnProperty(instanceId);
+            isExistInstance = self.registerInstances.hasOwnProperty(instanceId);
 
-        if (!instance) {
+        if (!isExistInstance) {
             self.registerInstances[instanceId] = instance;
             this.emit('core.instanceRegistered', instanceId);
         } else {
@@ -273,16 +272,20 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
 };
 
 AutomationController.prototype.reconfigureInstance = function (id, config) {
-    var instance = this.registerInstances[id];
+    var instance = this.registerInstances[id],
+        index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; }));
 
     if (!!instance) {
         instance.stop();
-        instance.init(config);
+        instance.init(config.params);
+        if (config.hasOwnProperty('params')) {
+            this.instances[index].params = config.params;
+        }
 
         this.emit('core.instanceReconfigured', id);
         return true;
     } else {
-        this.emit('core.error', new Error("Cannot reconfigure module " + className + " instance with id "+id));
+        this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
         return false;
     }
 };

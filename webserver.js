@@ -669,8 +669,6 @@ ZAutomationAPIWebRequest.prototype.reconfigureInstanceFunc = function (instanceI
             },
             reqObj = this.req.reqObj;
 
-        console.log(JSON.stringify(controller.instances));
-
         if (!_.any(controller.instances, function (instance) { return instanceId === instance.id; })) {
             reply.code = 404;
             reply.error = "Instance " + reqObj.id + " doesn't exist";
