@@ -14,23 +14,13 @@ define([
 
         initialize: function () {
             var that = this,
-                localServer = true;
+                host = null,
+                port = null;
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-
-            //localServer = false;
-            if (window.location.host.indexOf('localhost') !== -1 && localServer) {
-                that.apiPort = '8083';
-                that.apiHost = 'localhost';
-            } else {
-                that.apiPort = '10483';
-                that.apiHost = 'mskoff.z-wave.me';
-            }
-            that.vars = {
-                apiPort : qVar("port") || window.location.port,
-                apiHost : qVar("host") || window.location.hostname
-            };
+            that.apiPort = host || window.location.port;
+            that.apiHost = port || window.location.hostname;
 
             that.preFilterAjax();
             that.buildStructure();
