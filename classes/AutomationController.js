@@ -283,7 +283,7 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         }
 
         this.emit('core.instanceReconfigured', id);
-        return true;
+        return this.instances[index];
     } else {
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
         return false;

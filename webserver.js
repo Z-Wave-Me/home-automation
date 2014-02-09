@@ -667,15 +667,17 @@ ZAutomationAPIWebRequest.prototype.reconfigureInstanceFunc = function (instanceI
                 error: null,
                 data: null
             },
-            reqObj = this.req.reqObj;
+            reqObj = this.req.reqObj,
+            instance;
 
         if (!_.any(controller.instances, function (instance) { return instanceId === instance.id; })) {
             reply.code = 404;
             reply.error = "Instance " + reqObj.id + " doesn't exist";
         } else {
-            if (controller.reconfigureInstance(instanceId, reqObj)) {
+            instance = controller.reconfigureInstance(instanceId, reqObj);
+            if (instance) {
                 reply.code = 200;
-                reply.data = _.find(controller.instances, function (instance) { return instanceId === instance.id; })
+                reply.data = instance;
             } else {
                 reply.code = 500;
                 reply.error = "Cannot reconfigure module " + instanceId + " config";
@@ -688,25 +690,23 @@ ZAutomationAPIWebRequest.prototype.reconfigureInstanceFunc = function (instanceI
 
 ZAutomationAPIWebRequest.prototype.deleteInstanceFunc = function (instanceId) {
     return function () {
-        this.res.status = 500;
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
-
         var reply = {
             error: null,
-            data: null
+            data: null,
+            code: 200
         }
 
         // console.log("--- INSTANCES", JSON.stringify(controller.instances, null, "  "));
-        if (!controller.instances.hasOwnProperty(instanceId)) {
-            this.res.status = 404;
+        if (!_.any(controller.instances, function (instance) { return instance.id === instanceId; })) {
+            reply.code = 404;
             reply.error = "Instance " + instanceId + " not found";
         } else {
-            this.res.status = 204;
+            reply.code = 204;
             reply = null;
             controller.deleteInstance(instanceId);
         }
 
-        this.res.body = JSON.stringify(reply);
+        this.initResponse(reply);
     }
 };
 
