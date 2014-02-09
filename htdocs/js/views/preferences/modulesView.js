@@ -5,6 +5,7 @@ define([
     'models/instance',
     'alpaca'
 ], function (Backbone, RoomTmp, SchemaTmp, Instance) {
+
     'use strict';
 
     return Backbone.View.extend({
@@ -26,16 +27,19 @@ define([
 
         render: function () {
             var that = this;
+
             that.$el.find('.footer-button').show();
             that.$el.find('.left-sidebar').show();
             that.$el.find('.list-container').show();
             that.$el.find('.list-container').find('.title-sidebar').text('Instances:');
             that.$el.find('.items-list').empty();
+
             that.$el.find('.add-button').off().on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 that.newInstance();
             });
+
             that.$el.find('.remove-button').off().on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -44,6 +48,8 @@ define([
 
         renderInstances: function () {
             var that = this;
+
+            that.$el.find('.items-list').empty();
 
             that.Instances.each(function (instance) {
                 that.renderInstanceList(instance);
@@ -54,7 +60,36 @@ define([
             var $instance,
                 that = this;
 
-            $instance = $("<li> Instance #" + instance.get('id') + "</li>");
+            $instance = $("<li>" + instance.get('params').title + "</li>");
+
+            that.listenTo(instance, 'destroy', function () {
+                $instance.hide('fast', function () {
+                    $instance.prev().click();
+                    $instance.remove();
+                });
+            });
+
+            $instance.on('click', function (e) {
+                var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">save</button></div> </div></div></div>')
+                e.preventDefault();
+                that.$el.find('.items-list').find('li').removeClass('active');
+                $instance.addClass('active');
+                that.$el.find('.content-body').empty().append($template);
+
+                that.$el.find('.alpaca-form').empty().alpaca({
+                    data: instance.get('params'),
+                    schema: App.Modules.get(instance.get('moduleId')).get('schema'),
+                    options: App.Modules.get(instance.get('moduleId')).get('options'),
+                    postRender: function (form) {
+                        that.$el.find('.save-button').on('click', function (e) {
+                            e.preventDefault();
+                            var json = form.getValue();
+                            instance.save({params: json});
+                        });
+                    }
+                });
+            });
+
             that.$el.find('.items-list').append($instance);
         },
 
@@ -64,7 +99,6 @@ define([
 
         newInstance: function () {
             var that = this,
-                editor,
                 $schema;
 
             $schema = $(_.template(SchemaTmp, {
@@ -73,9 +107,8 @@ define([
 
             $schema.find('.selectModules').on('change', function () {
                 var $this = $(this);
-
                 that.$el.find('.alpaca-form').empty().alpaca({
-                    data: App.Modules.get(parseInt($this.val())).get('params'),
+                    data: App.Modules.get(parseInt($this.val())).get('defaults'),
                     schema: App.Modules.get(parseInt($this.val())).get('schema'),
                     options: App.Modules.get(parseInt($this.val())).get('options'),
                     postRender: function (form) {
@@ -90,12 +123,12 @@ define([
                                 }
                             });
                         });
-
                     }
                 });
             });
 
-            that.$el.find('.content-body').append($schema);
+            that.$el.find('.items-list').find('li').removeClass('active');
+            that.$el.find('.content-body').empty().append($schema);
         }
     });
 });

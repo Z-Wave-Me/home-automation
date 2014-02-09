@@ -1,14 +1,14 @@
 define([
     //libs
     'backbone',
-    'models/module'
-], function (Backbone, ModuleM) {
+    'models/instance'
+], function (Backbone, InstanceM) {
     'use strict';
 
     var InstancesCollection =  Backbone.Collection.extend({
 
         // model reference
-        model: ModuleM,
+        model: InstanceM,
 
         methodToURL: {
             'read': '/instances',

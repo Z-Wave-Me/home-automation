@@ -1,6 +1,7 @@
 {
     "id": 5,
     "autoload": false,
+    "userView": false,
     "autoloadPriority": 10,
     "singleton": true,
     "defaults": {

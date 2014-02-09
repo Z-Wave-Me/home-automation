@@ -586,8 +586,10 @@ ZAutomationAPIWebRequest.prototype.listModules = function () {
 
     Object.keys(controller.modules).forEach(function (className) {
         module = controller.modules[className].meta;
-        module.className = className;
-        reply.data.push(module);
+        if (module.hasOwnProperty('userView') && module.userView)  {
+            module.className = className;
+            reply.data.push(module);
+        }
     });
 
     this.initResponse(reply);
@@ -656,36 +658,28 @@ ZAutomationAPIWebRequest.prototype.getInstanceFunc = function (instanceId) {
 
 ZAutomationAPIWebRequest.prototype.reconfigureInstanceFunc = function (instanceId) {
     return function () {
-        this.res.status = 500;
-        this.responseHeader("Content-Type", "application/json; charset=utf-8");
+        var reply = {
+                error: null,
+                data: null
+            },
+            reqObj = this.req.reqObj;
 
-        reply = {
-            error: null,
-            data: null
-        }
+        console.log(JSON.stringify(controller.instances));
 
-        var reqObj;
-        try {
-            reqObj = JSON.parse(this.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
-        }
-
-        if ("object" === typeof reqObj) {
-            if (!controller.instances.hasOwnProperty(instanceId)) {
-                this.res.status = 404;
-                reply.error = "Module " + reqObj.id + " doesn't exist";
+        if (!_.any(controller.instances, function (instance) { return instanceId === instance.id; })) {
+            reply.code = 404;
+            reply.error = "Instance " + reqObj.id + " doesn't exist";
+        } else {
+            if (controller.reconfigureInstance(instanceId, reqObj)) {
+                reply.code = 200;
+                reply.data = _.find(controller.instances, function (instance) { return instanceId === instance.id; })
             } else {
-                if (controller.reconfigureInstance(instanceId, reqObj)) {
-                    this.res.status = 200;
-                } else {
-                    this.res.status = 500;
-                    reply.error = "Cannot reconfigure module " + instanceId + " config";
-                };
+                reply.code = 500;
+                reply.error = "Cannot reconfigure module " + instanceId + " config";
             };
         };
 
-        this.res.body = JSON.stringify(reply);
+        this.initResponse(reply);
     }
 };
 
@@ -1173,7 +1167,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         re = /\/v1\/instances\/(.+)/;
         reTest = re.exec(url);
         if (!!reTest) {
-            var instanceId = reTest[1];
+            var instanceId = parseInt(reTest[1]);
             if ("GET" === method && !!instanceId) {
                 handlerFunc = this.getInstanceFunc(instanceId);
             } else if ("PUT" === method && !!instanceId) {

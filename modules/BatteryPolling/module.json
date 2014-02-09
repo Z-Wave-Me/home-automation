@@ -2,7 +2,10 @@
     "id": 2,
     "autoload": false,
     "singleton": true,
+    "userView": true,
     "defaults": {
+        "title": "Battery Polling",
+        "description": "Battery Polling description",
         "launchWeekDay": 0,
 	    "warningLevel": 20
     },
@@ -20,31 +23,54 @@
                 "required": true,
                 "minimum": 0,
                 "maximum": 99
+            },
+            "title": {
+                "type": "text",
+                "required": true,
+                "minimum": 0,
+                "maximum": 6
+            },
+            "description": {
+                "type": "textarea",
+                "required": true,
+                "minimum": 0,
+                "maximum": 6
+            },
+            "status": {
+                "type": "select",
+                "required": true,
+                "enum": ["enable", "disable"]
             }
         },
         "required": false
     },
     "options": {
         "fields": {
+            "title": {
+                "type": "text",
+                "required": true,
+                "label": "Title"
+            },
+            "description": {
+                "type": "textarea",
+                "required": true,
+                "label": "Description"
+            },
             "launchWeekDay": {
                 "type": "number",
-                "label": "launchWeekDay",
-                "focus": false,
-                "validate": true,
-                "disabled": false,
-                "showMessages": true,
+                "label": "Launch WeekDay",
                 "size": 40,
                 "helper": "Enter weekday (0-6)"
             },
             "warningLevel": {
                 "type": "number",
-                "label": "warningLevel",
-                "focus": false,
-                "validate": true,
-                "disabled": false,
-                "showMessages": true,
+                "label": "Warning Level",
                 "size": 40,
                 "helper": "Enter warning level"
+            },
+            "status": {
+                "type": "select",
+                "label": "Status"
             }
         },
         "focus": true,
@@ -54,9 +80,5 @@
         "showMessages": true,
         "collapsible": true,
         "legendStyle": "button"
-    },
-    "params": {
-        "launchWeekDay": 0,
-        "warningLevel": 20
     }
 }

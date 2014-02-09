@@ -15,6 +15,7 @@ function AutomationController () {
     this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
     this.instances = config.instances || [];
+    this.registerInstances = [];
     this.files = files || {};
 
     console.log(JSON.stringify(config, null, "  "));
@@ -155,6 +156,7 @@ AutomationController.prototype.loadModules = function (callback) {
         // Grab _module and clear it out
         self.modules[moduleClassName] = {
             meta: moduleMeta,
+            className: moduleClassName,
             classRef: _module
         };
         _module = undefined;
@@ -176,42 +178,45 @@ AutomationController.prototype.loadModules = function (callback) {
     if (callback) callback();
 };
 
-AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, instanceConfig) {
-    console.log("Instantiating module", instanceId, "from class", instanceClass);
+AutomationController.prototype.instantiateModule = function (instance) {
 
-    var self = this,
-        moduleClass = self.modules[instanceClass].classRef,
-        instance = new moduleClass(instanceId, self);
+    var module = _.find(this.modules, function (module) { return instance.moduleId === module.meta.id; }),
+        self = this,
+        moduleClass = module.className,
+        instance = new window[moduleClass](instance.id, self);
 
-    if (instance.meta["singleton"]) {
-        if (in_array(this._loadedSingletons, instanceClass)) {
-            console.log("WARNING: Module", instanceId, "is a singleton and already has been instantiated. Skipping.");
+    console.log("Instantiating module", instance.id, "from class", moduleClass);
+
+    if (module.meta.singleton) {
+        if (in_array(this._loadedSingletons, moduleClass)) {
+            console.log("WARNING: Module", instance.id, "is a singleton and already has been instantiated. Skipping.");
             return;
         }
 
-        this._loadedSingletons.push(instanceClass);
+        this._loadedSingletons.push(moduleClass);
     }
 
-    instance.init(instanceConfig);
-
+    instance.init(instance.params);
     self.registerInstance(instance);
-
     return instance;
 };
 
 AutomationController.prototype.instantiateModules = function () {
-    var self = this;
+    var self = this,
+        module;
 
     console.log("--- Automatic modules instantiation ---");
-    this._autoLoadModules.forEach(function (moduleClassName) {
-        self.instantiateModule(moduleClassName, moduleClassName);
+    self._autoLoadModules.forEach(function (moduleClassName) {
+        module = _.find(self.modules, function (module) { return module.className === moduleClassName; });
+        if (!!module) {
+            self.createInstance(module.meta.id, module.meta.defaults);
+        }
     });
 
     console.log("--- User configured modules instantiation ---");
-    if (this.config.hasOwnProperty('instances') && Object.keys(this.config.instances).length > 0) {
-        Object.keys(this.config.instances).forEach(function (instanceId) {
-            var instanceDefs = self.config.instances[instanceId];
-            self.instantiateModule(instanceId, instanceDefs.module, instanceDefs.config);
+    if (self.instances.length > 0) {
+        self.instances.forEach(function (instance) {
+            self.instantiateModule(instance);
         });
     } else {
         console.log("--! No user-configured instances found");
@@ -223,17 +228,21 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
 };
 
 AutomationController.prototype.registerInstance = function (instance) {
-    if (!!instance) {
-        var instanceId = instance.id;
+    console.log(JSON.stringify(instance));
+    var self = this;
 
-        if (!this.instances.hasOwnProperty(instanceId)) {
-            this.instances[instanceId] = instance;
+    if (!!instance) {
+        var instanceId = instance.id,
+            instance = self.registerInstances.hasOwnProperty(instanceId);
+
+        if (!instance) {
+            self.registerInstances[instanceId] = instance;
             this.emit('core.instanceRegistered', instanceId);
         } else {
             this.emit('core.error', new Error("Can't register module instance " + instanceId + " twice"));
         }
     } else {
-        this.emit('core.error', new Error("Can't register empty module instance " + instanceId));
+        this.emit('core.error', new Error("Can't register empty module instance " + instance.id));
     }
 };
 
@@ -248,12 +257,14 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
         instance = {
             id: id,
             moduleId: moduleId,
-            params: params
+            params: params,
+            userView: module.userView
         };
 
         this.instances.push(instance);
         this.saveConfig();
         this.emit('core.instanceCreated', id);
+        this.instantiateModule(instance);
         return instance;
     } else {
         this.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
@@ -262,7 +273,7 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
 };
 
 AutomationController.prototype.reconfigureInstance = function (id, config) {
-    var instance = this.instances[id];
+    var instance = this.registerInstances[id];
 
     if (!!instance) {
         instance.stop();
@@ -271,14 +282,14 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         this.emit('core.instanceReconfigured', id);
         return true;
     } else {
-        this.emit('core.error', new Error("Cannot reconfigure module "+className+" instance with id "+id));
+        this.emit('core.error', new Error("Cannot reconfigure module " + className + " instance with id "+id));
         return false;
     }
 };
 
 AutomationController.prototype.removeInstance = function (id) {
-    var instance = this.instances[id];
-    var instanceClass = instance.toJSON()["module"];
+    var instance = this.registerInstances[id],
+        instanceClass = instance.toJSON()["module"];
 
     instance.saveConfig();
     instance.stop();
@@ -290,17 +301,15 @@ AutomationController.prototype.removeInstance = function (id) {
         }
     }
 
-    delete this.instances[id];
-
+    delete this.registerInstances[id];
     this.emit('core.instanceStopped', id);
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
     this.removeInstance(id);
 
-    delete this.config.instances[id];
+    this.instances = this.instances.filter(function(model) { return id !== model.id; })
     this.saveConfig();
-
     this.emit('core.instanceDeleted', id);
 };
 

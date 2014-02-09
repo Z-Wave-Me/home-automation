@@ -2,6 +2,7 @@
     "id": 7,
     "autoload": false,
     "singleton": false,
+    "userView": false,
     "defaults": {
 		"map": []
     }

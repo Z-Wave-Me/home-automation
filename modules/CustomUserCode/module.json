@@ -2,6 +2,7 @@
     "id": 4,
     "autoload": false,
     "singleton": true,
+    "userView": false,
     "defaults": {
 	"customCodeFiles": [ ]
     }
