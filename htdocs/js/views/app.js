@@ -16,11 +16,12 @@ define([
             var that = this,
                 host = null,
                 port = null;
+
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = host || window.location.port;
-            that.apiHost = port || window.location.hostname;
+            that.apiPort = window.location.port !== "" ? window.location.port : 8083;
+            that.apiHost = window.location.hostname;
 
             that.preFilterAjax();
             that.buildStructure();
