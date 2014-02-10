@@ -98,9 +98,9 @@ if (!config) {
 
     //--- Instantiate Automation Controller
 
-    var api = null;
-    var storage = null;
-    var controller = new AutomationController(config);
+    var api = null,
+        storage = null,
+        controller = new AutomationController(config);
 
     controller.on('core.init', function () {
         console.log('Starting ZWay Automation webserver');
@@ -120,7 +120,6 @@ if (!config) {
     });
 
     //--- main
-
     controller.init();
     controller.start();
 }

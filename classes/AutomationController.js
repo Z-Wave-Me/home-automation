@@ -22,7 +22,7 @@ function AutomationController () {
 
     this.modules = {};
     this.devices = {};
-    this.schemas = schemas || [];
+    this.schemas = config.schemas || [];
 
     this.notifications = [];
     this.lastStructureChangeTime = 0;
@@ -180,20 +180,20 @@ AutomationController.prototype.loadModules = function (callback) {
 
 AutomationController.prototype.instantiateModule = function (instance) {
 
-    var module = _.find(this.modules, function (module) { return instance.moduleId === module.meta.id; }),
-        self = this,
+    var self = this,
+        module = _.find(self.modules, function (module) { return instance.moduleId === module.meta.id; }),
         moduleClass = module.className,
         instance = new window[moduleClass](instance.id, self);
 
     console.log("Instantiating module", instance.id, "from class", moduleClass);
 
     if (module.meta.singleton) {
-        if (in_array(this._loadedSingletons, moduleClass)) {
+        if (in_array(self._loadedSingletons, moduleClass)) {
             console.log("WARNING: Module", instance.id, "is a singleton and already has been instantiated. Skipping.");
             return;
         }
 
-        this._loadedSingletons.push(moduleClass);
+        self._loadedSingletons.push(moduleClass);
     }
 
     instance.init(instance.params);
@@ -236,23 +236,24 @@ AutomationController.prototype.registerInstance = function (instance) {
 
         if (!isExistInstance) {
             self.registerInstances[instanceId] = instance;
-            this.emit('core.instanceRegistered', instanceId);
+            self.emit('core.instanceRegistered', instanceId);
         } else {
-            this.emit('core.error', new Error("Can't register module instance " + instanceId + " twice"));
+            self.emit('core.error', new Error("Can't register module instance " + instanceId + " twice"));
         }
     } else {
-        this.emit('core.error', new Error("Can't register empty module instance " + instance.id));
+        self.emit('core.error', new Error("Can't register empty module instance " + instance.id));
     }
 };
 
 AutomationController.prototype.createInstance = function (moduleId, params) {
     //var instance = this.instantiateModule(id, className, config),
-    var id = this.instances.length ? this.instances[this.instances.length - 1].id + 1 : 1,
+    var self = this,
+        id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
         instance = null,
-        module = _.find(this.modules, function (module) { return module.meta.id === moduleId; });
+        module = _.find(self.modules, function (module) { return module.meta.id === moduleId; }),
+        result;
 
     if (!!module) {
-
         instance = {
             id: id,
             moduleId: moduleId,
@@ -260,20 +261,23 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
             userView: module.meta.userView
         };
 
-        this.instances.push(instance);
-        this.saveConfig();
-        this.emit('core.instanceCreated', id);
-        this.instantiateModule(instance);
-        return instance;
+        self.instances.push(instance);
+        self.saveConfig();
+        self.emit('core.instanceCreated', id);
+        self.instantiateModule(instance);
+        result = instance;
     } else {
-        this.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
-        return false;
+        self.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
+        result = false;
     }
+
+    return result;
 };
 
 AutomationController.prototype.reconfigureInstance = function (id, config) {
     var instance = this.registerInstances[id],
-        index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; }));
+        index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
+        result;
 
     if (!!instance) {
         instance.stop();
@@ -283,11 +287,13 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         }
 
         this.emit('core.instanceReconfigured', id);
-        return this.instances[index];
+        result = this.instances[index];
     } else {
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
-        return false;
+        result = false;
     }
+
+    return result;
 };
 
 AutomationController.prototype.removeInstance = function (id) {
