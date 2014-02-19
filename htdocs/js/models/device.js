@@ -6,22 +6,20 @@ define([
     var Device =  Backbone.Model.extend({
 
         defaults: {
-            deviceSubType: null,
             deviceType: null,
-            id: null,
             lock: true,
             metrics: {}
         },
 
         methodToURL: {
-            'read': '/devices/',
-            'create': '/devices/',
-            'update': '/devices/',
-            'delete': '/devices/'
+            'read': '/devices',
+            'create': '/devices',
+            'update': '/devices',
+            'delete': '/devices'
         },
 
         url: function () {
-            var url = '';
+            var url = !this.isNew() ? '/' + this.get('id') : '';
             return url;
         },
 
@@ -36,7 +34,11 @@ define([
             this.bind('error', function (model, err) {
                 log("ERROR: " + err);
             });
+        },
+        parse: function (response, xhr) {
+            return response.data || response;
         }
+
     });
 
     return Device;

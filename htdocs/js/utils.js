@@ -73,7 +73,6 @@ function qVar(variable) {
     return undefined;
 }
 
-function capitaliseFirstLetter(string){
-    'use strict';
-    return string.charAt(0).toUpperCase() + string.slice(1);
+String.prototype.capitalize = function () {
+    return this.charAt(0).toUpperCase() + this.slice(1);
 }

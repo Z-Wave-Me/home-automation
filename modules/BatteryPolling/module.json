@@ -1,8 +1,84 @@
 {
+    "id": 2,
     "autoload": false,
     "singleton": true,
+    "userView": true,
     "defaults": {
+        "title": "Battery Polling",
+        "description": "Battery Polling description",
         "launchWeekDay": 0,
-	"warningLevel": 20
+	    "warningLevel": 20
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "launchWeekDay": {
+                "type": "number",
+                "required": true,
+                "minimum": 0,
+                "maximum": 6
+            },
+            "warningLevel": {
+                "type": "number",
+                "required": true,
+                "minimum": 0,
+                "maximum": 99
+            },
+            "title": {
+                "type": "text",
+                "required": true,
+                "minimum": 0,
+                "maximum": 6
+            },
+            "description": {
+                "type": "textarea",
+                "required": true,
+                "minimum": 0,
+                "maximum": 6
+            },
+            "status": {
+                "type": "select",
+                "required": true,
+                "enum": ["enable", "disable"]
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "title": {
+                "type": "text",
+                "required": true,
+                "label": "Title"
+            },
+            "description": {
+                "type": "textarea",
+                "required": true,
+                "label": "Description"
+            },
+            "launchWeekDay": {
+                "type": "number",
+                "label": "Launch WeekDay",
+                "size": 40,
+                "helper": "Enter weekday (0-6)"
+            },
+            "warningLevel": {
+                "type": "number",
+                "label": "Warning Level",
+                "size": 40,
+                "helper": "Enter warning level"
+            },
+            "status": {
+                "type": "select",
+                "label": "Status"
+            }
+        },
+        "focus": true,
+        "type": "object",
+        "validate": true,
+        "disabled": false,
+        "showMessages": true,
+        "collapsible": true,
+        "legendStyle": "button"
     }
 }

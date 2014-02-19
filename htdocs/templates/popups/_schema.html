@@ -1,0 +1,25 @@
+<div class="widget-container modules-container">
+    <div class="module <% if (typeof id  === 'undefined') { print('edit'); } %>">
+        <form class="form-horizontal general-tab" role="form">
+            <div class="form-group">
+                <label for="selectModules" class="control-label">Modules:</label>
+                <div class="input-group">
+                    <select class="form-control selectModules" id="selectModules">
+                        <option disabled selected>Choose module</option>
+                        <% _.each(modules, function(module) { %>
+                            <option value="<%= module.id %>"><%= module.className %></option>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group alpaca-form"></div>
+            <div class="form-group button-group">
+                <div class="input-group">
+                    <button class="button-group edit-button <% if (typeof id  === 'undefined') { print('just-hidden'); } %>">edit</button>
+                    <button class="button-group save-button <% if (typeof id  !== 'undefined') { print('just-hidden'); } %>">save</button>
+                    <button class="button-group cancel-button <% if (typeof id  !== 'undefined') { print('just-hidden'); } %>">cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

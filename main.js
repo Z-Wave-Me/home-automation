@@ -56,16 +56,17 @@ function get_values (obj) {
 //--- Load configuration
 
 
-var config;
+var config, files, templates, schemas, modules;
 try {
-    // config = loadJSON("config.json");
     config = loadObject("config.json") || {
         "controller": {},
         "vdevInfo": {},
-        "locations": {}
+        "locations": []
     };
+    files = loadObject("files.json") || {};
+    schemas = loadObject("schemas.json") || [];
 } catch (ex) {
-    console.log("Error loading config.json:", ex.message);
+    console.log("Error loading config.json or files.json:", ex.message);
 }
 
 if (!config) {
@@ -81,18 +82,25 @@ if (!config) {
 
     executeFile("constants.js");
     executeFile(config.libPath + "/eventemitter2.js");
+    executeFile(config.libPath + "/underscore-min.js");
+
+    //--- Load router
+    //executeFile(config.libPath + "/Router.js");
 
     //--- Load Automation subsystem classes
 
-    executeFile(config.classesPath+"/AutomationController.js");
-    executeFile(config.classesPath+"/AutomationModule.js");
-    executeFile(config.classesPath+"/VirtualDevice.js");
+    executeFile(config.classesPath + "/AutomationController.js");
+    executeFile(config.classesPath + "/AutomationModule.js");
+    executeFile(config.classesPath + "/VirtualDevice.js");
+    executeFile("request.js");
     executeFile("webserver.js");
+    executeFile("storage.js");
 
     //--- Instantiate Automation Controller
 
-    var api = null;
-    var controller = new AutomationController(config);
+    var api = null,
+        storage = null,
+        controller = new AutomationController(config);
 
     controller.on('core.init', function () {
         console.log('Starting ZWay Automation webserver');
@@ -112,7 +120,6 @@ if (!config) {
     });
 
     //--- main
-
     controller.init();
     controller.start();
 }

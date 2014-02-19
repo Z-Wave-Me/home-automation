@@ -24,6 +24,9 @@ define([
         var hash = window.location.hash.length > 0 ? window.location.hash.match(/(?:[a-z]+){2}/) : 'dashboard';
         $('.top-nav').find("a").removeClass("active");
         $('.top-nav a[href*="' + hash + '"]:first').addClass('active');
+        if (!$('.top-nav a[href*="' + hash + '"]:first').length) {
+            $('.top-nav a[href*="dashboard"]:first').addClass('active')
+        }
     };
 
     return Utils;

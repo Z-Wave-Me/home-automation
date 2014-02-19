@@ -11,14 +11,18 @@ function AutomationController () {
     AutomationController.super_.call(this);
 
     this.config = config.controller || {};
-    this.locations = config.locations || {};
+    this.locations = config.locations || [];
+    this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
+    this.instances = config.instances || [];
+    this.registerInstances = [];
+    this.files = files || {};
 
     console.log(JSON.stringify(config, null, "  "));
 
     this.modules = {};
-    this.instances = {};
     this.devices = {};
+    this.schemas = config.schemas || [];
 
     this.notifications = [];
     this.lastStructureChangeTime = 0;
@@ -47,10 +51,18 @@ AutomationController.prototype.saveConfig = function () {
     var cfgObject = {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
-        "locations": this.locations
-    }
+        "locations": this.locations,
+        "profiles": this.profiles,
+        "instances": this.instances
+    };
 
     saveObject("config.json", cfgObject);
+    saveObject("schemas.json", this.schemas);
+};
+
+
+AutomationController.prototype.saveFiles = function () {
+    saveObject("files.json", this.files);
 };
 
 AutomationController.prototype.start = function () {
@@ -65,6 +77,10 @@ AutomationController.prototype.start = function () {
     console.log("Starting webserver...");
     api = new ZAutomationAPIWebRequest().handlerFunc();
 
+    // Run storage
+    console.log("Starting storage...");
+    storage = new ZAutomationStorageWebRequest().handlerFunc();
+
     // Notify core
     this.emit("core.start");
 };
@@ -73,6 +89,7 @@ AutomationController.prototype.stop = function () {
     // Remove API webserver
     console.log("Stopping webserver...");
     api = null;
+    storage = null;
 
     var self = this;
 
@@ -139,6 +156,7 @@ AutomationController.prototype.loadModules = function (callback) {
         // Grab _module and clear it out
         self.modules[moduleClassName] = {
             meta: moduleMeta,
+            className: moduleClassName,
             classRef: _module
         };
         _module = undefined;
@@ -160,43 +178,45 @@ AutomationController.prototype.loadModules = function (callback) {
     if (callback) callback();
 };
 
-AutomationController.prototype.instantiateModule = function (instanceId, instanceClass, instanceConfig) {
-    console.log("Instantiating module", instanceId, "from class", instanceClass);
+AutomationController.prototype.instantiateModule = function (instance) {
 
-    var self = this;
-    var moduleClass = self.modules[instanceClass].classRef;
+    var self = this,
+        module = _.find(self.modules, function (module) { return instance.moduleId === module.meta.id; }),
+        moduleClass = module.className,
+        instance = new window[moduleClass](instance.id, self);
 
-    var instance = new moduleClass(instanceId, self);
+    console.log("Instantiating module", instance.id, "from class", moduleClass);
 
-    if (instance.meta["singleton"]) {
-        if (in_array(this._loadedSingletons, instanceClass)) {
-            console.log("WARNING: Module", instanceId, "is a singleton and already has been instantiated. Skipping.");
+    if (module.meta.singleton) {
+        if (in_array(self._loadedSingletons, moduleClass)) {
+            console.log("WARNING: Module", instance.id, "is a singleton and already has been instantiated. Skipping.");
             return;
         }
 
-        this._loadedSingletons.push(instanceClass);
+        self._loadedSingletons.push(moduleClass);
     }
 
-    instance.init(instanceConfig);
-
+    instance.init(instance.params);
     self.registerInstance(instance);
-
     return instance;
 };
 
 AutomationController.prototype.instantiateModules = function () {
-    var self = this;
+    var self = this,
+        module;
 
-    console.log("--- Automatic modules instantiation");
-    this._autoLoadModules.forEach(function (moduleClassName) {
-        self.instantiateModule(moduleClassName, moduleClassName);
+    console.log("--- Automatic modules instantiation ---");
+    self._autoLoadModules.forEach(function (moduleClassName) {
+        module = _.find(self.modules, function (module) { return module.className === moduleClassName; });
+        if (!!module && !_.any(self.instances, function (model) { return model.moduleId === module.meta.id; })) {
+            self.createInstance(module.meta.id, module.meta.defaults);
+        }
     });
 
-    console.log("--- User configured modules instantiation");
-    if (this.config.hasOwnProperty('instances') && Object.keys(this.config.instances).length > 0) {
-        Object.keys(this.config.instances).forEach(function (instanceId) {
-            var instanceDefs = self.config.instances[instanceId];
-            self.instantiateModule(instanceId, instanceDefs.module, instanceDefs.config);
+    console.log("--- User configured modules instantiation ---");
+    if (self.instances.length > 0) {
+        self.instances.forEach(function (instance) {
+            self.instantiateModule(instance);
         });
     } else {
         console.log("--! No user-configured instances found");
@@ -208,57 +228,77 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
 };
 
 AutomationController.prototype.registerInstance = function (instance) {
-    if (!!instance) {
-        var instanceId = instance.id;
+    var self = this;
 
-        if (!this.instances.hasOwnProperty(instanceId)) {
-            this.instances[instanceId] = instance;
-            this.emit('core.instanceRegistered', instanceId);
+    if (!!instance) {
+        var instanceId = instance.id,
+            isExistInstance = self.registerInstances.hasOwnProperty(instanceId);
+
+        if (!isExistInstance) {
+            self.registerInstances[instanceId] = instance;
+            self.emit('core.instanceRegistered', instanceId);
         } else {
-            this.emit('core.error', new Error("Can't register module instance "+instanceId+" twice"));
+            self.emit('core.error', new Error("Can't register module instance " + instanceId + " twice"));
         }
     } else {
-        this.emit('core.error', new Error("Can't register empty module instance "+instanceId));
+        self.emit('core.error', new Error("Can't register empty module instance " + instance.id));
     }
 };
 
-AutomationController.prototype.createInstance = function (id, className, config) {
-    var instance = this.instantiateModule(id, className, config);
-    if (!!instance) {
-        if (!this.config.hasOwnProperty("instances")) {
-            this.config.instances = {};
-        }
-        this.config.instances[id] = {
-            module: className,
-            config: config
+AutomationController.prototype.createInstance = function (moduleId, params) {
+    //var instance = this.instantiateModule(id, className, config),
+    var self = this,
+        id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
+        instance = null,
+        module = _.find(self.modules, function (module) { return module.meta.id === moduleId; }),
+        result;
+
+    if (!!module) {
+        instance = {
+            id: id,
+            moduleId: moduleId,
+            params: params,
+            userView: module.meta.userView
         };
-        this.saveConfig();
-        this.emit('core.instanceCreated', id);
-        return true;
+
+        self.instances.push(instance);
+        self.saveConfig();
+        self.emit('core.instanceCreated', id);
+        self.instantiateModule(instance);
+        result = instance;
     } else {
-        this.emit('core.error', new Error("Cannot create module "+className+" instance with id "+id));
-        return false;
+        self.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
+        result = false;
     }
+
+    return result;
 };
 
 AutomationController.prototype.reconfigureInstance = function (id, config) {
-    var instance = this.instances[id];
+    var instance = this.registerInstances[id],
+        index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
+        result;
 
     if (!!instance) {
         instance.stop();
-        instance.init(config);
+        instance.init(config.params);
+        if (config.hasOwnProperty('params')) {
+            this.instances[index].params = config.params;
+        }
 
         this.emit('core.instanceReconfigured', id);
-        return true;
+        result = this.instances[index];
     } else {
-        this.emit('core.error', new Error("Cannot reconfigure module "+className+" instance with id "+id));
-        return false;
+        this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
+        result = false;
     }
+
+    return result;
 };
 
 AutomationController.prototype.removeInstance = function (id) {
-    var instance = this.instances[id];
-    var instanceClass = instance.toJSON()["module"];
+    var instance = this.registerInstances[id],
+        instanceClass = instance.toJSON()["module"];
 
     instance.saveConfig();
     instance.stop();
@@ -270,17 +310,15 @@ AutomationController.prototype.removeInstance = function (id) {
         }
     }
 
-    delete this.instances[id];
-
+    delete this.registerInstances[id];
     this.emit('core.instanceStopped', id);
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
     this.removeInstance(id);
 
-    delete this.config.instances[id];
+    this.instances = this.instances.filter(function(model) { return id !== model.id; })
     this.saveConfig();
-
     this.emit('core.instanceDeleted', id);
 };
 
@@ -310,6 +348,12 @@ AutomationController.prototype.getVdevInfo = function (id) {
     return this.vdevInfo[id];
 }
 
+AutomationController.prototype.setVdevInfo = function (id, device) {
+    this.devices[device.id] = device;
+    this.saveConfig();
+    return this.devices[device.id];
+}
+
 AutomationController.prototype.saveNotifications = function () {
     saveObject("notifications", this.notifications);
 }
@@ -319,69 +363,289 @@ AutomationController.prototype.loadNotifications = function () {
 }
 
 AutomationController.prototype.addNotification = function (severity, message) {
-    var now = new Date();
-    var ts = Math.round(now.getTime() / 1000);
-    var id = now.getTime().toString();
-    this.notifications.push([id, ts, severity, message]);
+    var now = new Date(), notice;
+
+    notice = {
+        id: Math.floor(new Date().getTime() / 1000),
+        timestamp: now.toISOString(),
+        level: severity,
+        message: message,
+        redeemed: false
+    };
+
+    this.notifications.push(notice);
     this.saveNotifications();
 }
 
-AutomationController.prototype.deleteNotifications = function (ids) {
-    this.notifications = this.notifications.filter(function (item) {
-        return ids.indexOf(item[0]) === -1;
+AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
+    var that = this;
+    ids = Array.isArray(ids) ? ids : [ids];
+
+
+    if (removeNotification) {
+        that.notifications = that.notifications.filter(function (notification) {
+            return ids.indexOf(parseInt(notification.id)) === -1;
+        });
+    } else {
+        that.notifications.forEach(function (notification) {
+            if (ids.indexOf(parseInt(notification.id)) !== -1) {
+                that.notifications[that.notifications.indexOf(notification)].redeemed = true;
+            }
+        });
+    }
+
+    callback(true);
+    this.saveNotifications();
+};
+
+AutomationController.prototype.addLocation = function (title, icon, callback) {
+    var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
+    var locations = this.locations.filter(function (location) {
+        return location.id === id;
     });
-    this.saveNotifications();
-}
 
-AutomationController.prototype.addLocation = function (id, title) {
-    if (!this.locations.hasOwnProperty(id)) {
-        this.locations[id] = {
+    if (locations.length > 0) {
+        callback(false)
+    } else {
+        var location = {
             id: id,
-            title: title
-        }
+            title: title,
+            icon: icon
+        };
+        this.locations.push(location);
+        callback(location);
         this.saveConfig();
         this.emit('location.added', id);
-    } else {
-        this.emit('core.error', new Error("Cannot add location "+id+" - already exists"));
     }
 };
 
-AutomationController.prototype.removeLocation = function (id) {
+AutomationController.prototype.removeLocation = function (id, callback) {
     var self = this;
-
-    if (this.locations.hasOwnProperty(id)) {
-        var loc = this.locations[id];
+    var locations = this.locations.filter(function (location) {
+        return location.id === id;
+    });
+    if (locations.length > 0) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
             if (vdev.location === id) {
                 vdev.location = null;
             }
         });
-        delete this.locations[id];
+
+        this.locations = this.locations.filter(function (location) {
+            return location.id !== id;
+        });
+
         this.saveConfig();
+        callback(true);
         this.emit('location.removed', id);
     } else {
+        callback(false);
         this.emit('core.error', new Error("Cannot remove location "+id+" - doesn't exist"));
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title) {
-    if (this.locations.hasOwnProperty(id)) {
-        this.locations[id].title = title;
+AutomationController.prototype.updateLocation = function (id, title, callback) {
+    var locations = this.locations.filter(function (location) {
+        return location.id === id;
+    });
+    if (locations.length > 0) {
+        this.locations[this.locations.indexOf(locations[0])].title = title;
+        callback(this.locations[this.locations.indexOf(locations[0])]);
         this.saveConfig();
         this.emit('location.updated', id);
     } else {
+        callback(false);
         this.emit('core.error', new Error("Cannot update location "+id+" - doesn't exist"));
     }
 };
 
 AutomationController.prototype.listNotifications = function (since) {
     var self = this;
-    since = since || 0;
-
+    since = parseInt(since) || 0;
     var filteredNotifications = this.notifications.filter(function (notification) {
-        return notification[1] >= since;
+        return notification.id >= since;
     });
 
     return filteredNotifications;
+};
+
+AutomationController.prototype.getNotification = function (id) {
+    var filteredNotifications = this.notifications.filter(function (notification) {
+        return parseInt(notification.id) === parseInt(id);
+    });
+
+    return filteredNotifications[0] || null;
+};
+
+AutomationController.prototype.getListProfiles = function () {
+    if (this.profiles.length === 0) {
+        this.profiles.push({
+            id: 1,
+            name: 'Default',
+            description: 'This is default profile. Default profile created automatically.',
+            widgets: [],
+            active: true
+        })
+    }
+    return this.profiles;
+};
+
+AutomationController.prototype.getProfile = function (id) {
+    var profile = this.profiles.filter(function (profile) {
+        return profile.id === parseInt(id);
+    });
+
+    return profile[0] || null;
+};
+
+AutomationController.prototype.createProfile = function (object) {
+    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
+        profile;
+
+    profile = {
+        id: id,
+        name: object.name,
+        description: object.description || null,
+        widgets: object.widgets || [],
+        active: object.active || false
+    }
+
+    this.profiles.push(profile);
+    this.saveConfig();
+    return profile;
+};
+
+AutomationController.prototype.updateProfile = function (object, id) {
+    var profile = this.profiles.filter(function (profile) {
+            return profile.id === parseInt(id);
+        }),
+        index;
+
+    if (profile.length) {
+        index = this.profiles.indexOf(profile[0]);
+
+        if (object.hasOwnProperty('name')) {
+            this.profiles[index].name = object.name;
+        }
+        if (object.hasOwnProperty('description')) {
+            this.profiles[index].description = object.description;
+        }
+        if (object.hasOwnProperty('widgets')) {
+            this.profiles[index].widgets = object.widgets;
+        }
+        if (object.hasOwnProperty('active')) {
+            this.profiles[index].active = object.active;
+        }
+    }
+
+    this.saveConfig();
+    return this.profiles[index];
+};
+
+AutomationController.prototype.removeProfile = function (id) {
+    this.profiles = this.profiles.filter(function (profile) {
+        return profile.id !== parseInt(id);
+    });
+
+    this.saveConfig();
+};
+
+// Schemas
+
+AutomationController.prototype.getListSchemas = function (id) {
+    var result = null;
+    id = id || null;
+    if (id) {
+        result = this.schemas.filter(function (schema) {
+            return schema.id === parseInt(id);
+        })[0];
+    } else {
+        result = this.schemas;
+    }
+    return result;
+};
+
+AutomationController.prototype.createSchema = function (object) {
+    var id = this.schemas.length ? this.schemas[this.schemas.length - 1].id + 1 : 1,
+        schema;
+
+    schema = {
+        id: id,
+        title: object.title,
+        schema: object.schema
+    }
+
+    this.schemas.push(schema);
+    this.saveConfig();
+    return schema;
+};
+
+AutomationController.prototype.updateSchema = function (object, id) {
+    var result = null,
+        index,
+        schema;
+    id = id || null;
+
+
+    if (id) {
+        schema = this.schemas.filter(function (sch) {
+            return sch.id === parseInt(id);
+        });
+
+
+        if (schema.length) {
+            index = this.schemas.indexOf(schema[0]);
+
+            if (object.hasOwnProperty('title')) {
+                this.schemas[index].title = object.title;
+            }
+            if (object.hasOwnProperty('schema')) {
+                this.schemas[index].schema = object.schema;
+            }
+
+            result = this.schemas[index];
+        } else {
+            result = null;
+        }
+    } else {
+        result = null;
+    }
+
+    this.saveConfig();
+    return result;
+};
+
+
+AutomationController.prototype.removeSchema = function (id) {
+    id = id || null;
+
+    this.schemas = this.schemas.filter(function (schema) {
+        return schema.id !== parseInt(id);
+    });
+
+    this.saveConfig();
+};
+
+AutomationController.prototype.pullFile = function (id) {
+    var file;
+    if (this.files.hasOwnProperty('id')) {
+        file = this.files[id];
+        file["blob"] = loadObject(id);
+    } else {
+        file = null;
+    }
+    return file;
+};
+
+AutomationController.prototype.pushFile = function (file, callback) {
+    var id = String((new Date()).getTime());
+    this.files[id] = {
+        name: file.name,
+        type: file.type,
+        id: id
+    }
+    this.saveFiles();
+    saveObject(id, file);
+    callback(this.files[id]);
 };

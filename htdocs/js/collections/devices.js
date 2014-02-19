@@ -8,10 +8,10 @@ define([
         // model reference
         model: DeviceM,
         methodToURL: {
-            'read': '/devices/',
-            'create': '/devices/',
-            'update': '/devices/',
-            'delete': '/devices/'
+            'read': '/devices',
+            'create': '/devices',
+            'update': '/devices',
+            'delete': '/devices'
         },
 
         url: function () {
@@ -21,10 +21,11 @@ define([
 
         sync: function (method, model, options) {
             options = options || {};
+            options.data = options.data || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
             if (this.updateTime !== undefined) {
-                options.data = {since: this.updateTime};
+                options.data.since = this.updateTime;
             }
 
             Backbone.sync(method, model, options);

@@ -1,30 +1,32 @@
 define([
     'backbone',
     'helpers/bb-sync',
-    'layout'
-], function (Backbone, bbSync, Layout) {
+    'collections/devices',
+    'collections/locations',
+    'collections/notifications',
+    'collections/profiles',
+    'collections/modules',
+    'collections/instances'
+], function (Backbone, bbSync, Devices, Locations, Notifications, Profiles, Modules, Instances) {
     'use strict';
     return Backbone.View.extend({
         el: 'body',
 
         initialize: function () {
-            var that = this;
-            _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax');
+            var that = this,
+                host = null,
+                port = null;
+
+            _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = '10483';
-            that.apiHost = 'mskoff.z-wave.me';
-            that.Layout = new Layout();
+            that.apiPort = window.location.port !== "" ? window.location.port : 8083;
+            that.apiHost = window.location.hostname;
 
-            that.vars = {
-                apiPort : qVar("port") || window.location.port,
-                apiHost : qVar("host") || window.location.hostname
-            };
-
+            that.preFilterAjax();
+            that.buildStructure();
             Backbone.sync = bbSync;
             that.addJqueryMethod();
-            that.preFilterAjax();
-            that.Layout.render();
         },
         render: function () {
             log('Render app.js...');
@@ -68,7 +70,7 @@ define([
                 this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
                     $(window).scrollLeft()) + "px");
                 return this;
-            }
+            };
 
             $.fn.top = function () {
                 this.css("position","absolute");
@@ -77,18 +79,68 @@ define([
                 this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
                     $(window).scrollLeft()) + "px");
                 return this;
-            }
+            };
         },
         preFilterAjax: function () {
             var that = this;
             $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
                 // Your server goes below
-                var apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api" + options.url;
+                that.apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api/v1" + options.url;
 
-                options.url = apiUrl;
+                options.url = that.apiUrl;
                 options.crossDomain = {
                     crossDomain: true
                 };
+            });
+        },
+        buildStructure: function () {
+            if (!window.App) {
+                window.App = {
+                    Devices: new Devices(),
+                    Locations: new Locations(),
+                    Tags: {},
+                    Notifications: new Notifications(),
+                    Profiles: new Profiles(),
+                    Modules: new Modules(),
+                    Instances: new Instances(),
+                    API: {
+                        HOST: this.apiHost,
+                        PORT: this.apiPort,
+                        URL: this.apiUrl
+                    }
+                };
+            }
+
+            setInterval(function () {
+                window.App.Devices.fetch({
+                    remove: false,
+                    merge: true
+                });
+
+                window.App.Notifications.fetch({
+                    remove: false,
+                    merge: true
+                });
+            }, 1000);
+
+            window.App.Locations.fetch({
+                remove: false,
+                merge: true
+            });
+
+            window.App.Profiles.fetch({
+                remove: false,
+                merge: true
+            });
+
+            window.App.Modules.fetch({
+                remove: false,
+                merge: true
+            });
+
+            window.App.Instances.fetch({
+                remove: false,
+                merge: true
             });
         }
     });

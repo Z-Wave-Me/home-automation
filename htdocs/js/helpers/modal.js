@@ -72,12 +72,12 @@ define([
 
         $popup.appendTo('body');
 
-        if (!position || position == undefined && position !== top) {
+        if (!position || position === undefined) {
             $popup.center();
-        } else if (position == 'top'){
+        } else if (position === 'top') {
             $popup.top();
         } else {
-            $popup.css( position );
+            $popup.css(position);
         }
 
         $popup.show();

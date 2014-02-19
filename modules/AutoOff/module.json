@@ -1,5 +1,7 @@
 {
+    "id": 0,
     "autoload": false,
+    "userView": false,
     "singleton": false,
     "defaults": {
         "timeout": 5
