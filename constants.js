@@ -22,6 +22,7 @@ var ZWAY_DATA_CHANGE_TYPE = {
     0x01: "Updated",       // Value updated or child created
     0x02: "Invalidated",   // Value invalidated
     0x03: "Deleted",       // Data holder deleted - callback is called last time before being deleted
+    0x04: "ChildCreated",  // New direct child node created
     0x40: "PhantomUpdate", // Data holder updated with same value (only updateTime changed)
     0x80: "ChildEvent"     // Event from child node
 };

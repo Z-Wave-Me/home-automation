@@ -101,11 +101,12 @@ ZWaveGate.prototype.handleStructureChanges = function (changeType, device, insta
     // console.log("--- handleStructureChanges", changeType, device, instance, commandClass);
 
     if ("InstanceAdded" === changeType) {
-        // Ignore instance 0 for multiinstance devices
-        if (0 == instance && Object.keys(zway.devices[device].instances).length > 1) {
-            console.log("Device", device, "is a multiinstance device. Ignoring instance 0", zway.devices[device].instances.length);
-            return;
-        };
+        // This is not the case for some devices, so for now we are instanciating all vDevs
+        //// Ignore instance 0 for multiinstance devices
+        //if (0 == instance && Object.keys(zway.devices[device].instances).length > 1) {
+        //    console.log("Device", device, "is a multiinstance device. Ignoring instance 0", zway.devices[device].instances.length);
+        //    return;
+        //};
 
         // Create ZWayDevice instance
         console.log("Creating device", device, "instance", instance, "virtual devices");
