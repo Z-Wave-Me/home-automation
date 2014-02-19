@@ -17,6 +17,7 @@ define([
             _.bindAll(this, 'render', 'isExistWidget', 'renderWidget', 'setPosition');
             var that = this;
             that.Devices = window.App.Devices;
+            that.Profiles = window.App.Profiles;
             that.activeMode = false;
 
             that.listenTo(that.Devices, 'add change', function (model) {
