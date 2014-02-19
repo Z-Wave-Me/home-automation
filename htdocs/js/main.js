@@ -5,11 +5,11 @@ requirejs.config({
     paths : {
         backbone : 'libs/backbone/backbone-min',
         underscore : 'libs/backbone/underscore-min',
-        jquery : 'libs/vendor/jquery-2.0.3.min',
+        jquery : 'libs/vendor/jquery-2.1.0.min',
+        'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom.min',
         cookie : 'libs/vendor/jquery.cookie',
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
-        drags: 'libs/vendor/jquery.draggable',
         alpaca: 'libs/alpaca/alpaca-full.min',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
@@ -17,6 +17,9 @@ requirejs.config({
     shim : {
         jquery : {
             exports : '$'
+        },
+        'jquery-ui': {
+            deps: ['jquery']
         },
         cookie : {
             deps: ['jquery'],

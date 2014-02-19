@@ -157,9 +157,10 @@ define([
                 ms,
                 profile,
                 widgets,
-                active = _.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === device.id; }) === undefined;
+                active;
 
             $device.on('click', function () {
+                active = _.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === device.id; });
                 that.$ListContainer.find('li').removeClass('active');
                 $device.addClass('active');
                 $deviceTmp = $(_.template(WidgetTmp, {device: device.toJSON(), widget: active}));
@@ -196,7 +197,6 @@ define([
                 });
 
                 $(ms).on('beforerender', function () {
-                    log('afterrender');
                     $(ms).setValue(tags);
                 });
 
@@ -363,7 +363,6 @@ define([
                     $location.remove();
                 });
             });
-
 
             $location.off().on('click', function () {
                 that.activeRoom = model.get('id');

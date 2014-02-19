@@ -8,13 +8,13 @@ define([
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
     "text!templates/widgets/switch-small.html",
-    'drags'
+    'jquery-ui'
 ], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
     'use strict';
     var DashboardView = Backbone.View.extend({
         el: '#devices-container',
         initialize: function () {
-            _.bindAll(this, 'render', 'isExistWidget', 'renderWidget');
+            _.bindAll(this, 'render', 'isExistWidget', 'renderWidget', 'setPosition');
             var that = this;
             that.Devices = window.App.Devices;
             that.activeMode = false;
@@ -38,7 +38,6 @@ define([
                 that.$el.empty();
                 that.Devices.each(function (device) {
                     var position = device.get('position');
-                    position['z-index'] = parseInt(device.cid);
                     device.set({position: position});
                     that.renderWidget(device);
                 });
@@ -46,44 +45,36 @@ define([
         },
         renderWidget: function (model) {
             var that = this;
-            if (_.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }) === undefined) {
-                return;
+            if (_.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; })) {
+                if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
+                    that.renderProbe(model);
+                } else if (model.get('deviceType') === "fan") {
+                    that.renderFan(model);
+                } else if (model.get('deviceType') === "switchMultilevel") {
+                    that.renderMultilevel(model);
+                } else if (model.get('deviceType') === "thermostat") {
+                    that.renderThermostat(model);
+                } else if (model.get('deviceType') === "doorlock") {
+                    that.renderDoorlock(model);
+                } else if (model.get('deviceType') === "switchBinary") {
+                    that.renderSwitch(model);
+                } else {
+                    //log(model);
+                }
             }
-            if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
-                that.renderProbe(model);
-            } else if (model.get('deviceType') === "fan") {
-                that.renderFan(model);
-            } else if (model.get('deviceType') === "switchMultilevel") {
-                that.renderMultilevel(model);
-            } else if (model.get('deviceType') === "thermostat") {
-                that.renderThermostat(model);
-            } else if (model.get('deviceType') === "doorlock") {
-                that.renderDoorlock(model);
-            } else if (model.get('deviceType') === "switchBinary") {
-                that.renderSwitch(model);
-            } else {
-                //log(model);
-            }
-            that.$el.find('.widget-small').off().drags({
-                handle: '.border-widget',
-                onMouseUp: function (offset, position) {
-                    model.save({position: position});
-                },
-                container: '.widgets',
-                containerType: 'parent'
-            });
         },
         renderProbe: function (model) {
             var that = this,
                 $ProbeTmp = $(_.template(templateProbe, model.toJSON()));
 
-            $ProbeTmp.css(model.get('position'));
+            that.setPosition($ProbeTmp, model);
 
             if (that.activeMode) {
                 $ProbeTmp.removeClass('clear');
             } else {
                 $ProbeTmp.addClass('clear');
             }
+
 
             if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append($ProbeTmp);
@@ -95,13 +86,14 @@ define([
             var that = this,
                 $FanTmp = $(_.template(templateFan, model.toJSON()));
 
-            $FanTmp.css(model.get('position'));
+            that.setPosition($FanTmp, model);
 
             if (that.activeMode) {
                 $FanTmp.removeClass('clear');
             } else {
                 $FanTmp.addClass('clear');
             }
+
 
             $FanTmp.find(".select-field select").on('change', function () {
 
@@ -123,7 +115,7 @@ define([
             var that = this,
                 $DoorLockTmp = $(_.template(templateDoorlock, model.toJSON()));
 
-            $DoorLockTmp.css(model.get('position'));
+            that.setPosition($DoorLockTmp, model);
 
             if (that.activeMode) {
                 $DoorLockTmp.removeClass('clear');
@@ -159,7 +151,7 @@ define([
                 $progress =  $ComplementaryTmp.find('.progress-bar'),
                 $text =  $ComplementaryTmp.find('.text');
 
-            $ComplementaryTmp.css(model.get('position'));
+            that.setPosition($ComplementaryTmp, model);
 
             if (that.activeMode) {
                 $ComplementaryTmp.removeClass('clear');
@@ -195,7 +187,7 @@ define([
             var that = this,
                 $ThermostatTmp = $(_.template(templateThermostat, model.toJSON()));
 
-            $ThermostatTmp.css(model.get('position'));
+            that.setPosition($ThermostatTmp, model);
 
             if (that.activeMode) {
                 $ThermostatTmp.removeClass('clear');
@@ -222,7 +214,7 @@ define([
             var that = this,
                 $SwitchTmp = $(_.template(templateSwitch, model.toJSON()));
 
-            $SwitchTmp.css(model.get('position'));
+            that.setPosition($SwitchTmp, model);
 
             if (that.activeMode) {
                 $SwitchTmp.removeClass('clear');
@@ -253,6 +245,13 @@ define([
         },
         isExistWidget: function (id) {
             return $('div[data-widget-id="' + id + '"]').exists();
+        },
+        setPosition: function ($template, model) {
+            var position = _.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }).position;
+            $template.css({
+                top: position.y,
+                left: position.x
+            });
         }
     });
 

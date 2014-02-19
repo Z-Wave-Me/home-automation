@@ -85,6 +85,10 @@ define([
                             e.preventDefault();
                             var json = form.getValue();
                             instance.save({params: json});
+                            $template.hide('fast', function () {
+                                $template.off().remove();
+                                $instance.removeClass('active');
+                            });
                         });
                     }
                 });

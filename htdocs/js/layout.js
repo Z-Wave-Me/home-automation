@@ -22,13 +22,14 @@ define([
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
-
             $ok = that.$header.find('.events-ok');
             $warning = that.$header.find('.events-warning');
+
             that.Notifications = window.App.Notifications;
             that.Locations = window.App.Locations;
             that.Devices = window.App.Devices;
             that.deleted = [];
+
             window.App.filters = {
                 locations: true,
                 types: false,
@@ -102,6 +103,10 @@ define([
 
         addEventToList: function (model) {
             var notice = model.toJSON(), $template, that = this;
+            if (that.$eventsContainer.children().length) {
+                that.$eventsContainer.empty();
+            }
+
             if (that.$eventsContainer.exists()) {
                 notice.timeDate = new Date(notice.timestamp);
                 notice.timeDate = notice.timeDate.getDate() + "/" + (notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
@@ -111,8 +116,12 @@ define([
                     $template.slideUp('fast');
                     model.save({redeemed: true});
                     if (!that.Notifications.length) {
+                        if (that.$eventsContainer.children().length) {
+                            that.$eventsContainer.text('Everything is ok');
+                        }
                         ModalHelper.hideAll();
                     }
+
                 });
 
                 $template.find('.read').off().on('click', function () {
@@ -259,6 +268,7 @@ define([
                 that.$header.find('.menu-filter').prepend($allTemplate);
                 $allTemplate.click();
             });
+
             that.$footer.find('.footer-bar').off().on('click', function () {
                 var $this = $(this);
                 $this.toggleClass('active');
@@ -267,6 +277,33 @@ define([
                 } else {
                     that.Devices.trigger('normal');
                 }
+                $('.widget-small').off().draggable({
+                    grid: [ 10, 10 ],
+                    handle: '.small-border',
+                    scroll: false,
+                    snap: true,
+                    snapTolerance: 10,
+                    containment: "parent",
+                    stop: function(event, ui) {
+                        var xPos = ui.position.left,
+                            yPos = ui.position.top,
+                            device = App.Devices.get($(this).attr('data-widget-id')),
+                            profile = App.Profiles.findWhere({active: true}),
+                            widgets = profile.get('widgets'),
+                            model = _.find(widgets, function (widget) {return device.id === widget.id; }),
+                            index = widgets.indexOf(model);
+
+                        widgets[index] = {
+                            id: device.id,
+                            position: {
+                                x: xPos,
+                                y: yPos
+                            }
+                        };
+
+                        profile.save({widgets: widgets});
+                    }
+                });
             });
         },
         update: function () {
