@@ -44,6 +44,14 @@
 
 * SwitchBinary & SwitchMultilevel now has equal deviceType (switch) and different deviceSubTypes
 
+* Added tags and locations subsystems
+
+* Added support multi-profiles
+
+* Added control widgets position
+
+* Refactored API (devices, locations) and added new methods (modules, profiles)
+
 # Release 1.0.0
 
 (initial)
