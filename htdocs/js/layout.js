@@ -6,7 +6,8 @@ define([
     'text!templates/layout/main.html',
     'text!templates/layout/footer.html',
     'text!templates/popups/event-menu.html',
-    'text!templates/popups/_event.html'
+    'text!templates/popups/_event.html',
+    'jquery-ui'
 ], function (Backbone, ModalHelper, PreferencesView, HeaderTpl, MainTpl, FooterTpl, EventMenuTpl, EventTmp) {
     'use strict';
     var AppLayout = Backbone.View.extend({
