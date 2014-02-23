@@ -178,18 +178,18 @@ AutomationController.prototype.loadModules = function (callback) {
     if (callback) callback();
 };
 
-AutomationController.prototype.instantiateModule = function (instance) {
+AutomationController.prototype.instantiateModule = function (instanceModel) {
 
     var self = this,
-        module = _.find(self.modules, function (module) { return instance.moduleId === module.meta.id; }),
+        module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
         moduleClass = module.className,
-        instance = new window[moduleClass](instance.id, self);
+        instance = new window[moduleClass](instanceModel.id, self);
 
-    console.log("Instantiating module", instance.id, "from class", moduleClass);
+    console.log("Instantiating module", instanceModel.id, "from class", moduleClass);
 
     if (module.meta.singleton) {
         if (in_array(self._loadedSingletons, moduleClass)) {
-            console.log("WARNING: Module", instance.id, "is a singleton and already has been instantiated. Skipping.");
+            console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
             return;
         }
 
