@@ -123,16 +123,16 @@ define([
             $schema.find('.selectModules').on('change', function () {
                 var $this = $(this);
                 that.$el.find('.alpaca-form').empty().alpaca({
-                    data: App.Modules.get(parseInt($this.val())).get('defaults'),
-                    schema: App.Modules.get(parseInt($this.val())).get('schema'),
-                    options: App.Modules.get(parseInt($this.val())).get('options'),
+                    data: App.Modules.get($this.val()).get('defaults'),
+                    schema: App.Modules.get($this.val()).get('schema'),
+                    options: App.Modules.get($this.val()).get('options'),
                     postRender: function (form) {
                         that.$el.find('.save-button').on('click', function (e) {
                             e.preventDefault();
                             var json = form.getValue(),
                                 instance = new Instance();
 
-                            instance.save({moduleId: parseInt($this.val()), params: json}, {
+                            instance.save({moduleId: $this.val(), params: json}, {
                                 success: function () {
                                     that.Instances.add(instance);
                                     that.Modules.get(instance.get('moduleId')).set({created: true});

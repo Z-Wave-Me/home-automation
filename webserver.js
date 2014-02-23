@@ -623,7 +623,7 @@ ZAutomationAPIWebRequest.prototype.createInstance = function () {
             that = this,
             instance;
 
-        if (!controller.modules.hasOwnProperty(reqObj.moduleId)) {
+        if (controller.modules.hasOwnProperty(reqObj.moduleId)) {
             instance = controller.createInstance(reqObj.moduleId, reqObj.params);
             if (instance) {
                 reply.code = 201;
