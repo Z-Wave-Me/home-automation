@@ -13,6 +13,7 @@ define([
         initialize: function () {
             var that = this;
             _.bindAll(this, 'render', 'renderInstances', 'renderModules', 'newInstance');
+
             // Default collections and models
             that.Instances = window.App.Instances;
             that.Modules = window.App.Modules;
@@ -26,7 +27,8 @@ define([
         },
 
         render: function () {
-            var that = this;
+            var that = this,
+                instance;
 
             that.$el.find('.footer-button').show();
             that.$el.find('.left-sidebar').show();
@@ -43,6 +45,14 @@ define([
             that.$el.find('.remove-button').off().on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+                if (that.instanceActive) {
+                    instance = that.Instances.get(that.instanceActive);
+                    that.Modules.get(instance.get('moduleId')).set({created: false});
+                    instance.destroy();
+                    $('.modules-container').hide('fast', function () {
+                        $('.modules-container').off().remove();
+                    });
+                }
             });
         },
 
@@ -73,6 +83,7 @@ define([
                 var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">save</button></div> </div></div></div>')
                 e.preventDefault();
                 that.$el.find('.items-list').find('li').removeClass('active');
+                that.instanceActive = instance.id;
                 $instance.addClass('active');
                 that.$el.find('.content-body').empty().append($template);
 
@@ -124,6 +135,10 @@ define([
                             instance.save({moduleId: parseInt($this.val()), params: json}, {
                                 success: function () {
                                     that.Instances.add(instance);
+                                    that.Modules.get(instance.get('moduleId')).set({created: true});
+                                    $schema.hide('fast', function () {
+                                        $schema.off().remove();
+                                    });
                                 }
                             });
                         });

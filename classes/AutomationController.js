@@ -362,7 +362,7 @@ AutomationController.prototype.loadNotifications = function () {
     this.notifications = loadObject("notifications") || [];
 }
 
-AutomationController.prototype.addNotification = function (severity, message) {
+AutomationController.prototype.addNotification = function (severity, message, type) {
     var now = new Date(), notice;
 
     notice = {
@@ -370,6 +370,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
         timestamp: now.toISOString(),
         level: severity,
         message: message,
+        type: type || 'device',
         redeemed: false
     };
 
