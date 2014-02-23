@@ -1,6 +1,5 @@
-/******************************************************************************
+/*** AutoOff Z-Way Home Automation module *************************************
 
- AutoOff Z-Way Home Automation module
  Version: 1.0.0
  (c) Z-Wave.Me, 2013
 
@@ -23,9 +22,9 @@ function AutoOff (id, controller) {
 
     // Create instance variables
     this.timer = null;
-}
+};
 
-inherits(AutoOff, AutomationModule);
+//inherits(AutoOff, AutomationModule);
 
 _module = AutoOff;
 
@@ -33,7 +32,8 @@ _module = AutoOff;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-AutoOff.prototype.init = function (config) {
+//AutoOff.prototype.init = function (config) {};
+/*
     // Call superclass' init (this will process config argument and so on)
     AutoOff.super_.prototype.init.call(this, config);
 
@@ -76,15 +76,17 @@ AutoOff.prototype.init = function (config) {
             }
         }
     });
-};
+*/
+//};
 
+/*
 AutoOff.prototype.stop = function () {
     console.log("--- AutoOff.stop()");
     AutoOff.super_.prototype.stop.call(this);
 
     clearInterval(this.timer);
 };
-
+*/
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

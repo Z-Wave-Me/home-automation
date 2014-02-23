@@ -1,4 +1,4 @@
-/*** CustomUserCode ZAutomation module ****************************************
+  /*** CustomUserCode ZAutomation module ****************************************
 
 Version: 1.0.0
 (c) Z-Wave.Me, 2013
@@ -31,7 +31,8 @@ CustomUserCode.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     CustomUserCode.super_.prototype.init.call(this, config);
 
-    this.config.customCodeFiles.forEach(function (file) {
+    console.log(JSON.stringify(config));
+    this.config.params.customCodeFiles.forEach(function (file) {
       var stat = fs.stat(file);
       if (stat && stat.type == "file") {
         executeFile(file);
@@ -39,7 +40,6 @@ CustomUserCode.prototype.init = function (config) {
         console.log("File " + file + " not found");
       }
     });
-
 };
 
 // ----------------------------------------------------------------------------

@@ -7,7 +7,7 @@
         "title": "Battery Polling",
         "description": "Battery Polling description",
         "launchWeekDay": 0,
-	    "warningLevel": 20
+	"warningLevel": 20
     },
     "schema": {
         "type": "object",
@@ -19,10 +19,9 @@
                 "maximum": 6
             },
             "warningLevel": {
-                "type": "number",
+                "type": "select",
                 "required": true,
-                "minimum": 0,
-                "maximum": 99
+                "data": {"5": "5%", "10": "10%", "15": "15%", "20": "20%"}
             },
             "title": {
                 "type": "text",

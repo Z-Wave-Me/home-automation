@@ -1,4 +1,5 @@
-/*
+/* RaZOR
+ *
  * OpenRemote, the Home of the Digital Home.
  * Adopted for Z-Wave.Me Z-Way
  * Copyright 2008-2013, OpenRemote Inc.
