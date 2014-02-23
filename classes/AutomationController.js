@@ -153,12 +153,14 @@ AutomationController.prototype.loadModules = function (callback) {
             return "modules/" + moduleClassName;
         };
 
+        moduleMeta.id = moduleClassName;
+
         // Grab _module and clear it out
         self.modules[moduleClassName] = {
             meta: moduleMeta,
-            className: moduleClassName,
             classRef: _module
         };
+
         _module = undefined;
     });
 
@@ -178,22 +180,23 @@ AutomationController.prototype.loadModules = function (callback) {
     if (callback) callback();
 };
 
-AutomationController.prototype.instantiateModule = function (instance) {
+AutomationController.prototype.instantiateModule = function (instanceModel) {
+
+    console.log(JSON.stringify(instanceModel));
 
     var self = this,
-        module = _.find(self.modules, function (module) { return instance.moduleId === module.meta.id; }),
-        moduleClass = module.className,
-        instance = new window[moduleClass](instance.id, self);
+        module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
+        instance = new window[module.meta.id](instanceModel.id, self);
 
-    console.log("Instantiating module", instance.id, "from class", moduleClass);
+    console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
 
     if (module.meta.singleton) {
-        if (in_array(self._loadedSingletons, moduleClass)) {
-            console.log("WARNING: Module", instance.id, "is a singleton and already has been instantiated. Skipping.");
+        if (in_array(self._loadedSingletons, module.meta.id)) {
+            console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
             return;
         }
 
-        self._loadedSingletons.push(moduleClass);
+        self._loadedSingletons.push(module.meta.id);
     }
 
     instance.init(instance.params);
@@ -207,7 +210,7 @@ AutomationController.prototype.instantiateModules = function () {
 
     console.log("--- Automatic modules instantiation ---");
     self._autoLoadModules.forEach(function (moduleClassName) {
-        module = _.find(self.modules, function (module) { return module.className === moduleClassName; });
+        module = _.find(self.modules, function (module) { return module.id === moduleClassName; });
         if (!!module && !_.any(self.instances, function (model) { return model.moduleId === module.meta.id; })) {
             self.createInstance(module.meta.id, module.meta.defaults);
         }
@@ -362,7 +365,7 @@ AutomationController.prototype.loadNotifications = function () {
     this.notifications = loadObject("notifications") || [];
 }
 
-AutomationController.prototype.addNotification = function (severity, message) {
+AutomationController.prototype.addNotification = function (severity, message, type) {
     var now = new Date(), notice;
 
     notice = {
@@ -370,6 +373,7 @@ AutomationController.prototype.addNotification = function (severity, message) {
         timestamp: now.toISOString(),
         level: severity,
         message: message,
+        type: type || 'device',
         redeemed: false
     };
 

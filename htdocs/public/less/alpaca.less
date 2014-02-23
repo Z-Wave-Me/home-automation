@@ -62,6 +62,7 @@ address:
     display: block;
     padding-top: 4px;
     padding-bottom: 4px;
+    text-align: left;
   }
 
   .alpaca-controlfield-label
@@ -457,7 +458,13 @@ address:
     margin-top: 15px;
     margin-left: 15px;
     overflow: auto;
-    height: 248px;
+    height: 240px;
+  }
+
+  &.edit {
+    .alpaca-form {
+      height: 280px;
+    }
   }
 
   .alpaca-form-buttons-container {
@@ -681,6 +688,7 @@ address:
   .alpaca-view-web-list DIV.alpaca-controlfield-container
   {
     display:inline-block;
+    text-align: left;
   }
 
   .alpaca-controlfield-label-list-view {
@@ -840,6 +848,7 @@ address:
   span.alpaca-view-web-edit-yaml div.alpaca-controlfield-container {
     padding-top: 0px;
     padding-bottom: 0px;
+    text-align: left;
   }
 
   span.alpaca-view-web-edit-yaml div.alpaca-controlfield-container > input,

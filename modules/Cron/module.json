@@ -1,5 +1,4 @@
 {
-    "id": 3,
     "autoload": true,
     "autoloadPriority": 100,
     "singleton": true,

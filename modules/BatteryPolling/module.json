@@ -1,5 +1,4 @@
 {
-    "id": 2,
     "autoload": false,
     "singleton": true,
     "userView": true,
