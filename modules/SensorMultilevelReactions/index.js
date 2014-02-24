@@ -54,7 +54,7 @@ SensorMultilevelReactions.prototype.init = function(config) {
     // Call superclass' init (this will process config argument and so on)
     SensorMultilevelReactions.super_.prototype.init.call(this, config);
 
-    this.map = config.map;
+    this.map = this.config.map;
 
     var self = this;
 
