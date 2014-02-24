@@ -25,7 +25,7 @@ define([
         },
 
         initialize: function () {
-            this.bind('error', function (model, err) {
+            this.listenTo(this, 'error', function (model, err) {
                 log("ERROR: " + err);
             });
         },

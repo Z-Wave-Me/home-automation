@@ -79,6 +79,10 @@ define([
                 });
             });
 
+            that.listenTo(instance, 'change:params', function () {
+                $instance.text(instance.get('params').title);
+            });
+
             $instance.on('click', function (e) {
                 var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">save</button></div> </div></div></div>')
                 e.preventDefault();

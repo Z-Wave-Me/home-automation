@@ -32,12 +32,12 @@ CustomUserCode.prototype.init = function (config) {
     CustomUserCode.super_.prototype.init.call(this, config);
 
     this.config.customCodeFiles.forEach(function (file) {
-      var stat = fs.stat(file);
-      if (stat && stat.type == "file") {
-        executeFile(file);
-      } else {
-        console.log("File " + file + " not found");
-      }
+        var stat = fs.stat(file);
+        if (stat && stat.type === "file") {
+            executeFile(file);
+        } else {
+            console.log("File " + file + " not found");
+        }
     });
 };
 

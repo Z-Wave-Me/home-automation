@@ -104,7 +104,7 @@ define([
 
         addEventToList: function (model) {
             var notice = model.toJSON(), $template, that = this;
-            if (that.$eventsContainer.children().length) {
+            if (!that.$eventsContainer.children().length) {
                 that.$eventsContainer.empty();
             }
 
@@ -117,10 +117,8 @@ define([
                     $template.slideUp('fast');
                     model.save({redeemed: true});
                     if (!that.Notifications.length) {
-                        if (that.$eventsContainer.children().length) {
-                            that.$eventsContainer.text('Everything is ok');
-                        }
                         ModalHelper.hideAll();
+                        that.$eventsContainer.empty().text('Everything is ok');
                     }
 
                 });

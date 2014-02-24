@@ -144,50 +144,31 @@ ZAutomationAPIWebRequest.prototype.getNotificationFunc = function (notificationI
     }
 }
 
-ZAutomationAPIWebRequest.prototype.markNotificationsRead = function (notificationId) {
+ZAutomationAPIWebRequest.prototype.updateNotification = function (notificationId) {
     var reply = {
             error: null,
             data: "OK"
         },
-        reqObj,
-        that = this,
-        id,
-        removeNotification;
+        notification,
+        that = this;
 
     return function () {
-        removeNotification = that.req.query.hasOwnProperty("removeNotification") ? that.req.query.removeNotification : false;
-        if (that.req.method === 'PUT' || that.req.method === 'POST') {
-            try {
-                reqObj = JSON.parse(this.req.body);
-            } catch (ex) {
-                reply.error = ex.message;
-            }
-            if (that.req.method === 'POST') {
-                id = Array.isArray(reqObj) ? reqObj : [reqObj];
-            } else {
-                id = notificationId !== undefined ?  parseInt(notificationId): parseInt(reqObj.id);
-            }
-        } else if (that.req.method === 'GET') {
-            id = that.req.query.hasOwnProperty("id") ? parseInt(that.req.query.hasOwnProperty("id")) : 0;
-        }
+        notification = controller.getNotification(notificationId);
+        if (notification) {
 
-        if (id) {
-            controller.deleteNotifications(id, function (status) {
-                if (status) {
-                    reply.code = 200;
-                } else if (!status && Array.isArray(id)) {
-                    reply.code = 500;
-                    reply.error = "Payload must an array with at least one id or must be and array of strings.";
-                } else {
-                    reply.code = 500;
-                    reply.error = "Unknown error.";
-                }
-            }, removeNotification);
+            notification = controller.updateNotification(notificationId, this.req.reqObj);
+            if (notification) {
+                reply.code = 200;
+                reply.data = notification;
+            } else {
+                reply.code = 500;
+                reply.data = null;
+                reply.error = "Object doesn't exist redeemed argument";
+            }
         } else {
             reply.code = 404;
             reply.error = "Notification " + notificationId + " doesn't exist";
         }
-
         that.initResponse(reply);
     }
 };
@@ -1075,7 +1056,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (!!reTest) {
             var notificationId = parseInt(reTest[1]);
             if ("PUT" === method && notificationId) {
-                handlerFunc = this.markNotificationsRead(notificationId);
+                handlerFunc = this.updateNotification(notificationId);
             } else if ("GET" === method && notificationId) {
                 handlerFunc = this.getNotificationFunc(notificationId);
             }

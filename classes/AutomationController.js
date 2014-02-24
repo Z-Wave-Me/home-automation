@@ -498,6 +498,24 @@ AutomationController.prototype.getNotification = function (id) {
     return filteredNotifications[0] || null;
 };
 
+AutomationController.prototype.updateNotification = function (id, object) {
+    var filteredNotifications = _.find(this.notifications, function (notification) {
+            return parseInt(notification.id) === parseInt(id);
+        }),
+        index = this.notifications.indexOf(filteredNotifications),
+        result;
+
+    if (object.hasOwnProperty('redeemed')) {
+        this.notifications[index].redeemed = object.redeemed;
+        this.saveNotifications();
+        result = this.notifications[index];
+    } else {
+        result = null;
+    }
+
+    return result;
+};
+
 AutomationController.prototype.getListProfiles = function () {
     if (this.profiles.length === 0) {
         this.profiles.push({

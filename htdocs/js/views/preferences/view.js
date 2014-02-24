@@ -90,7 +90,10 @@ define([
                     merge: true
                 });
 
+
                 ModalHelper.popup(that.$template, true, true);
+                log('123');
+                that.$template.find('.back-button').click();
             });
         },
         renderList: function (type) {
