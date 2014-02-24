@@ -15,6 +15,7 @@ function AutomationController () {
     this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
     this.instances = config.instances || [];
+    this.namespaces = namespaces || [];
     this.registerInstances = [];
     this.files = files || {};
 
@@ -56,6 +57,10 @@ AutomationController.prototype.saveConfig = function () {
 
     saveObject("config.json", cfgObject);
     saveObject("schemas.json", this.schemas);
+};
+
+AutomationController.prototype.saveNamespaces = function () {
+    saveObject("namespaces.json", this.namespaces);
 };
 
 
@@ -661,6 +666,75 @@ AutomationController.prototype.removeSchema = function (id) {
 
     this.saveConfig();
 };
+
+// namespaces
+AutomationController.prototype.getListNamespaces = function (id) {
+    var result = null;
+    id = id || null;
+    if (id) {
+        result = this.namespaces.filter(function (namespace) {
+            return namespace.id === parseInt(id);
+        })[0];
+    } else {
+        result = this.namespaces;
+    }
+
+    return result;
+};
+
+
+AutomationController.prototype.setNamespace = function (id, reqObj) {
+    var result = null,
+        namespace,
+        index;
+    id = id || null;
+    if (id && this.getListNamespaces(id)) {
+        namespace = _.find(this.namespaces, function (namespace) {
+            return namespace.id === parseInt(id);
+        });
+        index = this.namespaces.indexOf(namespace);
+        this.namespaces[index].params = reqObj.data;
+        result = this.namespaces[index];
+    } else {
+        result = null;
+    }
+    this.saveNamespaces();
+    return result;
+};
+
+AutomationController.prototype.createNamespace = function (reqObj) {
+
+    if (reqObj.hasOwnProperty('id') && reqObj.hasOwnProperty('params')) {
+        var namespace = reqObj;
+
+        this.namespaces.push(namespace);
+        this.saveNamespaces();
+        return namespace;
+    }
+
+
+
+};
+
+
+AutomationController.prototype.deleteNamespace = function (id) {
+    var result = null,
+        namespace,
+        index;
+
+    id = id || null;
+
+    if (id && this.getListNamespaces(id)) {
+        this.namespaces = this.namespaces.filter(function (namespace) {
+            return namespace.id !== parseInt(id);
+        });
+
+        this.saveNamespaces();
+    }
+};
+
+
+
 
 AutomationController.prototype.pullFile = function (id) {
     var file;

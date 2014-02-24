@@ -951,6 +951,131 @@ ZAutomationAPIWebRequest.prototype.deleteSchema = function (schemaId) {
     }
 };
 
+// namespaces
+ZAutomationAPIWebRequest.prototype.listNamespaces = function () {
+    var reply = {
+        error: null,
+        data: null,
+        code: 500
+    }, namespaces;
+
+
+    namespaces = controller.getListNamespaces()
+    if (_.isArray(namespaces)) {
+        reply.data = namespaces;
+        reply.code = 200;
+    } else {
+        reply.error = "Namespaces array is null";
+    }
+
+    this.initResponse(reply);
+};
+
+
+
+
+ZAutomationAPIWebRequest.prototype.getNamespaceFunc = function (id) {
+
+    return function () {
+        var reply = {
+            error: null,
+            data: null,
+            code: 500
+        }, namespace;
+
+
+        namespace = controller.getListNamespaces(id);
+        if (namespace) {
+            reply.data = namespace;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces " + id + " doesn't exist";
+        }
+
+        this.initResponse(reply);
+    }
+
+};
+
+
+ZAutomationAPIWebRequest.prototype.setNamespaceFunc = function (id) {
+
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            namespace,
+            reqObj = this.req.reqObj;
+
+
+        namespace = controller.getListNamespaces(id);
+        if (namespace) {
+            reply.data = controller.setNamespace(id, reqObj);
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces " + id + " doesn't exist";
+        }
+
+        this.initResponse(reply);
+    }
+
+};
+
+ZAutomationAPIWebRequest.prototype.createNamespace = function () {
+
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj = this.req.reqObj;
+
+        reply.data = controller.createNamespace(reqObj);
+        reply.code = 200;
+
+        this.initResponse(reply);
+    }
+
+};
+
+
+
+ZAutomationAPIWebRequest.prototype.deleteNamespaceFunc = function (id) {
+
+    return function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            namespace,
+            reqObj = this.req.reqObj;
+
+
+        namespace = controller.getListNamespaces(id);
+        if (namespace) {
+            controller.deleteNamespace(id);
+            reply.data = null;
+            reply.code = 204;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces " + id + " doesn't exist";
+        }
+
+        this.initResponse(reply);
+    }
+
+};
+
+
+
+
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     // Default handler is NotFound
     var handlerFunc = this.NotFound;
@@ -971,6 +1096,10 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         handlerFunc = this.listLocations();
     } else if ("GET" === method && "/v1/profiles" == url) {
         handlerFunc = this.listProfiles();
+    } else if ("GET" === method && "/v1/namespaces" == url) {
+        handlerFunc = this.listNamespaces;
+    } else if (("POST" === method) && "/v1/namespaces" == url) {
+        handlerFunc = this.createNamespace();
     } else if (("POST" === method) && "/v1/profiles" == url) {
         handlerFunc = this.createProfile();
     } else if (("GET" === method && "/v1/locations/add" == url) || ("POST" === method && "/v1/locations" == url)) {
@@ -1158,6 +1287,22 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 handlerFunc = this.reconfigureInstanceFunc(instanceId);
             } else if ("DELETE" === method && !!instanceId) {
                 handlerFunc = this.deleteInstanceFunc(instanceId);
+            }
+        }
+    }
+
+    // --- Get namespaces
+    if (handlerFunc === this.NotFound) {
+        re = /\/v1\/namespaces\/(.+)/;
+        reTest = re.exec(url);
+        if (!!reTest) {
+            var namespaceId = parseInt(reTest[1]);
+            if ("GET" === method && !!namespaceId) {
+                handlerFunc = this.getNamespaceFunc(namespaceId);
+            } else if ("PUT" === method && !!namespaceId) {
+                handlerFunc = this.setNamespaceFunc(namespaceId);
+            } else if ("DELETE" === method && !!namespaceId) {
+                handlerFunc = this.deleteNamespaceFunc(namespaceId);
             }
         }
     }

@@ -62,7 +62,7 @@ function get_values (obj) {
 //--- Load configuration
 
 
-var config, files, templates, schemas, modules;
+var config, files, templates, schemas, modules, namespaces;
 try {
     config = loadObject("config.json") || {
         "controller": {},
@@ -71,6 +71,7 @@ try {
     };
     files = loadObject("files.json") || {};
     schemas = loadObject("schemas.json") || [];
+    namespaces = loadObject("namespaces.json") || [];
 } catch (ex) {
     console.log("Error loading config.json or files.json:", ex.message);
 }
