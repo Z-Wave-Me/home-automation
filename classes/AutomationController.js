@@ -189,9 +189,6 @@ AutomationController.prototype.loadModules = function (callback) {
 };
 
 AutomationController.prototype.instantiateModule = function (instanceModel) {
-
-    console.log(JSON.stringify(instanceModel));
-
     var self = this,
         module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
         instance;
@@ -225,7 +222,7 @@ AutomationController.prototype.instantiateModules = function () {
 
     console.log("--- Automatic modules instantiation ---");
     self._autoLoadModules.forEach(function (moduleClassName) {
-        module = _.find(self.modules, function (module) { return module.id === moduleClassName; });
+        module = _.find(self.modules, function (module) { return module.meta.id === moduleClassName; });
         if (!!module && !_.any(self.instances, function (model) { return model.moduleId === module.meta.id; })) {
             self.createInstance(module.meta.id, module.meta.defaults);
         }
