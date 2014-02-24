@@ -71,7 +71,6 @@ try {
     };
     files = loadObject("files.json") || {};
     schemas = loadObject("schemas.json") || [];
-    namespaces = loadObject("namespaces.json") || [];
 } catch (ex) {
     console.log("Error loading config.json or files.json:", ex.message);
 }

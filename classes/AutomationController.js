@@ -59,11 +59,6 @@ AutomationController.prototype.saveConfig = function () {
     saveObject("schemas.json", this.schemas);
 };
 
-AutomationController.prototype.saveNamespaces = function () {
-    saveObject("namespaces.json", this.namespaces);
-};
-
-
 AutomationController.prototype.saveFiles = function () {
     saveObject("files.json", this.files);
 };
@@ -682,7 +677,6 @@ AutomationController.prototype.getListNamespaces = function (id) {
     return result;
 };
 
-
 AutomationController.prototype.setNamespace = function (id, reqObj) {
     var result = null,
         namespace,
@@ -698,7 +692,6 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
     } else {
         result = null;
     }
-    this.saveNamespaces();
     return result;
 };
 
@@ -708,7 +701,6 @@ AutomationController.prototype.createNamespace = function (reqObj) {
         var namespace = reqObj;
 
         this.namespaces.push(namespace);
-        this.saveNamespaces();
         return namespace;
     }
 
