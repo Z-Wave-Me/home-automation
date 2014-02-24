@@ -712,8 +712,6 @@ AutomationController.prototype.createNamespace = function (reqObj) {
         return namespace;
     }
 
-
-
 };
 
 
