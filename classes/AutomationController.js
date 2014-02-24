@@ -18,8 +18,6 @@ function AutomationController () {
     this.registerInstances = [];
     this.files = files || {};
 
-    console.log(JSON.stringify(config, null, "  "));
-
     this.modules = {};
     this.devices = {};
     this.schemas = config.schemas || [];
@@ -115,7 +113,7 @@ AutomationController.prototype.stop = function () {
 AutomationController.prototype.restart = function () {
     this.stop();
     this.start();
-    this.addNotification("warning", "Automation Controller is restarted");
+    this.addNotification("warning", "Automation Controller is restarted", "core");
 };
 
 AutomationController.prototype.loadModules = function (callback) {
@@ -130,7 +128,12 @@ AutomationController.prototype.loadModules = function (callback) {
             return;
         }
 
-        var moduleMeta = loadJSON(moduleMetaFilename);
+        try {
+            var moduleMeta = loadJSON(moduleMetaFilename);
+        } catch (e) {
+            self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
+            return; // skip this modules
+        }
         if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
 
         if (moduleMeta.hasOwnProperty("autoload") && !!moduleMeta["autoload"]) {
@@ -146,8 +149,13 @@ AutomationController.prototype.loadModules = function (callback) {
         }
 
         console.log("Loading module " + moduleClassName + " from " + moduleFilename);
-        executeFile(moduleFilename);
-
+        try {
+            executeFile(moduleFilename);
+        } catch (e) {
+            self.addNotification("error", "Can not load index.js from " + moduleFilename + ": " + e.toString(), "core");
+            return; // skip this modules
+        }
+        
         // Monkey-patch module with basePath method
         _module.prototype.moduleBasePath = function () {
             return "modules/" + moduleClassName;
@@ -186,7 +194,14 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
 
     var self = this,
         module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
-        instance = new window[module.meta.id](instanceModel.id, self);
+        instance;
+    
+    try {
+        instance = new global[module.meta.id](instanceModel.id, self);
+    } catch (e) {
+        self.addNotification("error", "Can not instanciate module " + module.meta.id + ": " + e.toString(), "core");
+        return;
+    }
 
     console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
 
@@ -199,7 +214,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         self._loadedSingletons.push(module.meta.id);
     }
 
-    instance.init(instance.params);
+    instance.init(instanceModel.params);
     self.registerInstance(instance);
     return instance;
 };
@@ -379,6 +394,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
 
     this.notifications.push(notice);
     this.saveNotifications();
+    this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
 }
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {

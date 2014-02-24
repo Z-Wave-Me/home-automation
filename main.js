@@ -20,7 +20,13 @@ var console = {
     log: debugPrint,
     warn: debugPrint,
     error: debugPrint,
-    debug: debugPrint
+    debug: debugPrint,
+    logJS: function() {
+        var arr = [];
+        for (var key in arguments)
+            arr.push(JSON.stringify(arguments[key]));
+        debugPrint(arr);
+    }
 };
 
 function inherits (ctor, superCtor) {
@@ -116,7 +122,7 @@ if (!config) {
 
     controller.on('core.error', function (err) {
         console.log("--- ERROR:", err.message);
-        controller.addNotification("error", err.message);
+        controller.addNotification("error", err.message, "core");
     });
 
     //--- main

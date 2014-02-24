@@ -44,7 +44,7 @@ ZAutomationAPIWebRequest.prototype.statusReport = function () {
         code: 200
     }
 
-    controller.addNotification("debug", "Status report requested");
+    controller.addNotification("debug", "Status report requested", "debug");
     this.initResponse(reply);
 };
 
@@ -694,7 +694,7 @@ ZAutomationAPIWebRequest.prototype.deleteInstanceFunc = function (instanceId) {
             error: null,
             data: null,
             code: 200
-        }
+        };
 
         // console.log("--- INSTANCES", JSON.stringify(controller.instances, null, "  "));
         if (!_.any(controller.instances, function (instance) { return instance.id === instanceId; })) {
@@ -702,7 +702,7 @@ ZAutomationAPIWebRequest.prototype.deleteInstanceFunc = function (instanceId) {
             reply.error = "Instance " + instanceId + " not found";
         } else {
             reply.code = 204;
-            reply = null;
+            reply.data = null;
             controller.deleteInstance(instanceId);
         }
 

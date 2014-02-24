@@ -31,8 +31,7 @@ CustomUserCode.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     CustomUserCode.super_.prototype.init.call(this, config);
 
-    console.log(JSON.stringify(config));
-    this.config.params.customCodeFiles.forEach(function (file) {
+    this.config.customCodeFiles.forEach(function (file) {
       var stat = fs.stat(file);
       if (stat && stat.type == "file") {
         executeFile(file);
