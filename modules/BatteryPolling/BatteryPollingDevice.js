@@ -13,13 +13,22 @@ Copyright: (c) ZWave.Me, 2013
 BatteryPollingDevice = function (id, controller) {
     BatteryPollingDevice.super_.call(this, id, controller);
 
-    this.deviceType = "batteryPolling";
+    this.deviceType = "battery";
+
+    this.setMetricValue("probeTitle", "Battery");
+    this.setMetricValue("scaleTitle", "%");
+
+    this.setMetricValue("level", "");
 }
 
 inherits(BatteryPollingDevice, VirtualDevice);
 
 BatteryPollingDevice.prototype.deviceTitle = function () {
-    return "Battery health"
+    return "Battery digest";
+}
+
+BatteryPollingDevice.prototype.deviceIconBase = function () {
+    return "battery";
 }
 
 BatteryPollingDevice.prototype.performCommand = function (command) {

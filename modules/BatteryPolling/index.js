@@ -27,20 +27,16 @@ _module = BatteryPolling;
 // ----------------------------------------------------------------------------
 
 BatteryPolling.prototype.init = function (config) {
-    // console.log("--- FFFFF");
     BatteryPolling.super_.prototype.init.call(this, config);
 
     var self = this;
 
-    // console.log("--- GGGGG");
     executeFile(this.moduleBasePath()+"/BatteryPollingDevice.js");
     this.vdev = new BatteryPollingDevice("BatteryPolling", this.controller);
+    this.vdev.setMetricValue("level", self.minimalBatteryValue());
     this.vdev.init();
     this.controller.registerDevice(this.vdev);
 
-    this.batIds = this.scanForBatteries();
-
-    self.vdev.setMetricValue("reports", self.transformToReports());
 
     this.controller.emit("cron.addTask", "batteryPolling.poll", {
         minute: 0,
@@ -52,9 +48,11 @@ BatteryPolling.prototype.init = function (config) {
 
     // Setup event listeners
     this.onMetricUpdated = function (vdevId, name, value) {
-        var pos = self.batIds.indexOf(vdevId);
-        if (pos > -1 && name === "level") {
-            self.vdev.setMetricValue("reports", self.transformToReports());
+        var dev = self.controller.findVirtualDeviceById(vdevId);
+        if (dev && dev.deviceType === " battery" && name === "level") {
+            self.vdev.setMetricValue("level", self.minimalBatteryValue());
+            if (value <= self.config.warningLevel)
+                self.controller.addNotification("warning", "Device " + dev.getMetricValue("title") + " is low battery", "battery");
         }
     };
     this.controller.on('device.metricUpdated', this.onMetricUpdated);
@@ -78,29 +76,15 @@ BatteryPolling.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-BatteryPolling.prototype.scanForBatteries = function () {
+BatteryPolling.prototype.minimalBatteryValue = function () {
     var self = this;
-    return Object.keys(this.controller.devices).filter(function (vdevId) {
+    var res = 100;
+
+    for (var vdevId in this.controller.devices) {
         var vdev = self.controller.devices[vdevId];
-        return vdev.deviceType === "battery";
-    }).map(function (item) {
-        return item;
-    });
-}
-
-BatteryPolling.prototype.transformToReports = function () {
-    var self = this;
-    var res = [];
-
-    this.batIds.forEach(function (vdevId) {
-        var vdev = self.controller.devices[vdevId];
-
-        res.push({
-            id: vdevId,
-            level: vdev.getMetricValue("level"),
-            title: vdev.getMetricValue("title")
-        })
-    });
+        if (vdev.deviceType === "battery" && res > vdev.getMetricValue("level"))
+            res = vdev.getMetricValue("level");
+    }
 
     return res;
 }

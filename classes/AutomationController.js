@@ -196,7 +196,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
     try {
         instance = new global[module.meta.id](instanceModel.id, self);
     } catch (e) {
-        self.addNotification("error", "Can not instanciate module " + module.meta.id + ": " + e.toString(), "core");
+        self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
         return;
     }
 
@@ -392,6 +392,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     this.notifications.push(notice);
     this.saveNotifications();
     this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
+    console.log("Notification:", severity, "(" + type + "):", message);
 }
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
@@ -748,3 +749,7 @@ AutomationController.prototype.pushFile = function (file, callback) {
     saveObject(id, file);
     callback(this.files[id]);
 };
+
+AutomationController.prototype.findVirtualDeviceById = function(vdevId) {
+    return this.devices[vdevId] || null;
+}

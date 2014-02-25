@@ -1,10 +1,10 @@
 /*** AutoOff Z-Way Home Automation module *************************************
 
- Version: 1.0.0
- (c) Z-Wave.Me, 2013
+ Version: 1.0.1
+ (c) Z-Wave.Me, 2014
 
  -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me>
+ Author: Gregory Sitnin <sitnin@z-wave.me> and Poltorak Serguei <ps@z-wave.me>
  Description:
      This module listens given VirtualDevice (which MUSt be typed as switch)
      level metric update events and switches off device after configured
@@ -24,7 +24,7 @@ function AutoOff (id, controller) {
     this.timer = null;
 };
 
-//inherits(AutoOff, AutomationModule);
+inherits(AutoOff, AutomationModule);
 
 _module = AutoOff;
 
@@ -32,8 +32,7 @@ _module = AutoOff;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-//AutoOff.prototype.init = function (config) {};
-/*
+AutoOff.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     AutoOff.super_.prototype.init.call(this, config);
 
@@ -47,9 +46,9 @@ _module = AutoOff;
     var device = this.controller.devices[this.config.device];
 
     // Check if device is a switch
-    if ("switch" !== device.deviceType) {
+    if ("switchBinary" !== device.deviceType && "switchMultilevel" !== device.deviceType) {
         // Exit initializer due to invalid device type
-        console.log("ERROR", "AutoOff Device", this.config.device, "isn't switch", "("+device.deviceType+").");
+        console.log("ERROR", "AutoOff Device", this.config.device, "isn't switch", "(" + device.deviceType + ").");
         return;
     }
 
@@ -76,17 +75,14 @@ _module = AutoOff;
             }
         }
     });
-*/
-//};
+};
 
-/*
 AutoOff.prototype.stop = function () {
     console.log("--- AutoOff.stop()");
     AutoOff.super_.prototype.stop.call(this);
 
     clearInterval(this.timer);
 };
-*/
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

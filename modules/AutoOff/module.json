@@ -3,6 +3,31 @@
     "userView": true,
     "singleton": false,
     "defaults": {
-        "timeout": 5
+        "timeout": 5,
+	"device": ""
+    },
+    "schema": {
+        "description": "Automatically turn of devices after N seconds",
+        "type": "object",
+        "properties": {
+            "device": {
+		"dataSource": XXXX,
+                "required": true,
+            "timeout": {
+		"type": number,
+                "required": true,
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "device": {
+                "label": "The device to be turned off afte the timeout"
+            },
+            "timeout": {
+                "label": "Timout in secnds"
+            }
+        }
     }
 }

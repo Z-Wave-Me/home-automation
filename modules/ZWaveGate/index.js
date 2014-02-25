@@ -207,7 +207,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
 
         namespaces.push({
             deviceId: device.id,
-            deviceName: _.uniqueId('device_')
+            deviceName: device.metrics["title"]
         });
     });
 
