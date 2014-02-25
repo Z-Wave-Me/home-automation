@@ -6,7 +6,7 @@
         "title": "Battery Polling",
         "description": "Battery Polling description",
         "launchWeekDay": 0,
-	"warningLevel": 20
+	    "warningLevel": 20
     },
     "schema": {
         "type": "object",
@@ -22,38 +22,21 @@
                 "required": true,
                 "data": {"5": "5%", "10": "10%", "15": "15%", "20": "20%"}
             },
-            "title": {
-                "type": "text",
-                "required": true,
-                "minimum": 0,
-                "maximum": 6
-            },
-            "description": {
-                "type": "textarea",
-                "required": true,
-                "minimum": 0,
-                "maximum": 6
-            },
             "status": {
                 "type": "select",
                 "required": true,
                 "enum": ["enable", "disable"]
+            },
+            "items": {
+                "datasource": "namespaces",
+                "field": "enum",
+                "enum": "namespaces:devices:deviceId"
             }
         },
         "required": false
     },
     "options": {
         "fields": {
-            "title": {
-                "type": "text",
-                "required": true,
-                "label": "Title"
-            },
-            "description": {
-                "type": "textarea",
-                "required": true,
-                "label": "Description"
-            },
             "launchWeekDay": {
                 "type": "number",
                 "label": "Launch WeekDay",
@@ -69,6 +52,13 @@
             "status": {
                 "type": "select",
                 "label": "Status"
+            },
+            "items": {
+                "datasource": "namespaces",
+                "field": "optionLabels",
+                "label": "Ice cream",
+                "helper": "Guess my favorite ice cream?",
+                "optionLabels": "namespaces:devices:deviceName"
             }
         },
         "focus": true,

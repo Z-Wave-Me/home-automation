@@ -61,8 +61,9 @@ ZWaveGate.prototype.init = function (config) {
         deviceId = parseInt(deviceId, 10);
         var device = zway.devices[deviceId];
 
+
         // Ignore Static PC Controllers for now
-        if (2 == device.data.basicType.value && 1 == device.data.specificType.value) {
+        if (2 === device.data.basicType.value && 1 === device.data.specificType.value) {
             console.log("Device", deviceId, "is a Static PC Controller. Ignoring for now");
             return;
         }
@@ -119,11 +120,12 @@ ZWaveGate.prototype.handleStructureChanges = function (changeType, device, insta
 
 ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     console.log("--- createDevicesForInstance("+deviceId+", "+instanceId+")");
-    var self = this;
-    var instance = zway.devices[deviceId].instances[instanceId];
-    var instanceCommandClasses = Object.keys(instance.commandClasses);
-    var instanceDevices = [];
-    var deviceName = null;
+    var self = this,
+        instance = zway.devices[deviceId].instances[instanceId],
+        instanceCommandClasses = Object.keys(instance.commandClasses),
+        instanceDevices = [],
+        deviceName = null,
+        namespaces = [];
 
     if (in_array(instanceCommandClasses, "64") || in_array(instanceCommandClasses, "67")) {
         deviceName = "ZWayVDev_"+deviceId+":"+instanceId+":Thermostat";
@@ -202,5 +204,24 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         device.init();
         device.bindToDatapoints();
         self.controller.registerDevice(device);
+
+        namespaces.push({
+            deviceId: device.id,
+            deviceName: _.uniqueId('device_')
+        });
     });
+
+    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === 'devices'})) {
+        controller.namespaces.push({
+            id: "devices",
+            params: namespaces
+        });
+    } else {
+        var devicesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === 'devices'}),
+            index = controller.namespaces.indexOf(devicesNameSpace);
+
+        controller.namespaces[index].params = _.union(controller.namespaces[index].params, namespaces);
+    }
+
+    namespaces = [];
 };
