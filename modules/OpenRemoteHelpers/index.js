@@ -66,7 +66,7 @@ sensors of the type:switch. Apply Regular expression: on|off in the http call.
 
 OpenRemote usage: http://IP:8083/ZAutomation/OpenRemote/<Command>/N/I/...
 
-SwitchOn/N/I
+SwitchBinaryOn/N/I
 SwitchBinaryOff/N/I
 SwitchBinaryStatus/N/I
     Add Regular Expression on|off in http call specification 
@@ -78,9 +78,9 @@ SwitchMultilevelStatus/N/I
     Add Regular Expression on|off in http call specification 
     Do use Sensor type:switch with this command
 AlarmStatus/N
-    on means not triggered
-BinaryStatus/N/I/Type
-    on means not triggered
+    off means not triggered
+SensorBinaryStatus/N/I/Type
+    off means not triggered
 ThermostatLevel/N
 ThermostatSet/N/${param}
 ThermostatSetMode/N/Mode
@@ -125,10 +125,11 @@ OpenRemoteHelpers.prototype.init = function (config) {
     // define global handler for HTTP requests
     OpenRemote = function(url, request) {
         var params = url.split("/");
+        params.shift(); // shift empty string before first /
         var cmd = params.shift();
         var N = params.shift();
         var I = params.shift();
-        
+
         switch(cmd) {
             case "SwitchBinaryOn":
                 zway.devices[N].instances[I].SwitchBinary.Set(255);
@@ -147,18 +148,18 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 return level;
                 
             case "SwitchMultilevelStatus":
-                return zway.devices[N].instances[I].Multilevel.data.level.value ? "on" : "off";
+                return zway.devices[N].instances[I].SwitchMultilevel.data.level.value ? "on" : "off";
                 
-            case "SwitchMultilevel":
-                return zway.devices[N].instances[I].Multilevel.data.level.value;
+            case "SwitchMultilevelLevel":
+                return zway.devices[N].instances[I].SwitchMultilevel.data.level.value;
             
             case "AlarmStatus":
-                // there are usually no instances for thermostats
-                return (zway.devices[N].AlarmSensor.data.level.value == 0) ? "on" : "off" ;
+                // there are usually no instances for alarms
+                return (zway.devices[N].AlarmSensor.data.level.value == 0) ? "off" : "on" ;
             
-            case "BinaryStatus":
+            case "SensorBinaryStatus":
                 var T = params.shift(); // sensor type
-                return (zway.devices[N].instances[I].SensorBinary[T].data.level.value == 0) ? "on" : "off" ;
+                return (zway.devices[N].instances[I].SensorBinary.data[T].level.value == 0) ? "off" : "on" ;
 
             case "ThermostatLevel":
                 var temp = I; // there are usually no instances for thermostats
@@ -197,8 +198,21 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 }
                 return 0;
 
-            case "ThermostatSet":
+            case "ThermostatSetMode":
                 var mode = I; // there are usually no instances for thermostats
+		switch (mode) {
+			case "Off":
+				mode = 0;
+				break;
+
+			case "Heat":
+				mode = 1;
+				break;
+			
+			case "Cool":
+				mode = 2;
+				break;
+		}
                 zway.devices[N].ThermostatMode.Set(mode);
                 return mode;
 
