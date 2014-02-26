@@ -200,19 +200,14 @@ OpenRemoteHelpers.prototype.init = function (config) {
 
             case "ThermostatSetMode":
                 var mode = I; // there are usually no instances for thermostats
-		switch (mode) {
-			case "Off":
-				mode = 0;
-				break;
-
-			case "Heat":
-				mode = 1;
-				break;
-			
-			case "Cool":
-				mode = 2;
-				break;
-		}
+		if (! zway.devices[N].ThermostatMode.data[mode]) {
+		    for (var m in zway.devices[N].ThermostatMode.data) {
+		        if (zway.devices[N].ThermostatMode.data[m] && zway.devices[N].ThermostatMode.data[m].modeName && zway.devices[N].ThermostatMode.data[m].modeName.value.toLowerCase() == mode.toLowerCase()) {
+		            mode = m;
+		            break;
+                        }
+                    }
+                }
                 zway.devices[N].ThermostatMode.Set(mode);
                 return mode;
 
