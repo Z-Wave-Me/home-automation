@@ -3,12 +3,14 @@
     "singleton": false,
     "userView": true,
     "defaults": {
-        "severity": 0,
+        "title": "SMS.ru notifications",
+        "description": "Sends all notifications via free SMS poroxy SMS.ru",
         "api_key": "",
-        "phone": ""
+        "phone": "",
+	"prefix": "Z-Way notification:"
     },
     "schema": {
-        "description": "Send SMS via SMS.ru gateway. To register enter your phone number, name and password on http://sms.ru/?panel=register and confirm your phone number with a code. After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f).",
+        "description": "Send SMS via SMS.ru gateway. To register enter your phone number, name and password on http://sms.ru/?panel=register and confirm your phone number with a code.",
         "type": "object",
         "properties": {
             "phone": {
@@ -34,7 +36,8 @@
                 "label": "Prefix for all messages"
             },
             "api_key": {
-                "label": "API key from SMS.ru?"
+                "label": "API key from SMS.ru",
+		"helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
             }
         }
     }

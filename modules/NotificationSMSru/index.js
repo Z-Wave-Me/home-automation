@@ -58,7 +58,7 @@ NotificationSMSru.prototype.onNotificationHandler = function () {
             data: {
                 api_id: self.api_key,
                 to: self.phone,
-                text: self.prefix + ": " + notice.message
+                text: self.prefix + " " + notice.message
             }
         });
     }
