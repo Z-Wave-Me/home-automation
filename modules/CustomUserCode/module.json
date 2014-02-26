@@ -3,27 +3,26 @@
     "singleton": false,
     "userView": true,
     "defaults": {
-	"customCodeFiles": [ ]
+	"title": "Load custom JavaScript code",
+	"description": "Allows to load custom JavaScript code on system load",
+	"customCode": ""
     },
     "schema": {
-        "description": "User defined JavaScript files to be executed on load",
+        "description": "User defined JavaScript code to be executed on load",
         "type": "object",
         "properties": {
-            "customCodeFiles": {
-                "type": "array",
-                "items": {
-                    "title": "File name",
-                    "type": "string"      
-                }
+            "customCode": {
+                "type": "string"
             }
         },
         "required": false
     },
     "options": {
         "fields": {
-            "customCodeFiles": {
-                "type": "array",
-                "helper": "Add paths to files relative to automation/ folder."
+            "customCode": {
+                "type": "textarea",
+                "label": "Your JavaScript code:",
+		"cols": 80
             }
         }
     }

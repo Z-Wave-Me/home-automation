@@ -53,7 +53,13 @@ NotificationSMSru.prototype.onNotificationHandler = function () {
 
     return function(notice) {
         http.request({
-            url: "http://sms.ru/sms/send?api_id=" + self.api_key + "&to=" + self.phone + "&text=" + (self.prefix + ": " + notice.message).replace(/ /g, "+"),
+            method: 'POST',
+            url: "http://sms.ru/sms/send",
+            data: {
+                api_id: self.api_key,
+                to: self.phone,
+                text: self.prefix + ": " + notice.message
+            }
         });
     }
 }

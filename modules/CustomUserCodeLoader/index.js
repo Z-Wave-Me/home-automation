@@ -1,4 +1,4 @@
-  /*** CustomUserCode ZAutomation module ****************************************
+  /*** CustomUserCodeLoader ZAutomation module ****************************************
 
 Version: 1.0.0
 (c) Z-Wave.Me, 2013
@@ -14,29 +14,33 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function CustomUserCode (id, controller) {
+function CustomUserCodeLoader (id, controller) {
     // Call superconstructor first (AutomationModule)
-    CustomUserCode.super_.call(this, id, controller);
+    CustomUserCodeLoader.super_.call(this, id, controller);
 }
 
-inherits(CustomUserCode, AutomationModule);
+inherits(CustomUserCodeLoader, AutomationModule);
 
-_module = CustomUserCode;
+_module = CustomUserCodeLoader;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-CustomUserCode.prototype.init = function (config) {
+CustomUserCodeLoader.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
-    CustomUserCode.super_.prototype.init.call(this, config);
+    CustomUserCodeLoader.super_.prototype.init.call(this, config);
 
-    // TODO: executeJS errors are impossible to catch!
-    //try {
-        executeJS(this.config.customCode);
-    //} catch (e) {
-    //    controrolle.addNotification("warning", "Failed to load custom user code: " + this.getMetric("title"), "module");
-    //}
+    this.config.customCodeFiles.forEach(function (file) {
+        if (!file)
+            return;
+        var stat = fs.stat(file);
+        if (stat && stat.type === "file") {
+            executeFile(file);
+        } else {
+            console.log("File " + file + " not found");
+        }
+    });
 };
 
 // ----------------------------------------------------------------------------
