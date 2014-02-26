@@ -88,9 +88,9 @@ ThermostatModeName/N
     Do use RexExp [\w\s]{1,} in the http-call to get rid of quotes
 BatteryLevel/N
     Do use Sensor type:Range with this command for use in slider
-MeterElectricLevel/N/I/S
+MeterLevel/N/I/S
     Use S=0 for kWh; S=2 for Watts;  
-MeterElectricReset/N/I
+MeterReset/N/I
 TemperatureLevel/N/I
 HumidityLevel/N/I
 SensorMultilevel/N/I/S
@@ -233,20 +233,12 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 zway.devices[N].Battery.Get();
                 return zway.devices[N].Battery.data.last.value;
             
-            case "MeterElectricLevel":
+            case "MeterValue":
                 var S = params.shift();
                 zway.devices[N].instances[I].Meter.Get();
-                
-                var V = zway.devices[N].instances[I].Meter.data[S].val.value;
-                switch (S) {
-                    case 0:
-                        return Math.round(V*1000);
-                    case 2:
-                        return Math.round(V*10)/10;
-                }
-                return 0;
+                return zway.devices[N].instances[I].Meter.data[S].val.value;
             
-            case "MeterElectricReset":
+            case "MeterReset":
                 zway.devices[N].instances[I].Meter.Reset();
                 return 0; // just to return something
             
