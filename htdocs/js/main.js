@@ -14,6 +14,7 @@ requirejs.config({
         ace: 'libs/acejs/ace',
         'theme-chrome': 'libs/acejs/theme-chrome',
         'mode-javascript': 'libs/acejs/mode-javascript',
+        'mode-json': 'libs/acejs/mode-json',
         'worker-javascript': 'libs/acejs/worker-javascript',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
@@ -54,6 +55,9 @@ requirejs.config({
         'mode-javascript': {
             deps : ['ace']
         },
+        'mode-json': {
+            deps : ['ace']
+        },
         'theme-chrome': {
             deps : ['ace']
         },
@@ -61,7 +65,7 @@ requirejs.config({
             deps : ['ace']
         },
         alpaca: {
-            deps: ['jquery', 'ace']
+            deps: ['jquery', 'ace', 'mode-javascript', 'mode-json', 'theme-chrome', 'worker-javascript']
         }
     },
     urlArgs: "v=" + vers
@@ -71,11 +75,7 @@ require([
     'backbone',
     'views/app',
     'router',
-    'vm',
-    'ace',
-    'mode-javascript',
-    'theme-chrome',
-    'worker-javascript'
+    'vm'
 ], function (Backbone, AppView, Router, Vm) {
     'use strict';
     AppView = Vm.create({}, 'AppView', AppView);
