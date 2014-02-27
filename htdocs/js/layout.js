@@ -110,7 +110,7 @@ define([
 
             if (that.$eventsContainer.exists()) {
                 notice.timeDate = new Date(notice.timestamp);
-                notice.timeDate = notice.timeDate.getDate() + "/" + (notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
+                notice.timeDate = notice.timeDate.getDate() + "/" + LZ(notice.timeDate.getMonth() + 1) + "/" + (notice.timeDate.getYear() - 100) + " - " + notice.timeDate.getHours() + ":" + notice.timeDate.getMinutes();
                 $template = $(_.template(EventTmp, notice));
 
                 that.listenTo(model, 'remove', function () {

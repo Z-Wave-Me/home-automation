@@ -130,14 +130,15 @@ define([
                         if (options.fields[key].hasOwnProperty('datasource')) {
                             option = options.fields[key];
                             field = options.fields[key].field;
-                            namespace = _.pluck(App.Namespaces.get(option[field].split(':')[1]).get('params'), options.fields[key][field].split(':')[2]);
-                            options.fields[key][field] = namespace;
-                            model.set({options: options});
+                            if (_.isString(option[field]) && _.isString(options.fields[key][field])) {
+                                namespace = _.pluck(App.Namespaces.get(option[field].split(':')[1]).get('params'), options.fields[key][field].split(':')[2]);
+                                options.fields[key][field] = namespace;
+                                model.set({options: options});
+                            }
                         }
                     });
                 }
             }
-
 
             // schema
             if (schema) {
@@ -146,8 +147,15 @@ define([
                         if (schema.properties[key].hasOwnProperty('datasource')) {
                             prop = schema.properties[key];
                             field = schema.properties[key].field;
-                            namespace = _.pluck(App.Namespaces.get(prop[field].split(':')[1]).get('params'), schema.properties[key][field].split(':')[2]);
-                            schema.properties[key][field] = namespace;
+                            log(prop);
+                            if (prop.hasOwnProperty('items')) {
+                                namespace = _.pluck(App.Namespaces.get(prop.items[field].split(':')[1]).get('params'), prop.items[field].split(':')[2]);
+                                schema.properties[key].items[field] = namespace;
+                            } else {
+                                namespace = _.pluck(App.Namespaces.get(prop[field].split(':')[1]).get('params'), prop[field].split(':')[2]);
+                                schema.properties[key][field] = namespace;
+                            }
+
                             model.set({schema: schema});
                         }
                     });
