@@ -149,12 +149,14 @@ define([
                         if (schema.properties[key].hasOwnProperty('datasource')) {
                             prop = schema.properties[key];
                             field = schema.properties[key].field;
-                            if (prop.hasOwnProperty('items')) {
-                                namespace = _.pluck(App.Namespaces.get(prop.items[field].split(':')[1]).get('params'), prop.items[field].split(':')[2]);
-                                schema.properties[key].items[field] = namespace;
-                            } else {
-                                namespace = _.pluck(App.Namespaces.get(prop[field].split(':')[1]).get('params'), prop[field].split(':')[2]);
-                                schema.properties[key][field] = namespace;
+                            if (_.isString(prop[field])) {
+                                if (prop.hasOwnProperty('items')) {
+                                    namespace = _.pluck(App.Namespaces.get(prop.items[field].split(':')[1]).get('params'), prop.items[field].split(':')[2]);
+                                    schema.properties[key].items[field] = namespace;
+                                } else {
+                                    namespace = _.pluck(App.Namespaces.get(prop[field].split(':')[1]).get('params'), prop[field].split(':')[2]);
+                                    schema.properties[key][field] = namespace;
+                                }
                             }
 
                             model.set({schema: schema});
