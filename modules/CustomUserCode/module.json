@@ -20,7 +20,7 @@
     "options": {
         "fields": {
             "customCode": {
-                "type": "textarea",
+                "type": "editor",
                 "label": "Your JavaScript code:",
 		"cols": 80
             }

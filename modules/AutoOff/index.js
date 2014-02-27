@@ -55,14 +55,13 @@ AutoOff.prototype.init = function (config) {
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
-    // Setup metric update event listener
-    this.controller.on('device.metricUpdated', function (deviceId, metric, value) {
+    this.handler = function (deviceId, metric, value) {
         if (self.config.device === deviceId && "level" === metric) {
             if (self.timer) {
                 // Timer is set, so we destroy it
                 clearTimeout(self.timer);
             }
-            if (255 === value) {
+            if (true === value || 255 === value) {
                 // Device reported "on", set (or reset) timer to new timeout
                 // Notice: self.config.timeout set in seconds
                 self.timer = setTimeout(function () {
@@ -74,7 +73,10 @@ AutoOff.prototype.init = function (config) {
                 }, self.config.timeout*1000);
             }
         }
-    });
+    };
+
+    // Setup metric update event listener
+    this.controller.on('device.metricUpdated', this.handler);
 };
 
 AutoOff.prototype.stop = function () {
@@ -82,6 +84,7 @@ AutoOff.prototype.stop = function () {
     AutoOff.super_.prototype.stop.call(this);
 
     clearInterval(this.timer);
+    this.controller.off('device.metricUpdated', this.handler)
 };
 // ----------------------------------------------------------------------------
 // --- Module methods

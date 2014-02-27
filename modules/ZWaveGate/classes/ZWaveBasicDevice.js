@@ -17,7 +17,7 @@ ZWaveBasicDevice = function (id, controller) {
     this.zDeviceId = zway.controller.data.nodeId.value;
     this.zCommandClassId = 32;
 
-	var self = this;
+    var self = this;
     this.controller.on('zway.dataUpdate', function () {
     	return self.onUpdate.apply(self, arguments);
     })
