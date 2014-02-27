@@ -12,6 +12,7 @@ requirejs.config({
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         alpaca: 'libs/alpaca/alpaca-full.min',
         ace: 'libs/alpaca/ace',
+        'mode-javascript': 'libs/alpaca/mode-javascript',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
     },
@@ -48,6 +49,9 @@ requirejs.config({
         ace: {
             deps : ['jquery']
         },
+        'mode-javascript': {
+            deps : ['ace']
+        },
         alpaca: {
             deps: ['jquery', 'ace']
         }
@@ -59,8 +63,10 @@ require([
     'backbone',
     'views/app',
     'router',
-    'vm'
-], function (Backbone, AppView, Router, Vm, ace) {
+    'vm',
+    'ace',
+    'mode-javascript'
+], function (Backbone, AppView, Router, Vm, ace, ACEmodeJS) {
     'use strict';
     AppView = Vm.create({}, 'AppView', AppView);
     Router.initialize({appView: AppView});
