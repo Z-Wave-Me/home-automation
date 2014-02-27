@@ -116,7 +116,8 @@ define([
             setInterval(function () {
                 window.App.Devices.fetch({
                     remove: false,
-                    merge: true
+                    merge: true,
+                    data: {limit: 0}
                 });
 
                 window.App.Notifications.fetch({
