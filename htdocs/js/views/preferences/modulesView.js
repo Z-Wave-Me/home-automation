@@ -121,7 +121,13 @@ define([
                 $schema;
 
             $schema = $(_.template(SchemaTmp, {
-                modules: that.Modules.where({created: false})
+                modules: that.Modules.select(function (model) {
+                    var result = false;
+                    if (!model.get('singleton') || (model.get('singleton') && !model.get('created'))) {
+                        result = true;
+                    }
+                    return result;
+                })
             }));
 
             $schema.find('.selectModules').on('change', function () {
