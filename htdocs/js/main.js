@@ -11,8 +11,10 @@ requirejs.config({
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         alpaca: 'libs/alpaca/alpaca-full.min',
-        ace: 'libs/alpaca/ace',
-        'mode-javascript': 'libs/alpaca/mode-javascript',
+        ace: 'libs/acejs/ace',
+        'theme-chrome': 'libs/acejs/theme-chrome',
+        'mode-javascript': 'libs/acejs/mode-javascript',
+        'worker-javascript': 'libs/acejs/worker-javascript',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
     },
@@ -52,6 +54,12 @@ requirejs.config({
         'mode-javascript': {
             deps : ['ace']
         },
+        'theme-chrome': {
+            deps : ['ace']
+        },
+        'worker-javascript': {
+            deps : ['ace']
+        },
         alpaca: {
             deps: ['jquery', 'ace']
         }
@@ -65,8 +73,10 @@ require([
     'router',
     'vm',
     'ace',
-    'mode-javascript'
-], function (Backbone, AppView, Router, Vm, ace, ACEmodeJS) {
+    'mode-javascript',
+    'theme-chrome',
+    'worker-javascript'
+], function (Backbone, AppView, Router, Vm) {
     'use strict';
     AppView = Vm.create({}, 'AppView', AppView);
     Router.initialize({appView: AppView});
