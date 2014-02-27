@@ -32,7 +32,7 @@ VirtualDevice.prototype.init = function () {
 };
 
 VirtualDevice.prototype.destroy = function () {
-    console.log("--- VDev destroy("+this.id+")");
+    console.log("--- VDev destroy(" + this.id + ")");
 };
 
 VirtualDevice.prototype.deviceTitle = function () {
@@ -98,7 +98,6 @@ VirtualDevice.prototype.removeTag = function (tag) {
             info["tags"] = [];
         }
         info["tags"] = this.tags;
-
         this.controller.saveConfig();
     }
 };
@@ -123,10 +122,10 @@ VirtualDevice.prototype.updateFromVdevInfo = function () {
                         if (_tag.length > 0) {
                             if (!in_array(self.tags, _tag)) {
                                 self.tags.push(_tag);
-                            };
-                        };
+                            }
+                        }
                     });
-                };
+                }
                 console.log("--! Device", self.id, "tags is:", JSON.stringify(self.tags));
                 self.controller.emit("device.tagsUpdated", self.id, self.tags);
             } else if ("location" === key) {

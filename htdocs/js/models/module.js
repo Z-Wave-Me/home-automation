@@ -86,6 +86,8 @@ define([
                         options.fields.status = {
                             "type": "select",
                             "required": true,
+                            "label": "Status",
+                            "helper": "",
                             "enum": ["enable", "disable"]
                         };
                     }
@@ -147,7 +149,6 @@ define([
                         if (schema.properties[key].hasOwnProperty('datasource')) {
                             prop = schema.properties[key];
                             field = schema.properties[key].field;
-                            log(prop);
                             if (prop.hasOwnProperty('items')) {
                                 namespace = _.pluck(App.Namespaces.get(prop.items[field].split(':')[1]).get('params'), prop.items[field].split(':')[2]);
                                 schema.properties[key].items[field] = namespace;
