@@ -233,7 +233,7 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 zway.devices[N].Battery.Get();
                 return zway.devices[N].Battery.data.last.value;
             
-            case "MeterValue":
+            case "MeterLevel":
                 var S = params.shift();
                 zway.devices[N].instances[I].Meter.Get();
                 return zway.devices[N].instances[I].Meter.data[S].val.value;
@@ -253,7 +253,8 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 return zway.devices[N].instances[I].SensorMultilevel.data[S].val.value;
 
             case "SensorMultilevel":
-                var S = paras.shift();
+                var S = 2;
+//params.shift();
                 zway.devices[N].instances[I].SensorMultilevel.Get();
                 return zway.devices[N].instances[I].SensorMultilevel.data[S].val.value;
 
