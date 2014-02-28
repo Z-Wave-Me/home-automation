@@ -29,6 +29,9 @@ Description:
 Author: Pieter E. Zanstra
 Converted into Z-Way HA module: Poltorak Serguei
 
+Version 1.01.01	      2014-02-28
+Testing all functions and bugfixing (Yurkin Vitaliy aivs@z-wave.me)
+
 Version 1.01.00       2013-12-11
 Converted into Z-Way HA module
 
@@ -253,8 +256,7 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 return zway.devices[N].instances[I].SensorMultilevel.data[S].val.value;
 
             case "SensorMultilevel":
-                var S = 2;
-//params.shift();
+                var S = params.shift();
                 zway.devices[N].instances[I].SensorMultilevel.Get();
                 return zway.devices[N].instances[I].SensorMultilevel.data[S].val.value;
 
