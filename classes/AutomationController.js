@@ -719,12 +719,8 @@ AutomationController.prototype.deleteNamespace = function (id) {
         this.namespaces = this.namespaces.filter(function (namespace) {
             return namespace.id !== parseInt(id);
         });
-
-        this.saveNamespaces();
     }
 };
-
-
 
 
 AutomationController.prototype.pullFile = function (id) {

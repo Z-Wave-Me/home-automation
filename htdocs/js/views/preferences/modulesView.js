@@ -84,7 +84,7 @@ define([
             });
 
             $instance.on('click', function (e) {
-                var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">save</button></div> </div></div></div>')
+                var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">save</button></div> </div></div></div>');
                 e.preventDefault();
                 that.$el.find('.items-list').find('li').removeClass('active');
                 that.instanceActive = instance.id;
@@ -121,7 +121,13 @@ define([
                 $schema;
 
             $schema = $(_.template(SchemaTmp, {
-                modules: that.Modules.where({created: false})
+                modules: that.Modules.select(function (model) {
+                    var result = false;
+                    if (!model.get('singleton') || (model.get('singleton') && !model.get('created'))) {
+                        result = true;
+                    }
+                    return result;
+                })
             }));
 
             $schema.find('.selectModules').on('change', function () {

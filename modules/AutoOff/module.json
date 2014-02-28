@@ -3,21 +3,24 @@
     "userView": true,
     "singleton": false,
     "defaults": {
-	"title": "Auto off devices",
-	"description": "Turns off automatically devices after a defined time",
+        "title": "Auto off devices",
+        "description": "Turns off automatically devices after a defined time",
         "timeout": 5,
-	"device": ""
+        "device": ""
     },
     "schema": {
         "description": "Automatically turn of devices after N seconds",
         "type": "object",
         "properties": {
             "device": {
-		"dataSource": XXXX,
-                "required": true,
+                "field": "enum",
+                "datasource": "namespaces",
+                "enum": "namespaces:devices:deviceId",
+                "required": true
+            },
             "timeout": {
-		"type": number,
-                "required": true,
+                "type": "number",
+                "required": true
             }
         },
         "required": false
@@ -25,10 +28,13 @@
     "options": {
         "fields": {
             "device": {
-                "label": "The device to be turned off afte the timeout"
+                "label": "The device to be turned off afte the timeout",
+                "datasource": "namespaces",
+                "field": "optionLabels",
+                "optionLabels": "namespaces:devices:deviceName"
             },
             "timeout": {
-                "label": "Timout in secnds"
+                "label": "Timout in seconds"
             }
         }
     }

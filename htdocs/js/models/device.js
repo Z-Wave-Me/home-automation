@@ -12,7 +12,7 @@ define([
         },
 
         methodToURL: {
-            'read': '/devices?limit=0',
+            'read': '/devices',
             'create': '/devices',
             'update': '/devices',
             'delete': '/devices'

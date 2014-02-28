@@ -76,3 +76,5 @@ function qVar(variable) {
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }
+
+function LZ(x) {return(x<0||x>9?"":"0")+x}

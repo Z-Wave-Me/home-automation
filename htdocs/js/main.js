@@ -11,6 +11,11 @@ requirejs.config({
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         alpaca: 'libs/alpaca/alpaca-full.min',
+        ace: 'libs/acejs/ace',
+        'theme-chrome': 'libs/acejs/theme-chrome',
+        'mode-javascript': 'libs/acejs/mode-javascript',
+        'mode-json': 'libs/acejs/mode-json',
+        'worker-javascript': 'libs/acejs/worker-javascript',
         text: 'libs/require/requirejs-text',
         templates: '../templates'
     },
@@ -44,8 +49,23 @@ requirejs.config({
             deps : ['jquery', 'underscore'],
             exports : 'Backbone'
         },
+        ace: {
+            deps : ['jquery']
+        },
+        'mode-javascript': {
+            deps : ['ace']
+        },
+        'mode-json': {
+            deps : ['ace']
+        },
+        'theme-chrome': {
+            deps : ['ace']
+        },
+        'worker-javascript': {
+            deps : ['ace']
+        },
         alpaca: {
-            deps: ['jquery']
+            deps: ['jquery', 'ace', 'mode-javascript', 'mode-json', 'theme-chrome', 'worker-javascript']
         }
     },
     urlArgs: "v=" + vers
