@@ -1,0 +1,56 @@
+{
+    "autoload": false,
+    "singleton": true,
+    "userView": true,
+    "defaults": {
+        "title": "Poll sensors",
+        "description": "Regular sensors polling",
+        "devices": [],
+        "period": 60
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "devices": {
+                    "type": "array",
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "items": {
+                            "enum": "namespaces:devices_sensor:deviceId",
+                            "type": "string",
+                            "required": true,
+                            "minItems": 1
+                    }
+            },
+            "period": {
+                "type": "select",
+                "required": true,
+		"enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "devices": {
+                    "label": "Sensors to poll:",
+                    "fields": {
+                            "datasource": "namespaces",
+                            "field": "optionLabels",
+                            "optionLabels": "namespaces:devices_sensor:deviceName"
+                    }
+            },
+            "period": {
+                "label": "Poll period",
+                "optionLabels": ["1 minute", "2 minute", "5 minute", "10 minute", "20 minute", "30 minute", "60 minute", "1 hour", "2 hours", "4 hours", "6 hours", "twice per day", "daily", "weekly"]
+            }
+        },
+        "focus": true,
+        "type": "object",
+        "validate": true,
+        "disabled": false,
+        "showMessages": true,
+        "collapsible": true,
+        "legendStyle": "button"
+    }
+}

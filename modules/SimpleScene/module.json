@@ -3,8 +3,11 @@
 	"singleton": true,
 	"userView": true,
 	"defaults": {
-		"title": "Battery Polling",
-		"description": "Battery Polling notifications"
+		"title": "Scene",
+		"description": "Define scene - state of switches, dimmers, blinds",
+		"switches": [],
+		"dimmers": [],
+		"scenes": []
 	},
 	"schema": {
 		"type": "object",
@@ -14,7 +17,7 @@
 				"items": {
 					"type": "object",
 					"properties": {
-						"deviceSwitch": {
+						"device": {
 							"field": "enum",
 							"datasource": "namespaces",
 							"enum": "namespaces:devices_switchBinary:deviceId",
@@ -23,10 +26,9 @@
 						"status": {
 							"type": "number",
 							"required": true,
-							"enum": [0, 255]
+							"enum": [false, true]
 						}
-					},
-					"minItems": 0
+					}
 				}
 			},
 			"dimmers": {
@@ -34,7 +36,7 @@
 				"items": {
 					"type": "object",
 					"properties": {
-						"deviceSwitch": {
+						"device": {
 							"field": "enum",
 							"datasource": "namespaces",
 							"enum": "namespaces:devices_switchMultilevel:deviceId",
@@ -46,8 +48,16 @@
 							"minimum": 0,
 							"maximum": 99
 						}
-					},
-					"minItems": 0
+					}
+				}
+			},
+			"scenes": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:scenes:sceneId",
+					"required": true
 				}
 			}
 		},
@@ -90,6 +100,16 @@
 								"slider": true
 							}
 						}
+					}
+				}
+			},
+			"scenes": {
+				"label": "List of scenes to activate",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:scenes:sceneName"
 					}
 				}
 			}
