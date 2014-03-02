@@ -49,7 +49,7 @@ BatteryPolling.prototype.init = function (config) {
     // Setup event listeners
     this.onMetricUpdated = function (vdevId, name, value) {
         var dev = self.controller.findVirtualDeviceById(vdevId);
-        if (dev && dev.deviceType === " battery" && name === "level") {
+        if (dev && dev.deviceType === "battery" && name === "level") {
             self.vdev.setMetricValue("level", self.minimalBatteryValue());
             if (value <= self.config.warningLevel)
                 self.controller.addNotification("warning", "Device " + dev.getMetricValue("title") + " is low battery", "battery");
@@ -65,9 +65,9 @@ BatteryPolling.prototype.init = function (config) {
 };
 
 BatteryPolling.prototype.stop = function () {
-    console.log("--- BatteryPolling.stop()");
     BatteryPolling.super_.prototype.stop.call(this);
 
+    this.controller.removeDevice(this.vdev.id);
     this.controller.off('device.metricUpdated', this.onMetricUpdated);
     this.controller.off('batteryPolling.poll', this.onPoll);
 };

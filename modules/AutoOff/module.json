@@ -15,7 +15,7 @@
             "device": {
                 "field": "enum",
                 "datasource": "namespaces",
-                "enum": "namespaces:devices:deviceId",
+                "enum": "namespaces:devices_switch:deviceId",
                 "required": true
             },
             "timeout": {
@@ -28,10 +28,10 @@
     "options": {
         "fields": {
             "device": {
-                "label": "The device to be turned off afte the timeout",
+                "label": "The device to be turned off after the timeout",
                 "datasource": "namespaces",
                 "field": "optionLabels",
-                "optionLabels": "namespaces:devices:deviceName"
+                "optionLabels": "namespaces:devices_switch:deviceName"
             },
             "timeout": {
                 "label": "Timout in seconds"

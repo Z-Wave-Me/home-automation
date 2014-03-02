@@ -41,6 +41,7 @@ AutomationModule.prototype.defaultConfig = function (config) {
 }
 
 AutomationModule.prototype.init = function (config) {
+    console.log("--- Starting module " + this.meta.defaults.title);
     if (!!config) {
         this.config = this.defaultConfig(config);
         this.saveConfig();
@@ -50,7 +51,7 @@ AutomationModule.prototype.init = function (config) {
 };
 
 AutomationModule.prototype.stop = function () {
-    // Virtual destructor
+    console.log("--- Stopping module " + this.meta.defaults.title);
 };
 
 AutomationModule.prototype.loadConfig = function () {

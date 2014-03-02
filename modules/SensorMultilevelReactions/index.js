@@ -66,7 +66,7 @@ SensorMultilevelReactions.prototype.init = function(config) {
 };
 
 SensorMultilevelReactions.prototype.stop = function () {
-    console.log("--- SensorMultilevelReactions.stop()");
+    console.log("---y SensorMultilevelReactions.stop()");
     SensorMultilevelReactions.super_.prototype.stop.call(this);
 
     var self = this;

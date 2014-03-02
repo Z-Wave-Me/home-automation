@@ -278,7 +278,6 @@ OpenRemoteHelpers.prototype.init = function (config) {
 };
 
 OpenRemoteHelpers.prototype.stop = function () {
-    console.log("--- OpenRemoteHelpers.stop()");
     OpenRemoteHelpers.super_.prototype.stop.call(this);
 
     OpenRemote = null;

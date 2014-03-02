@@ -1,0 +1,105 @@
+{
+	"autoload": false,
+	"singleton": true,
+	"userView": true,
+	"defaults": {
+		"title": "Battery Polling",
+		"description": "Battery Polling notifications"
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"switches": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"deviceSwitch": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchBinary:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "number",
+							"required": true,
+							"enum": [0, 255]
+						}
+					},
+					"minItems": 0
+				}
+			},
+			"dimmers": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"deviceSwitch": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchMultilevel:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "integer",
+							"required": true,
+							"minimum": 0,
+							"maximum": 99
+						}
+					},
+					"minItems": 0
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"switches": {
+				"label": "List of switches",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "Select switch",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName"
+							},
+							"status": {
+								"label": "State",
+								"optionLabels": ["Off", "On"]
+							}
+						}
+					}
+				}
+			},
+			"dimmers": {
+				"label": "List of dimmers",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "Select dimmer",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+							},
+							"status": {
+								"label": "State",
+								"slider": true
+							}
+						}
+					}
+				}
+			}
+		},
+		"focus": true,
+		"type": "object",
+		"validate": true,
+		"disabled": false,
+		"showMessages": true,
+		"collapsible": true,
+		"legendStyle": "button"
+	}
+}

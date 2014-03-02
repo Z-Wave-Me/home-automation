@@ -137,7 +137,6 @@ Cron.prototype.init = function (config) {
 };
 
 Cron.prototype.stop = function () {
-    console.log("--- Cron.stop()");
     Cron.super_.prototype.stop.call(this);
 
     clearInterval(this.timer);

@@ -124,8 +124,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         instance = zway.devices[deviceId].instances[instanceId],
         instanceCommandClasses = Object.keys(instance.commandClasses),
         instanceDevices = [],
-        deviceName = null,
-        namespaces = [];
+        deviceName = null;
 
     if (in_array(instanceCommandClasses, "64") || in_array(instanceCommandClasses, "67")) {
         deviceName = "ZWayVDev_"+deviceId+":"+instanceId+":Thermostat";
@@ -204,20 +203,37 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         device.init();
         device.bindToDatapoints();
         self.controller.registerDevice(device);
-
-        namespaces.push({
-            deviceId: device.id,
-            deviceName: device.metrics["title"]
-        });
     });
 
-    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === 'devices'})) {
+    this.pushNamespaceVar(instanceDevices, "devices_all", function(device) { return true; });
+    this.pushNamespaceVar(instanceDevices, "devices_switchBinary", function(device) { return device.deviceType === "switchBinary"; });
+    this.pushNamespaceVar(instanceDevices, "devices_switchMultilevel", function(device) { return device.deviceType === "switchMultilevel"; });
+    this.pushNamespaceVar(instanceDevices, "devices_switch", function(device) { return device.deviceType === "switchBinary" || device.deviceType === "switchMultilevel"; });
+    this.pushNamespaceVar(instanceDevices, "devices_fan", function(device) { return device.deviceType === "fan"; });
+    this.pushNamespaceVar(instanceDevices, "devices_probe", function(device) { return device.deviceType === "proble"; });
+    this.pushNamespaceVar(instanceDevices, "devices_sensor", function(device) { return device.deviceType === "sensor"; });
+    this.pushNamespaceVar(instanceDevices, "devices_thermostat", function(device) { return device.deviceType === "thermostat"; });
+    this.pushNamespaceVar(instanceDevices, "devices_doorlock", function(device) { return device.deviceType === "doorlock"; });
+};
+
+ZWaveGate.prototype.pushNamespaceVar = function (devicesList, varName, filterFunc) {
+    var namespaces = [];
+    devicesList.forEach(function (device) {
+        if (filterFunc(device)) {
+            namespaces.push({
+                deviceId: device.id,
+                deviceName: device.metrics["title"]
+            });
+        }
+    });
+
+    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === varName})) {
         controller.namespaces.push({
-            id: "devices",
+            id: varName,
             params: namespaces
         });
     } else {
-        var devicesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === 'devices'}),
+        var devicesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === varName}),
             index = controller.namespaces.indexOf(devicesNameSpace);
 
         controller.namespaces[index].params = _.union(controller.namespaces[index].params, namespaces);

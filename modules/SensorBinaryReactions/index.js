@@ -73,7 +73,6 @@ SensorBinaryReactions.prototype.init = function(config) {
 };
 
 SensorBinaryReactions.prototype.stop = function () {
-    console.log("--- SensorBinaryReactions.stop()");
     SensorBinaryReactions.super_.prototype.stop.call(this);
 
     var self = this;

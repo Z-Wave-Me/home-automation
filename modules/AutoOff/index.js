@@ -80,11 +80,13 @@ AutoOff.prototype.init = function (config) {
 };
 
 AutoOff.prototype.stop = function () {
-    console.log("--- AutoOff.stop()");
     AutoOff.super_.prototype.stop.call(this);
 
-    clearInterval(this.timer);
-    this.controller.off('device.metricUpdated', this.handler)
+    if (this.timer)
+        clearInterval(this.timer);
+    
+    if (this.handler)
+        this.controller.off('device.metricUpdated', this.handler);
 };
 // ----------------------------------------------------------------------------
 // --- Module methods

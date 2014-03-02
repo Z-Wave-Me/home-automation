@@ -13,26 +13,6 @@
         "properties": {
             "customCode": {
                 "type": "string"
-            },
-            "testSelect": {
-                "datasource": "namespaces",
-                "field": "enum",
-                "enum": "namespaces:devices:deviceId",
-                "title": "Ice Cream",
-                "type": "select",
-                "minItems": 2,
-                "maxItems": 3
-            },
-            "testSelectArr": {
-                "title": "Devices",
-                "type": "array",
-                "datasource": "namespaces",
-                "field": "enum",
-                "items": {
-                    "title": "Ice Cream",
-                    "type": "string",
-                    "enum": "namespaces:devices:deviceId"
-                }
             }
         },
         "required": false
@@ -41,22 +21,9 @@
         "toolbarSticky": true,
         "fields": {
             "customCode": {
-                "type": "editor",
+                "type": "textarea",
                 "label": "Your JavaScript code:",
-		        "cols": 40
-            },
-            "testSelect": {
-                "label": "Ice cream",
-                "datasource": "namespaces",
-                "field": "optionLabels",
-                "multiple": true,
-                "size": 3,
-                "optionLabels": "namespaces:devices:deviceName"
-            },
-            "testSelectArr": {
-                "datasource": "namespaces",
-                "field": "optionLabels",
-                "optionLabels": "namespaces:devices:deviceName"
+		"cols": 40
             }
         }
     }

@@ -62,16 +62,6 @@ define([
                         };
                     }
 
-                    if (!schema.properties.hasOwnProperty('title')) {
-                        schema.properties.title = {
-                            "type": "textarea",
-                            "required": true,
-                            "minimum": 0,
-                            "maximum": 6
-                        };
-                    }
-
-
                     if (!schema.properties.hasOwnProperty('description')) {
                         schema.properties.description =  {
                             "type": "textarea",

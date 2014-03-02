@@ -72,7 +72,6 @@ BasicReactions.prototype.init = function (config) {
 };
 
 BasicReactions.prototype.stop = function () {
-    console.log("--- BasicReactions.stop()");
     BasicReactions.super_.prototype.stop.call(this);
 
     var self = this;

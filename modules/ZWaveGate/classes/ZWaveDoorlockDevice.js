@@ -17,8 +17,6 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.deviceType = "doorlock";
 
-    this.widgetClass = "DoorlockWidget";
-
     this.setMetricValue("mode", this._dic().data.mode.value);
 }
 
