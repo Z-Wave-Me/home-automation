@@ -1,8 +1,0 @@
-{
-    "autoload": false,
-    "userView": false,
-    "singleton": false,
-    "defaults": {
-		"map": []
-    }
-}
