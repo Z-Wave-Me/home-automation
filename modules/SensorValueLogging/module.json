@@ -1,0 +1,32 @@
+{
+    "autoload": false,
+    "userView": true,
+    "singleton": false,
+    "defaults": {
+        "title": "Sensor logging",
+        "description": "Store sensor values in JSON file",
+        "device": ""
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "device": {
+                "field": "enum",
+                "datasource": "namespaces",
+                "enum": "namespaces:devices_sensor:deviceId",
+                "required": true
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "device": {
+                "label": "Sensor to log",
+                "datasource": "namespaces",
+                "field": "optionLabels",
+                "optionLabels": "namespaces:devices_sensor:deviceName"
+            }
+        }
+    }
+}
