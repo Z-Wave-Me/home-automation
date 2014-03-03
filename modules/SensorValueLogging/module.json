@@ -4,7 +4,7 @@
     "singleton": false,
     "defaults": {
         "title": "Sensor logging",
-        "description": "Store sensor values in JSON file",
+        "description": "Store sensor values in JSON file or via HTTP requests to your server",
         "device": ""
     },
     "schema": {
@@ -15,6 +15,16 @@
                 "datasource": "namespaces",
                 "enum": "namespaces:devices_sensor:deviceId",
                 "required": true
+            },
+            "logTo": {
+            	"enum": ["JSONFile", "HTTPGET"],
+            	"required": true
+            },
+            "url": {
+            	"type": "string",
+            	"depends": "logTo",
+            	"required": true,
+            	"dependencies": "logTo"
             }
         },
         "required": false
@@ -26,6 +36,17 @@
                 "datasource": "namespaces",
                 "field": "optionLabels",
                 "optionLabels": "namespaces:devices_sensor:deviceName"
+            },
+            "logTo": {
+            	"label": "How to store:",
+            	"optionLables": ["to JSON file in storage", "send via HTTP request"]
+            },
+            "url": {
+            	"label": "HTTP request to do. Strings ${id} and ${value} are replaced by sensor ID and value correspondingly",
+            	"helper": "Example: http://mydomainname.org/path/to/something/${id}?myval=${value}",
+            	"dependencies": {
+            		"logTo": "HTTPGET"
+		}
             }
         }
     }

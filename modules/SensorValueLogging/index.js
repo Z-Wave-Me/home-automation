@@ -45,13 +45,22 @@ SensorValueLogging.prototype.init = function (config) {
 
     this.handler = function (deviceId, metric, value) {
         if (self.config.device === deviceId && "level" === metric) {
-            var storedLog = loadObject("SensorValueLogging-" + self.id);
-            if (!storedLog) {
-                storedLog = [];
+            if (self.config.logTo === "JSONFile") {
+                var storedLog = loadObject("SensorValueLogging_" + deviceId + "_" + self.id);
+                if (!storedLog) {
+                    storedLog = [];
+                }
+                storedLog.push({"time": Date.now(), "deviceId": deviceId, "value": value});
+                saveObject("SensorValueLogging_" + deviceId + "_" + self.id, storedLog);
+                storedLog = null;
             }
-            storedLog.push({"deviceId": deviceId, "time": Date.now(), "value": value});
-            saveObject("SensorValueLogging-" + self.id, storedLog);
-            storedLog = null;
+            
+            if (self.config.logTo === "HTTPGET") {
+                http.request({
+                    method: 'GET',
+                    url: self.config.url.replace("${id}", deviceId).replace("${value}", value)
+                });
+            }
         }
     };
 
