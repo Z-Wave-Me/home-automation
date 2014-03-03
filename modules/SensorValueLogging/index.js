@@ -34,7 +34,7 @@ SensorValueLogging.prototype.init = function (config) {
     var device = this.controller.findVirtualDeviceById(this.config.device);
 
     // Check if device is a switch
-    if ("proble" !== device.deviceType && "sensor" !== device.deviceType) {
+    if ("probe" !== device.deviceType && "sensor" !== device.deviceType) {
         // Exit initializer due to invalid device type
         console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + device.deviceType + ").");
         return;
@@ -48,8 +48,9 @@ SensorValueLogging.prototype.init = function (config) {
             var storedLog = loadObject("SensorValueLogging-" + self.id);
             if (!storedLog) {
                 storedLog = [];
+            }
             storedLog.push({"deviceId": deviceId, "time": Date.now(), "value": value});
-            storeObject("SensorValueLogging-" + self.id);
+            saveObject("SensorValueLogging-" + self.id, storedLog);
             storedLog = null;
         }
     };

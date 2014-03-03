@@ -211,8 +211,8 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
     this.pushNamespaceVar(instanceDevices, "devices_switch", function(device) { return device.deviceType === "switchBinary" || device.deviceType === "switchMultilevel"; });
     this.pushNamespaceVar(instanceDevices, "devices_fan", function(device) { return device.deviceType === "fan"; });
     this.pushNamespaceVar(instanceDevices, "devices_sensorBinary", function(device) { return device.deviceType === "sensor"; });
-    this.pushNamespaceVar(instanceDevices, "devices_sensorMultilevel", function(device) { return device.deviceType === "proble"; });
-    this.pushNamespaceVar(instanceDevices, "devices_sensor", function(device) { return device.deviceType === "sensor" || device.deviceType === "proble"; });
+    this.pushNamespaceVar(instanceDevices, "devices_sensorMultilevel", function(device) { return device.deviceType === "probe"; });
+    this.pushNamespaceVar(instanceDevices, "devices_sensor", function(device) { return device.deviceType === "sensor" || device.deviceType === "probe"; });
     this.pushNamespaceVar(instanceDevices, "devices_thermostat", function(device) { return device.deviceType === "thermostat"; });
     this.pushNamespaceVar(instanceDevices, "devices_doorlock", function(device) { return device.deviceType === "doorlock"; });
 };
