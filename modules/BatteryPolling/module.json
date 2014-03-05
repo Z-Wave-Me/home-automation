@@ -35,13 +35,6 @@
                 "helper": "Warn if device's battery is below this level",
                 "optionLabels": ["5%", "10%", "15%", "20%"]
             }
-        },
-        "focus": true,
-        "type": "object",
-        "validate": true,
-        "disabled": false,
-        "showMessages": true,
-        "collapsible": true,
-        "legendStyle": "button"
+        }
     }
 }

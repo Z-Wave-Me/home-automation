@@ -15,10 +15,6 @@ VirtualDevice = function (id, controller) {
     this.tags = [];
     this.location = null;
     this.updateTime = 0;
-    this.position = {
-        top: 0,
-        left: 0
-    };
 };
 
 
@@ -50,7 +46,7 @@ VirtualDevice.prototype.setMetricValue = function (name, value) {
 };
 
 VirtualDevice.prototype.setVDevObject = function (id, object) {
-    var excludeProp = ['deviceType', 'updateTime', 'id', 'metrics'],
+    var excludeProp = ['deviceType', 'updateTime', 'id'],
         self = this,
         data = object.hasOwnProperty('data') ? object.data : object;
 
@@ -61,6 +57,9 @@ VirtualDevice.prototype.setVDevObject = function (id, object) {
             self.controller.emit("device.valueUpdate", self.id, key, self[key]);
         }
     });
+
+    console.log(JSON.stringify(object));
+    console.log(JSON.stringify(this.metrics));
 
     this.controller.saveConfig();
 };
@@ -79,9 +78,9 @@ VirtualDevice.prototype.addTag = function (tag) {
         this.tags.push(tag);
 
         if (!info.hasOwnProperty("tags")) {
-            info["tags"] = [];
+            info.tags = [];
         }
-        info["tags"].push(tag);
+        info.tags.push(tag);
 
         this.controller.saveConfig();
     }

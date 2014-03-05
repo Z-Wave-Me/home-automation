@@ -308,6 +308,7 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         result = false;
     }
 
+    this.saveConfig();
     return result;
 };
 

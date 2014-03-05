@@ -109,51 +109,56 @@ define([
         getNamespacesData: function (model) {
             var schema = model.get('schema'),
                 options = model.get('options'),
+                defaultObject = {
+                    "focus": true,
+                    "type": "object",
+                    "validate": true,
+                    "disabled": false,
+                    "showMessages": true,
+                    "collapsible": true,
+                    "legendStyle": "button"
+                },
                 prop,
-                option,
                 namespace,
-                field,
                 App = window.App;
+
+            function r(obj) {
+                var key;
+                if (obj) {
+                    for (key in obj) {
+                        if (typeof obj[key] === "object") {
+                            r(obj[key]);
+                        } else if (_.isString(obj[key])) {
+                            if (obj[key].indexOf('namespaces') !== -1 && obj[key].split(':').length > 1) {
+                                namespace = App.Namespaces.get(obj[key].split(':')[1]);
+                                if (namespace) {
+                                    obj[key] = _.pluck(namespace.get('params'), obj[key].split(':')[2]);
+                                }
+                            }
+                        }
+                    }
+                }
+                return obj;
+            }
+
+            prop = r(model.toJSON());
 
             // options
             if (options) {
-                if (options.hasOwnProperty('fields')) {
-                    _.each(_.keys(options.fields), function (key) {
-                        if (options.fields[key].hasOwnProperty('datasource')) {
-                            option = options.fields[key];
-                            field = options.fields[key].field;
-                            if (_.isString(option[field]) && _.isString(options.fields[key][field])) {
-                                namespace = _.pluck(App.Namespaces.get(option[field].split(':')[1]).get('params'), options.fields[key][field].split(':')[2]);
-                                options.fields[key][field] = namespace;
-                                model.set({options: options});
-                            }
-                        }
-                    });
-                }
+                Object.keys(defaultObject).forEach(function (key) {
+                     if (!options.hasOwnProperty(key)) {
+                        options[key] = defaultObject[key];
+                     }
+                });
+                model.set({options: prop.options});
             }
 
             // schema
             if (schema) {
-                if (schema.hasOwnProperty('properties')) {
-                    _.each(_.keys(schema.properties), function (key) {
-                        if (schema.properties[key].hasOwnProperty('datasource')) {
-                            prop = schema.properties[key];
-                            field = schema.properties[key].field;
-                            if (_.isString(prop[field])) {
-                                if (prop.hasOwnProperty('items')) {
-                                    namespace = _.pluck(App.Namespaces.get(prop.items[field].split(':')[1]).get('params'), prop.items[field].split(':')[2]);
-                                    schema.properties[key].items[field] = namespace;
-                                } else {
-                                    namespace = _.pluck(App.Namespaces.get(prop[field].split(':')[1]).get('params'), prop[field].split(':')[2]);
-                                    schema.properties[key][field] = namespace;
-                                }
-                            }
-
-                            model.set({schema: schema});
-                        }
-                    });
-                }
+                model.set({schema: prop.schema});
             }
+
+
         },
         parse: function (response, xhr) {
             return response.data || response;

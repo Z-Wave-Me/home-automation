@@ -153,7 +153,7 @@ define([
         },
         addDevice: function (device) {
             var that = this,
-                $device = $("<li>" + device.get('metrics').title + "</li>"),
+                $device = $("<li title='" + device.get('metrics').title + "'>" + device.get('metrics').title + "</li>"),
                 $deviceTmp,
                 avalaibleTags = that.getTags(),
                 tags = device.get('tags'),
@@ -161,6 +161,11 @@ define([
                 profile,
                 widgets,
                 active;
+
+            device.on('change:metrics', function () {
+                $device.attr('title', device.get('metrics').title);
+                $device.text(device.get('metrics').title);
+            });
 
             $device.on('click', function () {
                 active = _.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === device.id; });
@@ -201,6 +206,13 @@ define([
 
                 $(ms).on('beforerender', function () {
                     $(ms).setValue(tags);
+                });
+
+                $('#inputTitleText').on('keydown', function () {
+                    var metrics = device.get('metrics');
+                    metrics.title = $(this).val();
+                    device.save({metrics: metrics});
+                    device.trigger('change:metrics');
                 });
 
                 $(ms).on('blur', function () {
