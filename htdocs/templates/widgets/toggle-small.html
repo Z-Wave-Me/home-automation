@@ -4,13 +4,12 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %>"></div>
+            <div class="icon-base <%= metrics.iconBase %> <%= deviceType %>"></div>
         </div>
         <div class="content"><%= metrics.title %>
-            <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('Open'); } else { print('Closed'); }%>">
-                <span class="switch-door <% if (metrics.level > 0) { print(' active'); } %>">
+            <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('On'); } else { print('Off'); }%>">
+                <span class="switch-door bubble-door active">
                     <span class="bubble"></span>
-                    <span class="text"><% if (metrics.level > 0) { print('OPEN'); } else { print('CLOSED'); }%></span>
                 </span>
             </a>
         </div>

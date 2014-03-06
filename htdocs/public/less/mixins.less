@@ -103,6 +103,27 @@
         &.active {
           .switch.active;
         }
+        &.bubble-door {
+          background: none;
+          &.active {
+            background: none;
+          }
+          .bubble {
+            border: 1px solid #ccc;
+            -webkit-transition: all 0.1s;
+            -moz-transition: all 0.1s;
+            transition: all 0.1s;
+            -webkit-box-shadow: 0px 5px 0px #84261a;
+            -moz-box-shadow: 0px 5px 0px #84261a;
+            box-shadow: 0px 5px 0px #84261a;
+            &:active {
+              margin-top: 2px;
+              -webkit-box-shadow: 0px 2px 0px #84261a;
+              -moz-box-shadow: 0px 2px 0px #84261a;
+              box-shadow: 0px 2px 0px #84261a;
+            }
+          }
+        }
       }
       // progress bar
       .progress-bar {

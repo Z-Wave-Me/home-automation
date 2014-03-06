@@ -231,7 +231,9 @@ AutomationController.prototype.instantiateModules = function () {
     console.log("--- User configured modules instantiation ---");
     if (self.instances.length > 0) {
         self.instances.forEach(function (instance) {
-            self.instantiateModule(instance);
+            if ((instance.params.hasOwnProperty('status') && instance.params.status === 'enable') || !instance.params.hasOwnProperty('status')) {
+                self.instantiateModule(instance);
+            }
         });
     } else {
         console.log("--! No user-configured instances found");
@@ -296,7 +298,10 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
 
     if (!!instance) {
         instance.stop();
-        instance.init(config.params);
+        console.log(JSON.stringify(instance));
+        if (instance.config.status === 'enable') {
+            instance.init(config.params);
+        }
         if (config.hasOwnProperty('params')) {
             this.instances[index].params = config.params;
         }
@@ -305,6 +310,9 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         result = this.instances[index];
     } else {
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
+        if (instance.params.config === 'enable') {
+            instance.init(config.params);
+        }
         result = false;
     }
 
@@ -313,13 +321,14 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
 };
 
 AutomationController.prototype.removeInstance = function (id) {
+    console.log(id);
     var instance = this.registerInstances[id],
-        instanceClass = instance.toJSON()["module"];
+        instanceClass = id;
 
     instance.saveConfig();
     instance.stop();
 
-    if (instance.meta["singleton"]) {
+    if (instance.meta.singleton) {
         var pos = this._loadedSingletons.indexOf(instanceClass);
         if (pos >= 0) {
             this._loadedSingletons.splice(pos, 1);

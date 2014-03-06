@@ -12,8 +12,8 @@ VirtualDevice = function (id, controller) {
     this.controller = controller;
     this.deviceType = null;
     this.metrics = {};
-    this.tags = [];
     this.location = null;
+    this.tags = [];
     this.updateTime = 0;
 };
 
@@ -58,9 +58,6 @@ VirtualDevice.prototype.setVDevObject = function (id, object) {
         }
     });
 
-    console.log(JSON.stringify(object));
-    console.log(JSON.stringify(this.metrics));
-
     this.controller.saveConfig();
 };
 
@@ -98,6 +95,7 @@ VirtualDevice.prototype.removeTag = function (tag) {
         }
         info["tags"] = this.tags;
         this.controller.saveConfig();
+        this.updateFromVdevInfo();
     }
 };
 

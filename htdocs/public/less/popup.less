@@ -337,6 +337,8 @@
           height: 26px;
           line-height: 26px;
           width: 225px;
+          overflow: hidden;
+          text-overflow: ellipsis;
           &.active {
             cursor: default;
             font-size: 18px;
@@ -440,6 +442,7 @@
   }
   .form-horizontal {
     width: 100%;
+    max-width: 520px;
     margin: 0 auto;
     display: inline-block;
     text-align: center;
@@ -584,6 +587,9 @@
     }
   }
   .profile {
+    .form-horizontal {
+      margin-top: 25px;
+    }
     .form-control {
       display: block;
     }

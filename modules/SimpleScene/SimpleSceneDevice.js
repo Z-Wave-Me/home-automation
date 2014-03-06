@@ -12,8 +12,7 @@ Copyright: (c) ZWave.Me, 2014
 
 SimpleSceneDevice = function (id, controller) {
     SimpleSceneDevice.super_.call(this, id, controller);
-
-    this.deviceType = "switchBinary";
+    this.deviceType = "toggleButton";
 }
 
 inherits(SimpleSceneDevice, VirtualDevice);

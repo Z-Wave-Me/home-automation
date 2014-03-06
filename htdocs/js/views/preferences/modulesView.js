@@ -76,6 +76,7 @@ define([
                 $instance.hide('fast', function () {
                     $instance.prev().click();
                     $instance.remove();
+                    App.Devices.reset({silent: true}).fetch();
                 });
             });
 

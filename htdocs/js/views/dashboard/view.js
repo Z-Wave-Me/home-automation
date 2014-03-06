@@ -8,8 +8,9 @@ define([
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
     "text!templates/widgets/switch-small.html",
+    "text!templates/widgets/toggle-small.html",
     'jquery-ui'
-], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
+], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch, templateToggle) {
     'use strict';
     var DashboardView = Backbone.View.extend({
         el: '#devices-container',
@@ -59,6 +60,8 @@ define([
                     that.renderDoorlock(model);
                 } else if (model.get('deviceType') === "switchBinary") {
                     that.renderSwitch(model);
+                } else if (model.get('deviceType') === "toggleButton") {
+                    that.renderToggle(model);
                 } else {
                     //log(model);
                 }
@@ -242,6 +245,35 @@ define([
                 that.$el.append($SwitchTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);
+            }
+        },
+        renderToggle: function (model) {
+            var that = this,
+                $ToggleTmp = $(_.template(templateToggle, model.toJSON()));
+
+            that.setPosition($ToggleTmp, model);
+
+            if (that.activeMode) {
+                $ToggleTmp.removeClass('clear');
+            } else {
+                $ToggleTmp.addClass('clear');
+            }
+
+            $ToggleTmp.find('.action').on('click', function (e) {
+                e.preventDefault();
+
+                var $button = $(this),
+                    command = 'on';
+
+                Apis.devices.command(model.get('id'), command, {}, function () {
+
+                });
+            });
+
+            if (!that.isExistWidget(model.get('id'))) {
+                that.$el.append($ToggleTmp);
+            } else {
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ToggleTmp);
             }
         },
         isExistWidget: function (id) {

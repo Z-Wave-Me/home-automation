@@ -53,7 +53,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         pager = null,
         limit = that.req.query.hasOwnProperty('limit') ? parseInt(that.req.query['limit']) : 10,
         offset = that.req.query.hasOwnProperty('offset') ? parseInt(that.req.query['offset']) : 0,
-        pagination = that.req.query.hasOwnProperty('pagination') ? that.req.query['pagination'] : true,
+        pagination = that.req.query.hasOwnProperty('pagination') ? that.req.query['pagination'] : false,
         query = that.req.query.hasOwnProperty('q') ? String(that.req.query['q']).toLowerCase() : null,
         httpCode = {
             200: "200 OK",

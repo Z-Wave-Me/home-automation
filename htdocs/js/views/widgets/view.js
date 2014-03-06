@@ -6,8 +6,9 @@ define([
     "text!templates/widgets/doorlock-small.html",
     "text!templates/widgets/complementary-small.html",
     "text!templates/widgets/thermostat-small.html",
-    "text!templates/widgets/switch-small.html"
-], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch) {
+    "text!templates/widgets/switch-small.html",
+    "text!templates/widgets/toggle-small.html"
+], function (Apis, Backbone, templateProbe, templateFan, templateDoorlock, templateComplementary, templateThermostat, templateSwitch, templateToggle) {
     'use strict';
     var WidgetsView = Backbone.View.extend({
         el: '#devices-container',
@@ -73,6 +74,8 @@ define([
                     that.renderWidget(device, templateDoorlock);
                 } else if (device.get('deviceType') === "switchBinary") {
                     that.renderWidget(device, templateSwitch);
+                } else if (device.get('deviceType') === "toggleButton") {
+                    that.renderWidget(device, templateToggle);
                 }
             });
         },
@@ -90,6 +93,8 @@ define([
                 that.renderDoorlock(model);
             } else if (model.get('deviceType') === "switchBinary") {
                 that.renderSwitch(model);
+            } else if (model.get('deviceType') === "toggleButton") {
+                that.renderToggle(model);
             } else {
                 //log(model);
             }
@@ -272,6 +277,34 @@ define([
                 that.$el.append($SwitchTmp);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($SwitchTmp);
+            }
+        },
+        renderToggle: function (model) {
+            var that = this,
+                $ToggleTmp = $(_.template(templateToggle, model.toJSON()));
+
+            that.setHideEvents($ToggleTmp, model);
+
+            if (that.activeMode) {
+                $ToggleTmp.removeClass('clear');
+            } else {
+                $ToggleTmp.addClass('clear');
+            }
+
+            $ToggleTmp.find('.action').on('click', function (e) {
+                e.preventDefault();
+
+                var $button = $(this),
+                    command = 'on';
+
+                Apis.devices.command(model.get('id'), command, {}, function () {
+
+                });
+            });
+            if (!that.isExistWidget(model.get('id'))) {
+                that.$el.append($ToggleTmp);
+            } else {
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith($ToggleTmp);
             }
         },
         setHideEvents: function ($template, device) {
