@@ -325,20 +325,18 @@ AutomationController.prototype.removeInstance = function (id) {
     var instance = this.registerInstances[id],
         instanceClass = id;
 
-    if (instance) {
-        instance.stop();
+    instance.stop();
 
-        if (instance.meta.singleton) {
-            var pos = this._loadedSingletons.indexOf(instanceClass);
-            if (pos >= 0) {
-                this._loadedSingletons.splice(pos, 1);
-            }
+    if (instance.meta.singleton) {
+        var pos = this._loadedSingletons.indexOf(instanceClass);
+        if (pos >= 0) {
+            this._loadedSingletons.splice(pos, 1);
         }
-
-        delete this.registerInstances[id];
-        this.emit('core.instanceStopped', id);
-        this.controller.saveConfig();
     }
+
+    delete this.registerInstances[id];
+    this.emit('core.instanceStopped', id);
+    this.controller.saveConfig();
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
