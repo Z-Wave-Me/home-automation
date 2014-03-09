@@ -439,13 +439,21 @@
         height: 100px;
         width: 100px;
         padding: 10px;
-        line-height: 100px;
-        vertical-align: bottom;
-        background-color: #bbc2c4;
+        vertical-align: middle;
         margin-right: 27px;
         cursor: pointer;
-        &:hover {
-          opacity: 0.6;
+        text-align: center;
+        .icon-span {
+          margin-top: 7px;
+          vertical-align: middle;
+          display: inline-block;
+          width: 50px;
+          height: 60px;
+          line-height: 60px;
+          .container-icon {
+            display: inline-block;
+            vertical-align: middle;
+          }
         }
         .title-list {
           text-align: center;
@@ -453,6 +461,7 @@
           line-height: 25px;
           vertical-align: bottom;
           width: 100%;
+          opacity: 0.6;
         }
       }
     }

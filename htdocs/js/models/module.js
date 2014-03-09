@@ -114,7 +114,7 @@ define([
                     "type": "object",
                     "validate": true,
                     "disabled": false,
-                    "showMessages": true,
+                    "showMessages": false,
                     "collapsible": true,
                     "legendStyle": "button"
                 },
