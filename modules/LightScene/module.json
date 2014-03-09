@@ -1,10 +1,10 @@
 {
 	"autoload": false,
-	"singleton": true,
+	"singleton": false,
 	"userView": true,
 	"defaults": {
-		"title": "Scene",
-		"description": "Define scene - state of switches, dimmers, blinds",
+		"title": "Light scene",
+		"description": "Light scene defines state of switches, dimmers, blinds",
 		"switches": [],
 		"dimmers": [],
 		"scenes": []
@@ -113,13 +113,6 @@
 					}
 				}
 			}
-		},
-		"focus": true,
-		"type": "object",
-		"validate": true,
-		"disabled": false,
-		"showMessages": true,
-		"collapsible": true,
-		"legendStyle": "button"
+		}
 	}
 }

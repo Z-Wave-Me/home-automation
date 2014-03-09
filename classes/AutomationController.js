@@ -132,6 +132,7 @@ AutomationController.prototype.loadModules = function (callback) {
             var moduleMeta = loadJSON(moduleMetaFilename);
         } catch (e) {
             self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
+            console.log(e.stack);
             return; // skip this modules
         }
         if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
@@ -153,6 +154,7 @@ AutomationController.prototype.loadModules = function (callback) {
             executeFile(moduleFilename);
         } catch (e) {
             self.addNotification("error", "Can not load index.js from " + moduleFilename + ": " + e.toString(), "core");
+            console.log(e.stack);
             return; // skip this modules
         }
         
@@ -197,7 +199,8 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         instance = new global[module.meta.id](instanceModel.id, self);
     } catch (e) {
         self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
-        return;
+        console.log(e.stack);
+        return null;
     }
 
     console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
@@ -211,7 +214,14 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         self._loadedSingletons.push(module.meta.id);
     }
 
-    instance.init(instanceModel.params);
+    try {
+        instance.init(instanceModel.params);
+    } catch (e) {
+        self.addNotification("error", "Can not init module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+        console.log(e.stack);
+        return null;
+    }
+    
     self.registerInstance(instance);
     return instance;
 };
@@ -356,7 +366,10 @@ AutomationController.prototype.registerDevice = function (device) {
 
 AutomationController.prototype.removeDevice = function (id) {
     var vdev = this.devices[id];
-
+    
+    if (!vdev)
+        return;
+    
     vdev.destroy();
     delete this.devices[id];
 
