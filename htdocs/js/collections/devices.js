@@ -24,8 +24,11 @@ define([
             options.data = options.data || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
-            if (this.updateTime !== undefined) {
+
+            if (this.updateTime !== undefined && !this.structureChanged) {
                 options.data.since = this.updateTime;
+            } else if (this.structureChanged) {
+                options.data.since = 0;
             }
 
             Backbone.sync(method, model, options);

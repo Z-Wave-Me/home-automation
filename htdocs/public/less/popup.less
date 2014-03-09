@@ -320,16 +320,33 @@
       margin-bottom: 25px;
       .title-sidebar {
         display: inline-block;
-        line-height: 70px;
-        height: 70px;
+        margin-top: 10px;
+        line-height: 25px;
+        height: 25px;
         width: 100%;
         vertical-align: middle;
         font-size: 12px;
+      }
+      .filter-sidebar {
+        display: inline-block;
+        line-height: 13px;
+        height: 13px;
+        width: 57%;
+        vertical-align: middle;
+        background-color: #f7f7f7;
+        border-radius: 5px;
+        outline: none;
+        padding: 1px 5px;
+        font-size: 13px;
       }
       .items-list {
         list-style-type: none;
         margin: 0;
         padding: 0;
+        max-height: 270px;
+        height: auto;
+        overflow: hidden;
+        overflow-y: auto;
         li {
           cursor: pointer;
           color: #375666;

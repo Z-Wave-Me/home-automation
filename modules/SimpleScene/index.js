@@ -30,13 +30,12 @@ SimpleScene.prototype.init = function (config) {
 
     var self = this;
 
-    executeFile(this.moduleBasePath()+"/SimpleSceneDevice.js");
+    executeFile(this.moduleBasePath() + "/SimpleSceneDevice.js");
     this.vdev = new SimpleSceneDevice("SimpleScene", this.controller);
     this.vdev.config = this.config;
     this.vdev.init();
     this.controller.registerDevice(this.vdev);
-    
-    this.sceneId = "Scene_" + this.id.toString()
+    this.sceneId = "Scene_" + this.id.toString();
     this.pushSceneToNamespaceVar(this.sceneId, this.config.title);
 };
 
@@ -53,16 +52,18 @@ SimpleScene.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 SimpleScene.prototype.pushSceneToNamespaceVar = function (sceneId, sceneName) {
-    var namespaces = [{"sceneId": sceneId, "sceneName": sceneName}];
+    var namespaces = [{"sceneId": sceneId, "sceneName": sceneName}],
+        scenesNameSpace,
+        index;
 
-    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === varName})) {
+    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === sceneName; })) {
         controller.namespaces.push({
             id: "scenes",
             params: namespaces
         });
     } else {
-        var scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"}),
-            index = controller.namespaces.indexOf(scenesNameSpace);
+        scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"; });
+        index = controller.namespaces.indexOf(scenesNameSpace);
 
         controller.namespaces[index].params = _.union(controller.namespaces[index].params, namespaces);
     }
@@ -70,16 +71,15 @@ SimpleScene.prototype.pushSceneToNamespaceVar = function (sceneId, sceneName) {
     namespaces = [];
 };
 
-SimpleScene.prototype.pushSceneToNamespaceVar = function (sceneId, sceneName) {
-    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === "scenes"})) {
+SimpleScene.prototype.popSceneFromNamespaceVar = function (sceneId, sceneName) {
+    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === "scenes"; })) {
         return; // nothing to do
     } else {
-        var scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"}),
-            index = controller.namespaces.indexOf(scenesNameSpace);
-
-        var element = _.find(controller.namespaces[index].params, function (id) { return id === sceneId }),
+        var scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"; }),
+            index = controller.namespaces.indexOf(scenesNameSpace),
+            element = _.find(controller.namespaces[index].params, function (id) { return id === sceneId; }),
             elementIndex = controller.namespaces[index].params.indexOf(element);
-        
+
         controller.namespaces[index].params.splice(index, 1);
     }
 };

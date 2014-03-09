@@ -40,6 +40,17 @@ define([
             that.$contentContainer = that.$template.find('.content-body');
             that.$template.find('.back-button').hide();
 
+            that.$leftSidebar.find('.filter-sidebar').off().on('keyup', function () {
+                var value = $(this).val();
+                $(".items-list > li").each(function () {
+                    if ($(this).text().indexOf(value) > -1) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+
             // listen
             that.listenTo(that.Locations, 'add', function (model) {
                 if (that.type === 'rooms') {
@@ -208,7 +219,7 @@ define([
                     $(ms).setValue(tags);
                 });
 
-                $('#inputTitleText').on('keydown', function () {
+                $('#inputTitleText').on('keyup', function () {
                     var metrics = device.get('metrics');
                     metrics.title = $(this).val();
                     device.save({metrics: metrics});

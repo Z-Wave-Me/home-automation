@@ -121,8 +121,9 @@ AutomationController.prototype.loadModules = function (callback) {
     var self = this;
 
     fs.list("modules/").forEach(function (moduleClassName) {
-        var moduleMetaFilename = "modules/" + moduleClassName + "/module.json";
-        var _st = fs.stat(moduleMetaFilename);
+        var moduleMetaFilename = "modules/" + moduleClassName + "/module.json",
+            _st = fs.stat(moduleMetaFilename);
+
         if ("file" !== _st.type || 2 > _st.size) {
             console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
             return;
@@ -296,9 +297,9 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
         result;
 
-    if (!!instance) {
+    console.log(instance === undefined);
+    if (instance !== undefined) {
         instance.stop();
-        console.log(JSON.stringify(instance));
         if (instance.config.status === 'enable') {
             instance.init(config.params);
         }
@@ -321,11 +322,9 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
 };
 
 AutomationController.prototype.removeInstance = function (id) {
-    console.log(id);
     var instance = this.registerInstances[id],
         instanceClass = id;
 
-    instance.saveConfig();
     instance.stop();
 
     if (instance.meta.singleton) {
@@ -337,6 +336,7 @@ AutomationController.prototype.removeInstance = function (id) {
 
     delete this.registerInstances[id];
     this.emit('core.instanceStopped', id);
+    this.controller.saveConfig();
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
@@ -374,9 +374,9 @@ AutomationController.prototype.getVdevInfo = function (id) {
 }
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.devices[device.id] = device;
+    this.vdevInfo[id] = device;
     this.saveConfig();
-    return this.devices[device.id];
+    return this.vdevInfo[id];
 }
 
 AutomationController.prototype.saveNotifications = function () {
