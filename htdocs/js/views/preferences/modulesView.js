@@ -33,7 +33,7 @@ define([
             that.$el.find('.footer-button').show();
             that.$el.find('.left-sidebar').show();
             that.$el.find('.list-container').show();
-            that.$el.find('.list-container').find('.title-sidebar').text('Instances:');
+            that.$el.find('.list-container').find('.title-sidebar').text('Rules:');
             that.$el.find('.items-list').empty();
 
             that.$el.find('.add-button').off().on('click', function (e) {

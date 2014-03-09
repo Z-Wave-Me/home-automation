@@ -124,7 +124,7 @@ AutomationController.prototype.loadModules = function (callback) {
         var moduleMetaFilename = "modules/" + moduleClassName + "/module.json",
             _st = fs.stat(moduleMetaFilename);
 
-        if ("file" !== _st.type || 2 > _st.size) {
+        if (!_st || "file" !== _st.type || 2 > _st.size) {
             console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
             return;
         }
