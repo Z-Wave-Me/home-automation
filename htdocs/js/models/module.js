@@ -154,7 +154,7 @@ define([
                 if (options.hasOwnProperty('fields')) {
                     Object.keys(options.fields).forEach(function (key) {
                         if (!options.fields[key].hasOwnProperty('helpers')) {
-                            options.fields[key].helpers = '';
+                            options.fields[key].helper = "";
                         }
                     });
                 }
