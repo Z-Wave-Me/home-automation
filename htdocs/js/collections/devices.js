@@ -29,9 +29,8 @@ define([
                 options.data.since = this.updateTime;
             } else if (this.structureChanged) {
                 options.data.since = 0;
+                this.reset();
             }
-
-            this.reset();
 
             Backbone.sync(method, model, options);
         },

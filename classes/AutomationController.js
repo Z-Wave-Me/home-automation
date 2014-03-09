@@ -297,7 +297,6 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
         result;
 
-    console.log(instance === undefined);
     if (instance !== undefined) {
         instance.stop();
         if (instance.config.status === 'enable') {
@@ -311,9 +310,14 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         result = this.instances[index];
     } else {
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
-        if (instance.params.config === 'enable') {
+        if (instance.hasOwnProperty('params')) {
+            if (instance.params.config === 'enable') {
+                instance.init(config.params);
+            }
+        } else {
             instance.init(config.params);
         }
+
         result = false;
     }
 
@@ -325,18 +329,21 @@ AutomationController.prototype.removeInstance = function (id) {
     var instance = this.registerInstances[id],
         instanceClass = id;
 
-    instance.stop();
 
-    if (instance.meta.singleton) {
-        var pos = this._loadedSingletons.indexOf(instanceClass);
-        if (pos >= 0) {
-            this._loadedSingletons.splice(pos, 1);
+    if (!!instance) {
+        instance.stop();
+
+        if (instance.meta.singleton) {
+            var pos = this._loadedSingletons.indexOf(instanceClass);
+            if (pos >= 0) {
+                this._loadedSingletons.splice(pos, 1);
+            }
         }
-    }
 
-    delete this.registerInstances[id];
-    this.emit('core.instanceStopped', id);
-    this.controller.saveConfig();
+        delete this.registerInstances[id];
+        this.emit('core.instanceStopped', id);
+        this.saveConfig();
+    }
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
