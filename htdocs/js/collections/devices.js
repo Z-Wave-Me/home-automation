@@ -31,6 +31,8 @@ define([
                 options.data.since = 0;
             }
 
+            this.reset();
+
             Backbone.sync(method, model, options);
         },
 

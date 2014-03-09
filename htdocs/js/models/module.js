@@ -146,10 +146,19 @@ define([
             // options
             if (options) {
                 Object.keys(defaultObject).forEach(function (key) {
-                     if (!options.hasOwnProperty(key)) {
+                    if (!options.hasOwnProperty(key)) {
                         options[key] = defaultObject[key];
-                     }
+                    }
                 });
+
+                if (options.hasOwnProperty('fields')) {
+                    Object.keys(options.fields).forEach(function (key) {
+                        if (!options.fields[key].hasOwnProperty('helpers')) {
+                            options.fields[key].helpers = '';
+                        }
+                    });
+                }
+
                 model.set({options: prop.options});
             }
 
