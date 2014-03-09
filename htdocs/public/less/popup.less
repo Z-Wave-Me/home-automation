@@ -320,16 +320,33 @@
       margin-bottom: 25px;
       .title-sidebar {
         display: inline-block;
-        line-height: 70px;
-        height: 70px;
+        margin-top: 10px;
+        line-height: 25px;
+        height: 25px;
         width: 100%;
         vertical-align: middle;
         font-size: 12px;
+      }
+      .filter-sidebar {
+        display: inline-block;
+        line-height: 13px;
+        height: 13px;
+        width: 57%;
+        vertical-align: middle;
+        background-color: #f7f7f7;
+        border-radius: 5px;
+        outline: none;
+        padding: 1px 5px;
+        font-size: 13px;
       }
       .items-list {
         list-style-type: none;
         margin: 0;
         padding: 0;
+        max-height: 270px;
+        height: auto;
+        overflow: hidden;
+        overflow-y: auto;
         li {
           cursor: pointer;
           color: #375666;
@@ -422,13 +439,21 @@
         height: 100px;
         width: 100px;
         padding: 10px;
-        line-height: 100px;
-        vertical-align: bottom;
-        background-color: #bbc2c4;
+        vertical-align: middle;
         margin-right: 27px;
         cursor: pointer;
-        &:hover {
-          opacity: 0.6;
+        text-align: center;
+        .icon-span {
+          margin-top: 7px;
+          vertical-align: middle;
+          display: inline-block;
+          width: 50px;
+          height: 60px;
+          line-height: 60px;
+          .container-icon {
+            display: inline-block;
+            vertical-align: middle;
+          }
         }
         .title-list {
           text-align: center;
@@ -436,6 +461,7 @@
           line-height: 25px;
           vertical-align: bottom;
           width: 100%;
+          opacity: 0.6;
         }
       }
     }

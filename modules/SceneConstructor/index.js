@@ -28,7 +28,7 @@ _module = SceneConstructor;
 SceneConstructor.prototype.init = function (config) {
     SceneConstructor.super_.prototype.init.call(this, config);
 
-    executeFile(this.moduleBasePath()+"/SceneConstructorDevice.js");
+    executeFile(this.moduleBasePath() + "/SceneConstructorDevice.js");
     
     this.vDevs = [];
 
@@ -94,16 +94,18 @@ SceneConstructor.prototype.stop = function () {
 
 
 SceneConstructor.prototype.pushSceneToNamespaceVar = function (sceneId, sceneName) {
-    var namespaces = [{"sceneId": sceneId, "sceneName": sceneName}];
+    var namespaces = [{"sceneId": sceneId, "sceneName": sceneName}],
+        scenesNameSpace,
+        index;
 
-    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === "scenes"})) {
+    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === "scenes"; })) {
         controller.namespaces.push({
             id: "scenes",
             params: namespaces
         });
     } else {
-        var scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"}),
-            index = controller.namespaces.indexOf(scenesNameSpace);
+        scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"; });
+        index = controller.namespaces.indexOf(scenesNameSpace);
 
         controller.namespaces[index].params = _.union(controller.namespaces[index].params, namespaces);
     }
@@ -112,13 +114,12 @@ SceneConstructor.prototype.pushSceneToNamespaceVar = function (sceneId, sceneNam
 };
 
 SceneConstructor.prototype.popSceneFromNamespaceVar = function (sceneId, sceneName) {
-    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === "scenes"})) {
+    if (!_.any(controller.namespaces, function (namespace) { return namespace.id === "scenes"; })) {
         return; // nothing to do
     } else {
-        var scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"}),
-            index = controller.namespaces.indexOf(scenesNameSpace);
-
-        var element = _.find(controller.namespaces[index].params, function (id) { return id === sceneId }),
+        var scenesNameSpace = _.find(controller.namespaces, function (namespace) { return namespace.id === "scenes"; }),
+            index = controller.namespaces.indexOf(scenesNameSpace),
+            element = _.find(controller.namespaces[index].params, function (id) { return id === sceneId }),
             elementIndex = controller.namespaces[index].params.indexOf(element);
         
         controller.namespaces[index].params.splice(index, 1);

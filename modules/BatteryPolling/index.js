@@ -31,7 +31,7 @@ BatteryPolling.prototype.init = function (config) {
 
     var self = this;
 
-    executeFile(this.moduleBasePath()+"/BatteryPollingDevice.js");
+    executeFile(this.moduleBasePath() + "/BatteryPollingDevice.js");
     this.vdev = new BatteryPollingDevice("BatteryPolling", this.controller);
     this.vdev.setMetricValue("level", self.minimalBatteryValue());
     this.vdev.init();
@@ -51,8 +51,9 @@ BatteryPolling.prototype.init = function (config) {
         var dev = self.controller.findVirtualDeviceById(vdevId);
         if (dev && dev.deviceType === "battery" && name === "level") {
             self.vdev.setMetricValue("level", self.minimalBatteryValue());
-            if (value <= self.config.warningLevel)
+            if (value <= self.config.warningLevel) {
                 self.controller.addNotification("warning", "Device " + dev.getMetricValue("title") + " is low battery", "battery");
+            }
         }
     };
     this.controller.on('device.metricUpdated', this.onMetricUpdated);

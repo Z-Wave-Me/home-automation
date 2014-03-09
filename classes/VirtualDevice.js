@@ -21,10 +21,16 @@ VirtualDevice = function (id, controller) {
 VirtualDevice.prototype.init = function () {
     console.log("--- VDev init(" + this.id + ")");
 
-    this.metrics.title = this.deviceTitle();
-    this.metrics.iconBase = this.deviceIconBase();
-
-    this.updateFromVdevInfo();
+    this.device = this.controller.getVdevInfo(this.id);
+    if (this.device !== undefined) {
+        this.tags = this.device.tags;
+        this.location = this.device.location;
+        this.metrics.title = this.device.metrics.title !== undefined ? this.device.metrics.title : this.deviceTitle();
+        this.metrics.iconBase = this.device.metrics.iconBase !== undefined ? this.device.metrics.iconBase : this.deviceIconBase();
+    } else {
+        this.metrics.title  = this.deviceTitle();
+        this.metrics.iconBase = this.deviceIconBase();
+    }
 };
 
 VirtualDevice.prototype.destroy = function () {
@@ -58,6 +64,7 @@ VirtualDevice.prototype.setVDevObject = function (id, object) {
         }
     });
 
+    this.controller.setVdevInfo(id, object);
     this.controller.saveConfig();
 };
 
@@ -100,9 +107,9 @@ VirtualDevice.prototype.removeTag = function (tag) {
 };
 
 VirtualDevice.prototype.updateFromVdevInfo = function () {
-    var self = this;
+    var self = this,
+        info = this.controller.getVdevInfo(this.id);
 
-    var info = this.controller.getVdevInfo(this.id);
     if (!!info) {
         Object.keys(info).forEach(function (key) {
             var value = info[key];
@@ -132,7 +139,7 @@ VirtualDevice.prototype.updateFromVdevInfo = function () {
                         self.location = value;
                     } else {
                         unchanged = true;
-                        self.controller.emit("core.error", "Can't set location "+value+" to the device "+self.id+" -- location doesn't exist");
+                        self.controller.emit("core.error", "Can't set location " + value + " to the device " + self.id + " -- location doesn't exist");
                     }
 
                 } else {

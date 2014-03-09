@@ -23,6 +23,8 @@ define([
 
             that.apiPort = window.location.port !== "" ? window.location.port : 8083;
             that.apiHost = window.location.hostname;
+            //that.apiPort = 10483;
+            //that.apiHost = 'mskoff.z-wave.me';
 
             that.preFilterAjax();
             that.buildStructure();

@@ -23,7 +23,7 @@
             "customCode": {
                 "type": "textarea",
                 "label": "Your JavaScript code:",
-		"cols": 40
+		        "cols": 40
             }
         }
     }
