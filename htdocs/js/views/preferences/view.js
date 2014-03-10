@@ -43,7 +43,7 @@ define([
             that.$leftSidebar.find('.filter-sidebar').off().on('keyup', function () {
                 var value = $(this).val();
                 $(".items-list > li").each(function () {
-                    if ($(this).text().indexOf(value) > -1) {
+                    if ($(this).text().toLowerCase().indexOf(value.toLowerCase()) > -1) {
                         $(this).show();
                     } else {
                         $(this).hide();
@@ -133,7 +133,7 @@ define([
                 that.renderWidgets();
             } else if (type === 'general') {
                 that.renderProfiles();
-            } else if (type === 'modules') {
+            } else if (type === 'automation') {
                 that.$modulesMenu.show().find('li').off().on('click', function () {
                     var $this = $(this);
                     that.$modulesMenu.find('li').removeClass('active');
