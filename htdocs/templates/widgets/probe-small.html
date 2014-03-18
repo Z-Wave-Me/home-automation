@@ -6,7 +6,7 @@
         <div class="container-icon">
             <div class="icon-base <%= metrics.iconBase %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
         </div>
-        <div class="content"><%= metrics.title %>
+        <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="value-field">
                 <nobr class="probe-value"><%= metrics.level.toFixed(1) %> <%= metrics.scaleTitle %></nobr>
                 <div class="preference-button"></div>

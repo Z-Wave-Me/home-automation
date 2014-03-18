@@ -7,6 +7,7 @@ define([
     var DevicesCollection =  Backbone.Collection.extend({
         // model reference
         model: DeviceM,
+        activeMode: false,
         methodToURL: {
             'read': '/devices',
             'create': '/devices',

@@ -107,6 +107,12 @@ define([
                     Modules: new Modules(),
                     Instances: new Instances(),
                     Namespaces: new Namespaces(),
+                    Views: {
+                        Dashboard: null,
+                        Preferences: null,
+                        Applications: null
+                    },
+                    Widgets: {},
                     API: {
                         HOST: this.apiHost,
                         PORT: this.apiPort,

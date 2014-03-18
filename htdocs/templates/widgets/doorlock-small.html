@@ -6,7 +6,7 @@
         <div class="container-icon">
             <div class="icon-base <%= metrics.iconBase %>"></div>
         </div>
-        <div class="content"><%= metrics.title %>
+        <div class="content"><span class="title-container"><%= metrics.title %></span>
             <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('Open'); } else { print('Closed'); }%>">
                 <span class="switch-door <% if (metrics.level > 0) { print(' active'); } %>">
                     <span class="bubble"></span>
