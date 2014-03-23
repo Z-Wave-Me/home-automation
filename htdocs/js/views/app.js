@@ -155,17 +155,6 @@ define([
                 };
             }
 
-            App.Devices.add([{
-                deviceType: "switchControl",
-                id: "ZWayVDev_75:0:38",
-                location: 2,
-                metrics: {level: 0, title: 'switchControl33', iconBase: 'switchControl'},
-                level: 0,
-                title: "switchControl1",
-                tags: [],
-                updateTime: 1395412561
-            }]);
-
             setInterval(function () {
                 window.App.Devices.fetch({
                     remove: false,
