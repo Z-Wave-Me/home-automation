@@ -450,18 +450,25 @@
   }
   .camera-block {
     float: left;
-    display: block;
     margin-right: 20px;
     width: 140px;
     height: 108px;
     margin-top: 5px;
+    display: block;
     &.view-block {
       width: 108px;
       margin-right: 0;
+      display: inline-block;
+      line-height: 100px;
       cursor: pointer;
+      vertical-align: middle;
+      .camera-image {
+        vertical-align: middle;
+        display: inline-block;
+      }
     }
     .camera-icon {
-      top: -68px;
+      top: -82px;
       left: 38px;
       display: inline-block;
       position: relative;

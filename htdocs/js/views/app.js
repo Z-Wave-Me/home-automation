@@ -156,15 +156,6 @@ define([
             }
 
             App.Devices.add([{
-                deviceType: "camera",
-                id: "ZWayVDev_72:0:38",
-                location: 2,
-                metrics: {level: 0, title: 'Camera123', iconBase: 'camera'},
-                level: 0,
-                title: "Camera1",
-                tags: [],
-                updateTime: 1395412561
-            }, {
                 deviceType: "switchControl",
                 id: "ZWayVDev_75:0:38",
                 location: 2,

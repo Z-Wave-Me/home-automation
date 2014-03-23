@@ -19,7 +19,8 @@ define([
         render: function () {
             var that = this,
                 model = that.model,
-                $popup = $(_.template(templateCameraPopup, that.model.toJSON()));
+                $popup = $(_.template(templateCameraPopup, that.model.toJSON())),
+                cameraImage = new Image();
 
             that.$template = $(_.template(templateCam, model.toJSON()));
 
@@ -28,6 +29,13 @@ define([
             } else {
                 that.$template.removeClass('clear');
             }
+
+            cameraImage.src = that.model.get('metrics').url;
+
+            $(cameraImage).on('load', function () {
+                that.$template.find('.camera-image')[0].src = cameraImage.src;
+                that.loadImage = true;
+            });
 
             that.listenTo(model, 'show', function () {
                 that.$template.removeClass('show').addClass('show').show('fast');
@@ -67,6 +75,14 @@ define([
                     e.preventDefault();
                     Apis.devices.command(that.model.get('id'), 'haveOpen', {});
                 });
+
+                if (!that.loadImage) {
+                    $(cameraImage).on('load', function () {
+                        $popup.find('.camera-image')[0].src = cameraImage.src;
+                    });
+                } else {
+                    $popup.find('.camera-image')[0].src = cameraImage.src;
+                }
 
                 Modal.popup($popup, true, true);
             });
