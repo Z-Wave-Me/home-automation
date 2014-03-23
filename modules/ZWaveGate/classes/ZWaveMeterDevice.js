@@ -18,6 +18,8 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
 
     this.deviceType = "probe";
 
+    this.widgetClass = "ProbeWidget";
+
     this.sensorTypeString = this._dics().sensorTypeString.value;
     this.scaleString = this._dics().scaleString.value;
 
@@ -28,6 +30,10 @@ ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
 }
 
 inherits(ZWaveMeterDevice, ZWaveDevice);
+
+ZWaveMeterDevice.prototype.deviceTitle = function () {
+    return this.sensorTypeString+" Probe";
+}
 
 ZWaveMeterDevice.prototype.dataPoints = function () {
     return [this._dics().val];

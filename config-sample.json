@@ -1,23 +1,6 @@
 {
     "controller": {
-        "modules": [
-            "EventLog",
-            "ZWaveGate",
-            "Cron",
-            "BatteryPolling",
-            "AutoOff",
-            "CustomUserCode",
-            "BasicReactions"
-        ],
         "instances": {
-            "EventLog": {
-                "module": "EventLog",
-                "config": {}
-            },
-            "ZWave": {
-                "module": "ZWaveGate",
-                "config": {}
-            },
             "BasicReactor": {
                 "module": "BasicReactions",
                 "config": {
@@ -45,6 +28,51 @@
                     ]
                 }
             }
+        }
+    },
+    "vdevInfo": {
+        "ZWayVDev_2:0:48:12": {
+            "title": "Motion in the hall"
+        },
+        "ZWayVDev_2:0:49:1": {
+            "title": "Hall temp"
+        },
+        "ZWayVDev_2:0:49:3": {
+            "title": "Hall lightness"
+        },
+        "ZWayVDev_2:0:128": {
+            "title": "Hall sensor battery"
+        },
+        "ZWayVDev_3:0:37": {
+            "title": "Wall outlet"
+        },
+        "ZWayVDev_5:0:Thermostat": {
+            "title": "Living room thermo"
+        },
+        "ZWayVDev_5:0:49:1": {
+            "title": "Living room temp",
+            "tags": [
+                "Living room"
+            ]
+        },
+        "ZWayVDev_5:0:68": {
+            "title": "LR fan",
+            "tags": [
+                "Living room"
+            ]
+        },
+        "ZWayVDev_5:0:128": {
+            "title": "LR bat",
+            "tags": [
+                "Living room"
+            ]
+        },
+        "ZWayVDev_6:0:38": {
+            "title": "Lamp near TV",
+            "tags": [
+                "Living room",
+                "Working Env"
+            ]
         }
     }
 }

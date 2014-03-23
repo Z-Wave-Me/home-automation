@@ -1,0 +1,28 @@
+{
+    "autoload": false,
+    "singleton": false,
+    "userView": true,
+    "defaults": {
+        "title": "Camera",
+        "description": "This module include configuration for a camera and create camera device"
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "type": "url",
+                "required": true
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "url": {
+                "label": "Camera URL",
+                "type": "url",
+                "required": true
+            }
+        }
+    }
+}

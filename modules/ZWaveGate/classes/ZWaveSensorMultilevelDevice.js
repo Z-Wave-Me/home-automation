@@ -29,6 +29,10 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
 
 inherits(ZWaveSensorMultilevelDevice, ZWaveDevice);
 
+ZWaveSensorMultilevelDevice.prototype.deviceTitle = function () {
+    return this.sensorTypeString+" Sensor";
+}
+
 ZWaveSensorMultilevelDevice.prototype.dataPoints = function () {
     return [this._dics().val];
 }

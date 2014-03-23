@@ -1,0 +1,32 @@
+{
+    "autoload": false,
+    "singleton": false,
+    "userView": true,
+    "defaults": {
+	"title": "Custom user code loader",
+	"description": "Allows to load custom files from automation/ folder",
+	"customCodeFiles": [ ]
+    },
+    "schema": {
+        "description": "User defined JavaScript files to be executed on load",
+        "type": "object",
+        "properties": {
+            "customCodeFiles": {
+                "type": "array",
+                "items": {
+                    "title": "File name",
+                    "type": "string"      
+                }
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "customCodeFiles": {
+                "type": "array",
+                "helper": "Add paths to files relative to automation/ folder."
+            }
+        }
+    }
+}

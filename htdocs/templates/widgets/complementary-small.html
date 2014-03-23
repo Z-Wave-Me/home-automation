@@ -1,0 +1,14 @@
+<div class="widget-small show <% if ( typeof clear === 'undefined' ) { print('clear'); } else { print('unclear'); }; %>" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite small-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget">
+        <div class="container-icon">
+            <div class="icon-base light <%= metrics.iconBase %>  <%= metrics.scaleTitle %>"></div>
+        </div>
+        <div class="content"><span class="text title-container"><%= metrics.title %></span>
+            <progress class="progress-bar" progress-bar-id="0" value="<%= metrics.level %>" min="0" max="100"></progress>
+            <input class="input-range hidden" type="range" min="0" max="100" value="<%= metrics.level %>" step="1">
+        </div>
+    </div>
+</div>

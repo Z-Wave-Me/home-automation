@@ -1,13 +1,9 @@
 {
-    "autoload": true,
+    "autoload": false,
+    "userView": false,
+    "autoloadPriority": 10,
     "singleton": true,
     "defaults": {
     	"debug": false
-	},
-    "actions": {
-        "expose": {},
-        "hide": {},
-        "post": {}
-    },
-    "metrics": {}
+	}
 }

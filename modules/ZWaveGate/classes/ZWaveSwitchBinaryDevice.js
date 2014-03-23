@@ -15,12 +15,16 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.zCommandClassId = 0x25;
 
-    this.deviceType = "switch";
+    this.deviceType = "switchBinary";
 
     this.setMetricValue("level", this._dic().data.level.value);
 }
 
 inherits(ZWaveSwitchBinaryDevice, ZWaveDevice);
+
+ZWaveSwitchBinaryDevice.prototype.deviceTitle = function () {
+    return "Switch";
+}
 
 ZWaveSwitchBinaryDevice.prototype.dataPoints = function () {
     return [this._dic().data.level];

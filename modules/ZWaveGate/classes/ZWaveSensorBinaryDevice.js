@@ -27,6 +27,10 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sens
 
 inherits(ZWaveSensorBinaryDevice, ZWaveDevice);
 
+ZWaveSensorBinaryDevice.prototype.deviceTitle = function () {
+    return this.sensorTypeString+" Sensor";
+}
+
 ZWaveSensorBinaryDevice.prototype.dataPoints = function () {
     return [this._dics().level];
 }

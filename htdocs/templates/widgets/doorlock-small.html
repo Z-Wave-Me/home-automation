@@ -1,0 +1,18 @@
+<div class="widget-small show <% if ( typeof clear === 'undefined' ) { print('clear'); } else { print('unclear'); }; %>" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite small-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget">
+        <div class="container-icon">
+            <div class="icon-base <%= metrics.iconBase %>"></div>
+        </div>
+        <div class="content"><span class="title-container"><%= metrics.title %></span>
+            <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('Open'); } else { print('Closed'); }%>">
+                <span class="switch-door <% if (metrics.level > 0) { print(' active'); } %>">
+                    <span class="bubble"></span>
+                    <span class="text"><% if (metrics.level > 0) { print('OPEN'); } else { print('CLOSED'); }%></span>
+                </span>
+            </a>
+        </div>
+    </div>
+</div>

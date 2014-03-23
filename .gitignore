@@ -8,6 +8,9 @@ htdocs/js/_precompiled.js
 .SyncIgnore
 .SyncTrash
 
-modules/CommonWidgets
 zwayTree.json
-
+ha-*.json
+storage/*
+!storage/.keep
+.idea/
+.idea
