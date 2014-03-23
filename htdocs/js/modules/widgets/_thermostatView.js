@@ -52,11 +52,11 @@ define([
                 });
             });
 
-            if (!that.isExistWidget(model.get('id'))) {
+            //if (!that.isExistWidget(model.get('id'))) {
                 that.$el.append(that.$template);
-            } else {
-                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith(that.$template);
-            }
+            //} else {
+            //    that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith(that.$template);
+            //}
         },
         getTemplate: function () {
             return this.$template;

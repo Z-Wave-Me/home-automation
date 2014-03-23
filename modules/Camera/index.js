@@ -41,5 +41,4 @@ Camera.prototype.stop = function () {
     Camera.super_.prototype.stop.call(this);
 
     this.controller.removeDevice(this.vdev.id);
-    this.controller.off('device.metricUpdated', this.onMetricUpdated);
 };

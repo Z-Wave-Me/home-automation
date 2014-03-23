@@ -1,0 +1,59 @@
+{
+	"autoload": false,
+	"singleton": true,
+	"userView": true,
+	"defaults": {
+		"title": "Remote Switches generator",
+		"description": "Generates new widgets on the fly for Remote Switches and other devices sending control commands to controller",
+		"generated": [],
+		"banned": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"generated": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:switches:switchId",
+					"required": true
+				}
+			},
+			"banned": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:switches:switchId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"generated": {
+				"label": "List of switches to instanciate (filled automatically)",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:switches:switchName"
+					}
+				}
+			},
+			"banned": {
+				"label": "List of switches not to instanciate",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:switches:switchName"
+					}
+				}
+			}
+		}
+	}
+}
