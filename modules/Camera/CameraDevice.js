@@ -1,47 +1,41 @@
-/*** Battery Polling Virtual Device class module ******************************
+/*** Camera Virtual Device class module ******************************
 
 Version: 1.0.0
 
 -------------------------------------------------------------------------------
 
-Author: Gregory Sitnin <sitnin@z-wave.me>
+Author: Stanislav Morozov <r3b@seoarmy.ru>
 
-Copyright: (c) ZWave.Me, 2013
+Copyright: (c) ZWave.Me, 2014
 
 ******************************************************************************/
 
-BatteryPollingDevice = function (id, controller) {
-    BatteryPollingDevice.super_.call(this, id, controller);
+CameraDevice = function (id, controller) {
+    CameraDevice.super_.call(this, id, controller);
 
-    this.deviceType = "battery";
-
-    this.setMetricValue("probeTitle", "Battery");
-    this.setMetricValue("scaleTitle", "%");
-
-    this.setMetricValue("level", "");
+    this.deviceType = "camera";
 }
 
-inherits(BatteryPollingDevice, VirtualDevice);
+inherits(CameraDevice, VirtualDevice);
 
-BatteryPollingDevice.prototype.deviceTitle = function () {
-    return "Battery digest";
+CameraDevice.prototype.deviceTitle = function () {
+    return "Camera";
 }
 
-BatteryPollingDevice.prototype.deviceIconBase = function () {
-    return "battery";
+CameraDevice.prototype.deviceIconBase = function () {
+    return "camera";
 }
 
-BatteryPollingDevice.prototype.performCommand = function (command) {
-    console.log("--- BatteryPollingDevice.performCommand processing...");
+CameraDevice.prototype.performCommand = function (command) {
+    console.log("--- CameraDevice.performCommand processing...");
+    console.log("--- Command: " + command);
 
     var handled = true;
-    if ("update" === command) {
-        for (var id in zway.devices) {
-            zway.devices[id].Battery && zway.devices[id].Battery.Get();
-        }
+    if ("test" === command) {
+        console.log('test');
     } else {
         handled = false;
     }
 
-    return handled ? true : BatteryPollingDevice.super_.prototype.performCommand.call(this, command);
+    return handled ? true : CameraDevice.super_.prototype.performCommand.call(this, command);
 }
