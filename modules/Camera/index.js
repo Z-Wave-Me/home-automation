@@ -31,7 +31,7 @@ Camera.prototype.init = function (config) {
     executeFile(this.moduleBasePath() + "/CameraDevice.js");
 
     var that = this;
-    that.vdev = new CameraDevice("Camera", that.controller);
+    that.vdev = new CameraDevice("Camera_" + that.id, that.controller);
     that.vdev.setMetricValue("url", config.url);
     that.vdev.init();
     that.controller.registerDevice(that.vdev);
