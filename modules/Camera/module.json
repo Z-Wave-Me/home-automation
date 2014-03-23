@@ -1,0 +1,40 @@
+{
+    "autoload": false,
+    "singleton": true,
+    "userView": true,
+    "defaults": {
+        "title": "Battery Polling",
+        "description": "Battery Polling notifications",
+        "launchWeekDay": 0,
+        "warningLevel": 20
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "launchWeekDay": {
+                "type": "number",
+                "required": true,
+	        "enum": [1, 2, 3, 4, 5, 6, 0]
+            },
+            "warningLevel": {
+                "type": "select",
+                "required": true,
+                "enum": [5, 10, 15, 20]
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "launchWeekDay": {
+                "label": "Do battery polling on",
+		        "optionLabels": ["Monday", "Thuesday", "Wednesday", "Thurstday", "Friday", "Satrunday", "Sunday"]
+            },
+            "warningLevel": {
+                "label": "Warning Level",
+                "helper": "Warn if device's battery is below this level",
+                "optionLabels": ["5%", "10%", "15%", "20%"]
+            }
+        }
+    }
+}
