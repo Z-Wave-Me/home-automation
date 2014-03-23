@@ -52,7 +52,7 @@ define([
                 });
             });
 
-            if (!that.isExistWidget(model.get('id'))) {
+            if (!$('div[data-widget-id="' + that.model.id + '"]').exists()) {
                 that.$el.append(that.$template);
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith(that.$template);
