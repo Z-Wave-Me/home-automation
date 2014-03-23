@@ -302,13 +302,24 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
     return result;
 };
 
+AutomationController.prototype.stopInstance = function (instance) {
+    instance.stop();
+    if (instance.meta.singleton) {
+        var index = this._loadedSingletons.indexOf(instance.meta.id);
+        if (index > -1) {
+            this._loadedSingletons.splice(index, 1);
+        }
+    }
+};
+
 AutomationController.prototype.reconfigureInstance = function (id, config) {
     var instance = this.registerInstances[id],
         index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
         result;
 
     if (instance !== undefined) {
-        instance.stop();
+        this.stopInstance(instance);
+
         if (instance.config.status === 'enable') {
             instance.init(config.params);
         }
@@ -320,6 +331,9 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         result = this.instances[index];
     } else {
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
+        return;
+        // WTF!!!??? What does this code mean?
+        /*
         if (instance.hasOwnProperty('params')) {
             if (instance.params.config === 'enable') {
                 instance.init(config.params);
@@ -329,6 +343,7 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         }
 
         result = false;
+        */
     }
 
     this.saveConfig();
@@ -341,7 +356,7 @@ AutomationController.prototype.removeInstance = function (id) {
 
 
     if (!!instance) {
-        instance.stop();
+        this.stopInstance(instance);
 
         if (instance.meta.singleton) {
             var pos = this._loadedSingletons.indexOf(instanceClass);

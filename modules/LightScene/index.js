@@ -40,11 +40,11 @@ LightScene.prototype.init = function (config) {
         self.config.dimmers.forEach(function(devState) {
             var vDev = self.controller.findVirtualDeviceById(devState.device);
             if (vDev) {
-                vDev.performCommand(devState.state);
+                vDev.performCommand("exact", devState.state);
             }
         });
         self.config.scenes.forEach(function(scene) {
-            var vDev = self.controller.findVirtualDeviceById(scnee);
+            var vDev = self.controller.findVirtualDeviceById(scene);
             if (vDev) {
                 vDev.performCommand("on");
             }
