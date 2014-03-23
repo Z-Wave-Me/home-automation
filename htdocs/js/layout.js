@@ -276,14 +276,14 @@ define([
                 } else {
                     that.Devices.trigger('normal');
                 }
-                $('.widget-small').off().draggable({
+                $('.widget-small, .widget').off().draggable({
                     grid: [ 10, 10 ],
-                    handle: '.small-border',
+                    handle: '.small-border, .button-select-border',
                     scroll: false,
                     snap: true,
                     snapTolerance: 10,
                     containment: "parent",
-                    stop: function(event, ui) {
+                    stop: function (event, ui) {
                         var xPos = ui.position.left,
                             yPos = ui.position.top,
                             device = App.Devices.get($(this).attr('data-widget-id')),

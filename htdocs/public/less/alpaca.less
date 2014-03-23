@@ -936,3 +936,47 @@ address:
 
   /* END styles for VIEW: VIEW_WEB_EDIT_INLINE */
 }
+.alpaca-form {
+  font-size: 13px;
+  .alpaca-fieldset {
+    display: block;
+    float: left;
+    border: 2px solid rgba(55, 86, 102, 0.3);
+    width: 98%;
+    .alpaca-fieldset-legend {
+      color: #222;
+      padding: 5px 10px ;
+      border-radius: 5px;
+      margin-left: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+  .alpaca-fieldset-item-container {
+    border-bottom: 1px dotted #ccc;
+  }
+  //buttons
+  .alpaca-fieldset-array-item-toolbar-icon,
+  .alpaca-fieldset-array-toolbar-icon {
+    border: 1px solid #a3a3a3;
+    outline: none;
+    -moz-box-shadow: inset 0px 1px 0px 0px #ffffff;
+    -webkit-box-shadow: inset 0px 1px 0px 0px #ffffff;
+    box-shadow: inset 0px 1px 0px 0px #ffffff;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf));
+    background: -moz-linear-gradient(center top, #ededed 5%, #dfdfdf 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+    background-color: #ededed;
+    border-radius: 5px;
+    padding: 4px 5px;
+    margin: 0px 5px;
+    &:first-child {
+      margin-left: 0;
+    }
+    &.alpaca-fieldset-array-item-toolbar-add {
+
+    }
+  }
+}
+

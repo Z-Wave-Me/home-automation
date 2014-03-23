@@ -116,7 +116,9 @@ define([
                     "disabled": false,
                     "showMessages": false,
                     "collapsible": true,
-                    "legendStyle": "button"
+                    "legendStyle": "button",
+                    "toolbarSticky": true,
+                    "renderForm": false
                 },
                 prop,
                 namespace,

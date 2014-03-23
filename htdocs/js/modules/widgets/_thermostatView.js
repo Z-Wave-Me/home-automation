@@ -20,7 +20,6 @@ define([
 
             that.$template = $(_.template(templateThermostat, that.model.toJSON()));
 
-
             if (!that.Devices.activeMode) {
                 that.$template.addClass('clear');
             } else {

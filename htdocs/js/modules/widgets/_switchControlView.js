@@ -1,8 +1,8 @@
 define([
     "helpers/apis",
     "backbone",
-    "text!templates/widgets/switch-small.html"
-], function (Apis, Backbone, templateSwitch) {
+    "text!templates/widgets/switchcontrol-small.html"
+], function (Apis, Backbone, templateSwitchControl) {
     'use strict';
 
     return Backbone.View.extend({
@@ -16,9 +16,11 @@ define([
         },
         render: function () {
             var that = this,
-                model = that.model;
+                model = that.model,
+                isHold,
+                command;
 
-            that.$template = $(_.template(templateSwitch, model.toJSON()));
+            that.$template = $(_.template(templateSwitchControl, model.toJSON()));
 
             if (!that.Devices.activeMode) {
                 that.$template.addClass('clear');
@@ -40,32 +42,29 @@ define([
 
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
+            });
 
-                if (parseInt((that.model.get('metrics').level) > 0)) {
-                    that.$template.find(".action").addClass('active').attr({title: 'On'});
-                    that.$template.find(".switch-door").addClass('active');
-                    that.$template.find(".switch-door").find('.text').text('On');
-                } else {
-                    that.$template.find(".action").removeClass('active').attr({title: 'Off'});
-                    that.$template.find(".switch-door").removeClass('active');
-                    that.$template.find(".switch-door").find('.text').text('Off');
+            that.$template.find('.quad-button').mousehold(function (i) {
+                if (i > 2 && isHold !== true) {
+                    isHold = true;
+                    command = $(this).hasClass('up-button') ? 'upstart' : 'downstart';
+                    Apis.devices.command(model.get('id'), command, {});
                 }
             });
 
-            that.$template.find('.action').on('click', function (e) {
-                e.preventDefault();
+            that.$template.find('.quad-button').on('mouseup', function (i) {
+                if (isHold) {
+                    command = $(this).hasClass('up-button') ? 'upstop' : 'downstop';
+                    Apis.devices.command(model.get('id'), command, {});
+                } else {
+                    command = $(this).hasClass('up-button') ? 'on' : 'off';
+                    Apis.devices.command(model.get('id'), command, {});
+                    isHold = false;
+                }
+            });
 
-                var $button = $(this),
-                    command = !$button.hasClass('active') ? 'on' : 'off';
-
-                Apis.devices.command(model.get('id'), command, {}, function () {
-                    $button
-                        .toggleClass('active')
-                        .attr('title', command.capitalize())
-                        .children()
-                        .toggleClass('active')
-                        .find('.text').text(command.toUpperCase());
-                });
+            that.$template.find('.quad-button').on('mousedown', function (i) {
+                isHold = false;
             });
 
             if (!$('div[data-widget-id="' + that.model.id + '"]').exists()) {

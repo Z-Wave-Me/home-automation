@@ -65,7 +65,7 @@ requirejs.config({
             deps : ['ace']
         },
         alpaca: {
-            deps: ['jquery', 'ace', 'mode-javascript', 'mode-json', 'theme-chrome', 'worker-javascript']
+            deps: ['jquery', 'ace', 'mode-javascript', 'mode-json', 'jquery-ui', 'theme-chrome', 'worker-javascript']
         }
     },
     urlArgs: "v=" + vers

@@ -7,8 +7,10 @@ define([
     "modules/widgets/_thermostatView",
     "modules/widgets/_doorView",
     "modules/widgets/_switchView",
-    "modules/widgets/_toggleView"
-], function (Backbone, ProbeWidgetView, FanWidgetView, MultilevelWidgetView, ThermostatView, DoorLockView, SwitchView, ToggleView) {
+    "modules/widgets/_switchControlView",
+    "modules/widgets/_toggleView",
+    "modules/widgets/_cameraView"
+], function (Backbone, ProbeWidgetView, FanWidgetView, MultilevelWidgetView, ThermostatView, DoorLockView, SwitchView, SwitchControlView, ToggleView, CameraView) {
     'use strict';
 
     return Backbone.View.extend({
@@ -49,6 +51,10 @@ define([
                     modelView = new SwitchView({model: model});
                 } else if (model.get('deviceType') === "toggleButton") {
                     modelView = new ToggleView({model: model});
+                } else if (model.get('deviceType') === "camera") {
+                    modelView = new CameraView({model: model});
+                } else if (model.get('deviceType') === "switchControl") {
+                    modelView = new SwitchControlView({model: model});
                 } else {
                     //log(model);
                 }

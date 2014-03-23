@@ -1,8 +1,10 @@
 define([
     "helpers/apis",
+    "helpers/modal",
     "backbone",
-    "text!templates/widgets/fan-small.html"
-], function (Apis, Backbone, templateFan) {
+    "text!templates/widgets/camera-big.html",
+    "text!templates/popups/camera.html"
+], function (Apis, Modal, Backbone, templateCam, templateCameraPopup) {
     'use strict';
 
     return Backbone.View.extend({
@@ -16,9 +18,10 @@ define([
         },
         render: function () {
             var that = this,
-                model = that.model;
+                model = that.model,
+                $popup = $(_.template(templateCameraPopup, that.model.toJSON()));
 
-            that.$template = $(_.template(templateFan, model.toJSON()));
+            that.$template = $(_.template(templateCam, model.toJSON()));
 
             if (!that.Devices.activeMode) {
                 that.$template.addClass('clear');
@@ -36,24 +39,36 @@ define([
 
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                if (that.model.get('metrics').state !== true || that.model.get('metrics').state !== 'true') {
-                    that.$template.find('select').val('-1');
-                } else {
-                    that.$template.find('select').val(that.model.get('metrics').currentMode);
-                }
             });
 
             that.listenTo(window.App.Devices, 'settings normal', function () {
                 that.$template.toggleClass('clear');
             });
 
-            that.$template.find(".select-field select").on('change', function () {
-                var params = $(this).val() !== -1 ? {mode: $(this).val()} : {},
-                    command = $(this).val() !== -1 ? 'setMode' : 'off';
+            that.$template.find('.view-block').on('click', function (e) {
+                e.preventDefault();
 
-                Apis.devices.command(model.get('id'), command, params, function (json) {
-                    //log(json);
+                $popup.find('.havePan-btn').on('click', function (e) {
+                    e.preventDefault();
+                    Apis.devices.command(that.model.get('id'), 'havePan', {});
                 });
+
+                $popup.find('.haveTilt-btn').on('click', function (e) {
+                    e.preventDefault();
+                    Apis.devices.command(that.model.get('id'), 'haveTilt', {});
+                });
+
+                $popup.find('.haveZoom-btn').on('click', function (e) {
+                    e.preventDefault();
+                    Apis.devices.command(that.model.get('id'), 'haveZoom', {});
+                });
+
+                $popup.find('.haveOpen-btn').on('click', function (e) {
+                    e.preventDefault();
+                    Apis.devices.command(that.model.get('id'), 'haveOpen', {});
+                });
+
+                Modal.popup($popup, true, true);
             });
 
             if (!$('div[data-widget-id="' + that.model.id + '"]').exists()) {

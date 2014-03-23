@@ -14,9 +14,7 @@ define([
         el: 'body',
 
         initialize: function () {
-            var that = this,
-                host = null,
-                port = null;
+            var that = this;
 
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
@@ -67,11 +65,11 @@ define([
             $.fn.exists = function () { return (this.length > 0); };
 
             $.fn.center = function () {
-                this.css("position", "absolute");
-                this.css("top", Math.max(0, (($(window).height() - $(this).outerHeight()) / 2) +
-                    $(window).scrollTop()) + "px");
-                this.css("left", Math.max(0, (($(window).width() - $(this).outerWidth()) / 2) +
-                    $(window).scrollLeft()) + "px");
+                this.css({
+                    'position': 'absolute',
+                    'top': ($(window).height() - this.height()) / 2 + $(window).scrollTop() + "px",
+                    'left': ($(window).width() - this.width()) / 2 + $(window).scrollLeft() + "px"
+                });
                 return this;
             };
 
@@ -83,6 +81,42 @@ define([
                     $(window).scrollLeft()) + "px");
                 return this;
             };
+
+            $.fn.mousehold = function (timeout, f) {
+                if (timeout && _.isFunction(timeout)) {
+                    f = timeout;
+                    timeout = 100;
+                }
+                if (f && _.isFunction(f)) {
+                    var timer = 0,
+                        fireStep = 0,
+                        clearMousehold;
+
+                    return this.each(function () {
+                        $(this).mousedown(function () {
+                            fireStep = 1;
+                            var ctr = 0,
+                                t = this;
+                            timer = setInterval(function () {
+                                ctr += 1;
+                                f.call(t, ctr);
+                                fireStep = 2;
+                            }, timeout);
+                        });
+
+                        clearMousehold = function () {
+                            clearInterval(timer);
+                            if (fireStep === 1) {
+                                f.call(this, 1);
+                            }
+                            fireStep = 0;
+                        }
+
+                        $(this).mouseout(clearMousehold);
+                        $(this).mouseup(clearMousehold);
+                    })
+                }
+            }
         },
         preFilterAjax: function () {
             var that = this;
@@ -121,10 +155,32 @@ define([
                 };
             }
 
+            App.Devices.add([{
+                deviceType: "camera",
+                id: "ZWayVDev_72:0:38",
+                location: 2,
+                metrics: {level: 0, title: 'Camera123', iconBase: 'camera'},
+                level: 0,
+                title: "Camera1",
+                tags: [],
+                updateTime: 1395412561
+            }, {
+                deviceType: "switchControl",
+                id: "ZWayVDev_75:0:38",
+                location: 2,
+                metrics: {level: 0, title: 'switchControl33', iconBase: 'switchControl'},
+                level: 0,
+                title: "switchControl1",
+                tags: [],
+                updateTime: 1395412561
+            }]);
+
             setInterval(function () {
                 window.App.Devices.fetch({
                     remove: false,
                     merge: true,
+                    update: true,
+                    add: true,
                     data: {limit: 0}
                 });
 
