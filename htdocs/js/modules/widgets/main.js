@@ -20,23 +20,21 @@ define([
             var that = this;
             that.Devices = window.App.Devices;
         },
-        render: function (fixedPosition) {
+        render: function (fixedPosition, forceView) {
             var that = this;
             that.fixedPosition = fixedPosition || null;
             if (that.Devices.length > 0) {
                 that.$el.empty();
                 that.Devices.each(function (device) {
-                    var position = device.get('position');
-                    device.set({position: position});
-                    that.renderWidget(device);
+                    that.renderWidget(device, forceView);
                 });
             }
         },
-        renderWidget: function (model) {
+        renderWidget: function (model, forceView) {
             var that = this,
                 modelView = null;
 
-            if (_.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; })) {
+            if (_.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }) || forceView) {
                 if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
                     modelView = new ProbeWidgetView({model: model});
                 } else if (model.get('deviceType') === "fan") {

@@ -50,7 +50,7 @@ define([
         },
         render: function () {
             var that = this;
-            that.WidgetsModule.render(false);
+            that.WidgetsModule.render(false, true);
         }
     });
 });
