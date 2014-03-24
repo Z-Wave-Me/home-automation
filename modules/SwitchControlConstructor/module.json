@@ -1,0 +1,10 @@
+{
+	"autoload": true,
+	"singleton": true,
+	"userView": false,
+	"autoloadPriority": 200,
+	"defaults": {
+		"title": "Switches constructor",
+		"description": "Provides switch (wall button) vDev and namespace variable and acts as helper for other switches modules"
+	}
+}
