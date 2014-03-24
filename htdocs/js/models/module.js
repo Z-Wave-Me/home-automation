@@ -125,17 +125,22 @@ define([
                 App = window.App;
 
             function r(obj) {
-                var key;
+                var key, arr = [], union;
                 if (obj) {
                     for (key in obj) {
                         if (typeof obj[key] === "object") {
                             r(obj[key]);
                         } else if (_.isString(obj[key])) {
                             if (obj[key].indexOf('namespaces') !== -1 && obj[key].split(':').length > 1) {
-                                namespace = App.Namespaces.get(obj[key].split(':')[1]);
-                                if (namespace) {
-                                    obj[key] = _.pluck(namespace.get('params'), obj[key].split(':')[2]);
-                                }
+                                obj[key].split(',').forEach(function (val) {
+                                    namespace = App.Namespaces.get(val.split(':')[1]);
+                                    if (namespace) {
+                                        arr = _.union(arr, _.pluck(namespace.get('params'), val.split(':')[2]));
+                                    }
+                                });
+
+                                obj[key] = _.clone(_.uniq(arr));
+                                arr = [];
                             }
                         }
                     }
