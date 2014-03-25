@@ -58,7 +58,7 @@ define([
             that.$template.find('.action').on('click', function (e) {
                 e.preventDefault();
                 var $button = $(this),
-                    command = !parseInt(that.model.get('metrics').mode) > 0 ? 'close' : 'open';
+                    command = parseInt(that.model.get('metrics').mode) > 0 ? 'close' : 'open';
 
                 Apis.devices.command(model.get('id'), command, {}, function (json) {
                     //log(json);
