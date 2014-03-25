@@ -83,9 +83,11 @@ define([
                 if (!that.loadImage) {
                     $(cameraImage).on('load', function () {
                         $popup.find('.camera-image')[0].src = cameraImage.src;
+                        $popup.center();
                     });
                 } else {
                     $popup.find('.camera-image')[0].src = cameraImage.src;
+                    $popup.center();
                 }
 
                 Modal.popup($popup, true, true);
