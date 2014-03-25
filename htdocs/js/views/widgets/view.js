@@ -50,6 +50,7 @@ define([
         },
         render: function () {
             var that = this;
+            window.App.Devices.lock = true;
             that.WidgetsModule.render(false, true);
         }
     });

@@ -32,6 +32,7 @@ define([
         },
         render: function () {
             var that = this;
+            window.App.Devices.lock = false;
             that.WidgetsModule.render(true);
         }
     });

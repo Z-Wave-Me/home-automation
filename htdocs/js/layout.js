@@ -270,6 +270,9 @@ define([
 
             that.$footer.find('.footer-bar').off().on('click', function () {
                 var $this = $(this);
+                if (window.App.Devices.lock) {
+                    return;
+                }
                 $this.toggleClass('active');
                 if ($this.hasClass('active')) {
                     that.Devices.trigger('settings');
