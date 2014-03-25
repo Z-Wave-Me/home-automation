@@ -53,6 +53,10 @@ define([
                 that.$template.toggleClass('clear');
             });
 
+            that.listenTo(that.model, 'destroy', function () {
+                that.remove();
+            });
+
             that.$template.find('.view-block').on('click', function (e) {
                 e.preventDefault();
 

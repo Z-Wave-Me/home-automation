@@ -30,6 +30,10 @@ define([
                 that.$template.toggleClass('clear');
             });
 
+            that.listenTo(that.model, 'destroy', function () {
+                that.remove();
+            });
+
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-metrics').text(that.model.get('metrics').title);
             });

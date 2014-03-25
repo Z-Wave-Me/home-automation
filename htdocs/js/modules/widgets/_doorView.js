@@ -47,6 +47,10 @@ define([
                 }
             });
 
+            that.listenTo(that.model, 'destroy', function () {
+                that.remove();
+            });
+
             that.listenTo(window.App.Devices, 'settings normal', function () {
                 that.$template.toggleClass('clear');
             });

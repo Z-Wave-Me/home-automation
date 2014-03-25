@@ -44,6 +44,10 @@ define([
                 that.$template.removeClass('show').hide('fast');
             });
 
+            that.listenTo(that.model, 'destroy', function () {
+                that.remove();
+            });
+
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
                 $progress.val(that.model.get('metrics').level);

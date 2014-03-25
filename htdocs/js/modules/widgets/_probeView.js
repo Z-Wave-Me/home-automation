@@ -36,6 +36,10 @@ define([
                 that.$template.toggleClass('clear');
             });
 
+            that.listenTo(that.model, 'destroy', function () {
+                that.remove();
+            });
+
             that.listenTo(model, 'show', function () {
                 that.$template.removeClass('show').addClass('show').show('fast');
             });

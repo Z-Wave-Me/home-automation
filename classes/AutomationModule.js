@@ -65,7 +65,7 @@ AutomationModule.prototype.loadConfig = function () {
 };
 
 AutomationModule.prototype.saveConfig = function () {
-    saveObject("cfg"+this.id, this.config);
+    saveObject("cfg" + this.id, this.config);
 };
 
 // This method returns JSON representation
