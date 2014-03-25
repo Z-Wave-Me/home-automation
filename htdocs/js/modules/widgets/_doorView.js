@@ -36,7 +36,7 @@ define([
 
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                if (parseInt(that.model.get('metrics').mode) > 0) {
+                if (parseInt(that.model.get('metrics').mode) === 0) {
                     that.$template.find('.action').addClass('active').attr({title: 'Open'});
                     that.$template.find('.switch-door').addClass('active');
                     that.$template.find('.text').text('OPEN');
@@ -58,7 +58,7 @@ define([
             that.$template.find('.action').on('click', function (e) {
                 e.preventDefault();
                 var $button = $(this),
-                    command = parseInt(that.model.get('metrics').mode) > 0 ? 'close' : 'open';
+                    command = parseInt(that.model.get('metrics').mode) === 0 ? 'close' : 'open';
 
                 Apis.devices.command(model.get('id'), command, {}, function (json) {
                     //log(json);
