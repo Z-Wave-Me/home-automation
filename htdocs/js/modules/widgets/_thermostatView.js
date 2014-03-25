@@ -52,15 +52,11 @@ define([
                 });
             });
 
-<<<<<<< HEAD
             if (!$('div[data-widget-id="' + that.model.id + '"]').exists()) {
-=======
-            //if (!that.isExistWidget(model.get('id'))) {
->>>>>>> fb7d1868e77d84b975467a6e4a9cd02bbca7cc89
                 that.$el.append(that.$template);
-            //} else {
-            //    that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith(that.$template);
-            //}
+            } else {
+                that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith(that.$template);
+            }
         },
         getTemplate: function () {
             return this.$template;
