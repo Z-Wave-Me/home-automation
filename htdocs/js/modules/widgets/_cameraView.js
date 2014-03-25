@@ -30,8 +30,8 @@ define([
                 that.$template.removeClass('clear');
             }
 
-            cameraImage.addEventListener('load', function () {
-                that.$template.find('.camera-image')[0].src = cameraImage.src;
+            $(cameraImage).on('load', function () {
+                that.$template.find('.camera-image').attr({'src': $(cameraImage).attr('src')});
                 that.loadImage = true;
             });
 
@@ -79,12 +79,12 @@ define([
                 });
 
                 if (!that.loadImage) {
-                    cameraImage.addEventListener('load', function () {
-                        $popup.find('.camera-image')[0] = cameraImage;
+                    $(cameraImage).on('load', function () {
+                        $popup.find('.camera-image').attr({src: cameraImage.src});
                         $popup.center();
                     });
                 } else {
-                    $popup.find('.camera-image')[0] = cameraImage;
+                    $popup.find('.camera-image').attr({src: cameraImage.src});
                     $popup.center();
                 }
 
