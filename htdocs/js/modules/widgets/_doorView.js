@@ -36,7 +36,7 @@ define([
 
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                if (parseInt(that.model.get('metrics').level) > 0) {
+                if (parseInt(that.model.get('metrics').mode) > 0) {
                     that.$template.find('.action').addClass('active').attr({title: 'Open'});
                     that.$template.find('.switch-door').addClass('active');
                     that.$template.find('.text').text('OPEN');
