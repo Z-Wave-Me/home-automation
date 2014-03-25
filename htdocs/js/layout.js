@@ -269,10 +269,10 @@ define([
             });
 
             that.$footer.find('.footer-bar').off().on('click', function () {
-                var $this = $(this);
                 if (window.App.Devices.lock) {
                     return;
                 }
+                var $this = $(this);
                 $this.toggleClass('active');
                 if ($this.hasClass('active')) {
                     that.Devices.trigger('settings');
