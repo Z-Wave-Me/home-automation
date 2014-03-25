@@ -58,7 +58,7 @@ define([
             that.$template.find('.action').on('click', function (e) {
                 e.preventDefault();
                 var $button = $(this),
-                    command = !$button.hasClass('active') ? 'open' : 'closed';
+                    command = !$button.hasClass('active') ? 'open' : 'close';
                 Apis.devices.command(model.get('id'), command, {}, function (json) {
                     //log(json);
                     $button
