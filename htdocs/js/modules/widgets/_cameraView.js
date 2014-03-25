@@ -30,9 +30,7 @@ define([
                 that.$template.removeClass('clear');
             }
 
-            cameraImage.src = that.model.get('metrics').url;
-
-            $(cameraImage).on('load', function () {
+            cameraImage.addEventListener('load', function () {
                 that.$template.find('.camera-image')[0].src = cameraImage.src;
                 that.loadImage = true;
             });
@@ -81,12 +79,12 @@ define([
                 });
 
                 if (!that.loadImage) {
-                    $(cameraImage).on('load', function () {
-                        $popup.find('.camera-image')[0].src = cameraImage.src;
+                    cameraImage.addEventListener('load', function () {
+                        $popup.find('.camera-image')[0] = cameraImage;
                         $popup.center();
                     });
                 } else {
-                    $popup.find('.camera-image')[0].src = cameraImage.src;
+                    $popup.find('.camera-image')[0] = cameraImage;
                     $popup.center();
                 }
 
@@ -98,6 +96,8 @@ define([
             } else {
                 that.$el.find('div[data-widget-id="' + model.get('id') + '"]').replaceWith(that.$template);
             }
+
+            cameraImage.src = that.model.get('metrics').url;
         },
         getTemplate: function () {
             return this.$template;
