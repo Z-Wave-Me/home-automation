@@ -46,13 +46,13 @@ define([
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
 
                 if (String(that.model.get('metrics').level) === 'true') {
-                    that.$template.find(".action").addClass('active').attr({title: 'On'});
+                    that.$template.find(".action").addClass('active').attr({title: 'ON'});
                     that.$template.find(".switch-door").addClass('active');
-                    that.$template.find(".switch-door").find('.text').text('On');
+                    that.$template.find(".switch-door").find('.text').text('ON');
                 } else {
-                    that.$template.find(".action").removeClass('active').attr({title: 'Off'});
+                    that.$template.find(".action").removeClass('active').attr({title: 'OFF'});
                     that.$template.find(".switch-door").removeClass('active');
-                    that.$template.find(".switch-door").find('.text').text('Off');
+                    that.$template.find(".switch-door").find('.text').text('OFF');
                 }
             });
 
