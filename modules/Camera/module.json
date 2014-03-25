@@ -10,7 +10,7 @@
         "type": "object",
         "properties": {
             "url": {
-                "type": "url",
+                "format": "uri",
                 "required": true
             }
         },
