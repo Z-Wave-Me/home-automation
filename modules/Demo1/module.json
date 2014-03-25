@@ -1,0 +1,27 @@
+{
+    "autoload": false,
+    "singleton": true,
+    "userView": true,
+    "defaults": {
+        "title": "Demo1",
+        "description": "",
+        "prefix": "Demo1: "
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "prefix": {
+                "type": "string",
+                "required": true
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "prefix": {
+                "label": "Prefix"
+            }
+        }
+    }
+}

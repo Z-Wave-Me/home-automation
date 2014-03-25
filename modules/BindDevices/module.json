@@ -1,0 +1,59 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Bind devices",
+		"description": "Bind actions on one device to others",
+		"sourceDevices": [],
+		"targetDevices": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"sourceDevices": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:switches:switchId",
+					"required": true
+				}
+			},
+			"targetDevices": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchBinary:deviceId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"sourceDevices": {
+				"label": "List of event sources",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:switches:switchName"
+					}
+				}
+			},
+			"targetDevices": {
+				"label": "List of actors",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchBinary:deviceName"
+					}
+				}
+			}
+		}
+	}
+}

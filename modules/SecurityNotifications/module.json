@@ -1,0 +1,105 @@
+{
+	"autoload": false,
+	"singleton": true,
+	"userView": true,
+	"defaults": {
+		"title": "Security notifications",
+		"description": "Notify on changes of sensors and switches state",
+		"binaries": 0,
+		"warningLevel": 20,
+	"triggerScene": null
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"binary": {
+				"type": "object",
+                                "properties": {
+                                        "id": {
+                                                "field": "enum",
+                                                "datasource": "namespaces",
+                                                "enum": "namespaces:devices_binary:deviceId",
+                                                "required": true
+                                        },
+                                        "safeStatus": {
+                                                "type": "select",
+                                                "required": true,
+                                                "enum": [false, true"]
+                                        }
+				}
+			},
+			"multilevel": {
+				"type": "object",
+                                "properties": {
+                                        "id": {
+                                                "field": "enum",
+                                                "datasource": "namespaces",
+                                                "enum": "namespaces:multilvel:deviceId",
+                                                "required": true
+                                        },
+                                        "greater": {
+                                                "type": "select",
+                                                "required": true,
+						"enum": [false, true"]
+                                        },
+                                        "border": {
+                                                "type": "number",
+                                                "required": true
+                                        }
+				}
+			},
+			"triggerScene": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:scenes:sceneId"
+			}
+		},
+         	"required": false
+	},
+	"options": {
+		"fields": {
+			"launchWeekDay": {
+				"label": "Do battery polling on",
+				"optionLabels": ["Monday", "Thuesday", "Wednesday", "Thurstday", "Friday", "Satrunday", "Sunday"]
+			},
+			"warningLevel": {
+				"label": "Warning Level",
+				"helper": "Warn if device's battery is below this level",
+				"optionLabels": ["5%", "10%", "15%", "20%"]
+			}
+			"binary": {
+				"label": "Binary devices",
+                                "fields": {
+                                        "id": {
+                                                "datasource": "namespaces",
+                                                "field": "optionLabels",
+                                                "optionLables": "namespaces:binary:deviceName"
+                                        },
+                                        "safeStatus": {
+                                                "optionLabels": ["Off", "On"]
+                                        }
+				}
+			},
+			"multilevel": {
+				"type": "object",
+                                "properties": {
+                                        "id": {
+                                                "datasource": "namespaces",
+                                                "field": "optionLabels",
+                                                "optionLables": "namespaces:multilevel:deviceName"
+                                        },
+                                        "greater": {
+						"optionLabels": ["<", ">"]
+                                        },
+                                        "border": {
+                                        }
+				}
+			},
+			"triggerScene": {
+                                "datasource": "namespaces",
+                                "field": "optionLabels",
+                                "optionLables": "namespaces:scenes:sceneName"
+			}
+		}
+	}
+}
