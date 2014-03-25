@@ -71,13 +71,13 @@
 					"item": {
 						"fields": {
 							"device": {
-								"label": "Select switch",
+								"label": "",
 								"datasource": "namespaces",
 								"field": "optionLabels",
 								"optionLabels": "namespaces:devices_switchBinary:deviceName"
 							},
 							"status": {
-								"label": "State",
+								"label": "",
 								"optionLabels": ["Off", "On"]
 							}
 						}
@@ -90,14 +90,13 @@
 					"item": {
 						"fields": {
 							"device": {
-								"label": "Select dimmer",
+								"label": "",
 								"datasource": "namespaces",
 								"field": "optionLabels",
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 							},
 							"status": {
-								"label": "State",
-								"slider": true
+								"label": "State"
 							}
 						}
 					}

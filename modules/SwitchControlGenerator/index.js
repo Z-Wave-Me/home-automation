@@ -35,6 +35,7 @@ SwitchControlGenerator.prototype.init = function (config) {
         var insts = zway.devices[zway.controller.data.nodeId.value].instances;
         for (var i in insts) {
             (function(n) {
+                // !!! ADD HERE SwitchMultilevel dimming actions !!!
                 self.bindings[n] = insts[n].Basic.data.level.bind(function(type, instId) {
                     self.handler(this.value ? "on" : "off", insts[n].Basic.data.srcNodeId.value, insts[n].Basic.data.srcInstanceId.value, instId);
                 }, n);
@@ -80,7 +81,7 @@ SwitchControlGenerator.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 SwitchControlGenerator.prototype.widgetHandler = function(command) {
-    console.log(this.deviceId, command);
+    this.setMetricValue("level", command);
 };
 
 SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstInst) {
@@ -92,7 +93,8 @@ SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstIn
         }
 
         this.controller.emit("switches.register", name, this.config.title, this.widgetHandler);
-            
+        
+        console.log("!!! FIX THIS !!! in SwitchControlGenerator.prototype.handler");
         this.config.generated.push(name);
         this.params = this.config;
         this.controller.saveConfig();

@@ -16,6 +16,8 @@
                     "field": "enum",
                     "datasource": "namespaces",
                     "items": {
+                            "field": "enum",
+                            "datasource": "namespaces",
                             "enum": "namespaces:devices_sensor:deviceId",
                             "type": "string",
                             "required": true,
@@ -35,9 +37,11 @@
             "devices": {
                     "label": "Sensors to poll:",
                     "fields": {
-                            "datasource": "namespaces",
-                            "field": "optionLabels",
-                            "optionLabels": "namespaces:devices_sensor:deviceName"
+                            "item": {
+                            		"datasource": "namespaces",
+		                        "field": "optionLabels",
+                                        "optionLabels": "namespaces:devices_sensor:deviceName"
+            		    }
                     }
             },
             "period": {

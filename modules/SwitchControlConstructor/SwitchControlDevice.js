@@ -13,6 +13,7 @@ Copyright: (c) ZWave.Me, 2014
 SwitchControlDevice = function (id, controller) {
     SwitchControlDevice.super_.call(this, id, controller);
     this.deviceType = "switchControl";
+    this.setMetricValue("level", "");
 }
 
 inherits(SwitchControlDevice, VirtualDevice);
