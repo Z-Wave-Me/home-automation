@@ -139,7 +139,7 @@ define([
                                     }
                                 });
 
-                                obj[key] = _.clone(_.uniq(arr));
+                                obj[key] = arr;
                                 arr = [];
                             }
                         }
