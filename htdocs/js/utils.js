@@ -73,6 +73,38 @@ function qVar(variable) {
     return undefined;
 }
 
+function getXmlHttp() {
+    'use strict';
+    try {
+        return new ActiveXObject("Msxml2.XMLHTTP");
+    } catch (e) {
+        try {
+            return new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (ee) {
+
+        }
+    }
+    if (XMLHttpRequest !== undefined) {
+        return new XMLHttpRequest();
+    }
+}
+
+function getUrl(url, cb) {
+    'use strict';
+    var xmlhttp = getXmlHttp();
+    xmlhttp.open("GET", url, true);
+    xmlhttp.onreadystatechange = function () {
+        if (xmlhttp.readyState === 4) {
+            if (cb) {
+                cb(xmlhttp.status, xmlhttp.getAllResponseHeaders(), xmlhttp.responseText);
+            }
+
+        }
+    };
+    xmlhttp.send(null);
+}
+
+
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
 }

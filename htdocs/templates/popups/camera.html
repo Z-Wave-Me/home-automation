@@ -1,13 +1,33 @@
 <div class="popover popover-camera">
     <div class="popover-content">
         <div class="image-container">
-            <img class="camera-image" src="http://placehold.it/320x240">
+            <img class="camera-image" src="">
         </div>
         <div class="control-container">
-            <button class="havePan-btn">havePan</button>
-            <button class="haveTilt-btn">haveTilt</button>
-            <button class="haveZoom-btn">haveZoom</button>
-            <button class="haveOpen-btn">haveOpen</button>
+            <% if (metrics.zoomInUrl) { %>
+                <span data-url="<%= metrics.zoomInUrl %>" class="ui-icon ui-icon-circle-zoomin" title="Zoom In"></span>
+            <% } %>
+            <% if (metrics.zoomOutUrl) { %>
+                <span data-url="<%= metrics.zoomOutUrl %>" class="ui-icon ui-icon-circle-zoomout" title="Zoom Out"></span>
+            <% } %>
+            <% if (metrics.leftUrl) { %>
+                <span data-url="<%= metrics.leftUrl %>" class="ui-icon ui-icon-circle-arrow-w" title="Left"></span>
+            <% } %>
+            <% if (metrics.rightUrl) { %>
+                <span data-url="<%= metrics.rightUrl %>" class="ui-icon ui-icon-circle-arrow-e" title="Right"></span>
+            <% } %>
+            <% if (metrics.upUrl) { %>
+                <span data-url="<%= metrics.upUrl %>" class="ui-icon ui-icon-circle-arrow-n" title="Up"></span>
+            <% } %>
+            <% if (metrics.downUrl) { %>
+                <span data-url="<%= metrics.downUrl %>" class="ui-icon ui-icon-circle-arrow-s" title="Down"></span>
+            <% } %>
+            <% if (metrics.openUrl) { %>
+                <span data-url="<%= metrics.openUrl %>" class="ui-icon ui-icon-power" title="Open"></span>
+            <% } %>
+            <% if (metrics.closeUrl) { %>
+                <span data-url="<%= metrics.closeUrl %>" class="ui-icon ui-icon-circle-close" title="Close"></span>
+            <% } %>
         </div>
     </div>
 </div>

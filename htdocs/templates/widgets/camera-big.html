@@ -5,9 +5,36 @@
     <div class="content-widget">
         <div class="control-block camera-block">
             <span class="title-container"><%= metrics.title %></span>
+            <div class="control-buttons">
+                <% if (metrics.zoomInUrl) { %>
+                    <span data-url="<%= metrics.zoomInUrl %>" class="ui-icon ui-icon-circle-zoomin" title="Zoom In"></span>
+                <% } %>
+                <% if (metrics.zoomOutUrl) { %>
+                    <span data-url="<%= metrics.zoomOutUrl %>" class="ui-icon ui-icon-circle-zoomout" title="Zoom Out"></span>
+                <% } %>
+                <% if (metrics.leftUrl) { %>
+                    <span data-url="<%= metrics.leftUrl %>" class="ui-icon ui-icon-circle-arrow-w" title="Left"></span>
+                <% } %>
+                <% if (metrics.rightUrl) { %>
+                    <span data-url="<%= metrics.rightUrl %>" class="ui-icon ui-icon-circle-arrow-e" title="Right"></span>
+                <% } %>
+                <br>
+                <% if (metrics.upUrl) { %>
+                    <span data-url="<%= metrics.upUrl %>" class="ui-icon ui-icon-circle-arrow-n" title="Up"></span>
+                <% } %>
+                <% if (metrics.downUrl) { %>
+                    <span data-url="<%= metrics.downUrl %>" class="ui-icon ui-icon-circle-arrow-s" title="Down"></span>
+                <% } %>
+                <% if (metrics.openUrl) { %>
+                    <span data-url="<%= metrics.openUrl %>" class="ui-icon ui-icon-power" title="Open"></span>
+                <% } %>
+                <% if (metrics.closeUrl) { %>
+                    <span data-url="<%= metrics.closeUrl %>" class="ui-icon ui-icon-circle-close" title="Close"></span>
+                <% } %>
+            </div>
         </div>
         <div class="view-block camera-block">
-            <img class="camera-image" src="http://placehold.it/108x108">
+            <img class="camera-image" src="">
             <span class="camera-icon"></span>
         </div>
     </div>

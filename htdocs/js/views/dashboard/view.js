@@ -21,19 +21,22 @@ define([
                 that.WidgetsModule.renderWidget(model);
             });
 
-            that.listenTo(that.Devices, 'refresh', function () {
-                that.WidgetsModule.render(true);
-            });
-
-            that.listenToOnce(that.Devices, 'sync', function () {
+            that.listenToOnce(window.App.Devices, 'reset sync', function () {
                 that.render();
             });
+
+            that.listenTo(window.App.Devices, 'refresh', function () {
+                that.render();
+            });
+
             that.render();
         },
         render: function () {
-            var that = this;
-            window.App.Devices.lock = false;
-            that.WidgetsModule.render(true);
+            if (window.location.hash.indexOf('dashboard') !== -1) {
+                var that = this;
+                window.App.Devices.lock = false;
+                that.WidgetsModule.render(true);
+            }
         }
     });
 });

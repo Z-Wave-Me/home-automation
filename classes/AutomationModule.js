@@ -65,7 +65,11 @@ AutomationModule.prototype.loadConfig = function () {
 };
 
 AutomationModule.prototype.saveConfig = function () {
-    saveObject("cfg" + this.id, this.config);
+    var that = this,
+        index = this.controller.instances.indexOf(_.find(this.controller.instances, function (model) { return model.id === that.id; }))
+
+    this.controller.instances[index].conf = this.config;
+    this.controller.saveConfig();
 };
 
 // This method returns JSON representation

@@ -91,24 +91,14 @@ ZAutomationAPIWebRequest.prototype.exposeNotifications = function () {
         that.res.status = 200;
         since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
         redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
-        notifications = controller.listNotifications(since);
+        notifications = controller.listNotifications(since, redeemed);
 
-        if (redeemed) {
-            reply.data = {
-                updateTime: nowTS,
-                notifications: notifications
-            };
-            reply.code = 200;
-        } else {
-            notifications = notifications.filter(function (notification) {
-                return !notification.redeemed;
-            });
-            reply.data = {
-                updateTime: nowTS,
-                notifications: notifications
-            };
-            reply.code = 200;
-        }
+        reply.data = {
+            updateTime: nowTS,
+            notifications: notifications
+        };
+
+        reply.code = 200;
 
         that.initResponse(reply);
     }

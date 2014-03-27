@@ -12,6 +12,38 @@
             "url": {
                 "format": "uri",
                 "required": true
+            },
+            "zoomInUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "zoomOutUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "leftUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "rightUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "upUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "downUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "openUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "closeUrl": {
+                "format": "uri",
+                "required": false
             }
         },
         "required": false
@@ -22,6 +54,46 @@
                 "label": "Camera URL",
                 "type": "url",
                 "required": true
+            },
+            "zoomInUrl": {
+                "label": "ZoomIn URL",
+                "type": "url",
+                "required": false
+            },
+            "zoomOutUrl": {
+                "label": "ZoomOut URL",
+                "type": "url",
+                "required": false
+            },
+            "leftUrl": {
+                "label": "Left URL",
+                "type": "url",
+                "required": false
+            },
+            "rightUrl": {
+                "label": "Right URL",
+                "type": "url",
+                "required": false
+            },
+            "upUrl": {
+                "label": "Up URL",
+                "type": "url",
+                "required": false
+            },
+            "downUrl": {
+                "label": "Down URL",
+                "type": "url",
+                "required": false
+            },
+            "openUrl": {
+                "label": "Open URL",
+                "type": "url",
+                "required": false
+            },
+            "closeUrl": {
+                "label": "Close URL",
+                "type": "url",
+                "required": false
             }
         }
     }

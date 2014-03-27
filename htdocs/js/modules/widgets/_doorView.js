@@ -47,7 +47,13 @@ define([
                 }
             });
 
-            that.listenTo(that.model, 'destroy', function () {
+            that.listenTo(that.model, 'destroy reset', function () {
+                that.$template.remove();
+                that.remove();
+            });
+
+            that.listenTo(window.App.Devices, 'reset', function () {
+                that.$template.remove();
                 that.remove();
             });
 

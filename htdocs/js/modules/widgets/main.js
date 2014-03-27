@@ -25,6 +25,9 @@ define([
             that.fixedPosition = fixedPosition || null;
             if (that.Devices.length > 0) {
                 that.$el.empty();
+                if (!$("#devices-container").exists()) {
+                    $('#main-region').append('<section id="devices-container" class="widgets"></section>');
+                }
                 that.Devices.each(function (device) {
                     that.renderWidget(device, forceView);
                 });
@@ -33,6 +36,7 @@ define([
         renderWidget: function (model, forceView) {
             var that = this,
                 modelView = null;
+
 
             if (_.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }) || forceView) {
                 if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {

@@ -139,7 +139,7 @@ define([
                                     }
                                 });
 
-                                obj[key] = arr;
+                                obj[key] = arr || [];
                                 arr = [];
                             }
                         }

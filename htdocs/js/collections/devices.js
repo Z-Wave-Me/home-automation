@@ -30,6 +30,7 @@ define([
                 options.data.since = this.updateTime;
             } else if (this.structureChanged) {
                 options.data.since = 0;
+                this.structureChanged = false;
                 this.reset();
             }
 

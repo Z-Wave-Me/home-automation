@@ -284,6 +284,7 @@ define([
                     handle: '.small-border, .button-select-border',
                     scroll: false,
                     snap: true,
+                    snapMode: "outer",
                     snapTolerance: 10,
                     containment: "parent",
                     stop: function (event, ui) {

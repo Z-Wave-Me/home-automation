@@ -317,33 +317,28 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
         result;
 
-    if (instance !== undefined) {
+    if (instance !== undefined) { // is registered
         this.stopInstance(instance);
 
         if (instance.config.status === 'enable') {
             instance.init(config.params);
         }
+
         if (config.hasOwnProperty('params')) {
             this.instances[index].params = config.params;
         }
 
         this.emit('core.instanceReconfigured', id);
         result = this.instances[index];
+    } else if (!instance && index !== -1) { // is not registered
+        this.instances[index].params = config.params;
+        if (config.params.status === 'enable') {
+            this.instantiateModule(this.instances[index]);
+        }
+        result = this.instances[index];
+        this.emit('core.instanceReconfigured', id);
     } else {
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
-        return;
-        // WTF!!!??? What does this code mean?
-        /*
-        if (instance.hasOwnProperty('params')) {
-            if (instance.params.config === 'enable') {
-                instance.init(config.params);
-            }
-        } else {
-            instance.init(config.params);
-        }
-
-        result = false;
-        */
     }
 
     this.saveConfig();
@@ -523,11 +518,11 @@ AutomationController.prototype.updateLocation = function (id, title, callback) {
     }
 };
 
-AutomationController.prototype.listNotifications = function (since) {
+AutomationController.prototype.listNotifications = function (since, isRedeemed) {
     var self = this;
     since = parseInt(since) || 0;
     var filteredNotifications = this.notifications.filter(function (notification) {
-        return notification.id >= since;
+        return notification.id >= since && notification.redeemed === isRedeemed;
     });
 
     return filteredNotifications;

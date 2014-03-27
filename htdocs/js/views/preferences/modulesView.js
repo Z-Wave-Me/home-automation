@@ -100,14 +100,27 @@ define([
                         that.$el.find('.save-button').on('click', function (e) {
                             e.preventDefault();
                             var json = form.getValue();
-                            instance.save({params: json});
-                            $template.hide('fast', function () {
-                                $template.off().remove();
-                                $instance.removeClass('active');
-                            });
+                            if (Validator.validate(json, App.Modules.get(instance.get('moduleId')).get('schema'))) {
+                                instance.save({params: json});
+                                $template.hide('fast', function () {
+                                    $template.off().remove();
+                                    $instance.removeClass('active');
+                                });
+                                that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
+                                window.App.Devices.since = 0;
+                                window.App.Devices.structureChanged = true;
+                                window.App.Devices.fetch({
+                                    success: function () {
+                                        window.App.Devices.trigger('refresh');
+                                    }
+                                });
+                            } else {
+                                that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
+                            }
                         });
                     }
                 });
+                that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
             });
 
             that.$el.find('.items-list').append($instance);

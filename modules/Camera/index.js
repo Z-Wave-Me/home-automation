@@ -30,9 +30,29 @@ Camera.prototype.init = function (config) {
     Camera.super_.prototype.init.call(this, config);
     executeFile(this.moduleBasePath() + "/CameraDevice.js");
 
-    var that = this;
+    var that = this,
+        url = config.url || null,
+        zoomInUrl = config.zoomInUrl || null,
+        zoomOutUrl = config.zoomOutUrl || null,
+        leftUrl = config.leftUrl || null,
+        rightUrl = config.rightUrl || null,
+        upUrl = config.upUrl || null,
+        downUrl = config.downUrl || null,
+        openUrl = config.openUrl || null,
+        closeUrl = config.closeUrl || null;
+
     that.vdev = new CameraDevice("Camera_" + that.id, that.controller);
-    that.vdev.setMetricValue("url", config.url);
+    that.vdev.setMetricValue("url", url);
+
+    that.vdev.setMetricValue("zoomInUrl", zoomInUrl);
+    that.vdev.setMetricValue("zoomOutUrl", zoomOutUrl);
+    that.vdev.setMetricValue("leftUrl", leftUrl);
+    that.vdev.setMetricValue("rightUrl", rightUrl);
+    that.vdev.setMetricValue("upUrl", upUrl);
+    that.vdev.setMetricValue("downUrl", downUrl);
+    that.vdev.setMetricValue("openUrl", openUrl);
+    that.vdev.setMetricValue("closeUrl", closeUrl);
+
     that.vdev.init();
     that.controller.registerDevice(that.vdev);
 };

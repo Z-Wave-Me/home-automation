@@ -30,6 +30,16 @@ define([
                 that.$template.removeClass('clear');
             }
 
+            $popup.find('.ui-icon').on('click', function (e) {
+                e.preventDefault();
+                getUrl($(this).attr('data-url'));
+            });
+
+            that.$template.find('.ui-icon').on('click', function (e) {
+                e.preventDefault();
+                getUrl($(this).attr('data-url'));
+            });
+
             $(cameraImage).on('load', function () {
                 that.$template.find('.camera-image').attr({'src': $(cameraImage).attr('src')});
                 that.loadImage = true;
@@ -51,7 +61,13 @@ define([
                 that.$template.toggleClass('clear');
             });
 
-            that.listenTo(that.model, 'destroy', function () {
+            that.listenTo(that.model, 'destroy reset', function () {
+                that.$template.remove();
+                that.remove();
+            });
+
+            that.listenTo(window.App.Devices, 'reset', function () {
+                that.$template.remove();
                 that.remove();
             });
 
