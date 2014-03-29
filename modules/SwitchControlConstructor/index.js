@@ -62,7 +62,7 @@ SwitchControlConstructor.prototype.init = function (config) {
             return; // not found
         }
         
-        var vDev = self.vDevs.splice(index, 1);
+        var vDev = self.vDevs.splice(index, 1)[0];
         
         vDev.activationHandler = null;
         self.popSwitchFromNamespaceVar(switchId);

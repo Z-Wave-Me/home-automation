@@ -3,8 +3,8 @@
 	"singleton": true,
 	"userView": true,
 	"defaults": {
-		"title": "Remote Switches generator",
-		"description": "Generates new widgets on the fly for Remote Switches and other devices sending control commands to controller",
+		"title": "Switch Controls generator",
+		"description": "Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
 		"generated": [],
 		"banned": []
 	},

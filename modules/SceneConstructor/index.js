@@ -48,7 +48,7 @@ SceneConstructor.prototype.init = function (config) {
 
     this.unregisterScene = function (id) {
         var sceneId = "Scene_" + id.toString();
-        
+    
         var index = -1;
         
         for (var i = 0; i < self.vDevs.length; i++) {
@@ -62,7 +62,7 @@ SceneConstructor.prototype.init = function (config) {
             return; // not found
         }
         
-        var vDev = self.vDevs.splice(i, 1);
+        var vDev = self.vDevs.splice(index, 1)[0];
         
         vDev.activationHandler = null;
         self.popSceneFromNamespaceVar(sceneId);

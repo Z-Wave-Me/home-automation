@@ -5,9 +5,9 @@
 	"defaults": {
 		"title": "Security notifications",
 		"description": "Notify on changes of sensors and switches state",
-		"binaries": 0,
-		"warningLevel": 20,
-	"triggerScene": null
+		"binary": [],
+		"multilevel": []
+		"triggerScene": null
 	},
 	"schema": {
 		"type": "object",
@@ -18,7 +18,7 @@
                                         "id": {
                                                 "field": "enum",
                                                 "datasource": "namespaces",
-                                                "enum": "namespaces:devices_binary:deviceId",
+                                                "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
                                                 "required": true
                                         },
                                         "safeStatus": {
@@ -34,7 +34,7 @@
                                         "id": {
                                                 "field": "enum",
                                                 "datasource": "namespaces",
-                                                "enum": "namespaces:multilvel:deviceId",
+                                                "enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
                                                 "required": true
                                         },
                                         "greater": {
@@ -42,7 +42,7 @@
                                                 "required": true,
 						"enum": [false, true"]
                                         },
-                                        "border": {
+                                        "safeBorder": {
                                                 "type": "number",
                                                 "required": true
                                         }
@@ -58,22 +58,13 @@
 	},
 	"options": {
 		"fields": {
-			"launchWeekDay": {
-				"label": "Do battery polling on",
-				"optionLabels": ["Monday", "Thuesday", "Wednesday", "Thurstday", "Friday", "Satrunday", "Sunday"]
-			},
-			"warningLevel": {
-				"label": "Warning Level",
-				"helper": "Warn if device's battery is below this level",
-				"optionLabels": ["5%", "10%", "15%", "20%"]
-			}
 			"binary": {
-				"label": "Binary devices",
+				"label": "Binary devices:",
                                 "fields": {
                                         "id": {
                                                 "datasource": "namespaces",
                                                 "field": "optionLabels",
-                                                "optionLables": "namespaces:binary:deviceName"
+                                                "optionLables": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
                                         },
                                         "safeStatus": {
                                                 "optionLabels": ["Off", "On"]
@@ -81,17 +72,18 @@
 				}
 			},
 			"multilevel": {
+				"label": "Multilevel devices:",
 				"type": "object",
                                 "properties": {
                                         "id": {
                                                 "datasource": "namespaces",
                                                 "field": "optionLabels",
-                                                "optionLables": "namespaces:multilevel:deviceName"
+                                                "optionLables": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
                                         },
                                         "greater": {
 						"optionLabels": ["<", ">"]
                                         },
-                                        "border": {
+                                        "safeBorder": {
                                         }
 				}
 			},

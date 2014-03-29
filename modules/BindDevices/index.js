@@ -37,9 +37,9 @@ BindDevices.prototype.init = function (config) {
             var actionBinary = null;
             var actionMultilevel = null;
             
-            if (value === 255 || value === true) {
+            if (value === 255 || value === true || value === "on") {
                 actionBinary = "on";
-            } else if (value === 0 || value === false) {
+            } else if (value === 0 || value === false || value === "off") {
                 actionBinary = "off";
             } else {
                 actionBinary = "on";
@@ -52,6 +52,7 @@ BindDevices.prototype.init = function (config) {
                 if (vDev) {
                     if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "swtichMultilevel" && actionMultilevel === null) {
                         vDev.performCommand(actionBinary);
+                        console.log(actionBinary, vDev.id);
                     } else if (vDev.deviceType === "swtichMultilevel") {
                             vDev.performCommand("exact", actionMultilevel);
                     }

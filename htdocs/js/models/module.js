@@ -135,7 +135,7 @@ define([
                                 obj[key].split(',').forEach(function (val) {
                                     namespace = App.Namespaces.get(val.split(':')[1]);
                                     if (namespace) {
-                                        arr = _.union(arr, _.pluck(namespace.get('params'), val.split(':')[2]));
+                                        arr = arr.concat(_.pluck(namespace.get('params'), val.split(':')[2]));
                                     }
                                 });
 

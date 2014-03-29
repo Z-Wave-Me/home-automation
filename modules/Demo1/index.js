@@ -36,7 +36,7 @@ Demo1.prototype.init = function (config) {
     this.vdev.init();
     this.controller.registerDevice(this.vdev);
     
-    console.logJS(this.config.title);
+    this.vdev.prefix = this.config.prefix;
 };
 
 Demo1.prototype.stop = function () {

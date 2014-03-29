@@ -32,9 +32,9 @@ Demo1Device.prototype.performCommand = function (command) {
     var handled = true;
     if ("update" === command) {
     } else if ("off" === command) {
-        controller.addNotification("notice", "I'm OFF", "");
+        controller.addNotification("notice", this.prefix + ": I'm OFF", "device");
     } else if ("on" === command) {
-        controller.addNotification("notice", "I'm ON", "device");
+        controller.addNotification("notice", this.prefix + ": I'm ON", "device");
     } else {
         handled = false;
     }
