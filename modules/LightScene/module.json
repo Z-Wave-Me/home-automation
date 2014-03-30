@@ -26,7 +26,7 @@
 						"status": {
 							"type": "number",
 							"required": true,
-							"enum": [false, true]
+							"enum": ["off", "on"]
 						}
 					}
 				}

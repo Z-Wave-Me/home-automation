@@ -34,7 +34,7 @@ LightScene.prototype.init = function (config) {
         self.config.switches.forEach(function(devState) {
             var vDev = self.controller.findVirtualDeviceById(devState.device);
             if (vDev) {
-                vDev.performCommand(devState.state ? "on" : "off");
+                vDev.performCommand(devState.status ? "on" : "off");
             }
         });
         self.config.dimmers.forEach(function(devState) {

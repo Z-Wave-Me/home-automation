@@ -194,37 +194,39 @@ AutomationController.prototype.loadModules = function (callback) {
 AutomationController.prototype.instantiateModule = function (instanceModel) {
     var self = this,
         module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
-        instance;
-    
-    try {
-        instance = new global[module.meta.id](instanceModel.id, self);
-    } catch (e) {
-        self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
-        console.log(e.stack);
-        return null;
-    }
+        instance = null;
 
-    console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
-
-    if (module.meta.singleton) {
-        if (in_array(self._loadedSingletons, module.meta.id)) {
-            console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
-            return;
+    if ((instanceModel.params.hasOwnProperty('status') && instanceModel.params.status === 'enable') || !instanceModel.params.hasOwnProperty('status')) {
+        try {
+            instance = new global[module.meta.id](instanceModel.id, self);
+        } catch (e) {
+            self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+            console.log(e.stack);
+            return null;
         }
 
-        self._loadedSingletons.push(module.meta.id);
-    }
+        console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
 
-    try {
-        instance.init(instanceModel.params);
-    } catch (e) {
-        self.addNotification("error", "Can not init module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
-        console.log(e.stack);
-        return null;
+        if (module.meta.singleton) {
+            if (in_array(self._loadedSingletons, module.meta.id)) {
+                console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
+                return;
+            }
+
+            self._loadedSingletons.push(module.meta.id);
+        }
+
+        try {
+            instance.init(instanceModel.params);
+        } catch (e) {
+            self.addNotification("error", "Can not init module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+            console.log(e.stack);
+            return null;
+        }
+        
+        self.registerInstance(instance);
+        return instance;
     }
-    
-    self.registerInstance(instance);
-    return instance;
 };
 
 AutomationController.prototype.instantiateModules = function () {
@@ -242,9 +244,7 @@ AutomationController.prototype.instantiateModules = function () {
     console.log("--- User configured modules instantiation ---");
     if (self.instances.length > 0) {
         self.instances.forEach(function (instance) {
-            if ((instance.params.hasOwnProperty('status') && instance.params.status === 'enable') || !instance.params.hasOwnProperty('status')) {
-                self.instantiateModule(instance);
-            }
+            self.instantiateModule(instance);
         });
     } else {
         console.log("--! No user-configured instances found");
@@ -320,7 +320,7 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
     if (instance !== undefined) { // is registered
         this.stopInstance(instance);
 
-        if (instance.config.status === 'enable') {
+        if (config.params.status === 'enable') { // here we read new config instead of existing
             instance.init(config.params);
         }
 
