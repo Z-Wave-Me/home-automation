@@ -195,6 +195,15 @@ define([
                     });
                 }
             });
+
+
+            this.listenTo(window.App.Modules, 'sync', function (model, err) {
+                window.App.Namespaces.fetch();
+            });
+
+            this.listenTo(window.App.Instances, 'sync', function (model, err) {
+                window.App.Namespaces.fetch();
+            });
         }
     });
 });
