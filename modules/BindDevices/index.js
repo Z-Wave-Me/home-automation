@@ -50,10 +50,10 @@ BindDevices.prototype.init = function (config) {
                 var vDev = that.controller.findVirtualDeviceById(el);
                 
                 if (vDev) {
-                    if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "swtichMultilevel" && actionMultilevel === null) {
+                    if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "switchMultilevel" && actionMultilevel === null) {
                         vDev.performCommand(actionBinary);
                         console.log(actionBinary, vDev.id);
-                    } else if (vDev.deviceType === "swtichMultilevel") {
+                    } else if (vDev.deviceType === "switchMultilevel") {
                             vDev.performCommand("exact", actionMultilevel);
                     }
                 }
