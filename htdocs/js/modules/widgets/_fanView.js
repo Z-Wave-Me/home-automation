@@ -26,6 +26,8 @@ define([
                 that.$template.removeClass('clear');
             }
 
+            that.$template.hide();
+
             that.listenTo(model, 'show', function () {
                 that.$template.removeClass('show').addClass('show').show('fast');
             });

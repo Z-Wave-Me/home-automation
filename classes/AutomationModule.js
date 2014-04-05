@@ -38,7 +38,7 @@ AutomationModule.prototype.defaultConfig = function (config) {
     }
 
     return result;
-}
+};
 
 AutomationModule.prototype.init = function (config) {
     console.log("--- Starting module " + this.meta.defaults.title);
@@ -61,14 +61,14 @@ AutomationModule.prototype.loadConfig = function () {
         Object.keys(cfg).forEach(function (key) {
             self.config[key] = cfg[key];
         });
-    };
+    }
 };
 
-AutomationModule.prototype.saveConfig = function () {
+AutomationModule.prototype.saveConfig = function (config) {
     var that = this,
-        index = this.controller.instances.indexOf(_.find(this.controller.instances, function (model) { return model.id === that.id; }))
+        index = this.controller.instances.indexOf(_.find(this.controller.instances, function (model) { return model.id === that.id; }));
 
-    this.controller.instances[index].conf = this.config;
+    this.controller.instances[index].params = config || this.config;
     this.controller.saveConfig();
 };
 
@@ -77,7 +77,7 @@ AutomationModule.prototype.toJSON = function () {
     function getClassName(obj) {
         if (typeof obj != "object" || obj === null) return false;
         return /(\w+)\(/.exec(obj.constructor.toString())[1];
-    };
+    }
 
     return {
         module: getClassName(this),

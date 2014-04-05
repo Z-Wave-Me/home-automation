@@ -28,6 +28,8 @@ define([
                 that.$template.removeClass('clear');
             }
 
+            that.$template.hide();
+
             that.listenTo(window.App.Devices, 'settings normal', function () {
                 that.$template.toggleClass('clear');
             });
@@ -62,7 +64,7 @@ define([
                 }
             });
 
-            that.$template.find('.quad-button').on('mouseup', function (i) {
+            that.$template.find('.quad-button').on('mouseup', function () {
                 if (isHold) {
                     command = $(this).hasClass('up-button') ? 'upstop' : 'downstop';
                     Apis.devices.command(model.get('id'), command, {});
@@ -73,7 +75,7 @@ define([
                 }
             });
 
-            that.$template.find('.quad-button').on('mousedown', function (i) {
+            that.$template.find('.quad-button').on('mousedown', function () {
                 isHold = false;
             });
 

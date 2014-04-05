@@ -19,10 +19,10 @@ define([
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = window.location.port !== "" ? window.location.port : 8083;
-            that.apiHost = window.location.hostname;
-            //that.apiPort = 10783;
-            //that.apiHost = 'mskoff.z-wave.me';
+            //that.apiPort = window.location.port !== "" ? window.location.port : 8083;
+            //that.apiHost = window.location.hostname;
+            that.apiPort = 10483;
+            that.apiHost = 'mskoff.z-wave.me';
 
             that.preFilterAjax();
             that.buildStructure();
@@ -110,7 +110,7 @@ define([
                                 f.call(this, 1);
                             }
                             fireStep = 0;
-                        }
+                        };
 
                         $(this).mouseout(clearMousehold);
                         $(this).mouseup(clearMousehold);
@@ -120,7 +120,7 @@ define([
         },
         preFilterAjax: function () {
             var that = this;
-            $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+            $.ajaxPrefilter(function (options) {
                 // Your server goes below
                 that.apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api/v1" + options.url;
 
@@ -196,13 +196,9 @@ define([
                 }
             });
 
-
-            this.listenTo(window.App.Modules, 'sync', function (model, err) {
+            this.listenTo(window.App.Instances, 'sync', function () {
                 window.App.Namespaces.fetch();
-            });
-
-            this.listenTo(window.App.Instances, 'sync', function (model, err) {
-                window.App.Namespaces.fetch();
+                window.App.Devices.fetch();
             });
         }
     });

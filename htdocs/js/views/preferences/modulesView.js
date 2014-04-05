@@ -12,7 +12,7 @@ define([
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'renderInstances', 'renderModules', 'newInstance');
+            _.bindAll(this, 'render', 'renderInstances', 'newInstance');
 
             // Default collections and models
             that.Instances = window.App.Instances;
@@ -72,11 +72,15 @@ define([
 
             $instance = $("<li>" + instance.get('params').title + "</li>");
 
-            that.listenTo(instance, 'destroy', function () {
+            that.listenTo(instance, 'destroy reset remove', function () {
                 $instance.hide('fast', function () {
                     $instance.prev().click();
                     $instance.remove();
-                    App.Devices.reset({silent: true}).fetch();
+                    App.Devices.reset({silent: true}).fetch({
+                        success: function () {
+                            window.App.Devices.trigger('refresh');
+                        }
+                    });
                 });
             });
 
@@ -114,6 +118,9 @@ define([
                                         window.App.Devices.trigger('refresh');
                                     }
                                 });
+                                window.App.Instances.fetch({
+                                    reset: true
+                                });
                             } else {
                                 that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
                             }
@@ -124,10 +131,6 @@ define([
             });
 
             that.$el.find('.items-list').append($instance);
-        },
-
-        renderModules: function () {
-            var that = this;
         },
 
         newInstance: function () {

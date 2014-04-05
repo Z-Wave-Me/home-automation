@@ -30,6 +30,8 @@ define([
                 that.$template.toggleClass('clear');
             });
 
+            that.$template.hide();
+
             that.listenTo(that.model, 'destroy reset', function () {
                 that.$template.remove();
                 that.remove();

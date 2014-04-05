@@ -37,46 +37,57 @@ define([
             var that = this,
                 modelView = null;
 
+            if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
+                modelView = new ProbeWidgetView({model: model});
+            } else if (model.get('deviceType') === "fan") {
+                modelView = new FanWidgetView({model: model});
+            } else if (model.get('deviceType') === "switchMultilevel") {
+                modelView = new MultilevelWidgetView({model: model});
+            } else if (model.get('deviceType') === "thermostat") {
+                modelView = new ThermostatView({model: model});
+            } else if (model.get('deviceType') === "doorlock") {
+                modelView = new DoorLockView({model: model});
+            } else if (model.get('deviceType') === "switchBinary") {
+                modelView = new SwitchView({model: model});
+            } else if (model.get('deviceType') === "toggleButton") {
+                modelView = new ToggleView({model: model});
+            } else if (model.get('deviceType') === "camera") {
+                modelView = new CameraView({model: model});
+            } else if (model.get('deviceType') === "switchControl") {
+                modelView = new SwitchControlView({model: model});
+            } else {
+                //log(model);
+            }
 
-            if (_.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }) || forceView) {
-                if (model.get('deviceType') === "probe" || model.get('deviceType') === "battery") {
-                    modelView = new ProbeWidgetView({model: model});
-                } else if (model.get('deviceType') === "fan") {
-                    modelView = new FanWidgetView({model: model});
-                } else if (model.get('deviceType') === "switchMultilevel") {
-                    modelView = new MultilevelWidgetView({model: model});
-                } else if (model.get('deviceType') === "thermostat") {
-                    modelView = new ThermostatView({model: model});
-                } else if (model.get('deviceType') === "doorlock") {
-                    modelView = new DoorLockView({model: model});
-                } else if (model.get('deviceType') === "switchBinary") {
-                    modelView = new SwitchView({model: model});
-                } else if (model.get('deviceType') === "toggleButton") {
-                    modelView = new ToggleView({model: model});
-                } else if (model.get('deviceType') === "camera") {
-                    modelView = new CameraView({model: model});
-                } else if (model.get('deviceType') === "switchControl") {
-                    modelView = new SwitchControlView({model: model});
-                } else {
-                    //log(model);
-                }
-
-                if (modelView) {
-                    modelView.render();
-                    if (that.fixedPosition) {
-                        that.setPosition(modelView);
-                    }
+            if (modelView) {
+                modelView.render();
+                that.showingControl(modelView, model, forceView);
+                if (that.fixedPosition) {
+                    that.setPosition(modelView);
                 }
             }
         },
         setPosition: function (modelView) {
-            var position = _.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === modelView.model.id; }).position,
+            var device = _.find(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === modelView.model.id; }),
                 $template = modelView.getTemplate();
 
-            $template.css({
-                top: position.y,
-                left: position.x
-            });
+            if (device !== undefined) {
+                $template.css({
+                    top: device.position.y,
+                    left: device.position.x
+                });
+            } else {
+                $template.css({
+                    top: 0,
+                    left: 0
+                });
+            }
+        },
+        showingControl: function (modelView, model, forceView) {
+            var $template = modelView.getTemplate();
+            if (_.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === model.id; }) || forceView) {
+                $template.show();
+            }
         }
     });
 });

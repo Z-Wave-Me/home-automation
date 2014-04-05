@@ -11,9 +11,9 @@ define([
     'text!templates/popups/_profile.html',
     'dragsort',
     'magicsuggest'
-], function (Backbone, ModalHelper, Apis, Location, Profile, ModulesView, PreferencesPopupTmp, RoomTmp, WidgetTmp, ProfileTmp, TagTmp) {
+], function (Backbone, ModalHelper, Apis, Location, Profile, ModulesView, PreferencesPopupTmp, RoomTmp, WidgetTmp, ProfileTmp) {
     'use strict';
-    var PreferencesView = Backbone.View.extend({
+    return Backbone.View.extend({
 
         initialize: function () {
             var that = this;
@@ -197,14 +197,15 @@ define([
                                 id: device.get('id'),
                                 position: {x: null, y: null}
                             });
+                            window.App.Devices.get(device.id).trigger('show');
                         }
                     } else {
                         widgets = widgets.filter(function (widget) {
                             return widget.id !== device.id;
                         });
+                        window.App.Devices.get(device.id).trigger('hide');
                     }
                     profile.save({widgets: widgets});
-                    window.App.Devices.trigger('refresh');
                 });
 
                 ms = $deviceTmp.find('#ms-gmail').magicSuggest({
@@ -575,6 +576,4 @@ define([
             return tags;
         }
     });
-
-    return PreferencesView;
 });

@@ -26,6 +26,8 @@ define([
                 that.$template.removeClass('clear');
             }
 
+            that.$template.hide();
+
             that.listenTo(model, 'show', function () {
                 that.$template.removeClass('show').addClass('show').show('fast');
             });
@@ -66,7 +68,7 @@ define([
                 var $button = $(this),
                     command = parseInt(that.model.get('metrics').mode) !== 255 ? 'close' : 'open';
 
-                Apis.devices.command(model.get('id'), command, {}, function (json) {
+                Apis.devices.command(model.get('id'), command, {}, function () {
                     //log(json);
                     $button
                         .toggleClass('active')

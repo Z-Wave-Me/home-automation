@@ -32,7 +32,7 @@ define([
             that.render();
         },
         render: function () {
-            if (window.location.hash.indexOf('dashboard') !== -1) {
+            if (window.location.hash.indexOf('dashboard') !== -1 || !window.location.hash) {
                 var that = this;
                 window.App.Devices.lock = false;
                 that.WidgetsModule.render(true);

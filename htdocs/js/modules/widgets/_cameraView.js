@@ -30,6 +30,8 @@ define([
                 that.$template.removeClass('clear');
             }
 
+            that.$template.hide();
+
             $popup.find('.ui-icon').on('click', function (e) {
                 e.preventDefault();
                 getUrl($(this).attr('data-url'));

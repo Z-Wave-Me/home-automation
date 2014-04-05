@@ -32,6 +32,8 @@ define([
                 that.$template.removeClass('clear');
             }
 
+            that.$template.hide();
+
             that.listenTo(window.App.Devices, 'settings normal', function () {
                 that.$template.toggleClass('clear');
             });
