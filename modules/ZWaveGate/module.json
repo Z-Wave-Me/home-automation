@@ -4,7 +4,6 @@
     "singleton": true,
     "userView": false,
     "defaults": {
-        "createDevices": true,
-        "basicsEnabled": true
+        "title": "Z-Wave device creator"
     }
 }

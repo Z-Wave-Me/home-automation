@@ -3,5 +3,7 @@
     "autoloadPriority": 100,
     "singleton": true,
     "userView": false,
-    "defaults": {}
+    "defaults": {
+        "title": "Cron scheduler"
+    }
 }

@@ -19,6 +19,7 @@ ZWaveBatteryDevice = function (id, controller) {
     this.setMetricValue("scaleTitle", "%");
     this.setMetricValue("level", "");
     this.setMetricValue("icon", "battery");
+    this.setMetricValue("title", "Battery");
 }
 
-inherits(ZWaveBatteryDevice, ZWaveDevice);
+inherits(ZWaveBatteryDevice, VirtualDevice);

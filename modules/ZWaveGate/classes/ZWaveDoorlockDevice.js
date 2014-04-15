@@ -16,23 +16,9 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.deviceType = "doorlock";
 
     this.setMetricValue("mode", "");
+    this.setMetricValue("icon", "door");
+    this.setMetricValue("Door Lock");
 }
 
 inherits(ZWaveDoorlockDevice, VirtualDevice);
-
-    if ("open" === command) {
-        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(0);
-    } else if ("close" === command) {
-        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(255);
-    } else {
-        handled = false;
-    }
-
-    return handled ? true : ZWaveDoorlockDevice.super_.prototype.performCommand.call(this, command);
-}
-
-
-ZWaveDoorlockDevice.prototype.deviceIconBase = function () {
-    return "door";
-}
 

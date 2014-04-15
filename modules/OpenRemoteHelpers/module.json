@@ -1,5 +1,7 @@
 {
     "autoload": true,
     "singleton": true,
-    "defaults": { }
+    "defaults": {
+        "title": "OpenRemote helper"
+    }
 }

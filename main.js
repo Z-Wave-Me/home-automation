@@ -83,9 +83,8 @@ if (!config) {
     config.devicesPath = "modules/ZWaveGate";
     config.resourcesPath = "res";
 
-    //--- Load constants & 3d-party dependencies
+    //--- Load 3d-party dependencies
 
-    executeFile("constants.js");
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore-min.js");
 
@@ -95,10 +94,9 @@ if (!config) {
     executeFile(config.classesPath + "/VirtualDevice.js");
 
     // Load abstract ZWave device class
-    executeFile(config.devicesPath+"/classes/ZWaveDevice.js");
+    // !!! executeFile(config.devicesPath+"/classes/ZWaveDevice.js");
 
     // Load exact device classes
-    executeFile(config.devicesPath+"/classes/ZWaveBasicDevice.js");
     executeFile(config.devicesPath+"/classes/ZWaveSwitchBinaryDevice.js");
     executeFile(config.devicesPath+"/classes/ZWaveSwitchMultilevelDevice.js");
     executeFile(config.devicesPath+"/classes/ZWaveSensorBinaryDevice.js");

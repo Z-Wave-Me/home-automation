@@ -23,7 +23,7 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.setMetricValue("state", this._dic().data.on.value);
 }
 
-inherits(ZWaveFanModeDevice, ZWaveDevice);
+inherits(ZWaveFanModeDevice, VirtualDevice);
 
 ZWaveFanModeDevice.prototype.deviceTitle = function () {
     return "Fan";

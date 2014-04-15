@@ -28,67 +28,42 @@ _.extend(DevicesCollection.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'updateLength', 'create');
-        this.create('0', '0', 0);
     },
     updateLength: function () {
         this.length = _.size(this.models);
     },
-    create: function (deviceName, devceType) {
+    create: function (deviceId, deviceType) {
         var that = this,
-            vDev = null;
+            vDev = null,
             model;
-
-        console.log("Creating device " + devceType + " id = " + deviceName);
-        if ("switchBinary" === devceType) {
-            vDev = new ZWaveSwitchBinaryDevice(deviceName, that.controller);
+        
+        console.log("Creating device " + deviceType + " id = " + deviceId);
+        if ("switchBinary" === deviceType) {
+            vDev = new ZWaveSwitchBinaryDevice(deviceId, that.controller);
         } else if ("switchMultilevel" === deviceType) {
-            vDev = new ZWaveSwitchMultilevelDevice(deviceName, that.controller);
+            vDev = new ZWaveSwitchMultilevelDevice(deviceId, that.controller);
         } else if ("sensor" === deviceType) {
-            vDev = new ZWaveSensorBinaryDevice(deviceName, that.controller);
+            vDev = new ZWaveSensorBinaryDevice(deviceId, that.controller);
+        } else if ("probe" === deviceType) {
+            vDev = new ZWaveSensorMultilevelDevice(deviceId, that.controller);
+        } else if ("battery" === deviceType) {
+            vDev = new ZWaveBatteryDevice(deviceId, that.controller);
+        } else if ("door" === deviceType) {
+            vDev = new ZWaveDoorlockDevice(deviceId, that.controller);
+        } else if ("fan" === deviceType) {
+            vDev = new ZWaveFanModeDevice(deviceId, that.controller);
+        } else if ("thermostat" === deviceType) {
+            vDev = new ZWaveThermostatDevice(deviceId, that.controller);
         }
         
         if (vDev !== null) {
-            deviceClass.init();
-            deviceClass.bindToDatapoints();
-            model = new DeviceModel(deviceClass, that);
+            vDev.init();
+            model = new DeviceModel(vDev, that);
             that.updateLength();
             that.add(model);
         } else {
             console.log("Error creating device");
         }
-
-        /*
-        } else if (0x31 === commandClassId) {
-            Object.keys(instance.commandClasses[0x31].data).forEach(function (sensorTypeId) {
-                var sensorTypeId = parseInt(sensorTypeId, 10);
-                if (!isNaN(sensorTypeId)) {
-                    console.log("Creating SensorMultilevel device for sensor type id", sensorTypeId);
-                    instanceDevices.push(new ZWaveSensorMultilevelDevice(deviceName + ":" + sensorTypeId, that.controller, deviceId, instanceId, sensorTypeId));
-                }
-            });
-        } else if (0x32 === commandClassId) {
-            Object.keys(instance.commandClasses[0x32].data).forEach(function (scaleId) {
-                scaleId = parseInt(scaleId, 10);
-                if (!isNaN(scaleId)) {
-                    console.log("Creating Meter device for scale", scaleId);
-                    instanceDevices.push(new ZWaveMeterDevice(deviceName + ":" + scaleId, that.controller, deviceId, instanceId, scaleId));
-                }
-            });
-        } else if (0x80 === commandClassId) {
-            console.log("Creating Battery device");
-            instanceDevices.push(new ZWaveBatteryDevice(deviceName, that.controller, deviceId, instanceId));
-        } else if (0x62 === commandClassId) {
-            console.log("Creating Doorlock device");
-            instanceDevices.push(new ZWaveDoorlockDevice(deviceName, that.controller, deviceId, instanceId));
-        } else if (0x44 === commandClassId) {
-            console.log("Creating FanMode device");
-            instanceDevices.push(new ZWaveFanModeDevice(deviceName, that.controller, deviceId, instanceId));
-        } else if (0 === commandClassId) {
-            console.log("Creating Basic device");
-            instanceDevices.push(new ZWaveBasicDevice(deviceName, that.controller));
-        }
-        */
-
 
         return vDev;
     },
@@ -144,6 +119,10 @@ _.extend(DevicesCollection.prototype, {
         var that = this,
             model = that.get(identificator);
 
+        if (!model) {
+            return;
+        }
+        
         that.models = that.models.filter(function (object) {
             return object.cid !== model.cid;
         });

@@ -4,6 +4,7 @@
     "autoloadPriority": 10,
     "singleton": true,
     "defaults": {
-    	"debug": false
-	}
+        "title": "Event logger",
+        "debug": false
+    }
 }

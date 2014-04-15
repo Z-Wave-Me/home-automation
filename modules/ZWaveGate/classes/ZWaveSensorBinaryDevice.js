@@ -13,24 +13,12 @@ Copyright: (c) ZWave.Me, 2013
 ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sensorTypeId) {
     ZWaveSensorBinaryDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
-    this.zCommandClassId = 0x30;
-    this.zSubTreeKey = sensorTypeId;
-
     this.deviceType = "sensor";
 
-    this.sensorTypeString = this._dics().sensorTypeString.value;
-
-    this.setMetricValue("probeTitle", this.sensorTypeString);
-
-    this.setMetricValue("level", this._dics().level.value);
+    this.setMetricValue("probeTitle", "");
+    this.setMetricValue("level", "");
+    this.setMetricValue("icon", "");
+    this.setMetricValue("title", "Sensor");
 }
 
-inherits(ZWaveSensorBinaryDevice, ZWaveDevice);
-
-ZWaveSensorBinaryDevice.prototype.deviceTitle = function () {
-    return this.sensorTypeString+" Sensor";
-}
-
-ZWaveSensorBinaryDevice.prototype.dataPoints = function () {
-    return [this._dics().level];
-}
+inherits(ZWaveSensorBinaryDevice, VirtualDevice);

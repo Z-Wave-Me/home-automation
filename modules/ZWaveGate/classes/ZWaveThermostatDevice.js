@@ -35,7 +35,7 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     }
 }
 
-inherits(ZWaveThermostatDevice, ZWaveDevice);
+inherits(ZWaveThermostatDevice, VirtualDevice);
 
 ZWaveThermostatDevice.prototype.deviceTitle = function () {
     return "Thermostat";
