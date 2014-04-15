@@ -42,11 +42,11 @@ function inherits (ctor, superCtor) {
 }
 
 function in_array (array, value) {
-    return -1 != array.indexOf(value);
+    return -1 !== array.indexOf(value);
 }
 
 function has_key (obj, key) {
-    return -1 != Object.keys(obj).indexOf(key);
+    return -1 !== Object.keys(obj).indexOf(key);
 }
 
 function get_values (obj) {
@@ -60,8 +60,6 @@ function get_values (obj) {
 }
 
 //--- Load configuration
-
-
 var config, files, templates, schemas, modules, namespaces;
 try {
     config = loadObject("config.json") || {
@@ -82,6 +80,7 @@ if (!config) {
 } else {
     config.libPath = "lib";
     config.classesPath = "classes";
+    config.devicesPath = "modules/ZWaveGate";
     config.resourcesPath = "res";
 
     //--- Load constants & 3d-party dependencies
@@ -93,11 +92,28 @@ if (!config) {
     //--- Load router
     //executeFile(config.libPath + "/Router.js");
 
-    //--- Load Automation subsystem classes
+    executeFile(config.classesPath + "/VirtualDevice.js");
 
+    // Load abstract ZWave device class
+    executeFile(config.devicesPath+"/classes/ZWaveDevice.js");
+
+    // Load exact device classes
+    executeFile(config.devicesPath+"/classes/ZWaveBasicDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveSwitchBinaryDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveSwitchMultilevelDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveSensorBinaryDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveSensorMultilevelDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveMeterDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveBatteryDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveFanModeDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveThermostatDevice.js");
+    executeFile(config.devicesPath+"/classes/ZWaveDoorlockDevice.js");
+
+    //--- Load Automation subsystem classes
+    executeFile(config.classesPath + "/DeviceModel.js");
+    executeFile(config.classesPath + "/DevicesCollection.js");
     executeFile(config.classesPath + "/AutomationController.js");
     executeFile(config.classesPath + "/AutomationModule.js");
-    executeFile(config.classesPath + "/VirtualDevice.js");
     executeFile("request.js");
     executeFile("webserver.js");
     executeFile("storage.js");

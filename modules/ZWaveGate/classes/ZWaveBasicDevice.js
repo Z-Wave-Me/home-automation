@@ -19,8 +19,8 @@ ZWaveBasicDevice = function (id, controller) {
 
     var self = this;
     this.controller.on('zway.dataUpdate', function () {
-    	return self.onUpdate.apply(self, arguments);
-    })
+        return self.onUpdate.apply(self, arguments);
+    });
 }
 
 inherits(ZWaveBasicDevice, ZWaveDevice);

@@ -48,9 +48,7 @@ SwitchControlConstructor.prototype.init = function (config) {
 
     this.unregisterSwitch = function (id) {
         var switchId = id.toString();
-        
         var index = -1;
-        
         for (var i = 0; i < self.vDevs.length; i++) {
             if (self.vDevs[i].id === switchId) {
                 index = i;

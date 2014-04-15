@@ -21,6 +21,7 @@ function AutomationController () {
 
     this.modules = {};
     this.devices = {};
+    this.collection = new DevicesCollection(this);
     this.schemas = config.schemas || [];
 
     this.notifications = [];
@@ -404,7 +405,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 }
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = device;
+    this.vdevInfo[id] = _.pick(device, ["deviceType", "metrics", "location", "tags"]);
     this.saveConfig();
     return this.vdevInfo[id];
 }

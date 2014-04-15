@@ -13,22 +13,6 @@ function ZWaveGate (id, controller) {
     ZWaveGate.super_.call(this, id, controller);
 
     this.devices = {};
-
-    // Load abstract ZWave device class
-    executeFile(this.moduleBasePath()+"/classes/ZWaveDevice.js");
-
-    // Load exact device classes
-    executeFile(this.moduleBasePath()+"/classes/ZWaveBasicDevice.js");
-
-    executeFile(this.moduleBasePath()+"/classes/ZWaveSwitchBinaryDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveSwitchMultilevelDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveSensorBinaryDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveSensorMultilevelDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveMeterDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveBatteryDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveFanModeDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveThermostatDevice.js");
-    executeFile(this.moduleBasePath()+"/classes/ZWaveDoorlockDevice.js");
 }
 
 // Module inheritance and setup
@@ -45,6 +29,7 @@ ZWaveGate.prototype.init = function (config) {
     this.onStructureUpdate = function () {
         self.handleStructureChanges.apply(self, arguments);
     };
+
     this.controller.on('zway.structureUpdate', this.onStructureUpdate);
 
     // If basicsEnabled, instantiate ZWaveBasic module
@@ -82,8 +67,9 @@ ZWaveGate.prototype.init = function (config) {
                 commandClassId = parseInt(commandClassId, 10);
                 var commandClass = instance.commandClasses[commandClassId];
 
-                // console.log("--- DEVICE INSTANCE COMMAND CLASS", deviceId, instanceId, commandClassId);
+                //console.log("--- DEVICE INSTANCE COMMAND CLASS", deviceId, instanceId, commandClassId);
                 self.controller.emit('zway.structureUpdate', ZWAY_DEVICE_CHANGE_TYPES[0x10], deviceId, instanceId, commandClassId);
+                self.controller.collection.create(deviceId, instanceId, parseInt(commandClassId, 10));
             });
         });
     });
@@ -119,7 +105,7 @@ ZWaveGate.prototype.handleStructureChanges = function (changeType, device, insta
 };
 
 ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
-    console.log("--- createDevicesForInstance("+deviceId+", "+instanceId+")");
+    console.log("--- createDevicesForInstance(" + deviceId + ", " + instanceId + ")");
     var self = this,
         instance = zway.devices[deviceId].instances[instanceId],
         instanceCommandClasses = Object.keys(instance.commandClasses),
@@ -127,9 +113,11 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
         deviceName = null;
 
     if (in_array(instanceCommandClasses, "64") || in_array(instanceCommandClasses, "67")) {
-        deviceName = "ZWayVDev_"+deviceId+":"+instanceId+":Thermostat";
+        deviceName = "ZWayVDev_" + deviceId + ":" + instanceId + ":Thermostat";
 
-        if (self.controller.deviceExists(deviceName)) return;
+        if (self.controller.deviceExists(deviceName)) {
+            return;
+        }
 
         console.log("Creating Thermostat device");
         instanceDevices.push(new ZWaveThermostatDevice(deviceName, self.controller, deviceId, instanceId));
@@ -151,7 +139,7 @@ ZWaveGate.prototype.createDevicesForInstance = function (deviceId, instanceId) {
             return;
         }
 
-        var deviceName = "ZWayVDev_"+deviceId+":"+instanceId+":"+commandClassId;
+        var deviceName = "ZWayVDev_" + deviceId + ":" + instanceId + ":" + commandClassId;
 
         // Do not recreate devices
         if (self.controller.deviceExists(deviceName)) return;
