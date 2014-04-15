@@ -11,8 +11,6 @@ Copyright: (c) Z-Wave.Me, 2013
 
 function ZWaveGate (id, controller) {
     ZWaveGate.super_.call(this, id, controller);
-
-    this.devices = {};
 }
 
 // Module inheritance and setup
@@ -25,7 +23,12 @@ ZWaveGate.prototype.init = function (config) {
     ZWaveGate.super_.prototype.init.call(this, config);
 
     var self = this;
-
+    
+    
+    
+    this.controller.collection.create("")
+    zway.devices[deviceId].instances[instanceId]
+    
     this.onStructureUpdate = function () {
         self.handleStructureChanges.apply(self, arguments);
     };

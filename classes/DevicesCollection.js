@@ -33,30 +33,31 @@ _.extend(DevicesCollection.prototype, {
     updateLength: function () {
         this.length = _.size(this.models);
     },
-    create: function (deviceId, instanceId, commandClassId) {
-        console.log("--- createDevicesForInstance(" + deviceId + ", " + instanceId + ")");
-
+    create: function (deviceName, devceType) {
         var that = this,
-            instance = commandClassId !== 0 ? zway.devices[deviceId].instances[instanceId] : null,
-            instanceDevices = [],
-            deviceName = "ZWayVDev_" + deviceId + ":" + instanceId + ":" + commandClassId,
+            vDev = null;
             model;
 
+        console.log("Creating device " + devceType + " id = " + deviceName);
+        if ("switchBinary" === devceType) {
+            vDev = new ZWaveSwitchBinaryDevice(deviceName, that.controller);
+        } else if ("switchMultilevel" === deviceType) {
+            vDev = new ZWaveSwitchMultilevelDevice(deviceName, that.controller);
+        } else if ("sensor" === deviceType) {
+            vDev = new ZWaveSensorBinaryDevice(deviceName, that.controller);
+        }
+        
+        if (vDev !== null) {
+            deviceClass.init();
+            deviceClass.bindToDatapoints();
+            model = new DeviceModel(deviceClass, that);
+            that.updateLength();
+            that.add(model);
+        } else {
+            console.log("Error creating device");
+        }
 
-        if (0x25 === commandClassId) {
-            console.log("Creating SwitchBinary device");
-            instanceDevices.push(new ZWaveSwitchBinaryDevice(deviceName, that.controller, deviceId, instanceId));
-        } else if (0x26 === commandClassId) {
-            console.log("Creating SwitchMultilevel device");
-            instanceDevices.push(new ZWaveSwitchMultilevelDevice(deviceName, that.controller, deviceId, instanceId));
-        } else if (0x30 === commandClassId) {
-            Object.keys(instance.commandClasses[0x30].data).forEach(function (sensorTypeId) {
-                var sensorTypeId = parseInt(sensorTypeId, 10);
-                if (!isNaN(sensorTypeId)) {
-                    console.log("Creating SensorBinary device for sensor type id", sensorTypeId);
-                    instanceDevices.push(new ZWaveSensorBinaryDevice(deviceName + ":" + sensorTypeId, that.controller, deviceId, instanceId, sensorTypeId));
-                }
-            });
+        /*
         } else if (0x31 === commandClassId) {
             Object.keys(instance.commandClasses[0x31].data).forEach(function (sensorTypeId) {
                 var sensorTypeId = parseInt(sensorTypeId, 10);
@@ -86,16 +87,10 @@ _.extend(DevicesCollection.prototype, {
             console.log("Creating Basic device");
             instanceDevices.push(new ZWaveBasicDevice(deviceName, that.controller));
         }
+        */
 
-        instanceDevices.forEach(function (deviceClass) {
-            deviceClass.init();
-            deviceClass.bindToDatapoints();
-            model = new DeviceModel(deviceClass, that);
-            that.updateLength();
-            that.add(model);
-        });
 
-        return instanceDevices;
+        return vDev;
     },
     add: function (model) {
         if (model.hasOwnProperty('cid')) {
