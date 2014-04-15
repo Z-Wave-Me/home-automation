@@ -48,9 +48,12 @@ SensorValueLogging.prototype.init = function (config) {
             if (self.config.logTo === "JSONFile") {
                 var storedLog = loadObject("SensorValueLogging_" + deviceId + "_" + self.id);
                 if (!storedLog) {
-                    storedLog = [];
+                    storedLog = {
+                        "deviceId": deviceId,
+                        "sensorData": []
+                    };
                 }
-                storedLog.push({"time": Date.now(), "deviceId": deviceId, "value": value});
+                storedLog.sensorData.push({"time": Date.now(), "value": value});
                 saveObject("SensorValueLogging_" + deviceId + "_" + self.id, storedLog);
                 storedLog = null;
             }
