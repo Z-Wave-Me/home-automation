@@ -41,7 +41,7 @@ _.extend(VirtualDevice.prototype, {
         _.bindAll(this, 'get', 'set');
         _.defaults(this.attributes, this.defaults);
         this.set(this, {silent: true});
-        _.extend(this.attributes, this.collection.controller.getVdevInfo(deviceId));
+        _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
     },
     get: function (param) {
         'use strict';
