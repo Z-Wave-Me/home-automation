@@ -14,15 +14,14 @@ define([
         el: 'body',
 
         initialize: function () {
-            var that = this;
+            var that = this,
+                query = that.getQueryParams(document.location.search);
 
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = window.location.port !== "" ? window.location.port : 8083;
-            that.apiHost = window.location.hostname;
-            //that.apiPort = 10483;
-            //that.apiHost = 'mskoff.z-wave.me';
+            that.apiPort = query.hasOwnProperty('port') ? query.port : window.location.port !== "" ? window.location.port : 8083;
+            that.apiHost = query.hasOwnProperty('host') ? query.host : window.location.hostname;
 
             that.preFilterAjax();
             that.buildStructure();
@@ -129,6 +128,19 @@ define([
                     crossDomain: true
                 };
             });
+        },
+        getQueryParams: function (qs) {
+            qs = qs.split("+").join(" ");
+
+            var params = {}, tokens,
+                re = /[?&]?([^=]+)=([^&]*)/g;
+
+            while (tokens = re.exec(qs)) {
+                params[decodeURIComponent(tokens[1])]
+                    = decodeURIComponent(tokens[2]);
+            }
+
+            return params;
         },
         buildStructure: function () {
             if (!window.App) {
