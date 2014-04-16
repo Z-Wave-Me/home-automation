@@ -22,3 +22,19 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
 
 inherits(ZWaveDoorlockDevice, VirtualDevice);
 
+ZWaveDoorlockDevice.prototype.performCommand = function (command) {
+    var handled = false;
+
+    console.log("--- ZWaveDoorlockDevice.performCommand processing...", command);
+
+    handled = true;
+    if ("open" === command) {
+        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(0);
+    } else if ("close" === command) {
+        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(255);
+    } else {
+        handled = false;
+    }
+
+    return handled ? true : ZWaveDoorlockDevice.super_.prototype.performCommand.call(this, command);
+}

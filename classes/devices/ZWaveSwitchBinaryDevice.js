@@ -21,3 +21,19 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 }
 
 inherits(ZWaveSwitchBinaryDevice, VirtualDevice);
+
+ZWaveSwitchBinaryDevice.prototype.performCommand = function (command) {
+    console.log("--- ZWaveSwitchBinaryDevice.performCommand processing...");
+
+    var handled = true;
+
+    if ("on" === command) {
+        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(255);
+    } else if ("off" === command) {
+        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(0);
+    } else {
+        handled = false;
+    }
+
+    return handled ? true : ZWaveSwitchBinaryDevice.super_.prototype.performCommand.call(this, command);
+}
