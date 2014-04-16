@@ -307,6 +307,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             // !!! изменение
         }
     }
+    self.controller.collection.emit('ready');
 };
 
 ZWaveGate.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClassId) {

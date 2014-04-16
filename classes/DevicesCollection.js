@@ -8,18 +8,22 @@
  ******************************************************************************/
 
 DevicesCollection = function (controller) {
-    this.controller = controller;
-    this.config = {};
-    this.models = [];
-    this.indexes = {};
-    this.db = {
+    var that = this;
+    that.controller = controller;
+    that.config = {};
+    that.models = [];
+    that.statusReady = false;
+    that.db = {
         cid: {},
         id: {},
         indexes: {},
         hardwareId: {}
     };
-    this.length = 0;
-    this.initialize.apply(this, arguments);
+    that.length = 0;
+    that.on('ready', function () {
+        that.statusReady = true;
+    });
+    that.initialize.apply(this, arguments);
 };
 
 inherits(DevicesCollection, EventEmitter2);
@@ -28,15 +32,20 @@ _.extend(DevicesCollection.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'updateLength', 'create');
+        // Load exact device classes
+        var path = 'classes/devices/';
+
+        fs.list(path).forEach(function (deviceCLassName) {
+            executeFile(path + deviceCLassName);
+        });
     },
     updateLength: function () {
         this.length = _.size(this.models);
     },
     create: function (deviceId, deviceType) {
         var that = this,
-            vDev = null,
-            model;
-        
+            vDev = null;
+
         console.log("Creating device " + deviceType + " id = " + deviceId);
         if ("switchBinary" === deviceType) {
             vDev = new ZWaveSwitchBinaryDevice(deviceId, that.controller);
@@ -55,12 +64,11 @@ _.extend(DevicesCollection.prototype, {
         } else if ("thermostat" === deviceType) {
             vDev = new ZWaveThermostatDevice(deviceId, that.controller);
         }
-        
+
         if (vDev !== null) {
             vDev.init();
-            model = new DeviceModel(vDev, that);
             that.updateLength();
-            that.add(model);
+            that.add(vDev);
         } else {
             console.log("Error creating device");
         }
@@ -102,17 +110,23 @@ _.extend(DevicesCollection.prototype, {
         return _.size(this.models);
     },
     toJSON: function (options) {
-        var models = this.models.map(function (model) {
+        var models;
+        if (!this.statusReady) {
+            models = [];
+        } else {
+            models = this.models.map(function (model) {
                 return model.toJSON();
             });
 
-        options = options || {};
+            options = options || {};
 
-        if (options.since) {
-            models = models.filter(function (device) {
-                return device.updateTime >= options.since;
-            });
+            if (options.since) {
+                models = models.filter(function (device) {
+                    return device.updateTime >= options.since;
+                });
+            }
         }
+
         return models;
     },
     remove: function (identificator) {
@@ -122,7 +136,7 @@ _.extend(DevicesCollection.prototype, {
         if (!model) {
             return;
         }
-        
+
         that.models = that.models.filter(function (object) {
             return object.cid !== model.cid;
         });
