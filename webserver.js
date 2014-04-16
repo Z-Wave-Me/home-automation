@@ -218,7 +218,7 @@ ZAutomationAPIWebRequest.prototype.performVDevCommandFunc = function (vDevId, co
     return function () {
         var reply = {
             error: null,
-            data: !!controller.devices[vDevId].performCommand.call(controller.devices[vDevId], commandId, self.req.query)
+            data: !!controller.collection.get(vDevId).performCommand.call(controller.collection.get(vDevId), commandId, self.req.query)
         }
 
         reply.code = 200;
@@ -1123,7 +1123,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (!!reTest) {
             var vDevId = reTest[1];
             var commandId = reTest[2];
-            if ("GET" === method && !!vDevId && !!commandId && controller.devices.hasOwnProperty(vDevId)) {
+            if ("GET" === method && !!vDevId && !!commandId && controller.collection.get(vDevId)) {
                 handlerFunc = this.performVDevCommandFunc(vDevId, commandId);
             }
         }

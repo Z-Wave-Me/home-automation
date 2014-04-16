@@ -42,27 +42,27 @@ _.extend(DevicesCollection.prototype, {
     updateLength: function () {
         this.length = _.size(this.models);
     },
-    create: function (deviceId, deviceType) {
+    create: function (deviceId, deviceType, handler) {
         var that = this,
             vDev = null;
 
         console.log("Creating device " + deviceType + " id = " + deviceId);
         if ("switchBinary" === deviceType) {
-            vDev = new ZWaveSwitchBinaryDevice(deviceId, that.controller);
+            vDev = new ZWaveSwitchBinaryDevice(deviceId, that.controller, handler);
         } else if ("switchMultilevel" === deviceType) {
-            vDev = new ZWaveSwitchMultilevelDevice(deviceId, that.controller);
+            vDev = new ZWaveSwitchMultilevelDevice(deviceId, that.controller, handler);
         } else if ("sensor" === deviceType) {
-            vDev = new ZWaveSensorBinaryDevice(deviceId, that.controller);
+            vDev = new ZWaveSensorBinaryDevice(deviceId, that.controller, handler);
         } else if ("probe" === deviceType) {
-            vDev = new ZWaveSensorMultilevelDevice(deviceId, that.controller);
+            vDev = new ZWaveSensorMultilevelDevice(deviceId, that.controller, handler);
         } else if ("battery" === deviceType) {
-            vDev = new ZWaveBatteryDevice(deviceId, that.controller);
+            vDev = new ZWaveBatteryDevice(deviceId, that.controller, handler);
         } else if ("door" === deviceType) {
-            vDev = new ZWaveDoorlockDevice(deviceId, that.controller);
+            vDev = new ZWaveDoorlockDevice(deviceId, that.controller, handler);
         } else if ("fan" === deviceType) {
-            vDev = new ZWaveFanModeDevice(deviceId, that.controller);
+            vDev = new ZWaveFanModeDevice(deviceId, that.controller, handler);
         } else if ("thermostat" === deviceType) {
-            vDev = new ZWaveThermostatDevice(deviceId, that.controller);
+            vDev = new ZWaveThermostatDevice(deviceId, that.controller, handler);
         }
 
         if (vDev !== null) {

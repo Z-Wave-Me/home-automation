@@ -10,8 +10,8 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
-    ZWaveFanModeDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
+function ZWaveFanModeDevice(id, controller, handler) {
+    ZWaveFanModeDevice.super_.call(this, id, controller, handler);
 
     this.zCommandClassId = 0x44;
 

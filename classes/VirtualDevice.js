@@ -7,8 +7,9 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-VirtualDevice = function (deviceId, controller) {
+VirtualDevice = function (deviceId, controller, handler) {
     this.id = deviceId;
+    this.handler = handler;
     this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
     this.controller = controller;
     this.collection = this.controller.collection;
@@ -158,7 +159,10 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics[name];
     },
     performCommand: function () {
-        return;
+        console.log("--- " + this.constructor.name + ".performCommand processing...");
+        if (typeof(this.handler) === "function") {
+            return this.handler.apply(this, arguments);
+        }
     },
     updateFromVdevInfo: function () {
         var self = this,

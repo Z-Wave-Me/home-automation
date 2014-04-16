@@ -1,4 +1,4 @@
-/*** Zthis.set({deviceType: "switchBinary"});WaveSwitchBinaryDevice.js ***********************************************
+/*** ZWaveSwitchBinaryDevice.js ***********************************************
 
 Version: 1.0.0
 
@@ -10,8 +10,8 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
-    ZWaveSwitchBinaryDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
+function ZWaveSwitchBinaryDevice(id, controller, handler) {
+    ZWaveSwitchBinaryDevice.super_.call(this, id, controller, handler);
 
     this.deviceType = "switchBinary";
 
@@ -22,19 +22,3 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
 }
 
 inherits(ZWaveSwitchBinaryDevice, VirtualDevice);
-
-ZWaveSwitchBinaryDevice.prototype.performCommand = function (command) {
-    console.log("--- ZWaveSwitchBinaryDevice.performCommand processing...");
-
-    var handled = true;
-
-    if ("on" === command) {
-        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(255);
-    } else if ("off" === command) {
-        zway.devices[this.zDeviceId].instances[this.zInstanceId].commandClasses[this.zCommandClassId].Set(0);
-    } else {
-        handled = false;
-    }
-
-    return handled ? true : ZWaveSwitchBinaryDevice.super_.prototype.performCommand.call(this, command);
-}
