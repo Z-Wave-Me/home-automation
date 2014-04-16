@@ -21,9 +21,7 @@ define([
             log("App Initialize");
 
             that.apiPort = query.hasOwnProperty('port') ? query.port : window.location.port !== "" ? window.location.port : 8083;
-            that.apiHost = query.hasOwnProperty('host') ? query.hostname : window.location.hostname;
-            //that.apiPort = 10483;
-            //that.apiHost = 'mskoff.z-wave.me';
+            that.apiHost = query.hasOwnProperty('host') ? query.host : window.location.hostname;
 
             that.preFilterAjax();
             that.buildStructure();
