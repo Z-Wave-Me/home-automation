@@ -22,10 +22,6 @@ VirtualDevice = function (deviceId, controller) {
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
     }
-    _.defaults(this.attributes, this.defaults);
-    this.set(this, {silent: true});
-    _.extend(this.attributes, this.collection.controller.getVdevInfo(deviceId));
-
     this.initialize.apply(this, arguments);
     return this;
 };
@@ -43,6 +39,9 @@ _.extend(VirtualDevice.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'get', 'set');
+        _.defaults(this.attributes, this.defaults);
+        this.set(this, {silent: true});
+        _.extend(this.attributes, this.collection.controller.getVdevInfo(deviceId));
     },
     get: function (param) {
         'use strict';
