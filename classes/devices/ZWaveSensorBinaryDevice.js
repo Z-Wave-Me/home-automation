@@ -19,6 +19,7 @@ ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sens
     this.setMetricValue("level", "");
     this.setMetricValue("icon", "");
     this.setMetricValue("title", "Sensor");
+    this.set({deviceType: "sensor"});
 }
 
 inherits(ZWaveSensorBinaryDevice, VirtualDevice);

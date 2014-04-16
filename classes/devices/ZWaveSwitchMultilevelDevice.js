@@ -18,6 +18,7 @@ ZWaveSwitchMultilevelDevice = function (id, controller, zDeviceId, zInstanceId) 
     this.setMetricValue("level", "");
     this.setMetricValue("icon", "");
     this.setMetricValue("title", "Dimmer");
+    this.set({deviceType: "switchMultilevel"});
 }
 
 inherits(ZWaveSwitchMultilevelDevice, VirtualDevice);

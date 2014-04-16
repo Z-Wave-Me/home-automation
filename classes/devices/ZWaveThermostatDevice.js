@@ -13,8 +13,6 @@ Copyright: (c) ZWave.Me, 2013
 ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
     ZWaveThermostatDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
-    this.deviceType = "thermostat";
-
     var CCs = this._di().commandClasses;
 
     this.sensorAvailable = Object.keys(CCs).indexOf("49") >= 0 && Object.keys(this._dic(49).data).indexOf("1") >= 0 && this._dic(49).data.interviewDone;
@@ -33,6 +31,7 @@ ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
         this.setMetricValue("scaleTitle", this._dic(49).data[1].scaleString.value);
         this.setMetricValue("level", this.sensorValue());
     }
+    this.set({deviceType: "thermostat"});
 }
 
 inherits(ZWaveThermostatDevice, VirtualDevice);

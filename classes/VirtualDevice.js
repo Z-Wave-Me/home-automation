@@ -9,9 +9,9 @@ Copyright: (c) ZWave.Me, 2013
 
 VirtualDevice = function (deviceId, controller) {
     this.id = deviceId;
+    this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
     this.controller = controller;
     this.collection = this.controller.collection;
-    this.deviceType = null;
     this.metrics = {};
     this.location = null;
     this.tags = [];
@@ -39,9 +39,9 @@ _.extend(VirtualDevice.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'get', 'set');
-        _.defaults(this.attributes, this.defaults);
         this.set(this, {silent: true});
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
+        _.defaults(this.attributes, this.defaults);
     },
     get: function (param) {
         'use strict';
@@ -59,9 +59,9 @@ _.extend(VirtualDevice.prototype, {
             accessAttrs;
 
         options = options || {};
-        accessAttrs = options.accessAttrs || ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
+        accessAttrs = options.accessAttrs || that.accessAttrs;
 
-        attrs = _.extend(this.attributes, _.pick(attrs, accessAttrs));
+        attrs = _.extend(that.attributes, _.pick(attrs, accessAttrs));
 
         if (_.isObject(attrs)) {
             Object.keys(attrs).forEach(function (key) {
@@ -154,7 +154,7 @@ _.extend(VirtualDevice.prototype, {
         this.controller.setVdevInfo(id, object);
         this.controller.saveConfig();
     },
-    getMetricValue: function () {
+    getMetricValue: function (name) {
         return this.metrics[name];
     },
     performCommand: function () {

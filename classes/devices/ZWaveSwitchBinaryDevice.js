@@ -1,4 +1,4 @@
-/*** ZWaveSwitchBinaryDevice.js ***********************************************
+/*** Zthis.set({deviceType: "switchBinary"});WaveSwitchBinaryDevice.js ***********************************************
 
 Version: 1.0.0
 
@@ -18,6 +18,7 @@ ZWaveSwitchBinaryDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.setMetricValue("level", "");
     this.setMetricValue("icon", "");
     this.setMetricValue("title", "Switch");
+    this.set({deviceType: "switchBinary"});
 }
 
 inherits(ZWaveSwitchBinaryDevice, VirtualDevice);
