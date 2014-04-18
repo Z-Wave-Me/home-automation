@@ -18,7 +18,7 @@ ZWaveSensorMultilevelDevice = function (id, controller, zDeviceId, zInstanceId, 
     this.setMetricValue("level", "");
     this.setMetricValue("icon", "");
     this.setMetricValue("title", "Sensor");
-    this.set({deviceType: "sensor"});
+    this.set({deviceType: "probe"});
 }
 
 inherits(ZWaveSensorMultilevelDevice, VirtualDevice);

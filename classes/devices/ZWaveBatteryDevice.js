@@ -13,12 +13,16 @@ Copyright: (c) ZWave.Me, 2013
 ZWaveBatteryDevice = function (id, controller) {
     ZWaveBatteryDevice.super_.call(this, id, controller);
 
-    this.setMetricValue("probeTitle", "Battery");
-    this.setMetricValue("scaleTitle", "%");
-    this.setMetricValue("level", "");
-    this.setMetricValue("icon", "battery");
-    this.setMetricValue("title", "Battery");
-    this.set({deviceType: "battery"});
+    this.set({
+        deviceType: 'battery',
+        metrics: {
+            probeTitle: 'Battery',
+            scaleTitle: '%',
+            level: '',
+            icon: 'battery',
+            title: 'Battery'
+        }
+    });
 }
 
 inherits(ZWaveBatteryDevice, VirtualDevice);

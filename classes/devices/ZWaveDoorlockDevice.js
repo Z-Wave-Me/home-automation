@@ -15,8 +15,14 @@ ZWaveDoorlockDevice = function (id, controller, zDeviceId, zInstanceId) {
 
     this.setMetricValue("mode", "");
     this.setMetricValue("icon", "door");
-    this.setMetricValue("Door Lock");
-    this.set({deviceType: "doorlock"});
+    this.set({
+        deviceType: 'doorlock',
+        metrics: {
+            mode: '',
+            icon: 'door',
+            title: 'Door Lock'
+        }
+    });
 }
 
 inherits(ZWaveDoorlockDevice, VirtualDevice);

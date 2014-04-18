@@ -13,11 +13,13 @@ Copyright: (c) ZWave.Me, 2013
 ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
     ZWaveMeterDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
 
-    this.setMetricValue("probeTitle", "");
-    this.setMetricValue("scaleTitle", "");
-    this.setMetricValue("level", "");
-    this.setMetricValue("title", "Probe");
-    this.set({deviceType: "probe"});
+    this.set({
+        deviceType: 'probe',
+        probeTitle: '',
+        scaleTitle: '',
+        level: '',
+        title: 'Probe'
+    });
 }
 
 inherits(ZWaveMeterDevice, VirtualDevice);

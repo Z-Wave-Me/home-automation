@@ -16,10 +16,15 @@ ZWaveFanModeDevice = function (id, controller, zDeviceId, zInstanceId) {
     this.zCommandClassId = 0x44;
 
     this.modes = this.assembleModes();
-    this.setMetricValue("modes", this.modes);
-    this.setMetricValue("currentMode", this._dic().data.mode.value);
-    this.setMetricValue("state", this._dic().data.on.value);
-    this.set({deviceType: "fan"});
+    this.set({
+        deviceType: 'fan',
+        metrics: {
+            currentMode: this._dic().data.mode.value,
+            modes: this.modes,
+            state: this._dic().data.on.value,
+            title: 'Fan'
+        }
+    });
 }
 
 inherits(ZWaveFanModeDevice, VirtualDevice);
