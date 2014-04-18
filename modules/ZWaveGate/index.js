@@ -197,24 +197,60 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
     */
 
     if (this.CC["SwitchBinary"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "switchBinary");
+        vDev = self.controller.collection.create(vDevId, "switchBinary", function(command) {
+            if ("on" == command) {
+                cc.Set(true);
+            } else if ("off" == command) {
+                cc.Set(false);
+            }
+        });
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "level", function() {
                 vDev.setMetricValue("level", this.value ? "on" : "off");
             }, "value");
-            vDev.on("level", function(val) {
-                cc.Set(val === "on");
-            });
         }
     } else if (this.CC["SwitchMultilevel"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "switchMultilevel");
+        vDev = self.controller.collection.create(vDevId, "switchMultilevel", function(command, args) {
+            var newVal;
+            if ("on" === command) {
+                newVal = 255;
+            } else if ("off" === command) {
+                newVal = 0;
+            } else if ("min" === command) {
+                newVal = 10;
+            } else if ("max" === command) {
+                newVal = 99;
+            } else if ("increase" === command) {
+                newVal = this.metrics.level+10;
+                if (0 !== newVal%10) {
+                    newVal = Math.round(newVal/10)*10;
+                }
+                if (newVal > 99) newVal = 99;
+            } else if ("decrease" === command) {
+                newVal = this.metrics.level-10;
+                if (newVal < 0) newVal = 0;
+                if (0 !== newVal%10) {
+                    newVal = Math.round(newVal/10)*10;
+                }
+            } else if ("exact" === command) {
+                newVal = parseInt(args["level"], 10);
+                if (newVal < 0) {
+                    newVal = 0
+                } else if(newVal == 255) {
+                    newVal = 255;
+                } else if (newVal > 99) {
+                    newVal = null;
+                }
+            }
+
+            if (0 === newVal || !!newVal) {
+                cc.Set(newVal);
+            }
+        });
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "level", function() {
                 vDev.setMetricValue("level", this.value);
             }, "value");
-            vDev.on("level", function(val) {
-                cc.Set(parseInt(val, 10));
-            });
         }
     } else if (this.CC["SensorBinary"] === commandClassId) {
         Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -274,14 +310,17 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }, "value");
         }
     } else if (this.CC["DoorLock"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "door");
+        vDev = self.controller.collection.create(vDevId, "door", function(command) {
+            if ("open" === command) {
+                cc.Set(0);
+            } else if ("close" === command) {
+                cc.Set(255);
+            }
+        });
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "mode", function() {
                 vDev.setMetricValue("mode", this.value === 255 ? "close" : "open");
             }, "value");
-            vDev.on("mode", function(val) {
-                cc.Set(val === "close" ? 255 : 0);
-            });
         }
     } else if (this.CC["ThermostatFanMode"] === commandClassId) {
         vDev = self.controller.collection.create(vDevId, "fan");

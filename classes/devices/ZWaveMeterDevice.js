@@ -10,8 +10,8 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-ZWaveMeterDevice = function (id, controller, zDeviceId, zInstanceId, zScaleId) {
-    ZWaveMeterDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
+function ZWaveMeterDevice(id, controller, handler) {
+    ZWaveMeterDevice.super_.call(this, id, controller, handler);
 
     this.set({
         deviceType: 'probe',

@@ -10,8 +10,8 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-ZWaveSensorBinaryDevice = function (id, controller, zDeviceId, zInstanceId, sensorTypeId) {
-    ZWaveSensorBinaryDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
+function ZWaveSensorBinaryDevice(id, controller, handler) {
+    ZWaveSensorBinaryDevice.super_.call(this, id, controller, handler);
 
     this.set({
         deviceType: 'sensor',

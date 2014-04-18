@@ -10,8 +10,8 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-ZWaveThermostatDevice = function (id, controller, zDeviceId, zInstanceId) {
-    ZWaveThermostatDevice.super_.call(this, id, controller, zDeviceId, zInstanceId);
+function ZWaveThermostatDevice(id, controller, handler) {
+    ZWaveThermostatDevice.super_.call(this, id, controller, handler);
 
     var CCs = this._di().commandClasses;
 

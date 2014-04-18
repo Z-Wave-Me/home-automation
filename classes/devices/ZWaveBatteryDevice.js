@@ -10,8 +10,8 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-ZWaveBatteryDevice = function (id, controller) {
-    ZWaveBatteryDevice.super_.call(this, id, controller);
+function ZWaveBatteryDevice(id, controller, handler) {
+    ZWaveBatteryDevice.super_.call(this, id, controller, handler);
 
     this.set({
         deviceType: 'battery',
