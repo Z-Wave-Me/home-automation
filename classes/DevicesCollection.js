@@ -67,8 +67,8 @@ _.extend(DevicesCollection.prototype, {
 
         if (vDev !== null) {
             vDev.init();
-            that.updateLength();
             that.add(vDev);
+            that.updateLength();
         } else {
             console.log("Error creating device");
         }

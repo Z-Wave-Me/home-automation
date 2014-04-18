@@ -13,12 +13,16 @@ Copyright: (c) ZWave.Me, 2013
 function ZWaveSensorMultilevelDevice(id, controller, handler) {
     ZWaveSensorMultilevelDevice.super_.call(this, id, controller, handler);
 
-    this.setMetricValue("probeTitle", "");
-    this.setMetricValue("scaleTitle", "");
-    this.setMetricValue("level", "");
-    this.setMetricValue("icon", "");
-    this.setMetricValue("title", "Sensor");
-    this.set({deviceType: "probe"});
+    this.set({
+        deviceType: "probe",
+        metrics: {
+            probeTitle: '',
+            scaleTitle: '',
+            level: '',
+            icon: '',
+            title: 'Sensor'
+        }
+    });
 }
 
 inherits(ZWaveSensorMultilevelDevice, VirtualDevice);

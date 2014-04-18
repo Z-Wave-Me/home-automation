@@ -32,7 +32,12 @@ inherits(VirtualDevice, EventEmitter2);
 _.extend(VirtualDevice.prototype, {
     defaults: {
         deviceType: 'baseType',
-        metrics: {},
+        metrics: {
+            probeTitle: '',
+            scaleTitle: '',
+            level: '',
+            icon: ''
+        },
         location: '',
         tags: [],
         updateTime: ''
@@ -52,19 +57,42 @@ _.extend(VirtualDevice.prototype, {
         }
         return result;
     },
-    set: function (attrs, options) {
+    set: function (keyName, val, options) {
         var that = this,
             changes = [],
-            current = this.attributes,
+            current = _.clone(this.attributes),
             prev = this._previousAttributes,
-            accessAttrs;
+            accessAttrs,
+            attrs,
+            i = 0,
+            keys,
+            findObj;
+
+        function findX(obj, key) {
+            var val = obj[key];
+            if (val !== undefined) {
+                return obj;
+            }
+            for (var name in obj) {
+                var result = findX(obj[name]);
+                if (result !== undefined) {
+                    return obj;
+                }
+            }
+            return undefined;
+        }
 
         options = options || {};
         accessAttrs = options.accessAttrs || that.accessAttrs;
 
-        attrs = _.extend(that.attributes, _.pick(attrs, accessAttrs));
-
-        if (_.isObject(attrs)) {
+        if (_.isString(keyName) && !!val && keyName.split(':').length === 1) {
+            findObj = findX(this.attributes, keyName);
+            if (findObj[keyName] === val) {
+                changes.push(keyName);
+                that.changed[keyName] = val;
+            }
+        } else {
+            attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
             Object.keys(attrs).forEach(function (key) {
                 if (!_.isEqual(current[key], attrs[key])) {
                     changes.push(attrs[key]);
@@ -76,6 +104,7 @@ _.extend(VirtualDevice.prototype, {
                 }
             });
         }
+
 
         if (!options.silent) {
             if (changes.length) {
@@ -95,6 +124,17 @@ _.extend(VirtualDevice.prototype, {
             });
         }
 
+        if (!options.setOnly) {
+            that.save();
+        }
+        return this;
+    },
+    save: function (attrs, options) {
+        if (!!attrs) {
+            this.set(attrs, options);
+        }
+        this.collection.controller.setVdevInfo(this.id, this.attributes);
+        this.collection.controller.saveConfig();
         return this;
     },
     toJSON: function () {

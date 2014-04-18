@@ -13,12 +13,16 @@ Copyright: (c) ZWave.Me, 2013
 function ZWaveSwitchMultilevelDevice(id, controller, handler) {
     ZWaveSwitchMultilevelDevice.super_.call(this, id, controller, handler);
 
-    this.deviceType = "switchMultilevel";
-
-    this.setMetricValue("level", "");
-    this.setMetricValue("icon", "");
-    this.setMetricValue("title", "Dimmer");
-    this.set({deviceType: "switchMultilevel"});
+    this.set({
+        deviceType: "switchMultilevel",
+        metrics: {
+            probeTitle: '',
+            scaleTitle: '',
+            level: '',
+            icon: '',
+            title: 'Dimmer'
+        }
+    });
 }
 
 inherits(ZWaveSwitchMultilevelDevice, VirtualDevice);

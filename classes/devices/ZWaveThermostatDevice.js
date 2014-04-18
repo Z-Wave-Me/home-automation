@@ -13,25 +13,29 @@ Copyright: (c) ZWave.Me, 2013
 function ZWaveThermostatDevice(id, controller, handler) {
     ZWaveThermostatDevice.super_.call(this, id, controller, handler);
 
-    var CCs = this._di().commandClasses;
+    var CCs = this._di().commandClasses,
+        metrics = {};
 
     this.sensorAvailable = Object.keys(CCs).indexOf("49") >= 0 && Object.keys(this._dic(49).data).indexOf("1") >= 0 && this._dic(49).data.interviewDone;
     this.modeAvailable = Object.keys(CCs).indexOf("64") >= 0 && this._dic(64).data.interviewDone;
     this.setPointAvailable = Object.keys(CCs).indexOf("67") >= 0 && this._dic(67).data.interviewDone;
 
-    this.setMetricValue("hasSensor", this.sensorAvailable);
-    this.setMetricValue("hasMode", this.modeAvailable);
-    this.setMetricValue("hasSetPoint", this.setPointAvailable);
+    metrics.hasSensor = this.sensorAvailable;
+    metrics.hasMode = this.modeAvailable;
+    metrics.hasSetPoint = this.setPointAvailable;
 
     this.modes = this.assembleModes();
-    this.setMetricValue("modes", this.modes);
-    this.setMetricValue("currentMode", this.currentMode());
+    metrics.modes = this.modes;
+    metrics.currentMode = this.currentMode();
 
     if (this.sensorAvailable) {
-        this.setMetricValue("scaleTitle", this._dic(49).data[1].scaleString.value);
-        this.setMetricValue("level", this.sensorValue());
+        metrics.scaleTitle = this._dic(49).data[1].scaleString.value;
+        metrics.level = this.sensorValue();
     }
-    this.set({deviceType: "thermostat"});
+    this.set({
+        deviceType: "thermostat",
+        metrics: metrics
+    });
 }
 
 inherits(ZWaveThermostatDevice, VirtualDevice);
