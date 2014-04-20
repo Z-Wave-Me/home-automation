@@ -1,0 +1,108 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Group devices",
+		"description": "Group several devices together",
+		"isDimmable": true,
+		"devices": [],
+		"scenesOn": [],
+		"scenesOff": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"isDimmable": {
+				"type": "select",
+				"enum": [false, true],
+				"require": true
+			},
+			"devices": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_doorlock:deviceId",
+							"required": true
+						},
+						"invert": {
+							"type": "select",
+							"required": true,
+							"enum": [false, true]
+						}
+					}
+				}
+			},
+			"scenesOn": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:scenes:sceneId",
+					"required": true
+				}
+			},
+			"scenesOff": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:scenes:sceneId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"isDimmable": {
+				"label": "Device type",
+				"optionLabels": ["Switch", "Dimmer"]
+			},
+			"devices": {
+				"label": "Group devices",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_doorlock:deviceName"
+							},
+							"invert": {
+								"label": "Invert action",
+								"optionLabels": ["No", "Yes"]
+							}
+						}
+					}
+				}
+			},
+			"scenesOn": {
+				"label": "List of scenes to activate on On action",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:scenes:sceneName"
+					}
+				}
+			},
+			"scenesOff": {
+				"label": "List of scenes to activate on Off action",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:scenes:sceneName"
+					}
+				}
+			}
+		}
+	}
+}

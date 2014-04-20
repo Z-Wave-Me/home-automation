@@ -59,7 +59,6 @@ OpenWeather.prototype.fetchWeather = function(instance) {
         url: "http://api.openweathermap.org/data/2.5/weather?q=" + self.config.city + "," + self.config.country,
         async: true,
         success: function(res) {
-            console.log("=====");
             try {
                 var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 : res.data.main.temp) * 10) / 10,
                     icon = res.data.main.icon;
@@ -72,7 +71,7 @@ OpenWeather.prototype.fetchWeather = function(instance) {
                             scaleTitle: self.config.units === "celsius" ? '°C' : '°F',
                             level: temp,
                             icon: icon,
-                            title: 'Weather'
+                            title: 'Weather ' + self.id
                         }
                     });
                 } else {
