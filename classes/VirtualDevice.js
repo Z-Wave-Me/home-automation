@@ -43,6 +43,7 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
+        this.save(); // !!!!!!!!!!!!!!!!! hack by PS to workaround a bug on line 163
     },
     get: function (param) {
         'use strict';
@@ -202,7 +203,7 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics[name];
     },
     performCommand: function () {
-        console.log("--- " + this.constructor.name + ".performCommand processing...");
+        console.log("--- " + this.id + " performCommand processing...");
         if (typeof(this.handler) === "function") {
             return this.handler.apply(this, arguments);
         }

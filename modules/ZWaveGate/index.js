@@ -282,7 +282,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 level: '',
                 title: 'Sensor'
             }
-        }
+        };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
@@ -335,7 +335,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 title: 'Probe',
                 icon: 'probe'
             }
-        }
+        };
         Object.keys(cc.data).forEach(function (scaleId) {
             scaleId = parseInt(scaleId, 10);
             if (!isNaN(scaleId)) {
@@ -362,7 +362,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 icon: 'battery',
                 title: 'Battery'
             }
-        }
+        };
         vDev = self.controller.collection.create(vDevId, defaults);
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "last", function() {
