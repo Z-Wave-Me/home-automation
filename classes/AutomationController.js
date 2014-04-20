@@ -401,7 +401,7 @@ AutomationController.prototype.deviceExists = function (vDevId) {
 }
 
 AutomationController.prototype.getVdevInfo = function (id) {
-    return this.vdevInfo[id];
+    return this.vdevInfo[id] || {};
 }
 
 AutomationController.prototype.setVdevInfo = function (id, device) {

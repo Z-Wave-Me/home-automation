@@ -101,7 +101,7 @@ _.extend(DevicesCollection.prototype, {
 
         models = this.models.filter(function (device) {
             return !!options.since ? device.toJSON().ready && device.toJSON().updateTime >= options.since : !!device.ready;
-        })
+        });
 
         models = this.models.map(function (model) {
             return model.toJSON();
