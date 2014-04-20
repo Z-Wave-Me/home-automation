@@ -43,7 +43,6 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
-
     },
     get: function (param) {
         'use strict';
