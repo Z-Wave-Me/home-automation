@@ -7,18 +7,31 @@ Copyright: (c) ZWave.Me, 2013
 
 ******************************************************************************/
 
-VirtualDevice = function (deviceId, controller, handler) {
+VirtualDevice = function (deviceId, controller, defaults, handler) {
     this.id = deviceId;
     this.handler = handler;
     this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
     this.controller = controller;
     this.collection = this.controller.collection;
     this.metrics = {};
+    this.ready = false;
     this.location = null;
     this.tags = [];
     this.updateTime = 0;
     this.attributes = {};
     this.changed = {};
+    this.defaults = defaults || this.defaults || {
+        deviceType: 'baseType',
+        metrics: {
+            probeTitle: '',
+            scaleTitle: '',
+            level: '',
+            icon: ''
+        },
+        location: '',
+        tags: [],
+        updateTime: ''
+    };
     this._previousAttributes = {};
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
@@ -30,28 +43,25 @@ VirtualDevice = function (deviceId, controller, handler) {
 inherits(VirtualDevice, EventEmitter2);
 
 _.extend(VirtualDevice.prototype, {
-    defaults: {
-        deviceType: 'baseType',
-        metrics: {
-            probeTitle: '',
-            scaleTitle: '',
-            level: '',
-            icon: ''
-        },
-        location: '',
-        tags: [],
-        updateTime: ''
-    },
     initialize: function () {
         'use strict';
         _.bindAll(this, 'get', 'set');
-        this.set(this, {silent: true});
+        //this.set(this, {silent: true});
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
-        _.defaults(this.attributes, this.defaults);
+        console.log('---------');
+        console.log(JSON.stringify(this.id));
+        console.log(JSON.stringify(this.deviceType));
+        console.log(JSON.stringify(this.attributes));
+        console.log(JSON.stringify(this.defaults));
+        _.defaults(this.attributes, this.defaults); // set default params
+        _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
+        console.log(JSON.stringify(this.attributes))
+        console.log('---------');
+
     },
     get: function (param) {
         'use strict';
-        var result;
+        var result = undefined;
         if (this.attributes.hasOwnProperty(param)) {
             result = this.attributes[param];
         }
@@ -64,8 +74,6 @@ _.extend(VirtualDevice.prototype, {
             prev = this._previousAttributes,
             accessAttrs,
             attrs,
-            i = 0,
-            keys,
             findObj;
 
         function findX(obj, key) {
@@ -92,7 +100,12 @@ _.extend(VirtualDevice.prototype, {
                 that.changed[keyName] = val;
             }
         } else {
-            attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
+            if (!!options.merge || options.merge === undefined) {
+                attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
+            } else {
+                attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
+            }
+
             Object.keys(attrs).forEach(function (key) {
                 if (!_.isEqual(current[key], attrs[key])) {
                     changes.push(attrs[key]);
@@ -162,22 +175,27 @@ _.extend(VirtualDevice.prototype, {
             this.tags = this.device.tags;
             this.location = this.device.location;
             this.metrics.title = this.device.metrics.title !== undefined ? this.device.metrics.title : this.deviceTitle();
-            this.metrics.iconBase = this.device.metrics.iconBase !== undefined ? this.device.metrics.iconBase : this.deviceIconBase();
+            this.metrics.icon = this.device.metrics.icon !== undefined ? this.device.metrics.icon : this.deviceIcon();
         } else {
             this.metrics.title  = this.deviceTitle();
-            this.metrics.iconBase = this.deviceIconBase();
+            this.metrics.icon = this.deviceIcon();
         }
+        this.ready = true;
     },
     deviceTitle: function () {
         return this.id;
     },
-    deviceIconBase: function () {
-        return this.metrics.iconBase = this.deviceType;
+    deviceIcon: function () {
+        return this.metrics.icon = this.deviceType;
     },
     setMetricValue: function (name, value) {
-        this.updateTime = Math.floor(new Date().getTime() / 1000);
-        this.metrics[name] = value;
+        var metrics = this.get('metrics');
+        metrics[name] = value;
         this.controller.emit("device.metricUpdated", this.id, name, value);
+        this.set({
+            updateTime: Math.floor(new Date().getTime() / 1000),
+            metrics: metrics
+        });
     },
     setVDevObject: function (id, object) {
         var excludeProp = ['deviceType', 'updateTime', 'id'],
@@ -202,56 +220,6 @@ _.extend(VirtualDevice.prototype, {
         console.log("--- " + this.constructor.name + ".performCommand processing...");
         if (typeof(this.handler) === "function") {
             return this.handler.apply(this, arguments);
-        }
-    },
-    updateFromVdevInfo: function () {
-        var self = this,
-            info = this.controller.getVdevInfo(this.id);
-
-        if (!!info) {
-            Object.keys(info).forEach(function (key) {
-                var value = info[key];
-                if ("tags" === key) {
-                    if (Array.isArray(value)) {
-                        value.forEach(function (tag) {
-                            if (!in_array(self.tags, tag)) {
-                                self.tags.push(tag);
-                            }
-                        });
-                    } else {
-                        value.toString().split(",").forEach(function (tag) {
-                            var _tag = tag.trim();
-                            if (_tag.length > 0) {
-                                if (!in_array(self.tags, _tag)) {
-                                    self.tags.push(_tag);
-                                }
-                            }
-                        });
-                    }
-                    console.log("--! Device", self.id, "tags is:", JSON.stringify(self.tags));
-                    self.controller.emit("device.tagsUpdated", self.id, self.tags);
-                } else if ("location" === key) {
-                    var unchanged = false;
-                    if (value !== null) {
-                        if (self.controller.locations.hasOwnProperty(value)) {
-                            self.location = value;
-                        } else {
-                            unchanged = true;
-                            self.controller.emit("core.error", "Can't set location " + value + " to the device " + self.id + " -- location doesn't exist");
-                        }
-
-                    } else {
-                        self.location = null;
-                    }
-
-                    if (!unchanged) {
-                        console.log("--! Device", self.id, "location is:", self.location);
-                        self.controller.emit("device.locationUpdated", self.id, self.location);
-                    }
-                } else {
-                    self.setMetricValue(key, info[key]);
-                }
-            });
         }
     }
 });

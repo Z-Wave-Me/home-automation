@@ -18,9 +18,9 @@
 
 * New configuration setting `vdevInfo` allows to set human-readable device names and tags
 
-* Introduced iconBase VDev metric
+* Introduced icon VDev metric
 
-* Introduced `VirtualDevice.deviceTitle` & `VirtualDevice.deviceIconBase` methods
+* Introduced `VirtualDevice.deviceTitle` & `VirtualDevice.deviceIcon` methods
 
 * VirtualDevice now requires `init()` to be called after instantiation
 

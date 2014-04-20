@@ -12,7 +12,6 @@ DevicesCollection = function (controller) {
     that.controller = controller;
     that.config = {};
     that.models = [];
-    that.statusReady = false;
     that.db = {
         cid: {},
         id: {},
@@ -20,9 +19,6 @@ DevicesCollection = function (controller) {
         hardwareId: {}
     };
     that.length = 0;
-    that.on('ready', function () {
-        that.statusReady = true;
-    });
     that.initialize.apply(this, arguments);
 };
 
@@ -42,27 +38,17 @@ _.extend(DevicesCollection.prototype, {
     updateLength: function () {
         this.length = _.size(this.models);
     },
-    create: function (deviceId, deviceType, handler) {
+    create: function (deviceId, defaults, handler) {
         var that = this,
             vDev = null;
 
-        console.log("Creating device " + deviceType + " id = " + deviceId);
-        if ("switchBinary" === deviceType) {
-            vDev = new ZWaveSwitchBinaryDevice(deviceId, that.controller, handler);
-        } else if ("switchMultilevel" === deviceType) {
-            vDev = new ZWaveSwitchMultilevelDevice(deviceId, that.controller, handler);
-        } else if ("sensor" === deviceType) {
-            vDev = new ZWaveSensorBinaryDevice(deviceId, that.controller, handler);
-        } else if ("probe" === deviceType) {
-            vDev = new ZWaveSensorMultilevelDevice(deviceId, that.controller, handler);
-        } else if ("battery" === deviceType) {
-            vDev = new ZWaveBatteryDevice(deviceId, that.controller, handler);
-        } else if ("door" === deviceType) {
-            vDev = new ZWaveDoorlockDevice(deviceId, that.controller, handler);
-        } else if ("fan" === deviceType) {
-            vDev = new ZWaveFanModeDevice(deviceId, that.controller, handler);
-        } else if ("thermostat" === deviceType) {
-            vDev = new ZWaveThermostatDevice(deviceId, that.controller, handler);
+        console.log("Creating device " + defaults.deviceType + " id = " + deviceId);
+        if ("fan" === defaults.deviceType) {
+            vDev = new ZWaveFanModeDevice(deviceId, that.controller, defaults, handler);
+        } else if ("thermostat" === defaults.deviceType) {
+            vDev = new ZWaveThermostatDevice(deviceId, that.controller, defaults, handler);
+        } else {
+            vDev = new VirtualDevice(deviceId, that.controller, defaults, handler);
         }
 
         if (vDev !== null) {
@@ -110,22 +96,16 @@ _.extend(DevicesCollection.prototype, {
         return _.size(this.models);
     },
     toJSON: function (options) {
-        var models;
-        if (!this.statusReady) {
-            models = [];
-        } else {
-            models = this.models.map(function (model) {
-                return model.toJSON();
-            });
+        var models, result;
+        options = options || {};
 
-            options = options || {};
+        models = this.models.filter(function (device) {
+            return !!options.since ? device.toJSON().ready && device.toJSON().updateTime >= options.since : !!device.ready;
+        })
 
-            if (options.since) {
-                models = models.filter(function (device) {
-                    return device.updateTime >= options.since;
-                });
-            }
-        }
+        models = this.models.map(function (model) {
+            return model.toJSON();
+        });
 
         return models;
     },

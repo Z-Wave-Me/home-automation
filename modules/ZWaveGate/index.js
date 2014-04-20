@@ -124,27 +124,27 @@ ZWaveGate.prototype.dataBind = function(nodeId, instanceId, commandClassId, path
     var cc = zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].data,
         ccc = cc,
         pathArr = path ? path.split(".") : [];
-    
+
     if (!func) {
         console.log("Function passed to dataBind is undefined");
         return;
     }
-    
-    while (pathArr.length && (ccc = ccc[pathArr.shift()])) {};
+
+    ccc = ccc[pathArr.shift()];
     if (ccc) {
         this.dataBinding.push({
             "nodeId": nodeId,
             "instanceId": instanceId,
             "commandClassId": commandClassId,
             "path": path,
-            "func": ccc.bind(func, type === "value" ? this.ZWAY_DATA_CHANGE_TYPE["Updated"] : this.ZWAY_DATA_CHANGE_TYPE["ChildCreated"])
+            "func": ccc.bind(func, type === "value" ? this.ZWAY_DATA_CHANGE_TYPE.Updated : this.ZWAY_DATA_CHANGE_TYPE.ChildCreated)
         });
         if (type === "value") {
-            func.call(ccc, this.ZWAY_DATA_CHANGE_TYPE["Updated"]);
+            func.call(ccc, this.ZWAY_DATA_CHANGE_TYPE.Updated);
         }
     } else {
         console.log("Can not find data path:", nodeId, instanceId, commandClassId, path);
-    }    
+    }
 };
 
 ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId) {
@@ -159,7 +159,8 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         vDevIdPrefix = "ZWayVDev_" + nodeId + ":" + instanceId + ":",
         vDevIdPostfix = commandClassId,
         vDevId = vDevIdPrefix + vDevIdPostfix,
-        vDev = null;
+        vDev = null,
+        defaults;
 
 /*
     !!! Thermostat widget
@@ -197,10 +198,20 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
     */
 
     if (this.CC["SwitchBinary"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "switchBinary", function(command) {
-            if ("on" == command) {
+        defaults = {
+            deviceType: "switchBinary",
+            metrics: {
+                probeTitle: '',
+                scaleTitle: '',
+                level: '',
+                icon: 'switch',
+                title: 'Switch'
+            }
+        };
+        vDev = self.controller.collection.create(vDevId, defaults, function (command) {
+            if ("on" === command) {
                 cc.Set(true);
-            } else if ("off" == command) {
+            } else if ("off" === command) {
                 cc.Set(false);
             }
         });
@@ -210,7 +221,17 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }, "value");
         }
     } else if (this.CC["SwitchMultilevel"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "switchMultilevel", function(command, args) {
+        defaults = {
+            deviceType: "switchMultilevel",
+            metrics: {
+                probeTitle: '',
+                scaleTitle: '',
+                level: '',
+                icon: 'multilevel',
+                title: 'Dimmer'
+            }
+        };
+        vDev = self.controller.collection.create(vDevId, defaults, function(command, args) {
             var newVal;
             if ("on" === command) {
                 newVal = 255;
@@ -253,10 +274,19 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }, "value");
         }
     } else if (this.CC["SensorBinary"] === commandClassId) {
+        defaults = {
+            deviceType: 'sensor',
+            metrics: {
+                probeTitle: '',
+                icon: 'sensor',
+                level: '',
+                title: 'Sensor'
+            }
+        }
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
-                vDev = self.controller.collection.create(vDevId, "sensor");
+                vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
                         vDev.setMetricValue("level", this.value ? "on" : "off");
@@ -269,10 +299,20 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
     } else if (this.CC["SensorMultilevel"] === commandClassId) {
+        defaults = {
+            deviceType: "probe",
+            metrics: {
+                probeTitle: '',
+                scaleTitle: '',
+                level: '',
+                icon: 'sensor',
+                title: 'Sensor'
+            }
+        };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
-                vDev = self.controller.collection.create(vDevId, "probe");
+                vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
@@ -286,10 +326,20 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
     } else if (this.CC["Meter"] === commandClassId) {
+        defaults = {
+            deviceType: 'probe',
+            metrics: {
+                probeTitle: '',
+                scaleTitle: '',
+                level: '',
+                title: 'Probe',
+                icon: 'probe'
+            }
+        }
         Object.keys(cc.data).forEach(function (scaleId) {
             scaleId = parseInt(scaleId, 10);
             if (!isNaN(scaleId)) {
-                vDev = self.controller.collection.create(vDevId, "probe");
+                vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, scaleId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
@@ -303,14 +353,33 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
     } else if (this.CC["Battery"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "battery");
+        defaults = {
+            deviceType: 'battery',
+            metrics: {
+                probeTitle: 'Battery',
+                scaleTitle: '%',
+                level: '',
+                icon: 'battery',
+                title: 'Battery'
+            }
+        }
+        vDev = self.controller.collection.create(vDevId, defaults);
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "last", function() {
                 vDev.setMetricValue("level", this.value);
             }, "value");
         }
     } else if (this.CC["DoorLock"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "door", function(command) {
+        defaults = {
+            deviceType: 'doorlock',
+            metrics: {
+                mode: '',
+                icon: 'door',
+                title: 'Door Lock'
+            }
+        };
+
+        vDev = self.controller.collection.create(vDevId, defaults, function(command) {
             if ("open" === command) {
                 cc.Set(0);
             } else if ("close" === command) {
@@ -323,7 +392,15 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }, "value");
         }
     } else if (this.CC["ThermostatFanMode"] === commandClassId) {
-        vDev = self.controller.collection.create(vDevId, "fan");
+        defaults = {
+            deviceType: "fan",
+            metrics: {
+                level: '',
+                icon: 'fan',
+                title: 'Fan'
+            }
+        };
+        vDev = self.controller.collection.create(vDevId, defaults, "fan");
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "mode", function() {
                 vDev.setMetricValue("currentMode", this.value);

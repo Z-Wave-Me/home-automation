@@ -4,11 +4,11 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
+            <div class="icon-base <%= metrics.icon %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="value-field">
-                <nobr class="probe-value"><% if ( metrics.level !== null ) { print(metrics.level.toFixed(1)); } %><%= metrics.scaleTitle %></nobr>
+                <nobr class="probe-value"><% if ( metrics.level !== null && !!metrics.level ) { print(metrics.level.toFixed(1)); } %><%= metrics.scaleTitle %></nobr>
                 <div class="preference-button"></div>
             </span>
         </div>

@@ -27,7 +27,7 @@ BatteryPollingDevice.prototype.deviceTitle = function () {
     return "Battery digest";
 }
 
-BatteryPollingDevice.prototype.deviceIconBase = function () {
+BatteryPollingDevice.prototype.deviceIcon = function () {
     return "battery";
 }
 

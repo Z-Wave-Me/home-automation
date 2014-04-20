@@ -4,7 +4,7 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.iconBase %>"></div>
+            <div class="icon-base <%= metrics.icon %>"></div>
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <a href="#" class="action <% if (parseInt(metrics.mode) !== 255) { print(' active'); } %>" title="<% if (parseInt(metrics.mode) !== 255) { print('Open'); } else { print('Closed'); }%>">

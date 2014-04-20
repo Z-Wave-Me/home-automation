@@ -22,7 +22,7 @@ Demo1Device.prototype.deviceTitle = function () {
     return "Demo1 widget";
 }
 
-Demo1Device.prototype.deviceIconBase = function () {
+Demo1Device.prototype.deviceIcon = function () {
     return "battery";
 }
 

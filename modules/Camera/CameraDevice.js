@@ -22,7 +22,7 @@ CameraDevice.prototype.deviceTitle = function () {
     return "Camera";
 }
 
-CameraDevice.prototype.deviceIconBase = function () {
+CameraDevice.prototype.deviceIcon = function () {
     return "camera";
 }
 

@@ -35,7 +35,7 @@
                 <% if (typeof devicesAvalaible  !== 'undefined') { %>
                     <% _.each(devicesAvalaible, function (device) { %>
                         <li class="device" title="<%= device.metrics.title %>" data-id="<%= device.id %>">
-                            <span class="icon-device <%= device.metrics.iconBase %>"></span>
+                            <span class="icon-device <%= device.metrics.icon %>"></span>
                             <span class="title-device"><%= device.metrics.title %></span>
                         </li>
                     <% }); %>
@@ -47,7 +47,7 @@
                 <% if (typeof devicesCurrent  !== 'undefined') { %>
                     <% _.each(devicesCurrent, function (device) { %>
                         <li class="device" title="<%= device.metrics.title %>" data-id="<%= device.id %>">
-                            <span class="icon-device <%= device.metrics.iconBase %>"></span>
+                            <span class="icon-device <%= device.metrics.icon %>"></span>
                             <span class="title-device"><%= device.metrics.title %></span>
                         </li>
                     <% }); %>

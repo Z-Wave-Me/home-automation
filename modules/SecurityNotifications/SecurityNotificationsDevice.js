@@ -22,7 +22,7 @@ SecurityNotificationsDevice.prototype.deviceTitle = function () {
     return "Security notification";
 }
 
-SecurityNotificationsDevice.prototype.deviceIconBase = function () {
+SecurityNotificationsDevice.prototype.deviceIcon = function () {
     return "switchBinary";
 }
 
