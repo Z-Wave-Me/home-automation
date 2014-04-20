@@ -216,7 +216,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }
         });
         if (vDev) {
-            self.dataBind(nodeId, instanceId, commandClassId, "level", function() {
+            self.dataBind(nodeId, instanceId, commandClassId, "level", function () {
                 vDev.setMetricValue("level", this.value ? "on" : "off");
             }, "value");
         }

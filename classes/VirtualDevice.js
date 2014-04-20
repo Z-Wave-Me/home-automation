@@ -20,18 +20,7 @@ VirtualDevice = function (deviceId, controller, defaults, handler) {
     this.updateTime = 0;
     this.attributes = {};
     this.changed = {};
-    this.defaults = defaults || this.defaults || {
-        deviceType: 'baseType',
-        metrics: {
-            probeTitle: '',
-            scaleTitle: '',
-            level: '',
-            icon: ''
-        },
-        location: '',
-        tags: [],
-        updateTime: ''
-    };
+    this.defaults = defaults || {};
     this._previousAttributes = {};
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
@@ -48,20 +37,13 @@ _.extend(VirtualDevice.prototype, {
         _.bindAll(this, 'get', 'set');
         //this.set(this, {silent: true});
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
-        console.log('---------');
-        console.log(JSON.stringify(this.id));
-        console.log(JSON.stringify(this.deviceType));
-        console.log(JSON.stringify(this.attributes));
-        console.log(JSON.stringify(this.defaults));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
-        console.log(JSON.stringify(this.attributes))
-        console.log('---------');
 
     },
     get: function (param) {
         'use strict';
-        var result = undefined;
+        var result;
         if (this.attributes.hasOwnProperty(param)) {
             result = this.attributes[param];
         }
