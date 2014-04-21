@@ -70,7 +70,7 @@ SwitchControlGenerator.prototype.stop = function () {
     var self = this;
     
     this.generated.forEach(function(name) {
-        self.controller.emit("switches.unregister", name);
+        self.controller.collection.remove(name);
     });
 
     SwitchControlGenerator.super_.prototype.stop.call(this);
@@ -85,14 +85,24 @@ SwitchControlGenerator.prototype.widgetHandler = function(command) {
 };
 
 SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstInst) {
-    var name = "Switch_" + this.id + "_" + srcNode.toString() + ":" + srcInst.toString() + ":" + dstInst.toString();
+    var postfix = srcNode.toString() + ":" + srcInst.toString() + ":" + dstInst.toString(),
+        name = "Switch_" + this.id + "_" + postfix;
     
     if (this.config.generated.indexOf(name) === -1) {
         if (this.config.banned.indexOf(name) !== -1) {
             return;
         }
 
-        this.controller.emit("switches.register", name, this.config.title, this.widgetHandler);
+        this.controller.collection.create(name, {
+            deviceType: "switchControl",
+            metrics: {
+                probeTitle: '',
+                scaleTitle: '',
+                level: '',
+                icon: '',
+                title: 'Remote ' + postfix
+            }
+        }, this.widgetHandler);
         
         console.log("!!! FIX THIS !!! in SwitchControlGenerator.prototype.handler");
         this.config.generated.push(name);

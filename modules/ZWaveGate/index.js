@@ -156,9 +156,10 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         instance = zway.devices[nodeId].instances[instanceId],
         instanceCommandClasses = Object.keys(instance.commandClasses),
         cc = instance.commandClasses[commandClassId],
-        vDevIdPrefix = "ZWayVDev_" + nodeId + ":" + instanceId + ":",
+        vDevIdPrefix = "ZWayVDev_",
+        vDevIdMidfix = nodeId + ":" + instanceId + ":",
         vDevIdPostfix = commandClassId,
-        vDevId = vDevIdPrefix + vDevIdPostfix,
+        vDevId = vDevIdPrefix + vDevIdMidfix + vDevIdPostfix,
         vDev = null,
         defaults;
 
@@ -182,9 +183,9 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
         return;
     }
-    if (this.CC["SwitchMultilevel"] === commandClassId && this.controller.collection.get(vDevIdPrefix + this.CC["SwitchBinary"])) {
+    if (this.CC["SwitchMultilevel"] === commandClassId && this.controller.collection.get(vDevIdPrefix + vDevIdMidfix + this.CC["SwitchBinary"])) {
         console.log("Removing SwitchBinary due to SwitchMultilevel existence");
-        this.controller.collection.remove(vDevIdPrefix + this.CC["SwitchBinary"]);
+        this.controller.collection.remove(vDevIdPrefix + vDevIdMidfix + this.CC["SwitchBinary"]);
         return;
     }
 
@@ -205,7 +206,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'switch',
-                title: 'Switch'
+                title: 'Switch' + vDevIdMidfix
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults, function (command) {
@@ -228,7 +229,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'multilevel',
-                title: 'Dimmer'
+                title: 'Dimmer' + vDevIdMidfix
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults, function(command, args) {
@@ -280,12 +281,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 probeTitle: '',
                 icon: 'sensor',
                 level: '',
-                title: 'Sensor'
+                title: ''
             }
-        }
+        };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
+                defaults.metrics.title =  'Sensor' + vDevIdMidfix + vDevIdPostfix + ":" + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
@@ -306,12 +308,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'sensor',
-                title: 'Sensor'
+                title: ''
             }
         };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
+                defaults.metrics.title =  'Sensor' + vDevIdMidfix + vDevIdPostfix + ":" + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
@@ -332,13 +335,14 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 probeTitle: '',
                 scaleTitle: '',
                 level: '',
-                title: 'Probe',
-                icon: 'probe'
+                icon: 'probe',
+                title: ''
             }
-        }
+        };
         Object.keys(cc.data).forEach(function (scaleId) {
             scaleId = parseInt(scaleId, 10);
             if (!isNaN(scaleId)) {
+                defaults.metrics.title =  'Meter' + vDevIdMidfix + vDevIdPostfix + ":" + scaleId;
                 vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, scaleId + ".val", function() {
@@ -360,9 +364,9 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '%',
                 level: '',
                 icon: 'battery',
-                title: 'Battery'
+                title: 'Battery' + vDevIdMidfix
             }
-        }
+        };
         vDev = self.controller.collection.create(vDevId, defaults);
         if (vDev) {
             self.dataBind(nodeId, instanceId, commandClassId, "last", function() {
@@ -375,7 +379,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             metrics: {
                 mode: '',
                 icon: 'door',
-                title: 'Door Lock'
+                title: 'Door Lock' + vDevIdMidfix
             }
         };
 
@@ -397,7 +401,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             metrics: {
                 level: '',
                 icon: 'fan',
-                title: 'Fan'
+                title: 'Fan' + vDevIdMidfix
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults, "fan");
@@ -432,9 +436,10 @@ ZWaveGate.prototype.parseDelCommandClass = function (nodeId, instanceId, command
     commandClassId = parseInt(commandClassId, 10);
 
     var self = this,
-        vDevIdPrefix = "ZWayVDev_" + nodeId + ":" + instanceId + ":",
+        vDevIdPrefix = "ZWayVDev_",
+        vDevIdMidfix = nodeId + ":" + instanceId + ":",
         vDevIdPostfix = commandClassId,
-        vDevId = vDevIdPrefix + vDevIdPostfix;
+        vDevId = vDevIdPrefix + vDevIdMidfix + vDevIdPostfix;
 
     this.controller.collection.remove(vDevId);
 };

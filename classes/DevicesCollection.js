@@ -43,13 +43,7 @@ _.extend(DevicesCollection.prototype, {
             vDev = null;
 
         console.log("Creating device " + defaults.deviceType + " id = " + deviceId);
-        if ("fan" === defaults.deviceType) {
-            vDev = new ZWaveFanModeDevice(deviceId, that.controller, defaults, handler);
-        } else if ("thermostat" === defaults.deviceType) {
-            vDev = new ZWaveThermostatDevice(deviceId, that.controller, defaults, handler);
-        } else {
-            vDev = new VirtualDevice(deviceId, that.controller, defaults, handler);
-        }
+        vDev = new VirtualDevice(deviceId, that.controller, defaults, handler);
 
         if (vDev !== null) {
             vDev.init();

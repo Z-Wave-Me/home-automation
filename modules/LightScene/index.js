@@ -30,7 +30,16 @@ LightScene.prototype.init = function (config) {
 
     var self = this;
 
-    this.controller.emit("scenes.register", this.id, this.config.title, function() {
+    this.vDev = this.controller.collection.create("LightScene_" + this.id, {
+        deviceType: "toggleButton",
+        metrics: {
+            probeTitle: '',
+            scaleTitle: '',
+            level: '',
+            icon: '',
+            title: 'Scene ' + this.id
+        }
+    }, function() {
         self.config.switches.forEach(function(devState) {
             var vDev = self.controller.findVirtualDeviceById(devState.device);
             if (vDev) {
@@ -53,7 +62,8 @@ LightScene.prototype.init = function (config) {
 };
 
 LightScene.prototype.stop = function () {
-    this.controller.emit("scenes.unregister", this.id);
+    if (this.vDev)
+        this.controller.removeDevice(this.vDev.id);
 
     LightScene.super_.prototype.stop.call(this);
 };

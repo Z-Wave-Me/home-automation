@@ -5,7 +5,7 @@ Version: 1.0.0
 -----------------------------------------------------------------------------
 Author: Stanislav Morozov <r3b@seoarmy.ru>
 Description:
-    This module saved params of camera
+    This module stores params of camera
 
 ******************************************************************************/
 
@@ -28,10 +28,8 @@ _module = Camera;
 
 Camera.prototype.init = function (config) {
     Camera.super_.prototype.init.call(this, config);
-    executeFile(this.moduleBasePath() + "/CameraDevice.js");
 
-    var that = this,
-        url = config.url || null,
+    var url = config.url || null,
         zoomInUrl = config.zoomInUrl || null,
         zoomOutUrl = config.zoomOutUrl || null,
         leftUrl = config.leftUrl || null,
@@ -41,24 +39,29 @@ Camera.prototype.init = function (config) {
         openUrl = config.openUrl || null,
         closeUrl = config.closeUrl || null;
 
-    that.vdev = new CameraDevice("Camera_" + that.id, that.controller);
-    that.vdev.setMetricValue("url", url);
-
-    that.vdev.setMetricValue("zoomInUrl", zoomInUrl);
-    that.vdev.setMetricValue("zoomOutUrl", zoomOutUrl);
-    that.vdev.setMetricValue("leftUrl", leftUrl);
-    that.vdev.setMetricValue("rightUrl", rightUrl);
-    that.vdev.setMetricValue("upUrl", upUrl);
-    that.vdev.setMetricValue("downUrl", downUrl);
-    that.vdev.setMetricValue("openUrl", openUrl);
-    that.vdev.setMetricValue("closeUrl", closeUrl);
-
-    that.vdev.init();
-    that.controller.registerDevice(that.vdev);
+    this.vDev = this.controller.collection.create("CameraDevice_" + this.id, {
+        deviceType: "camera",
+        metrics: {
+            probeTitle: '',
+            scaleTitle: '',
+            url: url,
+            zoomInUrl: zoomInUrl,
+            zoomOutUrl: zoomOutUrl,
+            leftUrl: leftUrl,
+            rightUrl: rightUrl,
+            upUrl: upUrl,
+            downUrl: downUrl,
+            openUrl: openUrl,
+            closeUrl: closeUrl,
+            icon: 'camera',
+            title: 'Camera ' + this.id
+        }
+    });
 };
 
 Camera.prototype.stop = function () {
     Camera.super_.prototype.stop.call(this);
 
-    this.controller.removeDevice(this.vdev.id);
+    if (this.vDev)
+        this.controller.removeDevice(this.vDev.id);
 };

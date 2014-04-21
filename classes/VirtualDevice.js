@@ -13,13 +13,14 @@ VirtualDevice = function (deviceId, controller, defaults, handler) {
     this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
     this.controller = controller;
     this.collection = this.controller.collection;
-    this.updateTime = 0;
+    this.metrics = {};
     this.ready = false;
+    this.location = null;
+    this.tags = [];
+    this.updateTime = 0;
     this.attributes = {
         id: this.id,
-        metrics: {},
-        location: null,
-        tags: []
+        metrics: this.metrics
     };
     this.changed = {};
     this.defaults = defaults || {};
@@ -38,6 +39,7 @@ _.extend(VirtualDevice.prototype, {
         'use strict';
         _.bindAll(this, 'get', 'set');
         //this.set(this, {silent: true});
+
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
@@ -168,7 +170,7 @@ _.extend(VirtualDevice.prototype, {
             this.metrics.title  = this.deviceTitle();
             this.metrics.icon = this.deviceIcon();
         }
-        this.setReady();
+        this.ready = true;
     },
     deviceTitle: function () {
         return this.id;
@@ -179,13 +181,11 @@ _.extend(VirtualDevice.prototype, {
     setMetricValue: function (name, value) {
         var metrics = this.get('metrics');
         metrics[name] = value;
+        this.controller.emit("device.metricUpdated", this.id, name, value);
         this.set({
             updateTime: Math.floor(new Date().getTime() / 1000),
             metrics: metrics
         });
-        this.controller.emit("device.metricUpdated", this.id, name, value);
-        this.collection.emit('change:metric:' + name, this, {name: value});
-        this.emit('change:metric:' + name, this, {name: value});
     },
     setVDevObject: function (id, object) {
         var excludeProp = ['deviceType', 'updateTime', 'id'],
