@@ -190,9 +190,10 @@ ZAutomationAPIWebRequest.prototype.getVDevFunc = function (vDevId) {
 
 ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
     var self = this, reqObj, reply = {
-        error: null,
-        data: null
-    };
+            error: null,
+            data: null
+        },
+        device = controller.collection.get([vDevId]);
 
     return function () {
         try {
@@ -203,8 +204,7 @@ ZAutomationAPIWebRequest.prototype.setVDevFunc = function (vDevId) {
 
         if (controller.devices.hasOwnProperty(vDevId)) {
             reply.code = 200;
-            controller.devices[vDevId].setVDevObject(vDevId, reqObj);
-            reply.data = self._vdevMetaOnly(controller.devices[vDevId]);
+            reply.data = device.set(reqObj);
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
