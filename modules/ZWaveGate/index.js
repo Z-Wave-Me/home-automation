@@ -239,7 +239,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             } else if ("max" === command) {
                 newVal = 99;
             } else if ("increase" === command) {
-                newVal = this.metrics.level+10;
+                newVal = this.metrics.level + 10;
                 if (0 !== newVal%10) {
                     newVal = Math.round(newVal/10)*10;
                 }
@@ -247,7 +247,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             } else if ("decrease" === command) {
                 newVal = this.metrics.level-10;
                 if (newVal < 0) newVal = 0;
-                if (0 !== newVal%10) {
+                if (0 !== newVal % 10) {
                     newVal = Math.round(newVal/10)*10;
                 }
             } else if ("exact" === command) {
@@ -278,7 +278,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 icon: 'sensor',
                 level: '',
-                title: ''
+                title: 'Sensor'
             }
         };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -305,7 +305,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'sensor',
-                title: ''
+                title: 'Sensor'
             }
         };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -333,7 +333,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'probe',
-                title: ''
+                title: 'Probe'
             }
         };
         Object.keys(cc.data).forEach(function (scaleId) {
@@ -349,7 +349,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }, "value");
                 }
             }
-        });        
+        });
         self.dataBind(nodeId, instanceId, commandClassId, "", function() {
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");

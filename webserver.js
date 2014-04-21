@@ -68,6 +68,7 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
     if (reply.data.structureChanged) {
         // Report all devices if structure was changed
         since = 0;
+        reply.data.structureChanged = false;
     }
 
     /*Object.keys(controller.devices).forEach(function (vDevId) {

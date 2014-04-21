@@ -43,7 +43,10 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
-        this.save(); // !!!!!!!!!!!!!!!!! hack by PS to workaround a bug on line 163
+    },
+    setReady: function () {
+        this.ready = true;
+        this.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
     },
     get: function (param) {
         'use strict';
@@ -156,20 +159,10 @@ _.extend(VirtualDevice.prototype, {
     },
     init: function () {
         console.log("--- VDev init(" + this.id + ")");
-        this.device = this.controller.getVdevInfo(this.id);
-        if (this.device !== undefined) {
-            this.tags = this.device.tags;
-            this.location = this.device.location;
-            this.metrics.title = this.device.metrics.title !== undefined ? this.device.metrics.title : this.deviceTitle();
-            this.metrics.icon = this.device.metrics.icon !== undefined ? this.device.metrics.icon : this.deviceIcon();
-        } else {
-            this.metrics.title  = this.deviceTitle();
-            this.metrics.icon = this.deviceIcon();
-        }
-        this.ready = true;
+        this.setReady();
     },
     deviceTitle: function () {
-        return this.id;
+        return this.attributes.metrics.hasOwnProperty('title') ? this.attributes.metrics.title : this.id;
     },
     deviceIcon: function () {
         return this.metrics.icon = this.deviceType;
@@ -182,6 +175,10 @@ _.extend(VirtualDevice.prototype, {
             updateTime: Math.floor(new Date().getTime() / 1000),
             metrics: metrics
         });
+        this.collection.emit("change:metrics:" + name, this, {name: value});
+        this.emit("change:metrics:" + name, this, {name: value});
+        this.collection.emit("change", this, {name: value});
+        this.emit("change", this, {name: value});
     },
     setVDevObject: function (id, object) {
         var excludeProp = ['deviceType', 'updateTime', 'id'],
@@ -203,7 +200,7 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics[name];
     },
     performCommand: function () {
-        console.log("--- " + this.id + " performCommand processing...");
+        console.log("--- " + this.constructor.name + ".performCommand processing...");
         if (typeof(this.handler) === "function") {
             return this.handler.apply(this, arguments);
         }
