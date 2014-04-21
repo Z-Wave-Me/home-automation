@@ -34,7 +34,7 @@ SensorValueLogging.prototype.init = function (config) {
     var device = this.controller.findVirtualDeviceById(this.config.device);
 
     // Check if device is a switch
-    if ("probe" !== device.deviceType && "sensor" !== device.deviceType) {
+    if ("sensor" !== device.deviceType) {
         // Exit initializer due to invalid device type
         console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + device.deviceType + ").");
         return;
@@ -43,37 +43,40 @@ SensorValueLogging.prototype.init = function (config) {
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
-    this.handler = function (deviceId, metric, value) {
-        if (self.config.device === deviceId && "level" === metric) {
-            if (self.config.logTo === "JSONFile") {
-                var storedLog = loadObject("SensorValueLogging_" + deviceId + "_" + self.id);
-                if (!storedLog) {
-                    storedLog = [];
-                }
-                storedLog.push({"time": Date.now(), "deviceId": deviceId, "value": value});
-                saveObject("SensorValueLogging_" + deviceId + "_" + self.id, storedLog);
-                storedLog = null;
+    this.handler = function (vDev) {
+        if (self.config.logTo === "JSONFile") {
+            var storedLog = loadObject("SensorValueLogging_" + vDev.id + "_" + self.id);
+            if (!storedLog) {
+                storedLog = {
+                    deviceId: vDev.id,
+                    deviceName: vDev.getMetricValue('title'),
+                    sensorData: []
+                };
             }
-            
-            if (self.config.logTo === "HTTPGET") {
-                http.request({
-                    method: 'GET',
-                    url: self.config.url.replace("${id}", deviceId).replace("${value}", value)
-                });
-            }
+            storedLog.push({"time": Date.now(), "value": vDev.getMetricValue('level')});
+            saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
+            storedLog = null;
+        }
+        
+        if (self.config.logTo === "HTTPGET") {
+            http.request({
+                method: 'GET',
+                url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.getMetricValue('level'))
+            });
         }
     };
 
     // Setup metric update event listener
-    this.controller.on('device.metricUpdated', this.handler);
+    device.on("change:metrics:level", this.handler);
 };
 
 SensorValueLogging.prototype.stop = function () {
     SensorValueLogging.super_.prototype.stop.call(this);
 
-    if (this.handler)
-        this.controller.off('device.metricUpdated', this.handler);
+    if (this.handler && this.controller.collection.get(self.config.device))
+        this.controller.collection.get(self.config.device).off("change:metrics:level", this.handler);
 };
+
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

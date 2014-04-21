@@ -30,43 +30,42 @@ BindDevices.prototype.init = function (config) {
 
     var self = this;
 
-    this.handler = function (deviceId, metric, value) {
-        if (in_array(self.config.sourceDevices, deviceId) && "level" === metric) {
-            var that = self;
-            
-            var actionBinary = null;
-            var actionMultilevel = null;
-            
-            if (value === 255 || value === true || value === "on") {
-                actionBinary = "on";
-            } else if (value === 0 || value === false || value === "off") {
-                actionBinary = "off";
-            } else {
-                actionBinary = "on";
-                actionMultilevel = value;
-            }
-            
-            self.config.targetDevices.forEach(function(el) {
-                var vDev = that.controller.findVirtualDeviceById(el);
-                
-                if (vDev) {
-                    if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "swtichMultilevel" && actionMultilevel === null) {
-                        vDev.performCommand(actionBinary);
-                        console.log(actionBinary, vDev.id);
-                    } else if (vDev.deviceType === "swtichMultilevel") {
-                            vDev.performCommand("exact", actionMultilevel);
-                    }
-                }
-            });
+    this.handler = function (sDev) {
+        var that = self;
+        
+        var actionBinary = null;
+        var actionMultilevel = null;
+        
+        value = sDev.getMetricValue("level");
+        if (value === 255 || value === true || value === "on") {
+            actionBinary = "on";
+        } else if (value === 0 || value === false || value === "off") {
+            actionBinary = "off";
+        } else {
+            actionBinary = "on";
+            actionMultilevel = value;
         }
+        
+        self.config.targetDevices.forEach(function(el) {
+            var vDev = that.controller.findVirtualDeviceById(el);
+            
+            if (vDev) {
+                if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "swtichMultilevel" && actionMultilevel === null) {
+                    vDev.performCommand(actionBinary);
+                    console.log(actionBinary, vDev.id);
+                } else if (vDev.deviceType === "swtichMultilevel") {
+                        vDev.performCommand("exact", actionMultilevel);
+                }
+            }
+        });
     };
 
     // Setup metric update event listener
-    this.controller.on('device.metricUpdated', this.handler);
+    this.controller.collection.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).on('change:metrics:level', this.handler);
 };
 
 BindDevices.prototype.stop = function () {
-    this.controller.off('device.metricUpdated', this.handler);
+    this.controller.collection.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).off('change:metrics:level', this.handler);
 
     BindDevices.super_.prototype.stop.call(this);
 };

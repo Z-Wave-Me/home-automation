@@ -33,8 +33,6 @@ LightScene.prototype.init = function (config) {
     this.vDev = this.controller.collection.create("LightScene_" + this.id, {
         deviceType: "toggleButton",
         metrics: {
-            probeTitle: '',
-            scaleTitle: '',
             level: '',
             icon: '',
             title: 'Scene ' + this.id
