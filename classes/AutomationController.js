@@ -710,6 +710,7 @@ AutomationController.prototype.generateNamespaces = function (callback) {
         devices = that.collection.models,
         deviceTypes = _.uniq(_.map(devices, function (device) { return device.toJSON().deviceType; }));
 
+    that.namespaces = [];
     deviceTypes.forEach(function (type) {
         that.setNamespace('devices_' + type, _.map(that.collection.where({deviceType: type}), function (device) {
             return {deviceId: device.id, deviceName: device.metrics.title};
@@ -745,11 +746,13 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
 
     if (id && this.getListNamespaces(id)) {
         namespace = _.find(this.namespaces, function (namespace) {
-            return namespace.id === parseInt(id);
+            return namespace.id === id;
         });
-        index = this.namespaces.indexOf(namespace);
-        this.namespaces[index].params = reqObj.data;
-        result = this.namespaces[index];
+        if (!!namespace) {
+            index = this.namespaces.indexOf(namespace);
+            this.namespaces[index].params = reqObj.data;
+            result = this.namespaces[index];
+        }
     } else {
         this.namespaces.push({
             id: id,

@@ -148,6 +148,9 @@ _.extend(DevicesCollection.prototype, {
             });
 
         return devices.length && !!devices ? devices : [];
+    },
+    findWhere: function (obj) {
+        return _.first(this.where(obj));
     }
 });
 
@@ -162,9 +165,6 @@ set
 at - index
 pop
 sync
-where
-findWhere
-clone
 trigger
 on
 off
