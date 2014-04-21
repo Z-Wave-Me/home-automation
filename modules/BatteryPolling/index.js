@@ -58,7 +58,7 @@ BatteryPolling.prototype.init = function (config) {
     };
     
     // Setup event listeners
-    this.controller.collection.toJSON().filter(function (xDev) { return xDev.deviceType === "battery"}).on("change:metrics:level", this.onMetricUpdated);
+    this.controller.collection.where({deviceType: "battery"}).on("change:metrics:level", this.onMetricUpdated);
 
     // set up cron handler
     this.controller.on("batteryPolling.poll", this.onPoll);
@@ -77,7 +77,7 @@ BatteryPolling.prototype.stop = function () {
     BatteryPolling.super_.prototype.stop.call(this);
 
     this.controller.collection.remove(this.vDev.id);
-    this.controller.collection.toJSON().filter(function (xDev) { return xDev.deviceType === "battery"}).off("change:metrics:level", this.onMetricUpdated);
+    this.controller.collection.where({deviceType: "battery"}).off("change:metrics:level", this.onMetricUpdated);
     this.controller.emit("cron.removeTask", "batteryPolling.poll");
     this.controller.off("batteryPolling.poll", this.onPoll);
 };
