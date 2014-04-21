@@ -185,7 +185,7 @@ _.extend(VirtualDevice.prototype, {
             self = this,
             data = object.hasOwnProperty('data') ? object.data : object;
 
-        this.updateTime = Math.floor(new Date().getTime() / 1000);
+        this.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
         Object.keys(data).forEach(function (key) {
             if (excludeProp.indexOf(key) === -1 && self.hasOwnProperty(key)) {
                 self[key] = data[key];
@@ -193,8 +193,8 @@ _.extend(VirtualDevice.prototype, {
             }
         });
 
-        this.controller.setVdevInfo(id, object);
-        this.controller.saveConfig();
+        this.setVdevInfo(id, object);
+        this.saveConfig();
     },
     getMetricValue: function (name) {
         return this.metrics[name];
