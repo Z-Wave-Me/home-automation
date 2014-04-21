@@ -64,8 +64,10 @@ GroupDevices.prototype.init = function (config) {
 };
 
 GroupDevices.prototype.stop = function () {
-    if (this.vDev)
+    if (this.vDev) {
         self.controller.collection.remove(this.vDev.id);
+        this.vDev = null;
+    }
 
     GroupDevices.super_.prototype.stop.call(this);
 };

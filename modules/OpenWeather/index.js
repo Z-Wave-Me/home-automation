@@ -44,8 +44,10 @@ OpenWeather.prototype.stop = function () {
     if (this.timer)
         clearInterval(this.timer);
         
-    if (this.vDev)
+    if (this.vDev) {
         this.controller.removeDevice(this.vDev.id);
+        this.vDev = null;
+    }
 };
 
 // ----------------------------------------------------------------------------

@@ -72,6 +72,7 @@ SwitchControlGenerator.prototype.stop = function () {
     this.generated.forEach(function(name) {
         self.controller.collection.remove(name);
     });
+    this.generated = null;
 
     SwitchControlGenerator.super_.prototype.stop.call(this);
 };
