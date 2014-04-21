@@ -61,22 +61,9 @@ ZAutomationAPIWebRequest.prototype.listDevices = function () {
         since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
         self = this;
 
-    since = isNaN(since) ? 0 : since;
+    reply.data.structureChanged = controller.lastStructureChangeTime >= since && !!since ? true : false;
+    since = isNaN(since) || reply.data.structureChanged ? 0 : since;
     reply.data.devices = controller.collection.toJSON({since: since});
-    reply.data.structureChanged = controller.lastStructureChangeTime >= since;
-
-    if (reply.data.structureChanged) {
-        // Report all devices if structure was changed
-        since = 0;
-        reply.data.structureChanged = false;
-    }
-
-    /*Object.keys(controller.devices).forEach(function (vDevId) {
-        if (controller.devices[vDevId].updateTime >= since) {
-            reply.data.devices.push(self._vdevMetaOnly(controller.devices[vDevId]));
-        }
-    });*/
-
     self.initResponse(reply);
 };
 

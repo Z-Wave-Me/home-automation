@@ -594,13 +594,13 @@ AutomationController.prototype.createProfile = function (object) {
 };
 
 AutomationController.prototype.updateProfile = function (object, id) {
-    var profile = this.profiles.filter(function (profile) {
+    var profile = _.find(this.profiles, function (profile) {
             return profile.id === parseInt(id);
         }),
         index;
 
-    if (profile.length) {
-        index = this.profiles.indexOf(profile[0]);
+    if (!!profile) {
+        index = this.profiles.indexOf(profile);
 
         if (object.hasOwnProperty('name')) {
             this.profiles[index].name = object.name;
@@ -724,7 +724,6 @@ AutomationController.prototype.getListNamespaces = function (id) {
         namespaces = this.namespaces;
 
     id = id || null;
-
 
     if (!!id) {
         result = namespaces.filter(function (namespace) {

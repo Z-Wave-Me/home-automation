@@ -12,7 +12,6 @@ define([
 
         initialize: function () {
             var that = this;
-            _.bindAll(this, 'render', 'renderInstances', 'newInstance');
 
             // Default collections and models
             that.Instances = window.App.Instances;
@@ -76,11 +75,6 @@ define([
                 $instance.hide('fast', function () {
                     $instance.prev().click();
                     $instance.remove();
-                    App.Devices.reset({silent: true}).fetch({
-                        success: function () {
-                            window.App.Devices.trigger('refresh');
-                        }
-                    });
                 });
             });
 
@@ -111,16 +105,7 @@ define([
                                     $instance.removeClass('active');
                                 });
                                 that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
-                                window.App.Devices.since = 0;
-                                window.App.Devices.structureChanged = true;
-                                window.App.Devices.fetch({
-                                    success: function () {
-                                        window.App.Devices.trigger('refresh');
-                                    }
-                                });
-                                window.App.Instances.fetch({
-                                    reset: true
-                                });
+                                window.App.Instances.fetch();
                             } else {
                                 that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
                             }

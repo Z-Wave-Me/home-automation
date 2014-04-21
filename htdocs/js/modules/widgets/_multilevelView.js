@@ -20,7 +20,7 @@ define([
                 $progress,
                 $text;
 
-            that.$template = $(_.template(templateComplementary, that.model.toJSON()))
+            that.$template = $(_.template(templateComplementary, that.model.toJSON()));
 
             $range = that.$template.find('.input-range');
             $progress =  that.$template.find('.progress-bar');
@@ -55,6 +55,7 @@ define([
                 that.$template.remove();
                 that.remove();
             });
+
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
                 $progress.val(that.model.get('metrics').level);
@@ -75,9 +76,11 @@ define([
                 $text.toggleClass('hidden');
                 $progress.val($range.val()).toggleClass('hidden');
                 $range.toggleClass('hidden');
-                Apis.devices.command(model.get('id'), 'exact', {level: $range.val()}, function (json) {
-                    //log(json);
-                });
+                if (parseInt(model.get('metrics').level) !== parseInt($range.val())) {
+                    Apis.devices.command(model.get('id'), 'exact', {level: $range.val()}, function (json) {
+                        //log(json);
+                    });
+                }
             });
 
             if (!$('div[data-widget-id="' + that.model.id + '"]').exists()) {

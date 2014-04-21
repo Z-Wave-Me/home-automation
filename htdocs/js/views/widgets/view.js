@@ -43,21 +43,18 @@ define([
                 });
             });
 
-            that.listenToOnce(window.App.Devices, 'reset sync', function () {
-                that.render();
+            that.listenTo(that.Devices, 'add', function (model) {
+                that.WidgetsModule.renderWidget(model);
             });
-
-            that.listenTo(window.App.Devices, 'refresh', function () {
-                that.render();
-            });
-
-            that.render();
         },
         render: function () {
             if (window.location.hash.indexOf('widgets') !== -1) {
-                var that = this;
+                var that = this,
+                    fixedPosition = false,
+                    forceView = true;
+
                 window.App.Devices.lock = true;
-                that.WidgetsModule.render(false, true);
+                that.WidgetsModule.render(fixedPosition, forceView);
             }
         }
     });

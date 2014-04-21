@@ -25,20 +25,22 @@ define([
             options.data = options.data || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
 
-
             if (this.updateTime !== undefined && !this.structureChanged) {
                 options.data.since = this.updateTime;
-            } else if (this.structureChanged) {
-                options.data.since = 0;
-                this.structureChanged = false;
-                this.reset();
             }
 
             Backbone.sync(method, model, options);
         },
 
         parse: function (response, xhr) {
+            var data;
             this.updateTime = response.data.updateTime;
+
+            if (response.data.structureChanged) {
+                this.response = response.data.devices;
+                this.each(function (model) { model.trigger('structureChanged'); });
+            }
+
             return response.data.devices;
         },
 

@@ -104,6 +104,7 @@ define([
 
         addEventToList: function (model) {
             var notice = model.toJSON(), $template, that = this;
+
             if (!that.$eventsContainer.children().length) {
                 that.$eventsContainer.empty();
             }
@@ -120,13 +121,11 @@ define([
                         ModalHelper.hideAll();
                         that.$eventsContainer.empty().text('Everything is ok');
                     }
-
                 });
 
                 $template.find('.read').off().on('click', function () {
                     that.deleted.push(model);
                     that.Notifications.remove(model);
-
                 });
 
                 that.$eventsContainer.append($template);
