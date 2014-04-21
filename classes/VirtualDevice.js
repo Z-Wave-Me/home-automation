@@ -180,22 +180,6 @@ _.extend(VirtualDevice.prototype, {
         this.collection.emit("change", this, {name: value});
         this.emit("change", this, {name: value});
     },
-    setVDevObject: function (id, object) {
-        var excludeProp = ['deviceType', 'updateTime', 'id'],
-            self = this,
-            data = object.hasOwnProperty('data') ? object.data : object;
-
-        this.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
-        Object.keys(data).forEach(function (key) {
-            if (excludeProp.indexOf(key) === -1 && self.hasOwnProperty(key)) {
-                self[key] = data[key];
-                self.controller.emit("device.valueUpdate", self.id, key, self[key]);
-            }
-        });
-
-        this.setVdevInfo(id, object);
-        this.saveConfig();
-    },
     getMetricValue: function (name) {
         return this.metrics[name];
     },

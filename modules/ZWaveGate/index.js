@@ -18,18 +18,18 @@ function ZWaveGate (id, controller) {
         "CommandAdded": 0x10,
         "CommandRemoved": 0x20
     };
-    
+
     this.ZWAY_DATA_CHANGE_TYPE = {
         "Updated": 0x01,       // Value updated or child created
         "Invalidated": 0x02,   // Value invalidated
         "Deleted": 0x03,       // Data holder deleted - callback is called last time before being deleted
         "ChildCreated": 0x04,  // New direct child node created
-        
+
         // ORed flags
         "PhantomUpdate": 0x40, // Data holder updated with same value (only updateTime changed)
         "ChildEvent": 0x80     // Event from child node
     };
-    
+
     this.CC = {
         "Basic": 0x20,
         "SwitchBinary": 0x25,
@@ -59,8 +59,8 @@ _module = ZWaveGate;
 ZWaveGate.prototype.init = function (config) {
     ZWaveGate.super_.prototype.init.call(this, config);
 
-    var self = this;    
-    
+    var self = this;
+
     // Bind to all future CommandClasses changes
     this.zwayBinding = zway.bind(function (type, nodeId, instanceId, commandClassId) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
@@ -75,7 +75,7 @@ ZWaveGate.prototype.init = function (config) {
             self.parseDelCommandClass(nodeId, instanceId, commandClassId);
         }
     }, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"]);
- 
+
     // Iterate all existing Command Classes
     Object.keys(zway.devices).forEach(function (nodeId) {
         nodeId = parseInt(nodeId, 10);
@@ -240,15 +240,19 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 newVal = 99;
             } else if ("increase" === command) {
                 newVal = this.metrics.level + 10;
-                if (0 !== newVal%10) {
-                    newVal = Math.round(newVal/10)*10;
-                }
-                if (newVal > 99) newVal = 99;
-            } else if ("decrease" === command) {
-                newVal = this.metrics.level-10;
-                if (newVal < 0) newVal = 0;
                 if (0 !== newVal % 10) {
-                    newVal = Math.round(newVal/10)*10;
+                    newVal = Math.round(newVal / 10) * 10;
+                }
+                if (newVal > 99) {
+                    newVal = 99;
+                }
+            } else if ("decrease" === command) {
+                newVal = this.metrics.level - 10;
+                if (newVal < 0) {
+                    newVal = 0;
+                }
+                if (0 !== newVal % 10) {
+                    newVal = Math.round(newVal / 10) * 10;
                 }
             } else if ("exact" === command) {
                 newVal = parseInt(args["level"], 10);
