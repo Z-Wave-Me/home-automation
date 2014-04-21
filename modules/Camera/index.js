@@ -62,6 +62,8 @@ Camera.prototype.init = function (config) {
 Camera.prototype.stop = function () {
     Camera.super_.prototype.stop.call(this);
 
-    if (this.vDev)
-        this.controller.removeDevice(this.vDev.id);
+    if (this.vDev) {
+        this.controller.collection.remove(this.vDev.id);
+        this.vDev = null;
+    }
 };

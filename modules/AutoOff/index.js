@@ -83,8 +83,10 @@ AutoOff.prototype.stop = function () {
     if (this.timer)
         clearInterval(this.timer);
     
-    if (this.handler)
+    if (this.handler) {
         this.vDev.off('change:metrics:level', this.handler);
+        this.vDev = null;
+    }
 };
 // ----------------------------------------------------------------------------
 // --- Module methods

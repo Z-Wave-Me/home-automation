@@ -60,8 +60,10 @@ LightScene.prototype.init = function (config) {
 };
 
 LightScene.prototype.stop = function () {
-    if (this.vDev)
+    if (this.vDev) {
         this.controller.removeDevice(this.vDev.id);
+        this.vDev = null;
+    }
 
     LightScene.super_.prototype.stop.call(this);
 };

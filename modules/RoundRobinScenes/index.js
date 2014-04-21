@@ -51,7 +51,10 @@ RoundRobinScenes.prototype.init = function (config) {
 };
 
 RoundRobinScenes.prototype.stop = function () {
-    this.controller.collection.remove(this.vDev.id);
+    if (this.vDev) {
+        this.controller.collection.remove(this.vDev.id);
+        this.vDev = null;
+    }
 
     RoundRobinScenes.super_.prototype.stop.call(this);
 };
