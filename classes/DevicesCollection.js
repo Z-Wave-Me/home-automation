@@ -136,14 +136,9 @@ _.extend(DevicesCollection.prototype, {
         var models = this.toJSON(),
             devices = _.filter(models, function (model) {
                 var check = true;
-                Object.keys(obj, function (key) {
-                    if (model.hasOwnProperty(key) && model[key] === obj[key]) {
-                        check = true;
-                    } else {
-                        check = false;
-                        return;
-                    }
-                });
+                for (var key in obj) {
+                    check &= (model.hasOwnProperty(key) && model[key] === obj[key]);
+                }
                 return check;
             });
 

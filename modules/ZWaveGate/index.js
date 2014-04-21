@@ -205,7 +205,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             metrics: {
                 level: '',
                 icon: 'switch',
-                title: 'Switch' + vDevIdNI
+                title: 'Switch ' + vDevIdNI
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults, function (command) {
@@ -226,7 +226,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             metrics: {
                 level: '',
                 icon: 'multilevel',
-                title: 'Dimmer' + vDevIdNI
+                title: 'Dimmer ' + vDevIdNI
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults, function(command, args) {
@@ -290,7 +290,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
                 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-                defaults.metrics.title =  'Sensor' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
@@ -318,7 +318,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             if (!isNaN(sensorTypeId)) {
                 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                 defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-                defaults.metrics.title =  'Sensor' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
@@ -346,7 +346,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             if (!isNaN(scaleId)) {
                 defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
                 defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-                defaults.metrics.title =  'Meter' + vDevIdNI + separ + vDevIdC + separ + scaleId;
+                defaults.metrics.title =  'Meter ' + vDevIdNI + separ + vDevIdC + separ + scaleId;
                 vDev = self.controller.collection.create(vDevId + separ + scaleId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, scaleId + ".val", function() {
@@ -366,7 +366,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '%',
                 level: '',
                 icon: 'battery',
-                title: 'Battery' + vDevIdNI
+                title: 'Battery ' + vDevIdNI
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults);
@@ -381,7 +381,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             metrics: {
                 mode: '',
                 icon: 'door',
-                title: 'Door Lock' + vDevIdNI
+                title: 'Door Lock ' + vDevIdNI
             }
         };
 
@@ -403,7 +403,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             metrics: {
                 level: '',
                 icon: 'fan',
-                title: 'Fan' + vDevIdNI
+                title: 'Fan ' + vDevIdNI
             }
         };
         vDev = self.controller.collection.create(vDevId, defaults, "fan");
