@@ -951,14 +951,14 @@ ZAutomationAPIWebRequest.prototype.listNamespaces = function () {
         code: 500
     }, namespaces;
 
-
-    namespaces = controller.getListNamespaces()
-    if (_.isArray(namespaces)) {
-        reply.data = namespaces;
-        reply.code = 200;
-    } else {
-        reply.error = "Namespaces array is null";
-    }
+    controller.generateNamespaces(function (namespaces) {
+        if (_.isArray(namespaces)) {
+            reply.data = namespaces;
+            reply.code = 200;
+        } else {
+            reply.error = "Namespaces array is null";
+        }
+    });
 
     this.initResponse(reply);
 };
@@ -975,7 +975,7 @@ ZAutomationAPIWebRequest.prototype.getNamespaceFunc = function (id) {
             code: 500
         }, namespace;
 
-
+        controller.generateNamespaces();
         namespace = controller.getListNamespaces(id);
         if (namespace) {
             reply.data = namespace;
@@ -1001,7 +1001,6 @@ ZAutomationAPIWebRequest.prototype.setNamespaceFunc = function (id) {
             },
             namespace,
             reqObj = this.req.reqObj;
-
 
         namespace = controller.getListNamespaces(id);
         if (namespace) {
@@ -1047,7 +1046,6 @@ ZAutomationAPIWebRequest.prototype.deleteNamespaceFunc = function (id) {
             },
             namespace,
             reqObj = this.req.reqObj;
-
 
         namespace = controller.getListNamespaces(id);
         if (namespace) {

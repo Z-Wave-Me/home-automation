@@ -70,6 +70,7 @@ _.extend(DevicesCollection.prototype, {
         this.models.push(model);
         model.index = this.models.indexOf(model);
         this.db.indexes[model.index] = model;
+        return model;
     },
     get: function (identificator) {
         var result;
@@ -130,6 +131,23 @@ _.extend(DevicesCollection.prototype, {
         that.collection.emit('all', model);
 
         return model;
+    },
+    where: function (obj) {
+        var models = this.toJSON(),
+            devices = _.filter(models, function (model) {
+                var check = true;
+                Object.keys(obj, function (key) {
+                    if (model.hasOwnProperty(key) && model[key] === obj[key]) {
+                        check = true;
+                    } else {
+                        check = false;
+                        return;
+                    }
+                });
+                return check;
+            });
+
+        return devices.length && !!devices ? devices : [];
     }
 });
 

@@ -37,7 +37,7 @@ LightScene.prototype.init = function (config) {
             icon: '',
             title: 'Scene ' + this.id
         }
-    }, function() {
+    }, function () {
         self.config.switches.forEach(function(devState) {
             var vDev = self.controller.findVirtualDeviceById(devState.device);
             if (vDev) {

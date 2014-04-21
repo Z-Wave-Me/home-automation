@@ -705,15 +705,32 @@ AutomationController.prototype.removeSchema = function (id) {
 };
 
 // namespaces
+AutomationController.prototype.generateNamespaces = function (callback) {
+    var that = this,
+        devices = that.collection.models,
+        deviceTypes = _.uniq(_.map(devices, function (device) { return device.toJSON().deviceType; }));
+
+    deviceTypes.forEach(function (type) {
+        that.setNamespace('devices_' + type, _.map(that.collection.where({deviceType: type}), function (device) {
+            return {deviceId: device.id, deviceName: device.metrics.title};
+        }));
+    });
+    callback(that.namespaces);
+};
+
 AutomationController.prototype.getListNamespaces = function (id) {
-    var result = null;
+    var result = null,
+        namespaces = this.namespaces;
+
     id = id || null;
-    if (id) {
-        result = this.namespaces.filter(function (namespace) {
+
+
+    if (!!id) {
+        result = namespaces.filter(function (namespace) {
             return namespace.id === parseInt(id);
         })[0];
     } else {
-        result = this.namespaces;
+        result = namespaces;
     }
 
     return result;
@@ -723,7 +740,9 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
     var result = null,
         namespace,
         index;
+
     id = id || null;
+
     if (id && this.getListNamespaces(id)) {
         namespace = _.find(this.namespaces, function (namespace) {
             return namespace.id === parseInt(id);
@@ -732,8 +751,13 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
         this.namespaces[index].params = reqObj.data;
         result = this.namespaces[index];
     } else {
+        this.namespaces.push({
+            id: id,
+            params: reqObj
+        })
         result = null;
     }
+
     return result;
 };
 
