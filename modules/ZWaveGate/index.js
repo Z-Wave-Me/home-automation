@@ -101,7 +101,7 @@ ZWaveGate.prototype.init = function (config) {
                     } else {
                         self.parseDelCommandClass(nodeId, instanceId, commandClassId);
                     }
-                }, "value");                    
+                }, "value");
             });
         });
     });
@@ -257,8 +257,8 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             } else if ("exact" === command) {
                 newVal = parseInt(args["level"], 10);
                 if (newVal < 0) {
-                    newVal = 0
-                } else if(newVal == 255) {
+                    newVal = 0;
+                } else if (newVal === 255) {
                     newVal = 255;
                 } else if (newVal > 99) {
                     newVal = null;
@@ -297,7 +297,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }, "value");
                 }
             }
-        });        
+        });
         self.dataBind(nodeId, instanceId, commandClassId, "", function() {
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
@@ -325,7 +325,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }, "value");
                 }
             }
-        });        
+        });
         self.dataBind(nodeId, instanceId, commandClassId, "", function() {
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
