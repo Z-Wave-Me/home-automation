@@ -43,7 +43,6 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
-        this.setReady();
     },
     setReady: function () {
         this.ready = true;
@@ -160,20 +159,10 @@ _.extend(VirtualDevice.prototype, {
     },
     init: function () {
         console.log("--- VDev init(" + this.id + ")");
-        this.device = this.controller.getVdevInfo(this.id);
-        if (this.device !== undefined) {
-            this.tags = this.device.tags;
-            this.location = this.device.location;
-            this.metrics.title = this.device.metrics.title !== undefined ? this.device.metrics.title : this.deviceTitle();
-            this.metrics.icon = this.device.metrics.icon !== undefined ? this.device.metrics.icon : this.deviceIcon();
-        } else {
-            this.metrics.title  = this.deviceTitle();
-            this.metrics.icon = this.deviceIcon();
-        }
-        this.ready = true;
+        this.setReady();
     },
     deviceTitle: function () {
-        return this.id;
+        return this.attributes.metrics.hasOwnProperty('title') ? this.attributes.metrics.title : this.id;
     },
     deviceIcon: function () {
         return this.metrics.icon = this.deviceType;
