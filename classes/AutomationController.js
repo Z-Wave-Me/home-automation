@@ -304,7 +304,13 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
 };
 
 AutomationController.prototype.stopInstance = function (instance) {
-    instance.stop();
+    try {
+        instance.stop();
+    } catch (e) {
+        this.addNotification("error", "Can not stop module " + ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(), "core");
+        console.log(e.stack);
+        return;
+    }
     if (instance.meta.singleton) {
         var index = this._loadedSingletons.indexOf(instance.meta.id);
         if (index > -1) {
