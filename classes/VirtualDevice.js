@@ -186,6 +186,10 @@ _.extend(VirtualDevice.prototype, {
             updateTime: Math.floor(new Date().getTime() / 1000),
             metrics: metrics
         });
+        this.collection.emit("change:metrics:" + name, this, {name: value});
+        this.emit("change:metrics:" + name, this, {name: value});
+        this.collection.emit("change", this, {name: value});
+        this.emit("change", this, {name: value});
     },
     setVDevObject: function (id, object) {
         var excludeProp = ['deviceType', 'updateTime', 'id'],
