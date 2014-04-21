@@ -202,8 +202,6 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         defaults = {
             deviceType: "switchBinary",
             metrics: {
-                probeTitle: '',
-                scaleTitle: '',
                 level: '',
                 icon: 'switch',
                 title: 'Switch' + vDevIdMidfix
@@ -225,8 +223,6 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         defaults = {
             deviceType: "switchMultilevel",
             metrics: {
-                probeTitle: '',
-                scaleTitle: '',
                 level: '',
                 icon: 'multilevel',
                 title: 'Dimmer' + vDevIdMidfix
@@ -279,6 +275,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             deviceType: 'sensor',
             metrics: {
                 probeTitle: '',
+                scaleTitle: '',
                 icon: 'sensor',
                 level: '',
                 title: ''
@@ -287,13 +284,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
+                defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                 defaults.metrics.title =  'Sensor' + vDevIdMidfix + vDevIdPostfix + ":" + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
                         vDev.setMetricValue("level", this.value ? "on" : "off");
                     }, "value");
-                    vDev.setMetricValue("probeTitle", cc.data[sensorTypeId].sensorTypeString.value);
                 }
             }
         });        
@@ -302,7 +299,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         }, "child");
     } else if (this.CC["SensorMultilevel"] === commandClassId) {
         defaults = {
-            deviceType: "probe",
+            deviceType: "sensor",
             metrics: {
                 probeTitle: '',
                 scaleTitle: '',
@@ -314,14 +311,14 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         Object.keys(cc.data).forEach(function (sensorTypeId) {
             sensorTypeId = parseInt(sensorTypeId, 10);
             if (!isNaN(sensorTypeId)) {
+                defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
+                defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
                 defaults.metrics.title =  'Sensor' + vDevIdMidfix + vDevIdPostfix + ":" + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
                     }, "value");
-                    vDev.setMetricValue("probeTitle", cc.data[sensorTypeId].sensorTypeString.value);
-                    vDev.setMetricValue("scaleTitle", cc.data[sensorTypeId].scaleString.value);
                 }
             }
         });        
@@ -342,14 +339,14 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         Object.keys(cc.data).forEach(function (scaleId) {
             scaleId = parseInt(scaleId, 10);
             if (!isNaN(scaleId)) {
+                defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
+                defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
                 defaults.metrics.title =  'Meter' + vDevIdMidfix + vDevIdPostfix + ":" + scaleId;
                 vDev = self.controller.collection.create(vDevId, defaults);
                 if (vDev) {
                     self.dataBind(nodeId, instanceId, commandClassId, scaleId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
                     }, "value");
-                    vDev.setMetricValue("probeTitle", cc.data[scaleId].sensorTypeString.value);
-                    vDev.setMetricValue("scaleTitle", cc.data[scaleId].scaleString.value);
                 }
             }
         });        

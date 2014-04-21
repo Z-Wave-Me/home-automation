@@ -1,9 +1,9 @@
 /*** BatteryPolling Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2013
+Version: 2.0.0
+(c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Gregory Sitnin <sitnin@z-wave.me>
+Author: Gregory Sitnin <sitnin@z-wave.me> nad Serguei Poltorak <ps@z-wave.me>
 Description:
     This module periodically requests all batery devices for battery level report
 
@@ -31,46 +31,55 @@ BatteryPolling.prototype.init = function (config) {
 
     var self = this;
 
-    executeFile(this.moduleBasePath() + "/BatteryPollingDevice.js");
-    this.vdev = new BatteryPollingDevice("BatteryPolling", this.controller);
-    this.vdev.setMetricValue("level", self.minimalBatteryValue());
-    this.vdev.init();
-    this.controller.registerDevice(this.vdev);
+    // polling function
+    this.onPoll = function () {
+        for (var id in zway.devices) {
+            zway.devices[id].Battery && zway.devices[id].Battery.Get();
+        }
+    };
 
+    // create vDev
+    this.vDev = this.controller.collection.create("BatteryPolling_" + this.id, {
+        deviceType: "battery",
+        metrics: {
+            probeTitle: "Battery",
+            scaleTitle: "%",
+            level: "",
+            icon: "",
+            title: "Scene " + this.id
+        }
+    }, this.onPoll);
 
+    this.onMetricUpdated = function (vdev) {
+        self.vdev.setMetricValue("level", self.minimalBatteryValue());
+        if (value <= self.config.warningLevel) {
+            self.controller.addNotification("warning", "Device " + dev.getMetricValue("title") + " is low battery", "battery");
+        }
+    };
+    
+    // Setup event listeners
+    this.controller.collection.toJSON().filter(function (xDev) { return xDev.deviceType === "battery"}).on("change:metrics:level", this.onMetricUpdated);
+
+    // set up cron handler
+    this.controller.on("batteryPolling.poll", this.onPoll);
+
+    // add cron schedule
     this.controller.emit("cron.addTask", "batteryPolling.poll", {
         minute: 0,
         hour: 0,
         weekDay: this.config.launchWeekDay,
         day: null,
         month: null
-    });
-
-    // Setup event listeners
-    this.onMetricUpdated = function (vdevId, name, value) {
-        var dev = self.controller.findVirtualDeviceById(vdevId);
-        if (dev && dev.deviceType === "battery" && name === "level") {
-            self.vdev.setMetricValue("level", self.minimalBatteryValue());
-            if (value <= self.config.warningLevel) {
-                self.controller.addNotification("warning", "Device " + dev.getMetricValue("title") + " is low battery", "battery");
-            }
-        }
-    };
-    this.controller.on('device.metricUpdated', this.onMetricUpdated);
-
-    // TODO: Refactor to device.update command
-    this.onPoll = function () {
-        self.vdev.performCommand("update");
-    };
-    this.controller.on('batteryPolling.poll', this.onPoll);
+    }); 
 };
 
 BatteryPolling.prototype.stop = function () {
     BatteryPolling.super_.prototype.stop.call(this);
 
-    this.controller.removeDevice(this.vdev.id);
-    this.controller.off('device.metricUpdated', this.onMetricUpdated);
-    this.controller.off('batteryPolling.poll', this.onPoll);
+    this.controller.collection.remove(this.vDev.id);
+    this.controller.collection.toJSON().filter(function (xDev) { return xDev.deviceType === "battery"}).off("change:metrics:level", this.onMetricUpdated);
+    this.controller.emit("cron.removeTask", "batteryPolling.poll");
+    this.controller.off("batteryPolling.poll", this.onPoll);
 };
 
 // ----------------------------------------------------------------------------

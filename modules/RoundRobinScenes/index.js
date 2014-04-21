@@ -32,7 +32,14 @@ RoundRobinScenes.prototype.init = function (config) {
 
     var self = this;
     
-    this.controller.emit("scenes.register", this.id, this.config.title, function() {
+    this.vDev = this.controller.collection.create("RoundRobinScene_" + this.id, {
+        deviceType: "toggleButton",
+        metrics: {
+            level: '',
+            icon: '',
+            title: 'Scene ' + this.id
+        }
+    }, function() {
         self.currentSceneIndex++;
         self.currentSceneIndex %= self.config.scenes.length;
         
@@ -44,7 +51,7 @@ RoundRobinScenes.prototype.init = function (config) {
 };
 
 RoundRobinScenes.prototype.stop = function () {
-    this.controller.emit("scenes.unregister", this.id);
+    this.controller.collection.remove(this.vDev.id);
 
     RoundRobinScenes.super_.prototype.stop.call(this);
 };
