@@ -127,8 +127,8 @@ _.extend(DevicesCollection.prototype, {
         delete model.cid;
 
         // events
-        that.collection.emit('remove', model);
-        that.collection.emit('all', model);
+        that.emit('remove', model);
+        that.emit('all', model);
 
         return model;
     },
