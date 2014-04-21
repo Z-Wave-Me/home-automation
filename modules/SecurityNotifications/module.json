@@ -51,7 +51,7 @@
 			"triggerScene": {
 				"field": "enum",
 				"datasource": "namespaces",
-				"enum": "namespaces:scenes:sceneId"
+				"enum": "namespaces:devices_toggleButton:deviceId"
 			}
 		},
          	"required": false
@@ -90,7 +90,7 @@
 			"triggerScene": {
                                 "datasource": "namespaces",
                                 "field": "optionLabels",
-                                "optionLables": "namespaces:scenes:sceneName"
+                                "optionLables": "namespaces:devices_toggleButton:deviceName"
 			}
 		}
 	}

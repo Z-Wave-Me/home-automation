@@ -332,7 +332,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         }, "child");
     } else if (this.CC["Meter"] === commandClassId) {
         defaults = {
-            deviceType: 'probe',
+            deviceType: 'sensor',
             metrics: {
                 probeTitle: '',
                 scaleTitle: '',

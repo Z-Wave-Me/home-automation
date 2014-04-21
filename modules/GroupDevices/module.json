@@ -42,7 +42,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:scenes:sceneId",
+					"enum": "namespaces:devices_toggleButton:deviceId",
 					"required": true
 				}
 			},
@@ -51,7 +51,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:scenes:sceneId",
+					"enum": "namespaces:devices_toggleButton:deviceId",
 					"required": true
 				}
 			}
@@ -89,7 +89,7 @@
 					"item": {
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:scenes:sceneName"
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
 					}
 				}
 			},
@@ -99,7 +99,7 @@
 					"item": {
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:scenes:sceneName"
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
 					}
 				}
 			}
