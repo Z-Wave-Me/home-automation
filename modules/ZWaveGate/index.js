@@ -278,7 +278,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 icon: 'sensor',
                 level: '',
-                title: 'Sensor'
+                title: ''
             }
         };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -305,7 +305,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'sensor',
-                title: 'Sensor'
+                title: ''
             }
         };
         Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -333,7 +333,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle: '',
                 level: '',
                 icon: 'probe',
-                title: 'Probe'
+                title: ''
             }
         };
         Object.keys(cc.data).forEach(function (scaleId) {
