@@ -424,7 +424,6 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 }
             });  
             this.setMetricValue("modes", modes);
-            // !!! изменение
         }
     }
     self.controller.collection.emit('ready');
