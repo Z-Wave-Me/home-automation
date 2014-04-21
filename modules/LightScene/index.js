@@ -61,7 +61,7 @@ LightScene.prototype.init = function (config) {
 
 LightScene.prototype.stop = function () {
     if (this.vDev) {
-        this.controller.removeDevice(this.vDev.id);
+        this.controller.collection.remove(this.vDev.id);
         this.vDev = null;
     }
 

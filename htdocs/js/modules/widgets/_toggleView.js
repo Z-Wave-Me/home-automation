@@ -42,6 +42,13 @@ define([
                 that.remove();
             });
 
+            that.listenTo(that.model, 'structureChanged', function () {
+                if (!_.filter(window.App.Devices.response, function (device) { return device.id === that.model.id; })) {
+                    that.$template.remove();
+                    that.remove();
+                }
+            });
+
             that.listenTo(that.model, 'change', function () {
                 that.$template.find('.title-metrics').text(that.model.get('metrics').title);
             });

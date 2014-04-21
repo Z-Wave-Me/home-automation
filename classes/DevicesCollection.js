@@ -129,7 +129,7 @@ _.extend(DevicesCollection.prototype, {
         // events
         that.emit('remove', model);
         that.emit('all', model);
-
+        that.controller.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
         return model;
     },
     where: function (obj) {

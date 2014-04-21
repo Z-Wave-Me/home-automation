@@ -101,7 +101,6 @@ define([
                     merge: true
                 });
 
-
                 ModalHelper.popup(that.$template, true, true);
                 that.$template.find('.back-button').click();
             });
@@ -138,11 +137,7 @@ define([
                     that.$modulesMenu.find('li').removeClass('active');
 
                     if (!$this.hasClass('active')) {
-                        if ($this.attr('data-type') === 'modules') {
-                            that.modulesView.renderModules();
-                        } else {
-                            that.modulesView.renderInstances();
-                        }
+                        that.modulesView.renderInstances();
                     }
 
                     $this.addClass('active');
@@ -169,7 +164,7 @@ define([
                 tags = device.get('tags'),
                 ms,
                 profile,
-                widgets,
+                widget,
                 active;
 
             device.on('change:metrics', function () {
@@ -178,7 +173,7 @@ define([
             });
 
             $device.on('click', function () {
-                active = _.any(App.Profiles.findWhere({active: true}).get('widgets'), function (widget) { return widget.id === device.id; });
+                active = that.Profiles.isShow(device.id);
                 that.$ListContainer.find('li').removeClass('active');
                 $device.addClass('active');
                 $deviceTmp = $(_.template(WidgetTmp, {device: device.toJSON(), widget: active}));
@@ -189,23 +184,9 @@ define([
                 $deviceTmp.show('fast');
 
                 $deviceTmp.find('.input-dashboard').on('change', function () {
-                    profile = that.Profiles.findWhere({active: true});
-                    widgets = profile.get('widgets');
-                    if ($(this).prop('checked')) {
-                        if (!_.any(widgets, function (widget) { return widget.id === device.id; })) {
-                            widgets.push({
-                                id: device.get('id'),
-                                position: {x: null, y: null}
-                            });
-                            window.App.Devices.get(device.id).trigger('show');
-                        }
-                    } else {
-                        widgets = widgets.filter(function (widget) {
-                            return widget.id !== device.id;
-                        });
-                        window.App.Devices.get(device.id).trigger('hide');
-                    }
-                    profile.save({widgets: widgets});
+                    widget = that.Profiles.getDevice(device.id);
+                    widget.show = !!$(this).prop('checked');
+                    App.Profiles.setDevice(widget);
                 });
 
                 ms = $deviceTmp.find('#ms-gmail').magicSuggest({

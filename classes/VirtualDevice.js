@@ -20,7 +20,9 @@ VirtualDevice = function (deviceId, controller, defaults, handler) {
     this.updateTime = 0;
     this.attributes = {
         id: this.id,
-        metrics: this.metrics
+        metrics: this.metrics,
+        tags: [],
+        location: null
     };
     this.changed = {};
     this.defaults = defaults || {};
@@ -38,8 +40,6 @@ _.extend(VirtualDevice.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'get', 'set');
-        //this.set(this, {silent: true});
-
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics

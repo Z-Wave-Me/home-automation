@@ -20,22 +20,15 @@ define([
             that.listenTo(that.Devices, 'add', function (model) {
                 that.WidgetsModule.renderWidget(model);
             });
-
-            that.listenToOnce(window.App.Devices, 'reset sync', function () {
-                that.render();
-            });
-
-            that.listenTo(window.App.Devices, 'refresh', function () {
-                that.render();
-            });
-
-            that.render();
         },
         render: function () {
             if (window.location.hash.indexOf('dashboard') !== -1 || !window.location.hash) {
-                var that = this;
+                var that = this,
+                    fixedPosition = true,
+                    forceView = false;
+
                 window.App.Devices.lock = false;
-                that.WidgetsModule.render(true);
+                that.WidgetsModule.render(fixedPosition, forceView);
             }
         }
     });

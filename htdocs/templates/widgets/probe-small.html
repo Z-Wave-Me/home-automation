@@ -8,7 +8,7 @@
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="value-field">
-                <nobr class="probe-value"><% if ( metrics.level !== null && !!metrics.level ) { print(metrics.level.toFixed(1)); } %><%= metrics.scaleTitle %></nobr>
+                <nobr class="probe-value"><% if ( metrics.level !== null && !!metrics.level ) { print(_.isNumber(metrics.level) ? metrics.level.toFixed(1) : metrics.level); } %><%= metrics.scaleTitle %></nobr>
                 <div class="preference-button"></div>
             </span>
         </div>
