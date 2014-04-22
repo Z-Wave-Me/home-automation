@@ -200,40 +200,25 @@ define([
                     $(ms).setValue(tags);
                 });
 
-                $('#inputTitleText').on('keyup', function () {
-                    var metrics = device.get('metrics');
-                    metrics.title = $(this).val();
-                    device.save({metrics: metrics});
-                    device.trigger('change:metrics');
-                });
-
-                $('#inputTitleIcon').on('keyup change', function () {
-                    var metrics = device.get('metrics');
-                    metrics.icon = $(this).val();
-                    device.save({metrics: metrics});
-                    device.trigger('change:metrics');
-                });
-
                 $(ms).on('blur', function () {
-                    var savedParam;
-                    if (this.getValue().indexOf('dashboard') === -1) {
-                        savedParam = {
-                            tags: this.getValue(),
-                            position: {
-                                top: 0,
-                                left: 0
-                            }
-                        };
-                    } else {
-                        savedParam = {
-                            tags: this.getValue()
-                        };
-                    }
-
-                    device.save(savedParam);
                     this.setValue(this.getValue());
                     tags = this.getValue();
+                    device.set({
+                        tags: tags
+                    });
                     avalaibleTags = that.getTags();
+                });
+
+                $deviceTmp.find('.save-button').on('click', function (e) {
+                    e.preventDefault();
+                    var metrics = device.get('metrics');
+                    metrics.title = $deviceTmp.find('#inputTitleText').val();
+                    metrics.icon = $deviceTmp.find('#inputIcon').val();
+                    $device.text(metrics.title);
+                    device.save({
+                        metrics: metrics
+                    });
+                    device.trigger('change:metrics');
                 });
             });
 

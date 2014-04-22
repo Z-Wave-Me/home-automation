@@ -9,7 +9,7 @@
         <div class="label-option">Icon</div>
         <div class="form-group">
             <div class="input-group">
-                <input type="text" class="form-control" id="inputTitleIcon" value="<%= device.metrics.icon %>" placeholder="Icon">
+                <input type="text" class="form-control" id="inputIcon" value="<%= device.metrics.icon %>" placeholder="Icon">
             </div>
         </div>
         <div class="label-option">Tags</div>
@@ -20,6 +20,11 @@
             <div class="show-dashboard">
                 <span class="title-show">show in dashboard:</span>
                 <span class="input-show"><input type="checkbox" class="input-dashboard" <% if (typeof(widget) !== 'undefined' && widget) { print('checked'); } %>></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="input-group">
+                <button class="button-group save-button">Save</button>
             </div>
         </div>
     </form>
