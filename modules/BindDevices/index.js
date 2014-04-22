@@ -47,7 +47,7 @@ BindDevices.prototype.init = function (config) {
         }
         
         self.config.targetDevices.forEach(function(el) {
-            var vDev = that.controller.findVirtualDeviceById(el);
+            var vDev = that.controller.devices.get(el);
             
             if (vDev) {
                 if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "swtichMultilevel" && actionMultilevel === null) {

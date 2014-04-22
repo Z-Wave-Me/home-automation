@@ -43,7 +43,7 @@ AutoOff.prototype.init = function (config) {
         return;
     }
 
-    this.vDev = this.controller.findVirtualDeviceById(this.config.device);
+    this.vDev = this.controller.devices.get(this.config.device);
 
     // Check if device is a switch
     if ("switchBinary" !== this.vDev.deviceType && "switchMultilevel" !== this.vDev.deviceType) {
