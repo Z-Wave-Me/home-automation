@@ -43,7 +43,7 @@ RoundRobinScenes.prototype.init = function (config) {
         self.currentSceneIndex++;
         self.currentSceneIndex %= self.config.scenes.length;
         
-        var vDev = self.controller.findVirtualDeviceById(self.config.scenes[self.currentSceneIndex]);
+        var vDev = self.controller.devices.get(self.config.scenes[self.currentSceneIndex]);
         if (vDev) {
             vDev.performCommand("on");
         }

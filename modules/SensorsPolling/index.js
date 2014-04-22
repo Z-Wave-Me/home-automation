@@ -48,7 +48,7 @@ SensorsPolling.prototype.init = function (config) {
 
     this.onPoll = function () {
         self.config.devices.forEach(function(vDevId) {
-            var vDev = this.controller.findVirtualDeviceById(vDevId);
+            var vDev = this.controller.devices.get(vDevId);
             
             if (vDev)
                 vDev.performCommand("update");

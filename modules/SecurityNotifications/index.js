@@ -52,7 +52,7 @@ SecurityNotifications.prototype.init = function (config) {
         
         i = self.config.binary.map(function(el) { return el.id; }).indexOf(vdevId)
         if (i !== -1) {
-            var dev = self.controller.findVirtualDeviceById(vdevId);
+            var dev = self.controller.devices.get(vdevId);
             if (dev.getMetricValue("level") === self.config.binary[i].safeStatus) {
                 message = "Device " + vdev.getMetricValue("title") + " is back to safe.";
                 result = false;
@@ -64,7 +64,7 @@ SecurityNotifications.prototype.init = function (config) {
 
         i = self.config.multilevel.map(function(el) { return el.id; }).indexOf(vdevId)
         if (i !== -1) {
-            var dev = self.controller.findVirtualDeviceById(vdevId);
+            var dev = self.controller.devices.get(vdevId);
             if (dev.getMetricValue("level") > self.config.multilevel[i].border && self.config.multilevel[i].greater) {
                 message = "Device " + vdev.getMetricValue("title") + " is back to safe.";
                 result = false;
@@ -76,7 +76,7 @@ SecurityNotifications.prototype.init = function (config) {
         
         if (message && self.vdev.getMetricValue("level") === "on") {
             self.controller.addNotification("critical", message, "security");
-            var dev = self.controller.findVirtualDeviceById(self.config.triggerScene);
+            var dev = self.controller.devices.get(self.config.triggerScene);
             if (dev) {
                 dev.performCommand(result ? "on" : "off");
             }

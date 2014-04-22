@@ -31,7 +31,7 @@ SensorValueLogging.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     SensorValueLogging.super_.prototype.init.call(this, config);
 
-    var device = this.controller.findVirtualDeviceById(this.config.device);
+    var device = this.controller.devices.get(this.config.device);
 
     // Check if device is a switch
     if ("sensor" !== device.deviceType) {

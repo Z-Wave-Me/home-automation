@@ -741,7 +741,3 @@ AutomationController.prototype.pushFile = function (file, callback) {
     saveObject(id, file);
     callback(this.files[id]);
 };
-
-AutomationController.prototype.findVirtualDeviceById = function(vdevId) {
-    return this.devices[vdevId] || null;
-}

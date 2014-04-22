@@ -39,19 +39,19 @@ LightScene.prototype.init = function (config) {
         }
     }, function () {
         self.config.switches.forEach(function(devState) {
-            var vDev = self.controller.findVirtualDeviceById(devState.device);
+            var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand(devState.status ? "on" : "off");
             }
         });
         self.config.dimmers.forEach(function(devState) {
-            var vDev = self.controller.findVirtualDeviceById(devState.device);
+            var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand("exact", devState.state);
             }
         });
         self.config.scenes.forEach(function(scene) {
-            var vDev = self.controller.findVirtualDeviceById(scene);
+            var vDev = self.controller.devices.get(scene);
             if (vDev) {
                 vDev.performCommand("on");
             }
