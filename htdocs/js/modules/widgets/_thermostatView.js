@@ -50,7 +50,7 @@ define([
                 that.$template.removeClass('show').hide('fast');
             });
 
-            that.listenTo(that.model, 'change', function () {
+            that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
                 that.$template.find("select").val(that.model.get('metrics').currentMode);
             });

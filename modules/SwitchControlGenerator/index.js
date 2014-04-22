@@ -61,7 +61,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 
     this.config.generated.forEach(function(name) {
         if (self.config.banned.indexOf(name) === -1) {
-            self.controller.collection.create(name, {
+            self.controller.devices.create(name, {
                 deviceType: "switchControl",
                 metrics: {
                     icon: '',
@@ -86,7 +86,7 @@ SwitchControlGenerator.prototype.stop = function () {
     var self = this;
     
     this.generated.forEach(function(name) {
-        self.controller.collection.remove(name);
+        self.controller.devices.remove(name);
     });
     this.generated = null;
 
@@ -110,7 +110,7 @@ SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstIn
             return;
         }
 
-        this.controller.collection.create(name, {
+        this.controller.devices.create(name, {
             deviceType: "switchControl",
             metrics: {
                 icon: '',
@@ -123,7 +123,7 @@ SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstIn
         this.saveConfig();
     };
     
-    var vDev = this.controller.collection.get(name);
+    var vDev = this.controller.devices.get(name);
     if (vDev === null) {
         this.controller.addNotification("critical", "SwitchControlGenerator: Virtual device should exist, but was not found", "controller");
         return;

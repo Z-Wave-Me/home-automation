@@ -20,9 +20,9 @@ define([
 
             that.$template = $(_.template(templateProbe, that.model.toJSON()));
 
-            that.listenTo(that.model, 'change', function () {
+            that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                that.$template.find(".probe-value").text(that.model.get('metrics').level.toFixed(1) + ' ' + that.model.get('metrics').scaleTitle);
+                that.$template.find('.probe-value').text(that.model.get('metrics').level.toFixed(1) + ' ' + that.model.get('metrics').scaleTitle);
             });
 
             if (!that.Devices.activeMode) {

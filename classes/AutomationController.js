@@ -20,8 +20,7 @@ function AutomationController () {
     this.files = files || {};
 
     this.modules = {};
-    this.devices = {};
-    this.collection = new DevicesCollection(this);
+    this.devices = new DevicesCollection(this);
     this.schemas = config.schemas || [];
 
     this.notifications = [];
@@ -74,7 +73,7 @@ AutomationController.prototype.start = function () {
 
     // Run webserver
     console.log("Starting webserver...");
-    api = new ZAutomationAPIWebRequest().handlerFunc();
+    api = new ZAutomationAPIWebRequest(this).handlerFunc();
 
     // Run storage
     console.log("Starting storage...");
@@ -634,91 +633,15 @@ AutomationController.prototype.removeProfile = function (id) {
     this.saveConfig();
 };
 
-// Schemas
-
-AutomationController.prototype.getListSchemas = function (id) {
-    var result = null;
-    id = id || null;
-    if (id) {
-        result = this.schemas.filter(function (schema) {
-            return schema.id === parseInt(id);
-        })[0];
-    } else {
-        result = this.schemas;
-    }
-    return result;
-};
-
-AutomationController.prototype.createSchema = function (object) {
-    var id = this.schemas.length ? this.schemas[this.schemas.length - 1].id + 1 : 1,
-        schema;
-
-    schema = {
-        id: id,
-        title: object.title,
-        schema: object.schema
-    }
-
-    this.schemas.push(schema);
-    this.saveConfig();
-    return schema;
-};
-
-AutomationController.prototype.updateSchema = function (object, id) {
-    var result = null,
-        index,
-        schema;
-    id = id || null;
-
-
-    if (id) {
-        schema = this.schemas.filter(function (sch) {
-            return sch.id === parseInt(id);
-        });
-
-
-        if (schema.length) {
-            index = this.schemas.indexOf(schema[0]);
-
-            if (object.hasOwnProperty('title')) {
-                this.schemas[index].title = object.title;
-            }
-            if (object.hasOwnProperty('schema')) {
-                this.schemas[index].schema = object.schema;
-            }
-
-            result = this.schemas[index];
-        } else {
-            result = null;
-        }
-    } else {
-        result = null;
-    }
-
-    this.saveConfig();
-    return result;
-};
-
-
-AutomationController.prototype.removeSchema = function (id) {
-    id = id || null;
-
-    this.schemas = this.schemas.filter(function (schema) {
-        return schema.id !== parseInt(id);
-    });
-
-    this.saveConfig();
-};
-
 // namespaces
 AutomationController.prototype.generateNamespaces = function (callback) {
     var that = this,
-        devices = that.collection.models,
+        devices = that.devices.models,
         deviceTypes = _.uniq(_.map(devices, function (device) { return device.toJSON().deviceType; }));
 
     that.namespaces = [];
     deviceTypes.forEach(function (type) {
-        that.setNamespace('devices_' + type, _.map(that.collection.where({deviceType: type}), function (device) {
+        that.setNamespace('devices_' + type, _.map(that.devices.where({deviceType: type}), function (device) {
             return {deviceId: device.id, deviceName: device.metrics.title};
         }));
     });

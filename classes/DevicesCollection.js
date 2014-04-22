@@ -72,6 +72,13 @@ _.extend(DevicesCollection.prototype, {
         this.db.indexes[model.index] = model;
         return model;
     },
+    has: function (identificator) {
+        var result = false;
+        if (this.db.id.hasOwnProperty(identificator) || this.db.cid.hasOwnProperty(identificator)) {
+            result = true;
+        }
+        return result;
+    },
     get: function (identificator) {
         var result;
         if (this.db.id.hasOwnProperty(identificator)) {

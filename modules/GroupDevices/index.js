@@ -30,7 +30,7 @@ GroupDevices.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.collection.create("GroupDevices_" + this.id, {
+    this.vDev = this.controller.devices.create("GroupDevices_" + this.id, {
         deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary",
         metrics: {
             probeTitle: '',
@@ -41,7 +41,7 @@ GroupDevices.prototype.init = function (config) {
         }
     }, function(command, args) {
         self.config.devices.forEach(function(dev) {
-            var vDev = self.controller.collection.get(dev.device);
+            var vDev = self.controller.devices.get(dev.device);
             if (vDev) {
                 if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
                     vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
@@ -55,7 +55,7 @@ GroupDevices.prototype.init = function (config) {
             var scenes = command === "on" ? self.config.scenesOn : self.config.scenesOff;
         
             scenes.forEach(function(scene) {
-                var vDev = self.controller.collection.get(scene);
+                var vDev = self.controller.devices.get(scene);
                 if (vDev) {
                     vDev.performCommand("on");
                 }
@@ -66,7 +66,7 @@ GroupDevices.prototype.init = function (config) {
 
 GroupDevices.prototype.stop = function () {
     if (this.vDev) {
-        this.controller.collection.remove(this.vDev.id);
+        this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
 

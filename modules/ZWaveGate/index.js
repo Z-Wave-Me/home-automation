@@ -218,16 +218,16 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
         return;
     }
-    if (this.CC["SwitchMultilevel"] === commandClassId && this.controller.collection.get(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"])) {
+    if (this.CC["SwitchMultilevel"] === commandClassId && this.controller.devices.get(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"])) {
         console.log("Removing SwitchBinary due to SwitchMultilevel existence");
         this.controller.collection.remove(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"]);
         return;
     }
 
     /*
-    This check should be done in collection.create - this is used in sensors rendering
+    This check should be done in devices.create - this is used in sensors rendering
     // Do not recreate device twice
-    if (self.controller.collection.get(vDevId)) {
+    if (self.controller.devices.get(vDevId)) {
         console.log("Not duplicating vDev " + vDevId);
         return;
     }
@@ -242,7 +242,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 title: 'Switch ' + vDevIdNI
             }
         };
-        vDev = self.controller.collection.create(vDevId, defaults, function (command) {
+        vDev = self.controller.devices.create(vDevId, defaults, function (command) {
             if ("on" === command) {
                 cc.Set(true);
             } else if ("off" === command) {
@@ -263,7 +263,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 title: 'Dimmer ' + vDevIdNI
             }
         };
-        vDev = self.controller.collection.create(vDevId, defaults, function(command, args) {
+        vDev = self.controller.devices.create(vDevId, defaults, function(command, args) {
             var newVal;
             if ("on" === command) {
                 newVal = 255;
@@ -325,7 +325,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             if (!isNaN(sensorTypeId)) {
                 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                 defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
-                vDev = self.controller.collection.create(vDevId + separ + sensorTypeId, defaults);
+                vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
                         vDev.setMetricValue("level", this.value ? "on" : "off");
@@ -353,7 +353,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                 defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
                 defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
-                vDev = self.controller.collection.create(vDevId + separ + sensorTypeId, defaults);
+                vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
@@ -381,7 +381,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
                 defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
                 defaults.metrics.title =  'Meter ' + vDevIdNI + separ + vDevIdC + separ + scaleId;
-                vDev = self.controller.collection.create(vDevId + separ + scaleId, defaults);
+                vDev = self.controller.devices.create(vDevId + separ + scaleId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, scaleId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
@@ -403,7 +403,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 title: 'Battery ' + vDevIdNI
             }
         };
-        vDev = self.controller.collection.create(vDevId, defaults);
+        vDev = self.controller.devices.create(vDevId, defaults);
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "last", function() {
                 vDev.setMetricValue("level", this.value);
@@ -419,7 +419,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }
         };
 
-        vDev = self.controller.collection.create(vDevId, defaults, function(command) {
+        vDev = self.controller.devices.create(vDevId, defaults, function(command) {
             if ("open" === command) {
                 cc.Set(0);
             } else if ("close" === command) {
@@ -440,7 +440,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 title: 'Fan ' + vDevIdNI
             }
         };
-        vDev = self.controller.collection.create(vDevId, defaults, "fan");
+        vDev = self.controller.devices.create(vDevId, defaults, "fan");
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
                 vDev.setMetricValue("currentMode", this.value);
@@ -463,7 +463,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             // !!! изменение
         }
     }
-    self.controller.collection.emit('ready');
+    self.controller.devices.emit('ready');
 };
 
 ZWaveGate.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClassId) {
@@ -478,5 +478,5 @@ ZWaveGate.prototype.parseDelCommandClass = function (nodeId, instanceId, command
         vDevIdC = commandClassId,
         vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC;
 
-    this.controller.collection.remove(vDevId);
+    this.controller.devices.remove(vDevId);
 };

@@ -30,7 +30,7 @@ LightScene.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.collection.create("LightScene_" + this.id, {
+    this.vDev = this.controller.devices.create("LightScene_" + this.id, {
         deviceType: "toggleButton",
         metrics: {
             level: '',
@@ -61,7 +61,7 @@ LightScene.prototype.init = function (config) {
 
 LightScene.prototype.stop = function () {
     if (this.vDev) {
-        this.controller.collection.remove(this.vDev.id);
+        this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
 

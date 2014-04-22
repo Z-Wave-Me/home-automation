@@ -32,7 +32,7 @@ RoundRobinScenes.prototype.init = function (config) {
 
     var self = this;
     
-    this.vDev = this.controller.collection.create("RoundRobinScene_" + this.id, {
+    this.vDev = this.controller.devices.create("RoundRobinScene_" + this.id, {
         deviceType: "toggleButton",
         metrics: {
             level: '',
@@ -52,7 +52,7 @@ RoundRobinScenes.prototype.init = function (config) {
 
 RoundRobinScenes.prototype.stop = function () {
     if (this.vDev) {
-        this.controller.collection.remove(this.vDev.id);
+        this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
 

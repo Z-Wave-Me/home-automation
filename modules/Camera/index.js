@@ -39,7 +39,7 @@ Camera.prototype.init = function (config) {
         openUrl = config.openUrl || null,
         closeUrl = config.closeUrl || null;
 
-    this.vDev = this.controller.collection.create("CameraDevice_" + this.id, {
+    this.vDev = this.controller.devices.create("CameraDevice_" + this.id, {
         deviceType: "camera",
         metrics: {
             probeTitle: '',
@@ -63,7 +63,7 @@ Camera.prototype.stop = function () {
     Camera.super_.prototype.stop.call(this);
 
     if (this.vDev) {
-        this.controller.collection.remove(this.vDev.id);
+        this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
 };

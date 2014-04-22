@@ -56,7 +56,7 @@ define([
                 that.remove();
             });
 
-            that.listenTo(that.model, 'change', function () {
+            that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
                 $progress.val(that.model.get('metrics').level);
                 $range.val(that.model.get('metrics').level);

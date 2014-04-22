@@ -66,7 +66,7 @@ OpenWeather.prototype.fetchWeather = function(instance) {
                     icon = res.data.main.icon;
 
                 if (!self.vDev) {
-                    self.vDev = self.controller.collection.create("OpenWeather_" + self.id, {
+                    self.vDev = self.controller.devices.create("OpenWeather_" + self.id, {
                         deviceType: "probe",
                         metrics: {
                             probeTitle: 'Temperature',

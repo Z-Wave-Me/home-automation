@@ -61,11 +61,11 @@ BindDevices.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    this.controller.collection.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).on('change:metrics:level', this.handler);
+    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).on('change:metrics:level', this.handler);
 };
 
 BindDevices.prototype.stop = function () {
-    this.controller.collection.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).off('change:metrics:level', this.handler);
+    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).off('change:metrics:level', this.handler);
 
     BindDevices.super_.prototype.stop.call(this);
 };
