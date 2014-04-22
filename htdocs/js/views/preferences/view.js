@@ -207,6 +207,13 @@ define([
                     device.trigger('change:metrics');
                 });
 
+                $('#inputTitleIcon').on('keyup change', function () {
+                    var metrics = device.get('metrics');
+                    metrics.icon = $(this).val();
+                    device.save({metrics: metrics});
+                    device.trigger('change:metrics');
+                });
+
                 $(ms).on('blur', function () {
                     var savedParam;
                     if (this.getValue().indexOf('dashboard') === -1) {

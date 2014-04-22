@@ -4,7 +4,11 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.icon %> <%= deviceType %>"></div>
+            <% if (isUrl(metrics.icon)) { %>
+                <div class="customIcon" style="background-image: url(<%= metrics.icon %>);"></div>
+            <% } else { %>
+                <div class="icon-base <%= metrics.icon %> <%= deviceType %>"></div>
+            <% } %>
         </div>
         <div class="content">
             <span class="title-metrics"><%= metrics.title %></span>

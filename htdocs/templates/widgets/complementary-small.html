@@ -4,7 +4,11 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base light <%= metrics.icon %>  <%= metrics.scaleTitle %>"></div>
+            <% if (isUrl(metrics.icon)) { %>
+                <div class="customIcon" style="background-image: url(<%= metrics.icon %>);"></div>
+            <% } else { %>
+                <div class="icon-base light <%= metrics.icon %>  <%= metrics.scaleTitle %>"></div>
+            <% } %>
         </div>
         <div class="content"><span class="text title-container"><%= metrics.title %></span>
             <progress class="progress-bar" progress-bar-id="0" value="<%= metrics.level %>" min="0" max="100"></progress>

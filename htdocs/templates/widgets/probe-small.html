@@ -4,7 +4,11 @@
     </div>
     <div class="content-widget">
         <div class="container-icon">
-            <div class="icon-base <%= metrics.icon %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
+            <% if (isUrl(metrics.icon)) { %>
+                <div class="customIcon" style="background-image: url(<%= metrics.icon %>);"></div>
+            <% } else { %>
+                <div class="icon-base <%= metrics.icon %> <%= deviceType %> <% if( metrics.scaleTitle === 'kWh' || metrics.scaleTitle === 'W') { print('energy'); } %> <% if( metrics.scaleTitle == '°C') { print('temperature'); } %> <% if( metrics.probeTitle == 'Luminiscence') { print('light'); } %>"></div>
+            <% } %>
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="value-field">

@@ -58,19 +58,11 @@ function isFileSystemApiAvailable() {
     return result;
 }
 
-function qVar(variable) {
-    'use strict';
-    var query = window.location.search.substring(1),
-        vars = query.split('&'),
-        i,
-        pair;
-    for (i = 0; i < vars.length; i += 1) {
-        pair = vars[i].split('=');
-        if (decodeURIComponent(pair[0]) === variable) {
-            return decodeURIComponent(pair[1]);
-        }
-    }
-    return undefined;
+function isUrl(url) {
+    var expression = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi,
+        regex = new RegExp(expression);
+
+    return url.match(regex);
 }
 
 function getXmlHttp() {
