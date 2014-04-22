@@ -16,7 +16,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:switches:switchId",
+					"enum": "namespaces:devices_switchControl:deviceId",
 					"required": true
 				}
 			},
@@ -25,7 +25,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:switches:switchId",
+					"enum": "namespaces:devices_switchControl:deviceId",
 					"required": true
 				}
 			}
@@ -40,7 +40,7 @@
 					"item": {
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:switches:switchName"
+						"optionLabels": "namespaces:devices_switchControl:deviceName"
 					}
 				}
 			},
@@ -50,7 +50,7 @@
 					"item": {
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:switches:switchName"
+						"optionLabels": "namespaces:devices_switchControl:deviceName"
 					}
 				}
 			}

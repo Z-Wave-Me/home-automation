@@ -160,13 +160,13 @@ ZAutomationAPIWebRequest.prototype.getVDevFunc = function (vDevId) {
         };
 
     return function () {
-        if (controller.devices.hasOwnProperty(vDevId)) {
+        if (controller.collection.get(vDevId)) {
             reply.code = 200;
             //reply.data = {
             //   meta: self._vdevMetaOnly(controller.devices[vDevId]),
             //   data: controller.getVdevInfo(vDevId)
             //}
-            reply.data = self._vdevMetaOnly(controller.devices[vDevId]);
+            reply.data = self._vdevMetaOnly(controller.collection.get(vDevId));
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";

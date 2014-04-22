@@ -30,15 +30,28 @@ SwitchControlGenerator.prototype.init = function (config) {
 
     var self = this;
 
-    this.bindings = {};
+    this.CC = {
+        "Basic": 0x20,
+        "SwitchMultilevel": 0x26
+    };
+    
+    this.bindings = [];
     try {
         var insts = zway.devices[zway.controller.data.nodeId.value].instances;
         for (var i in insts) {
             (function(n) {
-                // !!! ADD HERE SwitchMultilevel dimming actions !!!
-                self.bindings[n] = insts[n].Basic.data.level.bind(function(type, instId) {
-                    self.handler(this.value ? "on" : "off", insts[n].Basic.data.srcNodeId.value, insts[n].Basic.data.srcInstanceId.value, instId);
-                }, n);
+                var dataB = insts[n].Basic.data,
+                    dataSML = insts[n].SwitchMultilevel.data;
+                
+                ZWaveGate.dataBind(self.bindings, zway.controller.data.nodeId.value, n, this.CC["Basic"], "level", function(type) {
+                    self.handler(this.value ? "on" : "off", dataB.srcNodeId.value, dataB.srcInstanceId.value, n);
+                }, "");
+                ZWaveGate.dataBind(self.bindings, zway.controller.data.nodeId.value, n, this.CC["SwitchMultilevel"], "startChange", function(type) {
+                    self.handler(this.value ? "downstart" : "upstart", dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n);
+                }, "");
+                ZWaveGate.dataBind(self.bindings, zway.controller.data.nodeId.value, n, this.CC["SwitchMultilevel"], "stopChange", function(type) {
+                    self.handler(dataSML.startChange.value ? "downstop" : "upstop", dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n);
+                }, "");
             })(i);
         }
     } catch(e) {
@@ -48,7 +61,13 @@ SwitchControlGenerator.prototype.init = function (config) {
 
     this.config.generated.forEach(function(name) {
         if (self.config.banned.indexOf(name) === -1) {
-            self.controller.emit("switches.register", name, self.config.title, self.widgetHandler);
+            self.controller.collection.create(name, {
+                deviceType: "switchControl",
+                metrics: {
+                    icon: '',
+                    title: name
+                }
+            }, this.widgetHandler);
         }
     });
     
@@ -57,10 +76,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 
 SwitchControlGenerator.prototype.stop = function () {
     try {
-        var insts = zway.devices[zway.controller.data.nodeId.value].instances;
-        for (var i in this.bindings) {
-            insts[i].Basic.data.level.unbind(this.bindings[i]);
-        }
+        ZWaveGate.dataUnbind(this.bindings);
     } catch(e) {
         this.controller.addNotification("error", "SwitchControlGenerator failed to stop: controller dataholder can not be unbinded: " + e.toString(), "controller");
     };
@@ -82,7 +98,7 @@ SwitchControlGenerator.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 SwitchControlGenerator.prototype.widgetHandler = function(command) {
-    this.setMetricValue("level", command);
+    this.performCommand("XXXXXXXXXXX", command);
 };
 
 SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstInst) {
@@ -97,21 +113,17 @@ SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstIn
         this.controller.collection.create(name, {
             deviceType: "switchControl",
             metrics: {
-                probeTitle: '',
-                scaleTitle: '',
-                level: '',
                 icon: '',
-                title: 'Remote ' + postfix
+                title: name
             }
         }, this.widgetHandler);
         
-        console.log("!!! FIX THIS !!! in SwitchControlGenerator.prototype.handler");
         this.config.generated.push(name);
         this.params = this.config;
-        this.controller.saveConfig();
+        this.saveConfig();
     };
     
-    var vDev = this.controller.findVirtualDeviceById(name);
+    var vDev = this.controller.collection.get(name);
     if (vDev === null) {
         this.controller.addNotification("critical", "SwitchControlGenerator: Virtual device should exist, but was not found", "controller");
         return;

@@ -41,12 +41,13 @@ GroupDevices.prototype.init = function (config) {
         }
     }, function(command, args) {
         self.config.devices.forEach(function(dev) {
-            var vDev = self.controller.findVirtualDeviceById(dev.device);
+            var vDev = self.controller.collection.get(dev.device);
             if (vDev) {
-                if (command === "on" || command === "off")
-                    vDev.performCommand((dev.invert ^ command === "on")? "on" : "off");
-                else if (command === "exact")
-                    vDev.performCommand(command, dev.invert ? args[0] : (99-args[0]));
+                if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
+                    vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
+                } else if (command === "exact") {
+                    vDev.performCommand(command, dev.invert ? args.level : (99-args.level));
+                }
             }
         });
 
@@ -54,7 +55,7 @@ GroupDevices.prototype.init = function (config) {
             var scenes = command === "on" ? self.config.scenesOn : self.config.scenesOff;
         
             scenes.forEach(function(scene) {
-                var vDev = self.controller.findVirtualDeviceById(scene);
+                var vDev = self.controller.collection.get(scene);
                 if (vDev) {
                     vDev.performCommand("on");
                 }
@@ -65,7 +66,7 @@ GroupDevices.prototype.init = function (config) {
 
 GroupDevices.prototype.stop = function () {
     if (this.vDev) {
-        self.controller.collection.remove(this.vDev.id);
+        this.controller.collection.remove(this.vDev.id);
         this.vDev = null;
     }
 

@@ -5,7 +5,7 @@
 	"defaults": {
 		"title": "Group devices",
 		"description": "Group several devices together",
-		"isDimmable": true,
+		"isDimmable": false,
 		"devices": [],
 		"scenesOn": [],
 		"scenesOff": []
@@ -14,9 +14,7 @@
 		"type": "object",
 		"properties": {
 			"isDimmable": {
-				"type": "select",
-				"enum": [false, true],
-				"require": true
+				"type": "boolean"
 			},
 			"devices": {
 				"type": "array",
@@ -30,9 +28,8 @@
 							"required": true
 						},
 						"invert": {
-							"type": "select",
-							"required": true,
-							"enum": [false, true]
+							"type": "boolean",
+							"default": false
 						}
 					}
 				}
@@ -61,8 +58,8 @@
 	"options": {
 		"fields": {
 			"isDimmable": {
-				"label": "Device type",
-				"optionLabels": ["Switch", "Dimmer"]
+				"label": "",
+				"rightLabel": "Dimmable"
 			},
 			"devices": {
 				"label": "Group devices",
@@ -76,8 +73,8 @@
 								"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_doorlock:deviceName"
 							},
 							"invert": {
-								"label": "Invert action",
-								"optionLabels": ["No", "Yes"]
+								"type": "checkbox",
+								"rightLabel": "Invert action"
 							}
 						}
 					}

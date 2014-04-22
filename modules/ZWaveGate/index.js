@@ -45,7 +45,7 @@ function ZWaveGate (id, controller) {
         "Battery": 0x80
     };
 
-    this.dataBinding = [];
+    this.dataBindings = [];
     this.zwayBinding = null;
 }
 
@@ -64,7 +64,7 @@ ZWaveGate.prototype.init = function (config) {
     // Bind to all future CommandClasses changes
     this.zwayBinding = zway.bind(function (type, nodeId, instanceId, commandClassId) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
-           self.dataBind(nodeId, instanceId, commandClassId, "interviewDone", function() {
+           self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function() {
                 if (this.value === true) {
                     self.parseAddCommandClass(nodeId, instanceId, commandClassId);
                 } else {
@@ -95,7 +95,7 @@ ZWaveGate.prototype.init = function (config) {
                 commandClassId = parseInt(commandClassId, 10);
                 var commandClass = instance.commandClasses[commandClassId];
 
-                self.dataBind(nodeId, instanceId, commandClassId, "interviewDone", function() {
+                self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function() {
                     if (this.value === true) {
                         self.parseAddCommandClass(nodeId, instanceId, commandClassId);
                     } else {
@@ -112,17 +112,14 @@ ZWaveGate.prototype.stop = function () {
     ZWaveGate.super_.prototype.stop.call(this);
 
     // releasing bindings
-    this.dataBinding.forEach(function (item) {
-        zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data[item.path].unbind(item.func);
-    });
+    this.dataUnbind(this.dataBindings);
     zway.unbind(this.zwayBinding);
 };
 
 // Module methods
 
-ZWaveGate.prototype.dataBind = function(nodeId, instanceId, commandClassId, path, func, type) {
-    var cc = zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].data,
-        ccc = cc,
+ZWaveGate.prototype.dataBind = function(dataBindings, nodeId, instanceId, commandClassId, path, func, type) {
+    var data = zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].data,
         pathArr = path ? path.split(".") : [];
 
     if (!func) {
@@ -130,21 +127,58 @@ ZWaveGate.prototype.dataBind = function(nodeId, instanceId, commandClassId, path
         return;
     }
 
-    ccc = ccc[pathArr.shift()];
-    if (ccc) {
-        this.dataBinding.push({
+    while (pathArr.length) {
+        data = data[pathArr.shift()];
+        if (!data) {
+            break;
+        }
+    }
+    
+    if (data) {
+        var changeType = 0;
+        if (type === "value") {
+            changeType = this.ZWAY_DATA_CHANGE_TYPE.Updated;
+        }
+        if (type === "child") {
+            changeType = this.ZWAY_DATA_CHANGE_TYPE.ChildCreated;
+        }
+        
+        dataBindings.push({
             "nodeId": nodeId,
             "instanceId": instanceId,
             "commandClassId": commandClassId,
             "path": path,
-            "func": ccc.bind(func, type === "value" ? this.ZWAY_DATA_CHANGE_TYPE.Updated : this.ZWAY_DATA_CHANGE_TYPE.ChildCreated)
+            "func": data.bind(func, changeType)
         });
         if (type === "value") {
-            func.call(ccc, this.ZWAY_DATA_CHANGE_TYPE.Updated);
+            func.call(data, this.ZWAY_DATA_CHANGE_TYPE.Updated);
         }
     } else {
         console.log("Can not find data path:", nodeId, instanceId, commandClassId, path);
     }
+};
+
+ZWaveGate.prototype.dataUnbind = function(dataBindings) {
+    dataBindings.forEach(function (item) {
+        if (zway.devices[item.nodeId] && zway.devices[item.nodeId].instances[item.instanceId] && zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]) {
+            var data = zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data,
+                pathArr = item.path ? item.path.split(".") : [];
+
+            while (pathArr.length) {
+                data = data[pathArr.shift()];
+                if (!data) {
+                    break;
+                }
+            }
+            
+            if (data) {
+                data.unbind(item.func);
+            } else {
+                console.log("Can not find data path:", item.nodeId, item.instanceId, item.commandClassId, item.path);
+            }
+        }
+    });
+    dataBindings = null;
 };
 
 ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId) {
@@ -216,7 +250,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }
         });
         if (vDev) {
-            self.dataBind(nodeId, instanceId, commandClassId, "level", function () {
+            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "level", function () {
                 vDev.setMetricValue("level", this.value ? "on" : "off");
             }, "value");
         }
@@ -271,7 +305,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }
         });
         if (vDev) {
-            self.dataBind(nodeId, instanceId, commandClassId, "level", function() {
+            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "level", function() {
                 vDev.setMetricValue("level", this.value);
             }, "value");
         }
@@ -293,13 +327,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
-                    self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
+                    self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
                         vDev.setMetricValue("level", this.value ? "on" : "off");
                     }, "value");
                 }
             }
         });
-        self.dataBind(nodeId, instanceId, commandClassId, "", function() {
+        self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function() {
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
     } else if (this.CC["SensorMultilevel"] === commandClassId) {
@@ -321,13 +355,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
                 vDev = self.controller.collection.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
-                    self.dataBind(nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
+                    self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
                     }, "value");
                 }
             }
         });
-        self.dataBind(nodeId, instanceId, commandClassId, "", function() {
+        self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function() {
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
     } else if (this.CC["Meter"] === commandClassId) {
@@ -349,13 +383,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.title =  'Meter ' + vDevIdNI + separ + vDevIdC + separ + scaleId;
                 vDev = self.controller.collection.create(vDevId + separ + scaleId, defaults);
                 if (vDev) {
-                    self.dataBind(nodeId, instanceId, commandClassId, scaleId + ".val", function() {
+                    self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, scaleId + ".val", function() {
                         vDev.setMetricValue("level", this.value);
                     }, "value");
                 }
             }
         });
-        self.dataBind(nodeId, instanceId, commandClassId, "", function() {
+        self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function() {
             self.parseAddCommandClass(nodeId, instanceId, commandClassId);
         }, "child");
     } else if (this.CC["Battery"] === commandClassId) {
@@ -371,7 +405,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         };
         vDev = self.controller.collection.create(vDevId, defaults);
         if (vDev) {
-            self.dataBind(nodeId, instanceId, commandClassId, "last", function() {
+            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "last", function() {
                 vDev.setMetricValue("level", this.value);
             }, "value");
         }
@@ -393,7 +427,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }
         });
         if (vDev) {
-            self.dataBind(nodeId, instanceId, commandClassId, "mode", function() {
+            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
                 vDev.setMetricValue("mode", this.value === 255 ? "close" : "open");
             }, "value");
         }
@@ -408,10 +442,10 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         };
         vDev = self.controller.collection.create(vDevId, defaults, "fan");
         if (vDev) {
-            self.dataBind(nodeId, instanceId, commandClassId, "mode", function() {
+            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
                 vDev.setMetricValue("currentMode", this.value);
             }, "value");
-            self.dataBind(nodeId, instanceId, commandClassId, "on", function() {
+            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "on", function() {
                 vDev.setMetricValue("state", this.value);
             }, "value");
 

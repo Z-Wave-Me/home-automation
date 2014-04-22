@@ -184,7 +184,7 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics[name];
     },
     performCommand: function () {
-        console.log("--- " + this.id + " performCommand processing...");
+        console.log("--- ", this.id, "performCommand processing:", JSON.stringify(arguments));
         if (typeof(this.handler) === "function") {
             return this.handler.apply(this, arguments);
         }
