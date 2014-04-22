@@ -9,7 +9,7 @@ define([
         return Utils.replaceNewLines(Utils.escape(str));
     };
 
-    Utils.escape = function(str) {
+    Utils.escape = function (str) {
         if (!str) {
             return '';
         }
@@ -25,7 +25,7 @@ define([
         $('.top-nav').find("a").removeClass("active");
         $('.top-nav a[href*="' + hash + '"]:first').addClass('active');
         if (!$('.top-nav a[href*="' + hash + '"]:first').length) {
-            $('.top-nav a[href*="dashboard"]:first').addClass('active')
+            $('.top-nav a[href*="dashboard"]:first').addClass('active');
         }
     };
 

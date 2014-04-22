@@ -312,11 +312,11 @@ define([
             var that = this,
                 hash = window.location.hash.match(/(?:[a-z]+){2}/) ? window.location.hash.match(/(?:[a-z]+){2}/)[0] : '';
             if (hash === 'widgets') {
-                that.$header.find('.header-box-sub-nav-rooms').removeClass('hidden').hide().slideDown('fast');
-                that.$header.find('.header-box-sub-nav').removeClass('hidden').hide().slideDown('fast');
+                that.$header.find('.header-box-sub-nav-rooms').slideDown('fast');
+                that.$header.find('.header-box-sub-nav').slideDown('fast');
             } else {
-                that.$header.find('.header-box-sub-nav-rooms').hide().slideUp('fast');
-                that.$header.find(".header-box-sub-nav").hide().slideUp('fast');
+                that.$header.find('.header-box-sub-nav-rooms').slideUp('fast');
+                that.$header.find(".header-box-sub-nav").slideUp('fast');
             }
         },
         clear: function () {

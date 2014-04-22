@@ -89,7 +89,14 @@ define([
         },
         clearPosition: function (modelView) {
             var $template = modelView.getTemplate();
-            $template.removeAttr('style');
+            $template.animate({
+                top: 0,
+                left: 0
+            }, {
+                complete: function () {
+                    $template.removeAttr('style');
+                }
+            });
         },
         showingControl: function (modelView, forceView) {
             var $template = modelView.getTemplate();
