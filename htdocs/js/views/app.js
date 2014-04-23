@@ -171,8 +171,6 @@ define([
                 window.App.Devices.fetch({
                     remove: false,
                     merge: true,
-                    update: true,
-                    add: true,
                     data: {limit: 0}
                 });
 

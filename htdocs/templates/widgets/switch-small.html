@@ -11,10 +11,10 @@
             <% } %>
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
-            <a href="#" class="action <% if (metrics.level > 0) { print(' active'); } %>" title="<% if (metrics.level > 0) { print('On'); } else { print('Off'); }%>">
-                <span class="switch-door <% if (metrics.level > 0) { print(' active'); } %>">
+            <a href="#" class="action <% if (metrics.level === 'on') { print(' active'); } %>" title="<% if (metrics.level === 'on') { print('On'); } else { print('Off'); }%>">
+                <span class="switch-door <% if (metrics.level === 'on') { print(' active'); } %>">
                     <span class="bubble"></span>
-                    <span class="text"><% if (metrics.level > 0) { print('ON'); } else { print('OFF'); }%></span>
+                    <span class="text"><% if (metrics.level === 'on') { print('ON'); } else { print('OFF'); }%></span>
                 </span>
             </a>
         </div>

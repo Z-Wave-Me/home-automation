@@ -53,7 +53,7 @@ define([
             that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
 
-                if (String(that.model.get('metrics').level) === 'true') {
+                if (String(that.model.get('metrics').level) === 'on') {
                     that.$template.find(".action").addClass('active').attr({title: 'ON'});
                     that.$template.find(".switch-door").addClass('active');
                     that.$template.find(".switch-door").find('.text').text('ON');
