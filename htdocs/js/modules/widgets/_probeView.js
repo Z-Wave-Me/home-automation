@@ -22,7 +22,7 @@ define([
             that.$template = $(_.template(templateProbe, that.model.toJSON()));
 
             that.listenTo(that.model, 'change:metrics', function () {
-                level = _.isNumber(that.model.get('metrics').level) ? that.model.get('metrics').level.toFixed(1) : that.model.get('metrics').level;
+                level = that.model.get('metrics').level;
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
                 that.$template.find('.probe-value').text(level + ' ' + that.model.get('metrics').scaleTitle);
             });
