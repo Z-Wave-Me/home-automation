@@ -32,16 +32,6 @@ define([
 
             that.$template.hide();
 
-            that.listenTo(that.model, 'destroy reset', function () {
-                that.$template.remove();
-                that.remove();
-            });
-
-            that.listenTo(window.App.Devices, 'reset', function () {
-                that.$template.remove();
-                that.remove();
-            });
-
             that.listenTo(model, 'show', function () {
                 that.$template.removeClass('show').addClass('show').show('fast');
             });

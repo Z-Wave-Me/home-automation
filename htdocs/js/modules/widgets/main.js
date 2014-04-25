@@ -69,6 +69,12 @@ define([
                     modelView.render();
                 }
 
+                that.listenTo(model, 'remove', function () {
+                    modelView.getTemplate().fadeOut(function () {
+                        modelView.getTemplate().remove();
+                    });
+                });
+
                 that.showingControl(modelView, model, forceView);
 
                 if (that.fixedPosition) {

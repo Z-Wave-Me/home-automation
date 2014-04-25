@@ -32,7 +32,8 @@ define([
 
         initialize: function () {
             this.bind('error', function (model, err) {
-                log("ERROR: " + err);
+                log("ERROR: ");
+                log(err);
             });
         },
         parse: function (response, xhr) {

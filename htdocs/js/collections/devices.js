@@ -33,18 +33,24 @@ define([
         },
 
         parse: function (response, xhr) {
-            var data;
-            this.updateTime = response.data.updateTime;
+            var that = this,
+                list = [];
 
             if (response.data.structureChanged) {
-                this.response = response.data.devices;
-                this.each(function (model) { model.trigger('structureChanged'); });
+                _.each(that.models, function (model) {
+                    if (!_.any(response.data.devices, function (dev) { return model.id === dev.id; })) {
+                        log('Remove model ' + model.id);
+                        that.remove(model);
+                    }
+                });
             }
 
+            this.updateTime = response.data.updateTime;
             return response.data.devices;
         },
 
         initialize: function () {
+            _.bindAll(this, 'parse');
            log('init devices');
         }
 

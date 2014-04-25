@@ -370,7 +370,6 @@ define([
                 $location.addClass('active');
                 $template = $(_.template(RoomTmp, json));
 
-
                 $template.on('keyup', function (e) {
                     if (e.which === 13) {
                         e.preventDefault();

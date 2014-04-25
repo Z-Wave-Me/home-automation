@@ -51,9 +51,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
             that = this;
 
-        reply.data.structureChanged = that.controller.lastStructureChangeTime >= since && !!since ? true : false;
-        since = isNaN(since) || reply.data.structureChanged ? 0 : since;
-        reply.data.devices = that.controller.devices.toJSON({since: since});
+        reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
+        if (reply.data.structureChanged) {
+            reply.data.devices = that.controller.devices.toJSON();
+        } else {
+            reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
+        }
         that.initResponse(reply);
     },
     getVDevFunc: function (vDevId) {

@@ -47,6 +47,7 @@ define([
                 that.loadImage = true;
             });
 
+
             that.listenTo(model, 'show', function () {
                 that.$template.removeClass('show').addClass('show').show('fast');
             });
@@ -61,16 +62,6 @@ define([
 
             that.listenTo(window.App.Devices, 'settings normal', function () {
                 that.$template.toggleClass('clear');
-            });
-
-            that.listenTo(that.model, 'destroy reset', function () {
-                that.$template.remove();
-                that.remove();
-            });
-
-            that.listenTo(window.App.Devices, 'reset', function () {
-                that.$template.remove();
-                that.remove();
             });
 
             that.$template.find('.view-block').on('click', function (e) {

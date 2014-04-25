@@ -18,6 +18,11 @@ DevicesCollection = function (controller) {
         indexes: {},
         hardwareId: {}
     };
+    that.changed = {
+        remove: [],
+        add: [],
+        update: []
+    };
     that.length = 0;
     that.initialize.apply(this, arguments);
 };
