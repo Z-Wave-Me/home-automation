@@ -99,7 +99,7 @@ define([
                 });
             });
 
-            if (that.model.get('deviceType') !== 'switchRGBW') {
+            if (that.model.get('deviceType') === 'switchRGBW') {
                 that.$template.find('.picker').simplecolorpicker({picker: true}).on('change', function () {
                     var value = that.$template.find('.picker').val(),
                         color = getColor(value);
