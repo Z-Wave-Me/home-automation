@@ -26,44 +26,49 @@ _module = Camera;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-Camera.prototype.init = function (config) {
-    Camera.super_.prototype.init.call(this, config);
+_.extend(Camera.prototype, {
+    init: function (config) {
+        Camera.super_.prototype.init.call(this, config);
 
-    var url = config.url || null,
-        zoomInUrl = config.zoomInUrl || null,
-        zoomOutUrl = config.zoomOutUrl || null,
-        leftUrl = config.leftUrl || null,
-        rightUrl = config.rightUrl || null,
-        upUrl = config.upUrl || null,
-        downUrl = config.downUrl || null,
-        openUrl = config.openUrl || null,
-        closeUrl = config.closeUrl || null;
+        var url = config.url || null,
+            hasUpUrl = config.hasUpUrl || null,
+            hasDownUrl = config.hasDownUrl || null,
+            zoomInUrl = config.zoomInUrl || null,
+            zoomOutUrl = config.zoomOutUrl || null,
+            leftUrl = config.leftUrl || null,
+            rightUrl = config.rightUrl || null,
+            upUrl = config.upUrl || null,
+            downUrl = config.downUrl || null,
+            openUrl = config.openUrl || null,
+            closeUrl = config.closeUrl || null;
 
-    this.vDev = this.controller.devices.create("CameraDevice_" + this.id, {
-        deviceType: "camera",
-        metrics: {
-            probeTitle: '',
-            scaleTitle: '',
-            url: url,
-            zoomInUrl: zoomInUrl,
-            zoomOutUrl: zoomOutUrl,
-            leftUrl: leftUrl,
-            rightUrl: rightUrl,
-            upUrl: upUrl,
-            downUrl: downUrl,
-            openUrl: openUrl,
-            closeUrl: closeUrl,
-            icon: 'camera',
-            title: 'Camera ' + this.id
+        this.vDev = this.controller.devices.create("CameraDevice_" + this.id, {
+            deviceType: "camera",
+            metrics: {
+                probeTitle: '',
+                scaleTitle: '',
+                url: url,
+                hasUpUrl: hasUpUrl,
+                hasDownUrl: hasDownUrl,
+                zoomInUrl: zoomInUrl,
+                zoomOutUrl: zoomOutUrl,
+                leftUrl: leftUrl,
+                rightUrl: rightUrl,
+                upUrl: upUrl,
+                downUrl: downUrl,
+                openUrl: openUrl,
+                closeUrl: closeUrl,
+                icon: 'camera',
+                title: 'Camera ' + this.id
+            }
+        });
+    },
+    stop: function () {
+        Camera.super_.prototype.stop.call(this);
+
+        if (this.vDev) {
+            this.controller.devices.remove(this.vDev.id);
+            this.vDev = null;
         }
-    });
-};
-
-Camera.prototype.stop = function () {
-    Camera.super_.prototype.stop.call(this);
-
-    if (this.vDev) {
-        this.controller.devices.remove(this.vDev.id);
-        this.vDev = null;
     }
-};
+});

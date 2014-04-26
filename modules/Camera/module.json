@@ -13,6 +13,14 @@
                 "format": "uri",
                 "required": true
             },
+            "hasUpUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "hasDownUrl": {
+                "format": "uri",
+                "required": false
+            },
             "zoomInUrl": {
                 "format": "uri",
                 "required": false
@@ -54,6 +62,16 @@
                 "label": "Camera URL",
                 "type": "url",
                 "required": true
+            },
+            "hasUpUrl": {
+                "label": "hasUp URL",
+                "type": "url",
+                "required": false
+            },
+            "hasDownUrl": {
+                "label": "hasDown URL",
+                "type": "url",
+                "required": false
             },
             "zoomInUrl": {
                 "label": "ZoomIn URL",

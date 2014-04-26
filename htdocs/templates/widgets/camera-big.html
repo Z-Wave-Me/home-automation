@@ -6,30 +6,36 @@
         <div class="control-block camera-block">
             <span class="title-container"><%= metrics.title %></span>
             <div class="control-buttons">
+                <% if (metrics.hasUpUrl) { %>
+                    <span data-command="hasUp" class="command-button ui-icon ui-icon-circle-triangle-n" title="Has Up"></span>
+                <% } %>
+                <% if (metrics.hasDownUrl) { %>
+                    <span data-command="hasDown" class="command-button ui-icon ui-icon-circle-triangle-s" title="Has Down"></span>
+                <% } %>
                 <% if (metrics.zoomInUrl) { %>
-                    <span data-url="<%= metrics.zoomInUrl %>" class="ui-icon ui-icon-circle-zoomin" title="Zoom In"></span>
+                    <span data-command="zoomIn" class="command-button ui-icon ui-icon-circle-zoomin" title="Zoom In"></span>
                 <% } %>
                 <% if (metrics.zoomOutUrl) { %>
-                    <span data-url="<%= metrics.zoomOutUrl %>" class="ui-icon ui-icon-circle-zoomout" title="Zoom Out"></span>
+                    <span data-command="zoomOut" class="command-button ui-icon ui-icon-circle-zoomout" title="Zoom Out"></span>
                 <% } %>
                 <% if (metrics.leftUrl) { %>
-                    <span data-url="<%= metrics.leftUrl %>" class="ui-icon ui-icon-circle-arrow-w" title="Left"></span>
+                    <span data-command="left" class="command-button ui-icon ui-icon-circle-arrow-w" title="Left"></span>
                 <% } %>
                 <% if (metrics.rightUrl) { %>
-                    <span data-url="<%= metrics.rightUrl %>" class="ui-icon ui-icon-circle-arrow-e" title="Right"></span>
+                    <span data-command="right" class="command-button ui-icon ui-icon-circle-arrow-e" title="Right"></span>
                 <% } %>
                 <br>
                 <% if (metrics.upUrl) { %>
-                    <span data-url="<%= metrics.upUrl %>" class="ui-icon ui-icon-circle-arrow-n" title="Up"></span>
+                    <span data-command="up" class="command-button ui-icon ui-icon-circle-arrow-n" title="Up"></span>
                 <% } %>
                 <% if (metrics.downUrl) { %>
-                    <span data-url="<%= metrics.downUrl %>" class="ui-icon ui-icon-circle-arrow-s" title="Down"></span>
+                    <span data-command="down" class="command-button ui-icon ui-icon-circle-arrow-s" title="Down"></span>
                 <% } %>
                 <% if (metrics.openUrl) { %>
-                    <span data-url="<%= metrics.openUrl %>" class="ui-icon ui-icon-power" title="Open"></span>
+                    <span data-command="open" class="command-button ui-icon ui-icon-power" title="Open"></span>
                 <% } %>
                 <% if (metrics.closeUrl) { %>
-                    <span data-url="<%= metrics.closeUrl %>" class="ui-icon ui-icon-circle-close" title="Close"></span>
+                    <span data-command="close" class="command-button ui-icon ui-icon-circle-close" title="Close"></span>
                 <% } %>
             </div>
         </div>
