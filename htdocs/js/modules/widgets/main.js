@@ -49,7 +49,7 @@ define([
                     modelView = new ThermostatView({model: model});
                 } else if (model.get('deviceType') === "doorlock") {
                     modelView = new DoorLockView({model: model});
-                } else if (model.get('deviceType') === "switchBinary") {
+                } else if (model.get('deviceType') === "switchBinary" || model.get('deviceType') === "switchRGBW") {
                     modelView = new SwitchView({model: model});
                 } else if (model.get('deviceType') === "toggleButton") {
                     modelView = new ToggleView({model: model});

@@ -1,9 +1,39 @@
 define([
     "helpers/apis",
     "backbone",
-    "text!templates/widgets/switch-small.html"
+    "text!templates/widgets/switch-small.html",
+    'simple-color-picker'
 ], function (Apis, Backbone, templateSwitch) {
     'use strict';
+
+    function getColor(value, hex) {
+        var color;
+
+        if (!hex) {
+            if (value === '#7bd148') {
+                color = 'green';
+            } else if (value === '#a4bdfc') {
+                color = 'blue';
+            } else if (value === '#ff887c') {
+                color = 'red';
+            } else {
+                color = 'white';
+            }
+        } else {
+            if (value === 'green') {
+                color = '#7bd148';
+            } else if (value === 'blue') {
+                color = '#a4bdfc';
+            } else if (value === 'red') {
+                color = '#ff887c';
+            } else {
+                color = '#ffffff';
+            }
+        }
+
+
+        return color;
+    }
 
     return Backbone.View.extend({
         el: '#devices-container',
@@ -42,7 +72,6 @@ define([
 
             that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-
                 if (String(that.model.get('metrics').level) === 'on') {
                     that.$template.find(".action").addClass('active').attr({title: 'ON'});
                     that.$template.find(".switch-door").addClass('active');
@@ -69,6 +98,18 @@ define([
                         .find('.text').text(command.toUpperCase());
                 });
             });
+
+            if (that.model.get('deviceType') !== 'switchRGBW') {
+                that.$template.find('.picker').simplecolorpicker({picker: true}).on('change', function () {
+                    var value = that.$template.find('.picker').val(),
+                        color = getColor(value);
+
+                    Apis.devices.command(that.model.get('id'), 'exact/' + color, {});
+                });
+
+                that.$template.find('.picker').simplecolorpicker('selectColor', getColor(that.model.get('metrics').color, true));
+                that.$template.find('.colors-container').show();
+            }
 
             if (!$('div[data-widget-id="' + that.model.id + '"]').exists()) {
                 that.$el.append(that.$template);

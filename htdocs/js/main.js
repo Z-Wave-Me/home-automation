@@ -7,6 +7,7 @@ requirejs.config({
         underscore : 'libs/backbone/underscore-min',
         jquery : 'libs/vendor/jquery-2.1.0.min',
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom.min',
+        'simple-color-picker': 'libs/vendor/jquery.simplecolorpicker',
         cookie : 'libs/vendor/jquery.cookie',
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
@@ -66,6 +67,9 @@ requirejs.config({
         },
         alpaca: {
             deps: ['jquery', 'ace', 'mode-javascript', 'mode-json', 'jquery-ui', 'theme-chrome', 'worker-javascript']
+        },
+        'simple-color-picker': {
+            deps: ['jquery']
         }
     },
     urlArgs: "v=" + vers

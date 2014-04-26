@@ -1,4 +1,4 @@
-<div class="widget-small widget-object show <% if ( typeof clear === 'undefined' ) { print('clear'); } else { print('unclear'); }; %>" data-widget-id="<%= id %>">
+<div class="widget-small <%= deviceType %> widget-object show <% if ( typeof clear === 'undefined' ) { print('clear'); } else { print('unclear'); }; %>" data-widget-id="<%= id %>">
     <div class="border-widget border-widget-sprite small-border">
         <span class="selection-button border-widget-sprite button-select-border"></span>
     </div>
@@ -11,6 +11,14 @@
             <% } %>
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
+            <div class="colors-container just-hidden">
+                <select class="picker">
+                    <option value="#7bd148">Green</option>
+                    <option value="#a4bdfc">Blue</option>
+                    <option value="#ff887c">Red</option>
+                    <option value="#ffffff">White</option>
+                </select>
+            </div>
             <a href="#" class="action <% if (metrics.level === 'on') { print(' active'); } %>" title="<% if (metrics.level === 'on') { print('On'); } else { print('Off'); }%>">
                 <span class="switch-door <% if (metrics.level === 'on') { print(' active'); } %>">
                     <span class="bubble"></span>
