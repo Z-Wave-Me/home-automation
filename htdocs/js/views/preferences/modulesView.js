@@ -95,7 +95,7 @@ define([
                     schema: App.Modules.get(instance.get('moduleId')).get('schema'),
                     options: App.Modules.get(instance.get('moduleId')).get('options'),
                     postRender: function (form) {
-                        that.$el.find('.save-button').on('click', function (e) {
+                        that.$el.find('.save-button').off().on('click', function (e) {
                             e.preventDefault();
                             var json = form.getValue();
                             if (Validator.validate(json, App.Modules.get(instance.get('moduleId')).get('schema'))) {
@@ -139,7 +139,7 @@ define([
                     schema: App.Modules.get($this.val()).get('schema'),
                     options: App.Modules.get($this.val()).get('options'),
                     postRender: function (form) {
-                        that.$el.find('.save-button').on('click', function (e) {
+                        that.$el.find('.save-button').off().on('click', function (e) {
                             e.preventDefault();
                             var json = form.getValue(),
                                 instance = new Instance();
