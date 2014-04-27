@@ -4,7 +4,17 @@
     "userView": true,
     "defaults": {
         "title": "Camera",
-        "description": "This module include configuration for a camera and create camera device"
+        "description": "This module include configuration for a camera and create camera device",
+	"url": "",
+	"zoomInUrl": "",
+	"zoomOutUrl": "",
+	"leftUrl": "",
+	"rightUrl": "",
+	"upUrl": "",
+	"downUrl": "",
+	"openUrl": "",
+	"closeUrl": "",
+	"doorDevices": []
     },
     "schema": {
         "type": "object",
@@ -12,14 +22,6 @@
             "url": {
                 "format": "uri",
                 "required": true
-            },
-            "hasUpUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "hasDownUrl": {
-                "format": "uri",
-                "required": false
             },
             "zoomInUrl": {
                 "format": "uri",
@@ -52,6 +54,15 @@
             "closeUrl": {
                 "format": "uri",
                 "required": false
+            },
+            "doorDevices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+                    "required": false
+                }
             }
         },
         "required": false
@@ -62,16 +73,6 @@
                 "label": "Camera URL",
                 "type": "url",
                 "required": true
-            },
-            "hasUpUrl": {
-                "label": "hasUp URL",
-                "type": "url",
-                "required": false
-            },
-            "hasDownUrl": {
-                "label": "hasDown URL",
-                "type": "url",
-                "required": false
             },
             "zoomInUrl": {
                 "label": "ZoomIn URL",
@@ -112,6 +113,16 @@
                 "label": "Close URL",
                 "type": "url",
                 "required": false
+            },
+            "doorDevices": {
+                "label": "Door device",
+                "fields": {
+                    "item": {
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+                    }
+                }
             }
         }
     }

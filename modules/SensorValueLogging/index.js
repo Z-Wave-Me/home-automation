@@ -74,7 +74,7 @@ SensorValueLogging.prototype.stop = function () {
     SensorValueLogging.super_.prototype.stop.call(this);
 
     if (this.handler && this.controller.devices.get(self.config.device))
-        this.controller.collection.get(self.config.device).off("change:metrics:level", this.handler);
+        this.controller.devices.get(self.config.device).off("change:metrics:level", this.handler);
 };
 
 // ----------------------------------------------------------------------------

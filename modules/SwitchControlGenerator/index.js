@@ -85,10 +85,12 @@ SwitchControlGenerator.prototype.stop = function () {
 
     var self = this;
     
-    this.generated.forEach(function(name) {
-        self.controller.devices.remove(name);
-    });
-    this.generated = null;
+    if (this.generated) {
+        this.generated.forEach(function(name) {
+            self.controller.devices.remove(name);
+        });
+        this.generated = null;
+    }
 
     SwitchControlGenerator.super_.prototype.stop.call(this);
 };

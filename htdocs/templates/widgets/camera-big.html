@@ -6,35 +6,29 @@
         <div class="control-block camera-block">
             <span class="title-container"><%= metrics.title %></span>
             <div class="control-buttons">
-                <% if (metrics.hasUpUrl) { %>
-                    <span data-command="hasUp" class="command-button ui-icon ui-icon-circle-triangle-n" title="Has Up"></span>
-                <% } %>
-                <% if (metrics.hasDownUrl) { %>
-                    <span data-command="hasDown" class="command-button ui-icon ui-icon-circle-triangle-s" title="Has Down"></span>
-                <% } %>
-                <% if (metrics.zoomInUrl) { %>
+                <% if (metrics.hasZoomIn) { %>
                     <span data-command="zoomIn" class="command-button ui-icon ui-icon-circle-zoomin" title="Zoom In"></span>
                 <% } %>
-                <% if (metrics.zoomOutUrl) { %>
+                <% if (metrics.hasZoomOut) { %>
                     <span data-command="zoomOut" class="command-button ui-icon ui-icon-circle-zoomout" title="Zoom Out"></span>
                 <% } %>
-                <% if (metrics.leftUrl) { %>
+                <% if (metrics.hasLeft) { %>
                     <span data-command="left" class="command-button ui-icon ui-icon-circle-arrow-w" title="Left"></span>
                 <% } %>
-                <% if (metrics.rightUrl) { %>
+                <% if (metrics.hasRight) { %>
                     <span data-command="right" class="command-button ui-icon ui-icon-circle-arrow-e" title="Right"></span>
                 <% } %>
                 <br>
-                <% if (metrics.upUrl) { %>
+                <% if (metrics.hasUp) { %>
                     <span data-command="up" class="command-button ui-icon ui-icon-circle-arrow-n" title="Up"></span>
                 <% } %>
-                <% if (metrics.downUrl) { %>
+                <% if (metrics.hasDown) { %>
                     <span data-command="down" class="command-button ui-icon ui-icon-circle-arrow-s" title="Down"></span>
                 <% } %>
-                <% if (metrics.openUrl) { %>
+                <% if (metrics.hasOpen) { %>
                     <span data-command="open" class="command-button ui-icon ui-icon-power" title="Open"></span>
                 <% } %>
-                <% if (metrics.closeUrl) { %>
+                <% if (metrics.hasClose) { %>
                     <span data-command="close" class="command-button ui-icon ui-icon-circle-close" title="Close"></span>
                 <% } %>
             </div>
