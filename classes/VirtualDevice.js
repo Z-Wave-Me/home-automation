@@ -51,9 +51,12 @@ _.extend(VirtualDevice.prototype, {
     get: function (param) {
         'use strict';
         var result;
-        if (this.attributes.hasOwnProperty(param)) {
-            result = this.attributes[param];
+        if (param.split(':').length) {
+            if (this.attributes.hasOwnProperty(param)) {
+                result = this.attributes[param];
+            }
         }
+
         return result;
     },
     set: function (keyName, val, options) {

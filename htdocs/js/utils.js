@@ -96,6 +96,10 @@ function getUrl(url, cb) {
     xmlhttp.send(null);
 }
 
+function rgbToHex(r, g, b, s) {
+    return (s || '') + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
 
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);

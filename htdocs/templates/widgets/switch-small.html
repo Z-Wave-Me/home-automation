@@ -12,12 +12,7 @@
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <div class="colors-container just-hidden">
-                <select class="picker">
-                    <option value="#7bd148">Green</option>
-                    <option value="#a4bdfc">Blue</option>
-                    <option value="#ff887c">Red</option>
-                    <option value="#ffffff">White</option>
-                </select>
+                <div class="picker"></div>
             </div>
             <a href="#" class="action <% if (metrics.level === 'on') { print(' active'); } %>" title="<% if (metrics.level === 'on') { print('On'); } else { print('Off'); }%>">
                 <span class="switch-door <% if (metrics.level === 'on') { print(' active'); } %>">

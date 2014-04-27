@@ -2,38 +2,9 @@ define([
     "helpers/apis",
     "backbone",
     "text!templates/widgets/switch-small.html",
-    'simple-color-picker'
+    'colpick'
 ], function (Apis, Backbone, templateSwitch) {
     'use strict';
-
-    function getColor(value, hex) {
-        var color;
-
-        if (!hex) {
-            if (value === '#7bd148') {
-                color = 'green';
-            } else if (value === '#a4bdfc') {
-                color = 'blue';
-            } else if (value === '#ff887c') {
-                color = 'red';
-            } else {
-                color = 'white';
-            }
-        } else {
-            if (value === 'green') {
-                color = '#7bd148';
-            } else if (value === 'blue') {
-                color = '#a4bdfc';
-            } else if (value === 'red') {
-                color = '#ff887c';
-            } else {
-                color = '#ffffff';
-            }
-        }
-
-
-        return color;
-    }
 
     return Backbone.View.extend({
         el: '#devices-container',
@@ -46,7 +17,8 @@ define([
         },
         render: function () {
             var that = this,
-                model = that.model;
+                model = that.model,
+                color;
 
             that.$template = $(_.template(templateSwitch, model.toJSON()));
 
@@ -100,14 +72,18 @@ define([
             });
 
             if (that.model.get('deviceType') === 'switchRGBW') {
-                that.$template.find('.picker').simplecolorpicker({picker: true}).on('change', function () {
-                    var value = that.$template.find('.picker').val(),
-                        color = getColor(value);
+                color = _.isObject(model.get('metrics').color) ? model.get('metrics').color : {r: 255, g: 255, b: 255};
 
-                    Apis.devices.command(that.model.get('id'), 'exact/' + color, {});
-                });
-
-                that.$template.find('.picker').simplecolorpicker('selectColor', getColor(that.model.get('metrics').color, true));
+                that.$template.find('.picker').colpick({
+                    colorScheme: 'dark',
+                    layout: 'rgbhex',
+                    color: rgbToHex(color.r, color.g, color.b),
+                    onSubmit: function (hsb, hex, rgb, el) {
+                        $(el).css('background-color', '#' + hex);
+                        $(el).colpickHide();
+                        Apis.devices.command(that.model.get('id'), 'exact', {red: rgb.r, green: rgb.g, blue: rgb.b});
+                    }
+                }).css({'background-color': rgbToHex(color.r, color.g, color.b, '#')});
                 that.$template.find('.colors-container').show();
             }
 
