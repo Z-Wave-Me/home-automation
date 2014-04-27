@@ -53,6 +53,10 @@ define([
                     });
                 }
             });
+
+            if (!Boolean(that.Instances.length)) {
+                that.newInstance();
+            }
         },
 
         renderInstances: function () {
