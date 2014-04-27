@@ -246,7 +246,7 @@ define([
                         types: false
                     };
                 } else if (type === 'tags') {
-                    _.each(_.without(_.uniq(_.flatten(that.Devices.pluck('tags'))), 'sensor'), function (type) {
+                    _.each(_.compact(_.without(_.uniq(_.flatten(that.Devices.pluck('tags'))), 'sensor')), function (type) {
                         that.addTagToFilter(type);
                     });
                     $allTemplate.on('click', function (e) {

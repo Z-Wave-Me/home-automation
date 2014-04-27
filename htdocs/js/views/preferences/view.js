@@ -545,7 +545,7 @@ define([
             if (tags.indexOf('tags') === -1) {
                 tags.push('dashboard');
             }
-            return tags;
+            return _.compact(tags);
         }
     });
 });
