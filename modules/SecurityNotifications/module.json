@@ -6,7 +6,7 @@
 		"title": "Security notifications",
 		"description": "Notify on changes of sensors and switches state",
 		"binary": [],
-		"multilevel": []
+		"multilevel": [],
 		"triggerScene": null
 	},
 	"schema": {

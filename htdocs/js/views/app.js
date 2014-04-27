@@ -14,20 +14,16 @@ define([
         el: 'body',
 
         initialize: function () {
-            var that = this;
-
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = window.location.port !== "" ? window.location.port : 8083;
-            that.apiHost = window.location.hostname;
-            //that.apiPort = 10483;
-            //that.apiHost = 'mskoff.z-wave.me';
+            this.apiPort = window.location.port !== "" ? window.location.port : 8083;
+            this.apiHost = window.location.hostname;
 
-            that.preFilterAjax();
-            that.buildStructure();
+            this.preFilterAjax();
+            this.buildStructure();
             Backbone.sync = bbSync;
-            that.addJqueryMethod();
+            this.addJqueryMethod();
         },
         render: function () {
             log('Render app.js...');

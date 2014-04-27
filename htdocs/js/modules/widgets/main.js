@@ -17,20 +17,18 @@ define([
         el: '#devices-container',
         initialize: function () {
             _.bindAll(this, 'render', 'renderWidget');
-            var that = this;
-            that.Devices = window.App.Devices;
+            this.Devices = window.App.Devices;
         },
         render: function (fixedPosition, forceView) {
-            var that = this;
-            that.fixedPosition = fixedPosition || null;
-            if (that.Devices.length > 0) {
-                that.$el.empty();
+            this.fixedPosition = fixedPosition || null;
+            if (this.Devices.length > 0) {
+                this.$el.empty();
                 if (!$("#devices-container").exists()) {
                     $('#main-region').append('<section id="devices-container" class="widgets"></section>');
                 }
-                that.Devices.each(function (device) {
-                    that.renderWidget(device, forceView);
-                });
+                this.Devices.each(function (device) {
+                    this.renderWidget(device, forceView);
+                }, this);
             }
         },
         renderWidget: function (model, forceView) {
