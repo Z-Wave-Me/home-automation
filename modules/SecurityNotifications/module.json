@@ -24,7 +24,7 @@
                                         "safeStatus": {
                                                 "type": "select",
                                                 "required": true,
-                                                "enum": [false, true"]
+                                                "enum": ["false", "true"]
                                         }
 				}
 			},
@@ -40,7 +40,7 @@
                                         "greater": {
                                                 "type": "select",
                                                 "required": true,
-						"enum": [false, true"]
+						"enum": ["false", "true"]
                                         },
                                         "safeBorder": {
                                                 "type": "number",
