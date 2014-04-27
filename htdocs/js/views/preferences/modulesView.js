@@ -53,12 +53,6 @@ define([
                     });
                 }
             });
-
-            if (!Boolean(that.Instances.length)) {
-                that.newInstance();
-            } else {
-                that.$el.find.children()[0].click();
-            }
         },
 
         renderInstances: function () {
@@ -69,6 +63,11 @@ define([
             that.Instances.each(function (instance) {
                 that.renderInstanceList(instance);
             });
+            if (!Boolean(that.Instances.length)) {
+                that.newInstance();
+            } else {
+                that.$el.find('.items-list').children()[0].click();
+            }
         },
 
         renderInstanceList: function (instance) {
