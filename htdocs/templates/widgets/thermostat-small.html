@@ -12,15 +12,29 @@
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="select-field">
-                <select>
-                    <% _.each(metrics.modes, function(mode) { %>
-                        <% if (mode.id == metrics.currentMode ) { %>
-                            <option selected value="<%= mode.id %>"><%= mode.title %></option>
-                        <% } else { %>
-                            <option value="<%= mode.id %>"><%= mode.title %></option>
-                        <% } %>
-                    <%  }); %>
-                </select>
+                <% if (metrics.hasSensor) { %>
+                    <select class="temp-select">
+                        <% _.each(metrics.availableTemperature, function(temp) { %>
+                            <% if (temp === metrics.level ) { %>
+                                <option selected value="<%= temp %>"><%= temp %></option>
+                            <% } else { %>
+                                <option value="<%= temp %>"><%= temp %></option>
+                            <% } %>
+                        <%  }); %>
+                    </select>
+                <% } %>
+
+                <% if (metrics.hasMode) { %>
+                    <select class="mode-select">
+                        <% _.each(Object.keys(metrics.modes), function(key) { %>
+                            <% if (key === metrics.currentMode) { %>
+                                <option selected value="<%= key %>"><%= metrics.modes[key] %></option>
+                            <% } else { %>
+                                <option value="<%= key %>"><%= metrics.modes[key] %></option>
+                            <% } %>
+                        <%  }); %>
+                    </select>
+                <% } %>
             </span>
         </div>
     </div>

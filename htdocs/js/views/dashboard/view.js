@@ -22,6 +22,7 @@ define([
             });
         },
         render: function () {
+            window.widget = this.WidgetsModule;
             if (window.location.hash.indexOf('dashboard') !== -1 || !window.location.hash) {
                 var that = this,
                     fixedPosition = true,
