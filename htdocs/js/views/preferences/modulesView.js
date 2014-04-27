@@ -57,7 +57,7 @@ define([
             if (!Boolean(that.Instances.length)) {
                 that.newInstance();
             } else {
-                that.$el.find.children()[0].click()
+                that.$el.find.children()[0].click();
             }
         },
 
