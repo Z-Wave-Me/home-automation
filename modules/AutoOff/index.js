@@ -46,9 +46,9 @@ AutoOff.prototype.init = function (config) {
     this.vDev = this.controller.devices.get(this.config.device);
 
     // Check if device is a switch
-    if ("switchBinary" !== this.vDev.deviceType && "switchMultilevel" !== this.vDev.deviceType) {
+    if ("switchBinary" !== this.vDev.get("deviceType") && "switchMultilevel" !== this.vDev.get("deviceType")) {
         // Exit initializer due to invalid device type
-        console.log("ERROR", "AutoOff Device", this.config.device, "isn't switch", "(" + this.vDev.deviceType + ").");
+        console.log("ERROR", "AutoOff Device", this.config.device, "isn't switch", "(" + this.vDev.get("deviceType") + ").");
         return;
     }
 

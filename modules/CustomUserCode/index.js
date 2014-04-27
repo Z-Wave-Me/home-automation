@@ -35,7 +35,7 @@ CustomUserCode.prototype.init = function (config) {
     //try {
         executeJS(this.config.customCode);
     //} catch (e) {
-    //    controrolle.addNotification("warning", "Failed to load custom user code: " + this.getMetric("title"), "module");
+    //    controller.addNotification("warning", "Failed to load custom user code: " + this.get("metrics:title"), "module");
     //}
 };
 

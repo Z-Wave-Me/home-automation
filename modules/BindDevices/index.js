@@ -36,7 +36,7 @@ BindDevices.prototype.init = function (config) {
         var actionBinary = null;
         var actionMultilevel = null;
         
-        value = sDev.getMetricValue("level");
+        value = sDev.get("metrics:level");
         if (value === 255 || value === true || value === "on") {
             actionBinary = "on";
         } else if (value === 0 || value === false || value === "off") {
@@ -50,10 +50,10 @@ BindDevices.prototype.init = function (config) {
             var vDev = that.controller.devices.get(el);
             
             if (vDev) {
-                if (vDev.deviceType === "switchBinary" || vDev.deviceType === "scene" || vDev.deviceType === "swtichMultilevel" && actionMultilevel === null) {
+                if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "swtichMultilevel" && actionMultilevel === null) {
                     vDev.performCommand(actionBinary);
                     console.log(actionBinary, vDev.id);
-                } else if (vDev.deviceType === "swtichMultilevel") {
+                } else if (vDev.get("deviceType") === "swtichMultilevel") {
                         vDev.performCommand("exact", actionMultilevel);
                 }
             }

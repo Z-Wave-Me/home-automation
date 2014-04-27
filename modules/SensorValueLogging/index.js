@@ -34,9 +34,9 @@ SensorValueLogging.prototype.init = function (config) {
     var device = this.controller.devices.get(this.config.device);
 
     // Check if device is a switch
-    if ("sensor" !== device.deviceType) {
+    if ("sensor" !== device.get("deviceType")) {
         // Exit initializer due to invalid device type
-        console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + device.deviceType + ").");
+        console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + device.get("deviceType") + ").");
         return;
     }
 
@@ -49,11 +49,11 @@ SensorValueLogging.prototype.init = function (config) {
             if (!storedLog) {
                 storedLog = {
                     deviceId: vDev.id,
-                    deviceName: vDev.getMetricValue('title'),
+                    deviceName: vDev.get("metrics:title"),
                     sensorData: []
                 };
             }
-            storedLog.push({"time": Date.now(), "value": vDev.getMetricValue('level')});
+            storedLog.push({"time": Date.now(), "value": vDev.get("metrics:level")});
             saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
             storedLog = null;
         }
@@ -61,7 +61,7 @@ SensorValueLogging.prototype.init = function (config) {
         if (self.config.logTo === "HTTPGET") {
             http.request({
                 method: 'GET',
-                url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.getMetricValue('level'))
+                url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.get('metrics:level'))
             });
         }
     };

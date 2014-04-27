@@ -168,6 +168,8 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics.icon = this.deviceType;
     },
     setMetricValue: function (name, value) {
+        console.log("Deprecated setMetricValue(\"xx\") should be replaced by set(\"metric:xx\")");
+        
         var metrics = this.get('metrics');
         metrics[name] = value;
         this.controller.emit("device.metricUpdated", this.id, name, value);
@@ -181,6 +183,8 @@ _.extend(VirtualDevice.prototype, {
         this.emit("change", this, {name: value});
     },
     getMetricValue: function (name) {
+        console.log("Deprecated getMetricValue(\"xx\") should be replaced by get(\"metric:xx\")");
+        
         return this.metrics[name];
     },
     performCommand: function () {
