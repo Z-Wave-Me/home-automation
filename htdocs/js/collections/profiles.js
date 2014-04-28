@@ -53,8 +53,7 @@ define([
         },
 
         setDevice: function (device) {
-            var that = this,
-                activeProfile = this.getActive(),
+            var activeProfile = this.getActive(),
                 widgets = activeProfile.get('widgets'),
                 widget,
                 index;
@@ -73,8 +72,7 @@ define([
                 App.Devices.get(device.id).trigger('hide');
             }
 
-            activeProfile.set({widgets: widgets});
-            activeProfile.save();
+            activeProfile.save({widgets: widgets});
         },
 
         isShow: function (deviceId) {
