@@ -205,11 +205,6 @@ define([
                     });
                 }
             });
-
-            this.listenTo(window.App.Instances, 'sync', function () {
-                window.App.Namespaces.fetch();
-                window.App.Devices.fetch();
-            });
         }
     });
 });
