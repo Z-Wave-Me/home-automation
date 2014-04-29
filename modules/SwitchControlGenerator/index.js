@@ -99,7 +99,9 @@ SwitchControlGenerator.prototype.init = function (config) {
                 deviceType: "switchControl",
                 metrics: {
                     icon: '',
-                    title: name
+                    title: name,
+                    level: "",
+                    change: ""
                 }
             }, this.widgetHandler);
         }
@@ -134,14 +136,14 @@ SwitchControlGenerator.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
-    if (this.command === "on" || this.command === "off") {
+    if (command === "on" || command === "off") {
         this.set("metrics:level", command);
     }
-    if (this.command === "exact") {
+    if (command === "exact") {
         this.set("metrics:level", params.level);
     }
-    if (this.command === "upstart" || this.command === "upstop" || this.command === "downstart" || this.command === "downstop") {
-        this.set("metrics:change", this.command);
+    if (command === "upstart" || command === "upstop" || command === "downstart" || command === "downstop") {
+        this.set("metrics:change", command);
     }
 };
 
@@ -158,7 +160,9 @@ SwitchControlGenerator.prototype.handler = function(cmd, par, ids) {
             deviceType: "switchControl",
             metrics: {
                 icon: '',
-                title: name
+                title: name,
+                level: "",
+                change: ""
             }
         }, this.widgetHandler);
         
