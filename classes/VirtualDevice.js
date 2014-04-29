@@ -152,6 +152,7 @@ _.extend(VirtualDevice.prototype, {
 
         if (!options.silent) {
             if (changes.length) {
+                that.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
                 if (!!that.collection) {
                     that.collection.emit('change', that);
                     that.collection.emit('all', that);
