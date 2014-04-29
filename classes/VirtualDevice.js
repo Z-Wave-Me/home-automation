@@ -34,6 +34,41 @@ VirtualDevice = function (deviceId, controller, defaults, handler) {
     return this;
 };
 
+function inObj(obj, arr, param) {
+    var result, findObj;
+
+    while (arr.length > 0) {
+        findObj = result === undefined ? obj : result;
+        if (findObj.hasOwnProperty(arr[0])) {
+            result = findObj[arr[0]];
+        } else {
+            break;
+        }
+
+        arr.shift();
+    }
+
+    return arr.length > 0 ? undefined : result;
+}
+
+function setObj(obj, arr, param) {
+    var key;
+
+    if (obj) {
+        if (obj.hasOwnProperty(arr[0])) {
+            key = arr[0];
+            arr.shift();
+            if (arr.length === 0) {
+                console.log([arr, obj, key]);
+                obj[key] = param;
+            } else {
+                setObj(obj[key], arr, param);
+            }
+        }
+    }
+    return obj;
+}
+
 inherits(VirtualDevice, EventEmitter2);
 
 _.extend(VirtualDevice.prototype, {
@@ -43,6 +78,8 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
+        console.log('----------------');
+        console.log(JSON.stringify(this.get('metrics:icon')));
     },
     setReady: function () {
         this.ready = true;
@@ -51,10 +88,13 @@ _.extend(VirtualDevice.prototype, {
     get: function (param) {
         'use strict';
         var result;
-        if (param.split(':').length) {
+
+        if (param.split(':').length === 1) {
             if (this.attributes.hasOwnProperty(param)) {
                 result = this.attributes[param];
             }
+        } else if (param.split(':').length > 1) {
+            result = inObj(this.toJSON(), param.split(':'));
         }
 
         return result;
@@ -92,29 +132,23 @@ _.extend(VirtualDevice.prototype, {
                 that.changed[keyName] = val;
             }
         } else {
-            // >>> workaround
-            if (_.isString(keyName) && typeof(val) != "undefined" && keyName.split(':').length > 1 && keyName.split(':')[0] === "metrics" && keyName.split(':')[1]) {
-                console.log("Workaround!!!");
-                this.setMetricValue(keyName.split(':')[1], val);
-                return this;
-            }
-            // <<<
-            if (!!options.merge || options.merge === undefined) {
-                attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
+            if (_.isString(keyName) && val !== undefined && keyName.split(':').length > 1) {
+                setObj(current, keyName.split(':'), val);
+                _.extend(that.attributes, current);
+                changes.push(keyName);
             } else {
                 attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
+                Object.keys(attrs).forEach(function (key) {
+                    if (!_.isEqual(current[key], attrs[key])) {
+                        changes.push(attrs[key]);
+                    }
+                    if (!_.isEqual(prev[key], attrs[key])) {
+                        that.changed[key] = attrs[key];
+                    } else {
+                        delete that.changed[key];
+                    }
+                });
             }
-
-            Object.keys(attrs).forEach(function (key) {
-                if (!_.isEqual(current[key], attrs[key])) {
-                    changes.push(attrs[key]);
-                }
-                if (!_.isEqual(prev[key], attrs[key])) {
-                    that.changed[key] = attrs[key];
-                } else {
-                    delete that.changed[key];
-                }
-            });
         }
 
 
