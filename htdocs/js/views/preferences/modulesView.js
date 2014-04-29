@@ -95,32 +95,34 @@ define([
                 $instance.addClass('active');
                 that.$el.find('.content-body').empty().append($template);
                 window.App.Instances.fetch();
-                window.App.Namespaces.fetch();
-                
-                that.$el.find('.alpaca-form').empty().alpaca({
-                    data: instance.get('params'),
-                    schema: App.Modules.get(instance.get('moduleId')).get('schema'),
-                    options: App.Modules.get(instance.get('moduleId')).get('options'),
-                    postRender: function (form) {
-                        that.$el.find('.save-button').off().on('click', function (e) {
-                            e.preventDefault();
-                            var json = form.getValue();
-                            if (Validator.validate(json, App.Modules.get(instance.get('moduleId')).get('schema'))) {
-                                instance.save({params: json});
-                                $template.hide('fast', function () {
-                                    $template.off().remove();
-                                    $instance.removeClass('active');
+                window.App.Namespaces.fetch({
+                    success: function () {
+                        that.$el.find('.alpaca-form').empty().alpaca({
+                            data: instance.get('params'),
+                            schema: App.Modules.get(instance.get('moduleId')).get('schema'),
+                            options: App.Modules.get(instance.get('moduleId')).get('options'),
+                            postRender: function (form) {
+                                that.$el.find('.save-button').off().on('click', function (e) {
+                                    e.preventDefault();
+                                    var json = form.getValue();
+                                    if (Validator.validate(json, App.Modules.get(instance.get('moduleId')).get('schema'))) {
+                                        instance.save({params: json});
+                                        $template.hide('fast', function () {
+                                            $template.off().remove();
+                                            $instance.removeClass('active');
+                                        });
+                                        that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
+                                        window.App.Instances.fetch();
+                                        window.App.Namespaces.fetch();
+                                    } else {
+                                        that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
+                                    }
                                 });
-                                that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
-                                window.App.Instances.fetch();
-                                window.App.Namespaces.fetch();
-                            } else {
-                                that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
                             }
                         });
+                        that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
                     }
                 });
-                that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
             });
 
             that.$el.find('.items-list').append($instance);
