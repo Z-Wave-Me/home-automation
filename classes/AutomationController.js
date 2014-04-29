@@ -196,6 +196,10 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
         instance = null;
 
+    if (!module) {
+        self.addNotification("error", "Can not instanciate module: module not found in the list of all modules", "core");
+    }
+    
     if ((instanceModel.params.hasOwnProperty('status') && instanceModel.params.status === 'enable') || !instanceModel.params.hasOwnProperty('status')) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);

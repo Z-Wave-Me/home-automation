@@ -85,13 +85,20 @@ _.extend(VirtualDevice.prototype, {
         options = options || {};
         accessAttrs = options.accessAttrs || that.accessAttrs;
 
-        if (_.isString(keyName) && !!val && keyName.split(':').length === 1) {
+        if (_.isString(keyName) && typeof(val) != "undefined" && keyName.split(':').length === 1) {
             findObj = findX(this.attributes, keyName);
             if (findObj[keyName] === val) {
                 changes.push(keyName);
                 that.changed[keyName] = val;
             }
         } else {
+            // >>> workaround
+            if (_.isString(keyName) && typeof(val) != "undefined" && keyName.split(':').length > 1 && keyName.split(':')[0] === "metrics" && keyName.split(':')[1]) {
+                console.log("Workaround!!!");
+                this.setMetricValue(keyName.split(':')[1], val);
+                return this;
+            }
+            // <<<
             if (!!options.merge || options.merge === undefined) {
                 attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
             } else {

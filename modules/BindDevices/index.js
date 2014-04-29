@@ -30,13 +30,12 @@ BindDevices.prototype.init = function (config) {
 
     var self = this;
 
-    this.handler = function (sDev) {
-        var that = self;
+    this.handlerLevel = function (sDev) {
+        var that = self,
+            actionBinary = null,
+            actionMultilevel = null,
+            value = sDev.get("metrics:level");
         
-        var actionBinary = null;
-        var actionMultilevel = null;
-        
-        value = sDev.get("metrics:level");
         if (value === 255 || value === true || value === "on") {
             actionBinary = "on";
         } else if (value === 0 || value === false || value === "off") {
@@ -52,20 +51,45 @@ BindDevices.prototype.init = function (config) {
             if (vDev) {
                 if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "swtichMultilevel" && actionMultilevel === null) {
                     vDev.performCommand(actionBinary);
-                    console.log(actionBinary, vDev.id);
                 } else if (vDev.get("deviceType") === "swtichMultilevel") {
-                        vDev.performCommand("exact", actionMultilevel);
+                    vDev.performCommand("exact", actionMultilevel);
+                }
+            }
+        });
+    };
+
+    this.handlerChange = function (sDev) {
+        var action = sDev.get("metrics:change");
+        
+        self.config.targetDevices.forEach(function(el) {
+            var vDev = self.controller.devices.get(el);
+            
+            if (vDev) {
+                if (vDev.get("deviceType") === "swtichMultilevel") {
+                    vDev.performCommand(action);
                 }
             }
         });
     };
 
     // Setup metric update event listener
-    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).on('change:metrics:level', this.handler);
+    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
+        self.controller.devices.get(el.id).on('change:metrics:level', self.handlerLevel);
+    });
+    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
+        self.controller.devices.get(el.id).on('change:metrics:change', self.handlerChange);
+    });
 };
 
 BindDevices.prototype.stop = function () {
-    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id)}).off('change:metrics:level', this.handler);
+    var self = this;
+    
+    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
+        self.controller.devices.get(el.id).off('change:metrics:level', self.handlerLevel);
+    });
+    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
+        self.controller.devices.get(el.id).off('change:metrics:level', self.handlerChange);
+    });
 
     BindDevices.super_.prototype.stop.call(this);
 };

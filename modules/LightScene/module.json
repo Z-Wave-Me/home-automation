@@ -72,6 +72,7 @@
 						"fields": {
 							"device": {
 								"label": "",
+								"type": "select",
 								"datasource": "namespaces",
 								"field": "optionLabels",
 								"optionLabels": "namespaces:devices_switchBinary:deviceName"
@@ -91,6 +92,7 @@
 						"fields": {
 							"device": {
 								"label": "",
+								"type": "select",
 								"datasource": "namespaces",
 								"field": "optionLabels",
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
@@ -106,6 +108,7 @@
 				"label": "List of scenes to activate",
 				"fields": {
 					"item": {
+						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_toggleButton:deviceName"

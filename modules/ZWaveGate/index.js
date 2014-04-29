@@ -105,6 +105,9 @@ ZWaveGate.prototype.init = function (config) {
             });
         });
     });
+    
+    this.controller.on("ZWaveGate.dataBind", this.dataBind);
+    this.controller.on("ZWaveGate.dataUnbind", this.dataUnbind);
 };
 
 ZWaveGate.prototype.stop = function () {
@@ -114,6 +117,9 @@ ZWaveGate.prototype.stop = function () {
     // releasing bindings
     this.dataUnbind(this.dataBindings);
     zway.unbind(this.zwayBinding);
+
+    this.controller.off("ZWaveGate.dataBind", this.dataBind);
+    this.controller.off("ZWaveGate.dataUnbind", this.dataUnbind);
 };
 
 // Module methods
@@ -251,7 +257,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         });
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "level", function () {
-                vDev.setMetricValue("level", this.value ? "on" : "off");
+                vDev.set("metrics:level", this.value ? "on" : "off");
             }, "value");
         }
     } else if (this.CC["SwitchMultilevel"] === commandClassId) {
@@ -306,7 +312,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         });
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "level", function() {
-                vDev.setMetricValue("level", this.value);
+                vDev.set("metrics:level", this.value);
             }, "value");
         }
     } else if (this.CC["SensorBinary"] === commandClassId) {
@@ -328,7 +334,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
-                        vDev.setMetricValue("level", this.value ? "on" : "off");
+                        vDev.set("metrics:level", this.value ? "on" : "off");
                     }, "value");
                 }
             }
@@ -356,7 +362,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
-                        vDev.setMetricValue("level", this.value);
+                        vDev.set("metrics:level", this.value);
                     }, "value");
                 }
             }
@@ -384,7 +390,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 vDev = self.controller.devices.create(vDevId + separ + scaleId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, scaleId + ".val", function() {
-                        vDev.setMetricValue("level", this.value);
+                        vDev.set("metrics:level", this.value);
                     }, "value");
                 }
             }
@@ -406,7 +412,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         vDev = self.controller.devices.create(vDevId, defaults);
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "last", function() {
-                vDev.setMetricValue("level", this.value);
+                vDev.set("metrics:level", this.value);
             }, "value");
         }
     } else if (this.CC["DoorLock"] === commandClassId) {
@@ -428,7 +434,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         });
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
-                vDev.setMetricValue("mode", this.value === 255 ? "close" : "open");
+                vDev.set("metrics:mode", this.value === 255 ? "close" : "open");
             }, "value");
         }
     } else if (this.CC["ThermostatFanMode"] === commandClassId) {
@@ -443,10 +449,10 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         vDev = self.controller.devices.create(vDevId, defaults, "fan");
         if (vDev) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
-                vDev.setMetricValue("currentMode", this.value);
+                vDev.set("metrics:currentMode", this.value);
             }, "value");
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "on", function() {
-                vDev.setMetricValue("state", this.value);
+                vDev.set("metrics:state", this.value);
             }, "value");
 
             var modes = {};
@@ -459,7 +465,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     };
                 }
             });  
-            this.setMetricValue("modes", modes);
+            this.set("metrics:modes", modes);
             // !!! изменение
         }
     }

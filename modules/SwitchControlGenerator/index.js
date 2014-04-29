@@ -32,31 +32,65 @@ SwitchControlGenerator.prototype.init = function (config) {
 
     this.CC = {
         "Basic": 0x20,
-        "SwitchMultilevel": 0x26
+        "SwitchBinary": 0x25,
+        "SwitchMultilevel": 0x26,
+        "SceneActivation": 0x2b
     };
     
     this.bindings = [];
     try {
-        var insts = zway.devices[zway.controller.data.nodeId.value].instances;
+        var ctrlNodeId = zway.controller.data.nodeId.value,
+            insts = zway.devices[ctrlNodeId].instances;
         for (var i in insts) {
             (function(n) {
                 var dataB = insts[n].Basic.data,
-                    dataSML = insts[n].SwitchMultilevel.data;
-                
-                ZWaveGate.dataBind(self.bindings, zway.controller.data.nodeId.value, n, this.CC["Basic"], "level", function(type) {
-                    self.handler(this.value ? "on" : "off", dataB.srcNodeId.value, dataB.srcInstanceId.value, n);
+                    dataSB = insts[n].SwitchBinary.data,
+                    dataSML = insts[n].SwitchMultilevel.data,
+                    dataSc = insts[n].SceneActivation.data;
+               
+                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
+                    var val, par = {};
+                    
+                    if (this.value === 0) {
+                        val = "off";
+                    } else if (this.value === 255) {
+                        val = "on";
+                    } else {
+                        val = "exact";
+                        par = { level: this.value };
+                    }
+                    self.handler(val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                 }, "");
-                ZWaveGate.dataBind(self.bindings, zway.controller.data.nodeId.value, n, this.CC["SwitchMultilevel"], "startChange", function(type) {
-                    self.handler(this.value ? "downstart" : "upstart", dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n);
+                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchBinary"], "level", function(type) {
+                    self.handler(this.value ? "on" : "off", [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
                 }, "");
-                ZWaveGate.dataBind(self.bindings, zway.controller.data.nodeId.value, n, this.CC["SwitchMultilevel"], "stopChange", function(type) {
-                    self.handler(dataSML.startChange.value ? "downstop" : "upstop", dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n);
+                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "level", function(type) {
+                    var val, par = {};
+                    
+                    if (this.value === 0) {
+                        val = "off";
+                    } else if (this.value === 255) {
+                        val = "on";
+                    } else {
+                        val = "exact";
+                        par = { level: this.value };
+                    }
+                    self.handler(val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                }, "");
+                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "startChange", function(type) {
+                    self.handler(this.value ? "downstart" : "upstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                }, "");
+                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "stopChange", function(type) {
+                    self.handler(dataSML.startChange.value ? "downstop" : "upstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                }, "");
+                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
+                    self.handler("on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
                 }, "");
             })(i);
         }
     } catch(e) {
         this.controller.addNotification("error", "SwitchControlGenerator failed to start: controller dataholder can not be loaded: " + e.toString(), "controller");
-        return;
+        throw(e);
     };
 
     this.config.generated.forEach(function(name) {
@@ -76,7 +110,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 
 SwitchControlGenerator.prototype.stop = function () {
     try {
-        ZWaveGate.dataUnbind(this.bindings);
+        controller.emit("ZWaveGate.dataUnbind", this.bindings);
     } catch(e) {
         this.controller.addNotification("error", "SwitchControlGenerator failed to stop: controller dataholder can not be unbinded: " + e.toString(), "controller");
     };
@@ -99,13 +133,21 @@ SwitchControlGenerator.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-SwitchControlGenerator.prototype.widgetHandler = function(command) {
-    this.performCommand("XXXXXXXXXXX", command);
+SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
+    if (this.command === "on" || this.command === "off") {
+        this.set("metrics:level", command);
+    }
+    if (this.command === "exact") {
+        this.set("metrics:level", params.level);
+    }
+    if (this.command === "upstart" || this.command === "upstop" || this.command === "downstart" || this.command === "downstop") {
+        this.set("metrics:change", this.command);
+    }
 };
 
-SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstInst) {
-    var postfix = srcNode.toString() + ":" + srcInst.toString() + ":" + dstInst.toString(),
-        name = "Switch_" + this.id + "_" + postfix;
+SwitchControlGenerator.prototype.handler = function(cmd, par, ids) {
+    var postfix = ids.join(":"),
+        name = "Remote_" + this.id + "_" + postfix;
     
     if (this.config.generated.indexOf(name) === -1) {
         if (this.config.banned.indexOf(name) !== -1) {
@@ -121,7 +163,6 @@ SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstIn
         }, this.widgetHandler);
         
         this.config.generated.push(name);
-        this.params = this.config;
         this.saveConfig();
     };
     
@@ -131,5 +172,5 @@ SwitchControlGenerator.prototype.handler = function(cmd, srcNode, srcInst, dstIn
         return;
     }
     
-    this.widgetHandler.call(vDev, cmd);
+    this.widgetHandler.call(vDev, cmd, par);
 };

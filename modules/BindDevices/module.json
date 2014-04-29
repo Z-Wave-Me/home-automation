@@ -38,6 +38,7 @@
 				"label": "List of event sources",
 				"fields": {
 					"item": {
+						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
@@ -48,6 +49,7 @@
 				"label": "List of actors",
 				"fields": {
 					"item": {
+						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_doorlock:deviceName"

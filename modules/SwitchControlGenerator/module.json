@@ -14,6 +14,7 @@
 			"generated": {
 				"type": "array",
 				"items": {
+					"type": "select",
 					"field": "enum",
 					"datasource": "namespaces",
 					"enum": "namespaces:devices_switchControl:deviceId",
@@ -38,6 +39,7 @@
 				"label": "List of switches to instanciate (filled automatically)",
 				"fields": {
 					"item": {
+						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_switchControl:deviceName"
@@ -48,6 +50,7 @@
 				"label": "List of switches not to instanciate",
 				"fields": {
 					"item": {
+						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_switchControl:deviceName"
