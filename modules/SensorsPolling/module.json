@@ -3,7 +3,7 @@
     "singleton": true,
     "userView": true,
     "defaults": {
-        "title": "Poll sensors",
+        "title": "Poll sensors periodically",
         "description": "Regular sensors polling",
         "devices": [],
         "period": 60
@@ -16,7 +16,7 @@
                     "items": {
                             "field": "enum",
                             "datasource": "namespaces",
-                            "enum": "namespaces:devices_sensor:deviceId",
+                            "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
                             "required": true,
                             "minItems": 1
                     }
@@ -38,7 +38,7 @@
 					"type": "select",
                             		"datasource": "namespaces",
 		                        "field": "optionLabels",
-                                        "optionLabels": "namespaces:devices_sensor:deviceName"
+                                        "optionLabels": "namespaces:devices_sensor:deviceName,namespaces:devices_sensorMultilevel:deviceName"
             		    }
                     }
             },

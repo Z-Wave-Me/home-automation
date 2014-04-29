@@ -3,7 +3,7 @@
     "singleton": false,
     "userView": true,
     "defaults": {
-	"title": "Custom user code loader",
+	"title": "Load custom JavaScript file",
 	"description": "Allows to load custom files from automation/ folder",
 	"customCodeFiles": [ ]
     },

@@ -39,7 +39,7 @@ define([
 
 
             if (!modelView) {
-                if (model.get('deviceType') === "probe" || model.get('deviceType') === "sensor" || model.get('deviceType') === "battery") {
+                if (model.get('deviceType') === "sensorBinary" || model.get('deviceType') === "sensorMultilevel" || model.get('deviceType') === "battery") {
                     modelView = new ProbeWidgetView({model: model});
                 } else if (model.get('deviceType') === "fan") {
                     modelView = new FanWidgetView({model: model});

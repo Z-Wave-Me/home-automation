@@ -93,7 +93,7 @@ define([
             });
 
             that.listenTo(that.Devices, 'change:tags', function () {
-                _.each(_.without(_.uniq(_.flatten(that.Devices.pluck('tags'))), 'sensor'), function (type) {
+                _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
                     that.addTagToFilter(type);
                 });
             });

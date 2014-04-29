@@ -3,7 +3,7 @@
     "singleton": false,
     "userView": true,
     "defaults": {
-        "title": "SMS.ru notifications",
+        "title": "SMS.ru Notifications",
         "description": "Sends all notifications via free SMS poroxy SMS.ru",
         "api_key": "",
         "phone": "",

@@ -3,7 +3,7 @@
     "singleton": false,
     "userView": true,
     "defaults": {
-        "title": "Camera",
+        "title": "Web Camera",
         "description": "This module include configuration for a camera and create camera device",
 	"url": "",
 	"zoomInUrl": "",

@@ -3,7 +3,7 @@
     "userView": true,
     "singleton": false,
     "defaults": {
-        "title": "Sensor logging",
+        "title": "Sensor values logging",
         "description": "Store sensor values in JSON file or via HTTP requests to your server",
         "device": ""
     },
@@ -13,7 +13,7 @@
             "device": {
                 "field": "enum",
                 "datasource": "namespaces",
-                "enum": "namespaces:devices_sensor:deviceId",
+                "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
                 "required": true
             },
             "logTo": {
@@ -35,7 +35,7 @@
                 "label": "Sensor to log",
                 "datasource": "namespaces",
                 "field": "optionLabels",
-                "optionLabels": "namespaces:devices_sensor:deviceName"
+                "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
             },
             "logTo": {
             	"label": "How to store:",

@@ -317,11 +317,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         }
     } else if (this.CC["SensorBinary"] === commandClassId) {
         defaults = {
-            deviceType: 'sensor',
+            deviceType: 'sensorBinary',
             metrics: {
                 probeTitle: '',
                 scaleTitle: '',
-                icon: 'sensor',
+                icon: '',
                 level: '',
                 title: ''
             }
@@ -331,6 +331,19 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             if (!isNaN(sensorTypeId)) {
                 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                 defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                if (sensorTypeId == 2) {
+                        defaults.metrics.icon = "smoke";
+                } else if (sensorTypeId == 3 || sensorTypeId == 4) {
+                        defaults.metrics.icon = "co";
+                } else if (sensorTypeId == 6) {
+                        defaults.metrics.icon = "flood";
+                } else if (sensorTypeId == 7) {
+                        defaults.metrics.icon = "cooling";
+                } else if (sensorTypeId == 10) {
+                        defaults.metrics.icon = "door";
+                } else if (sensorTypeId == 12) {
+                        defaults.metrics.icon = "motion";
+                }
                 vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function() {
@@ -344,12 +357,12 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         }, "child");
     } else if (this.CC["SensorMultilevel"] === commandClassId) {
         defaults = {
-            deviceType: "sensor",
+            deviceType: "sensorMultilevel",
             metrics: {
                 probeTitle: '',
                 scaleTitle: '',
                 level: '',
-                icon: 'sensor',
+                icon: '',
                 title: ''
             }
         };
@@ -359,6 +372,15 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                 defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
                 defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                if (sensorTypeId == 1) {
+                        defaults.metrics.icon = "temperature";
+                } else if (sensorTypeId == 3) {
+                        defaults.metrics.icon = "luminosity";
+                } else if (sensorTypeId == 4 || sensorTypeId == 15 || sensorTypeId == 16) {
+                        defaults.metrics.icon = "energy";
+                } else if (sensorTypeId == 5) {
+                        defaults.metrics.icon = "humidity";
+                }
                 vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults);
                 if (vDev) {
                     self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function() {
@@ -372,12 +394,12 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         }, "child");
     } else if (this.CC["Meter"] === commandClassId) {
         defaults = {
-            deviceType: 'sensor',
+            deviceType: 'sensorMultilevel',
             metrics: {
                 probeTitle: '',
                 scaleTitle: '',
                 level: '',
-                icon: 'probe',
+                icon: 'meter',
                 title: ''
             }
         };

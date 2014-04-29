@@ -201,7 +201,6 @@ _.extend(VirtualDevice.prototype, {
         this.removeAllListeners();
     },
     init: function () {
-        console.log("--- VDev init(" + this.id + ")");
         this.setReady();
     },
     deviceTitle: function () {

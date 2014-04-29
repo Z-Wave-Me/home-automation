@@ -3,7 +3,7 @@
     "singleton": false,
     "userView": true,
     "defaults": {
-        "title": "Weather informer",
+        "title": "Weather Informer",
         "description": "Weather informer provided by OpenWeatherMap.org",
         "units": "celsius",
 	"city": "Moscow",

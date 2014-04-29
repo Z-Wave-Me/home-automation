@@ -12,7 +12,6 @@ Description:
 // ----------------------------------------------------------------------------
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
-
 function SecurityNotifications (id, controller) {
     // Call superconstructor first (AutomationModule)
     SecurityNotifications.super_.call(this, id, controller);
@@ -37,7 +36,7 @@ SecurityNotifications.prototype.init = function (config) {
     
     executeFile(this.moduleBasePath() + "/SecurityNotificationsDevice.js");
     this.vdev = new SecurityNotificationsDevice("SecurityNotifications", this.controller);
-    this.vdev.setMetricValue("level", this.statusData.armed);
+    this.vdev.set("metrics:level", this.statusData.armed);
     this.vdev.init();
     this.controller.registerDevice(this.vdev);
 
@@ -47,10 +46,11 @@ SecurityNotifications.prototype.init = function (config) {
             result,
             i;
         
-        if (!self.get("metrics:level"))
+        if (!self.get("metrics:level")) {
             return;
+        }
         
-        i = self.config.binary.map(function(el) { return el.id; }).indexOf(vdevId)
+        i = self.config.binary.map(function(el) { return el.id; }).indexOf(vdevId);
         if (i !== -1) {
             var dev = self.controller.devices.get(vdevId);
             if (dev.get("metrics:level") === self.config.binary[i].safeStatus) {
@@ -62,13 +62,13 @@ SecurityNotifications.prototype.init = function (config) {
             }
         }
 
-        i = self.config.multilevel.map(function(el) { return el.id; }).indexOf(vdevId)
+        i = self.config.multilevel.map(function(el) { return el.id; }).indexOf(vdevId);
         if (i !== -1) {
             var dev = self.controller.devices.get(vdevId);
-            if (dev.get("metrics:level") > self.config.multilevel[i].border && self.config.multilevel[i].greater) {
+            if (dev.get("metrics:level") > self.config.multilevel[i].border && self.config.multilevel[i].greater === ">") {
                 message = "Device " + vdev.get("metrics:title") + " is back to safe.";
                 result = false;
-            } else (dev.get("metrics:level") < self.config.multilevel[i].border && !self.config.multilevel[i].greater) {
+            } else if (dev.get("metrics:level") < self.config.multilevel[i].border && !self.config.multilevel[i].greater === "<") {
                 message = "Device " + vdev.get("metrics:title") + " triggered!";
                 result = true;
             }

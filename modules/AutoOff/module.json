@@ -3,7 +3,7 @@
     "userView": true,
     "singleton": false,
     "defaults": {
-        "title": "Auto off devices",
+        "title": "Auto Off",
         "description": "Turns off automatically devices after a defined time",
         "timeout": 5,
         "device": ""

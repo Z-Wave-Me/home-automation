@@ -3,10 +3,10 @@
 	"singleton": true,
 	"userView": true,
 	"defaults": {
-		"title": "Security notifications",
+		"title": "Security notifications -- unfinished!!!",
 		"description": "Notify on changes of sensors and switches state",
 		"binary": [],
-		"multilevel": []
+		"multilevel": [],
 		"triggerScene": null
 	},
 	"schema": {
@@ -24,7 +24,7 @@
                                         "safeStatus": {
                                                 "type": "select",
                                                 "required": true,
-                                                "enum": [false, true"]
+                                                "enum": ["off", "on"]
                                         }
 				}
 			},
@@ -40,7 +40,7 @@
                                         "greater": {
                                                 "type": "select",
                                                 "required": true,
-						"enum": [false, true"]
+						"enum": ["<", ">"]
                                         },
                                         "safeBorder": {
                                                 "type": "number",

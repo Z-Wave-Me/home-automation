@@ -7,7 +7,7 @@
                     <select class="form-control selectModules" id="selectModules">
                         <option disabled selected>Choose module</option>
                         <% _.each(modules, function(module) { %>
-                            <option value="<%= module.id %>"><%= module.attributes.className %></option>
+                            <option value="<%= module.id %>"><%= module.attributes.defaults.title %></option>
                         <% }); %>
                     </select>
                 </div>

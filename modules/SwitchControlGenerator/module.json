@@ -3,7 +3,7 @@
 	"singleton": true,
 	"userView": true,
 	"defaults": {
-		"title": "Switch Controls generator",
+		"title": "Trap events from Remotes and Sensors",
 		"description": "Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
 		"generated": [],
 		"banned": []
