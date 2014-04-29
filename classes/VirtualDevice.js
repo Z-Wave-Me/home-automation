@@ -34,7 +34,7 @@ VirtualDevice = function (deviceId, controller, defaults, handler) {
     return this;
 };
 
-function inObj(obj, arr, param) {
+function inObj(obj, arr) {
     var result, findObj;
 
     while (arr.length > 0) {
@@ -55,14 +55,15 @@ function setObj(obj, arr, param) {
     var key;
 
     if (obj) {
-        if (obj.hasOwnProperty(arr[0])) {
-            key = arr[0];
-            arr.shift();
-            if (arr.length === 0) {
-                obj[key] = param;
-            } else {
-                setObj(obj[key], arr, param);
-            }
+        key = arr[0];
+        arr.shift();
+        if (arr.length === 0) {
+            obj[key] = param;
+        } else if (obj.hasOwnProperty(key) && arr.length > 0) {
+            setObj(obj[key], arr, param);
+        } else if (!obj.hasOwnProperty(key) && arr.length > 0) {
+            obj[key] = {};
+            setObj(obj[key], arr, param);
         }
     }
     return obj;
@@ -151,6 +152,7 @@ _.extend(VirtualDevice.prototype, {
 
         if (!options.silent) {
             if (changes.length) {
+                that.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
                 if (!!that.collection) {
                     that.collection.emit('change', that);
                     that.collection.emit('all', that);
