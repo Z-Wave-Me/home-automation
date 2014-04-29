@@ -53,7 +53,8 @@ define([
                     fixedPosition = false,
                     forceView = true;
 
-                window.App.Devices.lock = true;
+                that.Devices.trigger('normal');
+                that.Devices.lock = true;
                 that.WidgetsModule.render(fixedPosition, forceView);
             }
         }

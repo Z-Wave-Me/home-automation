@@ -282,28 +282,19 @@ define([
                     grid: [ 10, 10 ],
                     handle: '.small-border, .button-select-border',
                     scroll: false,
-                    snap: true,
                     snapMode: "outer",
-                    snapTolerance: 10,
                     containment: "parent",
                     stop: function (event, ui) {
                         var xPos = ui.position.left,
                             yPos = ui.position.top,
-                            device = App.Devices.get($(this).attr('data-widget-id')),
-                            profile = App.Profiles.findWhere({active: true}),
-                            widgets = profile.get('widgets'),
-                            model = _.find(widgets, function (widget) {return device.id === widget.id; }),
-                            index = widgets.indexOf(model);
+                            deviceId = $(this).attr('data-widget-id'),
+                            deviceFromProfile = App.Profiles.getDevice(deviceId);
 
-                        widgets[index] = {
-                            id: device.id,
-                            position: {
-                                x: xPos,
-                                y: yPos
-                            }
-                        };
 
-                        profile.save({widgets: widgets});
+                        deviceFromProfile.position.x = xPos;
+                        deviceFromProfile.position.y = yPos;
+
+                        window.App.Profiles.setDevice(deviceFromProfile);
                     }
                 });
             });
