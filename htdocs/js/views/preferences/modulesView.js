@@ -94,7 +94,9 @@ define([
                 that.instanceActive = instance.id;
                 $instance.addClass('active');
                 that.$el.find('.content-body').empty().append($template);
-
+                window.App.Instances.fetch();
+                window.App.Namespaces.fetch();
+                
                 that.$el.find('.alpaca-form').empty().alpaca({
                     data: instance.get('params'),
                     schema: App.Modules.get(instance.get('moduleId')).get('schema'),
