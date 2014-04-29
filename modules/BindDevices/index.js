@@ -73,22 +73,30 @@ BindDevices.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
-        self.controller.devices.get(el.id).on('change:metrics:level', self.handlerLevel);
+    this.controller.devices.filter(function(xDev) {
+        return in_array(self.config.sourceDevices, xDev.id);
+    }).map(function (yDev) {
+        self.controller.devices.get(yDev.id).on('change:metrics:level', self.handlerLevel);
     });
-    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
-        self.controller.devices.get(el.id).on('change:metrics:change', self.handlerChange);
+    this.controller.devices.filter(function(xDev) {
+        return in_array(self.config.sourceDevices, xDev.id);
+    }).map(function (yDev) {
+        self.controller.devices.get(yDev.id).on('change:metrics:change', self.handlerChange);
     });
 };
 
 BindDevices.prototype.stop = function () {
     var self = this;
     
-    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
-        self.controller.devices.get(el.id).off('change:metrics:level', self.handlerLevel);
+    this.controller.devices.filter(function(xDev) {
+        return in_array(self.config.sourceDevices, xDev.id);
+    }).map(function (yDev) {
+        self.controller.devices.get(yDev.id).off('change:metrics:level', self.handlerLevel);
     });
-    this.controller.devices.toJSON().filter(function(xDev) { return in_array(self.config.sourceDevices, xDev.id); }).map(function (el) {
-        self.controller.devices.get(el.id).off('change:metrics:level', self.handlerChange);
+    this.controller.devices.filter(function(xDev) {
+        return in_array(self.config.sourceDevices, xDev.id);
+    }).map(function (yDev) {
+        self.controller.devices.get(yDev.id).off('change:metrics:change', self.handlerChange);
     });
 
     BindDevices.super_.prototype.stop.call(this);
