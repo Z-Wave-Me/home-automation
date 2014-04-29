@@ -45,10 +45,6 @@ define([
                 });
             }
 
-            _.each(that.models, function (model) {
-                model.trigger('change:metrics');
-            });
-
             this.updateTime = response.data.updateTime;
             return response.data.devices;
         },
