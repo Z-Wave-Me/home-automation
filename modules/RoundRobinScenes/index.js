@@ -37,7 +37,7 @@ RoundRobinScenes.prototype.init = function (config) {
         metrics: {
             level: '',
             icon: '',
-            title: 'Scene ' + this.id
+            title: 'Round Robin Scene ' + this.id
         }
     }, function() {
         self.currentSceneIndex++;

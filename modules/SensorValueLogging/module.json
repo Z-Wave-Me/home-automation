@@ -13,7 +13,7 @@
             "device": {
                 "field": "enum",
                 "datasource": "namespaces",
-                "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
+                "enum": "namespaces:devices_sensor:deviceId",
                 "required": true
             },
             "logTo": {
@@ -35,7 +35,7 @@
                 "label": "Sensor to log",
                 "datasource": "namespaces",
                 "field": "optionLabels",
-                "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
+                "optionLabels": "namespaces:devices_sensor:deviceName"
             },
             "logTo": {
             	"label": "How to store:",

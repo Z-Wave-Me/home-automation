@@ -118,6 +118,7 @@
                 "label": "Door device",
                 "fields": {
                     "item": {
+			"type": "select",
                         "datasource": "namespaces",
                         "field": "optionLabels",
                         "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"

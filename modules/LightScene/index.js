@@ -35,13 +35,13 @@ LightScene.prototype.init = function (config) {
         metrics: {
             level: '',
             icon: '',
-            title: 'Scene ' + this.id
+            title: 'Light Scene ' + this.id
         }
     }, function () {
         self.config.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                vDev.performCommand(devState.status ? "on" : "off");
+                vDev.performCommand(devState.status);
             }
         });
         self.config.dimmers.forEach(function(devState) {

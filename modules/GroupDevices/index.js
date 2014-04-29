@@ -30,7 +30,8 @@ GroupDevices.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create("GroupDevices_" + this.id, {
+    this.vDev = this.controller.devices.create(
+        "GroupDevices_" + (this.config.isDimmable ? "bn" : "ml") + "_" + this.id, { // different names to rebuild UI on change
         deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary",
         metrics: {
             probeTitle: '',
@@ -61,6 +62,18 @@ GroupDevices.prototype.init = function (config) {
                 }
             });
         }
+        
+        var level = command;
+        if (self.config.isDimmable) {
+            if (command === "on") {
+                level = 99;
+            } else if (command === "off") {
+                level = 0;
+            } else {
+                level = args.level;
+            }
+        }
+        this.set("metrics:level", level);
     });
 };
 

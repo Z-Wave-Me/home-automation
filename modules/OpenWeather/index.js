@@ -45,7 +45,7 @@ OpenWeather.prototype.stop = function () {
         clearInterval(this.timer);
         
     if (this.vDev) {
-        this.controller.removeDevice(this.vDev.id);
+        this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
 };
@@ -63,11 +63,11 @@ OpenWeather.prototype.fetchWeather = function(instance) {
         success: function(res) {
             try {
                 var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 : res.data.main.temp) * 10) / 10,
-                    icon = res.data.main.icon;
+                    icon = "http://openweathermap.org/img/w/" + res.data.weather[0].icon + ".png";
 
                 if (!self.vDev) {
                     self.vDev = self.controller.devices.create("OpenWeather_" + self.id, {
-                        deviceType: "probe",
+                        deviceType: "sensor",
                         metrics: {
                             probeTitle: 'Temperature',
                             scaleTitle: self.config.units === "celsius" ? '°C' : '°F',
@@ -77,8 +77,8 @@ OpenWeather.prototype.fetchWeather = function(instance) {
                         }
                     });
                 } else {
-                    self.vDev.setMetricValue("level", temp);
-                    self.vDev.setMetricValue("icon", "http://openweathermap.org/img/w/" + icon + ".png");
+                    self.vDev.set("metrics:level", temp);
+                    self.vDev.set("metrics:icon", icon);
                 }
             } catch (e) {
                 self.controller.addNotification("error", "Can not parse weather information", "module");

@@ -28,6 +28,7 @@
 				"label": "List of scenes to activate",
 				"fields": {
 					"item": {
+						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_toggleButton:deviceName"

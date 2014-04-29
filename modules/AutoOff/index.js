@@ -36,31 +36,19 @@ AutoOff.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     AutoOff.super_.prototype.init.call(this, config);
 
-    // Check VirtualDevice existence
-    if (!this.controller.devices.hasOwnProperty(this.config.device)) {
-        // Exit initializer due to lack of the device
-        console.log("ERROR", "AutoOff Device", this.config.device, "doesn't exist.");
-        return;
-    }
-
     this.vDev = this.controller.devices.get(this.config.device);
-
-    // Check if device is a switch
-    if ("switchBinary" !== this.vDev.get("deviceType") && "switchMultilevel" !== this.vDev.get("deviceType")) {
-        // Exit initializer due to invalid device type
-        console.log("ERROR", "AutoOff Device", this.config.device, "isn't switch", "(" + this.vDev.get("deviceType") + ").");
-        return;
-    }
 
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
     this.handler = function (vDev) {
+        var value = vDev.get("metrics:level");
+        
         if (self.timer) {
             // Timer is set, so we destroy it
             clearTimeout(self.timer);
         }
-        if (true === value || 255 === value) {
+        if ("on" === value || (parseInt(value) && value > 0)) {
             // Device reported "on", set (or reset) timer to new timeout
             // Notice: self.config.timeout set in seconds
             self.timer = setTimeout(function () {
@@ -74,7 +62,9 @@ AutoOff.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    this.vDev.on('change:metrics:level', this.handler);
+    if (this.vDev) {
+        this.vDev.on('change:metrics:level', this.handler);
+    }
 };
 
 AutoOff.prototype.stop = function () {
@@ -83,7 +73,7 @@ AutoOff.prototype.stop = function () {
     if (this.timer)
         clearInterval(this.timer);
     
-    if (this.handler) {
+    if (this.handler && this.vDev) {
         this.vDev.off('change:metrics:level', this.handler);
         this.vDev = null;
     }

@@ -134,7 +134,7 @@ define([
                             if (obj[key].indexOf('namespaces') !== -1 && obj[key].split(':').length > 1) {
                                 obj[key].split(',').forEach(function (val) {
                                     namespace = App.Namespaces.get(val.split(':')[1]) || [];
-                                    if (namespace) {
+                                    if (namespace && namespace.attributes) { // check that it existsd in namespaces
                                         arr = arr.concat(_.pluck(namespace.get('params'), val.split(':')[2]));
                                     }
                                 });

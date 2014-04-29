@@ -103,7 +103,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                     level: "",
                     change: ""
                 }
-            }, this.widgetHandler);
+            }, self.widgetHandler);
         }
     });
     

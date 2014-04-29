@@ -53,7 +53,7 @@ SensorValueLogging.prototype.init = function (config) {
                     sensorData: []
                 };
             }
-            storedLog.push({"time": Date.now(), "value": vDev.get("metrics:level")});
+            storedLog.sensorData.push({"time": Date.now(), "value": vDev.get("metrics:level")});
             saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
             storedLog = null;
         }

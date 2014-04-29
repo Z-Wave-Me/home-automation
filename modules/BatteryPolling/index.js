@@ -46,19 +46,28 @@ BatteryPolling.prototype.init = function (config) {
             scaleTitle: "%",
             level: "",
             icon: "",
-            title: "Scene " + this.id
+            title: "Battery digest " + this.id
         }
     }, this.onPoll);
 
-    this.onMetricUpdated = function (vdev) {
-        self.vdev.setMetricValue("level", self.minimalBatteryValue());
+    this.onMetricUpdated = function (vDev) {
+        if (vDev.id === self.vDev.id) {
+            return; // prevent infinite loop with updates from itself
+        }
+        
+        var value = self.minimalBatteryValue();
+        self.vDev.set("metrics:level", value);
         if (value <= self.config.warningLevel) {
             self.controller.addNotification("warning", "Device " + dev.get("metrics:title") + " is low battery", "battery");
         }
     };
     
     // Setup event listeners
-    this.controller.devices.where({deviceType: "battery"}).on("change:metrics:level", this.onMetricUpdated);
+    this.controller.devices.filter(function (el) {
+        return el.get("deviceType") === "battery";
+    }).map(function(el) {
+        el.on("change:metrics:level", self.onMetricUpdated);
+    });
 
     // set up cron handler
     this.controller.on("batteryPolling.poll", this.onPoll);
@@ -70,14 +79,23 @@ BatteryPolling.prototype.init = function (config) {
         weekDay: this.config.launchWeekDay,
         day: null,
         month: null
-    }); 
+    });
+    
+    // run first time to set up the value
+    this.onMetricUpdated({id: "not_a_device"});
 };
 
 BatteryPolling.prototype.stop = function () {
     BatteryPolling.super_.prototype.stop.call(this);
 
+    var self = this;
+    
     this.controller.devices.remove(this.vDev.id);
-    this.controller.devices.where({deviceType: "battery"}).off("change:metrics:level", this.onMetricUpdated);
+    this.controller.devices.filter(function (el) {
+        return el.get("deviceType") === "battery";
+    }).map(function(el) {
+        el.off("change:metrics:level", self.onMetricUpdated);
+    });
     this.controller.emit("cron.removeTask", "batteryPolling.poll");
     this.controller.off("batteryPolling.poll", this.onPoll);
 };
@@ -87,14 +105,15 @@ BatteryPolling.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 BatteryPolling.prototype.minimalBatteryValue = function () {
-    var self = this;
-    var res = 100;
+    var self = this,
+        arr;
+   
+    arr = this.controller.devices.filter(function(vDev) {
+        return vDev.get("deviceType") === "battery" && vDev.id != self.vDev.id;
+    }).map(function(vDev) {
+        return vDev.get("metrics:level");
+    });
+    arr.push(100);
 
-    for (var vdevId in this.controller.devices) {
-        var vdev = self.controller.devices[vdevId];
-        if (vdev.get("deviceType") === "battery" && res > vdev.get("metrics:level"))
-            res = vdev.get("metrics:level");
-    }
-
-    return res;
+    return Math.min.apply(null, arr);
 }

@@ -13,13 +13,10 @@
         "properties": {
             "devices": {
                     "type": "array",
-                    "field": "enum",
-                    "datasource": "namespaces",
                     "items": {
                             "field": "enum",
                             "datasource": "namespaces",
-                            "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
-                            "type": "string",
+                            "enum": "namespaces:devices_sensor:deviceId",
                             "required": true,
                             "minItems": 1
                     }
@@ -38,9 +35,10 @@
                     "label": "Sensors to poll:",
                     "fields": {
                             "item": {
+					"type": "select",
                             		"datasource": "namespaces",
 		                        "field": "optionLabels",
-                                        "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
+                                        "optionLabels": "namespaces:devices_sensor:deviceName"
             		    }
                     }
             },
