@@ -164,6 +164,9 @@ _.extend(DevicesCollection.prototype, {
     },
     map: function (callback) {
         return _.map(this.models, callback);
+    },
+    each: function (callback) {
+        return _.each(this.models, callback);
     }
 });
 
