@@ -158,6 +158,15 @@ _.extend(DevicesCollection.prototype, {
     },
     findWhere: function (obj) {
         return _.first(this.where(obj));
+    },
+    filter: function (callback) {
+        return _.filter(this.models, callback);
+    },
+    map: function (callback) {
+        return _.map(this.models, callback);
+    },
+    each: function (callback) {
+        return _.each(this.models, callback);
     }
 });
 
