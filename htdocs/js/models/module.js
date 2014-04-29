@@ -133,7 +133,7 @@ define([
                         } else if (_.isString(obj[key])) {
                             if (obj[key].indexOf('namespaces') !== -1 && obj[key].split(':').length > 1) {
                                 obj[key].split(',').forEach(function (val) {
-                                    namespace = App.Namespaces.get(val.split(':')[1]);
+                                    namespace = App.Namespaces.get(val.split(':')[1]) || [];
                                     if (namespace) {
                                         arr = arr.concat(_.pluck(namespace.get('params'), val.split(':')[2]));
                                     }
