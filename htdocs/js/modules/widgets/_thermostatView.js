@@ -30,8 +30,12 @@ define([
 
             that.$template.hide();
 
-            that.listenTo(window.App.Devices, 'settings normal', function () {
-                that.$template.toggleClass('clear');
+            that.listenTo(window.App.Devices, 'settings', function () {
+                that.$template.removeClass('clear');
+            });
+
+            that.listenTo(window.App.Devices, 'normal', function () {
+                that.$template.addClass('clear');
             });
 
             if (!that.Devices.activeMode) {

@@ -55,8 +55,12 @@ define([
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
             });
 
-            that.listenTo(window.App.Devices, 'settings normal', function () {
-                that.$template.toggleClass('clear');
+            that.listenTo(window.App.Devices, 'settings', function () {
+                that.$template.removeClass('clear');
+            });
+
+            that.listenTo(window.App.Devices, 'normal', function () {
+                that.$template.addClass('clear');
             });
 
             that.$template.find('.view-block').on('click', function (e) {
