@@ -59,7 +59,6 @@ function setObj(obj, arr, param) {
             key = arr[0];
             arr.shift();
             if (arr.length === 0) {
-                console.log([arr, obj, key]);
                 obj[key] = param;
             } else {
                 setObj(obj[key], arr, param);
@@ -78,8 +77,6 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
-        console.log('----------------');
-        console.log(JSON.stringify(this.get('metrics:icon')));
     },
     setReady: function () {
         this.ready = true;
