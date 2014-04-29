@@ -111,6 +111,7 @@ define([
                                 });
                                 that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
                                 window.App.Instances.fetch();
+                                window.App.Namespaces.fetch();
                             } else {
                                 that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
                             }
