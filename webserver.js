@@ -11,9 +11,12 @@ Copyright: (c) ZWave.Me, 2013
 // --- ZAutomationAPIWebRequest
 // ----------------------------------------------------------------------------
 
+executeFile("router.js");
+
 function ZAutomationAPIWebRequest (controller) {
     ZAutomationAPIWebRequest.super_.call(this);
 
+    this.router = new Router("/v1");
     this.controller = controller;
     this.res = {
         status: 200,
@@ -22,11 +25,35 @@ function ZAutomationAPIWebRequest (controller) {
         },
         body: null
     };
+
+    this.registerRoutes();
 };
 
+var ZAutomationWebRequest = ZAutomationWebRequest || function() {};
 inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
 _.extend(ZAutomationAPIWebRequest.prototype, {
+    registerRoutes: function() {
+        this.router.get("/status", this.statusReport);
+        this.router.get("/notifications", this.exposeNotifications());
+        // this.router.get("/notifications/markRead", this.markNotificationsRead());
+        this.router.get("/devices", this.listDevices);
+        this.router.get("/restart", this.restartController);
+        this.router.get("/locations", this.listLocations());
+        this.router.get("/profiles", this.listProfiles());
+        this.router.get("/namespaces", this.listNamespaces);
+        // this.router.post("/namespaces", this.createNamespace());
+        this.router.get("/profiles", this.createProfile());
+        this.router.get("/locations/add", this.addLocation());
+        this.router.post("/locations", this.addLocation());
+        this.router.get("/locations/remove", this.removeLocation());
+        this.router.get("/locations/update", this.updateLocation());
+        this.router.get("/modules", this.listModules);
+        this.router.get("/instances", this.listInstances);
+        this.router.post("/instances", this.createInstance());
+        this.router.get("/schemas", this.listSchemas);
+        // this.router.post("/schemas", this.createSchema());
+    },
     statusReport: function () {
         var reply = {
             error: null,
@@ -689,46 +716,14 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     var handlerFunc = this.NotFound;
 
     // ---------- Test exact URIs ---------------------------------------------
-
-    if ("GET" === method && "/v1/status" === url) {
-        handlerFunc = this.statusReport;
-    } else if ("GET" === method && "/v1/notifications" === url) {
-        handlerFunc = this.exposeNotifications();
-    } else if ("GET" === method && "/v1/notifications/markRead" === url) {
-        handlerFunc = this.markNotificationsRead();
-    } else if ("GET" === method && "/v1/devices" === url) {
-        handlerFunc = this.listDevices;
-    } else if ("GET" === method && "/v1/restart" === url) {
-        handlerFunc = this.restartController;
-    } else if ("GET" === method && "/v1/locations" === url) {
-        handlerFunc = this.listLocations();
-    } else if ("GET" === method && "/v1/profiles" === url) {
-        handlerFunc = this.listProfiles();
-    } else if ("GET" === method && "/v1/namespaces" === url) {
-        handlerFunc = this.listNamespaces;
-    } else if (("POST" === method) && "/v1/namespaces" === url) {
-        handlerFunc = this.createNamespace();
-    } else if (("POST" === method) && "/v1/profiles" === url) {
-        handlerFunc = this.createProfile();
-    } else if (("GET" === method && "/v1/locations/add" === url) || ("POST" === method && "/v1/locations" === url)) {
-        handlerFunc = this.addLocation();
-    } else if ("GET" === method && "/v1/locations/remove" === url) {
-        handlerFunc = this.removeLocation();
-    } else if ("GET" === method && "/v1/locations/update" === url) {
-        handlerFunc = this.updateLocation();
-    } else if ("GET" === method && "/v1/modules" === url) {
-        handlerFunc = this.listModules;
-    } else if ("GET" === method && "/v1/instances" === url) {
-        handlerFunc = this.listInstances;
-    } else if (("POST" === method) && "/v1/instances" === url) {
-        handlerFunc = this.createInstance();
-    } else if ("GET" === method && "/v1/schemas" === url) {
-        handlerFunc = this.listSchemas;
-    } else if ("POST" === method && "/v1/schemas" === url) {
-        handlerFunc = this.createSchema();
-    } else if ("OPTIONS" === method) {
+    if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
-    };
+    } else {
+        var matched = this.router.dispatch(method, url);
+        if (matched) {
+            handlerFunc = matched.handler;
+        }
+    }
 
     // ---------- Test regexp URIs --------------------------------------------
     var re, reTest;
