@@ -108,7 +108,8 @@ define([
             var $template = modelView.getTemplate();
             if (App.Profiles.isShow(modelView.model.id) || forceView) {
                 $template.show();
-                window.$tmp = $template;
+            } else {
+                $template.hide();
             }
         }
     });
