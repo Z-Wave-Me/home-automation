@@ -75,7 +75,7 @@ define([
                     });
                 });
 
-                that.showingControl(modelView, model, forceView);
+                that.showingControl(modelView, forceView);
 
                 if (that.fixedPosition) {
                     that.setPosition(modelView);
