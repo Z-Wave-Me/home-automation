@@ -12,25 +12,26 @@
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="select-field">
-                <% if (metrics.hasSensor) { %>
+            	<% var curModeObj = metrics.modes.filter(function(el) { return el.id === metrics.mode && el.level; })[0]; %>
+                <% if (curModeObj) { %>
                     <select class="temp-select">
-                        <% _.each(metrics.availableTemperature, function(temp) { %>
-                            <% if (temp === metrics.level ) { %>
+                        <% for (var temp = curModeObj.min; temp <= curModeObj.max; temp++) { %>
+                            <% if (temp === curModeObj.level ) { %>
                                 <option selected value="<%= temp %>"><%= temp %></option>
                             <% } else { %>
                                 <option value="<%= temp %>"><%= temp %></option>
                             <% } %>
-                        <%  }); %>
+                        <%  }; %>
                     </select>
                 <% } %>
 
-                <% if (metrics.hasMode) { %>
+                <% if (metrics.modes.length > 1) { %>
                     <select class="mode-select">
-                        <% _.each(Object.keys(metrics.modes), function(key) { %>
-                            <% if (key === metrics.currentMode) { %>
-                                <option selected value="<%= key %>"><%= metrics.modes[key] %></option>
+                        <% _.each(metrics.modes, function(modeObj) { %>
+                            <% if (modeObj.id === metrics.mode) { %>
+                                <option selected value="<%= modeObj.id %>"><%= modeObj.title %></option>
                             <% } else { %>
-                                <option value="<%= key %>"><%= metrics.modes[key] %></option>
+                                <option value="<%= modeObj.id %>"><%= modeObj.title %></option>
                             <% } %>
                         <%  }); %>
                     </select>
