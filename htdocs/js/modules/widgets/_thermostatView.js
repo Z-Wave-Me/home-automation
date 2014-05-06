@@ -55,12 +55,12 @@ define([
             });
 
             that.listenTo(that.model, 'change:metrics', function () {
-                var curMode = that.model.get('metrics').modes.filter(function(el) { return el.id == that.model.get('metrics').mode; })[0];
+                var curMode = that.model.get('metrics').modes[that.model.get('metrics').mode];
                 
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
                 that.$template.find(".mode-select").val(that.model.get('metrics').mode);
                 if (curMode) {
-                    if ('level' in curMode.level) {
+                    if ('level' in curMode) {
                         that.$template.find(".temp-select").show("fast").val(curMode.level);
                     } else {
                         that.$template.find(".temp-select").hide("fast");
@@ -76,10 +76,10 @@ define([
                     $this = $(this);
 
                 if ($this.hasClass('mode-select')) {
-                    params = String($this.val()) !== '-1' ? {mode: $this.val()} : {};
+                    params = { mode: $this.val() };
                     command = 'setMode';
                     
-                    var curMode = that.model.get('metrics').modes.filter(function(el) { return el.id == $this.val(); })[0];
+                    var curMode = that.model.get('metrics').modes[$this.val()];
                     if (curMode) {
                         if ('level' in curMode) {
                             that.$template.find(".temp-select").show("fast").val(curMode.level);
@@ -89,7 +89,7 @@ define([
                     }
                 } else if ($this.hasClass('temp-select')) {
                     var modeVal = $this.parent().find('.mode-select').val() || that.model.get('metrics').mode;
-                    params = {mode: modeVal, temp: $this.val()};
+                    params = { mode: modeVal, temp: $this.val() };
                     command = 'setTemp';
                 }
 
