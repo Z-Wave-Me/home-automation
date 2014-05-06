@@ -1,0 +1,11 @@
+{
+  "name": "zautomation",
+  "version": "1.0.0",
+  "description": "",
+  "license": "Private",
+  "dependencies": {
+    "lodash": "*",
+    "requirejs": "*",
+    "less": "*"
+  }
+}
