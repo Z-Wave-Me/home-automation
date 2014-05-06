@@ -11,9 +11,12 @@ Copyright: (c) ZWave.Me, 2013
 // --- ZAutomationAPIWebRequest
 // ----------------------------------------------------------------------------
 
+executeFile("router.js");
+
 function ZAutomationAPIWebRequest (controller) {
     ZAutomationAPIWebRequest.super_.call(this);
 
+    this.router = new Router("/v1");
     this.controller = controller;
     this.res = {
         status: 200,
@@ -22,11 +25,62 @@ function ZAutomationAPIWebRequest (controller) {
         },
         body: null
     };
+
+    this.registerRoutes();
 };
 
+var ZAutomationWebRequest = ZAutomationWebRequest || function() {};
 inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
 _.extend(ZAutomationAPIWebRequest.prototype, {
+    registerRoutes: function() {
+        this.router.get("/status", this.statusReport);
+        this.router.get("/notifications", this.exposeNotifications());
+        this.router.get("/devices", this.listDevices);
+        this.router.get("/restart", this.restartController);
+        this.router.get("/locations", this.listLocations());
+        this.router.get("/profiles", this.listProfiles());
+        this.router.get("/namespaces", this.listNamespaces);
+        this.router.post("/profiles", this.createProfile());
+        this.router.get("/locations/add", this.addLocation());
+        this.router.post("/locations", this.addLocation());
+        this.router.get("/locations/remove", this.removeLocation());
+        this.router.get("/locations/update", this.updateLocation());
+        this.router.get("/modules", this.listModules);
+        this.router.get("/instances", this.listInstances);
+        this.router.post("/instances", this.createInstance());
+        this.router.get("/schemas", this.listSchemas);
+
+        // TODO: Should we remove these as they are no longer available?
+        // this.router.post("/namespaces", this.createNamespace());
+        // this.router.get("/notifications/markRead", this.markNotificationsRead());
+        // this.router.post("/schemas", this.createSchema());
+
+        // patterned routes, right now we are going to just send in the wrapper
+        // function. We will let the handler consumer handle the application of
+        // the parameters.
+        this.router.get("/devices/:v_dev_id/command/:command_id", this.performVDevCommandFunc);
+
+        this.router.del("/locations/:location_id", this.removeLocation, [parseInt]);
+        this.router.put("/locations/:location_id", this.updateLocation, [parseInt]);
+        this.router.get("/locations/:location_id", this.listLocations, [parseInt]);
+
+        this.router.put("/notifications/:notification_id", this.updateNotification, [parseInt]);
+        this.router.get("/notifications/:notification_id", this.getNotificationFunc, [parseInt]);
+
+        this.router.del("/profiles/:profile_id", this.removeProfile, [parseInt]);
+        this.router.put("/profiles/:profile_id", this.updateProfile, [parseInt]);
+        this.router.get("/profiles/:profile_id", this.listProfiles, [parseInt]);
+
+        this.router.put("/devices/:dev_id", this.setVDevFunc);
+        this.router.get("/devices/:dev_id", this.getVDevFunc);
+
+        this.router.get("/instances/:instance_id", this.getInstanceFunc, [parseInt]);
+        this.router.put("/instances/:instance_id", this.reconfigureInstanceFunc, [parseInt]);
+        this.router.del("/instances/:instance_id", this.deleteInstanceFunc, [parseInt]);
+
+        this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
+    },
     statusReport: function () {
         var reply = {
             error: null,
@@ -189,13 +243,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: "OK"
             },
             notification,
-            that = this;
+            that = this,
+            reqObj;
+
+
 
         return function () {
             notification = that.controller.getNotification(notificationId);
-            if (notification) {
+            if (Boolean(notification)) {
+                
+                try {
+                    reqObj = JSON.parse(that.req.body);
+                } catch (ex) {
+                    reply.error = ex.message;
+                }
 
-                notification = that.controller.updateNotification(notificationId, this.req.reqObj);
+                notification = that.controller.updateNotification(notificationId, reqObj);
                 if (notification) {
                     reply.code = 200;
                     reply.data = notification;
@@ -435,17 +498,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var that = this;
         return function () {
             var reply = {
-                error: null,
-                data: null,
-                code: 500
-            };
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
 
-            if (!that.controller.instances.hasOwnProperty(instanceId)) {
+            if (Boolean(instance)) {
                 reply.code = 404;
                 reply.error = "Instance " + instanceId + " not found";
             } else {
                 reply.code = 200;
-                reply.data = that.controller.instances[instanceId].config;
+                reply.data = instance;
             }
 
             this.initResponse(reply);
@@ -686,150 +750,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     // Default handler is NotFound
-    var handlerFunc = this.NotFound;
+    var handlerFunc = this.NotFound,
+        validParams;
 
-    // ---------- Test exact URIs ---------------------------------------------
-
-    if ("GET" === method && "/v1/status" === url) {
-        handlerFunc = this.statusReport;
-    } else if ("GET" === method && "/v1/notifications" === url) {
-        handlerFunc = this.exposeNotifications();
-    } else if ("GET" === method && "/v1/notifications/markRead" === url) {
-        handlerFunc = this.markNotificationsRead();
-    } else if ("GET" === method && "/v1/devices" === url) {
-        handlerFunc = this.listDevices;
-    } else if ("GET" === method && "/v1/restart" === url) {
-        handlerFunc = this.restartController;
-    } else if ("GET" === method && "/v1/locations" === url) {
-        handlerFunc = this.listLocations();
-    } else if ("GET" === method && "/v1/profiles" === url) {
-        handlerFunc = this.listProfiles();
-    } else if ("GET" === method && "/v1/namespaces" === url) {
-        handlerFunc = this.listNamespaces;
-    } else if (("POST" === method) && "/v1/namespaces" === url) {
-        handlerFunc = this.createNamespace();
-    } else if (("POST" === method) && "/v1/profiles" === url) {
-        handlerFunc = this.createProfile();
-    } else if (("GET" === method && "/v1/locations/add" === url) || ("POST" === method && "/v1/locations" === url)) {
-        handlerFunc = this.addLocation();
-    } else if ("GET" === method && "/v1/locations/remove" === url) {
-        handlerFunc = this.removeLocation();
-    } else if ("GET" === method && "/v1/locations/update" === url) {
-        handlerFunc = this.updateLocation();
-    } else if ("GET" === method && "/v1/modules" === url) {
-        handlerFunc = this.listModules;
-    } else if ("GET" === method && "/v1/instances" === url) {
-        handlerFunc = this.listInstances;
-    } else if (("POST" === method) && "/v1/instances" === url) {
-        handlerFunc = this.createInstance();
-    } else if ("GET" === method && "/v1/schemas" === url) {
-        handlerFunc = this.listSchemas;
-    } else if ("POST" === method && "/v1/schemas" === url) {
-        handlerFunc = this.createSchema();
-    } else if ("OPTIONS" === method) {
+    if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
-    };
-
-    // ---------- Test regexp URIs --------------------------------------------
-    var re, reTest;
-
-    // --- Perform vDev command
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/devices\/(.+)\/command\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var vDevId = reTest[1];
-            var commandId = reTest[2];
-            if ("GET" === method && !!vDevId && !!commandId && controller.devices.get(vDevId)) {
-                handlerFunc = this.performVDevCommandFunc(vDevId, commandId);
-            }
-        }
-    }
-
-    // --- Remove and Update location
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/locations\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var locationId = parseInt(reTest[1]);
-            if ("DELETE" === method && locationId) {
-                handlerFunc = this.removeLocation(locationId);
-            } else if ("PUT" === method && locationId) {
-                handlerFunc = this.updateLocation(locationId);
-            } else if ("GET" === method && locationId) {
-                handlerFunc = this.listLocations(locationId);
-            }
-        }
-    }
-
-    // --- Remove and Update notifications
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/notifications\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var notificationId = parseInt(reTest[1]);
-            if ("PUT" === method && notificationId) {
-                handlerFunc = this.updateNotification(notificationId);
-            } else if ("GET" === method && notificationId) {
-                handlerFunc = this.getNotificationFunc(notificationId);
-            }
-        }
-    }
-
-    // --- Remove and Update profiles
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/profiles\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var profileId = parseInt(reTest[1]);
-            if ("DELETE" === method && profileId) {
-                handlerFunc = this.removeProfile(profileId);
-            } else if ("PUT" === method && profileId) {
-                handlerFunc = this.updateProfile(profileId);
-            } else if ("GET" === method && profileId) {
-                handlerFunc = this.listProfiles(profileId);
-            }
-        }
-    }
-
-    // --- Get and Set VDev meta
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/devices\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var vDevId = reTest[1];
-            if ("GET" === method && !!vDevId) {
-                handlerFunc = this.getVDevFunc(vDevId);
-            } else if ("PUT" === method && !!vDevId) {
-                handlerFunc = this.setVDevFunc(vDevId);
-            }
-        }
-    }
-
-    // --- Get instance config
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/instances\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var instanceId = parseInt(reTest[1]);
-            if ("GET" === method && !!instanceId) {
-                handlerFunc = this.getInstanceFunc(instanceId);
-            } else if ("PUT" === method && !!instanceId) {
-                handlerFunc = this.reconfigureInstanceFunc(instanceId);
-            } else if ("DELETE" === method && !!instanceId) {
-                handlerFunc = this.deleteInstanceFunc(instanceId);
-            }
-        }
-    }
-
-    // --- Get namespaces
-    if (handlerFunc === this.NotFound) {
-        re = /\/v1\/namespaces\/(.+)/;
-        reTest = re.exec(url);
-        if (!!reTest) {
-            var namespaceId = parseInt(reTest[1]);
-            if ("GET" === method && !!namespaceId) {
-                handlerFunc = this.getNamespaceFunc(namespaceId);
+    } else {
+        var matched = this.router.dispatch(method, url);
+        if (matched) {
+            if (matched.params.length) {
+                validParams = _.every(matched.params), function(p) { return !!p; };
+                if (validParams) {
+                    handlerFunc = matched.handler.apply(this, matched.params);
+                }
+            } else {
+                handlerFunc = matched.handler;
             }
         }
     }

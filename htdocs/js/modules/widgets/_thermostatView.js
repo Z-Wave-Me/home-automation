@@ -55,19 +55,8 @@ define([
             });
 
             that.listenTo(that.model, 'change:metrics', function () {
-                var curMode = that.model.get('metrics').modes[that.model.get('metrics').mode];
-                
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                that.$template.find(".mode-select").val(that.model.get('metrics').mode);
-                if (curMode) {
-                    if ('level' in curMode) {
-                        that.$template.find(".temp-select").show("fast").val(curMode.level);
-                    } else {
-                        that.$template.find(".temp-select").hide("fast");
-                    }
-                } else {
-                    console.log("Error in thermostat: can not find mode " + that.model.get('metrics').mode + " in " + JSON.stringify(that.model.get('metrics').modes));
-                }
+                that.$template.find("select").val(that.model.get('metrics').mode);
             });
 
             that.$template.find(".select-field select").on('change', function () {
@@ -76,20 +65,15 @@ define([
                     $this = $(this);
 
                 if ($this.hasClass('mode-select')) {
-                    params = { mode: $this.val() };
-                    command = 'setMode';
-                    
-                    var curMode = that.model.get('metrics').modes[$this.val()];
-                    if (curMode) {
-                        if ('level' in curMode) {
-                            that.$template.find(".temp-select").show("fast").val(curMode.level);
-                        } else {
-                            that.$template.find(".temp-select").hide("fast");
-                        }
+                    params = String($this.val()) !== '0' ? {mode: $this.val()} : {};
+                    command = String($this.val()) !== '0' ? 'setMode' : 'off';
+                    if (String($this.attr('data-temp')) !== 'true') {
+                        $this.find('.temp-select').fadeOut();
+                    } else {
+                        $this.find('.temp-select').fadeIn();
                     }
                 } else if ($this.hasClass('temp-select')) {
-                    var modeVal = $this.parent().find('.mode-select').val() || that.model.get('metrics').mode;
-                    params = { mode: modeVal, temp: $this.val() };
+                    params = {temp: $this.val()};
                     command = 'setTemp';
                 }
 
@@ -105,6 +89,15 @@ define([
             }
         },
         prepare: function () {
+            var that = this,
+                metrics = that.model.get('metrics');
+
+            if (that.model.get('metrics').hasMode) {
+                if (_.values(that.model.get('metrics').modes).indexOf('Off') === -1) {
+                    metrics.modes[-1] = 'Off';
+                    that.model.set({metrics: metrics});
+                }
+            }
         },
         getTemplate: function () {
             return this.$template;
