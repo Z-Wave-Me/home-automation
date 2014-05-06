@@ -33,9 +33,11 @@ BatteryPolling.prototype.init = function (config) {
 
     // polling function
     this.onPoll = function () {
-        for (var id in zway.devices) {
-            zway.devices[id].Battery && zway.devices[id].Battery.Get();
-        }
+        self.controller.devices.filter(function (el) {
+            return el.get("deviceType") === "battery";
+        }).map(function(el) {
+            el.performCommand("update");
+        });
     };
 
     // create vDev

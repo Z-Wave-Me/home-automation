@@ -47,7 +47,7 @@ GroupDevices.prototype.init = function (config) {
                 if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
                     vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
                 } else if (command === "exact") {
-                    vDev.performCommand(command, dev.invert ? args.level : (99-args.level));
+                    vDev.performCommand("exact", { level: dev.invert ? args.level : (99-args.level) });
                 }
             }
         });

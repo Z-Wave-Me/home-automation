@@ -52,7 +52,7 @@ BindDevices.prototype.init = function (config) {
                 if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "swtichMultilevel" && actionMultilevel === null) {
                     vDev.performCommand(actionBinary);
                 } else if (vDev.get("deviceType") === "swtichMultilevel") {
-                    vDev.performCommand("exact", actionMultilevel);
+                    vDev.performCommand("exact", { level: actionMultilevel });
                 }
             }
         });
