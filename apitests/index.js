@@ -336,7 +336,7 @@ describe("ZAutomation API", function () {
                     obj.should.have.keys("error", "data", "code", "message");
                     should.strictEqual(obj.error, null);
 
-                    request.get(apiUrl+"/notifications", function (error, response, body) {
+                    request.get(apiUrl+"/notifications/" + notice.id, function (error, response, body) {
                         if (error || response.statusCode !== 200) {
                             done(new Error (error || response.statusCode));
                             return;
@@ -348,15 +348,9 @@ describe("ZAutomation API", function () {
                         // Response body id a correct API reply in JSON form without an error
                         var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
                         obj.should.have.keys("error", "data", "code", "message");
-                        should.strictEqual(obj.error, null);
 
-                        var foundOldId = false;
-                        obj.data.notifications.forEach(function (item) {
-                            if (item.id === notice.id) {
-                                foundOldId = true;
-                            }
-                        });
-                        assert.equal(foundOldId, false);
+                        should.strictEqual(obj.error, null);
+                        should.strictEqual(obj.id, notice.id);
 
                         done();
                     });
@@ -441,6 +435,9 @@ describe("ZAutomation API", function () {
                 // Response body id a correct API reply in JSON form without an error
                 reply.should.have.keys("error", "data", "code", "message");
                 should.strictEqual(reply.error, null);
+
+                console.log('123');
+                console.log(reply);
 
                 // Content tests
                 request.get(apiUrl + "/profiles/" + reply.data.id, function (error, response, body) {
