@@ -75,7 +75,6 @@ try {
 
 if (!config) {
     console.log("Can't read config.json or it's broken.");
-    console.log("Please, provide correct config.json (look at the config-sample.json for reference) and restart service.");
     console.log("ZAutomation engine not started.");
 } else {
     config.libPath = "lib";

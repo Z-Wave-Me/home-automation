@@ -33,12 +33,6 @@ _.extend(DevicesCollection.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'updateLength', 'create');
-        // Load exact device classes
-        var path = 'classes/devices/';
-
-        fs.list(path).forEach(function (deviceCLassName) {
-            executeFile(path + deviceCLassName);
-        });
     },
     updateLength: function () {
         this.length = _.size(this.models);
@@ -47,7 +41,7 @@ _.extend(DevicesCollection.prototype, {
         var that = this,
             vDev = null;
 
-        console.log("Creating device " + defaults.deviceType + " id = " + deviceId);
+        console.log("Creating device " + defaults.deviceType + " " + deviceId);
         vDev = new VirtualDevice(deviceId, that.controller, defaults, handler);
 
         if (vDev !== null) {
@@ -128,6 +122,7 @@ _.extend(DevicesCollection.prototype, {
             return object.cid !== model.cid;
         });
 
+        console.log("Deleting device " + model.get("deviceType") + " " + identificator);
         if (that.db.id.hasOwnProperty(identificator)) {
             delete that.db.id[identificator];
         } else if (that.db.cid.hasOwnProperty(identificator)) {
