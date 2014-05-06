@@ -1,32 +1,32 @@
-/*** RGBW Z-Way HA module *******************************************
+/*** RGB Z-Way HA module *******************************************
 
 Version: 1.0.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
-    Binds several dimmers to make RGB(W) device
+    Binds several dimmers to make RGB device
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function RGBW (id, controller) {
+function RGB (id, controller) {
     // Call superconstructor first (AutomationModule)
-    RGBW.super_.call(this, id, controller);
+    RGB.super_.call(this, id, controller);
 }
 
-inherits(RGBW, AutomationModule);
+inherits(RGB, AutomationModule);
 
-_module = RGBW;
+_module = RGB;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-RGBW.prototype.init = function (config) {
-    RGBW.super_.prototype.init.call(this, config);
+RGB.prototype.init = function (config) {
+    RGB.super_.prototype.init.call(this, config);
 
     var self = this;
 
@@ -50,7 +50,7 @@ RGBW.prototype.init = function (config) {
         return Math.round(color * 99.0 / 255.0);
     }
     
-    this.vDev = this.controller.devices.create("RGBW_" + this.id, {
+    this.vDev = this.controller.devices.create("RGB_" + this.id, {
         deviceType: "switchRGBW",
         metrics: {
             level: (levelToColor(this.red) || levelToColor(this.green) || levelToColor(this.blue)) ? 'on' : 'off',
@@ -89,7 +89,7 @@ RGBW.prototype.init = function (config) {
     this.blue.on("change:metrics:level", this.handleB);
 };
 
-RGBW.prototype.stop = function () {
+RGB.prototype.stop = function () {
     this.red.off("change:metrics:level", this.handleR);
     this.green.off("change:metrics:level", this.handleG);
     this.blue.off("change:metrics:level", this.handleB);
@@ -102,7 +102,7 @@ RGBW.prototype.stop = function () {
         this.vDev = null;
     }
 
-    RGBW.super_.prototype.stop.call(this);
+    RGB.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
