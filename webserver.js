@@ -435,17 +435,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var that = this;
         return function () {
             var reply = {
-                error: null,
-                data: null,
-                code: 500
-            };
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
 
-            if (!that.controller.instances.hasOwnProperty(instanceId)) {
+            if (Boolean(instance)) {
                 reply.code = 404;
                 reply.error = "Instance " + instanceId + " not found";
             } else {
                 reply.code = 200;
-                reply.data = that.controller.instances[instanceId].config;
+                reply.data = instance;
             }
 
             this.initResponse(reply);

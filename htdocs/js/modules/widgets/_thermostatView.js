@@ -56,7 +56,7 @@ define([
 
             that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                that.$template.find("select").val(that.model.get('metrics').currentMode);
+                that.$template.find("select").val(that.model.get('metrics').mode);
             });
 
             that.$template.find(".select-field select").on('change', function () {
@@ -65,8 +65,13 @@ define([
                     $this = $(this);
 
                 if ($this.hasClass('mode-select')) {
-                    params = String($this.val()) !== '-1' ? {mode: $this.val()} : {};
-                    command = String($this.val()) !== '-1' ? 'setMode' : 'off';
+                    params = String($this.val()) !== '0' ? {mode: $this.val()} : {};
+                    command = String($this.val()) !== '0' ? 'setMode' : 'off';
+                    if (String($this.attr('data-temp')) !== 'true') {
+                        $this.find('.temp-select').fadeOut();
+                    } else {
+                        $this.find('.temp-select').fadeIn();
+                    }
                 } else if ($this.hasClass('temp-select')) {
                     params = {temp: $this.val()};
                     command = 'setTemp';

@@ -12,25 +12,27 @@
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="select-field">
-                <% if (metrics.hasSensor) { %>
-                    <select class="temp-select">
-                        <% _.each(metrics.availableTemperature, function(temp) { %>
-                            <% if (temp === metrics.level ) { %>
-                                <option selected value="<%= temp %>"><%= temp %></option>
-                            <% } else { %>
-                                <option value="<%= temp %>"><%= temp %></option>
+                <select class="temp-select">
+                    <% _.each(metrics.modes, function(mode) { %>
+                        <% if (mode.id === metrics.mode) { %>
+                            <% for (var i = mode.min; i <= mode.max; i += 1) { %>
+                                <% if (mode.level === i) { %>
+                                    <option selected value="<%= i %>"><%= i %></option>
+                                <% } else { %>
+                                    <option value="<%= i %>"><%= <%= i %> %></option>
+                                <% } %>
                             <% } %>
-                        <%  }); %>
-                    </select>
-                <% } %>
+                        <% } %>
+                    <%  }); %>
+                </select>
 
-                <% if (metrics.hasMode) { %>
+                <% if (metrics.modes.length > 1) { %>
                     <select class="mode-select">
-                        <% _.each(Object.keys(metrics.modes), function(key) { %>
-                            <% if (key === metrics.currentMode) { %>
-                                <option selected value="<%= key %>"><%= metrics.modes[key] %></option>
+                        <% metrics.modes.forEach(function(mode) { %>
+                            <% if (mode.id === metrics.mode) { %>
+                                <option data-notemp="<% print(mode.hasOwnProperty('level')); %>" selected value="<%= mode.id %>"><%= mode.title %></option>
                             <% } else { %>
-                                <option value="<%= key %>"><%= metrics.modes[key] %></option>
+                                <option data-temp="<% print(mode.hasOwnProperty('level')); %>" value="<%= mode.id %>"><%= mode.title %></option>
                             <% } %>
                         <%  }); %>
                     </select>
