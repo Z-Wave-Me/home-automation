@@ -10,6 +10,7 @@
   "dependencies": {
     "should": "~2.1.0",
     "mocha": "~1.14.0",
-    "request": "~2.27.0"
+    "request": "~2.27.0",
+    "underscore": "*"
   }
 }
