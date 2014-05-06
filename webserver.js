@@ -246,15 +246,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             that = this,
             reqObj;
 
-        try {
-            reqObj = JSON.parse(that.req.body);
-        } catch (ex) {
-            reply.error = ex.message;
-        }
+
 
         return function () {
             notification = that.controller.getNotification(notificationId);
             if (Boolean(notification)) {
+                
+                try {
+                    reqObj = JSON.parse(that.req.body);
+                } catch (ex) {
+                    reply.error = ex.message;
+                }
 
                 notification = that.controller.updateNotification(notificationId, reqObj);
                 if (notification) {
