@@ -12,27 +12,37 @@
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
             <span class="select-field">
-                <select class="temp-select">
-                    <% _.each(metrics.modes, function(mode) { %>
-                        <% if (mode.id === metrics.mode) { %>
-                            <% for (var i = mode.min; i <= mode.max; i += 1) { %>
-                                <% if (mode.level === i) { %>
-                                    <option selected value="<%= i %>"><%= i %></option>
-                                <% } else { %>
-                                    <option value="<%= i %>"><%= <%= i %> %></option>
-                                <% } %>
-                            <% } %>
-                        <% } %>
-                    <%  }); %>
-                </select>
+            	<% var min = null, max = null, scale = metrics.scaleTitle; %>
+            	<% _.each(Object.keys(metrics.modes), function(mode) { %>
+            	<%     if ('level' in metrics.modes[mode]) { %>
+            	<%         if (min === null) { %>
+            	<%             min = metrics.modes[mode].min; %>
+            	<%             max = metrics.modes[mode].max; %>
+                <%         } else { %>
+            	<%             min = Math.min(min, metrics.modes[mode].min); %>
+            	<%             max = Math.max(max, metrics.modes[mode].max); %>
+                <%         } %>
+                <%     } %>
+                <% }); %>
+                <% if (scale && min !== null) { %>
+                    <% if ("level" in metrics.modes[metrics.mode]) { %>
+                        <select class="temp-select">
+                    <% } else { %>
+                        <select class="temp-select" style="display: none;">
+                    <% } %>
+                        <% for (var temp = min; temp <= max; temp++) { %>
+                            <option value="<%= temp %>"><%= temp %><%= scale %></option>
+                        <%  }; %>
+                    </select>
+                <% } %>
 
-                <% if (metrics.modes.length > 1) { %>
+                <% if (Object.keys(metrics.modes).length > 1) { %>
                     <select class="mode-select">
-                        <% metrics.modes.forEach(function(mode) { %>
-                            <% if (mode.id === metrics.mode) { %>
-                                <option data-notemp="<% print(mode.hasOwnProperty('level')); %>" selected value="<%= mode.id %>"><%= mode.title %></option>
+                        <% _.each(Object.keys(metrics.modes), function(mode) { %>
+                            <% if (mode === metrics.mode) { %>
+                                <option selected value="<%= mode %>"><%= metrics.modes[mode].title %></option>
                             <% } else { %>
-                                <option data-temp="<% print(mode.hasOwnProperty('level')); %>" value="<%= mode.id %>"><%= mode.title %></option>
+                                <option value="<%= mode %>"><%= metrics.modes[mode].title %></option>
                             <% } %>
                         <%  }); %>
                     </select>
