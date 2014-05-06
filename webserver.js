@@ -243,13 +243,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: "OK"
             },
             notification,
-            that = this;
+            that = this,
+            reqObj;
+
+        try {
+            reqObj = JSON.parse(that.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
 
         return function () {
             notification = that.controller.getNotification(notificationId);
-            if (notification) {
+            if (Boolean(notification)) {
 
-                notification = that.controller.updateNotification(notificationId, this.req.reqObj);
+                notification = that.controller.updateNotification(notificationId, reqObj);
                 if (notification) {
                     reply.code = 200;
                     reply.data = notification;
