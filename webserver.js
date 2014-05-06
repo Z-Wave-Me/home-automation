@@ -41,7 +41,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations", this.listLocations());
         this.router.get("/profiles", this.listProfiles());
         this.router.get("/namespaces", this.listNamespaces);
-        this.router.get("/profiles", this.createProfile());
+        this.router.post("/profiles", this.createProfile());
         this.router.get("/locations/add", this.addLocation());
         this.router.post("/locations", this.addLocation());
         this.router.get("/locations/remove", this.removeLocation());
