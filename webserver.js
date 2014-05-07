@@ -238,35 +238,35 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
     },
     updateNotification: function (notificationId) {
-        var reply = {
-                error: null,
-                data: "OK"
-            },
-            notification,
-            that = this,
-            reqObj;
-
-
 
         return function () {
-            notification = that.controller.getNotification(notificationId);
+            var reply = {
+                    error: null,
+                    data: "OK"
+                },
+                that = this,
+                reqObj,
+                notification = that.controller.getNotification(notificationId);
+
             if (Boolean(notification)) {
-                
+
                 try {
-                    reqObj = JSON.parse(that.req.body);
+                    reqObj = JSON.parse(this.req.body);
                 } catch (ex) {
                     reply.error = ex.message;
                 }
 
-                notification = that.controller.updateNotification(notificationId, reqObj);
-                if (notification) {
-                    reply.code = 200;
-                    reply.data = notification;
-                } else {
-                    reply.code = 500;
-                    reply.data = null;
-                    reply.error = "Object doesn't exist redeemed argument";
-                }
+                that.controller.updateNotification(notificationId, reqObj, function (notice) {
+                    if (notice) {
+                        reply.code = 200;
+                        reply.data = notice;
+                    } else {
+                        reply.code = 500;
+                        reply.data = null;
+                        reply.error = "Object doesn't exist redeemed argument";
+                    }
+                });
+
             } else {
                 reply.code = 404;
                 reply.error = "Notification " + notificationId + " doesn't exist";
