@@ -1,3 +1,9 @@
+/**
+ * This is used to build the index.html file for htdocs. It reads off the
+ * NODE_ENV variable to see what version of the file to spit out. This is not
+ * meant to be run by hand as there no checking for the arguments. Everything
+ * is run off of the Makefile
+ */
 var _ = require('lodash'),
     fs = require('fs');
 
