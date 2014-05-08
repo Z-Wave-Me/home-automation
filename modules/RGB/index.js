@@ -34,6 +34,11 @@ RGB.prototype.init = function (config) {
     this.green = this.controller.devices.get(this.config.green);
     this.blue = this.controller.devices.get(this.config.blue);
     
+    if (!this.red || !this.green || !this.blue) {
+        this.controller.addNotification("warning", "Some channels do not exist for RGB module " + this.id, "module");
+        return;
+    }
+    
     function levelToColor(vDev) {
         var val = vDev.get("metrics:level");
         
