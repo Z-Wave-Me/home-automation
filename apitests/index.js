@@ -1,8 +1,8 @@
 var request = require("request"),
     should = require("should"),
     assert = require("assert"),
-    apiUrl = "http://mskoff.z-wave.me:10483/ZAutomation/api/v1",
-    modules;
+    _ = require("underscore"),
+    apiUrl = "http://localhost:8083/ZAutomation/api/v1";
 
 describe("ZAutomation API", function () {
 
@@ -12,10 +12,11 @@ describe("ZAutomation API", function () {
         });
     });
 
+    describe("/instances", function () {
+        var instances, modules, instance;
 
-    describe("/modules", function () {
         it("list modules", function (done) {
-            request.get(apiUrl + "/instances", function (error, response, body) {
+            request.get(apiUrl + "/modules", function (error, response, body) {
                 if (error || response.statusCode !== 200) {
                     done(new Error (error || response.statusCode));
                     return;
@@ -40,9 +41,7 @@ describe("ZAutomation API", function () {
                 done();
             });
         });
-    });
 
-    describe("/instances", function () {
         it("list instances", function (done) {
             request.get(apiUrl + "/instances", function (error, response, body) {
                 if (error || response.statusCode !== 200) {
@@ -63,6 +62,7 @@ describe("ZAutomation API", function () {
 
                 // Content tests
                 obj.data.should.be.instanceOf(Array);
+                instances = obj.data;
 
                 // Everything is OK
                 done();
@@ -71,14 +71,21 @@ describe("ZAutomation API", function () {
 
         it("creates new instance", function (done) {
             // create BatteryPolling
+            var module = _.find(modules, function (ins) { return !Boolean(ins.singleton) && Boolean(ins.userView); }),
+                json = {
+                    moduleId: module.id,
+                    params: _.extend(module.defaults, {
+                        enable: true,
+                        title: module.id
+                    })
+                };
+
             request.post(apiUrl + "/instances", {
-                json: {
-                    "moduleId": "BatteryPolling",
-                    "params": {"title":"Battery Polling", "launchWeekDay":2, "warningLevel":20, "status":"enable"}
-                }
-            }, function (error, response, reply) {
-                if (error || response.statusCode !== 201) {
-                    done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
+                json: json
+            }, function (error, response, body) {
+
+                if (error || (response.statusCode !== 201 && response.statusCode !== 200)) {
+                    done(new Error (error || response.statusCode + " - " + JSON.stringify(body)));
                     return;
                 }
 
@@ -86,11 +93,16 @@ describe("ZAutomation API", function () {
                 response.should.have.header("content-type", "application/json; charset=utf-8");
 
                 // Response body id a correct API reply in JSON form without an error
-                reply.should.have.keys("error", "data", "code", "message");
-                should.strictEqual(reply.error, null);
+
+                var obj = body;
+
+                obj.should.have.keys("error", "data", "code", "message");
+                should.strictEqual(obj.error, null);
+
+                instance = obj.data;
 
                 // Content tests
-                request.get(apiUrl + "/instances/" + reply.data.id, function (error, response, body) {
+                request.get(apiUrl + "/instances/" + instance.id, function (error, response, body) {
                     if (error || response.statusCode !== 200) {
                         done(new Error (error || response.statusCode));
                         return;
@@ -101,24 +113,14 @@ describe("ZAutomation API", function () {
 
                     // Response body id a correct API reply in JSON form without an error
                     var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+
                     obj.should.have.keys("error", "data", "code", "message");
                     should.strictEqual(obj.error, null);
 
                     // Content tests
-                    obj.data.should.be.instanceOf(Array);
+                    obj.data.should.be.instanceOf(Object);
 
-                    var found = false,
-                        launchWeekDay = -1;
-
-                    obj.data.forEach(function (test) {
-                        if (response.moduleId === 'BatteryPolling') {
-                            found = true;
-                            launchWeekDay = test.config.launchWeekDay;
-                        }
-                    });
-
-                    assert(found);
-                    assert.equal(launchWeekDay, 3);
+                    assert.equal(_.isEqual(instance.params, obj.data.params), true);
 
                     // Everything is OK
                     done();
@@ -127,7 +129,7 @@ describe("ZAutomation API", function () {
         });
 
         it("exposes instance config", function (done) {
-            request.get(apiUrl + "/instances/TestBatteryPolling", function (error, response, body) {
+            request.get(apiUrl + "/instances/" + instance.id, function (error, response, body) {
                 if (error || response.statusCode !== 200) {
                     done(new Error (error || response.statusCode));
                     return;
@@ -145,18 +147,25 @@ describe("ZAutomation API", function () {
                 obj.data.should.be.instanceOf(Object);
                 // console.log(JSON.stringify(obj.data, null, "  "));
                 // assert.equal(obj.data.launchWeekDay, 3);
-                assert.equal(obj.data.warningLevel, 20);
+                assert.equal(_.isEqual(instance.params, obj.data.params), true);
 
                 // Everything is OK
                 done();
-            })
+            });
         });
 
         it("updates instance config", function (done) {
-            request.put(apiUrl + "/instances/TestBatteryPolling", {
-                json: {
-                    "launchWeekDay": 5
-                }
+            var title = instance.params.title + '(Test)',
+                enable = false,
+                json = _.extend(_.clone(instance), {
+                    params: {
+                        title: title,
+                        enable: enable
+                    }
+                });
+
+            request.put(apiUrl + "/instances/" + instance.id, {
+                json: json
             }, function (error, response, reply) {
                 if (error || response.statusCode !== 200) {
                     done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
@@ -171,7 +180,7 @@ describe("ZAutomation API", function () {
                 should.strictEqual(reply.error, null);
 
                 // Content tests
-                request.get(apiUrl + "/instances/TestBatteryPolling", function (error, response, body) {
+                request.get(apiUrl + "/instances/" + instance.id, function (error, response, body) {
                     if (error || response.statusCode !== 200) {
                         done(new Error (error || response.statusCode));
                         return;
@@ -187,8 +196,8 @@ describe("ZAutomation API", function () {
 
                     // Content tests
                     obj.data.should.be.instanceOf(Object);
-                    assert.equal(obj.data.launchWeekDay, 5);
-                    assert.equal(obj.data.warningLevel, 20);
+                    assert.equal(obj.data.params.title, title);
+                    assert.equal(obj.data.params.enable, enable);
 
                     // Everything is OK
                     done();
@@ -197,8 +206,8 @@ describe("ZAutomation API", function () {
         });
 
         it("deletes instance", function (done) {
-            request.del(apiUrl + "/instances/TestBatteryPolling", {}, function (error, response, reply) {
-                if (error || response.statusCode !== 202) {
+            request.del(apiUrl + "/instances/" + instance.id, {}, function (error, response, reply) {
+                if (error || (response.statusCode !== 204 && response.statusCode !== 200)) {
                     done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
                     return;
                 }
@@ -211,8 +220,8 @@ describe("ZAutomation API", function () {
                 // should.strictEqual(reply.error, null);
 
                 // Content tests
-                request.get(apiUrl+"/instances/", function (error, response, body) {
-                    if (error || response.statusCode !== 200) {
+                request.get(apiUrl + "/instances/" + instance.id, function (error, response, body) {
+                    if (error || (response.statusCode !== 404 && response.statusCode !== 200)) {
                         done(new Error (error || response.statusCode));
                         return;
                     }
@@ -222,20 +231,15 @@ describe("ZAutomation API", function () {
 
                     // Response body id a correct API reply in JSON form without an error
                     var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
-                    obj.should.have.keys("error", "data");
-                    should.strictEqual(obj.error, null);
+                    obj.should.have.keys("error", "data", "message", "code");
+
+                    should.strictEqual(obj.code, 404);
+                    should.strictEqual(obj.error, "Instance " + instance.id + " not found");
+                    should.strictEqual(obj.data, null);
+                    should.strictEqual(obj.message, "404 Not Found");
 
                     // Content tests
-                    obj.data.should.be.instanceOf(Array);
-                    obj.data.length.should.be.above(2);
-
-                    var found = false;
-                    obj.data.forEach(function (test) {
-                        if ("TestBatteryPolling" === test.id) {
-                            found = true;
-                        }
-                    });
-                    assert.notEqual(found, true);
+                    obj.should.be.instanceOf(Object);
 
                     // Everything is OK
                     done();
@@ -298,7 +302,7 @@ describe("ZAutomation API", function () {
         });
 
             it("marks notifications read", function (done) {
-            request.put(apiUrl+"/notifications", function (error, response, body) {
+            request.get(apiUrl+"/notifications", function (error, response, body) {
                 if (error || response.statusCode !== 200) {
                     done(new Error (error || response.statusCode));
                     return;
@@ -309,6 +313,7 @@ describe("ZAutomation API", function () {
 
                 // Response body id a correct API reply in JSON form without an error
                 var obj = {}; try { obj = JSON.parse(body); } catch (err) {};
+                obj.data.should.be.instanceOf(Object);
                 obj.should.have.keys("error", "data", "code", "message");
                 should.strictEqual(obj.error, null);
 
@@ -316,7 +321,10 @@ describe("ZAutomation API", function () {
                 obj.data.should.have.keys("updateTime", "notifications");
                 obj.data.notifications.should.be.instanceOf(Array);
 
-                var notice = obj.data.notifications[0];
+                var notice = _.find(obj.data.notifications, function (model) {
+                    return model.redeemed === false;
+                });
+
                 notice.redeemed = true;
 
                 request.put(apiUrl+"/notifications/" + notice.id, {
@@ -336,7 +344,7 @@ describe("ZAutomation API", function () {
                     obj.should.have.keys("error", "data", "code", "message");
                     should.strictEqual(obj.error, null);
 
-                    request.get(apiUrl+"/notifications/" + notice.id, function (error, response, body) {
+                    request.get(apiUrl+"/notifications/" + obj.data.id, function (error, response, body) {
                         if (error || response.statusCode !== 200) {
                             done(new Error (error || response.statusCode));
                             return;
@@ -350,7 +358,7 @@ describe("ZAutomation API", function () {
                         obj.should.have.keys("error", "data", "code", "message");
 
                         should.strictEqual(obj.error, null);
-                        should.strictEqual(obj.id, notice.id);
+                        should.strictEqual(obj.data.id, notice.id);
 
                         done();
                     });

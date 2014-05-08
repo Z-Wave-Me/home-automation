@@ -466,7 +466,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.initResponse(reply);
     },
     createInstance: function () {
-        var that = this;
         return function () {
             var reply = {
                     error: null,
@@ -481,7 +480,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 instance = that.controller.createInstance(reqObj.moduleId, reqObj.params);
                 if (instance) {
                     reply.code = 201;
-                    reply.data = instance
+                    reply.data = instance;
                 } else {
                     reply.code = 500;
                     reply.error = "Cannot instantiate module " + reqObj.id;
@@ -504,7 +503,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
 
-            if (Boolean(instance)) {
+            if (!Boolean(instance)) {
                 reply.code = 404;
                 reply.error = "Instance " + instanceId + " not found";
             } else {
