@@ -10,11 +10,32 @@ define([
         el: '#devices-container',
 
         initialize: function () {
-            _.bindAll(this, 'render', 'getTemplate');
+            _.bindAll(this, 'render', 'getTemplate', 'titleBlur', 'titleKeydown');
             var that = this;
 
             that.Devices = window.App.Devices;
         },
+
+        titleBlur: function($title) {
+            var title = $title.text().trim(),
+                metrics = _.extend({}, this.model.get('metrics'));
+
+            if (title !== metrics.title) {
+                metrics.title = title;
+                this.model.save({metrics: metrics});
+                this.model.trigger('change:metrics');
+            }
+        },
+
+        titleKeydown: function($title, e) {
+            if (e.keyCode === 13) {
+                // enter key, ignore it and treat it like a save (blur)
+                e.preventDefault();
+                e.stopPropagation();
+                $title.blur();
+            }
+        },
+
         render: function () {
             var that = this,
                 model = that.model,
@@ -29,11 +50,20 @@ define([
             }
 
             that.listenTo(window.App.Devices, 'settings', function () {
+                var $title = that.$template.find('.title-container');
+                $title.attr('contenteditable', true)
+                  .keydown(_.partial(this.titleKeydown, $title))
+                  .blur(_.partial(this.titleBlur, $title));
                 that.$template.removeClass('clear');
             });
 
             that.listenTo(window.App.Devices, 'normal', function () {
                 that.$template.addClass('clear');
+                that.$template
+                  .find('.title-container')
+                  .attr('contenteditable', false)
+                  .off('keydown')
+                  .off('blur');
             });
 
             that.$template.hide();
