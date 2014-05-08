@@ -20,4 +20,12 @@ Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home
 
     -   Compile front-end to /path/to/automationFolder/htdocs/dist.
 
-        $ grunt default
+        $ grunt
+
+## Running api-tests
+
+    - Install node.js and npm-packages
+
+    - Running tests
+
+        $ grunt mochaTest
