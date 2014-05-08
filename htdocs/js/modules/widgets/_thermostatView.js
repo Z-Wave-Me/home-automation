@@ -73,13 +73,14 @@ define([
             that.$template.find(".select-field select").on('change', function () {
                 var params,
                     command,
-                    $this = $(this);
+                    $this = $(this),
+                    curMode;
 
                 if ($this.hasClass('mode-select')) {
                     params = { mode: $this.val() };
                     command = 'setMode';
-                    
-                    var curMode = that.model.get('metrics').modes[$this.val()];
+                    curMode = that.model.get('metrics').modes[$this.val()];
+
                     if (curMode) {
                         if ('level' in curMode) {
                             that.$template.find(".temp-select").val(curMode.level).fadeIn();
@@ -87,6 +88,7 @@ define([
                             that.$template.find(".temp-select").fadeOut();
                         }
                     }
+
                 } else if ($this.hasClass('temp-select')) {
                     var modeVal = $this.parent().find('.mode-select').val() || that.model.get('metrics').mode;
                     params = { mode: modeVal, temp: $this.val() };

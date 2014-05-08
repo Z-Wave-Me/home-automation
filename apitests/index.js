@@ -243,8 +243,8 @@ describe("ZAutomation API", function () {
 
                     // Everything is OK
                     done();
-                })
-            })
+                });
+            });
         });
     });
 
