@@ -431,7 +431,6 @@ describe("ZAutomation API", function () {
             request.post(apiUrl + "/profiles", {
                 json: {"name":"name","description":"description","widgets":[],"active":false}
             }, function (error, response, reply) {
-                console.log(reply);
                 if (error || response.statusCode !== 201) {
                     done(new Error (error || response.statusCode + " - " + JSON.stringify(reply)));
                     return;
@@ -444,8 +443,6 @@ describe("ZAutomation API", function () {
                 reply.should.have.keys("error", "data", "code", "message");
                 should.strictEqual(reply.error, null);
 
-                console.log('123');
-                console.log(reply);
 
                 // Content tests
                 request.get(apiUrl + "/profiles/" + reply.data.id, function (error, response, body) {
