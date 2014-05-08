@@ -4,6 +4,7 @@ npm-debug.log
 config.json
 lib/_templates.js
 htdocs/js/_precompiled.js
+htdocs/build
 .SyncId
 .SyncIgnore
 .SyncTrash

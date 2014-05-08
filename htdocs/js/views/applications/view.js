@@ -1,9 +1,8 @@
 define([
-    "app",
     "helpers/apis",
     "backbone",
     "collections/devices"
-], function (App, Apis, Backbone, Devices) {
+], function (Apis, Backbone, Devices) {
     'use strict';
     var ApplicationsView = Backbone.View.extend({
         el: '#widgets-region.widgets',

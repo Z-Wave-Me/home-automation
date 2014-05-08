@@ -2,7 +2,13 @@ define([
     'backbone',
     'vm',
     'helpers/utils',
-    'layout'
+    'layout',
+
+    // Strictly for build purposes because the dynamic "require" below is
+    // these files to be skipped
+    'views/dashboard/view',
+    'views/applications/view',
+    'views/widgets/view'
 ], function (Backbone, Vm, Utils, Layout) {
     'use strict';
     var AppRouter = Backbone.Router.extend({

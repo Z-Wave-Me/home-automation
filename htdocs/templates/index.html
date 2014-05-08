@@ -10,15 +10,20 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width">
 
-        
+        <% if (environment === "production") { %>
         <link rel="stylesheet" type="text/css" href="build/css/all.css">
-        
+        <% } else { %>
+        <link rel="stylesheet/less" type="text/css" href="public/less/all.less">
+        <script src="js/libs/vendor/less-1.6.1.min.js"></script>
+        <% } %>
 
         <script src="js/libs/vendor/modernizr-2.6.2-respond-1.1.0.min.js"></script>
 
-        
+        <% if (environment === "production") { %>
         <script data-main="build/js/main" src="js/libs/require/require.js"></script>
-        
+        <% } else { %>
+        <script data-main="js/main" src="js/libs/require/require.js"></script>
+        <% } %>
         <script src="js/utils.js"></script>
     </head>
     <body id="body">
