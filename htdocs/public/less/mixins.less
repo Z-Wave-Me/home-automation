@@ -360,6 +360,16 @@
     overflow: hidden;
     display: block;
     float: left;
+
+
+    &[contenteditable="true"] {
+      border: 1px solid #cdcdcd;
+      box-sizing: border-box;
+      height: 47px;
+    }
+    &:focus {
+      text-overflow: inherit;
+    }
   }
   .border-widget {
     .selection-button {

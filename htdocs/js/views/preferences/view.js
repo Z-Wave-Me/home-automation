@@ -102,7 +102,6 @@ define([
                 });
 
                 ModalHelper.popup(that.$template, true, true);
-                that.$template.find('.back-button').click();
             });
         },
         renderList: function (type) {

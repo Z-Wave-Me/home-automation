@@ -1,3 +1,5 @@
+@popover-title-height: 60px;
+
 @border-width: 3px;
 @border-position: 4px;
 .popover {
@@ -194,7 +196,7 @@
   background-color: #ededed;
   .top-popover-container {
     background-color: #283236;
-    height: 60px;
+    height: @popover-title-height;
     display: block;
     float: left;
     width: 100%;
@@ -219,6 +221,21 @@
       cursor: pointer;
       font-size: 13px;
     }
+
+    .back-button {
+      vertical-align: baseline;
+      font-size: 20px;
+      transform: scale(2,1);
+      -webkit-transform: scale(1,2);
+      -moz-transform: scale(2,1);
+      -ms-transform: scale(2,1);
+      -o-transform: scale(2,1);
+    }
+
+    .close-button {
+      font-size: 20px;
+    }
+
     &.right {
       float: right;
     }
@@ -236,7 +253,7 @@
       margin: 0;
       font-weight: normal;
       font-size: 18px;
-      line-height: 34px;
+      line-height: @popover-title-height;
       vertical-align: middle;
       color: #fff;
       height: 34px;
@@ -452,6 +469,7 @@
           width: 50px;
           height: 60px;
           line-height: 60px;
+          opacity: 0.7;
           .container-icon {
             display: inline-block;
             vertical-align: middle;
@@ -464,6 +482,12 @@
           vertical-align: bottom;
           width: 100%;
           opacity: 0.6;
+        }
+
+        &:hover {
+          .icon-span {
+            opacity: 1.0;
+          }
         }
       }
     }

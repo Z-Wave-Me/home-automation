@@ -1,5 +1,6 @@
-requirejs.config({
-    baseUrl: "js",
+require.config({
+    baseUrl: "js/",
+    deps: ['main'],
     paths : {
         backbone : 'libs/backbone/backbone-min',
         underscore : 'libs/backbone/underscore-min',
@@ -69,17 +70,13 @@ requirejs.config({
         'colpick': {
             deps: ['jquery']
         }
+    },
+    optimize: "uglify2",
+    uglify: {
+        toplevel: true,
+        ascii_only: true,
+        beautify: true,
+        max_line_length: 1000,
+        compress: false
     }
-});
-
-require([
-    'backbone',
-    'views/app',
-    'router',
-    'vm'
-], function (Backbone, AppView, Router, Vm) {
-    'use strict';
-    AppView = Vm.create({}, 'AppView', AppView);
-    Router.initialize({appView: AppView});
-    AppView.render();
 });

@@ -2,12 +2,12 @@
 node_modules
 npm-debug.log
 config.json
-lib/_templates.js
+htdocs/dist/
+htdocs/dist
 htdocs/js/_precompiled.js
 .SyncId
 .SyncIgnore
 .SyncTrash
-
 zwayTree.json
 ha-*.json
 storage/*
