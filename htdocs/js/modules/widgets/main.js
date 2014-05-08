@@ -75,7 +75,7 @@ define([
                     });
                 });
 
-                that.showingControl(modelView, model, forceView);
+                that.showingControl(modelView, forceView);
 
                 if (that.fixedPosition) {
                     that.setPosition(modelView);
@@ -108,7 +108,8 @@ define([
             var $template = modelView.getTemplate();
             if (App.Profiles.isShow(modelView.model.id) || forceView) {
                 $template.show();
-                window.$tmp = $template;
+            } else {
+                $template.hide();
             }
         }
     });
