@@ -25,6 +25,7 @@ define([
                 this.model.save({metrics: metrics});
                 this.model.trigger('change:metrics');
             }
+            $title.scrollLeft(0);
         },
 
         titleKeydown: function($title, e) {
