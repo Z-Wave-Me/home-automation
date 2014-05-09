@@ -25,7 +25,9 @@ define([
         'z-index': '1000'
     };
 
-    function hideAllPopups(quick) {
+    function hideAllPopups(quick, onClose) {
+        onClose = onClose || $.noop;
+        onClose();
 
         if (!quick || quick == undefined || quick == null) {
             $('.popup').trigger('hide');
@@ -34,6 +36,7 @@ define([
             $('.popover').trigger('hide');
             $('.popover').fadeOut('fast', function() { $(this).remove(); });
         } else {
+
             $('.popup').trigger('hide');
             $('.popup').remove();
 
@@ -53,7 +56,8 @@ define([
 
     ModalHelper.hideAll = hideAllPopups;
 
-    ModalHelper.popup = function ($popup, forbidClose, fillScreenTransparent, position) {
+    ModalHelper.popup = function ($popup, forbidClose, fillScreenTransparent, position, onClose) {
+        onClose = onClose || $.noop;
 
 
         if (fillScreenTransparent && fillScreenTransparent !== 'hide') {
@@ -65,7 +69,7 @@ define([
         }
 
         if (forbidClose) {
-            $outer.click(hideAllPopups);
+            $outer.click(_.partial(hideAllPopups, undefined, onClose));
         } else {
             $outer.off('click');
         }
