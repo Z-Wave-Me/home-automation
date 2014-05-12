@@ -73,7 +73,7 @@ module.exports = function (grunt) {
                     cleancss: true
                 },
                 files: {
-                    "htdocs/dist/public/css/alltemp.css": "htdocs/dist/public/less/all.less"
+                    "htdocs/dist/public/css/all.css": "htdocs/public/less/all.less"
                 }
             }
         },
@@ -104,8 +104,7 @@ module.exports = function (grunt) {
                 src: [
                     'htdocs/dist/js/**/*.js',
                     'htdocs/dist/templates/**/*.html',
-                    'htdocs/dist/public/**/*.{png, gif, jpg, jpeg, eot, svg, ttf, woff}',
-                    'htdocs/dist/img/**/*.{png, gif, jpg, jpeg}'
+                    'htdocs/dist/public/**/*.{png, gif, jpg, jpeg, eot, svg, ttf, woff}'
                 ],
                 dest: 'htdocs/dist/manifest.appcache'
             }
@@ -136,7 +135,7 @@ module.exports = function (grunt) {
         copy: {
             main: {
                 files: [
-                    {expand: true, cwd: 'htdocs/', src: ['public/**'], dest: 'htdocs/dist/'},
+                    {expand: true, cwd: 'htdocs/', src: ['public/fonts/**'], dest: 'htdocs/dist/'},
                     {expand: true, cwd: 'htdocs/', src: ['js/**'], dest: 'htdocs/dist/'},
                     {expand: true, cwd: 'htdocs/', src: ['templates/**'], dest: 'htdocs/dist/'}
                 ]
@@ -147,7 +146,7 @@ module.exports = function (grunt) {
             all: {
                 options: {
                     mode: '0755',
-                    create: ['htdocs/dist/public/css']
+                    create: ['htdocs/dist/public', 'htdocs/dist/public/css']
                 }
             }
         },
@@ -168,5 +167,7 @@ module.exports = function (grunt) {
     });
 
     //grunt.registerTask('default', ['clean', 'requirejs', 'less', 'htmlmin', 'css_img_2_data_uri', 'manifest']);
-    grunt.registerTask('default', 'mochaTest', ['clean', 'copy', 'mkdir', 'index', 'less', 'requirejs', 'htmlmin', 'index', 'manifest', 'css_img_2_data_uri']);
+    grunt.registerTask('default', ['clean', 'copy', 'mkdir', 'index', 'less', 'requirejs', 'htmlmin', 'index', 'manifest']);
+    grunt.registerTask('mochaTest');
+
 };
