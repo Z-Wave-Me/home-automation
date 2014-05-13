@@ -131,6 +131,7 @@ if (!config) {
         try {
             executeFile("z-way-utils/" + file);
         } catch (e) {
+            controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
             console.log(e.stack);
         }
     });
