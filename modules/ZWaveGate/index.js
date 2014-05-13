@@ -203,7 +203,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
     }
     if (this.CC["SwitchMultilevel"] === commandClassId && this.controller.devices.get(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"])) {
         console.log("Removing SwitchBinary due to SwitchMultilevel existence");
-        this.controller.collection.remove(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"]);
+        this.controller.devices.remove(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"]);
         return;
     }
 
