@@ -73,7 +73,7 @@ OpenWeather.prototype.fetchWeather = function(instance) {
                             scaleTitle: self.config.units === "celsius" ? '°C' : '°F',
                             level: temp,
                             icon: icon,
-                            title: 'Weather ' + self.id
+                            title: self.config.city
                         }
                     });
                 } else {
