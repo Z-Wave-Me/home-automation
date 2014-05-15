@@ -72,6 +72,10 @@ define([
                 e.preventDefault();
                 e.stopPropagation();
 
+                var onClose = function() {
+                    that.$template.find('.back-button').click();
+                };
+
                 that.$template.find('.right-content-container').animate({opacity: 0}, 0);
 
                 that.$template.find('.back-button').on('click', function () {
@@ -85,7 +89,7 @@ define([
                 });
 
                 that.$template.find('.close-button').on('click', function () {
-                    that.$template.find('.back-button').click();
+                    onClose();
                     ModalHelper.hideAll();
                 });
 
@@ -101,7 +105,7 @@ define([
                     merge: true
                 });
 
-                ModalHelper.popup(that.$template, true, true);
+                ModalHelper.popup(that.$template, true, true, undefined, onClose);
             });
         },
         renderList: function (type) {

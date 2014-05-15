@@ -67,13 +67,13 @@ OpenWeather.prototype.fetchWeather = function(instance) {
 
                 if (!self.vDev) {
                     self.vDev = self.controller.devices.create("OpenWeather_" + self.id, {
-                        deviceType: "sensor",
+                        deviceType: "sensorMultilevel",
                         metrics: {
                             probeTitle: 'Temperature',
                             scaleTitle: self.config.units === "celsius" ? '°C' : '°F',
                             level: temp,
                             icon: icon,
-                            title: 'Weather ' + self.id
+                            title: self.config.city
                         }
                     });
                 } else {

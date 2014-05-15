@@ -127,10 +127,11 @@ if (!config) {
     controller.start();
 
     //--- load Z-Way utilities
-    fs.list("z-way-utils/").forEach(function (file) {
+    (fs.list("z-way-utils/") || []).forEach(function (file) {
         try {
             executeFile("z-way-utils/" + file);
         } catch (e) {
+            controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
             console.log(e.stack);
         }
     });
