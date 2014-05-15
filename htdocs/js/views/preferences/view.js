@@ -91,7 +91,7 @@ define([
                 that.$template.find('.close-button').on('click', function () {
                     onClose();
                     ModalHelper.hideAll();
-                });
+                }).click();
 
                 that.$template.find('.menu-container li').on('click', function () {
                     that.renderList($(this).attr('data-menu'));

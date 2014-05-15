@@ -4,6 +4,7 @@ define([
     "use strict";
 
     var fillScreenCss, fillScreenCssTransparent;
+
     fillScreenCss = {
         'background': '#000000',
         'opacity': '0.9',
@@ -14,6 +15,7 @@ define([
         'min-width': '100%',
         'z-index': '1000'
     };
+
     fillScreenCssTransparent = {
         'background': '#000000',
         'opacity': '0',
@@ -26,8 +28,9 @@ define([
     };
 
     function hideAllPopups(quick, onClose) {
-        onClose = onClose || $.noop;
-        onClose();
+        if (_.isFunction(onClose)) {
+            onClose();
+        }
 
         if (!quick || quick == undefined || quick == null) {
             $('.popup').trigger('hide');
@@ -58,14 +61,14 @@ define([
 
     ModalHelper.popup = function ($popup, forbidClose, fillScreenTransparent, position, onClose) {
         onClose = onClose || $.noop;
-
+        var $outer;
 
         if (fillScreenTransparent && fillScreenTransparent !== 'hide') {
-            var $outer = $("<div></div>").addClass('fillScreenOpacity').css(fillScreenCssTransparent).height($(document).height()).appendTo($('body'));
+            $outer = $("<div></div>").addClass('fillScreenOpacity').css(fillScreenCssTransparent).height($(document).height()).appendTo($('body'));
         } else if (fillScreenTransparent == 'hide') {
-            var $outer = $('<div></div>').hide();
+            $outer = $('<div></div>').hide();
         } else {
-            var $outer = $('<div></div>').addClass('fillScreen').css(fillScreenCss).height($(document).height()).appendTo($('body'));
+            $outer = $('<div></div>').addClass('fillScreen').css(fillScreenCss).height($(document).height()).appendTo($('body'));
         }
 
         if (forbidClose) {
