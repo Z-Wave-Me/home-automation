@@ -428,7 +428,7 @@ define([
                 $template.find('.get-devices').on('click', function (e) {
                     e.preventDefault();
                     that.$template.find('.menu-container li[data-type="devices"]').click();
-                })
+                });
 
                 $template.find('.list-devices-column').dragsort({ dragSelector: "li", dragEnd: function () {
                     var $this = $(this),
