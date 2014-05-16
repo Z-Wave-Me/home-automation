@@ -291,7 +291,7 @@ define([
             });
         },
         renderRooms: function () {
-            var that = this, $newRoomTmp, location;
+            var that = this, $RoomTmp, location;
             that.$leftSidebar.find('.title-sidebar').text('Rooms');
             that.$leftSidebar.show();
             that.$ListContainer.show();
@@ -305,33 +305,33 @@ define([
 
             that.$buttonContainer.find('.add-button').off().on('click', function () {
                 that.$ListContainer.find('li').removeClass('active');
-                $newRoomTmp = $(_.template(RoomTmp, {}));
+                $RoomTmp = $(_.template(RoomTmp, {}));
 
-                $newRoomTmp.find('.create-button').on('keyup', function (e) {
+                $RoomTmp.find('.create-button').on('keyup', function (e) {
                     if (e.which === 13) {
                         e.preventDefault();
-                        $newRoomTmp.find('.create-button').click();
+                        $RoomTmp.find('.create-button').click();
                     }
                 });
 
-                $newRoomTmp.find('.button-group').on('click', function (e) {
+                $RoomTmp.find('.button-group').on('click', function (e) {
                     e.preventDefault();
                     if ($(this).hasClass('create-button')) {
                         location = new Location();
-                        location.save({title: $newRoomTmp.find('#inputNameText').val()}, {
+                        location.save({title: $RoomTmp.find('#inputNameText').val()}, {
                             success: function (model) {
                                 that.Locations.add(model);
                             }
                         });
                     }
-                    $newRoomTmp.hide('fast', function () {
-                        $newRoomTmp.remove();
+                    $RoomTmp.hide('fast', function () {
+                        $RoomTmp.remove();
                     });
                 });
 
-                that.$contentContainer.html($newRoomTmp);
+                that.$contentContainer.html($RoomTmp);
                 that.$ListContainer.find('li').removeClass('.active');
-                $newRoomTmp.show('fast');
+                $RoomTmp.show('fast');
             });
 
             that.$buttonContainer.find('.remove-button').off().on('click', function () {

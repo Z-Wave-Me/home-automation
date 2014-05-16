@@ -299,15 +299,17 @@ define([
                 });
             });
         },
-        update: function () {
+        update: function (route) {
             var that = this,
                 hash = window.location.hash.match(/(?:[a-z]+){2}/) ? window.location.hash.match(/(?:[a-z]+){2}/)[0] : '';
             if (hash === 'widgets') {
                 that.$header.find('.header-box-sub-nav-rooms').slideDown('fast');
                 that.$header.find('.header-box-sub-nav').slideDown('fast');
+                that.$el.find('.footer-bar .title-item').text('Settings');
             } else {
                 that.$header.find('.header-box-sub-nav-rooms').slideUp('fast');
                 that.$header.find(".header-box-sub-nav").slideUp('fast');
+                that.$el.find('.footer-bar .title-item').text('Rearrange and Settings');
             }
         },
         clear: function () {
