@@ -384,7 +384,7 @@ define([
                     $template.find('.get-devices').text(model.get('counter') + ' devices');
                 });
 
-                $template.find('.save-button').on('click', function (e) {
+                $template.find('.save-button').off().on('click', function (e) {
                     e.preventDefault();
                     model.save({title: $template.find('#inputNameText').val()}, {
                         success: function () {
@@ -397,18 +397,18 @@ define([
                     });
                 });
 
-                $template.find('.icon-container').on('click', function () {
+                $template.find('.icon-container').off().on('click', function () {
                     $template.find('.get-file').click();
                 });
 
-                $template.find('.get-file').on('change', function (e) {
+                $template.find('.get-file').off().on('change', function (e) {
                     var file = e.target.files[0];
                     Apis.uploadFile(file, function (t) {
                        log(t);
                     });
                 });
 
-                $template.find('.edit-button').on('click', function (e) {
+                $template.find('.edit-button').off().on('click', function (e) {
                     e.preventDefault();
                     var $this = $(this);
                     $template.find('.name-location').hide();
@@ -424,6 +424,11 @@ define([
                         $this.show();
                     });
                 });
+
+                $template.find('.get-devices').on('click', function (e) {
+                    e.preventDefault();
+                    that.$template.find('.menu-container li[data-type="devices"]').click();
+                })
 
                 $template.find('.list-devices-column').dragsort({ dragSelector: "li", dragEnd: function () {
                     var $this = $(this),
