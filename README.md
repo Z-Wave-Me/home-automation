@@ -28,4 +28,4 @@ Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home
 
     - Running tests
 
-        $ grunt mochaTest
+        $ grunt mocha
