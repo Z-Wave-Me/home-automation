@@ -168,6 +168,5 @@ module.exports = function (grunt) {
 
     //grunt.registerTask('default', ['clean', 'requirejs', 'less', 'htmlmin', 'css_img_2_data_uri', 'manifest']);
     grunt.registerTask('default', ['clean', 'copy', 'mkdir', 'index', 'less', 'requirejs', 'htmlmin', 'index', 'manifest']);
-    grunt.registerTask('mochaTest');
-
+    grunt.registerTask('mocha', ['mochaTest']);
 };
