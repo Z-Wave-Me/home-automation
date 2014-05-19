@@ -31,12 +31,13 @@ SensorValueLogging.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     SensorValueLogging.super_.prototype.init.call(this, config);
 
-    var device = this.controller.devices.get(this.config.device);
+    var device = this.controller.devices.get(this.config.device)
+        deviceType = device.get("deviceType");
 
     // Check if device is a switch
-    if ("sensor" !== device.get("deviceType")) {
+    if ("sensorBinary" !== deviceType || "sensorMultilevel" !== deviceType) {
         // Exit initializer due to invalid device type
-        console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + device.get("deviceType") + ").");
+        console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + deviceType + ").");
         return;
     }
 
