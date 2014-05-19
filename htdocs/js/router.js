@@ -20,8 +20,8 @@ define([
 
             layout.render();
 
-            router.on('all', function () {
-                layout.update();
+            router.on('all', function (route) {
+                layout.update(route);
                 Utils.activateCurrentNav();
             });
 

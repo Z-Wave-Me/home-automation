@@ -4,6 +4,7 @@ define([
     "use strict";
 
     var fillScreenCss, fillScreenCssTransparent;
+
     fillScreenCss = {
         'background': '#000000',
         'opacity': '0.9',
@@ -14,6 +15,7 @@ define([
         'min-width': '100%',
         'z-index': '1000'
     };
+
     fillScreenCssTransparent = {
         'background': '#000000',
         'opacity': '0',
@@ -25,7 +27,10 @@ define([
         'z-index': '1000'
     };
 
-    function hideAllPopups(quick) {
+    function hideAllPopups(quick, onClose) {
+        if (_.isFunction(onClose)) {
+            onClose();
+        }
 
         if (!quick || quick == undefined || quick == null) {
             $('.popup').trigger('hide');
@@ -34,6 +39,7 @@ define([
             $('.popover').trigger('hide');
             $('.popover').fadeOut('fast', function() { $(this).remove(); });
         } else {
+
             $('.popup').trigger('hide');
             $('.popup').remove();
 
@@ -53,19 +59,20 @@ define([
 
     ModalHelper.hideAll = hideAllPopups;
 
-    ModalHelper.popup = function ($popup, forbidClose, fillScreenTransparent, position) {
-
+    ModalHelper.popup = function ($popup, forbidClose, fillScreenTransparent, position, onClose) {
+        onClose = onClose || $.noop;
+        var $outer;
 
         if (fillScreenTransparent && fillScreenTransparent !== 'hide') {
-            var $outer = $("<div></div>").addClass('fillScreenOpacity').css(fillScreenCssTransparent).height($(document).height()).appendTo($('body'));
+            $outer = $("<div></div>").addClass('fillScreenOpacity').css(fillScreenCssTransparent).height($(document).height()).appendTo($('body'));
         } else if (fillScreenTransparent == 'hide') {
-            var $outer = $('<div></div>').hide();
+            $outer = $('<div></div>').hide();
         } else {
-            var $outer = $('<div></div>').addClass('fillScreen').css(fillScreenCss).height($(document).height()).appendTo($('body'));
+            $outer = $('<div></div>').addClass('fillScreen').css(fillScreenCss).height($(document).height()).appendTo($('body'));
         }
 
         if (forbidClose) {
-            $outer.click(hideAllPopups);
+            $outer.click(_.partial(hideAllPopups, undefined, onClose));
         } else {
             $outer.off('click');
         }

@@ -40,7 +40,8 @@ define([
         render: function () {
             var that = this,
                 model = that.model,
-                color;
+                color,
+                timeout;
 
             that.$template = $(_.template(templateSwitch, model.toJSON()));
 
@@ -112,7 +113,15 @@ define([
                 that.$template.find('.picker').colpick({
                     colorScheme: 'dark',
                     layout: 'rgbhex',
+                    livePreview: true,
                     color: rgbToHex(color.r, color.g, color.b),
+                    onChange: function (hsb, hex, rgb, el) {
+                        $(el).css('background-color', '#' + hex);
+                        clearInterval(timeout);
+                        timeout = setTimeout(function () {
+                            Apis.devices.command(that.model.get('id'), 'exact', {red: rgb.r, green: rgb.g, blue: rgb.b});
+                        }, 1000)
+                    },
                     onSubmit: function (hsb, hex, rgb, el) {
                         $(el).css('background-color', '#' + hex);
                         $(el).colpickHide();

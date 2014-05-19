@@ -72,6 +72,10 @@ define([
                 e.preventDefault();
                 e.stopPropagation();
 
+                var onClose = function() {
+                    that.$template.find('.back-button').click();
+                };
+
                 that.$template.find('.right-content-container').animate({opacity: 0}, 0);
 
                 that.$template.find('.back-button').on('click', function () {
@@ -85,9 +89,9 @@ define([
                 });
 
                 that.$template.find('.close-button').on('click', function () {
-                    that.$template.find('.back-button').click();
+                    onClose();
                     ModalHelper.hideAll();
-                });
+                }).click();
 
                 that.$template.find('.menu-container li').on('click', function () {
                     that.renderList($(this).attr('data-menu'));
@@ -101,7 +105,7 @@ define([
                     merge: true
                 });
 
-                ModalHelper.popup(that.$template, true, true);
+                ModalHelper.popup(that.$template, true, true, undefined, onClose);
             });
         },
         renderList: function (type) {
@@ -287,7 +291,7 @@ define([
             });
         },
         renderRooms: function () {
-            var that = this, $newRoomTmp, location;
+            var that = this, $RoomTmp, location;
             that.$leftSidebar.find('.title-sidebar').text('Rooms');
             that.$leftSidebar.show();
             that.$ListContainer.show();
@@ -301,33 +305,33 @@ define([
 
             that.$buttonContainer.find('.add-button').off().on('click', function () {
                 that.$ListContainer.find('li').removeClass('active');
-                $newRoomTmp = $(_.template(RoomTmp, {}));
+                $RoomTmp = $(_.template(RoomTmp, {}));
 
-                $newRoomTmp.find('.create-button').on('keyup', function (e) {
+                $RoomTmp.find('.create-button').on('keyup', function (e) {
                     if (e.which === 13) {
                         e.preventDefault();
-                        $newRoomTmp.find('.create-button').click();
+                        $RoomTmp.find('.create-button').click();
                     }
                 });
 
-                $newRoomTmp.find('.button-group').on('click', function (e) {
+                $RoomTmp.find('.button-group').on('click', function (e) {
                     e.preventDefault();
                     if ($(this).hasClass('create-button')) {
                         location = new Location();
-                        location.save({title: $newRoomTmp.find('#inputNameText').val()}, {
+                        location.save({title: $RoomTmp.find('#inputNameText').val()}, {
                             success: function (model) {
                                 that.Locations.add(model);
                             }
                         });
                     }
-                    $newRoomTmp.hide('fast', function () {
-                        $newRoomTmp.remove();
+                    $RoomTmp.hide('fast', function () {
+                        $RoomTmp.remove();
                     });
                 });
 
-                that.$contentContainer.html($newRoomTmp);
+                that.$contentContainer.html($RoomTmp);
                 that.$ListContainer.find('li').removeClass('.active');
-                $newRoomTmp.show('fast');
+                $RoomTmp.show('fast');
             });
 
             that.$buttonContainer.find('.remove-button').off().on('click', function () {
@@ -380,7 +384,7 @@ define([
                     $template.find('.get-devices').text(model.get('counter') + ' devices');
                 });
 
-                $template.find('.save-button').on('click', function (e) {
+                $template.find('.save-button').off().on('click', function (e) {
                     e.preventDefault();
                     model.save({title: $template.find('#inputNameText').val()}, {
                         success: function () {
@@ -393,18 +397,18 @@ define([
                     });
                 });
 
-                $template.find('.icon-container').on('click', function () {
+                $template.find('.icon-container').off().on('click', function () {
                     $template.find('.get-file').click();
                 });
 
-                $template.find('.get-file').on('change', function (e) {
+                $template.find('.get-file').off().on('change', function (e) {
                     var file = e.target.files[0];
                     Apis.uploadFile(file, function (t) {
                        log(t);
                     });
                 });
 
-                $template.find('.edit-button').on('click', function (e) {
+                $template.find('.edit-button').off().on('click', function (e) {
                     e.preventDefault();
                     var $this = $(this);
                     $template.find('.name-location').hide();
@@ -419,6 +423,11 @@ define([
                         $template.find('.cancel-button').hide();
                         $this.show();
                     });
+                });
+
+                $template.find('.get-devices').on('click', function (e) {
+                    e.preventDefault();
+                    that.$template.find('.menu-container li[data-type="devices"]').click();
                 });
 
                 $template.find('.list-devices-column').dragsort({ dragSelector: "li", dragEnd: function () {
