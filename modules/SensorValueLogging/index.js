@@ -35,7 +35,7 @@ SensorValueLogging.prototype.init = function (config) {
         deviceType = device.get("deviceType");
 
     // Check if device is a switch
-    if ("sensorBinary" !== deviceType || "sensorMultilevel" !== deviceType) {
+    if ("sensorBinary" !== deviceType && "sensorMultilevel" !== deviceType) {
         // Exit initializer due to invalid device type
         console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + deviceType + ").");
         return;
