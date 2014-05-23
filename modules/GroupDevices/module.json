@@ -1,0 +1,105 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Group devices",
+		"description": "Group several devices together",
+		"isDimmable": false,
+		"devices": [],
+		"scenesOn": [],
+		"scenesOff": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"isDimmable": {
+				"type": "boolean"
+			},
+			"devices": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_doorlock:deviceId",
+							"required": true
+						},
+						"invert": {
+							"type": "boolean",
+							"default": false
+						}
+					}
+				}
+			},
+			"scenesOn": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_toggleButton:deviceId",
+					"required": true
+				}
+			},
+			"scenesOff": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_toggleButton:deviceId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"isDimmable": {
+				"label": "",
+				"rightLabel": "Dimmable"
+			},
+			"devices": {
+				"label": "Group devices",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_doorlock:deviceName"
+							},
+							"invert": {
+								"type": "checkbox",
+								"rightLabel": "Invert action"
+							}
+						}
+					}
+				}
+			},
+			"scenesOn": {
+				"label": "List of scenes to activate on On action",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
+					}
+				}
+			},
+			"scenesOff": {
+				"label": "List of scenes to activate on Off action",
+				"fields": {
+					"item": {
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
+					}
+				}
+			}
+		}
+	}
+}

@@ -1,0 +1,130 @@
+{
+    "autoload": false,
+    "singleton": false,
+    "userView": true,
+    "defaults": {
+        "title": "Web Camera",
+        "description": "This module include configuration for a camera and create camera device",
+	"url": "",
+	"zoomInUrl": "",
+	"zoomOutUrl": "",
+	"leftUrl": "",
+	"rightUrl": "",
+	"upUrl": "",
+	"downUrl": "",
+	"openUrl": "",
+	"closeUrl": "",
+	"doorDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "format": "uri",
+                "required": true
+            },
+            "zoomInUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "zoomOutUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "leftUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "rightUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "upUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "downUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "openUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "closeUrl": {
+                "format": "uri",
+                "required": false
+            },
+            "doorDevices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+                    "required": false
+                }
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "url": {
+                "label": "Camera URL",
+                "type": "url",
+                "required": true
+            },
+            "zoomInUrl": {
+                "label": "ZoomIn URL",
+                "type": "url",
+                "required": false
+            },
+            "zoomOutUrl": {
+                "label": "ZoomOut URL",
+                "type": "url",
+                "required": false
+            },
+            "leftUrl": {
+                "label": "Left URL",
+                "type": "url",
+                "required": false
+            },
+            "rightUrl": {
+                "label": "Right URL",
+                "type": "url",
+                "required": false
+            },
+            "upUrl": {
+                "label": "Up URL",
+                "type": "url",
+                "required": false
+            },
+            "downUrl": {
+                "label": "Down URL",
+                "type": "url",
+                "required": false
+            },
+            "openUrl": {
+                "label": "Open URL",
+                "type": "url",
+                "required": false
+            },
+            "closeUrl": {
+                "label": "Close URL",
+                "type": "url",
+                "required": false
+            },
+            "doorDevices": {
+                "label": "Door device",
+                "fields": {
+                    "item": {
+			"type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+                    }
+                }
+            }
+        }
+    }
+}

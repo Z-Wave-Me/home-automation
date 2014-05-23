@@ -1,0 +1,62 @@
+{
+	"autoload": false,
+	"singleton": true,
+	"userView": true,
+	"defaults": {
+		"title": "Trap events from Remotes and Sensors",
+		"description": "Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
+		"generated": [],
+		"banned": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"generated": {
+				"type": "array",
+				"items": {
+					"type": "select",
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchControl:deviceId",
+					"required": true
+				}
+			},
+			"banned": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchControl:deviceId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"generated": {
+				"label": "List of switches to instanciate (filled automatically)",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchControl:deviceName"
+					}
+				}
+			},
+			"banned": {
+				"label": "List of switches not to instanciate",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchControl:deviceName"
+					}
+				}
+			}
+		}
+	}
+}

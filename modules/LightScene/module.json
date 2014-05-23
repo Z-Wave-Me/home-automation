@@ -1,0 +1,120 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Light scene",
+		"description": "Light scene defines state of switches, dimmers, blinds",
+		"switches": [],
+		"dimmers": [],
+		"scenes": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"switches": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchBinary:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "number",
+							"required": true,
+							"enum": ["off", "on"]
+						}
+					}
+				}
+			},
+			"dimmers": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchMultilevel:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "integer",
+							"required": true,
+							"minimum": 0,
+							"maximum": 99
+						}
+					}
+				}
+			},
+			"scenes": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_toggleButton:deviceId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"switches": {
+				"label": "List of switches",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName"
+							},
+							"status": {
+								"label": "",
+								"optionLabels": ["Off", "On"]
+							}
+						}
+					}
+				}
+			},
+			"dimmers": {
+				"label": "List of dimmers",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+							},
+							"status": {
+								"label": "State"
+							}
+						}
+					}
+				}
+			},
+			"scenes": {
+				"label": "List of scenes to activate",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
+					}
+				}
+			}
+		}
+	}
+}

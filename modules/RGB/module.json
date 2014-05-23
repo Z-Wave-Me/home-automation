@@ -1,0 +1,61 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "RGB",
+		"description": "Creates RGB device based on three different dimmers",
+		"red": null,
+		"green": null,
+		"blue": null
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"red": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_switchMultilevel:deviceId",
+				"required": true
+			},
+			"green": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_switchMultilevel:deviceId",
+				"required": true
+			},
+			"blue": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_switchMultilevel:deviceId",
+				"required": true
+			}
+		},
+		"required": true
+	},
+	"options": {
+		"fields": {
+			"red": {
+				"label": "Red",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+			},
+			"green": {
+				"label": "Green",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+			},
+			"blue": {
+				"label": "Blue",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+			}
+		}
+	}
+}

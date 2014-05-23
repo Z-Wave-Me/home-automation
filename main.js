@@ -20,7 +20,13 @@ var console = {
     log: debugPrint,
     warn: debugPrint,
     error: debugPrint,
-    debug: debugPrint
+    debug: debugPrint,
+    logJS: function() {
+        var arr = [];
+        for (var key in arguments)
+            arr.push(JSON.stringify(arguments[key]));
+        debugPrint(arr);
+    }
 };
 
 function inherits (ctor, superCtor) {
@@ -35,20 +41,12 @@ function inherits (ctor, superCtor) {
     });
 }
 
-// Array.prototype.has = function (value) {
-//     return -1 != this.indexOf(value);
-// };
-
 function in_array (array, value) {
-    return -1 != array.indexOf(value);
+    return -1 !== array.indexOf(value);
 }
 
-// Object.prototype.hasKey = function (value) {
-//     return -1 != Object.keys(this).indexOf(value);
-// };
-
 function has_key (obj, key) {
-    return -1 != Object.keys(obj).indexOf(key);
+    return -1 !== Object.keys(obj).indexOf(key);
 }
 
 function get_values (obj) {
@@ -62,46 +60,79 @@ function get_values (obj) {
 }
 
 //--- Load configuration
+var config, files, templates, schemas, modules, namespaces;
+try {
+    config = loadObject("config.json") || {
+        "controller": {},
+        "vdevInfo": {},
+        "locations": []
+    };
+    files = loadObject("files.json") || {};
+    schemas = loadObject("schemas.json") || [];
+} catch (ex) {
+    console.log("Error loading config.json or files.json:", ex.message);
+}
 
-var config = loadJSON("config.json");
+if (!config) {
+    console.log("Can't read config.json or it's broken.");
+    console.log("ZAutomation engine not started.");
+} else {
+    config.libPath = "lib";
+    config.classesPath = "classes";
+    config.resourcesPath = "res";
 
-config.libPath = "lib";
-config.classesPath = "classes";
-config.resourcesPath = "res";
+    //--- Load 3d-party dependencies
 
-// console.log("CFG", JSON.stringify(config, null, "  "));
+    executeFile(config.libPath + "/eventemitter2.js");
+    executeFile(config.libPath + "/underscore-min.js");
 
-//--- Load constants & 3d-party dependencies
+    //--- Load router
+    //executeFile(config.libPath + "/Router.js");
 
-executeFile("constants.js");
+    executeFile(config.classesPath + "/VirtualDevice.js");
 
-executeFile(config.libPath + "/eventemitter2.js");
-
-//--- Load Automation subsystem classes
-
-executeFile(config.classesPath+"/AutomationController.js");
-executeFile(config.classesPath+"/AutomationModule.js");
-executeFile(config.classesPath+"/VirtualDevice.js");
-
-//--- Instantiate Automation Controller
-
-var controller = new AutomationController(config.controller);
-
-controller.on('init', function () {
-    controller.run();
-});
-
-controller.on('error', function (err) {
-    console.log("--- ERROR:", err.message);
-});
-
-controller.on('run', function () {
-    console.log('ZWay Automation Controller started');
-
-    //--- Initialize webserver
+    //--- Load Automation subsystem classes
+    executeFile(config.classesPath + "/DevicesCollection.js");
+    executeFile(config.classesPath + "/AutomationController.js");
+    executeFile(config.classesPath + "/AutomationModule.js");
+    executeFile("request.js");
     executeFile("webserver.js");
-});
+    executeFile("storage.js");
 
-//--- main
+    //--- Instantiate Automation Controller
 
-controller.init();
+    var api = null,
+        storage = null,
+        controller = new AutomationController(config);
+
+    controller.on('core.init', function () {
+        console.log('Starting ZWay Automation webserver');
+    });
+
+    controller.on('core.start', function () {
+        console.log('ZWay Automation started');
+    });
+
+    controller.on('core.stop', function () {
+        console.log('ZWay Automation stopped');
+    });
+
+    controller.on('core.error', function (err) {
+        console.log("--- ERROR:", err.message);
+        controller.addNotification("error", err.message, "core");
+    });
+
+    //--- main
+    controller.init();
+    controller.start();
+
+    //--- load Z-Way utilities
+    (fs.list("z-way-utils/") || []).forEach(function (file) {
+        try {
+            executeFile("z-way-utils/" + file);
+        } catch (e) {
+            controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
+            console.log(e.stack);
+        }
+    });
+}

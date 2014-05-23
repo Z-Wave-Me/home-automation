@@ -1,0 +1,32 @@
+<div class="widget-small widget-object show <% if ( typeof clear === 'undefined' ) { print('clear'); } else { print('unclear'); }; %>" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite small-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget">
+        <div class="container-icon">
+            <% if (isUrl(metrics.icon)) { %>
+                <div class="customIcon" style="background-image: url(<%= metrics.icon %>);"></div>
+            <% } else { %>
+                <div class="icon-base <%= metrics.icon %>"></div>
+            <% } %>
+        </div>
+        <div class="content"><span class="title-container"><%= metrics.title %></span>
+            <span class="select-field">
+                <select>
+                    <% if (metrics.state == true) { %>
+                        <option value="-1">Off</option>
+                    <% } else { %>
+                        <option selected value="-1">Off</option>
+                    <% } %>
+                    <% _.each(metrics.modes, function(mode) { %>
+                        <% if (mode.id == metrics.currentMode && metrics.state == true ) { %>
+                            <option selected value="<%= mode.id %>"><%= mode.title %></option>
+                        <% } else { %>
+                            <option value="<%= mode.id %>"><%= mode.title %></option>
+                        <% } %>
+                    <%  }); %>
+                </select>
+            </span>
+        </div>
+    </div>
+</div>

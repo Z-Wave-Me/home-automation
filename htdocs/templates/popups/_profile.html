@@ -1,0 +1,34 @@
+<div class="profile <% if (typeof id !== 'undefined') { print('created'); } %>">
+    <form class="form-horizontal general-tab" role="form">
+        <div class="form-group">
+            <label for="inputNameProfile" class="control-label">Name:</label>
+            <div class="input-group">
+                <span class="name-profile"><% if (typeof name  !== 'undefined') { print(name); } %></span>
+                <input type="text" class="form-control" id="inputNameProfile" value="<% if (typeof(name) !== 'undefined') { print(name); } %>" placeholder="Name">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputDescriptionsText" class="control-label">Description:</label>
+            <div class="input-group">
+                <span class="description-profile"><% if (typeof description  !== 'undefined') { print(description); } %></span>
+                <textarea class="form-control" id="inputDescriptionsText" placeholder="Description"><% if (typeof(description) !== 'undefined') { print(description); } %></textarea>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputActive" class="control-label">Active:</label>
+            <div class="input-group checkbox-group">
+                <input type="checkbox" id="inputActive" class="form-control checkbox-form" <% if (typeof id !== 'undefined') { print('disabled'); } %> <% if (typeof id !== 'undefined' && active) { print('checked'); } %>>
+            </div>
+        </div>
+        <div class="form-group button-group">
+            <div class="input-group">
+                <% if (typeof id === 'undefined') { %>
+                    <button class="button-group create-button">create</button>
+                <% } %>
+                    <button class="button-group edit-button just-hidden">edit</button>
+                    <button class="button-group save-button just-hidden">save</button>
+                    <button class="button-group cancel-button just-hidden">cancel</button>
+            </div>
+        </div>
+    </form>
+</div>

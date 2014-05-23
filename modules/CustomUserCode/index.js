@@ -1,7 +1,7 @@
-/*** CustomUserCode ZAutomation module ****************************************
+  /*** CustomUserCode ZAutomation module ****************************************
 
 Version: 1.0.0
-(c) ZWave.Me, 2013
+(c) Z-Wave.Me, 2013
 
 -------------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -31,15 +31,12 @@ CustomUserCode.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     CustomUserCode.super_.prototype.init.call(this, config);
 
-    this.config.customCodeFiles.forEach(function (file) {
-      var stat = fs.stat(file);
-      if (stat && stat.type == "file") {
-        executeFile(file);
-      } else {
-        console.log("File " + file + " not found");
-      }
-    });
-
+    // TODO: executeJS errors are impossible to catch!
+    //try {
+        executeJS(this.config.customCode);
+    //} catch (e) {
+    //    controller.addNotification("warning", "Failed to load custom user code: " + this.get("metrics:title"), "module");
+    //}
 };
 
 // ----------------------------------------------------------------------------

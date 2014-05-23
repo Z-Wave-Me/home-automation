@@ -1,11 +1,10 @@
-/******************************************************************************
+/*** AutoOff Z-Way Home Automation module *************************************
 
- AutoOff Z-Way Home Automation module
- Version: 1.0.0
- (c) ZWave.Me, 2013
+ Version: 1.0.1
+ (c) Z-Wave.Me, 2014
 
  -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me>
+ Author: Gregory Sitnin <sitnin@z-wave.me> and Poltorak Serguei <ps@z-wave.me>
  Description:
      This module listens given VirtualDevice (which MUSt be typed as switch)
      level metric update events and switches off device after configured
@@ -23,7 +22,7 @@ function AutoOff (id, controller) {
 
     // Create instance variables
     this.timer = null;
-}
+};
 
 inherits(AutoOff, AutomationModule);
 
@@ -37,47 +36,48 @@ AutoOff.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     AutoOff.super_.prototype.init.call(this, config);
 
-    // Check VirtualDevice existence
-    if (!this.controller.devices.hasOwnProperty(this.config.device)) {
-        // Exit initializer due to lack of the device
-        console.log("ERROR", "AutoOff Device", this.config.device, "doesn't exist.");
-        return;
-    }
-
-    var device = this.controller.devices[this.config.device];
-
-    // Check if device is a switch
-    if ("switch" !== device.deviceType) {
-        // Exit initializer due to invalid device type
-        console.log("ERROR", "AutoOff Device", this.config.device, "isn't switch", "("+device.deviceType+").");
-        return;
-    }
+    this.vDev = this.controller.devices.get(this.config.device);
 
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
-    // Setup metric update event listener
-    this.controller.on('metricUpdate.'+this.config.device, function (metric, value) {
-        if ("level" === metric) {
-            if (self.timer) {
-                // Timer is set, so we destroy it
-                clearTimeout(self.timer);
-            }
-            if (255 === value) {
-                // Device reported "on", set (or reset) timer to new timeout
-                // Notice: self.config.timeout set in seconds
-                self.timer = setTimeout(function () {
-                    // Timeout fired, so we send "off" command to the virtual device
-                    // (every switch device should handle it)
-                    device.performCommand("off");
-                    // And clearing out this.timer variable
-                    self.timer = null;
-                }, self.config.timeout*1000);
-            }
+    this.handler = function (vDev) {
+        var value = vDev.get("metrics:level");
+        
+        if (self.timer) {
+            // Timer is set, so we destroy it
+            clearTimeout(self.timer);
         }
-    });
+        if ("on" === value || (parseInt(value) && value > 0)) {
+            // Device reported "on", set (or reset) timer to new timeout
+            // Notice: self.config.timeout set in seconds
+            self.timer = setTimeout(function () {
+                // Timeout fired, so we send "off" command to the virtual device
+                // (every switch device should handle it)
+                vDev.performCommand("off");
+                // And clearing out this.timer variable
+                self.timer = null;
+            }, self.config.timeout*1000);
+        }
+    };
+
+    // Setup metric update event listener
+    if (this.vDev) {
+        this.vDev.on('change:metrics:level', this.handler);
+    }
 };
 
+AutoOff.prototype.stop = function () {
+    AutoOff.super_.prototype.stop.call(this);
+
+    if (this.timer)
+        clearInterval(this.timer);
+    
+    if (this.handler && this.vDev) {
+        this.vDev.off('change:metrics:level', this.handler);
+        this.vDev = null;
+    }
+};
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------

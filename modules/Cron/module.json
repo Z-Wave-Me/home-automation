@@ -1,7 +1,9 @@
 {
     "autoload": true,
-    "singleton": false,
-    "defaults": {},
-    "actions": {},
-    "metrics": {}
+    "autoloadPriority": 100,
+    "singleton": true,
+    "userView": false,
+    "defaults": {
+        "title": "Cron scheduler"
+    }
 }

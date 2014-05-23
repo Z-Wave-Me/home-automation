@@ -1,0 +1,44 @@
+{
+    "autoload": false,
+    "singleton": false,
+    "userView": true,
+    "defaults": {
+        "title": "SMS.ru Notifications",
+        "description": "Sends all notifications via free SMS poroxy SMS.ru",
+        "api_key": "",
+        "phone": "",
+	    "prefix": "Z-Way notification:"
+    },
+    "schema": {
+        "description": "Send SMS via SMS.ru gateway. To register enter your phone number, name and password on http://sms.ru/?panel=register and confirm your phone number with a code.",
+        "type": "object",
+        "properties": {
+            "phone": {
+                "required": true,
+                "pattern": "[1-9][0-9]*"
+            },
+            "prefix": {
+                "required": false
+            },
+            "api_key": {
+                "required": true,
+                "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "phone": {
+                "label": "Phone number to send SMS. In form of 79261234567"
+            },
+            "prefix": {
+                "label": "Prefix for all messages"
+            },
+            "api_key": {
+                "label": "API key from SMS.ru",
+		"helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+            }
+        }
+    }
+}

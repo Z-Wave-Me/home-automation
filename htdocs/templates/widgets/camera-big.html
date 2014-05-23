@@ -1,0 +1,41 @@
+<div class="widget widget-object clear camera-big" data-widget-id="<%= id %>">
+    <div class="border-widget border-widget-sprite big-border">
+        <span class="selection-button border-widget-sprite button-select-border"></span>
+    </div>
+    <div class="content-widget">
+        <div class="control-block camera-block">
+            <span class="title-container"><%= metrics.title %></span>
+            <div class="control-buttons">
+                <% if (metrics.hasZoomIn) { %>
+                    <span data-command="zoomIn" class="command-button ui-icon ui-icon-circle-zoomin" title="Zoom In"></span>
+                <% } %>
+                <% if (metrics.hasZoomOut) { %>
+                    <span data-command="zoomOut" class="command-button ui-icon ui-icon-circle-zoomout" title="Zoom Out"></span>
+                <% } %>
+                <% if (metrics.hasLeft) { %>
+                    <span data-command="left" class="command-button ui-icon ui-icon-circle-arrow-w" title="Left"></span>
+                <% } %>
+                <% if (metrics.hasRight) { %>
+                    <span data-command="right" class="command-button ui-icon ui-icon-circle-arrow-e" title="Right"></span>
+                <% } %>
+                <br>
+                <% if (metrics.hasUp) { %>
+                    <span data-command="up" class="command-button ui-icon ui-icon-circle-arrow-n" title="Up"></span>
+                <% } %>
+                <% if (metrics.hasDown) { %>
+                    <span data-command="down" class="command-button ui-icon ui-icon-circle-arrow-s" title="Down"></span>
+                <% } %>
+                <% if (metrics.hasOpen) { %>
+                    <span data-command="open" class="command-button ui-icon ui-icon-power" title="Open"></span>
+                <% } %>
+                <% if (metrics.hasClose) { %>
+                    <span data-command="close" class="command-button ui-icon ui-icon-circle-close" title="Close"></span>
+                <% } %>
+            </div>
+        </div>
+        <div class="view-block camera-block">
+            <img class="camera-image" src="">
+            <span class="camera-icon"></span>
+        </div>
+    </div>
+</div>

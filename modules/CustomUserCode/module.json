@@ -1,9 +1,30 @@
 {
-    "autoload": true,
-    "singleton": true,
+    "autoload": false,
+    "singleton": false,
+    "userView": true,
     "defaults": {
-	"customCodeFiles": [ ]
+	"title": "Load custom JavaScript code",
+	"description": "Allows to load custom JavaScript code on system load",
+	"customCode": ""
     },
-    "actions": {},
-    "metrics": {}
+    "schema": {
+        "description": "User defined JavaScript code to be executed on load",
+        "type": "object",
+        "properties": {
+            "customCode": {
+                "type": "string"
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "toolbarSticky": true,
+        "fields": {
+            "customCode": {
+                "type": "textarea",
+                "label": "Your JavaScript code:",
+		        "cols": 40
+            }
+        }
+    }
 }

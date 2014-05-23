@@ -1,0 +1,21 @@
+{
+  // Details: https://github.com/victorporof/Sublime-JSHint#using-your-own-jshintrc-options
+  // Example: https://github.com/jshint/jshint/blob/master/examples/.jshintrc
+  // Documentation: http://www.jshint.com/docs/
+  "browser": false,
+  "esnext": false,
+  "strict": false,
+  "globalstrict": true,
+  "globals": {
+    "zway",
+    "inherits",
+    "AutomationControler",
+    "AutomationModule",
+    "VirtualDevice"
+  },
+  "quotmark": false,
+  "smarttabs": true,
+  "trailing": true,
+  "undef": true,
+  "unused": true
+}
