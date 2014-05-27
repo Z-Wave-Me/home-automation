@@ -1,0 +1,253 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Logical rules",
+		"description": "Logical rules allows to trigger scenes based on devices status.",
+		"logicalOperator": "and",
+		"tests": [],
+		"action": ""
+	},
+	"schema": {
+		"title": "Select action condition",
+		"type": "object",
+		"properties": {
+			"logicalOperator": {
+				"type": "string",
+				"enum": ["and", "or"],
+				"default": "and",
+				"required": true
+			},
+			"tests": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"testType": {
+							"type": "string",
+							"enum": ["binary", "multilevel", "nested"],
+							"required": true
+						},
+						"testBinary": {
+							"type": "object",
+							"title": "_ binary",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_doorlock:deviceId",
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"enum": ["off", "on"],
+									"required": true
+								}
+							}
+						},
+						"testMultilevel": {
+							"type": "object",
+							"title": "_ multilevel",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"testOperator": {
+									"type": "string",
+									"enum": ["=", "!=", ">", "<"],
+									"required": true
+								},
+								"testValue": {
+									"type": "number",
+									"required": true
+								}
+							}
+						},
+						"testNested": {
+							"type": "object",
+							"title": "_ nested",
+							"dependencies": "testType",
+							"properties": {
+								"logicalOperator": {
+									"type": "string",
+									"enum": ["and", "or"],
+									"default": "or",
+									"required": true
+								},
+								"tests": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"testType": {
+												"type": "string",
+												"enum": ["binary", "multilevel"],
+												"required": true
+											},
+											"testBinary": {
+												"type": "object",
+												"title": "_ binary",
+												"dependencies": "testType",
+												"properties": {
+													"device": {
+														"field": "enum",
+														"datasource": "namespaces",
+														"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_doorlock:deviceId",
+														"required": true
+													},
+													"testValue": {
+														"type": "string",
+														"enum": ["off", "on"],
+														"required": true
+													}
+												}
+											},
+											"testMultilevel": {
+												"type": "object",
+												"title": "_ multilevel",
+												"dependencies": "testType",
+												"properties": {
+													"device": {
+														"field": "enum",
+														"datasource": "namespaces",
+														"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
+														"required": true
+													},
+													"testOperator": {
+														"type": "string",
+														"enum": ["=", "!=", ">", "<"],
+														"required": true
+													},
+													"testValue": {
+														"type": "number",
+														"required": true
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"action": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_toggleButton:deviceId",
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"renderform": "true",
+		"fields": {
+			"logicalOperator": {
+				"type": "select"
+			},
+			"tests": {
+				"fields": {
+					"item": {
+						"fields": {
+							"testType": {
+								"type": "select",
+								"default": ""
+							},
+							"testBinary": {
+								"dependencies": {
+									"testType": "binary"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_doorlock:deviceName"
+									}
+								}
+							},
+							"testMultilevel": {
+								"dependencies": {
+									"testType": "multilevel"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+									}
+								}
+							},
+							"testNested": {
+								"dependencies": {
+									"testType": "nested"
+								},
+								"fields": {
+									"logicalOperator": {
+										"type": "select"
+									},
+									"tests": {
+										"fields": {
+											"item": {
+												"fields": {
+													"testType": {
+														"type": "select",
+														"default": ""
+													},
+													"testBinary": {
+														"dependencies": {
+															"testType": "binary"
+														},
+														"fields": {
+															"device": {
+																"label": "",
+																"type": "select",
+																"datasource": "namespaces",
+																"field": "optionLabels",
+																"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_doorlock:deviceName"
+															}
+														}
+													},
+													"testMultilevel": {
+														"dependencies": {
+															"testType": "multilevel"
+														},
+														"fields": {
+															"device": {
+																"label": "",
+																"type": "select",
+																"datasource": "namespaces",
+																"field": "optionLabels",
+																"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"action": {
+				"label": "Action",
+				"type": "select",
+				"datasource": "namespaces",
+				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+			}
+		}
+	}
+}
