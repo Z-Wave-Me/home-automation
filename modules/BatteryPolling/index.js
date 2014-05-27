@@ -53,14 +53,13 @@ BatteryPolling.prototype.init = function (config) {
     }, this.onPoll);
 
     this.onMetricUpdated = function (vDev) {
-        if (vDev.id === self.vDev.id) {
-            return; // prevent infinite loop with updates from itself
+        if (!vDev || vDev.id === self.vDev.id) {
+            return; // prevent infinite loop with updates from itself and allows first fake update
         }
         
-        var value = self.minimalBatteryValue();
-        self.vDev.set("metrics:level", value);
-        if (value <= self.config.warningLevel) {
-            self.controller.addNotification("warning", "Device " + dev.get("metrics:title") + " is low battery", "battery");
+        self.vDev.set("metrics:level", self.minimalBatteryValue());
+        if (vDev.get("metrics:level") <= self.config.warningLevel) {
+            self.controller.addNotification("warning", "Device " + vDev.get("metrics:title") + " is low battery", "battery");
         }
     };
     
@@ -84,7 +83,7 @@ BatteryPolling.prototype.init = function (config) {
     });
     
     // run first time to set up the value
-    this.onMetricUpdated({id: "not_a_device"});
+    this.onMetricUpdated();
 };
 
 BatteryPolling.prototype.stop = function () {
