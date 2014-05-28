@@ -28,7 +28,7 @@
         "fields": {
             "launchWeekDay": {
                 "label": "Do battery polling on",
-	        "optionLabels": ["Monday", "Thuesday", "Wednesday", "Thurstday", "Friday", "Satrunday", "Sunday"]
+	        "optionLabels": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Satruday", "Sunday"]
             },
             "warningLevel": {
                 "label": "Warning Level",
