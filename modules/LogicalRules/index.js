@@ -82,9 +82,6 @@ LogicalRules.prototype.stop = function () {
 LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
     var vDev = this.controller.devices.get(test.device);
     
-    console.logJS(test, test.device);
-    console.logJS(this.config);
-    
     if (!vDev) {
         this.controller.addNotification("error", "Can not get vDev " + test.device, "module");
         return;
@@ -106,18 +103,18 @@ LogicalRules.prototype.testRule = function (tree) {
         tree = this.config;
     }
     
-    console.logJS(tree);
-    
     if (tree.logicalOperator === "and") {
         res = true;
     
         tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
-                console.logJS("& ML", self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue), self.controller.devices.get(test.testMultilevel.device).get("metrics:level"));
                 res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
-                console.logJS("& BI", self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue, (self.controller.devices.get(test.testBinary.device).get("metrics:level")));
                 res = res && (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
+            } else if (test.testType === "time") {
+                var curTime = new Date(),
+                    time_arr = test.testTime.testValue.split(":");
+                res = res && self.op(curTime.getHours() * 3600 + curTime.getMinutes() * 60 + curTime.getSeconds(), test.testTime.testOperator, time_arr[0] * 3600 + time_arr[1] * 60 + time_arr[2]);
             } else if (test.testType === "nested") {
                 res = res && self.testRule(test.testNested);
             }
@@ -127,18 +124,19 @@ LogicalRules.prototype.testRule = function (tree) {
     
         tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
-                console.logJS("| ML", self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue), self.controller.devices.get(test.testMultilevel.device).get("metrics:level"));
                 res = res || self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
-                console.logJS("| BI", self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue, (self.controller.devices.get(test.testBinary.device).get("metrics:level")));
                 res = res || (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
+            } else if (test.testType === "time") {
+                var curTime = new Date(),
+                    time_arr = test.testTime.testValue.split(":");
+                res = res || self.op(curTime.getHours() * 3600 + curTime.getMinutes() * 60 + curTime.getSeconds(), test.testTime.testOperator, time_arr[0] * 3600 + time_arr[1] * 60 + time_arr[2]);
             } else if (test.testType === "nested") {
                 res = res || self.testRule(test.testNested);
             }
         });
     }
     
-    console.logJS("RES", topLevel, res);
     if (topLevel && res) {
         this.controller.devices.get(tree.action).performCommand("on");
     }
@@ -153,6 +151,10 @@ LogicalRules.prototype.op = function (dval, op, val) {
         return dval > val;
     } else if (op === "<") {
         return dval < val;
+    } else if (op === ">=") {
+        return dval >= val;
+    } else if (op === "<=") {
+        return dval <= val;
     }
         
     return null; // error!!  

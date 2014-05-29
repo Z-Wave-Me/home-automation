@@ -26,12 +26,11 @@
 					"properties": {
 						"testType": {
 							"type": "string",
-							"enum": ["binary", "multilevel", "nested"],
+							"enum": ["binary", "multilevel", "time", "nested"],
 							"required": true
 						},
 						"testBinary": {
 							"type": "object",
-							"title": "_ binary",
 							"dependencies": "testType",
 							"properties": {
 								"device": {
@@ -49,7 +48,6 @@
 						},
 						"testMultilevel": {
 							"type": "object",
-							"title": "_ multilevel",
 							"dependencies": "testType",
 							"properties": {
 								"device": {
@@ -60,7 +58,7 @@
 								},
 								"testOperator": {
 									"type": "string",
-									"enum": ["=", "!=", ">", "<"],
+									"enum": ["=", "!=", ">", ">=", "<", "<="],
 									"required": true
 								},
 								"testValue": {
@@ -69,9 +67,23 @@
 								}
 							}
 						},
+						"testTime": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"testOperator": {
+									"type": "string",
+									"enum": [">=", "<="],
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"required": true
+								}
+							}
+						},
 						"testNested": {
 							"type": "object",
-							"title": "_ nested",
 							"dependencies": "testType",
 							"properties": {
 								"logicalOperator": {
@@ -87,12 +99,11 @@
 										"properties": {
 											"testType": {
 												"type": "string",
-												"enum": ["binary", "multilevel"],
+												"enum": ["binary", "multilevel", "time"],
 												"required": true
 											},
 											"testBinary": {
 												"type": "object",
-												"title": "_ binary",
 												"dependencies": "testType",
 												"properties": {
 													"device": {
@@ -110,7 +121,6 @@
 											},
 											"testMultilevel": {
 												"type": "object",
-												"title": "_ multilevel",
 												"dependencies": "testType",
 												"properties": {
 													"device": {
@@ -121,11 +131,26 @@
 													},
 													"testOperator": {
 														"type": "string",
-														"enum": ["=", "!=", ">", "<"],
+														"enum": ["=", "!=", ">", ">=", "<", "<="],
 														"required": true
 													},
 													"testValue": {
 														"type": "number",
+														"required": true
+													}
+												}
+											},
+											"testTime": {
+												"type": "object",
+												"dependencies": "testType",
+												"properties": {
+													"testOperator": {
+														"type": "string",
+														"enum": [">=", "<="],
+														"required": true
+													},
+													"testValue": {
+														"type": "string",
 														"required": true
 													}
 												}
@@ -150,9 +175,11 @@
 		"renderform": "true",
 		"fields": {
 			"logicalOperator": {
+				"label": "Boolean operator",
 				"type": "select"
 			},
 			"tests": {
+				"label": "Tests",
 				"fields": {
 					"item": {
 						"fields": {
@@ -161,6 +188,7 @@
 								"default": ""
 							},
 							"testBinary": {
+								"label": "Binary condition",
 								"dependencies": {
 									"testType": "binary"
 								},
@@ -175,6 +203,7 @@
 								}
 							},
 							"testMultilevel": {
+								"label": "Multilevel condition",
 								"dependencies": {
 									"testType": "multilevel"
 								},
@@ -185,15 +214,36 @@
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+									},
+									"testOperator": {
+										"type": "select",
+										"optionLabels": ["=", "≠", ">", "≥", "<", "≤"]
+									}
+								}
+							},
+							"testTime": {
+								"label": "Time condition",
+								"dependencies": {
+									"testType": "time"
+								},
+								"fields": {
+									"testOperator": {
+										"type": "select",
+										"optionLabels": ["≥", "≤"]
+									},
+									"testValue": {
+										"type": "time"
 									}
 								}
 							},
 							"testNested": {
+								"label": "Nested condition",
 								"dependencies": {
 									"testType": "nested"
 								},
 								"fields": {
 									"logicalOperator": {
+										"label": "Boolean operator",
 										"type": "select"
 									},
 									"tests": {
@@ -201,10 +251,12 @@
 											"item": {
 												"fields": {
 													"testType": {
+														"label": "Boolean operator",
 														"type": "select",
 														"default": ""
 													},
 													"testBinary": {
+														"label": "Binary condition",
 														"dependencies": {
 															"testType": "binary"
 														},
@@ -219,6 +271,7 @@
 														}
 													},
 													"testMultilevel": {
+														"label": "Multilevel condition",
 														"dependencies": {
 															"testType": "multilevel"
 														},
@@ -229,6 +282,25 @@
 																"datasource": "namespaces",
 																"field": "optionLabels",
 																"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+															},
+															"testOperator": {
+																"type": "select",
+																"optionLabels": ["=", "≠", ">", "≥", "<", "≤"]
+															}
+														}
+													},
+													"testTime": {
+														"label": "Time condition",
+														"dependencies": {
+															"testType": "time"
+														},
+														"fields": {
+															"testValue": {
+																"type": "time"
+															},
+															"testOperator": {
+																"type": "select",
+																"optionLabels": ["≥", "≤"]
 															}
 														}
 													}
