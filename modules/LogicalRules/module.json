@@ -1,0 +1,325 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Logical rules",
+		"description": "Logical rules allows to trigger scenes based on devices status.",
+		"logicalOperator": "and",
+		"tests": [],
+		"action": ""
+	},
+	"schema": {
+		"title": "Select action condition",
+		"type": "object",
+		"properties": {
+			"logicalOperator": {
+				"type": "string",
+				"enum": ["and", "or"],
+				"default": "and",
+				"required": true
+			},
+			"tests": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"testType": {
+							"type": "string",
+							"enum": ["binary", "multilevel", "time", "nested"],
+							"required": true
+						},
+						"testBinary": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"enum": ["off", "on"],
+									"required": true
+								}
+							}
+						},
+						"testMultilevel": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"testOperator": {
+									"type": "string",
+									"enum": ["=", "!=", ">", ">=", "<", "<="],
+									"required": true
+								},
+								"testValue": {
+									"type": "number",
+									"required": true
+								}
+							}
+						},
+						"testTime": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"testOperator": {
+									"type": "string",
+									"enum": [">=", "<="],
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"required": true
+								}
+							}
+						},
+						"testNested": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"logicalOperator": {
+									"type": "string",
+									"enum": ["and", "or"],
+									"default": "or",
+									"required": true
+								},
+								"tests": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"testType": {
+												"type": "string",
+												"enum": ["binary", "multilevel", "time"],
+												"required": true
+											},
+											"testBinary": {
+												"type": "object",
+												"dependencies": "testType",
+												"properties": {
+													"device": {
+														"field": "enum",
+														"datasource": "namespaces",
+														"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
+														"required": true
+													},
+													"testValue": {
+														"type": "string",
+														"enum": ["off", "on"],
+														"required": true
+													}
+												}
+											},
+											"testMultilevel": {
+												"type": "object",
+												"dependencies": "testType",
+												"properties": {
+													"device": {
+														"field": "enum",
+														"datasource": "namespaces",
+														"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
+														"required": true
+													},
+													"testOperator": {
+														"type": "string",
+														"enum": ["=", "!=", ">", ">=", "<", "<="],
+														"required": true
+													},
+													"testValue": {
+														"type": "number",
+														"required": true
+													}
+												}
+											},
+											"testTime": {
+												"type": "object",
+												"dependencies": "testType",
+												"properties": {
+													"testOperator": {
+														"type": "string",
+														"enum": [">=", "<="],
+														"required": true
+													},
+													"testValue": {
+														"type": "string",
+														"required": true
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"action": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_toggleButton:deviceId",
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"renderform": "true",
+		"fields": {
+			"logicalOperator": {
+				"label": "Boolean operator",
+				"type": "select"
+			},
+			"tests": {
+				"label": "Tests",
+				"fields": {
+					"item": {
+						"fields": {
+							"testType": {
+								"type": "select",
+								"default": ""
+							},
+							"testBinary": {
+								"label": "Binary condition",
+								"dependencies": {
+									"testType": "binary"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+									}
+								}
+							},
+							"testMultilevel": {
+								"label": "Multilevel condition",
+								"dependencies": {
+									"testType": "multilevel"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+									},
+									"testOperator": {
+										"type": "select",
+										"optionLabels": ["=", "≠", ">", "≥", "<", "≤"]
+									}
+								}
+							},
+							"testTime": {
+								"label": "Time condition",
+								"dependencies": {
+									"testType": "time"
+								},
+								"fields": {
+									"testOperator": {
+										"type": "select",
+										"optionLabels": ["≥", "≤"]
+									},
+									"testValue": {
+										"type": "time"
+									}
+								}
+							},
+							"testNested": {
+								"label": "Nested condition",
+								"dependencies": {
+									"testType": "nested"
+								},
+								"fields": {
+									"logicalOperator": {
+										"label": "Boolean operator",
+										"type": "select"
+									},
+									"tests": {
+										"fields": {
+											"item": {
+												"fields": {
+													"testType": {
+														"label": "Boolean operator",
+														"type": "select",
+														"default": ""
+													},
+													"testBinary": {
+														"label": "Binary condition",
+														"dependencies": {
+															"testType": "binary"
+														},
+														"fields": {
+															"device": {
+																"label": "",
+																"type": "select",
+																"datasource": "namespaces",
+																"field": "optionLabels",
+																"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+															}
+														}
+													},
+													"testMultilevel": {
+														"label": "Multilevel condition",
+														"dependencies": {
+															"testType": "multilevel"
+														},
+														"fields": {
+															"device": {
+																"label": "",
+																"type": "select",
+																"datasource": "namespaces",
+																"field": "optionLabels",
+																"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+															},
+															"testOperator": {
+																"type": "select",
+																"optionLabels": ["=", "≠", ">", "≥", "<", "≤"]
+															}
+														}
+													},
+													"testTime": {
+														"label": "Time condition",
+														"dependencies": {
+															"testType": "time"
+														},
+														"fields": {
+															"testValue": {
+																"type": "time"
+															},
+															"testOperator": {
+																"type": "select",
+																"optionLabels": ["≥", "≤"]
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"action": {
+				"label": "Action",
+				"type": "select",
+				"datasource": "namespaces",
+				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+			}
+		}
+	}
+}

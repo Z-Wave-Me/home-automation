@@ -1,0 +1,368 @@
+FORMAT: 1A
+HOST: http://mskoff.z-wave.me:10483/ZAutomation/api
+
+# Z-Way API
+Locations API is a *short texts saving* service similar to its physical paper presence on your table.
+
+
++ Allow get parameters
+    + suppress_response_codes (optional, boolean) ... If this parameter is present, all responses will be returned with a 200 OK status code - even errors. This parameter exists to accommodate Flash and JavaScript applications running in browsers that intercept all non-200 responses. If used, it’s then the job of the client to determine error states by parsing the response body. Use with caution, as those error messages may change.
+    + pagination (optional, boolean) ... If this parameter is present, all response of the lists (Devices, Notifications) will be included pagination  
+    + limit (optional, number) ... If this parameter is present, then set limit models per page, else set default 10 models per page
+    + offset (options, number) ... If this parameter is present, then set start point models in page, else set default offset 0.
+    + fields (options, string) ... example: nameField1,nameField2,...
+
++ Status codes,
+    + 200: "200 OK",
+    + 201: "201 Created",
+    + 204: "204 No Content",
+    + 304: "304 Not Modified",
+    + 400: "400 Bad Request",
+    + 401: "401 Unauthorized",
+    + 403: "403 Forbidden",
+    + 404: "404 Not Found",
+    + 405: "405 Method Not Allowed",
+    + 501: "501 Not Implemented",
+    + 500: "500 Internal server error"
+
+# Group Locations
+Locations related resources of the **Locations API**
+
+## Locations Collection [/v1/locations]
+### List all Locations [GET]
+
++ Response 200 (application/json)
+
+        {
+            "data":[
+                {"id":6,"title":"Garage"},
+                {"id":7,"title":"Hall"},
+                {"id":8,"title":"Kids"},
+                {"id":9,"title":"Kitchen"},
+                {"id":10,"title":"Bedroom"},
+                {"id":11,"title":"name123"},
+                {"id":12,"title":"test"}
+            ],
+            "error": null,
+            "code": "200 OK",
+            "message" null,
+        }
+        
+### Create a Location [POST]
++ Request (application/json)
+
+        { "title": "Garage", "icon": "http://example.com/garage.png" }
+
++ Parameters
+    + title (required, string, `Garage`) ... `title` of the location.
+    + icon (optional, string, `http://example.com/garage.png`) ... `icon` of the location.
+
++ Response 201 (application/json)
+
+        { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+        
+### Create a Location model [GET]
+
++ Request (application/json)
+
+        { "method": "POST", "title": "Garage", "icon": "http://example.com/garage.png" }
+
++ Parameters
+    + method (required, string, `method=POST`) ... emulation of `method` POST.
+    + title (required, string, `title=Garage`) ... `title` of the location.
+    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
+
+
++ Response 201 (application/json)
+
+        { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+
+
+## Location [/v1/locations/{id}]
+A single Location object with all its details
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+### Retrieve a Location [GET]
+
++ Request (application/json)
+
+        { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+
++ Response 200 (application/json)
+
+    + Body
+
+            { "id": 2, "title": "Pick-up posters from post-office" }
+            
+### Update a Location [PUT]
++ Response 200 (application/json)
+
+    + Body
+
+            { "id": 2, "title": "Pick-up posters from post-office" }
+
+### Remove a Location [DELETE]
++ Response 204
+
+## Location [/v1/locations/{?id}]
+EmulateHTTP
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+### Update a Location [GET]
+
++ Response 200 (application/json)
+
+    + Body
+    
+            { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+
++ Parameters
+    + method (required, string, `method=PUT`) ... Numeric `id` of the Location to perform action with.
+    + title (optional, string, `title=Garage`) ... `title` of the location.
+    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
+
+### Remove a Location [GET]
+
++ Response 204
+
++ Parameters
+    + method (required, string, `method=DELETE`) ... Numeric `id` of the Location to perform action with.
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+# Group Profiles
+Profiles related resources of the **Profiles API**
+
+## Profiles Collection [/v1/profiles]
+### List all Locations [GET]
+
++ Response 200 (application/json)
+
+        [{
+            "data":[
+                "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+            ],
+            "error": null,
+            "message": null,
+            "code": "200 OK"
+        }]
+        
+### Create a Profile [POST]
++ Request (application/json)
+
+        { "name": "Default", "Description": "descriptions", "active": false, "widgets": []}
+
++ Parameters
+    + name (required, string, `Default`) ... `name` of the profile.
+    + description (optional, string, `description`) ... `description` of the profile.
+    + active (optional, boolean, false) ... `show in dashboard` of the dashboard
+
++ Response 201 (application/json)
+
+    + Body
+
+        {
+            "data":[
+                "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+            ],
+            "error": null,
+            "message": null,
+            "code": "200 OK"
+        }
+
+## Profile [/v1/profiles/{id}]
+A single Location object with all its details
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
+
+### Retrieve a Profile [GET]
+
++ Request (application/json)
+
+        
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "data":[
+                    "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+                ],
+                "error": null,
+                "message": null,
+                "code": "200 OK"
+            }
+            
+### Update a Profile [PUT]
+
++ Response 200 (application/json)
+
+    + Body
+
+            {
+                "data":[
+                    "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+                ],
+                "error": null,
+                "message": null,
+                "code": "200 OK"
+            }
+
+### Remove a Profile [DELETE]
++ Response 204
+
+## Location [/v1/locations/{?id}]
+EmulateHTTP
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+### Update a Location [GET]
+
++ Response 200 (application/json)
+
+    + Body
+    
+            { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+
++ Parameters
+    + method (required, string, `method=PUT`) ... Numeric `id` of the Location to perform action with.
+    + title (optional, string, `title=Garage`) ... `title` of the location.
+    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
+
+### Remove a Location [GET]
+
++ Response 204
+
++ Parameters
+    + method (required, string, `method=DELETE`) ... Numeric `id` of the Location to perform action with.
+    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
+
+
+# Group Devices
+Devices related resources of the **Devices API**
+
+## Devices Collection [/v1/devices{?since}]
+### List all Devices  [GET]
+
++ Parameters
+    + since (optional, integer, `1387881635`) ... `updateTime` of the Devices.
+
++ Response 200 (application/json)
+
+        {
+            "error":null,
+            "data":{
+            "structureChanged":true,
+            "updateTime":1387881635,
+            "devices":[
+                {"id":"ZWayVDev_3:0:38","deviceType":"switchMultilevel","metrics":{"level":37,"title":"Dimmer","iconBase":"multilevel"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_4:0:37","deviceType":"switchBinary","metrics":{"level":255,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_4:0:50:0","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"kWh","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_4:0:50:2","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"W","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881629},
+                {"id":"ZWayVDev_5:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":false,"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1384795592,"invalidateTime":1384795544},"hasSetPoint":{"name":"interviewDone","type":"bool","value":false,"updateTime":1386347818,"invalidateTime":1384795544},"modes":[{"id":0,"title":"Off","target":null},{"id":1,"title":"Heat","target":30},{"id":2,"title":"Cool","target":12},{"id":3,"title":"Auto","target":null},{"id":5,"title":"Resume","target":null},{"id":6,"title":"Fan Only","target":null},{"id":8,"title":"Dry Air","target":null}],"currentMode":1,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_5:0:68","deviceType":"fan","metrics":{"modes":{"0":{"id":0,"title":"Auto Low"},"1":{"id":1,"title":"On Low"},"2":{"id":2,"title":"Auto High"},"3":{"id":3,"title":"On High"}},"currentMode":1,"state":true,"title":"Fan","iconBase":"fan"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_5:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":89,"title":"Battery (5)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_6:1:49:2","deviceType":"probe","metrics":{"probeTitle":"Generic","scaleTitle":"","level":20,"title":"Generic Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_6:2:49:3","deviceType":"probe","metrics":{"probeTitle":"Luminiscence","scaleTitle":"%","level":32,"title":"Luminiscence Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_6:3:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":20.399999618530273,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_11:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550842,"invalidateTime":1385550823},"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"hasSetPoint":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"modes":[{"id":1,"title":"Heat","target":-1408.0999755859375},{"id":2,"title":"Cool","target":2585.5}],"currentMode":1,"scaleTitle":"°C","level":23.200000762939453,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_11:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":23.200000762939453,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_11:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":59,"title":"Battery (11)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_12:1:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_12:2:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_16:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":0,"title":"Battery (16)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_18:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":13.100000381469727,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_19:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":6.400000095367432,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509}
+                ]
+            }
+        }
+        
+## Device [/v1/devices/{id}]
+A single Device object with all its details
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
+
+### Retrieve a Device [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            {"error":null,"data":{"meta":{"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}}}
+
+### Update a Device [PUT]
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
+
++ Request (application/json)
+
+    + Body
+
+            {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}
+
++ Response 200 (application/json)
+
+    + Body
+
+            {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}
+
+# Group Notifications
+Locations related resources of the **Notifications API**
+
+## Notifications Collection [/v1/notifications{?since}]
+### List all Notification  [GET]
+
++ Parameters
+    + redeemed = `false` (optional, boolean, `?redeemed=true`) ... if `redeemed` eq true - include redeemed notifications
+    + since (optional, integer, `?since=1387881635`) ... `updateTime` of the Notifications.
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {"error":null,
+              "data":{
+                "updateTime":1387884437,
+                "notifications":[
+                  {"id":"1387199352223","timestamp":"2013-12-16T13:09:12.223Z","level":"error","message":"Cannot remove location 54545 - doesn't exist","redeemed":true},
+                  {"id":"1387200419730","timestamp":"2013-12-16T13:26:59.730Z","level":"error","message":"Cannot remove location 54545 - doesn't exist","redeemed":true}
+                ]
+              }
+            }        
+        
+## Notification [/v1/notifications/{id}]
+A single Notice object with all its details
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the notifications to perform action with.
+
+### Retrieve a Notification [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            {"error":null,"data":{"id":1387202340396,"timestamp":"2013-12-16T13:59:00.396Z","level":"error","message":"Cannot remove location 54545 - doesn't exist","redeemed":true}}
+
+### Update a Notification [PUT]
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Notification to perform action with.
+
++ Request (application/json)
+
+    + Body
+
+            {"id":1387202340396,"timestamp":"2013-12-16T13:59:00.396Z","level":"error","message":"Cannot remove location 54545 - doesn't exist","redeemed":true}
+
++ Response 200 (application/json)
+
+    + Body
+
+            {"error":null,"data":{"id":1387202340396,"timestamp":"2013-12-16T13:59:00.396Z","level":"error","message":"Cannot remove location 54545 - doesn't exist","redeemed":true}}

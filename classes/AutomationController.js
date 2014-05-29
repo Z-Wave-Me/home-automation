@@ -121,58 +121,11 @@ AutomationController.prototype.loadModules = function (callback) {
     var self = this;
 
     fs.list("modules/").forEach(function (moduleClassName) {
-        var moduleMetaFilename = "modules/" + moduleClassName + "/module.json",
-            _st = fs.stat(moduleMetaFilename);
+        self.loadModulesFromFolder(moduleClassName, "modules/");
+    });
 
-        if (!_st || "file" !== _st.type || 2 > _st.size) {
-            console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
-            return;
-        }
-
-        try {
-            var moduleMeta = loadJSON(moduleMetaFilename);
-        } catch (e) {
-            self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
-            console.log(e.stack);
-            return; // skip this modules
-        }
-        if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
-
-        if (moduleMeta.hasOwnProperty("autoload") && !!moduleMeta["autoload"]) {
-            var _priority = moduleMeta.hasOwnProperty("autoloadPriority") ? moduleMeta["autoloadPriority"] : 1000;
-            self._autoLoadModules.push([_priority, moduleClassName]);
-        }
-
-        var moduleFilename = "modules/" + moduleClassName + "/index.js";
-        _st = fs.stat(moduleFilename);
-        if ("file" !== _st.type || 2 > _st.size) {
-            console.log("ERROR: Cannot stat module", moduleFilename);
-            return;
-        }
-
-        console.log("Loading module " + moduleClassName + " from " + moduleFilename);
-        try {
-            executeFile(moduleFilename);
-        } catch (e) {
-            self.addNotification("error", "Can not load index.js from " + moduleFilename + ": " + e.toString(), "core");
-            console.log(e.stack);
-            return; // skip this modules
-        }
-        
-        // Monkey-patch module with basePath method
-        _module.prototype.moduleBasePath = function () {
-            return "modules/" + moduleClassName;
-        };
-
-        moduleMeta.id = moduleClassName;
-
-        // Grab _module and clear it out
-        self.modules[moduleClassName] = {
-            meta: moduleMeta,
-            classRef: _module
-        };
-
-        _module = undefined;
+    (fs.list("user_modules/") || []).forEach(function (moduleClassName) {
+        self.loadModulesFromFolder(moduleClassName, "user_modules/");
     });
 
     // Sort and clarify automatically loaded modules list
@@ -189,6 +142,63 @@ AutomationController.prototype.loadModules = function (callback) {
     });
 
     if (callback) callback();
+};
+
+AutomationController.prototype.loadModulesFromFolder = function (moduleClassName, folder) {
+    var self = this;
+
+    var moduleMetaFilename = folder + moduleClassName + "/module.json",
+        _st = fs.stat(moduleMetaFilename);
+
+    if (!_st || "file" !== _st.type || 2 > _st.size) {
+        console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
+        return;
+    }
+
+    try {
+        var moduleMeta = loadJSON(moduleMetaFilename);
+    } catch (e) {
+        self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
+        console.log(e.stack);
+        return; // skip this modules
+    }
+    if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
+
+    if (moduleMeta.hasOwnProperty("autoload") && !!moduleMeta["autoload"]) {
+        var _priority = moduleMeta.hasOwnProperty("autoloadPriority") ? moduleMeta["autoloadPriority"] : 1000;
+        self._autoLoadModules.push([_priority, moduleClassName]);
+    }
+
+    var moduleFilename = folder + moduleClassName + "/index.js";
+    _st = fs.stat(moduleFilename);
+    if ("file" !== _st.type || 2 > _st.size) {
+        console.log("ERROR: Cannot stat module", moduleFilename);
+        return;
+    }
+
+    console.log("Loading module " + moduleClassName + " from " + moduleFilename);
+    try {
+        executeFile(moduleFilename);
+    } catch (e) {
+        self.addNotification("error", "Can not load index.js from " + moduleFilename + ": " + e.toString(), "core");
+        console.log(e.stack);
+        return; // skip this modules
+    }
+    
+    // Monkey-patch module with basePath method
+    _module.prototype.moduleBasePath = function () {
+        return folder + moduleClassName;
+    };
+
+    moduleMeta.id = moduleClassName;
+
+    // Grab _module and clear it out
+    self.modules[moduleClassName] = {
+        meta: moduleMeta,
+        classRef: _module
+    };
+
+    _module = undefined;
 };
 
 AutomationController.prototype.instantiateModule = function (instanceModel) {
