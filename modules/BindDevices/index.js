@@ -49,9 +49,9 @@ BindDevices.prototype.init = function (config) {
             var vDev = that.controller.devices.get(el);
             
             if (vDev) {
-                if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "swtichMultilevel" && actionMultilevel === null) {
+                if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "switchMultilevel" && actionMultilevel === null) {
                     vDev.performCommand(actionBinary);
-                } else if (vDev.get("deviceType") === "swtichMultilevel") {
+                } else if (vDev.get("deviceType") === "switchMultilevel") {
                     vDev.performCommand("exact", { level: actionMultilevel });
                 }
             }
@@ -65,7 +65,7 @@ BindDevices.prototype.init = function (config) {
             var vDev = self.controller.devices.get(el);
             
             if (vDev) {
-                if (vDev.get("deviceType") === "swtichMultilevel") {
+                if (vDev.get("deviceType") === "switchMultilevel") {
                     vDev.performCommand(action);
                 }
             }
