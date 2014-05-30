@@ -20,7 +20,7 @@ define([
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = query.hasOwnProperty('port') ? query.port : window.location.port !== "" ? window.location.port : 8083;
+            that.apiPort = query.hasOwnProperty('port') ? query.port : "";
             that.apiHost = query.hasOwnProperty('host') ? query.host : window.location.hostname;
 
             that.preFilterAjax();
@@ -118,10 +118,12 @@ define([
             }
         },
         preFilterAjax: function () {
-            var that = this;
+            var that = this,
+                host = that.apiPort ? that.apiHost + ":" + that.apiPort : that.apiHost;
             $.ajaxPrefilter(function (options) {
                 // Your server goes below
-                that.apiUrl = "http://" + that.apiHost + ":" + that.apiPort + "/ZAutomation/api/v1" + options.url;
+
+                that.apiUrl = "http://" + host + "/ZAutomation/api/v1" + options.url;
 
                 options.url = that.apiUrl;
                 options.crossDomain = {
