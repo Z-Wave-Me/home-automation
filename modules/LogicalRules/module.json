@@ -179,7 +179,7 @@
 				"type": "select"
 			},
 			"tests": {
-				"label": "Tests",
+				"label": "Conditions",
 				"fields": {
 					"item": {
 						"fields": {
@@ -237,7 +237,7 @@
 								}
 							},
 							"testNested": {
-								"label": "Nested condition",
+								"label": "Nested conditions",
 								"dependencies": {
 									"testType": "nested"
 								},
