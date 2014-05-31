@@ -20,7 +20,7 @@ define([
             _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
             log("App Initialize");
 
-            that.apiPort = query.hasOwnProperty('port') ? query.port : "";
+            that.apiPort = query.hasOwnProperty('port') ? query.port : window.location.port;
             that.apiHost = query.hasOwnProperty('host') ? query.host : window.location.hostname;
 
             that.preFilterAjax();

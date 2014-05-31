@@ -1,0 +1,274 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "HTTP device",
+		"description": "Create virtual device based on HTTP data.",
+
+		"deviceType": "",
+
+		"setterOn_toggleButton": "",
+
+		"getter_sensorBinary": "",
+		"getterParser_sensorBinary": "",
+		"getterPollInterval_sensortBinary": "",
+
+		"getter_sensorMultilevel": "",
+		"getterParser_sensorMultilevel": "",
+		"getterPollInterval_sensortMultilevel": "",
+		"scale_sensorMultilevel": "",
+
+		"setterOn_switchBinary": "",
+		"setterOff_switchBinary": "",
+		"getter_switchBinary": "",
+		"getterParser_switchBinary": "",
+		"getterPollInterval_switchtBinary": "",
+
+		"setterOn_switchMultilevel": "",
+		"setterOn_switchMultilevel": "",
+		"setterLevel_switchMultilevel": "",
+		"getter_switchMultilevel": "",
+		"getterParser_switchMultilevel": "",
+		"getterPollInterval_switchtMultilevel": "",
+
+		"method": "GET"
+	},
+	"schema": {
+		"label": "Select action condition",
+		"type": "object",
+		"properties": {
+			"deviceType": {
+				"type": "string",
+				"enum": ["toggleButton", "sensorBinary", "sensorMultilevel", "switchBinary", "switchMultilevel"],
+				"default": "toggleButton",
+				"required": true
+			},
+
+			"setterOn_toggleButton": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+
+			"getter_sensorBinary": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getterParser_sensorBinary": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_sensorBinary": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"getter_sensorMultilevel": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getterParser_sensorMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_sensorMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"scale_sensorMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"setterOn_switchBinary": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"setterOff_switchBinary": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getter_switchBinary": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterParser_switchBinary": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_switchBinary": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"setterLevel_switchMultilevel": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getter_switchMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterParser_switchMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_switchMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"method": {
+				"type": "string",
+				"required": true,
+				"enum": ["GET", "POST"]
+			}
+		}
+	},
+	"options": {
+		"renderform": "true",
+		"fields": {
+			"deviceType": {
+				"type": "select"
+			},
+
+			"setterOn_toggleButton": {
+				"label": "URL for action On",
+				"dependencies": {
+					"deviceType": "toggleButton"
+				}
+			},
+
+			"getter_sensorBinary": {
+				"label": "URL to get value",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+			"getterParser_sensorBinary": {
+				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
+				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+			"getterPollInterval_sensorBinary": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+
+			"getter_sensorMultilevel": {
+				"label": "URL to get value",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+			"getterParser_sensorMultilevel": {
+				"label": "Inline Javascript to parse incoming data to number",
+				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+			"getterPollInterval_sensorMultilevel": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+			"scale_sensorMultilevel": {
+				"label": "Sensor scale",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+
+			"setterOn_switchBinary": {
+				"label": "URL for action On",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"setterOff_switchBinary": {
+				"label": "URL for action Off",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"getter_switchBinary": {
+				"label": "URL to get value",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"getterParser_switchBinary": {
+				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
+				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"getterPollInterval_switchBinary": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+
+			"setterLevel_switchMultilevel": {
+				"label": "URL for action",
+				"helper": "%% is used to represent level in the URL. For example: http://host/dimmer/level/%%/set",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			},
+			"getter_switchMultilevel": {
+				"label": "URL to get value",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			},
+			"getterParser_switchMultilevel": {
+				"label": "Inline Javascript to parse incoming data to number",
+				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			},
+			"getterPollInterval_switchMultilevel": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			},
+
+			"method": {
+				"label": "HTTP method to use",
+				"type": "select"
+			}
+		}
+	}
+}

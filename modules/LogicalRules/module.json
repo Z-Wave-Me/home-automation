@@ -315,7 +315,7 @@
 				}
 			},
 			"action": {
-				"label": "Action",
+				"label": "Activate Scene",
 				"type": "select",
 				"datasource": "namespaces",
 				"optionLabels": "namespaces:devices_toggleButton:deviceName"
