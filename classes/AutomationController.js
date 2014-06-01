@@ -577,7 +577,7 @@ AutomationController.prototype.getListProfiles = function () {
             id: 1,
             name: 'Default',
             description: 'This is default profile. Default profile created automatically.',
-            widgets: [],
+            positions: [],
             active: true
         })
     }
@@ -596,15 +596,14 @@ AutomationController.prototype.createProfile = function (object) {
     var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
         profile;
 
-    profile = {
+    this.profiles.push({
         id: id,
         name: object.name,
         description: object.description || null,
-        widgets: object.widgets || [],
+        positions: object.positions || [],
         active: object.active || false
-    }
+    });
 
-    this.profiles.push(profile);
     this.saveConfig();
     return profile;
 };
@@ -624,8 +623,8 @@ AutomationController.prototype.updateProfile = function (object, id) {
         if (object.hasOwnProperty('description')) {
             this.profiles[index].description = object.description;
         }
-        if (object.hasOwnProperty('widgets')) {
-            this.profiles[index].widgets = object.widgets;
+        if (object.hasOwnProperty('positions')) {
+            this.profiles[index].positions = object.positions;
         }
         if (object.hasOwnProperty('active')) {
             this.profiles[index].active = object.active;

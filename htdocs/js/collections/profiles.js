@@ -42,44 +42,57 @@ define([
 
         getDevice: function (deviceId) {
             var that = this,
-                activeProfile = this.getActive().toJSON(),
-                device = _.find(activeProfile.widgets, function (widget) { return widget.id === deviceId; });
+                profile = that.getActive().toJSON(),
+                device = _.find(profile.positions, function (id) { return id === deviceId; });
 
-            return device || {
-                id: deviceId,
-                position: {x: 0, y: 0},
-                show: true
-            };
+            return device;
         },
 
-        setDevice: function (device) {
-            var activeProfile = this.getActive(),
-                widgets = activeProfile.get('widgets'),
-                widget,
-                index;
-
-            if (_.any(widgets, function (widget) { return widget.id === device.id; })) {
-                widget = _.find(widgets, function (widget) { return widget.id === device.id; });
-                index = widgets.indexOf(widget);
-                widgets[index] = device;
-            } else {
-                widgets.push(device);
+        setPositions: function (devicesId) {
+            var that = this;
+            if (_.isArray(devicesId)) {
+                that.getActive().set({positions: _.uniq(_.compact(devicesId))});
             }
-
-            if (!!device.show) {
-                App.Devices.get(device.id).trigger('show');
-            } else {
-                App.Devices.get(device.id).trigger('hide');
-            }
-
-            activeProfile.save({widgets: widgets});
         },
 
-        isShow: function (deviceId) {
+        toggleDevice: function (devicesId) {
             var that = this,
-                widget = this.getDevice(deviceId);
+                device,
+                devices = _.isArray(devicesId) ? devicesId : [devicesId];
 
-            return widget.show;
+            _.each(devices, function (deviceId) {
+                device = that.getDevice(deviceId);
+
+                if (device) {
+                    that.removeDevice(deviceId);
+                } else {
+                    that.setDevice(deviceId);
+                }
+            });
+        },
+
+        setDevice: function (deviceId) {
+            var that = this,
+                profile = that.getActive(),
+                positions = profile.get('positions');
+
+            if (!_.any(positions, function (id) { return deviceId === id; })) {
+                positions.push(deviceId);
+                profile.save({positions: _.compact(_.uniq(positions))});
+                App.Devices.get(deviceId).trigger('show');
+            }
+        },
+
+        removeDevice: function (deviceId) {
+            var that = this,
+                profile = that.getActive(),
+                positions = profile.get('positions');
+
+            if (_.any(positions, function (id) { return deviceId === id; })) {
+                positions = _.filter(positions, function (id) { return id !== deviceId; });
+                profile.save({positions: _.compact(_.uniq(positions))});
+                App.Devices.get(deviceId).trigger('hide');
+            }
         }
     });
 

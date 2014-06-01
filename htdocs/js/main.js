@@ -3,7 +3,7 @@ requirejs.config({
     paths : {
         backbone : 'libs/backbone/backbone-min',
         underscore : 'libs/backbone/underscore-min',
-        jquery : 'libs/vendor/jquery-2.1.0.min',
+        jquery : 'libs/vendor/jquery-2.1.1.min',
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom.min',
         'colpick': 'libs/vendor/jquery.colpick',
         cookie : 'libs/vendor/jquery.cookie',
