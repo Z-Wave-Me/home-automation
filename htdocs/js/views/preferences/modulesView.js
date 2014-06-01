@@ -112,8 +112,8 @@ define([
                                             $instance.removeClass('active');
                                         });
                                         that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
-                                        window.App.Instances.fetch();
-                                        window.App.Namespaces.fetch();
+                                        window.App.Instances.fetch({reset: false, merge: true});
+                                        window.App.Namespaces.fetch({reset: false, merge: true});
                                     } else {
                                         that.$el.find('.alpaca-controlfield-message-text').css('color', 'red');
                                     }
@@ -161,6 +161,8 @@ define([
                                     $schema.hide('fast', function () {
                                         $schema.off().remove();
                                     });
+                                    window.App.Instances.fetch({reset: false, merge: true});
+                                    window.App.Namespaces.fetch({reset: false, merge: true});
                                 }
                             });
                         });

@@ -16,13 +16,12 @@ define([
     return Backbone.View.extend({
         el: '#devices-container',
         initialize: function () {
-            _.bindAll(this, 'render', 'renderWidget');
+            _.bindAll(this, 'render', 'renderWidget', 'show');
             var that = this;
             that.Devices = window.App.Devices;
         },
-        render: function (fixedPosition, forceView) {
+        render: function (forceView) {
             var that = this;
-            that.fixedPosition = fixedPosition || null;
             if (that.Devices.length > 0) {
                 if (!$("#devices-container").exists()) {
                     $('#main-region').append('<section id="devices-container" class="widgets"></section>');
@@ -62,7 +61,6 @@ define([
                 }
             }
 
-
             if (modelView) {
                 if (!model.view) {
                     model.view = modelView;
@@ -75,41 +73,15 @@ define([
                     });
                 });
 
-                that.showingControl(modelView, forceView);
-
-                if (that.fixedPosition) {
-                    that.setPosition(modelView);
-                } else {
-                    that.clearPosition(modelView);
-                }
+                that.show(modelView, forceView);
             }
         },
-        setPosition: function (modelView) {
-            var device = App.Profiles.getDevice(modelView.model.id),
-                $template = modelView.getTemplate();
-
-            $template.animate({
-                top: device.position.y,
-                left: device.position.x
-            });
-        },
-        clearPosition: function (modelView) {
+        show: function (modelView, forceView) {
             var $template = modelView.getTemplate();
-            $template.animate({
-                top: 0,
-                left: 0
-            }, {
-                complete: function () {
-                    $template.removeAttr('style');
-                }
-            });
-        },
-        showingControl: function (modelView, forceView) {
-            var $template = modelView.getTemplate();
-            if (App.Profiles.isShow(modelView.model.id) || forceView) {
-                $template.show();
+            if (App.Profiles.getDevice(modelView.model.id) || forceView) {
+                $template.show().addClass('show');
             } else {
-                $template.hide();
+                $template.hide().removeClass('show');
             }
         }
     });

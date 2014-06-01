@@ -25,11 +25,10 @@ define([
             window.widget = this.WidgetsModule;
             if (window.location.hash.indexOf('dashboard') !== -1 || !window.location.hash) {
                 var that = this,
-                    fixedPosition = true,
                     forceView = false;
 
                 window.App.Devices.lock = false;
-                that.WidgetsModule.render(fixedPosition, forceView);
+                that.WidgetsModule.render(forceView);
             }
         }
     });

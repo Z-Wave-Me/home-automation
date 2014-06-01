@@ -176,7 +176,7 @@ define([
             });
 
             $device.on('click', function () {
-                active = that.Profiles.isShow(device.id);
+                active = that.Profiles.getDevice(device.id);
                 that.$ListContainer.find('li').removeClass('active');
                 $device.addClass('active');
                 $deviceTmp = $(_.template(WidgetTmp, {device: device.toJSON(), widget: active}));
@@ -187,9 +187,7 @@ define([
                 $deviceTmp.show('fast');
 
                 $deviceTmp.find('.input-dashboard').on('change', function () {
-                    widget = that.Profiles.getDevice(device.id);
-                    widget.show = !!$(this).prop('checked');
-                    App.Profiles.setDevice(widget);
+                    App.Profiles.toggleDevice(device.id)
                 });
 
                 ms = $deviceTmp.find('#ms-gmail').magicSuggest({

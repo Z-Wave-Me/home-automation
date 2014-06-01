@@ -34,7 +34,8 @@ define([
 
         parse: function (response, xhr) {
             var that = this,
-                list = [];
+                devicesId = window.App.Profiles.getActive().get('positions'),
+                zipped = [];
 
             if (response.data.structureChanged) {
                 _.each(that.models, function (model) {
@@ -45,8 +46,24 @@ define([
                 });
             }
 
-            this.updateTime = response.data.updateTime;
-            return response.data.devices;
+            if (!Boolean(that.updateTime)) {
+                // push only show
+                _.each(devicesId, function (deviceId) {
+                    if (_.any(response.data.devices, function (device) { return device.id === deviceId; })) {
+                        zipped.push(_.find(response.data.devices, function (device) { return device.id === deviceId; }));
+                    }
+                });
+
+                // push other
+                zipped = _.union(zipped, _.filter(response.data.devices, function (device) {
+                    return devicesId.indexOf(device.id) === -1;
+                }));
+            } else {
+                zipped = response.data.devices;
+            }
+
+            that.updateTime = response.data.updateTime;
+            return zipped;
         },
 
         initialize: function () {

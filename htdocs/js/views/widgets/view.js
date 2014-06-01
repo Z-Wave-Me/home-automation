@@ -50,12 +50,11 @@ define([
         render: function () {
             if (window.location.hash.indexOf('widgets') !== -1) {
                 var that = this,
-                    fixedPosition = false,
                     forceView = true;
 
                 that.Devices.trigger('normal');
                 that.Devices.lock = true;
-                that.WidgetsModule.render(fixedPosition, forceView);
+                that.WidgetsModule.render(forceView);
             }
         }
     });

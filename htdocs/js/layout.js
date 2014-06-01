@@ -275,29 +275,27 @@ define([
                 $this.toggleClass('active');
                 if ($this.hasClass('active')) {
                     that.Devices.trigger('settings');
+                    $('#devices-container, #widgets-container').sortable("enable");
                 } else {
                     that.Devices.trigger('normal');
+                    $('#devices-container, #widgets-container').sortable("disable");
                 }
-                $('.widget-small, .widget').off().draggable({
-                    grid: [ 10, 10 ],
-                    handle: '.small-border, .button-select-border',
-                    scroll: false,
-                    snapMode: "outer",
-                    containment: "parent",
-                    stop: function (event, ui) {
-                        var xPos = ui.position.left,
-                            yPos = ui.position.top,
-                            deviceId = $(this).attr('data-widget-id'),
-                            deviceFromProfile = App.Profiles.getDevice(deviceId);
 
-
-                        deviceFromProfile.position.x = xPos;
-                        deviceFromProfile.position.y = yPos;
-
-                        window.App.Profiles.setDevice(deviceFromProfile);
-                    }
-                });
             });
+
+            $('#devices-container, #widgets-container').sortable({
+                handle: '.border-widget',
+                tolerance: 'pointer',
+                zIndex: 9999,
+                items: ".show",
+                update: function () {
+                    var $widgets = $('.widget, .widget-small'),
+                        sorted = $(this).sortable( "toArray", { attribute: "data-widget-id" } );
+
+                    window.App.Profiles.setPositions(sorted);
+                }
+            });
+            $('#devices-container, #widgets-container').disableSelection();
         },
         update: function (route) {
             var that = this,
