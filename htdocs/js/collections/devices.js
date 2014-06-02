@@ -34,7 +34,7 @@ define([
 
         parse: function (response, xhr) {
             var that = this,
-                devicesId = window.App.Profiles.getActive().get('widgets'),
+                devicesId = window.App.Profiles.getActive().get('positions'),
                 zipped = [];
 
             if (response.data.structureChanged) {
