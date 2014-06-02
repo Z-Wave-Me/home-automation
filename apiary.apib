@@ -22,8 +22,8 @@ Locations API is a *short texts saving* service similar to its physical paper pr
     + 403: "403 Forbidden",
     + 404: "404 Not Found",
     + 405: "405 Method Not Allowed",
-    + 501: "501 Not Implemented",
-    + 500: "500 Internal server error"
+    + 500: "500 Internal server error",
+    + 501: "501 Not Implemented"
 
 # Group Locations
 Locations related resources of the **Locations API**
@@ -164,14 +164,14 @@ Profiles related resources of the **Profiles API**
 
     + Body
 
-        {
-            "data":[
-                "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
-            ],
-            "error": null,
-            "message": null,
-            "code": "200 OK"
-        }
+            {
+                "data":[
+                    "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+                ],
+                "error": null,
+                "message": null,
+                "code": "200 OK"
+            }
 
 ## Profile [/v1/profiles/{id}]
 A single Location object with all its details
