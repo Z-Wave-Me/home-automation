@@ -647,7 +647,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = ex.message;
             }
 
-            if (reqObj.hasOwnProperty('name') || reqObj.hasOwnProperty('description') || reqObj.hasOwnProperty('active') || reqObj.hasOwnProperty('widgets')) {
+            if (reqObj.hasOwnProperty('name') || reqObj.hasOwnProperty('description') || reqObj.hasOwnProperty('active') || reqObj.hasOwnProperty('positions')) {
                 profile = that.controller.updateProfile(reqObj, profileId);
                 if (profile !== undefined && profile.id !== undefined) {
                     reply.data = profile;
