@@ -143,7 +143,6 @@
 		}
 	},
 	"options": {
-		"renderform": "true",
 		"fields": {
 			"deviceType": {
 				"type": "select"
