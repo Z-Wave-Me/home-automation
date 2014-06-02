@@ -55,7 +55,7 @@ ImportRemoteHA.prototype.init = function (config) {
 
 ImportRemoteHA.prototype.stop = function () {
     if (this.timer) {
-        clearInterval(this.timer);
+        clearTimeout(this.timer);
     }
     
     this.controller.devices.remove("HTTP_Device_" + this.config.deviceType + "_" + this.id); // !!!!!!!!!!!!!!!!!!!!!!!!
@@ -89,10 +89,10 @@ ImportRemoteHA.prototype.requestUpdate = function () {
             }
             
             if (self.timer) {
-                clearInterval(self.timer);
+                clearTimeout(self.timer);
             }
             
-            self.timer = setInterval(function() {
+            self.timer = setTimeout(function() {
                 self.requestUpdate();
             }, dt);
         }
@@ -130,7 +130,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     self.handleCommand(this, command, args);
                 });
 
-                self.config.renderDevices.push({id: localId, deviceType: item.deviceType});
+                self.config.renderDevices.push({deviceId: localId, deviceType: item.deviceType});
                 self.saveConfig();
             }
         });

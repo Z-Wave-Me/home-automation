@@ -7,6 +7,7 @@
 		"description": "Create virtual device based remote Z-Way HA server.",
 
 		"url": "",
+		"dT": 500,
 		"skipDevices": [],
 		"renderDevices": []
 	},
@@ -16,6 +17,10 @@
 		"properties": {
 			"url": {
 				"type": "string",
+				"required": true
+			},
+			"dT": {
+				"type": "number",
 				"required": true
 			},
 			"skipDevices": {
@@ -52,6 +57,9 @@
 			"url": {
 				"label": "URL to remote side",
 				"helper": "Example: http://192.168.0.100:8083"
+			},
+			"dT": {
+				"label": "Update period (in milliseconds)"
 			},
 			"skipDevices": {
 				"label": "List of devices not to import from remote side",
