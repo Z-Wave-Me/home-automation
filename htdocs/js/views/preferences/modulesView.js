@@ -76,6 +76,12 @@ define([
 
             $instance = $("<li>" + instance.get('params').title + "</li>");
 
+            if (instance.get('params').status === 'enable') {
+                $instance.addClass('enable');
+            } else {
+                $instance.removeClass('enable')
+            }
+
             that.listenTo(instance, 'destroy reset remove', function () {
                 $instance.hide('fast', function () {
                     $instance.prev().click();
@@ -110,6 +116,11 @@ define([
                                         $template.hide('fast', function () {
                                             $template.off().remove();
                                             $instance.removeClass('active');
+                                            if (instance.get('params').status === 'enable') {
+                                                $instance.addClass('enable');
+                                            } else {
+                                                $instance.removeClass('enable')
+                                            }
                                         });
                                         that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
                                         window.App.Instances.fetch({reset: false, merge: true});

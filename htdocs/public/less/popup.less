@@ -384,6 +384,23 @@
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          padding-left: 3px;
+          &:before {
+            content: "";
+            border-radius: 50%;
+            background-color: red;
+            position: absolute;
+            height: 12px;
+            width: 12px;
+            display: block;
+            left: 200px;
+            margin-top: 8.5px;
+          }
+          &.enable {
+            &:before {
+              background-color: green;
+            }
+          }
           &.active {
             cursor: default;
             font-size: 18px;
@@ -392,8 +409,13 @@
             color: #222;
             background-color: #bbc2c4;
             margin-left: -13%;
-            padding-left: 13%;
+            padding-left: 14%;
             margin-right: 0;
+            &:before {
+              width: 18px;
+              height: 18px;
+              margin-top: 8px;
+            }
             &:after {
               content: "";
               border-style: dashed;
