@@ -161,8 +161,21 @@ define([
                                     $schema.hide('fast', function () {
                                         $schema.off().remove();
                                     });
-                                    window.App.Instances.fetch({reset: false, merge: true});
-                                    window.App.Namespaces.fetch({reset: false, merge: true});
+                                    window.App.Namespaces.fetch({
+                                        remove: false,
+                                        merge: true,
+                                        success: function () {
+                                            window.App.Modules.fetch({
+                                                remove: false,
+                                                merge: true
+                                            });
+
+                                            window.App.Instances.fetch({
+                                                remove: false,
+                                                merge: true
+                                            });
+                                        }
+                                    });
                                 }
                             });
                         });
