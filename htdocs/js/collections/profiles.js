@@ -51,7 +51,7 @@ define([
         setPositions: function (devicesId) {
             var that = this;
             if (_.isArray(devicesId)) {
-                that.getActive().set({positions: _.uniq(_.compact(devicesId))});
+                that.getActive().save({positions: _.uniq(_.compact(devicesId))});
             }
         },
 
