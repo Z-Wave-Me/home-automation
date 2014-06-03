@@ -1,5 +1,4 @@
 @popover-title-height: 60px;
-
 @border-width: 3px;
 @border-position: 4px;
 .popover {
@@ -12,7 +11,7 @@
   padding: 1px;
   text-align: left;
   white-space: normal;
-  background-color: #ffffff;
+  background-color: transparent;
   border: @border-width solid @green;
   border: @border-width solid rgba(187, 213, 8, 1);
   -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
@@ -45,13 +44,18 @@
   line-height: 18px;
   background-color: #f7f7f7;
   border-bottom: 1px solid #ebebeb;
+  -webkit-appearance: none;
   border-radius: 5px 5px 0 0;
+  -webkit-border-radius: 5px 5px 0 0
 }
 
 .popover-content {
   float: left;
   display: block;
   padding: 5px 10px;
+  background-color: #ededed;
+  border-radius: 5px 5px 0 0;
+  -webkit-border-radius: 5px 5px 0 0;
 }
 
 .popover .arrow,
@@ -143,8 +147,12 @@
 
 .popover-events {
   max-width: 300px;
+  padding: 0;
+  overflow: initial;
   .popover-content {
-    width: 95%;
+    width: 93%;
+    border-radius: 0;
+    background-color: #fff;
   }
   .event-item {
     display: block;
@@ -193,7 +201,7 @@
   border: 0;
   padding: 0;
   border-radius: 8px;
-  background-color: #ededed;
+  background-color: transparent;
   .top-popover-container {
     background-color: #283236;
     height: @popover-title-height;
