@@ -30,13 +30,13 @@ Locations API is a *short texts saving* service similar to its physical paper pr
     + 405:  "405 Method Not Allowed",
     + 500:  "500 Internal server error",
     + 501:  "501 Not Implemented"
-    + 503:  "403 Service Unavailable"
+    + 503:  "503 Service Unavailable"
     
 
 # Group Platform Availability 
 <a id="available" ></a>
 
-It will return 503 with Error message (see the details below). You can also use **v1/status** resource to check the Platform availability.
+It will return 503 with Error message (see the details below). You can also use **/v1/status** resource to check the Platform availability.
 
 ## /v1/status
 ### GET
@@ -62,6 +62,32 @@ Resource for checking the Platform availability.
                 data: "OK",
                 code: 200
             }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": false,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
     
 + Response 503
 
@@ -77,11 +103,36 @@ Resource for checking the Platform availability.
                 code: 503,
                 message: "Service Unavailable"
             }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
 
 # Group Platform Restart
 <a id="available" ></a>
 
-You can use **v1/restart** for restart platform.
+You can use **/v1/restart** for restart platform.
 
 ## /v1/restart
 ### GET
@@ -107,8 +158,359 @@ Platform Restart
                 data: "OK",
                 code: 200
             }
+            
+    + Schema
 
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
 
+# Group Instances and Modules
+<a id="available" ></a>
+
+###Methods
+- **/v1/modules** - read modules.
+- **/v1/instances** create/read/update/delete instances.
+
+## Modules Collection [/v1/modules]
+### List all Modules [GET]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        id: 'modulesId',
+                        
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": ["array"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
+         
+## Instances Collection [/v1/instances]   
+### List all Instances [GET]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        moduleId: 'moduleId',
+                        
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "array",
+                        "required": true
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+
+## Instance Model [/v1/instances/{:instanceId}]
+### READ [GET]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        moduleId: 'moduleId',
+                        
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "moduleId": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "params": {
+                                "type": "object",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
+### CREATE [POST]
+
++ Request (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        moduleId: 'moduleId',
+                        params: {
+                            status: "enable"
+                        }
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "moduleId": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "params": {
+                                "type": "object",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+
++ Response 201 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        moduleId: 'moduleId',
+                        
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "moduleId": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "params": {
+                                "type": "object",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
+### UPDATE [PUT]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        id: 1
+                        moduleId: 'moduleId',
+                        params: {
+                            status: "enable"
+                        }
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": false
+                            },
+                            "moduleId": {
+                                "type": "string",
+                                "required": false
+                            },
+                            "params": {
+                                "type": "object",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
+### DELETE [DELETE]
+
++ Response 204
 
 # Group Devices
 Devices related resources of the **Devices API**
@@ -121,55 +523,82 @@ Devices related resources of the **Devices API**
 
 + Response 200 (application/json)
 
-        {
-            "error":null,
-            "data":{
-            "structureChanged":true,
-            "updateTime":1387881635,
-            "devices":[
-                {"id":"ZWayVDev_3:0:38","deviceType":"switchMultilevel","metrics":{"level":37,"title":"Dimmer","iconBase":"multilevel"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_4:0:37","deviceType":"switchBinary","metrics":{"level":255,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_4:0:50:0","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"kWh","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_4:0:50:2","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"W","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881629},
-                {"id":"ZWayVDev_5:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":false,"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1384795592,"invalidateTime":1384795544},"hasSetPoint":{"name":"interviewDone","type":"bool","value":false,"updateTime":1386347818,"invalidateTime":1384795544},"modes":[{"id":0,"title":"Off","target":null},{"id":1,"title":"Heat","target":30},{"id":2,"title":"Cool","target":12},{"id":3,"title":"Auto","target":null},{"id":5,"title":"Resume","target":null},{"id":6,"title":"Fan Only","target":null},{"id":8,"title":"Dry Air","target":null}],"currentMode":1,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_5:0:68","deviceType":"fan","metrics":{"modes":{"0":{"id":0,"title":"Auto Low"},"1":{"id":1,"title":"On Low"},"2":{"id":2,"title":"Auto High"},"3":{"id":3,"title":"On High"}},"currentMode":1,"state":true,"title":"Fan","iconBase":"fan"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_5:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":89,"title":"Battery (5)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_6:1:49:2","deviceType":"probe","metrics":{"probeTitle":"Generic","scaleTitle":"","level":20,"title":"Generic Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_6:2:49:3","deviceType":"probe","metrics":{"probeTitle":"Luminiscence","scaleTitle":"%","level":32,"title":"Luminiscence Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_6:3:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":20.399999618530273,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_11:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550842,"invalidateTime":1385550823},"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"hasSetPoint":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"modes":[{"id":1,"title":"Heat","target":-1408.0999755859375},{"id":2,"title":"Cool","target":2585.5}],"currentMode":1,"scaleTitle":"°C","level":23.200000762939453,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_11:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":23.200000762939453,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_11:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":59,"title":"Battery (11)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_12:1:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_12:2:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_16:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":0,"title":"Battery (16)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_18:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":13.100000381469727,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_19:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":6.400000095367432,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509}
-                ]
+    + Body 
+
+            {
+                "error":null,
+                "data":{
+                "structureChanged":true,
+                "updateTime":1387881635,
+                "devices":[
+                    {"id":"ZWayVDev_3:0:38","deviceType":"switchMultilevel","metrics":{"level":37,"title":"Dimmer","iconBase":"multilevel"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_4:0:37","deviceType":"switchBinary","metrics":{"level":255,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_4:0:50:0","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"kWh","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_4:0:50:2","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"W","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881629},
+                    {"id":"ZWayVDev_5:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":false,"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1384795592,"invalidateTime":1384795544},"hasSetPoint":{"name":"interviewDone","type":"bool","value":false,"updateTime":1386347818,"invalidateTime":1384795544},"modes":[{"id":0,"title":"Off","target":null},{"id":1,"title":"Heat","target":30},{"id":2,"title":"Cool","target":12},{"id":3,"title":"Auto","target":null},{"id":5,"title":"Resume","target":null},{"id":6,"title":"Fan Only","target":null},{"id":8,"title":"Dry Air","target":null}],"currentMode":1,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_5:0:68","deviceType":"fan","metrics":{"modes":{"0":{"id":0,"title":"Auto Low"},"1":{"id":1,"title":"On Low"},"2":{"id":2,"title":"Auto High"},"3":{"id":3,"title":"On High"}},"currentMode":1,"state":true,"title":"Fan","iconBase":"fan"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_5:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":89,"title":"Battery (5)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_6:1:49:2","deviceType":"probe","metrics":{"probeTitle":"Generic","scaleTitle":"","level":20,"title":"Generic Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_6:2:49:3","deviceType":"probe","metrics":{"probeTitle":"Luminiscence","scaleTitle":"%","level":32,"title":"Luminiscence Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_6:3:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":20.399999618530273,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_11:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550842,"invalidateTime":1385550823},"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"hasSetPoint":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"modes":[{"id":1,"title":"Heat","target":-1408.0999755859375},{"id":2,"title":"Cool","target":2585.5}],"currentMode":1,"scaleTitle":"°C","level":23.200000762939453,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_11:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":23.200000762939453,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_11:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":59,"title":"Battery (11)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_12:1:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_12:2:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_16:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":0,"title":"Battery (16)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_18:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":13.100000381469727,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_19:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":6.400000095367432,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
+                    {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509}
+                    ]
+                }
             }
-        }
         
 ## Device [/v1/devices/{id}]
 A single Device object with all its details
 
+## Device attributes
+
 * ``id`` _immutable_ (string, uniq) - unique identifier
-* ``metrics`` _required_ 
-* ``description`` 
-* ``folder`` (attribute, fact) - 
-* ``dataType`` (fact, label) - 
+* ``deviceType`` _immutable_ (string) - device type 
+* ``metrics`` (object) - device parameters
+
+
+* ``metrics.probeTitle``    - title of probe, example: _Battery_
+* ``metrics.scaleTitle``    - title of scale, example: _%_
+* ``metrics.level``         - level, example: _integer, on/off, string_
+* ``metrics.icon``          - custom icon field _uri, string_
+* ``metrics.title``         - current title _string_
+* ``metrics.mode``          - current mode _string or integer_ (only for fan, thermostat, doorlock devices)
+* ``metrics.modes``         - avalaible modes _array or objects_ (only for fan, thermostat, doorlock devices)
+
+
+## Device Types
+| deviceType                        | Metrics                   | Commands| Examples                                                                                           |
+|-----------------------------------|---------------------------|-----------------------------------------------------------------------------------------------|--------------|
+| battery                           | probeTitle,scaleTitle, level, icon, title| -                                                                              |-|
+| doorlock                          | level, icon, title, mode, modes |**_open_** or **_close_**                                                                |apiURL/devices/:deviceId/command/open|
+| thermostat                        | level, icon, title, mode, modes |**_setMode_** with get-params **_mode_** and/or **_setTemp_** with get-params **_temp_** |apiURL/devices/:deviceId/command/setMode?mode=1|
+| switchBinary                      | level, icon, title | **_on_** or **_off_**                                                                                |apiURL/devices/:deviceId/command/on|
+| switchMultilevel                  | level, icon, title | **_exact_** + get params **_level_**                                                                 |apiURL/devices/:deviceId/command/exact?level=40|
+| sensorBinary                      | probeTitle, scaleTitle, level, icon, title| -                                                                             |-|
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
 
-### Retrieve a Device [GET]
+### READ [GET]
+
+Retrieve a Device
+
 + Response 200 (application/json)
 
     + Body
 
             {"error":null,"data":{"meta":{"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}}}
 
-### Update a Device [PUT]
+### UPDATE [PUT]
+
+Update a Device
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
