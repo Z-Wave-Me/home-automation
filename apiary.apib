@@ -671,6 +671,19 @@ A single Device object with all its details
 | switchMultilevel                  | level, icon, title | **_exact_** + get params **_level_**                                                                 |apiURL/devices/:deviceId/command/exact?level=40|
 | sensorBinary                      | probeTitle, scaleTitle, level, icon, title| -                                                                             |-                                              |
 
+## Icon Types
+* ``''``                                            - none
+* ``url(uri)``                                      - URL, example: http://image.com/image.png .
+* ``switch``                                        - for **switchBinary** deviceType.
+* ``multilevel``                                    - for **switchMultilevel** deviceType.
+* ``[smoke, co, cooling, door, motion]``            - for **sensorBinary** deviceType.
+* ``[temperature, luminosity, energy, humidity]``   - for **sensorMultilevel** deviceType.
+* ``battery``                                       - for **battery** deviceType.
+* ``thermostat``                                    - for **thermostat** deviceType.
+* ``fan``                                           - for **fan** deviceType.
+* ``meter``                                         - for **meter** deviceType.
+* ``door``                                          - for **doorlock** deviceType.
+
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
 
