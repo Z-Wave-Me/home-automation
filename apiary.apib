@@ -184,15 +184,15 @@ Platform Restart
                 }
             }
 
-# Group Instances and Modules
+
+# Group Namespaces
 <a id="available" ></a>
 
 ###Methods
-- **/v1/modules** - read modules.
-- **/v1/instances** create/read/update/delete instances.
+- **/v1/namespaces** - read namespaces.
 
-## Modules Collection [/v1/modules]
-### List all Modules [GET]
+## Namespaces Collection [/v1/namespaces]
+### List all Namespaces [GET]
 
 + Response 200 (application/json)
     
@@ -201,9 +201,8 @@ Platform Restart
             {
                 error: null,
                 data: [
-                    {
-                        id: 'modulesId',
-                        
+                    namespace: {
+                        namespaces: [],
                     }
                 ],
                 code: 200,
@@ -234,11 +233,16 @@ Platform Restart
                     },
                 }
             }
-            
-            
-            
-## Namespaces Collection [/v1/namespaces]
-### List all Namespaces [GET]
+
+# Group Instances and Modules
+<a id="available" ></a>
+
+###Methods
+- **/v1/modules** - read modules.
+- **/v1/instances** create/read/update/delete instances.
+
+## Modules Collection [/v1/modules]
+### List all Modules [GET]
 
 + Response 200 (application/json)
     
@@ -247,8 +251,9 @@ Platform Restart
             {
                 error: null,
                 data: [
-                    namespace: {
-                        namespaces: [],
+                    {
+                        id: 'modulesId',
+                        
                     }
                 ],
                 code: 200,
