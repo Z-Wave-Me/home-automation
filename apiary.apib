@@ -573,14 +573,14 @@ A single Device object with all its details
 
 
 ## Device Types
-| deviceType                        | Metrics                   | Commands| Examples                                                                                           |
-|-----------------------------------|---------------------------|-----------------------------------------------------------------------------------------------|--------------|
-| battery                           | probeTitle,scaleTitle, level, icon, title| -                                                                              |-|
-| doorlock                          | level, icon, title, mode, modes |**_open_** or **_close_**                                                                |apiURL/devices/:deviceId/command/open|
+| deviceType                        | Metrics                   | Commands| Examples                                                                                                                            |
+|-----------------------------------|---------------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------|
+| battery                           | probeTitle,scaleTitle, level, icon, title| -                                                                              |-                                              |
+| doorlock                          | level, icon, title, mode, modes |**_open_** or **_close_**                                                                |apiURL/devices/:deviceId/command/open          |
 | thermostat                        | level, icon, title, mode, modes |**_setMode_** with get-params **_mode_** and/or **_setTemp_** with get-params **_temp_** |apiURL/devices/:deviceId/command/setMode?mode=1|
-| switchBinary                      | level, icon, title | **_on_** or **_off_**                                                                                |apiURL/devices/:deviceId/command/on|
+| switchBinary                      | level, icon, title | **_on_** or **_off_**                                                                                |apiURL/devices/:deviceId/command/on            |
 | switchMultilevel                  | level, icon, title | **_exact_** + get params **_level_**                                                                 |apiURL/devices/:deviceId/command/exact?level=40|
-| sensorBinary                      | probeTitle, scaleTitle, level, icon, title| -                                                                             |-|
+| sensorBinary                      | probeTitle, scaleTitle, level, icon, title| -                                                                             |-                                              |
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
