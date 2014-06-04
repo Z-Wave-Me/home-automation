@@ -952,7 +952,7 @@ Remove a Location
 Profiles related resources of the **Profiles API**
 
 ## Profiles Collection [/v1/profiles]
-### List all Locations [GET]
+### List all Profiles [GET]
 
 + Response 200 (application/json)
 
@@ -965,63 +965,58 @@ Profiles related resources of the **Profiles API**
             "code": "200 OK"
         }]
         
-### Create a Profile [POST]
+### CREATE [POST]
 
-+ Parameters
-    + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
-    + name (required, string, `Default`) ... `name` of the profile.
-    + description (optional, string, `description`) ... `description` of the profile.
-    + active (optional, boolean, `false`) ... `profile is activated`.
-    + positions (required, array, `[deviceId1, deviceId2]`) ... `show and sortable on dashboard`.
+Create a Profile
 
-    + Request (application/json)
++ Request (application/json)
    
-    + Body
-    
-            { "name": "Default", "description": "descriptions", "active": false, "positions": []}
-    
-    + Schema 
-    
-            {
-                "type": "object",
-                "required": true,
-                "properties": {
-                    "error": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
-                    "data"
-                        "type": "object",
-                        "required": true,
-                        "properties": {
-                            "description": {
-                                "type": "string",
-                                "required": false,
-                            },
-                            "title": {
-                                "type": "string",
-                                "required": true
-                            },
-                            "positions": {
-                                "type": "array",
-                                "required": true
-                            },
-                            "active": {
-                                "type": "boolean",
-                                "required": true
+        + Body
+        
+                { "name": "Default", "description": "descriptions", "active": false, "positions": []}
+        
+        + Schema 
+        
+                {
+                    "type": "object",
+                    "required": true,
+                    "properties": {
+                        "error": {
+                            "type": ["string", "null"],
+                            "required": true
+                        },
+                        "data"
+                            "type": "object",
+                            "required": true,
+                            "properties": {
+                                "description": {
+                                    "type": "string",
+                                    "required": false,
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "required": true
+                                },
+                                "positions": {
+                                    "type": "array",
+                                    "required": true
+                                },
+                                "active": {
+                                    "type": "boolean",
+                                    "required": true
+                                }
                             }
-                        }
-                    },
-                    "code": {
-                        "type": ["integer", "null"],
-                        "required": true
-                    },
-                    "message": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
+                        },
+                        "code": {
+                            "type": ["integer", "null"],
+                            "required": true
+                        },
+                        "message": {
+                            "type": ["string", "null"],
+                            "required": true
+                        },
+                    }
                 }
-            }
         
 + Response 201 (application/json)
 
@@ -1037,14 +1032,14 @@ Profiles related resources of the **Profiles API**
             }
 
 ## Profile [/v1/profiles/{id}]
-A single Location object with all its details
+A single Profile object with all its details
 
-    + Parameters
-            + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
-            + name (required, string, `Default`) ... `name` of the profile.
-            + description (optional, string, `description`) ... `description` of the profile.
-            + active (optional, boolean, `false`) ... `profile is activated`.
-            + positions (required, array, `[deviceId1, deviceId2]`) ... `show and sortable on dashboard`.
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
+    + name (required, string, `Default`) ... `name` of the profile.
+    + description (optional, string, `description`) ... `description` of the profile.
+    + active (optional, boolean, `false`) ... `profile is activated`.
+    + positions (required, array, `[deviceId1, deviceId2]`) ... `show and sortable on dashboard`.
 
 ### READ [GET]
 
