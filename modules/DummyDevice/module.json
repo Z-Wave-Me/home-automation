@@ -1,0 +1,26 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Dummy device",
+		"description": "Create a Dummy device",
+		"isDimmable": false
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"isDimmable": {
+				"type": "boolean"
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"isDimmable": {
+				"label": "",
+				"rightLabel": "Dimmable"
+			}
+		}
+	}
+}
