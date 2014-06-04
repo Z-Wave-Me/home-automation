@@ -235,6 +235,50 @@ Platform Restart
                 }
             }
             
+            
+            
+## Namespaces Collection [/v1/namespaces]
+### List all Namespaces [GET]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    namespace: {
+                        namespaces: [],
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": ["array"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
          
 ## Instances Collection [/v1/instances]   
 ### List all Instances [GET]
