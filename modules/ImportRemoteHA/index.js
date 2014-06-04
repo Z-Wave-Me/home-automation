@@ -42,7 +42,7 @@ ImportRemoteHA.prototype.init = function (config) {
             return;
         }
         
-        self.controller.devices.create(item.id, {
+        self.controller.devices.create(item.deviceId, {
             deviceType: item.deviceType,
             metrics: {}
         }, function(command, args) {
