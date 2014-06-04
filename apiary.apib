@@ -280,64 +280,6 @@ Platform Restart
                 }
             }
 
-## Instance Model [/v1/instances/{:instanceId}]
-### READ [GET]
-
-+ Response 200 (application/json)
-    
-    + Body 
-
-            {
-                error: null,
-                data: [
-                    {
-                        moduleId: 'moduleId',
-                        
-                    }
-                ],
-                code: 200,
-                message: null
-            }
-            
-    + Schema
-
-            {
-                "type": "object",
-                "required": true,
-                "properties": {
-                    "error": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
-                    "data"
-                        "type": "object",
-                        "required": true,
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "required": true
-                            },
-                            "moduleId": {
-                                "type": "string",
-                                "required": true
-                            },
-                            "params": {
-                                "type": "object",
-                                "required": true
-                            }
-                        }
-                    },
-                    "code": {
-                        "type": ["integer", "null"],
-                        "required": true
-                    },
-                    "message": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
-                }
-            }
-            
 ### CREATE [POST]
 
 + Request (application/json)
@@ -447,6 +389,65 @@ Platform Restart
                     },
                 }
             }
+
+## Instance Model [/v1/instances/{:instanceId}]
+### READ [GET]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: [
+                    {
+                        moduleId: 'moduleId',
+                        
+                    }
+                ],
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "moduleId": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "params": {
+                                "type": "object",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
             
 ### UPDATE [PUT]
 
@@ -553,6 +554,45 @@ Devices related resources of the **Devices API**
                     ]
                 }
             }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "updateTime": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "structureChanged": {
+                                "type": "boolean",
+                                "required": true
+                            },
+                            "devices": {
+                                "type": "array",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
         
 ## Device [/v1/devices/{id}]
 A single Device object with all its details
@@ -560,9 +600,9 @@ A single Device object with all its details
 ## Device attributes
 
 * ``id`` _immutable_ (string, uniq) - unique identifier
-* ``deviceType`` _immutable_ (string) - device type 
+* ``deviceType`` _immutable_ (string) - device type
+* ``updateTime`` _immutable_ (integer) - lastupdate timestamp
 * ``metrics`` (object) - device parameters
-
 * ``metrics.probeTitle``    - title of probe, example: _Battery_
 * ``metrics.scaleTitle``    - title of scale, example: _%_
 * ``metrics.level``         - level, example: _integer, on/off, string_
@@ -595,6 +635,49 @@ Retrieve a Device
 
             {"error":null,"data":{"meta":{"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}}}
 
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": false
+                            },
+                            "deviceType": {
+                                "type": "string",
+                                "required": false
+                            },
+                            "metrics": {
+                                "type": "object",
+                                "required": true
+                            },
+                            "updateTime": {
+                                "type": "interger"
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+
 ### UPDATE [PUT]
 
 Update a Device
@@ -615,6 +698,7 @@ Update a Device
             {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}
 
 
+## Device [/v1/devices/{id}/command/{command}{?params}]
 ### Command to Device [GET]
 + Response 200 (application/json)
 
@@ -631,25 +715,92 @@ Locations related resources of the **Locations API**
 
 + Response 200 (application/json)
 
-        {
-            "data":[
-                {"id":6,"title":"Garage"},
-                {"id":7,"title":"Hall"},
-                {"id":8,"title":"Kids"},
-                {"id":9,"title":"Kitchen"},
-                {"id":10,"title":"Bedroom"},
-                {"id":11,"title":"name123"},
-                {"id":12,"title":"test"}
-            ],
-            "error": null,
-            "code": "200 OK",
-            "message" null,
-        }
-        
-### Create a Location [POST]
-+ Request (application/json)
+    + Body
 
-        { "title": "Garage", "icon": "http://example.com/garage.png" }
+            {
+                "data":[
+                    {"id":6,"title":"Garage"},
+                    {"id":7,"title":"Hall"},
+                    {"id":8,"title":"Kids"},
+                    {"id":9,"title":"Kitchen"},
+                    {"id":10,"title":"Bedroom"},
+                    {"id":11,"title":"name123"},
+                    {"id":12,"title":"test"}
+                ],
+                "error": null,
+                "code": "200 OK",
+                "message" null,
+            }
+        
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "array",
+                        "required": true
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+        
+### CREATE [POST]
+
+Create a Locatio
+
++ Request (application/json)
+    
+    + Body
+    
+            { "title": "Garage", "icon": "http://example.com/garage.png" }
+
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "icon": {
+                                "type": "string",
+                                "required": false
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
 
 + Parameters
     + title (required, string, `Garage`) ... `title` of the location.
@@ -657,24 +808,48 @@ Locations related resources of the **Locations API**
 
 + Response 201 (application/json)
 
-        { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+    + Body 
         
-### Create a Location model [GET]
+            { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
+        
+    + Schema
 
-+ Request (application/json)
-
-        { "method": "POST", "title": "Garage", "icon": "http://example.com/garage.png" }
-
-+ Parameters
-    + method (required, string, `method=POST`) ... emulation of `method` POST.
-    + title (required, string, `title=Garage`) ... `title` of the location.
-    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
-
-
-+ Response 201 (application/json)
-
-        { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
-
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "title": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "icon": {
+                                "type": "string",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
 
 ## Location [/v1/locations/{id}]
 A single Location object with all its details
@@ -684,15 +859,46 @@ A single Location object with all its details
 
 ### Retrieve a Location [GET]
 
-+ Request (application/json)
-
-        { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
-
 + Response 200 (application/json)
 
     + Body
 
             { "id": 2, "title": "Pick-up posters from post-office" }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "icon": {
+                                "type": "string",
+                                "required": false
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
             
 ### Update a Location [PUT]
 + Response 200 (application/json)
@@ -700,36 +906,47 @@ A single Location object with all its details
     + Body
 
             { "id": 2, "title": "Pick-up posters from post-office" }
+            
+    + Schema
 
-### Remove a Location [DELETE]
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "icon": {
+                                "type": "string",
+                                "required": false
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+
+### DELETE [DELETE]
+
+Remove a Location
+
 + Response 204
-
-## Location [/v1/locations/{?id}]
-EmulateHTTP
-
-+ Parameters
-    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
-
-### Update a Location [GET]
-
-+ Response 200 (application/json)
-
-    + Body
-    
-            { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
-
-+ Parameters
-    + method (required, string, `method=PUT`) ... Numeric `id` of the Location to perform action with.
-    + title (optional, string, `title=Garage`) ... `title` of the location.
-    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
-
-### Remove a Location [GET]
-
-+ Response 204
-
-+ Parameters
-    + method (required, string, `method=DELETE`) ... Numeric `id` of the Location to perform action with.
-    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
 
 # Group Profiles
 Profiles related resources of the **Profiles API**
@@ -749,15 +966,21 @@ Profiles related resources of the **Profiles API**
         }]
         
 ### Create a Profile [POST]
-+ Request (application/json)
 
-        { "name": "Default", "Description": "descriptions", "active": false, "widgets": []}
+    + Parameters
+        + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
+        + name (required, string, `Default`) ... `name` of the profile.
+        + description (optional, string, `description`) ... `description` of the profile.
+        + active (optional, boolean, `false`) ... `profile is activated`.
+        + positions (required, array, `[deviceId1, deviceId2]`) ... `show and sortable on dashboard`.
 
-+ Parameters
-    + name (required, string, `Default`) ... `name` of the profile.
-    + description (optional, string, `description`) ... `description` of the profile.
-    + active (optional, boolean, false) ... `show in dashboard` of the dashboard
-
+    + Request (application/json)
+   
+        + Body
+    
+            { "name": "Default", "description": "descriptions", "active": false, "positions": []}
+    
+        
 + Response 201 (application/json)
 
     + Body
@@ -776,26 +999,80 @@ A single Location object with all its details
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
+    + name (required, string, `Default`) ... `name` of the profile.
+    + description (optional, string, `description`) ... `description` of the profile.
+    + active (optional, boolean, `false`) ... `profile is activated`.
+    + positions (required, array, `[deviceId1, deviceId2]`) ... `show and sortable on dashboard`.
 
-### Retrieve a Profile [GET]
+### READ [GET]
 
-+ Request (application/json)
+Retrieve a Profile
 
-        
 + Response 200 (application/json)
 
     + Body
 
             {
                 "data":[
-                    "{"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","widgets":[],"active":true}",
+                    {"id":1,"name":"Default","description":"This is default profile. Default profile created automatically.","positions":[],"active":true},
                 ],
                 "error": null,
                 "message": null,
                 "code": "200 OK"
             }
             
+    + Schema
+     
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "id": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "title": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "positions": {
+                                "type": "array",
+                                "required": true
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
 ### Update a Profile [PUT]
+
++ Parameters
+    + id (required, integer, `1`) ... Numeric `id` of the Profile to perform action with.
+    + name (required, string, `Default`) ... `name` of the profile.
+    + description (optional, string, `description`) ... `description` of the profile.
+    + active (optional, boolean, `false`) ... `profile is activated`.
+    + positions (required, array, `[deviceId1, deviceId2]`) ... `show and sortable on dashboard`.
+
 
 + Response 200 (application/json)
 
@@ -810,40 +1087,57 @@ A single Location object with all its details
                 "code": "200 OK"
             }
 
+    + Schema
+     
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "title": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "description": {
+                                "type": "string",
+                                "required": false
+                            },
+                            "positions": {
+                                "type": "array",
+                                "required": true
+                            },
+                            "active": {
+                                "type": "boolean",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+
 ### Remove a Profile [DELETE]
 + Response 204
-
-## Location [/v1/locations/{?id}]
-EmulateHTTP
-
-+ Parameters
-    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
-
-### Update a Location [GET]
-
-+ Response 200 (application/json)
-
-    + Body
-    
-            { "id": 1, "title": "Garage", "icon": "http://example.com/garage.png" }
-
-+ Parameters
-    + method (required, string, `method=PUT`) ... Numeric `id` of the Location to perform action with.
-    + title (optional, string, `title=Garage`) ... `title` of the location.
-    + icon (optional, string, `icon=http://example.com/garage.png`) ... `icon` of the location.
-
-### Remove a Location [GET]
-
-+ Response 204
-
-+ Parameters
-    + method (required, string, `method=DELETE`) ... Numeric `id` of the Location to perform action with.
-    + id (required, integer, `1`) ... Numeric `id` of the Location to perform action with.
 
 # Group Notifications
 Locations related resources of the **Notifications API**
 
 ## Notifications Collection [/v1/notifications{?since}]
+
 ### List all Notification  [GET]
 
 + Parameters
