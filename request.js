@@ -21,6 +21,7 @@ function ZAutomationWebRequest() {
         },
         body: null
     };
+    this.error = null;
 }
 
 ZAutomationWebRequest.prototype.handlerFunc = function () {

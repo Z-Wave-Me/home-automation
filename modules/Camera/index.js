@@ -57,8 +57,8 @@ _.extend(Camera.prototype, {
                 hasRight: !!config.rightUrl,
                 hasUp: !!config.upUrl,
                 hasDown: !!config.downUrl,
-                hasOpen: !!config.openUrl || config.doorDevices.length,
-                hasClose: !!config.closeUrl || config.doorDevices.length,
+                hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
+                hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length),
                 icon: 'camera',
                 title: 'Camera ' + this.id
             }
