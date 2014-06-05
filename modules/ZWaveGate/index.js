@@ -289,7 +289,8 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 metrics: {
                     probeTitle: '',
                     scaleTitle: '',
-                    icon: '',
+                    // aivs // Motion icon for Sensor Binary by default
+                    icon: 'motion',
                     level: '',
                     title: ''
                 }
