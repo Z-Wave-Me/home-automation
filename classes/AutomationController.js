@@ -651,12 +651,14 @@ AutomationController.prototype.generateNamespaces = function (callback) {
 
     that.namespaces = [];
     deviceTypes.forEach(function (type) {
-        that.setNamespace('devices_' + type, _.map(that.devices.where({deviceType: type}), function (device) {
-            return {deviceId: device.id, deviceName: device.metrics.title};
+        that.setNamespace('devices_' + type, that.devices.filter(function (device) {
+            return device.get('deviceType') === type;
+        }).map(function (device) {
+            return {deviceId: device.id, deviceName: device.get('metrics:title')};
         }));
     });
     that.setNamespace('devices_all', that.devices.map(function (device) {
-        return {deviceId: device.id, deviceName: device.metrics.title};
+        return {deviceId: device.id, deviceName: device.get('metrics:title')};
     }));
     callback(that.namespaces);
 };
