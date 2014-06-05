@@ -289,8 +289,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 metrics: {
                     probeTitle: '',
                     scaleTitle: '',
-                    // aivs // Motion icon for Sensor Binary by default
-                    icon: 'motion',
+                    icon: '',
                     level: '',
                     title: ''
                 }
@@ -300,6 +299,9 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
                     defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                     defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                    // aivs // Motion icon for Sensor Binary by default
+                    defaults.metrics.icon = "motion";
+
                     if (sensorTypeId == 2) {
                             defaults.metrics.icon = "smoke";
                     } else if (sensorTypeId == 3 || sensorTypeId == 4) {
@@ -313,6 +315,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (sensorTypeId == 12) {
                             defaults.metrics.icon = "motion";
                     }
+                    
                     var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, function(command) {
                         if (command === "update") {
                             cc.Get(sensorTypeId);
