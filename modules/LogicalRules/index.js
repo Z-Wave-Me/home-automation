@@ -113,7 +113,7 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res && (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
             } else if (test.testType === "time") {
                 var curTime = new Date(),
-                    time_arr = test.testTime.testValue.split(":");
+                    time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });;
                 res = res && self.op(curTime.getHours() * 3600 + curTime.getMinutes() * 60 + curTime.getSeconds(), test.testTime.testOperator, time_arr[0] * 3600 + time_arr[1] * 60 + time_arr[2]);
             } else if (test.testType === "nested") {
                 res = res && self.testRule(test.testNested);
@@ -129,7 +129,7 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res || (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
             } else if (test.testType === "time") {
                 var curTime = new Date(),
-                    time_arr = test.testTime.testValue.split(":");
+                    time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });;
                 res = res || self.op(curTime.getHours() * 3600 + curTime.getMinutes() * 60 + curTime.getSeconds(), test.testTime.testOperator, time_arr[0] * 3600 + time_arr[1] * 60 + time_arr[2]);
             } else if (test.testType === "nested") {
                 res = res || self.testRule(test.testNested);

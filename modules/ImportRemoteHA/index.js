@@ -15,8 +15,6 @@ Description:
 function ImportRemoteHA (id, controller) {
     // Call superconstructor first (AutomationModule)
     ImportRemoteHA.super_.call(this, id, controller);
-    
-    this.dT = 500; // 500 ms minimal delay between requests
 }
 
 inherits(ImportRemoteHA, AutomationModule);
@@ -27,28 +25,37 @@ _module = ImportRemoteHA;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-
-////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-// Early creation !!!!!!!!!!!!!!!!!!!!!!!
-
-
 ImportRemoteHA.prototype.init = function (config) {
     ImportRemoteHA.super_.prototype.init.call(this, config);
 
     var self = this;
     
     this.urlPrefix = this.config.url + "/ZAutomation/api/v1/devices";
+    this.dT = Math.max(this.config.dT, 500); // 500 ms minimal delay between requests
     this.timestamp = 0;
     this.lastRequest = 0;
     this.timer = null;
 
+    // pre-render saved vDev to allow bindings to them
+    this.config.renderDevices.forEach(function(item) {
+        if (self.skipDevice(item.id)) {
+            return;
+        }
+        
+        self.controller.devices.create(item.deviceId, {
+            deviceType: item.deviceType,
+            metrics: {}
+        }, function(command, args) {
+            self.handleCommand(this, command, args);
+        });
+    });
+    
     this.requestUpdate();
 };
 
 ImportRemoteHA.prototype.stop = function () {
     if (this.timer) {
-        clearInterval(this.timer);
+        clearTimeout(this.timer);
     }
     
     this.controller.devices.remove("HTTP_Device_" + this.config.deviceType + "_" + this.id); // !!!!!!!!!!!!!!!!!!!!!!!!
@@ -70,7 +77,7 @@ ImportRemoteHA.prototype.requestUpdate = function () {
         method: "GET",
         async: true,
         success: function(response) {
-            self.parseResponse(response)
+            self.parseResponse(response);
         },
         error: function(response) {
             console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
@@ -82,10 +89,10 @@ ImportRemoteHA.prototype.requestUpdate = function () {
             }
             
             if (self.timer) {
-                clearInterval(self.timer);
+                clearTimeout(self.timer);
             }
             
-            self.timer = setInterval(function() {
+            self.timer = setTimeout(function() {
                 self.requestUpdate();
             }, dt);
         }
@@ -101,7 +108,8 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
         this.timestamp = data.updateTime;
         
         data.devices.forEach(function(item) {
-            var vDev = self.controller.devices.get("Remote_" + self.id + "_" + item.id);
+            var localId = "Remote_" + self.id + "_" + item.id,
+                vDev = self.controller.devices.get(localId);
             
             if (vDev) {
                 for (var m in item.metrics) {
@@ -110,28 +118,20 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     }
                 }
             } else {
-                self.controller.devices.create("Remote_" + self.id + "_" + item.id, {
+
+                if (self.skipDevice(localId)) {
+                    return;
+                }
+
+                self.controller.devices.create(localId, {
                     deviceType: item.deviceType,
                     metrics: item.metrics
                 }, function(command, args) {
-                    var argsFlat = "";
-                    if (args) {
-                        for (var key in args) {
-                            argsFlat = (argsFlat ? "&" : "?") + key.toString() + "=" + args[key].toString();
-                        }
-                    }
-                    
-                    var remoteId = this.id.slice(("Remote_" + self.id + "_").length); // here this refers to current vDev
-                    
-                    http.request({
-                        url: self.urlPrefix + "/" + remoteId + "/command/" + command + argsFlat,
-                        method: "GET",
-                        async: true,
-                        error: function(response) {
-                            console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
-                        }
-                    });
+                    self.handleCommand(this, command, args);
                 });
+
+                self.config.renderDevices.push({deviceId: localId, deviceType: item.deviceType});
+                self.saveConfig();
             }
         });
         
@@ -140,12 +140,12 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                 var remove = false;
                 
                 if (xDev.id.indexOf("Remote_" + self.id + "_") === 0) {
-                	return;
+                    return;
                	}
 
                 data.devices.forEach(function(item) {
                     if (item.id === xDev.id) {
-                        remove = true;
+                        remove |= true;
                         return false; // break
                     }
                 });
@@ -157,4 +157,37 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
             });
         }
     }
+};
+
+ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
+    var argsFlat = "";
+    if (args) {
+        for (var key in args) {
+            argsFlat = (argsFlat ? "&" : "?") + key.toString() + "=" + args[key].toString();
+        }
+    }
+    
+    var remoteId = vDev.id.slice(("Remote_" + this.id + "_").length);
+    
+    http.request({
+        url: this.urlPrefix + "/" + remoteId + "/command/" + command + argsFlat,
+        method: "GET",
+        async: true,
+        error: function(response) {
+            console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
+        }
+    });
+};
+
+ImportRemoteHA.prototype.skipDevice = function(id) {
+    var skip = false;
+    
+    this.config.skipDevices.forEach(function(skipItem) {
+        if (skipItem === id) {
+            skip |= true;
+            return false; // break
+        }   
+    });
+    
+    return skip;
 };

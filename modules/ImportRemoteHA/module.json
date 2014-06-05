@@ -6,7 +6,10 @@
 		"title": "Import from remote Z-Way HA",
 		"description": "Create virtual device based remote Z-Way HA server.",
 
-		"url": ""
+		"url": "",
+		"dT": 500,
+		"skipDevices": [],
+		"renderDevices": []
 	},
 	"schema": {
 		"label": "Select action condition",
@@ -15,14 +18,78 @@
 			"url": {
 				"type": "string",
 				"required": true
+			},
+			"dT": {
+				"type": "number",
+				"required": true
+			},
+			"skipDevices": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_all:deviceId",
+					"required": true
+				}
+			},
+			"renderDevices": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"deviceId": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_all:deviceId",
+							"required": true
+						},
+						"deviceType": {
+							"type": "string",
+							"required": true
+						}
+					}
+				}
 			}
 		}
 	},
 	"options": {
 		"fields": {
 			"url": {
-				"label": "",
+				"label": "URL to remote side",
 				"helper": "Example: http://192.168.0.100:8083"
+			},
+			"dT": {
+				"label": "Update period (in milliseconds)"
+			},
+			"skipDevices": {
+				"label": "List of devices not to import from remote side",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_all:deviceName"
+					}
+				}
+			},
+			"renderDevices": {
+				"label": "List of devices imported from remote side (filled automatically)",
+				"fields": {
+					"item": {
+						"fields": {
+							"deviceId": {
+								"type": "select",
+								"readonly": true,
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_all:deviceName"
+							},
+							"deviceType": {
+								"readonly": true
+							}
+						}
+					}
+				}
 			}
 		}
 	}

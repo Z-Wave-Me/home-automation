@@ -655,6 +655,9 @@ AutomationController.prototype.generateNamespaces = function (callback) {
             return {deviceId: device.id, deviceName: device.metrics.title};
         }));
     });
+    that.setNamespace('devices_all', that.devices.map(function (device) {
+        return {deviceId: device.id, deviceName: device.metrics.title};
+    }));
     callback(that.namespaces);
 };
 
