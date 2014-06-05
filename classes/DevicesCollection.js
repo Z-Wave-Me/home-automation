@@ -140,16 +140,22 @@ _.extend(DevicesCollection.prototype, {
         return model;
     },
     where: function (obj) {
-        var models = this.toJSON(),
-            devices = _.filter(models, function (model) {
-                var check = true;
-                for (var key in obj) {
-                    check &= (model.hasOwnProperty(key) && model[key] === obj[key]);
+        var that = this,
+            check,
+            devices = _.filter(that.models, function (model) {
+            check = true;
+
+            Object.keys(obj).forEach(function (key) {
+                if (model.get(key) !== obj[key] && check) {
+                    check = false;
+                    return;
                 }
-                return check;
             });
 
-        return devices.length && !!devices ? devices : [];
+            return check;
+        });
+
+        return devices.length && Boolean(devices) ? devices : [];
     },
     findWhere: function (obj) {
         return _.first(this.where(obj));
