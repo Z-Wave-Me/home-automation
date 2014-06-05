@@ -341,18 +341,18 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         this.stopInstance(instance);
 
         if (config.params.status === 'enable') { // here we read new config instead of existing
-            instance.init(config.params);
+            instance.init(config);
         }
 
         if (config.hasOwnProperty('params')) {
-            this.instances[index].params = config.params;
+            this.instances[index].params = config;
         }
 
         this.emit('core.instanceReconfigured', id);
         result = this.instances[index];
     } else if (!instance && index !== -1) { // is not registered
-        this.instances[index].params = config.params;
-        if (config.params.status === 'enable') {
+        this.instances[index].params = config;
+        if (config.status === 'enable') {
             this.instantiateModule(this.instances[index]);
         }
         result = this.instances[index];
@@ -488,7 +488,7 @@ AutomationController.prototype.addLocation = function (title, icon, callback) {
         var location = {
             id: id,
             title: title,
-            icon: icon
+            icon: icon || ''
         };
         this.locations.push(location);
         callback(location);
