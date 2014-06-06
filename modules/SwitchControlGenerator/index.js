@@ -78,10 +78,10 @@ SwitchControlGenerator.prototype.init = function (config) {
                     self.handler(val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
                 controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "startChange", function(type) {
-                    self.handler(this.value ? "downstart" : "upstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    self.handler(this.value ? "upstart" : "downstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
                 controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "stopChange", function(type) {
-                    self.handler(dataSML.startChange.value ? "downstop" : "upstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    self.handler(dataSML.startChange.value ? "upstop" : "downstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
                 controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
                     self.handler("on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);

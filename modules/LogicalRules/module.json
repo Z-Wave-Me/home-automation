@@ -79,7 +79,7 @@
 								},
 								"testValue": {
 									"type": "string",
-									"enum": ["off", "on"],
+									"enum": ["off", "on", "upstart", "upstop", "downstart", "downstop"],
 									"required": true
 								}
 							}
@@ -169,7 +169,7 @@
 													},
 													"testValue": {
 														"type": "string",
-														"enum": ["off", "on"],
+														"enum": ["off", "on", "upstart", "upstop", "downstart", "downstop"],
 														"required": true
 													}
 												}

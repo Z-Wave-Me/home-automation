@@ -100,6 +100,14 @@ LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
     } else {
         vDev.off("change:metrics:level", this._testRule);
     }
+
+    if (vDev.get("deviceType") === "switchControl") {
+        if (attachOrDetach) {
+            vDev.on("change:metrics:change", this._testRule);
+        } else {
+            vDev.off("change:metrics:change", this._testRule);
+        }
+    }
 };
 
 LogicalRules.prototype.testRule = function (tree) {
@@ -120,7 +128,8 @@ LogicalRules.prototype.testRule = function (tree) {
             } else if (test.testType === "binary") {
                 res = res && (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
             } else if (test.testType === "remote") {
-                res = res && (self.controller.devices.get(test.testRemote.device).get("metrics:level") === test.testRemote.testValue);
+                var dev = self.controller.devices.get(test.testRemote.device);
+                res = res && ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
             } else if (test.testType === "time") {
                 var curTime = new Date(),
                     time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
@@ -138,7 +147,8 @@ LogicalRules.prototype.testRule = function (tree) {
             } else if (test.testType === "binary") {
                 res = res || (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
             } else if (test.testType === "remote") {
-                res = res || (self.controller.devices.get(test.testRemote.device).get("metrics:level") === test.testRemote.testValue);
+                var dev = self.controller.devices.get(test.testRemote.device);
+                res = res || ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
             } else if (test.testType === "time") {
                 var curTime = new Date(),
                     time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
