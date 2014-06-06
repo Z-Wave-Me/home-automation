@@ -232,7 +232,10 @@
 										"optionLabels": ["≥", "≤"]
 									},
 									"testValue": {
-										"type": "time"
+										"type": "time",
+										"maskString": "99:99",
+										"timeFormat": "hh:mm",
+										"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
 									}
 								}
 							},
@@ -296,7 +299,10 @@
 														},
 														"fields": {
 															"testValue": {
-																"type": "time"
+																"type": "time",
+																"maskString": "99:99",
+																"timeFormat": "hh:mm",
+																"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
 															},
 															"testOperator": {
 																"type": "select",
