@@ -26,7 +26,7 @@
 					"properties": {
 						"testType": {
 							"type": "string",
-							"enum": ["binary", "multilevel", "time", "nested"],
+							"enum": ["binary", "multilevel","remote", "time", "nested"],
 							"required": true
 						},
 						"testBinary": {
@@ -67,6 +67,23 @@
 								}
 							}
 						},
+						"testRemote": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchControl:deviceId",
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"enum": ["off", "on"],
+									"required": true
+								}
+							}
+						},
 						"testTime": {
 							"type": "object",
 							"dependencies": "testType",
@@ -99,7 +116,7 @@
 										"properties": {
 											"testType": {
 												"type": "string",
-												"enum": ["binary", "multilevel", "time"],
+												"enum": ["binary", "multilevel", "remote", "time"],
 												"required": true
 											},
 											"testBinary": {
@@ -136,6 +153,23 @@
 													},
 													"testValue": {
 														"type": "number",
+														"required": true
+													}
+												}
+											},
+											"testRemote": {
+												"type": "object",
+												"dependencies": "testType",
+												"properties": {
+													"device": {
+														"field": "enum",
+														"datasource": "namespaces",
+														"enum": "namespaces:devices_switchControl:deviceId",
+														"required": true
+													},
+													"testValue": {
+														"type": "string",
+														"enum": ["off", "on"],
 														"required": true
 													}
 												}
@@ -221,6 +255,21 @@
 									}
 								}
 							},
+							"testRemote": {
+								"label": "Remote condition",
+								"dependencies": {
+									"testType": "remote"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchControl:deviceName"
+									}
+								}
+							},
 							"testTime": {
 								"label": "Time condition",
 								"dependencies": {
@@ -289,6 +338,21 @@
 															"testOperator": {
 																"type": "select",
 																"optionLabels": ["=", "≠", ">", "≥", "<", "≤"]
+															}
+														}
+													},
+													"testRemote": {
+														"label": "Remote condition",
+														"dependencies": {
+															"testType": "remote"
+														},
+														"fields": {
+															"device": {
+																"label": "",
+																"type": "select",
+																"datasource": "namespaces",
+																"field": "optionLabels",
+																"optionLabels": "namespaces:devices_switchControl:deviceName"
 															}
 														}
 													},

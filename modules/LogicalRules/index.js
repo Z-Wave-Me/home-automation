@@ -41,12 +41,16 @@ LogicalRules.prototype.init = function (config) {
             self.attachDetach(test.testBinary, true);
         } else if (test.testType === "multilevel") {
             self.attachDetach(test.testMultilevel, true);
+        } else if (test.testType === "remote") {
+            self.attachDetach(test.testRemote, true);
         } else if (test.testType === "nested") {
             test.testNested.tests.forEach(function(xtest) {
                 if (test.testType === "binary") {
                     self.attachDetach(test.testBinary, true);
                 } else if (test.testType === "multilevel") {
                     self.attachDetach(test.testMultilevel, true);
+                } else if (test.testType === "remote") {
+                    self.attachDetach(test.testRemote, true);
                 }
             });
         }
@@ -61,12 +65,16 @@ LogicalRules.prototype.stop = function () {
             self.attachDetach(test.testBinary, false);
         } else if (test.testType === "multilevel") {
             self.attachDetach(test.testMultilevel, false);
+        } else if (test.testType === "remote") {
+            self.attachDetach(test.testRemote, false);
         } else if (test.testType === "nested") {
             test.testNested.tests.forEach(function(xtest) {
                 if (test.testType === "binary") {
                     self.attachDetach(test.testBinary, false);
                 } else if (test.testType === "multilevel") {
                     self.attachDetach(test.testMultilevel, false);
+                } else if (test.testType === "remote") {
+                    self.attachDetach(test.testRemote, false);
                 }
             });
         }
@@ -111,6 +119,8 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
                 res = res && (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
+            } else if (test.testType === "remote") {
+                res = res && (self.controller.devices.get(test.testRemote.device).get("metrics:level") === test.testRemote.testValue);
             } else if (test.testType === "time") {
                 var curTime = new Date(),
                     time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
@@ -127,6 +137,8 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res || self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
                 res = res || (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
+            } else if (test.testType === "remote") {
+                res = res || (self.controller.devices.get(test.testRemote.device).get("metrics:level") === test.testRemote.testValue);
             } else if (test.testType === "time") {
                 var curTime = new Date(),
                     time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });

@@ -82,11 +82,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
     },
     statusReport: function () {
-        var reply = {
-            error: null,
-            data: "OK",
-            code: 200
-        };
+
+        if (Boolean(this.error)) {
+            var reply = {
+                error: "Internal server error. Please fill in bug report with request_id='" + this.error + "'",
+                data: null,
+                code: 503,
+                message: "Service Unavailable"
+            };
+        } else {
+            var reply = {
+                error: null,
+                data: "OK",
+                code: 200
+            };
+        }
+
 
         this.controller.addNotification("debug", "Status report requested", "debug");
         this.initResponse(reply);
@@ -483,7 +494,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.data = instance;
                 } else {
                     reply.code = 500;
-                    reply.error = "Cannot instantiate module " + reqObj.id;
+                    reply.error = "Cannot instantiate module " + reqObj.moduleId;
                 }
             } else {
                 reply.code = 500;
@@ -526,9 +537,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
                 reply.code = 404;
-                reply.error = "Instance " + reqObj.id + " doesn't exist";
+                reply.error = "Instance " + instanceId + " doesn't exist";
             } else {
-                instance = that.controller.reconfigureInstance(instanceId, reqObj);
+                instance = that.controller.reconfigureInstance(instanceId, reqObj.params);
                 if (instance) {
                     reply.code = 200;
                     reply.data = instance;
