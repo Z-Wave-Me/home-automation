@@ -75,6 +75,19 @@ GroupDevices.prototype.init = function (config) {
         }
         this.set("metrics:level", level);
     });
+        
+    this.config.devices.forEach(function(dev) {
+        var _vDev = this.controller.devices.get(dev.device);
+        
+        _vDev.on("change:metrics:level", function() {
+            var res = false;
+            self.config.devices.forEach(function(xdev) {
+                res |= xdev.invert ^ self.controller.devices.get(xdev.device);
+            });
+            
+            self.vDev.set("metrics:level", res);
+        });
+    });
 };
 
 GroupDevices.prototype.stop = function () {
