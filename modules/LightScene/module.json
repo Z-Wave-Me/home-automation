@@ -43,7 +43,6 @@
 							"required": true
 						},
 						"status": {
-							"type": "integer",
 							"required": true,
 							"minimum": 0,
 							"maximum": 99
@@ -98,7 +97,8 @@
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 							},
 							"status": {
-								"label": "State"
+								"label": "State",
+								"type": "integer"
 							}
 						}
 					}

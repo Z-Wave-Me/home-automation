@@ -94,7 +94,7 @@ ZWaveGate.prototype.init = function (config) {
             Object.keys(instance.commandClasses).forEach(function (commandClassId) {
                 commandClassId = parseInt(commandClassId, 10);
                 var commandClass = instance.commandClasses[commandClassId];
-
+                
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
                     if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
                         self.parseAddCommandClass(nodeId, instanceId, commandClassId);
@@ -197,8 +197,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         // vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
     try {
+        if (!cc.data.supported)
+            return; // do not handle unsupported Command Classes
+
         // Ignore SwitchBinary if SwitchMultilevel exists
-        if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"])) {
+        if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instanceCommandClasses[this.CC["SwitchMultilevel"]].data.supported) {
             console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
             return;
         }
