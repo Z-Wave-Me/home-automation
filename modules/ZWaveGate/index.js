@@ -197,11 +197,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         // vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
     try {
-        if (!cc.data.supported)
+        if (!cc.data.supported.value)
             return; // do not handle unsupported Command Classes
 
         // Ignore SwitchBinary if SwitchMultilevel exists
-        if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instanceCommandClasses[this.CC["SwitchMultilevel"]].data.supported) {
+        if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instanceCommandClasses[this.CC["SwitchMultilevel"]].data.supported.value) {
             console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
             return;
         }
