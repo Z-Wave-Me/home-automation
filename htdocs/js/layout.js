@@ -93,9 +93,11 @@ define([
             });
 
             that.listenTo(that.Devices, 'change:tags', function () {
-                _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
-                    that.addTagToFilter(type);
-                });
+                if (window.App.filters.tags) {
+                    _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
+                        that.addTagToFilter(type);
+                    });
+                }
             });
 
             that.PreferencesView = new PreferencesView({el: that.$header[0]});
