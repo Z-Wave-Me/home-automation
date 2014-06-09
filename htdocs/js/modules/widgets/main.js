@@ -16,7 +16,7 @@ define([
     return Backbone.View.extend({
         el: '#devices-container',
         initialize: function () {
-            _.bindAll(this, 'render', 'renderWidget', 'show');
+            _.bindAll(this, 'render', 'renderWidget', 'show', 'checkFilter');
             var that = this;
             that.Devices = window.App.Devices;
         },
@@ -76,12 +76,29 @@ define([
             }
         },
         show: function (modelView, forceView) {
-            var $template = modelView.getTemplate();
+            var that = this,
+                $template = modelView.getTemplate();
             if (App.Profiles.getDevice(modelView.model.id) || forceView) {
                 $template.fadeIn().addClass('show');
             } else {
-                $template.fadeOut().removeClass('show');
+                if (that.checkFilter(modelView.model)) {
+                    $template.fadeOut().removeClass('show');
+                }
             }
+        },
+        checkFilter: function (model) {
+            var result = true,
+                filters = window.App.filters;
+
+            if (filters.locations) {
+                result = model.get('location') === window.App.Locations.activeRoom || window.App.Devices.activeRoom === 'all';
+            } else if (filters.tags) {
+                result = model.get('tags').indexOf(window.App.Devices.activeTag) !== -1 || window.App.Devices.activeTag === 'all';
+            } else if (filters.types) {
+                result = model.get('deviceType') === window.App.Devices.activeType || window.App.Devices.activeType === 'all';
+            }
+
+            return result;
         }
     });
 });
