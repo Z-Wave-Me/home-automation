@@ -258,6 +258,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     if (newVal > 99) {
                         newVal = 99;
                     }
+
                 } else if ("decrease" === command) {
                     newVal = this.metrics.level - 10;
                     if (newVal < 0) {
@@ -273,7 +274,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (newVal === 255) {
                         newVal = 255;
                     } else if (newVal > 99) {
-                        newVal = null;
+                        newVal = 99;
                     }
                 }
 
