@@ -182,10 +182,6 @@ define([
 
             $template = $('<li class="tag-container"><a data-id="' + tag + '" class="item-nav" href="/">' + tag + '</a></li>');
 
-            //that.listenTo(that.Devices, 'destroy', function () {
-            //    $template.off().hide('fast');
-            //});
-
             $template.find('.item-nav').on('click', function (e) {
                 e.preventDefault();
                 that.$header.find('.item-nav').removeClass('active');
@@ -193,6 +189,15 @@ define([
                 that.Devices.activeTag = tag;
                 that.Devices.trigger('filter');
             });
+
+            if (!$('li.tag-container a[data-id="' + tag + '"]').exists()) {
+                that.$header.find('.menu-filter').append($template);
+            }
+        },
+
+        removeOldTags: function () {
+            var that = this,
+                tags = _.uniq(_.flatten(that.Devices.pluck('tags')));
 
             if (!$('li.tag-container a[data-id="' + tag + '"]').exists()) {
                 that.$header.find('.menu-filter').append($template);
@@ -248,9 +253,10 @@ define([
                         types: false
                     };
                 } else if (type === 'tags') {
-                    _.each(_.compact(_.uniq(_.flatten(that.Devices.pluck('tags')))), function (type) {
+                    _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
                         that.addTagToFilter(type);
                     });
+
                     $allTemplate.on('click', function (e) {
                         e.preventDefault();
                         that.Devices.activeTag = 'all';
