@@ -18,7 +18,7 @@ define([
             that.WidgetsModule = new WidgetsModule();
 
             that.listenTo(that.Devices, 'add', function (model) {
-                that.WidgetsModule.renderWidget(model);
+                that.WidgetsModule.renderWidget(model, false);
             });
         },
         render: function () {

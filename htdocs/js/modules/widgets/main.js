@@ -36,7 +36,6 @@ define([
             var that = this,
                 modelView = model.view || null;
 
-
             if (!modelView) {
                 if (model.get('deviceType') === "sensorBinary" || model.get('deviceType') === "sensorMultilevel" || model.get('deviceType') === "battery") {
                     modelView = new ProbeWidgetView({model: model});
@@ -79,9 +78,9 @@ define([
         show: function (modelView, forceView) {
             var $template = modelView.getTemplate();
             if (App.Profiles.getDevice(modelView.model.id) || forceView) {
-                $template.show().addClass('show');
+                $template.fadeIn().addClass('show');
             } else {
-                $template.hide().removeClass('show');
+                $template.fadeOut().removeClass('show');
             }
         }
     });

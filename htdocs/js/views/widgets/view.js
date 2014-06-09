@@ -44,7 +44,7 @@ define([
             });
 
             that.listenTo(that.Devices, 'add', function (model) {
-                that.WidgetsModule.renderWidget(model);
+                that.WidgetsModule.renderWidget(model, true);
             });
         },
         render: function () {
