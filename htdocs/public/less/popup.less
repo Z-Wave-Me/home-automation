@@ -385,20 +385,23 @@
           text-overflow: ellipsis;
           white-space: nowrap;
           padding-left: 3px;
-          &:before {
-            content: "";
-            border-radius: 50%;
-            background-color: red;
-            position: absolute;
-            height: 12px;
-            width: 12px;
-            display: block;
-            left: 200px;
-            margin-top: 8.5px;
-          }
-          &.enable {
-            &:before {
-              background-color: green;
+          &.instance-item {
+            .circle {
+              content: "";
+              border-radius: 50%;
+              background-color: red;
+              position: absolute;
+              height: 12px;
+              width: 12px;
+              display: block;
+              left: 200px;
+              margin-top: 8.5px;
+            }
+            &.enable {
+              .circle {
+                background-color: green;
+                margin-top: 8.5px;
+              }
             }
           }
           &.active {
@@ -411,7 +414,7 @@
             margin-left: -13%;
             padding-left: 14%;
             margin-right: 0;
-            &:before {
+            .circle {
               width: 18px;
               height: 18px;
               margin-top: 8px;

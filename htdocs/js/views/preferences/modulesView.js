@@ -74,7 +74,7 @@ define([
             var $instance,
                 that = this;
 
-            $instance = $("<li>" + instance.get('params').title + "</li>");
+            $instance = $("<li class='instance-item'><div class='text-title pull-left'>" + instance.get('params').title + "</div><div class='circle pull-left'></li>");
 
             if (instance.get('params').status === 'enable') {
                 $instance.addClass('enable');
@@ -90,13 +90,10 @@ define([
             });
 
             that.listenTo(instance, 'change:params', function () {
-                $instance.text(instance.get('params').title);
+                $instance.find('.text-title').text(instance.get('params').title);
             });
 
             $instance.on('click', function (e) {
-
-
-
                 var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">Save</button></div> </div></div></div>');
                 e.preventDefault();
                 that.$el.find('.items-list').find('li').removeClass('active');
