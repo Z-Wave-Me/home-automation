@@ -1,25 +1,29 @@
 {
-	"autoload": false,
-	"singleton": false,
-	"userView": true,
-	"defaults": {
-		"title": "Dummy device",
-		"description": "Create a Dummy device",
-		"isDimmable": false
+	"autoload" : false,
+	"singleton" : false,
+	"userView" : true,
+	"defaults" : {
+		"title" : "Dummy device",
+		"description" : "Create a Dummy device",
+		"deviceType" : "switchBinary"
 	},
-	"schema": {
-		"type": "object",
-		"properties": {
-			"isDimmable": {
-				"type": "boolean"
+	"schema" : {
+		"type" : "object",
+		"properties" : {
+			"deviceType" : {
+				"type" : "string",
+				"enum" : ["switchBinary", "switchMultilevel"],
+				"default" : "switchBinary",
+				"required" : true
 			}
 		}
 	},
-	"options": {
-		"fields": {
-			"isDimmable": {
-				"label": "",
-				"rightLabel": "Dimmable"
+	"options" : {
+		"fields" : {
+			"deviceType" : {
+				"label" : "Select device type",
+				"type" : "select",
+				"optionLabels" : ["Binary switch", "Multilevel switch"]
 			}
 		}
 	}
