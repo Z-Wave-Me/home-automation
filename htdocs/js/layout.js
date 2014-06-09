@@ -92,8 +92,9 @@ define([
                 }
             });
 
-            that.listenTo(that.Devices, 'change:tags', function () {
+            that.listenTo(that.Devices, 'change:tags add remove destroy', function () {
                 if (window.App.filters.tags) {
+                    that.removeOldTags();
                     _.each(_.uniq(_.flatten(that.Devices.pluck('tags'))), function (type) {
                         that.addTagToFilter(type);
                     });
@@ -197,11 +198,18 @@ define([
 
         removeOldTags: function () {
             var that = this,
-                tags = _.uniq(_.flatten(that.Devices.pluck('tags')));
+                tags = _.uniq(_.flatten(that.Devices.pluck('tags'))),
+                currentTags = _.uniq(_.map($('li.tag-container a'), function (el) { return $(el).attr('data-id'); })),
+                diff = _.difference(currentTags, tags);
 
-            if (!$('li.tag-container a[data-id="' + tag + '"]').exists()) {
-                that.$header.find('.menu-filter').append($template);
-            }
+            diff.forEach(function (tag) {
+                if (!$('li.tag-container a[data-id="' + tag + '"]').exists()) {
+                    $('li.tag-container a[data-id="' + tag + '"]').off().fadeOut(function () {
+                        $(this).remove();
+                    })
+                }
+            });
+
         },
 
         render: function () {

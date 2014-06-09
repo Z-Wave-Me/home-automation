@@ -204,7 +204,7 @@ define([
                 $(ms).on('blur', function () {
                     this.setValue(this.getValue());
                     tags = this.getValue();
-                    device.set({
+                    device.save({
                         tags: tags
                     });
                     avalaibleTags = that.getTags();
