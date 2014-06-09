@@ -198,10 +198,57 @@
 				}
 			},
 			"action": {
-				"field": "enum",
-				"datasource": "namespaces",
-				"enum": "namespaces:devices_toggleButton:deviceId",
-				"required": true
+				"type": "object",
+				"properties": {
+					"switches": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchBinary:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "number",
+									"required": true,
+									"enum": ["off", "on"]
+								}
+							}
+						}
+					},
+					"dimmers": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"status": {
+									"required": true,
+									"minimum": 0,
+									"maximum": 99
+								}
+							}
+						}
+					},
+					"scenes": {
+						"type": "array",
+						"items": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_toggleButton:deviceId",
+							"required": true
+						}
+					}
+				},
+				"required": false
 			}
 		}
 	},
@@ -386,9 +433,59 @@
 			},
 			"action": {
 				"label": "Activate Scene",
-				"type": "select",
-				"datasource": "namespaces",
-				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+				"fields": {
+					"switches": {
+						"label": "List of switches",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchBinary:deviceName"
+									},
+									"status": {
+										"label": "",
+										"optionLabels": ["Off", "On"]
+									}
+								}
+							}
+						}
+					},
+					"dimmers": {
+						"label": "List of dimmers",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+									},
+									"status": {
+										"label": "State",
+										"type": "integer"
+									}
+								}
+							}
+						}
+					},
+					"scenes": {
+						"label": "List of scenes to activate",
+						"fields": {
+							"item": {
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+							}
+						}
+					}
+				}
 			}
 		}
 	}

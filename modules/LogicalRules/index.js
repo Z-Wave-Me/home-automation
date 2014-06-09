@@ -160,7 +160,26 @@ LogicalRules.prototype.testRule = function (tree) {
     }
     
     if (topLevel && res) {
-        this.controller.devices.get(tree.action).performCommand("on");
+        tree.action.switches.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                vDev.performCommand(devState.status);
+            }
+        });
+        tree.action.dimmers.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                vDev.performCommand("exact", { level: devState.status });
+            }
+        });
+        tree.action.scenes.forEach(function(scene) {
+            var vDev = self.controller.devices.get(scene);
+            if (vDev) {
+                vDev.performCommand("on");
+            }
+        });
+
+        self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
     }
 };
 
