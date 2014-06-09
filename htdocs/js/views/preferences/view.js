@@ -260,8 +260,8 @@ define([
                         if ($newProfile.find('#inputActive').prop('checked')) {
                             that.Profiles.where({active: true}).forEach(function (model) {
                                 model.save({active: false});
-                            });
-                        }
+                    });
+                }
                         profile = new Profile();
                         profile.save({
                             name: $newProfile.find('#inputNameProfile').val(),
