@@ -274,8 +274,15 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (newVal === 255) {
                         newVal = 255;
                     } else if (newVal > 99) {
-                        newVal = 99;
-                    }
+                        console.log("Dimmer newVal > 99");
+                        if (newVal === 100) {
+                            console.log("Dimmer newVal now = 99");
+                            newVal = 99;
+                        } else {
+                            newVal = null;
+                        }
+                        
+                    } 
                 }
 
                 if (0 === newVal || !!newVal) {
