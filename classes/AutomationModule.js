@@ -43,10 +43,16 @@ AutomationModule.prototype.defaultConfig = function (config) {
 AutomationModule.prototype.init = function (config) {
     console.log("--- Starting module " + this.meta.defaults.title);
     if (!!config) {
-        this.config = this.defaultConfig(config);
-        this.saveConfig();
+        this.saveNewConfig(config);
     } else {
         this.loadConfig();
+    }
+};
+
+AutomationModule.prototype.saveNewConfig = function (config) {
+    if (!!config) {
+        this.config = this.defaultConfig(config);
+        this.saveConfig();
     }
 };
 

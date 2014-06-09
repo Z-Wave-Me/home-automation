@@ -54,11 +54,19 @@ ImportRemoteHA.prototype.init = function (config) {
 };
 
 ImportRemoteHA.prototype.stop = function () {
+    var self = this;
+
     if (this.timer) {
         clearTimeout(this.timer);
     }
     
-    this.controller.devices.remove("HTTP_Device_" + this.config.deviceType + "_" + this.id); // !!!!!!!!!!!!!!!!!!!!!!!!
+    this.controller.devices.filter(function(xDev) {
+        return (xDev.id.indexOf("RemoteHA_" + self.id + "_") !== -1)
+    }).map(function(yDev) {
+        return yDev.id
+    }).forEach(function(item) {
+        self.controller.devices.remove(item);
+    });
     
     ImportRemoteHA.super_.prototype.stop.call(this);
 };
@@ -71,32 +79,38 @@ ImportRemoteHA.prototype.requestUpdate = function () {
     var self = this;
     
     this.lastRequest = Date.now();
-    
-    http.request({
-        url: this.urlPrefix + "?since=" + this.timestamp.toString(),
-        method: "GET",
-        async: true,
-        success: function(response) {
-            self.parseResponse(response);
-        },
-        error: function(response) {
-            console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
-        },
-        complete: function() {
-            var dt = self.lastRequest + self.dT - Date.now();
-            if (dt < 0) {
-                dt = 1; // in 1 ms not to make recursion
+
+    try {    
+        http.request({
+            url: this.urlPrefix + "?since=" + this.timestamp.toString(),
+            method: "GET",
+            async: true,
+            success: function(response) {
+                self.parseResponse(response);
+            },
+            error: function(response) {
+                console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
+            },
+            complete: function() {
+                var dt = self.lastRequest + self.dT - Date.now();
+                if (dt < 0) {
+                    dt = 1; // in 1 ms not to make recursion
+                }
+                
+                if (self.timer) {
+                    clearTimeout(self.timer);
+                }
+                
+                self.timer = setTimeout(function() {
+                    self.requestUpdate();
+                }, dt);
             }
-            
-            if (self.timer) {
-                clearTimeout(self.timer);
-            }
-            
-            self.timer = setTimeout(function() {
-                self.requestUpdate();
-            }, dt);
-        }
-    });
+        });
+    } catch (e) {
+        self.timer = setTimeout(function() {
+            self.requestUpdate();
+        }, self.dT);
+    }
 };
 
 ImportRemoteHA.prototype.parseResponse = function (response) {
@@ -108,7 +122,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
         this.timestamp = data.updateTime;
         
         data.devices.forEach(function(item) {
-            var localId = "Remote_" + self.id + "_" + item.id,
+            var localId = "RemoteHA_" + self.id + "_" + item.id,
                 vDev = self.controller.devices.get(localId);
             
             if (vDev) {
@@ -137,19 +151,19 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
         
         if (data.structureChanged) {
             var removeList = this.controller.devices.filter(function(xDev) {
-                var remove = false;
+                var found = false;
                 
-                if (xDev.id.indexOf("Remote_" + self.id + "_") === 0) {
-                    return;
+                if (xDev.id.indexOf("RemoteHA_" + self.id + "_") === -1) {
+                    return false; // not to remove devices created by other modules
                	}
 
                 data.devices.forEach(function(item) {
-                    if (item.id === xDev.id) {
-                        remove |= true;
+                    if (("RemoteHA_" + self.id + "_" + item.id) === xDev.id) {
+                        found |= true;
                         return false; // break
                     }
                 });
-                return !remove;
+                return !found;
             }).map(function(yDev) { return yDev.id });
             
             removeList.forEach(function(item) {
@@ -167,7 +181,7 @@ ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
         }
     }
     
-    var remoteId = vDev.id.slice(("Remote_" + this.id + "_").length);
+    var remoteId = vDev.id.slice(("RemoteHA_" + this.id + "_").length);
     
     http.request({
         url: this.urlPrefix + "/" + remoteId + "/command/" + command + argsFlat,

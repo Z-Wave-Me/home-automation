@@ -41,12 +41,16 @@ LogicalRules.prototype.init = function (config) {
             self.attachDetach(test.testBinary, true);
         } else if (test.testType === "multilevel") {
             self.attachDetach(test.testMultilevel, true);
+        } else if (test.testType === "remote") {
+            self.attachDetach(test.testRemote, true);
         } else if (test.testType === "nested") {
             test.testNested.tests.forEach(function(xtest) {
                 if (test.testType === "binary") {
                     self.attachDetach(test.testBinary, true);
                 } else if (test.testType === "multilevel") {
                     self.attachDetach(test.testMultilevel, true);
+                } else if (test.testType === "remote") {
+                    self.attachDetach(test.testRemote, true);
                 }
             });
         }
@@ -61,12 +65,16 @@ LogicalRules.prototype.stop = function () {
             self.attachDetach(test.testBinary, false);
         } else if (test.testType === "multilevel") {
             self.attachDetach(test.testMultilevel, false);
+        } else if (test.testType === "remote") {
+            self.attachDetach(test.testRemote, false);
         } else if (test.testType === "nested") {
             test.testNested.tests.forEach(function(xtest) {
                 if (test.testType === "binary") {
                     self.attachDetach(test.testBinary, false);
                 } else if (test.testType === "multilevel") {
                     self.attachDetach(test.testMultilevel, false);
+                } else if (test.testType === "remote") {
+                    self.attachDetach(test.testRemote, false);
                 }
             });
         }
@@ -92,6 +100,14 @@ LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
     } else {
         vDev.off("change:metrics:level", this._testRule);
     }
+
+    if (vDev.get("deviceType") === "switchControl") {
+        if (attachOrDetach) {
+            vDev.on("change:metrics:change", this._testRule);
+        } else {
+            vDev.off("change:metrics:change", this._testRule);
+        }
+    }
 };
 
 LogicalRules.prototype.testRule = function (tree) {
@@ -106,15 +122,18 @@ LogicalRules.prototype.testRule = function (tree) {
     if (tree.logicalOperator === "and") {
         res = true;
     
-        tree.tests.forEach(function(test) {
+-        tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
                 res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
                 res = res && (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
+            } else if (test.testType === "remote") {
+                var dev = self.controller.devices.get(test.testRemote.device);
+                res = res && ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
             } else if (test.testType === "time") {
                 var curTime = new Date(),
-                    time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });;
-                res = res && self.op(curTime.getHours() * 3600 + curTime.getMinutes() * 60 + curTime.getSeconds(), test.testTime.testOperator, time_arr[0] * 3600 + time_arr[1] * 60 + time_arr[2]);
+                    time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
+                res = res && self.op(curTime.getHours() * 60 + curTime.getMinutes(), test.testTime.testOperator, time_arr[0] * 60 + time_arr[1]);
             } else if (test.testType === "nested") {
                 res = res && self.testRule(test.testNested);
             }
@@ -127,10 +146,13 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res || self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
                 res = res || (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
+            } else if (test.testType === "remote") {
+                var dev = self.controller.devices.get(test.testRemote.device);
+                res = res || ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
             } else if (test.testType === "time") {
                 var curTime = new Date(),
-                    time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });;
-                res = res || self.op(curTime.getHours() * 3600 + curTime.getMinutes() * 60 + curTime.getSeconds(), test.testTime.testOperator, time_arr[0] * 3600 + time_arr[1] * 60 + time_arr[2]);
+                    time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
+                res = res || self.op(curTime.getHours() * 60 + curTime.getMinutes(), test.testTime.testOperator, time_arr[0] * 60 + time_arr[1]);
             } else if (test.testType === "nested") {
                 res = res || self.testRule(test.testNested);
             }

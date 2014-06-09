@@ -185,6 +185,11 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
         return; // skip this modules
     }
     
+    if (!_module) {
+        self.addNotification("error", "Can not load index.js from " + moduleFilename, "core");
+        return; // skip this modules
+    }
+    
     // Monkey-patch module with basePath method
     _module.prototype.moduleBasePath = function () {
         return folder + moduleClassName;
@@ -340,8 +345,10 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
     if (instance !== undefined) { // is registered
         this.stopInstance(instance);
 
-        if (config.params.status === 'enable') { // here we read new config instead of existing
+        if (config.status === 'enable') { // here we read new config instead of existing
             instance.init(config);
+        } else {
+            instance.saveNewConfig(config);
         }
 
         if (config.hasOwnProperty('params')) {

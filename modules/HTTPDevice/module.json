@@ -150,6 +150,7 @@
 
 			"setterOn_toggleButton": {
 				"label": "URL for action On",
+				"placeholder": "http://192.168.0.100/action/on",
 				"dependencies": {
 					"deviceType": "toggleButton"
 				}
@@ -157,6 +158,7 @@
 
 			"getter_sensorBinary": {
 				"label": "URL to get value",
+				"placeholder": "http://192.168.0.100/get/value",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
@@ -178,6 +180,7 @@
 
 			"getter_sensorMultilevel": {
 				"label": "URL to get value",
+				"placeholder": "http://192.168.0.100/get/value",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
@@ -205,18 +208,21 @@
 
 			"setterOn_switchBinary": {
 				"label": "URL for action On",
+				"placeholder": "http://192.168.0.100/action/on",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"setterOff_switchBinary": {
 				"label": "URL for action Off",
+				"placeholder": "http://192.168.0.100/action/off",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"getter_switchBinary": {
 				"label": "URL to get value",
+				"placeholder": "http://192.168.0.100/get/value",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
@@ -238,6 +244,7 @@
 
 			"setterLevel_switchMultilevel": {
 				"label": "URL for action",
+				"placeholder": "http://192.168.0.100/action/set/%%",
 				"helper": "%% is used to represent level in the URL. For example: http://host/dimmer/level/%%/set",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
@@ -245,6 +252,7 @@
 			},
 			"getter_switchMultilevel": {
 				"label": "URL to get value",
+				"placeholder": "http://192.168.0.100/get/value",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}

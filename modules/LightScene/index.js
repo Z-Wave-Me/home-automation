@@ -33,7 +33,7 @@ LightScene.prototype.init = function (config) {
     this.vDev = this.controller.devices.create("LightScene_" + this.id, {
         deviceType: "toggleButton",
         metrics: {
-            level: '',
+            level: 'on', // it is always on, but usefull to allow bind
             icon: '',
             title: 'Light Scene ' + this.id
         }
@@ -56,6 +56,8 @@ LightScene.prototype.init = function (config) {
                 vDev.performCommand("on");
             }
         });
+
+        self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
     });
 };
 

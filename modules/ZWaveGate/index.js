@@ -94,7 +94,7 @@ ZWaveGate.prototype.init = function (config) {
             Object.keys(instance.commandClasses).forEach(function (commandClassId) {
                 commandClassId = parseInt(commandClassId, 10);
                 var commandClass = instance.commandClasses[commandClassId];
-
+                
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
                     if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
                         self.parseAddCommandClass(nodeId, instanceId, commandClassId);
@@ -197,8 +197,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         // vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
     try {
+        if (!cc.data.supported.value)
+            return; // do not handle unsupported Command Classes
+
         // Ignore SwitchBinary if SwitchMultilevel exists
-        if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"])) {
+        if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instanceCommandClasses[this.CC["SwitchMultilevel"]].data.supported.value) {
             console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
             return;
         }
@@ -255,6 +258,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     if (newVal > 99) {
                         newVal = 99;
                     }
+
                 } else if ("decrease" === command) {
                     newVal = this.metrics.level - 10;
                     if (newVal < 0) {
@@ -270,7 +274,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (newVal === 255) {
                         newVal = 255;
                     } else if (newVal > 99) {
-                        newVal = null;
+                        newVal = 99;
                     }
                 }
 
@@ -299,6 +303,9 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
                     defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                     defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                    // aivs // Motion icon for Sensor Binary by default
+                    defaults.metrics.icon = "motion";
+
                     if (sensorTypeId == 2) {
                             defaults.metrics.icon = "smoke";
                     } else if (sensorTypeId == 3 || sensorTypeId == 4) {
@@ -312,6 +319,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (sensorTypeId == 12) {
                             defaults.metrics.icon = "motion";
                     }
+                    
                     var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, function(command) {
                         if (command === "update") {
                             cc.Get(sensorTypeId);

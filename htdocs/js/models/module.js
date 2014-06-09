@@ -47,27 +47,24 @@ define([
                     // properties
                     if (!schema.properties.hasOwnProperty('status')) {
                         schema.properties.status = {
-                            "type": "select",
+                            "type": "string",
                             "required": true,
+                            "default": "enable",
                             "enum": ["enable", "disable"]
                         };
                     }
 
                     if (!schema.properties.hasOwnProperty('title')) {
                         schema.properties.title = {
-                            "type": "text",
-                            "required": true,
-                            "minimum": 0,
-                            "maximum": 6
+                            "type": "string",
+                            "required": true
                         };
                     }
 
                     if (!schema.properties.hasOwnProperty('description')) {
                         schema.properties.description =  {
-                            "type": "textarea",
-                            "required": true,
-                            "minimum": 0,
-                            "maximum": 6
+                            "type": "string",
+                            "required": true
                         };
                     }
 
@@ -75,17 +72,15 @@ define([
                     if (!options.fields.hasOwnProperty('status')) {
                         options.fields.status = {
                             "type": "select",
-                            "required": true,
                             "label": "Status",
                             "helper": "",
-                            "enum": ["enable", "disable"]
+                            "optionLabels": ["Enabled", "Disabled"]
                         };
                     }
 
                     if (!options.fields.hasOwnProperty('title')) {
                         options.fields.title = {
                             "type": "text",
-                            "required": true,
                             "label": "Title"
                         };
                     }
@@ -93,7 +88,6 @@ define([
                     if (!options.fields.hasOwnProperty('description')) {
                         options.fields.description =  {
                             "type": "textarea",
-                            "required": true,
                             "label": "Description"
                         };
                     }
@@ -114,7 +108,7 @@ define([
                     "type": "object",
                     "validate": true,
                     "disabled": false,
-                    "showMessages": false,
+                    "showMessages": true,
                     "collapsible": true,
                     "legendStyle": "button",
                     "toolbarSticky": true,
@@ -160,7 +154,6 @@ define([
                 if (options.hasOwnProperty('fields')) {
                     Object.keys(options.fields).forEach(function (key) {
                         if (!options.fields[key].hasOwnProperty('helpers')) {
-                            options.fields[key].helper = "";
                             options.fields[key].toolbarSticky = true;
                         }
                     });

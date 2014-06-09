@@ -234,5 +234,17 @@ _.extend(VirtualDevice.prototype, {
         if (typeof(this.handler) === "function") {
             return this.handler.apply(this, arguments);
         }
+    },
+    addTag: function (tag) {
+        if (!_.contains(this.attributes.tags, tag)) {
+            this.attributes.tags.push(tag);
+        }
+    },
+    removeTag: function (tag) {
+        var indx = _.indexOf(this.attributes.tags, tag);
+
+        if (indx !== -1) {
+            this.attributes.tags.splice(indx, 1);
+        }
     }
 });

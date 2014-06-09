@@ -6,8 +6,8 @@
         "title": "Weather Informer",
         "description": "Weather informer provided by OpenWeatherMap.org",
         "units": "celsius",
-	"city": "Moscow",
-	"country": "Russia"
+	"city": "",
+	"country": ""
     },
     "schema": {
         "type": "object",
@@ -31,10 +31,12 @@
     "options": {
         "fields": {
             "city": {
-                "label": "City"
+                "label": "City",
+		"placeholder": "Moscow"
             },
             "country": {
-                "label": "Country"
+                "label": "Country",
+		"placeholder": "Russia"
             },
             "units": {
                 "label": "Units",
