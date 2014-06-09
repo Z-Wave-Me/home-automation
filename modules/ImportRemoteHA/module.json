@@ -56,7 +56,7 @@
 		"fields": {
 			"url": {
 				"label": "URL to remote side",
-				"helper": "Example: http://192.168.0.100:8083"
+				"placeholder": "http://192.168.0.100:8083"
 			},
 			"dT": {
 				"label": "Update period (in milliseconds)"

@@ -347,6 +347,8 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
 
         if (config.status === 'enable') { // here we read new config instead of existing
             instance.init(config);
+        } else {
+            instance.saveNewConfig(config);
         }
 
         if (config.hasOwnProperty('params')) {

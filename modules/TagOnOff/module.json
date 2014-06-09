@@ -6,7 +6,7 @@
 		"title": "Tag devices with On/Off",
 		"description": "Mark devices with On/Off tags depending on their state.",
 		"tagOn": "On",
-		"tagOffs": "Off"
+		"tagOff": "Off"
 	},
 	"schema": {
 		"type": "object",
