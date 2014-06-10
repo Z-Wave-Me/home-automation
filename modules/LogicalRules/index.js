@@ -178,8 +178,6 @@ LogicalRules.prototype.testRule = function (tree) {
                 vDev.performCommand("on");
             }
         });
-
-        self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
     }
 };
 

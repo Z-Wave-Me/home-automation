@@ -432,7 +432,7 @@
 				}
 			},
 			"action": {
-				"label": "Activate Scene",
+				"label": "Actions",
 				"fields": {
 					"switches": {
 						"label": "List of switches",
