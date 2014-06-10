@@ -31,8 +31,8 @@ DummyDevice.prototype.init = function (config) {
     var self = this;
 
     this.vDev = this.controller.devices.create(
-        "DummyDevice_" + (this.config.isDimmable ? "ml" : "bn") + "_" + this.id, { // different names to rebuild UI on change
-        deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary",
+        "DummyDevice_" + (this.config.deviceType === "switchMultilevel" ? "ml" : "bn") + "_" + this.id, { // different names to rebuild UI on change
+        deviceType: this.config.deviceType,
         metrics: {
             probeTitle: '',
             scaleTitle: '',
@@ -42,7 +42,7 @@ DummyDevice.prototype.init = function (config) {
         }
     }, function(command, args) {
         var level = command;
-        if (self.config.isDimmable) {
+        if (this.deviceType === "switchMultilevel") {
             if (command === "on") {
                 level = 99;
             } else if (command === "off") {
