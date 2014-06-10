@@ -42,7 +42,7 @@ DummyDevice.prototype.init = function (config) {
         }
     }, function(command, args) {
         var level = command;
-        if (this.deviceType === "switchMultilevel") {
+        if (this.get('deviceType') === "switchMultilevel") {
             if (command === "on") {
                 level = 99;
             } else if (command === "off") {

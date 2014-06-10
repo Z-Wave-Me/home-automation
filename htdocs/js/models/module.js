@@ -32,9 +32,10 @@ define([
 
             that.listenTo(that, 'add change', function (model, err) {
                 var schema = model.get('schema'),
-                    options = model.get('options');
+                    options = model.get('options'),
+                    defaults = model.get('defaults');
 
-                if (schema && options) {
+                if (schema && options && defaults) {
                     if (!schema.hasOwnProperty('properties')) {
                         schema.properties = {};
                     }
@@ -92,9 +93,14 @@ define([
                         };
                     }
 
+                    if (!defaults.hasOwnProperty('status')) {
+                        defaults.status =  "enable";
+                    }
+
                     model.set({
                         schema: schema,
-                        options: options
+                        options: options,
+                        defaults: defaults
                     });
                 }
                 that.getNamespacesData(model);
@@ -103,6 +109,7 @@ define([
         getNamespacesData: function (model) {
             var schema = model.get('schema'),
                 options = model.get('options'),
+                defaults = model.get('defaults'),
                 defaultObject = {
                     "focus": true,
                     "type": "object",
