@@ -95,15 +95,16 @@ define([
                 e.preventDefault();
 
                 var $button = $(this),
-                    command = !$button.hasClass('active') ? 'on' : 'off';
+                    command = that.model.get('metrics').level === 'off' ? 'on' : 'off';
 
                 Apis.devices.command(model.get('id'), command, {}, function () {
                     $button
-                        .toggleClass('active')
                         .attr('title', command.capitalize())
                         .children()
                         .toggleClass('active')
                         .find('.text').text(command.toUpperCase());
+
+                    that.model.set({metrics: _.extend(model.get('metrics'), {mode: command})});
                 });
             });
 
