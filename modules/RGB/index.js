@@ -80,24 +80,38 @@ RGB.prototype.init = function (config) {
         }
     });
     
+
+    this.handleLevel = function() {
+        self.vDev.set("metrics:level", (levelToColor(self.red) || levelToColor(self.green) || levelToColor(self.blue)) ? 'on' : 'off');
+    };
+    
     this.handleR = function () {
         self.vDev.set("metrics:color:r", self.red.get("metrics:level"));
-    }
+        self.handleLevel();
+    };
     this.handleG = function () {
         self.vDev.set("metrics:color:g", self.green.get("metrics:level"));
-    }
+        self.handleLevel();
+    };
     this.handleB = function () {
         self.vDev.set("metrics:color:b", self.blue.get("metrics:level"));
-    }
+        self.handleLevel();
+    };
     this.red.on("change:metrics:level", this.handleR);
     this.green.on("change:metrics:level", this.handleG);
     this.blue.on("change:metrics:level", this.handleB);
 };
 
 RGB.prototype.stop = function () {
-    this.red.off("change:metrics:level", this.handleR);
-    this.green.off("change:metrics:level", this.handleG);
-    this.blue.off("change:metrics:level", this.handleB);
+    if (this.red) {
+        this.red.off("change:metrics:level", this.handleR);
+    }
+    if (this.green) {
+        this.green.off("change:metrics:level", this.handleG);
+    }
+    if (this.blue) {
+        this.blue.off("change:metrics:level", this.handleB);
+    }
     this.handleR = null;
     this.handleG = null;
     this.handleB = null;

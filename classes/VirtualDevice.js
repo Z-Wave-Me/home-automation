@@ -1,9 +1,9 @@
 /*** Z-Way HA Virtual Device base class ***************************************
 
-Version: 1.0.0
+Version: 2.0.0
 -------------------------------------------------------------------------------
-Author: Gregory Sitnin <sitnin@z-wave.me>
-Copyright: (c) ZWave.Me, 2013
+Author: Gregory Sitnin <sitnin@z-wave.me> and Stanislav Morozov <morozov@z-wave.me>
+Copyright: (c) ZWave.Me, 2013-2014
 
 ******************************************************************************/
 
@@ -232,7 +232,12 @@ _.extend(VirtualDevice.prototype, {
     performCommand: function () {
         console.log("--- ", this.id, "performCommand processing:", JSON.stringify(arguments));
         if (typeof(this.handler) === "function") {
-            return this.handler.apply(this, arguments);
+            try {
+                return this.handler.apply(this, arguments);
+            } catch(e) {
+                this.controller.addNotification("error", "Error during perform command execution: " + e.toString(), "module");
+                console.log(e.stack);
+            }
         }
     },
     addTag: function (tag) {

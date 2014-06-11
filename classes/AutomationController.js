@@ -91,14 +91,6 @@ AutomationController.prototype.stop = function () {
 
     var self = this;
 
-    // Clean devices
-    console.log("Stopping devices...");
-    Object.keys(this.devices).forEach(function (id) {
-        var vdev = self.devices[id];
-        vdev.destroy();
-        delete self.devices[id];
-    });
-
     // Clean modules
     console.log("Stopping modules...");
     Object.keys(this.instances).forEach(function (instanceId) {
@@ -285,7 +277,7 @@ AutomationController.prototype.registerInstance = function (instance) {
             self.registerInstances[instanceId] = instance;
             self.emit('core.instanceRegistered', instanceId);
         } else {
-            self.emit('core.error', new Error("Can't register module instance " + instanceId + " twice"));
+            self.emit('core.error', new Error("Can't register duplicate module instance " + instanceId));
         }
     } else {
         self.emit('core.error', new Error("Can't register empty module instance " + instance.id));
@@ -448,7 +440,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     var now = new Date(), notice;
 
     notice = {
-        id: Math.floor(new Date().getTime() / 1000),
+        id: now.getTime(),
         timestamp: now.toISOString(),
         level: severity,
         message: message,

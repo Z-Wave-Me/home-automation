@@ -1,0 +1,9 @@
+{
+    "autoload": true,
+    "autoloadPriority": 100,
+    "singleton": true,
+    "userView": false,
+    "defaults": {
+        "title": "Z-Wave device dead detection"
+    }
+}

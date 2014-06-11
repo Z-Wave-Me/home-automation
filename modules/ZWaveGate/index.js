@@ -146,7 +146,7 @@ ZWaveGate.prototype.dataBind = function(dataBindings, nodeId, instanceId, comman
             "instanceId": instanceId,
             "commandClassId": commandClassId,
             "path": path,
-            "func": data.bind(func, type === "child")
+            "func": data.bind(func, null, type === "child")
         });
         if (type === "value") {
             func.call(data, this.ZWAY_DATA_CHANGE_TYPE.Updated);
