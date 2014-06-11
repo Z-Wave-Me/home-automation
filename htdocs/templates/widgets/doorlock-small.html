@@ -11,10 +11,10 @@
             <% } %>
         </div>
         <div class="content"><span class="title-container"><%= metrics.title %></span>
-            <a href="#" class="action <% if (parseInt(metrics.mode) !== 255) { print(' active'); } %>" title="<% if (parseInt(metrics.mode) !== 255) { print('Open'); } else { print('Closed'); }%>">
-                <span class="switch-door <% if (parseInt(metrics.mode) !== 255) { print(' active'); } %>">
+            <a href="#" class="action <% if (metrics.mode === 'open') { print(' active'); } %>" title="<% if (metrics.mode === 'open') { print('Open'); } else { print('Closed'); }%>">
+                <span class="switch-door <% if (metrics.mode === 'open') { print(' active'); } %>">
                     <span class="bubble"></span>
-                    <span class="text"><% if (parseInt(metrics.mode) !== 255) { print('OPEN'); } else { print('CLOSED'); }%></span>
+                    <span class="text"><% if (metrics.mode === 'open') { print('OPEN'); } else { print('CLOSED'); }%></span>
                 </span>
             </a>
         </div>
