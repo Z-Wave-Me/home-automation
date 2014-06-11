@@ -56,12 +56,21 @@ define([
             }
             that.$eventsContainer = $modal.find('.events-container');
 
+            $modal.find('.hide-all-button').on('click', function (e) {
+                e.preventDefault();
+                that.Notifications.each(function (model) {
+                    model.save({redeemed: true});
+                    that.Notifications.remove(model);
+                });
+            }).hide();
+
             that.Notifications.each(function (model) {
                 var isExist = _.find(that.deleted, function (notice) { return notice.id === model.id; });
                 if (!model.get('redeemed') && !isExist) {
                     that.addEventToList(model);
                 }
             });
+
 
             that.$header.find('.events-menu').on('click', function (e) {
                 e.preventDefault();
@@ -74,9 +83,11 @@ define([
                     $ok.addClass('hidden');
                     $warning.removeClass('hidden');
                     $warning.find('.count').text(that.Notifications.size());
+                    $modal.find('.hide-all-button').show();
                 } else {
                     $ok.removeClass('hidden');
                     $warning.addClass('hidden');
+                    $modal.find('.hide-all-button').hide();
                 }
             });
 
@@ -133,6 +144,8 @@ define([
 
                 that.$eventsContainer.append($template);
             }
+
+
         },
 
         addRoomToFilter: function (location) {
