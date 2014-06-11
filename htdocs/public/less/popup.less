@@ -380,7 +380,7 @@
           font-size: 14px;
           height: 26px;
           line-height: 26px;
-          width: 225px;
+          width: 215px;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
@@ -390,18 +390,35 @@
               content: "";
               border-radius: 50%;
               background-color: red;
-              position: absolute;
               height: 12px;
               width: 12px;
               display: block;
-              left: 200px;
+              float: right;
               margin-top: 8.5px;
+              margin-right: 14px;
             }
             &.enable {
               .circle {
                 background-color: green;
-                margin-top: 8.5px;
               }
+            }
+          }
+          .text-title {
+            width: 180px;
+            overflow: hidden;
+            text-overflow: clip;
+            color: '-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0))';
+            &:after {
+              position: relative;
+              display: block;
+              bottom: 0;
+              height: 25px;
+              width: 133%;
+              content: "";
+              background: linear-gradient(to left, #ededed 20%, rgba(255, 255, 255, 0) 48%);
+              pointer-events: none;
+              z-index: 10000;
+              top: -30px;
             }
           }
           &.active {
@@ -411,13 +428,11 @@
             line-height: 34px;
             color: #222;
             background-color: #bbc2c4;
-            margin-left: -13%;
-            padding-left: 14%;
-            margin-right: 0;
             .circle {
               width: 18px;
               height: 18px;
               margin-top: 8px;
+              margin-right: 10px;
             }
             &:after {
               content: "";
@@ -435,9 +450,13 @@
               vertical-align: middle;
               width: 0;
               border-left: 0.3em solid #bbc2c4;
-              float: right;
-              margin-right: 0;
-              right: 0;
+              left: 26px;
+              top: -1px;
+            }
+            .text-title {
+              &:after {
+                background: linear-gradient(to left, #bbc2c4 20%, rgba(255, 255, 255, 0) 48%);
+              }
             }
           }
         }
