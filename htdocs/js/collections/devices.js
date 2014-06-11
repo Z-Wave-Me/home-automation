@@ -38,11 +38,16 @@ define([
                 zipped = [];
 
             if (response.data.structureChanged) {
+                var removalList = [];
                 _.each(that.models, function (model) {
                     if (!_.any(response.data.devices, function (dev) { return model.id === dev.id; })) {
-                        log('Remove model ' + model.id);
-                        that.remove(model);
+                        removalList.push(model);
                     }
+                });
+
+                _.each(removalList, function(model) {
+                    log('Remove model ' + model.id);
+                    that.remove(model);
                 });
             }
 
