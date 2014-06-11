@@ -1,0 +1,63 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Delayed Scene",
+		"description": "Activate scene after a defined timeout after",
+		"singleTimer": true,
+		"triggerScene": "",
+		"delayedScene": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"singleTimer": {
+				"type": "boolean"
+			},
+			"triggerScene": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_toggleButton:deviceId",
+				"required": true
+			},
+			"delayedScene": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_toggleButton:deviceId",
+				"required": true
+			},
+			"delay": {
+				"type": "integer",
+				"minimum": 1
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"singleTimer": {
+				"label": "",
+				"rightLabel": "Restart timer on trigger instead of starting new timer"
+			},
+			"triggerScene": {
+				"label": "Scene that trigger timer start",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+			},
+			"delayedScene": {
+				"label": "Delayed action",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+			},
+			"delay": {
+				"label": "Delay in seconds",
+				"type": "integer"
+			}
+		}
+	}
+}
