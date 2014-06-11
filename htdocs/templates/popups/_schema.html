@@ -1,5 +1,6 @@
 <div class="widget-container modules-container">
     <div class="module <% if (typeof id  !== 'undefined') { print('edit'); } %>">
+        <h2><% if (typeof id  !== 'undefined') { print(title); } %></h2>
         <form class="form-horizontal general-tab" role="form">
             <div class="form-group">
                 <label for="selectModules" class="control-label">Template:</label>

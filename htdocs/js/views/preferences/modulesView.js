@@ -94,8 +94,8 @@ define([
             });
 
             $instance.on('click', function (e) {
-                var $template = $('<div class="widget-container modules-container"><div class="module edit"><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group save-button">Save</button></div> </div></div></div>');
                 e.preventDefault();
+                var $template = $('<div class="widget-container modules-container"><div class="module edit"><h3 class="instance-block">' + instance.get('moduleId') +'</h3><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group just-hidden save-button">Save</button></div> </div></div></div>');
                 that.$el.find('.items-list').find('li').removeClass('active');
                 that.instanceActive = instance.id;
                 $instance.addClass('active');
@@ -140,6 +140,7 @@ define([
                                     }
                                 });
                                 that.$el.find('.alpaca-controlfield-message-text').css('color', '#222');
+                                $template.find('.save-button').fadeIn();
                             }
                         });
                     }
@@ -205,6 +206,7 @@ define([
                                         });
                                     }
                                 });
+                                $schema.find('.save-button').fadeIn();
                             }
                         });
                     }
