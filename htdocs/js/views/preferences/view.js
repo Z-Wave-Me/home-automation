@@ -260,22 +260,20 @@ define([
                         if ($newProfile.find('#inputActive').prop('checked')) {
                             that.Profiles.where({active: true}).forEach(function (model) {
                                 model.save({active: false});
-                    });
-                }
-                        profile = new Profile();
-                        profile.save({
+                            });
+                        }
+
+                        that.Profiles.add({
                             name: $newProfile.find('#inputNameProfile').val(),
                             description: $newProfile.find('#inputDescriptionsText').val(),
                             active: $newProfile.find('#inputActive').prop('checked')
-                        }, {
-                            success: function (model) {
-                                that.Profiles.add(model);
-                            }
                         });
                     }
 
                     $newProfile.hide('fast', function () {
-                        $newProfile.remove();
+                        if (that.Profiles > 1) {
+                            $newProfile.remove();
+                        }
                     });
                 });
 

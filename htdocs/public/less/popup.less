@@ -463,8 +463,16 @@
               vertical-align: middle;
               width: 0;
               border-left: 0.3em solid #bbc2c4;
-              left: 26px;
-              top: -1px;
+              top: 0px;
+              right: 0px;
+              float: right;
+            }
+            &.instance-item {
+              &:after {
+                top: -1px;
+                left: 25px;
+                float: none;
+              }
             }
             .text-title {
               &:after {

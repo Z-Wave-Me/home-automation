@@ -37,7 +37,7 @@ define([
         },
 
         getActive: function () {
-            return this.findWhere({active: true});
+            return this.findWhere({active: true}) || this.first();
         },
 
         getDevice: function (deviceId) {
