@@ -450,7 +450,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             module = null;
 
-        Object.keys(that.controller.modules).forEach(function (className) {
+        Object.keys(that.controller.modules).sort().forEach(function (className) {
             module = that.controller.modules[className].meta;
             if (module.hasOwnProperty('userView') && module.userView) {
                 module.className = className;
