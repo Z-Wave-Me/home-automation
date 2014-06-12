@@ -236,7 +236,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 deviceType: "switchMultilevel",
                 metrics: {
                     level: '',
-                    icon: 'multilevel',
+                    icon: (zway.devices[nodeId].data.genericType.value == 0x11 && _.contains([3, 5, 6, 7], zway.devices[nodeId].data.specificType.value)) ? 'blinds' : 'multilevel',
                     title: 'Dimmer ' + vDevIdNI
                 }
             };
