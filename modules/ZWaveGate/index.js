@@ -66,9 +66,9 @@ ZWaveGate.prototype.init = function (config) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
                 if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                    self.parseAddCommandClass(nodeId, instanceId, commandClassId);
+                    self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
                 } else {
-                    self.parseDelCommandClass(nodeId, instanceId, commandClassId);
+                    self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
                 }
             }, "value");
         } else {
@@ -97,9 +97,9 @@ ZWaveGate.prototype.init = function (config) {
                 
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
                     if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.parseAddCommandClass(nodeId, instanceId, commandClassId);
+                        self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
                     } else {
-                        self.parseDelCommandClass(nodeId, instanceId, commandClassId);
+                        self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
                     }
                 }, "value");
             });
@@ -179,7 +179,7 @@ ZWaveGate.prototype.dataUnbind = function(dataBindings) {
     dataBindings = null;
 };
 
-ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId) {
+ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded) {
     nodeId = parseInt(nodeId, 10);
     instanceId = parseInt(instanceId, 10);
     commandClassId = parseInt(commandClassId, 10);
@@ -341,11 +341,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }
                 }
             });
-            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function(type) {
-                if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                    self.parseAddCommandClass(nodeId, instanceId, commandClassId);
-                }
-            }, "child");
+            if (!scaleAdded) {
+                self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function(type) {
+                    if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+                        self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+                    }
+                }, "child");
+            }
         } else if (this.CC["SensorMultilevel"] === commandClassId) {
             defaults = {
                 deviceType: "sensorMultilevel",
@@ -388,11 +390,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }
                 }
             });
-            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function(type) {
-                if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                    self.parseAddCommandClass(nodeId, instanceId, commandClassId);
-                }
-            }, "child");
+            if (!scaleAdded) {
+                self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function(type) {
+                    if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+                        self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+                    }
+                }, "child");
+            }
         } else if (this.CC["Meter"] === commandClassId) {
             defaults = {
                 deviceType: 'sensorMultilevel',
@@ -426,11 +430,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }
                 }
             });
-            self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function(type) {
-                if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                    self.parseAddCommandClass(nodeId, instanceId, commandClassId);
-                }
-            }, "child");
+            if (!scaleAdded) {
+                self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "", function(type) {
+                    if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+                        self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+                    }
+                }, "child");
+            }
         } else if (this.CC["Battery"] === commandClassId && !self.controller.devices.get(vDevId)) {
             defaults = {
                 deviceType: 'battery',

@@ -7,7 +7,7 @@
 		"description": "Logical rules allows to trigger scenes based on devices status.",
 		"logicalOperator": "and",
 		"tests": [],
-		"action": ""
+		"action": {}
 	},
 	"schema": {
 		"title": "Select action condition",
@@ -27,7 +27,8 @@
 						"testType": {
 							"type": "string",
 							"enum": ["binary", "multilevel","remote", "time", "nested"],
-							"required": true
+							"required": true,
+							"default": "binary"
 						},
 						"testBinary": {
 							"type": "object",
@@ -117,7 +118,8 @@
 											"testType": {
 												"type": "string",
 												"enum": ["binary", "multilevel", "remote", "time"],
-												"required": true
+												"required": true,
+												"default": "binary"
 											},
 											"testBinary": {
 												"type": "object",

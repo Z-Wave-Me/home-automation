@@ -95,7 +95,7 @@ define([
 
             $instance.on('click', function (e) {
                 e.preventDefault();
-                var $template = $('<div class="widget-container modules-container"><div class="module edit"><h3 class="instance-block">' + instance.get('moduleId') +'</h3><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group just-hidden save-button">Save</button></div> </div></div></div>');
+                var $template = $('<div class="widget-container modules-container"><div class="module edit"><h3 class="instance-block">' + that.Modules.get(instance.get('moduleId')).get('defaults').title +'</h3><div class="form-group alpaca-form"></div><div class="form-group button-group"><div class="input-group"><button class="button-group just-hidden save-button">Save</button></div> </div></div></div>');
                 that.$el.find('.items-list').find('li').removeClass('active');
                 that.instanceActive = instance.id;
                 $instance.addClass('active');
