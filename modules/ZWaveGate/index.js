@@ -232,12 +232,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 }, "value");
             }
         } else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
+            var isBlind = zway.devices[nodeId].data.genericType.value == 0x11 && _.contains([3, 5, 6, 7], zway.devices[nodeId].data.specificType.value);
             defaults = {
                 deviceType: "switchMultilevel",
                 metrics: {
                     level: '',
-                    icon: (zway.devices[nodeId].data.genericType.value == 0x11 && _.contains([3, 5, 6, 7], zway.devices[nodeId].data.specificType.value)) ? 'blinds' : 'multilevel',
-                    title: 'Dimmer ' + vDevIdNI
+                    icon: isBlind ? 'blinds' : 'multilevel',
+                    title: (isBlind ? 'Blinds' : 'Dimmer') + ' ' + vDevIdNI
                 }
             };
             var vDev = self.controller.devices.create(vDevId, defaults, function(command, args) {

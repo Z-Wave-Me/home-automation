@@ -127,7 +127,7 @@ HTTPDevice.prototype.update = function (vDev) {
                 vDev.set("metrics:level", parser ? eval(parser.replace(/%%/g, data)) : response.data);
             },
             error: function(response) {
-                console.log("Can not make request: " + response.message); // don't add it to notifications, since it will fill all the notifcations on error
+                console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
             } 
         });
     }
@@ -142,14 +142,13 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
     	if (subst) {
     		url = url.replace(/%%/g, subst);
     	}
-    console.log(url);
         http.request({
             url: url,
             method: this.config.method,
             async: true,
             error: function(response) {
-                self.controller.addNotification("error", "Can not make request: " + response.message, "module");
-            } 
+                self.controller.addNotification("error", "Can not make request: " + response.statusText, "module");
+            }
         });
     } else if (selfValue !== null) {
         vDev.set("metrics:level", selfValue);
