@@ -116,8 +116,8 @@ AutomationController.prototype.loadModules = function (callback) {
         self.loadModulesFromFolder(moduleClassName, "modules/");
     });
 
-    (fs.list("user_modules/") || []).forEach(function (moduleClassName) {
-        self.loadModulesFromFolder(moduleClassName, "user_modules/");
+    (fs.list("userModules/") || []).forEach(function (moduleClassName) {
+        self.loadModulesFromFolder(moduleClassName, "userModules/");
     });
 
     // Sort and clarify automatically loaded modules list
