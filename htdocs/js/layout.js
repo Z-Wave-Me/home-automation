@@ -25,6 +25,7 @@ define([
             that.$footer = $(that.templateFooter);
             $ok = that.$header.find('.events-ok');
             $warning = that.$header.find('.events-warning');
+            that.removedNotices = [];
 
             that.Notifications = window.App.Notifications;
             that.Locations = window.App.Locations;
@@ -58,11 +59,14 @@ define([
 
             $modal.find('.hide-all-button').on('click', function (e) {
                 e.preventDefault();
-                that.Notifications.each(function (model) {
-                    model.save({redeemed: true});
-                    that.Notifications.remove(model);
-                });
+                that.Notifications.remove(that.Notifications.models);
             }).hide();
+
+            that.$eventsContainer.on('click', function (e) {
+                if (e.target.className === 'read') {
+                    that.Notifications.remove(that.Notifications.get($(e.target).attr('data-id')));
+                }
+            });
 
             that.Notifications.each(function (model) {
                 var isExist = _.find(that.deleted, function (notice) { return notice.id === model.id; });
@@ -71,6 +75,12 @@ define([
                 }
             });
 
+            that.listenTo(that.Notifications, 'remove', function () {
+                if (!that.Notifications.length) {
+                    ModalHelper.hideAll();
+                    that.$eventsContainer.empty().text('Everything is ok');
+                }
+            });
 
             that.$header.find('.events-menu').on('click', function (e) {
                 e.preventDefault();
@@ -119,6 +129,10 @@ define([
         addEventToList: function (model) {
             var notice = model.toJSON(), $template, that = this;
 
+            if (that.removedNotices.indexOf(model.id) !== -1) {
+                return;
+            }
+
             if (!that.$eventsContainer.children().length) {
                 that.$eventsContainer.empty();
             }
@@ -130,22 +144,12 @@ define([
 
                 that.listenTo(model, 'remove', function () {
                     $template.slideUp('fast');
+                    that.removedNotices.push(model.id);
                     model.save({redeemed: true});
-                    if (!that.Notifications.length) {
-                        ModalHelper.hideAll();
-                        that.$eventsContainer.empty().text('Everything is ok');
-                    }
-                });
-
-                $template.find('.read').off().on('click', function () {
-                    that.deleted.push(model);
-                    that.Notifications.remove(model);
                 });
 
                 that.$eventsContainer.append($template);
             }
-
-
         },
 
         addRoomToFilter: function (location) {
@@ -174,10 +178,6 @@ define([
                 $template;
 
             $template = $('<li><a data-id="' + type + '" class="item-nav" href="/">' + type + '</a></li>');
-
-            //that.listenTo(that.Devices, 'destroy', function () {
-            //    $template.off().hide('fast');
-            //});
 
             $template.find('.item-nav').on('click', function (e) {
                 e.preventDefault();
