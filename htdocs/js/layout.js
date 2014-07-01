@@ -57,15 +57,19 @@ define([
             }
             that.$eventsContainer = $modal.find('.events-container');
 
-            $modal.find('.hide-all-button').on('click', function (e) {
-                e.preventDefault();
-                that.Notifications.remove(that.Notifications.models);
-            }).hide();
+            $modal.hide();
 
-            that.$eventsContainer.on('click', function (e) {
-                if (e.target.className === 'read') {
-                    that.Notifications.remove(that.Notifications.get($(e.target).attr('data-id')));
-                }
+            that.$header.find('.events-menu').on('click', function (e) {
+                $modal.off().on('click', function (e) {
+                    if (e.target.className === 'read') {
+                        that.removedNotices.push(that.Notifications.get($(e.target).attr('data-id')));
+                        that.Notifications.remove(that.Notifications.get($(e.target).attr('data-id')));
+                    } else if (e.target.className === 'hide-all-button') {
+                        that.removedNotices = _.union(that.Notifications.map(function (m) {return m.id;}),  that.removedNotices);
+                        that.Notifications.remove(that.Notifications.models);
+                    }
+                });
+                ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
             that.Notifications.each(function (model) {
@@ -75,29 +79,18 @@ define([
                 }
             });
 
-            that.listenTo(that.Notifications, 'remove', function () {
+            that.listenTo(that.Notifications, 'all', function () {
                 if (!that.Notifications.length) {
                     ModalHelper.hideAll();
                     that.$eventsContainer.empty().text('Everything is ok');
-                }
-            });
-
-            that.$header.find('.events-menu').on('click', function (e) {
-                e.preventDefault();
-                ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
-            });
-
-            that.Notifications = window.App.Notifications;
-            that.listenTo(that.Notifications, 'all', function () {
-                if (that.Notifications.length) {
+                    $ok.removeClass('hidden');
+                    $warning.addClass('hidden');
+                    $modal.find('.hide-all-button').hide();
+                } else {
                     $ok.addClass('hidden');
                     $warning.removeClass('hidden');
                     $warning.find('.count').text(that.Notifications.size());
                     $modal.find('.hide-all-button').show();
-                } else {
-                    $ok.removeClass('hidden');
-                    $warning.addClass('hidden');
-                    $modal.find('.hide-all-button').hide();
                 }
             });
 
@@ -144,7 +137,6 @@ define([
 
                 that.listenTo(model, 'remove', function () {
                     $template.slideUp('fast');
-                    that.removedNotices.push(model.id);
                     model.save({redeemed: true});
                 });
 
