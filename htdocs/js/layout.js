@@ -81,7 +81,6 @@ define([
 
             that.listenTo(that.Notifications, 'all', function () {
                 if (!that.Notifications.length) {
-                    ModalHelper.hideAll();
                     that.$eventsContainer.empty().text('Everything is ok');
                     $ok.removeClass('hidden');
                     $warning.addClass('hidden');
