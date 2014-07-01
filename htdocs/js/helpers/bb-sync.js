@@ -4,9 +4,9 @@ define([
     "use strict";
 
     return function (method, model, options) {
-        log('-- SYNC --');
-        log(JSON.stringify(options));
-        log(model.toJSON());
+        //log('-- SYNC --');
+        //log(JSON.stringify(options));
+        //log(model.toJSON());
 
         var methodMap = { 'create': 'POST', 'update': 'PUT', 'delete': 'DELETE', 'read': 'GET' },
             type = methodMap[method],

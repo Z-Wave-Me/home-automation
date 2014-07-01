@@ -482,7 +482,6 @@ define([
                 $profile.addClass('active');
                 $template = $(_.template(ProfileTmp, model.toJSON()));
 
-
                 $template.find('.edit-button').on('click', function (e) {
                     e.preventDefault();
                     var $this = $(this);
@@ -504,6 +503,10 @@ define([
                             name: $template.find('#inputNameProfile').val(),
                             description: $template.find('#inputDescriptionsText').val(),
                             active: $template.find('#inputActive').prop('checked')
+                        }, {
+                            success: function () {
+                                that.Profiles.fetch({merge: true, reset: false});
+                            }
                         });
                         $template.find('.edit-button').show();
                         $template.find('.name-profile').text(model.get('name')).show();
