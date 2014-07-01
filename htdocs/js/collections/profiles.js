@@ -74,7 +74,7 @@ define([
         setDevice: function (deviceId) {
             var that = this,
                 profile = that.getActive(),
-                positions = profile.get('positions') || [];
+                positions = profile.has('positions') ? profile.get('positions') : [];
 
             if (!_.any(positions, function (id) { return deviceId === id; })) {
                 positions.push(deviceId);
