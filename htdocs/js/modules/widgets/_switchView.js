@@ -92,7 +92,6 @@ define([
 
                 if (that.model.get('deviceType') === 'switchRGBW') {
                     color = _.isObject(model.get('metrics').color) ? model.get('metrics').color : {r: 255, g: 255, b: 255};
-                    console.log(color);
                     that.$template.find('.picker').colpickSetColor($.colpick.rgbToHex({r: color.r, g: color.g, b: color.b}));
                 }
             });
