@@ -68,6 +68,12 @@ define([
                         that.removedNotices = _.union(that.Notifications.map(function (m) {return m.id;}),  that.removedNotices);
                         that.Notifications.remove(that.Notifications.models);
                     }
+
+                    if (that.Notifications.length === 0) {
+                        setTimeout(function () {
+                            ModalHelper.hideAll();
+                        }, 1000);
+                    }
                 });
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
