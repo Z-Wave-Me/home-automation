@@ -43,6 +43,18 @@ define([
                 });
             });
 
+            that.listenTo(that.Devices, 'change:tags', function () {
+                that.Devices.each(function (device) {
+                    if (window.App.filters.tags) {
+                        if (that.Devices.activeTag === 'all' || device.get('tags').indexOf(that.Devices.activeTag) !== -1) {
+                            device.trigger('show');
+                        } else {
+                            device.trigger('hide');
+                        }
+                    }
+                });
+            });
+
             that.listenTo(that.Devices, 'add', function (model) {
                 that.WidgetsModule.renderWidget(model, true);
             });

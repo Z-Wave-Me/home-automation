@@ -89,6 +89,11 @@ define([
                     that.$template.find(".switch-door").removeClass('active');
                     that.$template.find(".switch-door").find('.text').text('OFF');
                 }
+
+                if (that.model.get('deviceType') === 'switchRGBW') {
+                    color = _.isObject(model.get('metrics').color) ? model.get('metrics').color : {r: 255, g: 255, b: 255};
+                    that.$template.find('.picker').colpickSetColor($.colpick.rgbToHex({r: color.r, g: color.g, b: color.b}));
+                }
             });
 
             that.$template.find('.action').on('click', function (e) {
@@ -128,7 +133,7 @@ define([
                         $(el).colpickHide();
                         Apis.devices.command(that.model.get('id'), 'exact', {red: rgb.r, green: rgb.g, blue: rgb.b});
                     }
-                }).css({'background-color': rgbToHex(color.r, color.g, color.b, '#')});
+                }).css({'background-color': '#' + $.colpick.rgbToHex({r: color.r, g: color.g, b: color.b})});
                 that.$template.find('.colors-container').show();
             }
 

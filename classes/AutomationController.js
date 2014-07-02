@@ -618,9 +618,12 @@ AutomationController.prototype.updateProfile = function (object, id) {
     var profile = _.find(this.profiles, function (profile) {
             return profile.id === parseInt(id);
         }),
+        active = _.find(this.profiles, function (profile) {
+            return profile.active;
+        }),
         index;
 
-    if (!!profile) {
+    if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
 
         if (object.hasOwnProperty('name')) {
@@ -633,7 +636,22 @@ AutomationController.prototype.updateProfile = function (object, id) {
             this.profiles[index].positions = object.positions;
         }
         if (object.hasOwnProperty('active')) {
-            this.profiles[index].active = object.active;
+            if (object.active) {
+                _.each(this.profiles, function (model) {
+                    if (model.id === this.profiles[index].id) {
+                        model.active = object.active;
+                    } else {
+                        model.active = false;
+                    }
+                });
+            } else {
+                if (Boolean(active) && active.id !== profile.id) {
+                    profile.active = object.active;
+                } else if (Boolean(active) && active.id === profile.id && !Boolean(object.active)) {
+                    profile.active = object.active;
+                    _.first(this.profiles).active = true;
+                }
+            }
         }
     }
 
@@ -642,8 +660,9 @@ AutomationController.prototype.updateProfile = function (object, id) {
 };
 
 AutomationController.prototype.removeProfile = function (id) {
+    var that = this;
     this.profiles = this.profiles.filter(function (profile) {
-        return profile.id !== parseInt(id);
+        return profile.id !== parseInt(id) || that.profiles[0].id === profile.id;
     });
 
     this.saveConfig();
