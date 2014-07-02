@@ -59,6 +59,118 @@ function get_values (obj) {
     return res;
 }
 
+//--- Init JS handler
+
+allowExternalAccess("JS");
+allowExternalAccess("JS.Run");
+
+JS = function() {
+    return { status: 400, body: "Bad JS request" };
+};
+
+JS.Run = function(url) {
+	// skip trailing slash
+    url = url.substring(1);
+    try {
+    	var r = executeJS(url, "JS/Run");
+    	return { 
+    		status: 200, 
+    		headers: { 
+    			"Content-Type": "application/json",
+    			"Connection": "keep-alive"
+    		},
+    		body: r 
+    	};
+    } catch (e) {
+    	return { status: 500, body: e };
+    }
+};
+
+//--- Init ZWaveAPI handler
+
+allowExternalAccess("ZWaveAPI");
+allowExternalAccess("ZWaveAPI.Run");
+allowExternalAccess("ZWaveAPI.Data");
+allowExternalAccess("ZWaveAPI.InspectQueue");
+allowExternalAccess("ZWaveAPI.Backup");
+allowExternalAccess("ZWaveAPI.Restore");
+
+ZWaveAPI = function() {
+    return { status: 400, body: "Bad ZWaveAPI request" };
+};
+
+ZWaveAPI.Run = function(url) {
+    url = "zway." + url.substring(1);
+    try {
+    	var r = executeJS(url);
+    	return { 
+    		status: 200, 
+    		headers: { 
+    			"Content-Type": "application/json",
+    			"Connection": "keep-alive"
+    		},
+    		body: r 
+    	};
+    } catch (e) {
+    	return { status: 500, body: e };
+    }
+};
+
+ZWaveAPI.Data = function(url) {
+	var timestamp = parseInt(url.substring(1)) || 0;
+	return {
+		status: 200,
+		headers: { 
+			"Content-Type": "application/json",
+			"Connection": "keep-alive"
+		},
+		body: zway.data(timestamp)    	
+	};
+}
+
+ZWaveAPI.InspectQueue = function(url) {
+	return {
+		status: 200,
+		headers: { 
+			"Content-Type": "application/json",
+			"Connection": "keep-alive"
+		},
+		body: zway.InspectQueue()    	
+	};
+}
+
+ZWaveAPI.Backup = function(url) {
+	return { status: 400, body: "Not implemented yet" };
+}
+
+ZWaveAPI.Restore = function(url) {
+	return { status: 400, body: "Not implemented yet" };
+}
+
+// init WebServer
+
+function WebServerRequestHandler(req) {
+	var q = req.url.substring(1).replace(/\//g, '.');
+	if (!q) return null;
+	
+	var found = null;
+	if (listExternalAccess().some(function(ext) {
+		found = ext;
+		return (ext.length < q.length && q.slice(0, ext.length + 1) === ext + ".") || (ext === q);
+	}) && found) {
+		var cache = this.evalCache || (this.evalCache = {});
+		var handler = cache[found] || (cache[found] = evalPath(found));
+		return handler(req.url.substring(found.length + 1), req);
+	}
+	
+	return null;
+}
+
+ws = new WebServer(8083, WebServerRequestHandler, {
+	document_root: "htdocs",
+	enable_proxy: "yes"
+});
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {

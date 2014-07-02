@@ -207,7 +207,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     // Fill internal structures
     this.req.url = url;
     this.req.method = request.method;
-    this.req.query = request.query;
+    this.req.query = request.query || {};
     this.req.body = request.body || "";
     this.emulateHTTP = false;
     this.emulateHTTPMethod = null;
