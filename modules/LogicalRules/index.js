@@ -122,7 +122,7 @@ LogicalRules.prototype.testRule = function (tree) {
     if (tree.logicalOperator === "and") {
         res = true;
     
--        tree.tests.forEach(function(test) {
+        tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
                 res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
