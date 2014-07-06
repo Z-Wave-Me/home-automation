@@ -120,6 +120,8 @@ define([
             that.$ListContainer.find('.items-list').empty();
             that.type = type;
 
+            that.$buttonContainer.find('.add-folder-button').hide();
+
             if (type === 'rooms') {
                 that.$topmenu.show().find('li').off().on('click', function () {
                     var $this = $(this);

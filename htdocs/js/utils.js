@@ -103,6 +103,25 @@ function rgbToHex(r, g, b, s) {
 
 String.prototype.capitalize = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
-}
+};
+
+Object.defineProperty(
+    Object.prototype,
+    'renameProperty',
+    {
+        writable : false, // Cannot alter this property
+        enumerable : false, // Will not show up in a for-in loop.
+        configurable : false, // Cannot be deleted via the delete operator
+        value : function (oldName, newName) {
+            // Check for the old property name to
+            // avoid a ReferenceError in strict mode.
+            if (this.hasOwnProperty(oldName)) {
+                this[newName] = this[oldName];
+                delete this[oldName];
+            }
+            return this;
+        }
+    }
+);
 
 function LZ(x) {return(x<0||x>9?"":"0")+x}

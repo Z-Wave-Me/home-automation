@@ -59,6 +59,33 @@ function get_values (obj) {
     return res;
 }
 
+function actualize (config) {
+
+    console.log('Actualizing config');
+
+    // profiles
+    if (config.hasOwnProperty('profiles')) {
+        if (config.profiles.length > 0) {
+            config.profiles.forEach(function (profile) {
+                if (!_.isObject(profile.groups) || !profile.groups.hasOwnProperty('instances')) {
+                    profile.groups = {instances: {}}
+                }
+
+                if (_.isArray(profile.positions)) {
+                    profile.positions = _.filter(profile.positions, function (position) {
+                        return _.isString(position);
+                    });
+                } else {
+                    profile.positions = [];
+                }
+
+            });
+        }
+    }
+
+    return config;
+}
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
@@ -86,8 +113,8 @@ if (!config) {
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore-min.js");
 
-    //--- Load router
-    //executeFile(config.libPath + "/Router.js");
+    //---  Actualization config
+    config = actualize(config);
 
     executeFile(config.classesPath + "/VirtualDevice.js");
 

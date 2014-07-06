@@ -17,20 +17,27 @@ define([
         templateFooter: _.template(FooterTpl, {}),
 
         initialize: function () {
-            var that = this, $ok, $warning, $modal, fillScreenOpacity,
-                forbidClose, relX, relY, position;
+            var that = this,
+                $ok,
+                $warning,
+                $modal,
+                fillScreenOpacity,
+                forbidClose,
+                relX,
+                relY,
+                position;
+
             _.bindAll(this, 'render', 'clear', 'update', 'addEventToList', 'addRoomToFilter', 'addTypeToFilter');
+
             that.$header = $(that.templateHeader);
             that.$main = $(that.templateMain);
             that.$footer = $(that.templateFooter);
             $ok = that.$header.find('.events-ok');
             $warning = that.$header.find('.events-warning');
-            that.removedNotices = [];
 
             that.Notifications = window.App.Notifications;
             that.Locations = window.App.Locations;
             that.Devices = window.App.Devices;
-            that.deleted = [];
 
             window.App.filters = {
                 locations: true,
@@ -43,29 +50,20 @@ define([
             });
 
             $modal = $(_.template(EventMenuTpl, {}));
-            fillScreenOpacity = true;
-            forbidClose = true;
-            relX = "64.7%";
-            relY = "7.8%";
-            position = { top: relY, left: relX };
 
             // Popup initialization
-            if (!that.Notifications.length) {
-                $modal.find('.arrow').css({'left': '17%' });
-            } else {
-                $modal.find('.arrow').css({'left': '7%' });
-            }
+            $modal.find('.arrow').css({'left': '17.5%' });
+
             that.$eventsContainer = $modal.find('.events-container');
 
             $modal.hide();
 
             that.$header.find('.events-menu').on('click', function (e) {
+                e.preventDefault();
                 $modal.off().on('click', function (e) {
                     if (e.target.className === 'read') {
-                        that.removedNotices.push(that.Notifications.get($(e.target).attr('data-id')));
                         that.Notifications.remove(that.Notifications.get($(e.target).attr('data-id')));
                     } else if (e.target.className === 'hide-all-button') {
-                        that.removedNotices = _.union(that.Notifications.map(function (m) {return m.id;}),  that.removedNotices);
                         that.Notifications.remove(that.Notifications.models);
                     }
 
@@ -75,6 +73,14 @@ define([
                         }, 1000);
                     }
                 });
+
+
+                fillScreenOpacity = true;
+                forbidClose = true;
+                relX = $('#main-region').offset().left + $('#main-region').width() - 331 + 'px';
+                relY = "41px";
+                position = { top: relY, left: relX };
+
                 ModalHelper.popup($modal, forbidClose, fillScreenOpacity, position);
             });
 
@@ -127,9 +133,6 @@ define([
         addEventToList: function (model) {
             var notice = model.toJSON(), $template, that = this;
 
-            if (that.removedNotices.indexOf(model.id) !== -1) {
-                return;
-            }
 
             if (!that.$eventsContainer.children().length) {
                 that.$eventsContainer.empty();
