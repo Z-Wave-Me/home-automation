@@ -626,7 +626,8 @@ AutomationController.prototype.updateProfile = function (object, id) {
         active = _.find(this.profiles, function (profile) {
             return profile.active;
         }),
-        index;
+        index,
+        that = this;
 
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
@@ -646,7 +647,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
         if (object.hasOwnProperty('active')) {
             if (object.active) {
                 _.each(this.profiles, function (model) {
-                    if (model.id === this.profiles[index].id) {
+                    if (model.id === that.profiles[index].id) {
                         model.active = object.active;
                     } else {
                         model.active = false;
