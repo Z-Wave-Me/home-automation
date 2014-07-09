@@ -283,8 +283,15 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                         
                     } 
                 }
+                // Commands for Blinds
                 else if ("stop" === command) {
                     cc.StopLevelChange();
+                }
+                else if ("startUp" === command) {
+                    cc.StartLevelChange(true);
+                }
+                else if ("startDown" === command) {
+                    cc.StartLevelChange(false);
                 }
 
                 if (0 === newVal || !!newVal) {
