@@ -289,10 +289,10 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     cc.StopLevelChange();
                 }
                 else if ("startUp" === command) {
-                    cc.StartLevelChange(true);
+                    cc.StartLevelChange(0);
                 }
                 else if ("startDown" === command) {
-                    cc.StartLevelChange(false);
+                    cc.StartLevelChange(1);
                 }
 
                 if (0 === newVal || !!newVal) {
