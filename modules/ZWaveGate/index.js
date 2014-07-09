@@ -243,9 +243,10 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             };
             var vDev = self.controller.devices.create(vDevId, defaults, function(command, args) {
                 var newVal;
-                if ("on" === command) {
+                // up, down for Blinds
+                if ("on" === command || "up" === command) {
                     newVal = 255;
-                } else if ("off" === command) {
+                } else if ("off" === command || "down" === command) {
                     newVal = 0;
                 } else if ("min" === command) {
                     newVal = 10;
