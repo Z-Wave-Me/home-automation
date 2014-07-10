@@ -250,7 +250,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     newVal = 0;
                 } else if ("min" === command) {
                     newVal = 10;
-                } else if ("max" === command) {
+                } else if ("max" === command || "upMax" === command) {
                     newVal = 99;
                 } else if ("increase" === command) {
                     newVal = this.metrics.level + 10;
