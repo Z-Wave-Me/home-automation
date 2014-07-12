@@ -36,7 +36,7 @@ DummyDevice.prototype.init = function (config) {
         metrics: {
             probeTitle: '',
             scaleTitle: '',
-            level: '',
+            level: 'off',
             icon: '',
             title: 'Dummy ' + this.id
         }
