@@ -155,7 +155,7 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
     }
 
     try {
-        var moduleMeta = loadJSON(moduleMetaFilename);
+        var moduleMeta = fs.loadJSON(moduleMetaFilename);
     } catch (e) {
         self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
         console.log(e.stack);

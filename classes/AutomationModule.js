@@ -102,7 +102,7 @@ AutomationModule.prototype.runAction = function (actionId, args, callback) {
 AutomationModule.prototype.getMeta = function () {
     if (!this.meta) {
         var filePath = this.moduleBasePath() + "/module.json";
-        this.meta = loadJSON(filePath);
+        this.meta = fs.loadJSON(filePath);
     }
     return this.meta;
 };
