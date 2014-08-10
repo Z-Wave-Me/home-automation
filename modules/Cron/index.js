@@ -92,6 +92,7 @@ Cron.prototype.init = function (config) {
         self.schedules[eventName] = [];
       }
       self.schedules[eventName].push([self.renderSchedule(schedule), eventArgs]);
+      // console.log(JSON.stringify(self.renderSchedule(schedule))); // debug !
     });
 
     this.controller.on('cron.removeTask', function (eventName) {
