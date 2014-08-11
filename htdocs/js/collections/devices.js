@@ -34,7 +34,8 @@ define([
 
         parse: function (response, xhr) {
             var that = this,
-                devicesId = window.App.Profiles.getActive().get('positions') || [],
+                activeProfile =  window.App.Profiles.getActive(),
+                devicesId = activeProfile ? activeProfile.get('positions') : [],
                 zipped = [];
 
             if (response.data.structureChanged) {

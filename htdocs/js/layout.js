@@ -20,6 +20,7 @@ define([
             var that = this,
                 $ok,
                 $warning,
+                $not_connection,
                 $modal,
                 fillScreenOpacity,
                 forbidClose,
@@ -34,6 +35,7 @@ define([
             that.$footer = $(that.templateFooter);
             $ok = that.$header.find('.events-ok');
             $warning = that.$header.find('.events-warning');
+            $not_connection = that.$header.find('.events-not-connection');
 
             that.Notifications = window.App.Notifications;
             that.Locations = window.App.Locations;
@@ -92,16 +94,23 @@ define([
             });
 
             that.listenTo(that.Notifications, 'all', function () {
-                if (!that.Notifications.length) {
-                    that.$eventsContainer.empty().text('Everything is ok');
-                    $ok.removeClass('hidden');
-                    $warning.addClass('hidden');
-                    $modal.find('.hide-all-button').hide();
+                if (!window.App.errorConnection) {
+                    $not_connection.addClass('hidden');
+                    if (!that.Notifications.length) {
+                        that.$eventsContainer.empty().text('Everything is ok');
+                        $ok.removeClass('hidden');
+                        $warning.addClass('hidden');
+                        $modal.find('.hide-all-button').hide();
+                    } else {
+                        $ok.addClass('hidden');
+                        $warning.removeClass('hidden');
+                        $warning.find('.count').text(that.Notifications.size());
+                        $modal.find('.hide-all-button').show();
+                    }
                 } else {
                     $ok.addClass('hidden');
-                    $warning.removeClass('hidden');
-                    $warning.find('.count').text(that.Notifications.size());
-                    $modal.find('.hide-all-button').show();
+                    $warning.addClass('hidden');
+                    $not_connection.removeClass('hidden');
                 }
             });
 
