@@ -147,6 +147,15 @@ define([
         successHandler: function () {
             if (window.App.errorConnection) {
                 window.App.errorConnection = false;
+
+                window.App.Devices.updateTime = null;
+                _.each(['Locations', 'Devices', 'Profiles', 'Notifications', 'Modules', 'Instances', 'Namespaces'], function (hash) {
+                    if (window.App.hasOwnProperty(hash)) {
+                        window.App[hash].reset();
+                        window.App[hash].fetch();
+                    }
+                });
+
                 window.App.Notifications.trigger('connection:ok');
             }
         },
