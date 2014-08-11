@@ -3,6 +3,7 @@
 @gray: #8c979c;
 @dark-green: #375765;
 @green: #bbd508;
+@dark-red: #CC0000;
 
 html,
 button,
@@ -134,7 +135,8 @@ nav {
         padding: 14px 3.2% 10px 1.2%;
         color: @gray;
       }
-      &.events-warning {
+      &.events-warning,
+      &.events-not-connection {
         .text {
           color: @green;
           display: inline-block;
@@ -155,6 +157,19 @@ nav {
           color: #192226;
           margin: 0 1px;
           line-height: 16px;
+        }
+      }
+      &.events-not-connection {
+        .text {
+          color: @dark-red;
+          font-size: 11px;
+        }
+        .circle {
+          background: @dark-red;
+          p {
+            font-size: 11px;
+            color: #192226;
+          }
         }
       }
     }

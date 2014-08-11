@@ -37,13 +37,14 @@ define([
         },
 
         getActive: function () {
-            return this.findWhere({active: true}) || this.first();
+            return this.findWhere({active: true}) || this.first() || null;
         },
 
         getDevice: function (deviceId) {
             var that = this,
-                profile = that.getActive().toJSON(),
-                device = _.find(profile.positions, function (id) { return id === deviceId; });
+                active = that.getActive(),
+                profile = active ? active.toJSON() : null,
+                device = profile ? _.find(profile.positions, function (id) { return id === deviceId; }) : null;
 
             return device;
         },

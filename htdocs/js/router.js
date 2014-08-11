@@ -25,6 +25,12 @@ define([
                 Utils.activateCurrentNav();
             });
 
+            layout.listenTo(window.App.Notifications, 'connection:ok', function () {
+                setTimeout(function () {
+                    layout.update('#' + window.location.hash.substring(1));
+                }, 1000);
+            });
+
             function register(route, path, name) {
                 router.on(route, function (arg1, arg2) {
                     require([path], function (View) {
