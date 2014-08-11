@@ -1,0 +1,138 @@
+{
+  "autoload": false,
+  "singleton": false,
+  "userView": true,
+  "defaults": {
+    "title": "Thermostat Rules",
+    "description": "Allows you to schedule to turn the thermostat on or off during specific times of the year.",
+    "units": "fahrenheit"
+  },
+  "schema": {
+    "title": "Select Thermostat Mode",
+    "type": "object",
+    "properties": {
+      "city": {
+        "type": "string",
+        "required": true
+      },
+      "country": {
+        "type": "string",
+        "required": true
+      },
+      "device": {
+        "type": "integer",
+        "required": true,
+        "minimum": "1"
+      },
+      "units": {
+        "type": "select",
+        "enum": [
+          "celsius",
+          "fahrenheit"
+        ],
+        "required": true
+      },
+      "mode": {
+        "type": "select",
+        "required": true,
+        "enum": [
+          "0",
+          "1",
+          "2",
+          "3"
+        ]
+      },
+      "testTemp": {
+        "type": "object",
+        "dependencies": "mode",
+        "properties": {
+          "temp": {
+            "type": "integer",
+            "required": false,
+            "minimum": "50",
+            "maximum": "90"
+          }
+        }
+      },
+      "month": {
+        "type": "number",
+        "required": true,
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      }
+    }
+  },
+  "options": {
+    "renderform": "true",
+    "fields": {
+      "city": {
+        "label": "City",
+        "placeholder": "Islip"
+      },
+      "country": {
+        "label": "Country",
+        "placeholder": "United States"
+      },
+      "device": {
+        "label": "Thermostat Zway ID",
+        "placeholder": "2"
+      },
+      "units": {
+        "label": "Units",
+        "optionLabels": [
+          "°C",
+          "°F"
+        ]
+      },
+      "mode": {
+        "label": "Mode",
+        "type": "select",
+        "optionLabels": [
+          "Off",
+          "Heat",
+          "Cool",
+          "Auto"
+        ]
+      },
+      "testTemp": {
+        "dependency": "Heat, Cool",
+        "fields": {
+          "temp": {
+            "label": "Target Temp",
+            "placeholder": "68"
+          }
+        }
+      },
+      "month": {
+        "label": "Month",
+        "type": "select",
+        "optionLabels": [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December"
+        ]
+      }
+    }
+  }
+}
