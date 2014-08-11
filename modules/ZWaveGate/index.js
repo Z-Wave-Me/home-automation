@@ -243,13 +243,14 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             };
             var vDev = self.controller.devices.create(vDevId, defaults, function(command, args) {
                 var newVal;
-                if ("on" === command) {
+                // up, down for Blinds
+                if ("on" === command || "up" === command) {
                     newVal = 255;
-                } else if ("off" === command) {
+                } else if ("off" === command || "down" === command) {
                     newVal = 0;
                 } else if ("min" === command) {
                     newVal = 10;
-                } else if ("max" === command) {
+                } else if ("max" === command || "upMax" === command) {
                     newVal = 99;
                 } else if ("increase" === command) {
                     newVal = this.metrics.level + 10;
@@ -282,6 +283,16 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                         }
                         
                     } 
+                }
+                // Commands for Blinds
+                else if ("stop" === command) {
+                    cc.StopLevelChange();
+                }
+                else if ("startUp" === command) {
+                    cc.StartLevelChange(0);
+                }
+                else if ("startDown" === command) {
+                    cc.StartLevelChange(1);
                 }
 
                 if (0 === newVal || !!newVal) {
