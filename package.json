@@ -29,9 +29,17 @@
         "should": "~2.1.0",
         "mocha": "~1.14.0",
         "request": "~2.27.0",
+        "bower": "~1.3.x",
         "underscore": "*"
     },
     "scripts": {
+        "build": "./node_modules/.bin/grunt",
+        "start": "./node_modules/.bin/grunt server",
+        "postinstall": "./node_modules/.bin/bower --quiet install",
         "test": "node_modules/.bin/mocha -R spec apitests/index.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "\"https://github.com/Z-Wave-Me/home-automation\""
     }
 }
