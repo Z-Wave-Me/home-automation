@@ -1,6 +1,7 @@
 @popover-title-height: 60px;
 @border-width: 3px;
 @border-position: 4px;
+
 .popover {
   position: absolute;
   margin-top: 100px;
@@ -153,7 +154,7 @@
   overflow: initial;
   top: 34px;
   .popover-content {
-    width: 94%;
+    width: 93.5%;
     border-radius: 0;
     background-color: #fff;
     overflow: hidden;
@@ -170,6 +171,11 @@
     &:hover {
       color: rgba(0, 186, 196, 0.6)
     }
+  }
+  .events-container {
+    height: 200px;
+    overflow-y: scroll;
+    padding-right: 1px;
   }
   .event-item {
     display: block;
