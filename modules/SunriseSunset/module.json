@@ -1,0 +1,150 @@
+{
+    "autoload":false,
+    "singleton": false,
+    "userView": true,
+    "defaults": {
+        "title": "Sunrise / Sunset",
+        "description": "Turn selected switches and/or dimmers on or off at Sunrise or Sunset. ***How often we select the current time of day should not exceed the amount of time when the switches are being turned on or off***",
+		"etime": "00:05",
+		"stime": "11:59",
+		"periodrise": "10",
+		"periodset": "10",
+		"city": "Islip",
+"country": "United States"
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "city": {
+                "type": "string",
+                "required": true
+            },
+            "country": {
+                "type": "string",
+                "required": true
+            },
+			"switches": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchBinary:deviceId",
+							"required": true
+							}
+						}	
+				}
+			},
+			"dimmers": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchMultilevel:deviceId",
+							"required": true
+							},
+						"status": {
+							"type": "integer",
+							"required": true,
+							"minimum": 0,
+							"maximum": 99
+							}
+					}
+				}
+			},
+			"periodrise": {
+					"type": "select",
+					"required": true,
+					"enum": [10, 20, 30, 45, 60]
+						},
+			"periodset": {
+					"type": "select",
+					"required": true,
+					"enum": [10, 20, 30, 45, 60]
+						},
+			"stime": {
+					"type": "integer",
+					"enum": ["time"],
+					"required": true
+						},
+			"etime": {
+					"type": "integer",
+					"enum": ["time"],
+					"required": true
+						}		
+			},
+			"required": true
+},
+  "options": {
+        "fields": {
+            "city": {
+                "label": "City"
+            },
+            "country": {
+                "label": "Country"
+            },
+			"switches": {
+				"label": "List of switches",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName"
+							},
+							"status": {
+								"label": "",
+								"optionLabels": ["Off", "On"]
+							}
+						}
+					}
+				}
+			},
+			"dimmers": {
+				"label": "List of dimmers",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+							},
+							"status": {
+								"label": "State"
+							}
+						}
+					}
+				}
+			},"periodrise": {
+				"label": "Turn off the switch(es) after sunrise.",
+				"optionsLabels": ["10 Minutes", "20 Minutes", "30 Minutes", "45 Minutes", "60 Minutes"]
+			},"periodset": {
+				"label": "Turn on the switch(es) before sunset.",
+				"optionsLabels": ["10 Minutes", "20 Minutes", "30 Minutes", "45 Minutes", "60 Minutes"]
+			},"stime": {
+				"label": "How often we update the sunrise and sunset times.",
+					"type": "time",
+					"maskString": "99:99",
+					"timeFormat": "hh:mm",
+					"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
+			},"etime": {
+				"label": "How often we check for the time of day.",
+					"type": "time",
+					"maskString": "99:99",
+					"timeFormat": "hh:mm",
+					"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
+			}
+		}
+    }
+}
