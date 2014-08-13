@@ -1,6 +1,6 @@
 {
-    "name": "zautomation",
-    "version": "1.0.0",
+    "name": "Z-Wave",
+    "version": "1.7.1",
     "description": "ZWay Home Automation Engine API test suite",
     "devDependencies": {
         "grunt": ">=0.4.4",
@@ -36,7 +36,7 @@
         "build": "./node_modules/.bin/grunt",
         "start": "./node_modules/.bin/grunt server",
         "postinstall": "./node_modules/.bin/bower --quiet install",
-        "test": "node_modules/.bin/mocha -R spec apitests/index.js"
+        "test": "./node_modules/.bin/mocha -R spec apitests/index.js"
     },
     "repository": {
         "type": "git",

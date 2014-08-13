@@ -1,9 +1,12 @@
 requirejs.config({
     baseUrl: "js",
     paths : {
-        backbone : 'libs/backbone/backbone-min',
-        underscore : 'libs/backbone/underscore-min',
-        jquery : 'libs/vendor/jquery-2.1.1.min',
+        // Major libraries
+        jquery: '../bower_components/jquery/dist/jquery',
+        underscore: '../bower_components/lodash/dist/lodash.underscore',
+        backbone: '../bower_components/backbone/backbone',
+        'backbone-controller': '../bower_components/backbone.controller/backbone.controller',
+        mem: '../bower_components/mem.js/mem',
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
         'colpick': 'libs/vendor/jquery.colpick',
         cookie : 'libs/vendor/jquery.cookie',
@@ -15,8 +18,25 @@ requirejs.config({
         'mode-javascript': 'libs/acejs/mode-javascript',
         'mode-json': 'libs/acejs/mode-json',
         'worker-javascript': 'libs/acejs/worker-javascript',
-        text: 'libs/require/requirejs-text',
+        // ractive
+        ractive: '../bower_components/ractive/ractive',
+        'ractive-adaptors-backbone': '../bower_components/ractive-adaptors-backbone/ractive-adaptors-backbone',
+        'ractive-events-tap': '../bower_components/ractive-events-tap/ractive-events-tap',
+        'ractive-events-hover': '../bower_components/ractive-events-hover/ractive-events-hover',
+        'ractive-events-keys': '../bower_components/ractive-events-keys/ractive-events-keys',
+        'ractive-events-draggable': 'libs/ractive/ractive-events-draggable',
+        'ractive-transitions-fade': '../bower_components/ractive-transitions-fade/Ractive-transitions-fade',
+        'ractive-transitions-slide': '../bower_components/ractive-transitions-slide/Ractive-transitions-slide',
+        'ractive-decorators-tooltip': 'libs/ractive/ractive-decorators-tooltip',
+        text: '../bower_components/requirejs-text/text',
         templates: '../templates'
+    },
+    map: {
+        '*': {
+            'lodash': 'underscore',
+            'Ractive': 'ractive',
+            'Backbone': 'backbone'
+        }
     },
     shim : {
         jquery : {
@@ -39,7 +59,7 @@ requirejs.config({
         },
         drags: {
             deps: ['jquery'],
-            exporst: '$.drags'
+            exports: '$.drags'
         },
         underscore : {
             exports : '_'
@@ -47,6 +67,41 @@ requirejs.config({
         backbone : {
             deps : ['jquery', 'underscore'],
             exports : 'Backbone'
+        },
+        'backbone-controller': {
+            deps: ['backbone']
+        },
+        mem: {
+            deps: ['underscore'],
+            exports: 'Mem'
+        },
+        ractive: {
+            deps: ['backbone'],
+            exports: 'Ractive'
+        },
+        'ractive-adaptors-backbone': {
+            deps: ['backbone', 'ractive']
+        },
+        'ractive-events-tap': {
+            deps: ['ractive']
+        },
+        'ractive-events-hover': {
+            deps: ['ractive']
+        },
+        'ractive-events-keys': {
+            deps: ['ractive']
+        },
+        'ractive-events-draggable': {
+            deps: ['ractive']
+        },
+        'ractive-transitions-fade': {
+            deps: ['ractive', 'ractive-events-tap']
+        },
+        'ractive-transitions-slide': {
+            deps: ['ractive', 'ractive-events-tap']
+        },
+        'ractive-decorators-tooltip': {
+            deps: ['ractive']
         },
         ace: {
             deps : ['jquery']
@@ -69,16 +124,35 @@ requirejs.config({
         'colpick': {
             deps: ['jquery']
         }
-    }
+    },
+    packages: [
+        {
+            name: 'PreferencesModule', // default 'packagename'
+            location: 'modules/preferences'//,
+            //main: 'main' // default 'main'
+        }
+    ]
 });
 
 require([
     'backbone',
+    'ractive',
+    'mem',
     'views/app',
     'router',
+    'PreferencesModule',
     'vm'
-], function (Backbone, AppView, Router, Vm) {
+], function (Backbone, Ractive, Mem, AppView, Router, PreferencesModule, Vm) {
     'use strict';
+
+    // register module
+    [
+        'PreferencesModule'
+    ].forEach(function (moduleName) {
+        Mem.set(moduleName, PreferencesModule, {});
+    });
+
+    // init AppView
     AppView = Vm.create({}, 'AppView', AppView);
     Router.initialize({appView: AppView});
     AppView.render();

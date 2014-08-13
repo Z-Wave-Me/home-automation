@@ -1,7 +1,7 @@
 {
-    "name": "Z-Wave Home Automation WebApp",
+    "name": "Z-Wave",
     "version": "1.7.1",
-    "directory": "./bower_components",
+    "directory": "htdocs/bower_components",
     "dependencies": {
         "lodash": "2.4.1",
         "requirejs": "2.1.14",
@@ -14,6 +14,8 @@
         "ractive-events-hover": "0.1.1",
         "ractive-events-keys": "0.1.1",
         "ractive-transitions-fade": "0.1.1",
-        "ractive-transitions-slide": "0.1.1"
+        "ractive-transitions-slide": "0.1.1",
+        "backbone.controller": "*",
+        "mem.js": "*"
     }
 }

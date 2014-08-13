@@ -6,6 +6,7 @@ htdocs/dist/
 htdocs/dist
 htdocs/js/_precompiled.js
 bower_components
+htdocs/bower_components
 .SyncId
 .SyncIgnore
 .SyncTrash
