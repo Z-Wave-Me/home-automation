@@ -171,6 +171,63 @@ ws = new WebServer(8083, WebServerRequestHandler, {
 	enable_proxy: "yes"
 });
 
+// init HomeKit (for testing)
+
+hk = new HomeKit("RaZberry", function(r) {
+    if (r.method == "GET" && r.path == "/accessories") {
+        return this.accessories.serialize(r);
+    } else if (r.method == "PUT" && r.path == "/characteristics" && r.data && r.data.characteristics) {
+        r.data.characteristics.forEach(function (c) {
+            if (typeof c.value !== "undefined") {   
+                // use c.aid, c.iid and c.value here
+                var characteristic = this.accessories.find(c.aid, c.iid);
+                if (characteristic)
+                    characteristic.value = c.value;
+
+                // update subscribers
+                this.update(c.aid, c.iid);
+            }                          
+                                       
+            if (typeof c.events === "boolean") { 
+                // set event subscription state  
+                r.events(c.aid, c.iid, c.events);
+            }
+        }, this);
+        return null; // 204
+    } else if (r.method == "GET" && r.path.substring(0, 20) == "/characteristics?id=") {
+        var ids = r.path.substring(20).split('.').map(function(x) { return parseInt(x) });
+
+        var characteristic = this.accessories.find(ids[0], ids[1]);
+        if (characteristic) {
+            return {
+                characteristics: [
+                    { aid: ids[0], iid: ids[1], value: characteristic.value }
+                ]
+            };
+        }
+    }
+});
+
+hk.accessories = new HKAccessoryCollection(hk);
+
+with (hk.accessories) {
+    with(addAccessory("RaZberry", "z-wave.me", "ZME-RAZ01-EU", "ZMERAZ01EU12345")) {
+        with (addService(HomeKit.Services.Lightbulb, "Bedroom")) {
+            addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+                get: function() { return true; },
+                set: function(value) { debugPrint(value); }
+            });
+            with (addCharacteristic(HomeKit.Characteristics.Brightness, "float", 50, [ "pr", "pw" ])) {
+                minValue = 1;
+                maxValue = 100;
+                minStep = 5;   
+            };
+        };
+    };
+};   
+     
+debugPrint(hk.name, "PIN:", hk.pin);
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
