@@ -1,50 +1,50 @@
 define([
-    'backbone',
-    'vm',
-    'helpers/utils',
-    'layout'
-], function (Backbone, Vm, Utils, Layout) {
+    //libs
+    'director'
+], function (
+    // libs
+    Director
+    ) {
     'use strict';
-    var AppRouter = Backbone.Router.extend({
-            routes: {
-                'widgets': 'widgets',
-                'applications': 'applications',
-                'dashboard': 'dashboard',
-                '*dashboard': 'dashboard' // All urls will trigger this router
-            }
-        }),
-        initialize = function (options) {
-            var appView = options.appView,
-                router = new AppRouter(options),
-                layout = new Layout();
 
-            layout.render();
-
-            router.on('all', function (route) {
-                layout.update(route);
-                Utils.activateCurrentNav();
-            });
-
-            layout.listenTo(window.App.Notifications, 'connection:ok', function () {
-                setTimeout(function () {
-                    layout.update('#' + window.location.hash.substring(1));
-                }, 1000);
-            });
-
-            function register(route, path, name) {
-                router.on(route, function (arg1, arg2) {
-                    require([path], function (View) {
-                        Vm.create(appView, name, View).render(arg1, arg2);
-                    });
-                });
-            }
-
-            register('route:dashboard',    'views/dashboard/view',        'DashboardView');
-            register('route:applications',    'views/applications/view',        'ApplicationsView');
-            register('route:widgets',    'views/widgets/view',        'WidgetsView');
+    var RouterModule = new function(options_, context) {
+        var RouterModule = function (options_, context) {
+            this._init(options_, context);
         };
 
-    return {
-        initialize: initialize
+        RouterModule.prototype = {
+            constructor: RouterModule,
+            _init: function (options_, context) {
+                this.extend = Sticky.get('App.Helpers.JS').extend;
+                this.options = this.extend({}, options_);
+                this.context = context;
+                this.NOW_SHOWING = Object.freeze({
+                    DASHBOARD: 'dashboard',
+                    WIDGETS: 'widget'
+                });
+                this.run();
+            },
+            run: function () {
+                var that = this;
+                that.context.createClass({
+                    componentDidMount: function () {
+                        var state = this.getState();
+                        Router({
+                            '/': state.set.bind(state, 'nowShowing', this.NOW_SHOWING.DASHBOARD),
+                            '/dashboard': state.set.bind(state, 'nowShowing', this.NOW_SHOWING.DASHBOARD),
+                            '/widgets': state.set.bind(state, 'nowShowing', this.NOW_SHOWING.WIDGETS)
+                        }).init();
+                    },
+                    render: function () {
+                        console.log('123');
+                    }
+                });
+            }
+        };
+
+        return RouterModule;
     };
+
+    return RouterModule;
 });
+

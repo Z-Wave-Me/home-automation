@@ -1,0 +1,146 @@
+#header-region {
+  background-color: #192226;
+  display: block;
+  height: 50px;
+  .company-block {
+    display: block;
+    float: left;
+    height: 50px;
+    width: 30%;
+    .company-logo {
+      background: url(../img/logo.png) 40px center no-repeat;
+      display: block;
+      height: 100%;
+      width: 100%;
+    }
+  }
+  .main-navigation {
+    width: 40%;
+    float: left;
+    display: block;
+    height: 50px;
+    text-align: center;
+    .navigation-menu {
+      width: 60%;
+      display: inline-block;
+      height: 50px;
+      margin: 0;
+      padding: 0;
+      li {
+        height: 50px;
+        float: left;
+        display: block;
+        width: 50%;
+        padding: 0;
+        margin: 0;
+        a {
+          line-height: 50px;
+          vertical-align: middle;
+          text-align: center;
+          padding: 0;
+          margin: 0;
+          height: 50px;
+          display: block;
+          width: 100%;
+          font-family: "Helvetica Neue";
+          cursor: pointer;
+          text-decoration: none;
+          color: @text-green;
+          font-size: 14px;
+          &.selected {
+            color: #fff;
+            background-color: #000;
+          }
+        }
+      }
+    }
+  }
+  .user-panel-section {
+    width: 30%;
+    display: block;
+    float: left;
+    height: 50px;
+    .events-container {
+      width: 50%;
+      line-height: 50px;
+      vertical-align: middle;
+      display: inline-block;
+      float: left;
+      font-size: 10px;
+      cursor: pointer;
+      .events-counter {
+        display: inline-block;
+        min-width: 8px;
+        height: 18px;
+        border-radius: 12px;
+        background-color: @gray;
+        line-height: 18px;
+        vertical-align: middle;
+        text-align: center;
+        padding: 0 5px;
+        font-size: 10px;
+      }
+      .events-message {
+        line-height: 18px;
+        vertical-align: middle;
+        height: 18px;
+        display: inline-block;
+        color: @gray;
+        width: 110px;
+        font-size: 10px;
+        padding-left: 5px;
+      }
+      &.debug {
+        .events-counter {
+          background-color: @green;
+        }
+        .events-message {
+          color: @green;
+        }
+      }
+      &.warning {
+        .events-counter {
+          background-color: @green;
+        }
+        .events-message {
+          color: @green;
+        }
+      }
+      &.critical {
+        .events-counter {
+          background-color: @dark-red;
+        }
+        .events-message {
+          color: @dark-red;
+        }
+      }
+    }
+    .preferences-button {
+      width: 45%;
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 10px;
+      height: 50px;
+      cursor: pointer;
+      font-weight: bold;
+      text-align: left;
+      float: left;
+      line-height: 50px;
+      .icon-button {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 16px;
+        height: 16px;
+      }
+      .label-button {
+        display: inline-block;
+        vertical-align: middle;
+        line-height: 18px;
+        height: 18px;
+        width: 100px;
+        margin-left: 5px;
+        color: @gray;
+      }
+    }
+  }
+}

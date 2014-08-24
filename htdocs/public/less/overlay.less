@@ -1,13 +1,17 @@
-@overlay-backround: rgba(237, 237, 237, 0.9);
-
 .overlay {
-  display: block;
+  display: none;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
   position: absolute;
   z-index: 1000;
+  opacity: .1;
   overflow: hidden;
-  background-color: @overlay-backround;
+  background-color: @overlay-backround-color;
+  .transition(all .7s ease);
+  &.show {
+    opacity: 1;
+    display: block;
+  }
 }

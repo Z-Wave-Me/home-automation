@@ -3,12 +3,12 @@ requirejs.config({
     paths : {
         // Major libraries
         jquery: '../bower_components/jquery/dist/jquery',
+        'jquery.cookie': '../bower_components/jquery-cookie/jquery.cookie',
         underscore: '../bower_components/lodash/dist/lodash.underscore',
         backbone: '../bower_components/backbone/backbone',
-        'backbone-controller': '../bower_components/backbone.controller/backbone.controller',
-        mem: '../bower_components/mem.js/mem',
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
         'colpick': 'libs/vendor/jquery.colpick',
+        sticky: 'libs/home-automation/sticky',
         cookie : 'libs/vendor/jquery.cookie',
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
@@ -18,29 +18,28 @@ requirejs.config({
         'mode-javascript': 'libs/acejs/mode-javascript',
         'mode-json': 'libs/acejs/mode-json',
         'worker-javascript': 'libs/acejs/worker-javascript',
-        // ractive
-        ractive: '../bower_components/ractive/ractive',
-        'ractive-adaptors-backbone': '../bower_components/ractive-adaptors-backbone/ractive-adaptors-backbone',
-        'ractive-events-tap': '../bower_components/ractive-events-tap/ractive-events-tap',
-        'ractive-events-hover': '../bower_components/ractive-events-hover/ractive-events-hover',
-        'ractive-events-keys': '../bower_components/ractive-events-keys/ractive-events-keys',
-        'ractive-events-draggable': 'libs/ractive/ractive-events-draggable',
-        'ractive-transitions-fade': '../bower_components/ractive-transitions-fade/Ractive-transitions-fade',
-        'ractive-transitions-slide': '../bower_components/ractive-transitions-slide/Ractive-transitions-slide',
-        'ractive-decorators-tooltip': 'libs/ractive/ractive-decorators-tooltip',
+        react: '../bower_components/react/react-with-addons',
+        'react.backbone': '../bower_components/react.backbone/react.backbone',
+        JSXTransformer: '../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.0',
+        jsx: '../bower_components/jsx-requirejs-plugin/js/jsx',
         text: '../bower_components/requirejs-text/text',
+        immutable: '../bower_components/immutable/dist/immutable',
+        director: '../bower_components/director/build/director',
+        morearty: '../bower_components/moreartyjs/dist/morearty',
         templates: '../templates'
     },
     map: {
         '*': {
             'lodash': 'underscore',
-            'Ractive': 'ractive',
             'Backbone': 'backbone'
         }
     },
     shim : {
         jquery : {
             exports : '$'
+        },
+        'jquery.cookie': {
+            deps: ['jquery']
         },
         'jquery-ui': {
             deps: ['jquery']
@@ -68,40 +67,8 @@ requirejs.config({
             deps : ['jquery', 'underscore'],
             exports : 'Backbone'
         },
-        'backbone-controller': {
-            deps: ['backbone']
-        },
-        mem: {
-            deps: ['underscore'],
-            exports: 'Mem'
-        },
-        ractive: {
-            deps: ['backbone'],
-            exports: 'Ractive'
-        },
-        'ractive-adaptors-backbone': {
-            deps: ['backbone', 'ractive']
-        },
-        'ractive-events-tap': {
-            deps: ['ractive']
-        },
-        'ractive-events-hover': {
-            deps: ['ractive']
-        },
-        'ractive-events-keys': {
-            deps: ['ractive']
-        },
-        'ractive-events-draggable': {
-            deps: ['ractive']
-        },
-        'ractive-transitions-fade': {
-            deps: ['ractive', 'ractive-events-tap']
-        },
-        'ractive-transitions-slide': {
-            deps: ['ractive', 'ractive-events-tap']
-        },
-        'ractive-decorators-tooltip': {
-            deps: ['ractive']
+        sticky: {
+            exports: 'Sticky'
         },
         ace: {
             deps : ['jquery']
@@ -123,37 +90,159 @@ requirejs.config({
         },
         'colpick': {
             deps: ['jquery']
+        },
+        react: {
+            exports: 'React',
+            deps: ['jsx', 'JSXTransformer']
+        },
+        'react.backbone': {
+            deps: ['react', 'backbone']
+        },
+        director: {
+            exports: 'Router'
+        },
+        immutable: {
+            exports: 'Immutable'
+        },
+        morearty: {
+            exports: 'Morearty',
+            deps: ['immutable', 'react']
         }
     },
+    jsx: {
+        fileExtension: '.jsx'
+    },
+    // modules
     packages: [
+        {
+            name: 'LayoutModule', // default 'packagename'
+            location: 'modules/layout'//,
+        },
+        {
+            name: 'FiltersModule', // default 'packagename'
+            location: 'modules/filters'//,
+        },
         {
             name: 'PreferencesModule', // default 'packagename'
             location: 'modules/preferences'//,
-            //main: 'main' // default 'main'
+        },
+        {
+            name: 'ServerSyncModule', // default 'packagename'
+            location: 'modules/serversync'//,
+        },
+        {
+            name: 'DashboardModule',
+            location: 'modules/dashboard'
+        },
+        {
+            name: 'CoreModule',
+            location: 'modules/core'
         }
     ]
 });
 
 require([
-    'backbone',
-    'ractive',
-    'mem',
-    'views/app',
-    'router',
+    // components
+    'morearty',
+    'react',
+    'immutable',
+    'director',
+    'sticky',
+    // modules
+    'CoreModule',
+    'LayoutModule',
+    'FiltersModule',
     'PreferencesModule',
-    'vm'
-], function (Backbone, Ractive, Mem, AppView, Router, PreferencesModule, Vm) {
+    'ServerSyncModule',
+    'DashboardModule',
+    // helpers
+    'helpers/js'
+], function (
+    // libraries
+    Morearty,
+    React,
+    Immutable,
+    Director,
+    Sticky,
+    // modules
+    CoreModule,
+    LayoutModule,
+    FiltersModule,
+    PreferencesModule,
+    ServerSyncModule,
+    DashboardModule,
+    // helpers
+    HelpersJS
+    ) {
     'use strict';
 
-    // register module
+    var Ctx = Morearty.createContext(React, Immutable, {
+            nowShowing: 'dashboard', // start route
+            notificationsCount: 0,
+            notificationsSeverity: 'ok', // ok, warning, error, debug
+            notificationsMessage: 'ok',
+            overlayShow: false,
+            overlayShowName: null
+        }, {requestAnimationFrameEnabled: true}),
+        Bootstrap = Ctx.createClass({
+            componentWillMount: function () {
+                Ctx.init(this);
+            },
+
+            render: function () {
+                var App = Sticky.get('App.Modules.Core').getClass();
+                return App({ state: Ctx.state()});
+            }
+        }),
+        OverlayLayer = Ctx.createClass({
+            render: function () {
+                return Sticky.get('App.Modules.Preferences').getClass()({ state: Ctx.state()});
+            }
+        });
+
+    // reg module in global namespace
     [
-        'PreferencesModule'
-    ].forEach(function (moduleName) {
-        Mem.set(moduleName, PreferencesModule, {});
+        {
+            name: 'App.Helpers.JS',
+            module: HelpersJS
+        },
+        {
+            name: 'App.Modules.ServerSync',
+            module: ServerSyncModule
+        },
+        {
+            name: 'App.Modules.Core',
+            module: CoreModule
+        },
+        {
+            name: 'App.Modules.Preferences',
+            module: PreferencesModule
+        }
+        /*
+        {
+            name: 'App.Modules.Layout',
+            module: LayoutModule
+        },
+
+        {
+            name: 'App.Modules.Dashboard',
+            module: DashboardModule
+        }*/
+    ].forEach(function (options) {
+        Sticky.set(options.name, options.module, options.params || {}, Ctx);
     });
 
-    // init AppView
-    AppView = Vm.create({}, 'AppView', AppView);
-    Router.initialize({appView: AppView});
-    AppView.render();
+    // render core components
+    Ctx.React.renderComponent(
+        Bootstrap(),
+        document.getElementById('app-container')
+    );
+
+    // render overlay component
+    Ctx.React.renderComponent(
+        OverlayLayer(),
+        document.getElementById('overlay-region')
+    );
+
+
 });

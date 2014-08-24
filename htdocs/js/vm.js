@@ -1,17 +1,17 @@
 // Use this as a quick template for future modules
 define([
-    'jquery',
-    'backbone',
-    'events'
-], function ($, Backbone, Events) {
+    'backbone'
+], function (Backbone) {
     'use strict';
     var views = {}, create;
 
     create = function (context, name, View, options) {
         // View clean up isn't actually implemented yet but will simply call .clean, .remove and .unbind
         if (views[name] !== undefined) {
-            views[name].undelegateEvents();
-            if (typeof views[name].clean === 'function') {
+            if (views[name].hasOwnProperty('undelegateEvents')) {
+                views[name].undelegateEvents();
+            }
+            if (views[name].hasOwnProperty('clean')) {
                 views[name].clean();
             }
         }
@@ -23,7 +23,6 @@ define([
         } else {
             context.children[name] = view;
         }
-        Events.trigger('viewCreated');
         return view;
     };
 

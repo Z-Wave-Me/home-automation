@@ -6,16 +6,15 @@
         "lodash": "2.4.1",
         "requirejs": "2.1.14",
         "requirejs-text": "2.0.12",
+        "jsx-requirejs-plugin": "0.2.2",
         "backbone": "1.1.2",
         "jquery": "2.1.1",
-        "ractive": "0.5.5",
-        "ractive-adaptors-backbone": "0.1.1",
-        "ractive-events-tap": "0.1.1",
-        "ractive-events-hover": "0.1.1",
-        "ractive-events-keys": "0.1.1",
-        "ractive-transitions-fade": "0.1.1",
-        "ractive-transitions-slide": "0.1.1",
-        "backbone.controller": "*",
-        "mem.js": "*"
+        "react": "0.11.1",
+        "react.backbone": "0.5.0",
+        "less": "1.7.4",
+        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.2.2",
+        "immutable": "git://github.com/facebook/immutable-js.git#2.0.6",
+        "director": "1.2.2",
+        "jquery-cookie": "*"
     }
 }

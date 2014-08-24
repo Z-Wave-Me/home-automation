@@ -1,9 +1,16 @@
 define([
     //libs
-    'backbone'
+    'backbone',
+    // components
+    './components/header',
+    './components/main',
+    './components/footer'
 ], function (
     // libs
-    Backbone
+    Backbone,
+    HeaderComponent,
+    MainComponent,
+    FooterComponent
     ) {
     'use strict';
 
@@ -23,7 +30,10 @@ define([
             return this.MoreartyClass;
         },
         _createClass: function () {
-            var that = this;
+            var that = this,
+                Header = new HeaderComponent({}, that.Ctx),
+                Main = new MainComponent({}, that.Ctx),
+                Footer = new FooterComponent({}, that.Ctx);
 
             that.MoreartyClass = that.Ctx.createClass({
                 componentDidMount: function () {
@@ -37,7 +47,12 @@ define([
 
                 render: function () {
                     var __ = that.Ctx.React.DOM;
-                    return __.div({ className: 'text', 'data-app-id': 'home-automation' });
+                    return __.div({ className: 'applications wrapper', 'data-app-id': 'home-automation' },
+                        Header.getClass(this.getState()),
+                        Main.getClass(this.getState()),
+                        Footer.getClass(this.getState()),
+                        __.div({id: 'overlay-region'})
+                    );
                 }
             });
         },
