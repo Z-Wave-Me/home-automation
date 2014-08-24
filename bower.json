@@ -6,15 +6,13 @@
         "lodash": "2.4.1",
         "requirejs": "2.1.14",
         "requirejs-text": "2.0.12",
-        "jsx-requirejs-plugin": "0.2.2",
         "backbone": "1.1.2",
         "jquery": "2.1.1",
         "react": "0.11.1",
-        "react.backbone": "0.5.0",
+        "jsx-requirejs-plugin": "0.2.2",
         "less": "1.7.4",
-        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.2.2",
-        "immutable": "git://github.com/facebook/immutable-js.git#2.0.6",
-        "director": "1.2.2",
-        "jquery-cookie": "*"
+        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.2.3",
+        "immutable": "git://github.com/facebook/immutable-js.git#2.0.14",
+        "director": "1.2.2"
     }
 }

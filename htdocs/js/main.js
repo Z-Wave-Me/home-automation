@@ -3,25 +3,22 @@ requirejs.config({
     paths : {
         // Major libraries
         jquery: '../bower_components/jquery/dist/jquery',
-        'jquery.cookie': '../bower_components/jquery-cookie/jquery.cookie',
         underscore: '../bower_components/lodash/dist/lodash.underscore',
         backbone: '../bower_components/backbone/backbone',
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
         'colpick': 'libs/vendor/jquery.colpick',
         sticky: 'libs/home-automation/sticky',
-        cookie : 'libs/vendor/jquery.cookie',
         dragsort : 'libs/vendor/jquery.dragsort',
         magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         alpaca: 'libs/alpaca/alpaca-full',
         ace: 'libs/acejs/ace',
+        react: '../bower_components/react/react-with-addons',
+        jsx: '../bower_components/jsx-requirejs-plugin/js/jsx',
+        JSXTransformer: '../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.0',
         'theme-chrome': 'libs/acejs/theme-chrome',
         'mode-javascript': 'libs/acejs/mode-javascript',
         'mode-json': 'libs/acejs/mode-json',
         'worker-javascript': 'libs/acejs/worker-javascript',
-        react: '../bower_components/react/react-with-addons',
-        'react.backbone': '../bower_components/react.backbone/react.backbone',
-        JSXTransformer: '../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.0',
-        jsx: '../bower_components/jsx-requirejs-plugin/js/jsx',
         text: '../bower_components/requirejs-text/text',
         immutable: '../bower_components/immutable/dist/immutable',
         director: '../bower_components/director/build/director',
@@ -95,9 +92,6 @@ requirejs.config({
             exports: 'React',
             deps: ['jsx', 'JSXTransformer']
         },
-        'react.backbone': {
-            deps: ['react', 'backbone']
-        },
         director: {
             exports: 'Router'
         },
@@ -109,19 +103,8 @@ requirejs.config({
             deps: ['immutable', 'react']
         }
     },
-    jsx: {
-        fileExtension: '.jsx'
-    },
     // modules
     packages: [
-        {
-            name: 'LayoutModule', // default 'packagename'
-            location: 'modules/layout'//,
-        },
-        {
-            name: 'FiltersModule', // default 'packagename'
-            location: 'modules/filters'//,
-        },
         {
             name: 'PreferencesModule', // default 'packagename'
             location: 'modules/preferences'//,
@@ -131,12 +114,12 @@ requirejs.config({
             location: 'modules/serversync'//,
         },
         {
-            name: 'DashboardModule',
-            location: 'modules/dashboard'
-        },
-        {
             name: 'CoreModule',
             location: 'modules/core'
+        },
+        {
+            name: 'WidgetsModule',
+            location: 'modules/widgets'
         }
     ]
 });
@@ -150,11 +133,9 @@ require([
     'sticky',
     // modules
     'CoreModule',
-    'LayoutModule',
-    'FiltersModule',
     'PreferencesModule',
     'ServerSyncModule',
-    'DashboardModule',
+    'WidgetsModule',
     // helpers
     'helpers/js'
 ], function (
@@ -166,11 +147,9 @@ require([
     Sticky,
     // modules
     CoreModule,
-    LayoutModule,
-    FiltersModule,
     PreferencesModule,
     ServerSyncModule,
-    DashboardModule,
+    WidgetsModule,
     // helpers
     HelpersJS
     ) {
@@ -178,12 +157,18 @@ require([
 
     var Ctx = Morearty.createContext(React, Immutable, {
             nowShowing: 'dashboard', // start route
+            notifications: [],
             notificationsCount: 0,
             notificationsSeverity: 'ok', // ok, warning, error, debug
             notificationsMessage: 'ok',
+            devices: [],
+            devicesCount: 0,
+            devicesUpdateTime: 0,
             overlayShow: false,
             overlayShowName: null
-        }, {requestAnimationFrameEnabled: true}),
+        }, {
+            requestAnimationFrameEnabled: true
+        }),
         Bootstrap = Ctx.createClass({
             componentWillMount: function () {
                 Ctx.init(this);
@@ -192,11 +177,6 @@ require([
             render: function () {
                 var App = Sticky.get('App.Modules.Core').getClass();
                 return App({ state: Ctx.state()});
-            }
-        }),
-        OverlayLayer = Ctx.createClass({
-            render: function () {
-                return Sticky.get('App.Modules.Preferences').getClass()({ state: Ctx.state()});
             }
         });
 
@@ -217,17 +197,11 @@ require([
         {
             name: 'App.Modules.Preferences',
             module: PreferencesModule
-        }
-        /*
-        {
-            name: 'App.Modules.Layout',
-            module: LayoutModule
         },
-
         {
-            name: 'App.Modules.Dashboard',
-            module: DashboardModule
-        }*/
+            name: 'App.Modules.Widgets',
+            module: WidgetsModule
+        }
     ].forEach(function (options) {
         Sticky.set(options.name, options.module, options.params || {}, Ctx);
     });
@@ -237,12 +211,4 @@ require([
         Bootstrap(),
         document.getElementById('app-container')
     );
-
-    // render overlay component
-    Ctx.React.renderComponent(
-        OverlayLayer(),
-        document.getElementById('overlay-region')
-    );
-
-
 });

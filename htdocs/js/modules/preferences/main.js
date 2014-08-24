@@ -23,30 +23,49 @@ define([
 
             that._createClass();
         },
-        getClass: function () {
-            return this.MoreartyClass;
+        getClass: function (state) {
+            return this.MoreartyClass({state: state});
         },
         _createClass: function () {
             var that = this,
                 Base = new BaseComponent({}, that.Ctx);
 
             that.MoreartyClass = that.Ctx.createClass({
-
+                back: function () {
+                    var state = this.getState();
+                    console.log('Back!');
+                },
+                closeOverlay: function () {
+                    var state = this.getState();
+                    state.set('overlayShow', false);
+                },
                 render: function () {
-                    var __ = that.Ctx.React.DOM,
+                    var _ = that.Ctx.React.DOM,
                         state = this.getState(),
                         overlay_show = state.val('overlayShow'),
                         overlay_name = state.val('overlayShowName');
 
-                    return __.div({ className: overlay_show ? ['overlay', 'show'].join(' ') : ['overlay', 'hide'].join(' '), 'data-overlay-name': overlay_name || 'default'},
-                        Base.getClass(this.getState())
+                    return (
+                        _.div({
+                                className: overlay_show ? ['overlay', 'show'].join(' ') : 'overlay',
+                                    'data-overlay-name': overlay_name || 'default'
+                            },
+                            _.div({className: 'overlay-wrapper'},
+                                _.div({className: 'overlay-top'},
+                                    _.div({className: 'overlay-left-top-panel overlay-top-panel'},
+                                        _.span({className: 'overlay-back-button', onClick: this.back}, '←')
+                                    ),
+                                    _.div({className: 'overlay-center-top-panel overlay-top-panel'},
+                                        _.span({className: 'overlay-close-button', onClick: this.closeOverlay}, '✖')
+                                    ),
+                                    _.div({className: 'overlay-right-top-panel overlay-top-panel'})
+                                ),
+                                Base.getClass(this.getState())
+                            )
+                        )
                     );
                 }
             });
-        },
-        _routes: Object.freeze({
-            'DASHBOARD': 'dashboard',
-            'WIDGETS': 'widgets'
-        })
+        }
     });
 });

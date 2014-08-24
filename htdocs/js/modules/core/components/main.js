@@ -32,7 +32,7 @@ define([
 
                     return _.div({ className: 'main-container clearfix' },
                         _.div({id: 'main-region', className: 'main wrapper clearfix'},
-                            _.section({id: 'widgets-container', className: 'widgets'})
+                            Sticky.get('App.Modules.Widgets').getClass(state)
                         )
                     );
                 }

@@ -1,9 +1,11 @@
 define([
     //libs
-    'backbone'
+    'backbone',
+    './components/base'
 ], function (
     // libs
-    Backbone
+    Backbone,
+    BaseWidgetView
     ) {
     'use strict';
 
@@ -19,31 +21,30 @@ define([
 
             that._createClass();
         },
-        getClass: function () {
-            return this.MoreartyClass;
+        getClass: function (state) {
+            return this.MoreartyClass({state: state});
         },
         _createClass: function () {
-            var that = this;
+            var that = this,
+                BaseWidget = new BaseWidgetView({}, that.Ctx);
 
             that.MoreartyClass = that.Ctx.createClass({
-                componentDidMount: function () {
-                    var state = this.getState();
-                    Router({
-                        '/': state.set.bind(state, 'nowShowing', that._routes.DASHBOARD),
-                        '/dashboard': state.set.bind(state, 'nowShowing', that._routes.DASHBOARD),
-                        '/widgets': state.set.bind(state, 'nowShowing', that._routes.WIDGETS)
-                    }).init();
-                },
-
                 render: function () {
-                    var __ = that.Ctx.React.DOM;
-                    return __.div({ className: 'text', 'data-app-id': 'home-automation' });
+                    var _ = that.Ctx.React.DOM,
+                        state = this.getState(),
+                        itemsBinding = state.sub('devices'),
+                        items = itemsBinding.val(),
+                        renderWidget;
+
+                    renderWidget = function (item, index) {
+                        return BaseWidget.getClass({ state: itemsBinding.sub(index) })
+                    };
+
+                    return _.section({id: 'widgets-container', className: 'widgets'},
+                        items.map(renderWidget).toArray()
+                    );
                 }
             });
-        },
-        _routes: Object.freeze({
-            'DASHBOARD': 'dashboard',
-            'WIDGETS': 'widgets'
-        })
+        }
     });
 });

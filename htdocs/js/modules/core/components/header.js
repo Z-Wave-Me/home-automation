@@ -27,11 +27,16 @@ define([
 
             that.MoreartyClass = that.Ctx.createClass({
                 onShowPreferences: function () {
-                    var state = this.getState();
-                    state.set('overlayShow', true);
-                    state.set('overlayShowName', 'preferences');
+                    //this.getState().atomically()
+                    //    .set('overlayShow', true)
+                     //   .set('overlayShowName', 'preferences')
+                     //   .commit();
+                    this.getState().set('overlayShow', true);
+                    console.log(this.getState().val('overlayShow'));
+                    return false;
                 },
                 render: function () {
+                    window.state = this.getState();
                     var state = this.getState(),
                         nowShowing = state.val('nowShowing'),
                         notifications_count = state.val('notificationsCount'),

@@ -51,7 +51,7 @@ define([
                         Header.getClass(this.getState()),
                         Main.getClass(this.getState()),
                         Footer.getClass(this.getState()),
-                        __.div({id: 'overlay-region'})
+                        Sticky.get('App.Modules.Preferences').getClass(this.getState())
                     );
                 }
             });
