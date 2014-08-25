@@ -30,17 +30,17 @@ define([
 
             that.MoreartyClass = that.Ctx.createClass({
                 render: function () {
-                    var _ = that.Ctx.React.DOM,
+                    var __ = that.Ctx.React.DOM,
                         state = this.getState(),
                         itemsBinding = state.sub('devices'),
                         items = itemsBinding.val(),
                         renderWidget;
 
                     renderWidget = function (item, index) {
-                        return BaseWidget.getClass({ state: itemsBinding.sub(index) })
+                        return BaseWidget.getClass({ key: index, state: itemsBinding.sub(index) })
                     };
 
-                    return _.section({id: 'widgets-container', className: 'widgets'},
+                    return __.section({id: 'devices-container', className: 'widgets'},
                         items.map(renderWidget).toArray()
                     );
                 }
