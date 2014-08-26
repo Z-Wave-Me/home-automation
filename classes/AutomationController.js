@@ -136,7 +136,7 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
         _st;
     
     _st = fs.stat(folder + moduleClassName);
-    if (!_st && "file" === _st.type) {
+    if (_st && "file" === _st.type) {
         return; // skip files in modules folders
     }
     
