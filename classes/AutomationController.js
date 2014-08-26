@@ -26,7 +26,6 @@ function AutomationController () {
     this.notifications = [];
     this.lastStructureChangeTime = 0;
 
-    this._autoLoadModules = [];
     this._loadedSingletons = [];
 }
 
@@ -71,13 +70,13 @@ AutomationController.prototype.start = function () {
     console.log("Loading modules...");
     this.instantiateModules();
 
-	allowExternalAccess("ZAutomation");
-	allowExternalAccess("ZAutomation.api");
-	allowExternalAccess("ZAutomation.storage");
+    allowExternalAccess("ZAutomation");
+    allowExternalAccess("ZAutomation.api");
+    allowExternalAccess("ZAutomation.storage");
 	
-	ZAutomation = function() {
-		return { status: 400, body: "Invalid ZAutomation request" };
-	};
+    ZAutomation = function() {
+        return { status: 400, body: "Invalid ZAutomation request" };
+    };
 	
     // Run webserver
     console.log("Starting automation...");
@@ -120,30 +119,17 @@ AutomationController.prototype.loadModules = function (callback) {
     var self = this;
 
     fs.list("modules/").forEach(function (moduleClassName) {
-        self.loadModulesFromFolder(moduleClassName, "modules/");
+        self.loadModuleFromFolder(moduleClassName, "modules/");
     });
 
     (fs.list("userModules/") || []).forEach(function (moduleClassName) {
-        self.loadModulesFromFolder(moduleClassName, "userModules/");
+        self.loadModuleFromFolder(moduleClassName, "userModules/");
     });
 
-    // Sort and clarify automatically loaded modules list
-    this._autoLoadModules = this._autoLoadModules.sort(function (a, b) {
-        if (a[0] < b[0]) {
-            return -1;
-        } else if (a[0] > b[0]) {
-            return 1;
-        }
-
-        return 0;
-    }).map(function (item) {
-        return item[1];
-    });
-    
     if (callback) callback();
 };
 
-AutomationController.prototype.loadModulesFromFolder = function (moduleClassName, folder) {
+AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder) {
     var self = this;
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
@@ -170,11 +156,6 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
     }
     if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
 
-    if (moduleMeta.hasOwnProperty("autoload") && !!moduleMeta["autoload"]) {
-        var _priority = moduleMeta.hasOwnProperty("autoloadPriority") ? moduleMeta["autoloadPriority"] : 1000;
-        self._autoLoadModules.push([_priority, moduleClassName]);
-    }
-
     var moduleFilename = folder + moduleClassName + "/index.js";
     _st = fs.stat(moduleFilename);
     if ("file" !== _st.type || 2 > _st.size) {
@@ -182,35 +163,15 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
         return;
     }
 
-    console.log("Loading module " + moduleClassName + " from " + moduleFilename);
-    try {
-        executeFile(moduleFilename);
-    } catch (e) {
-        self.addNotification("error", "Can not load index.js from " + moduleFilename + ": " + e.toString(), "core");
-        console.log(e.stack);
-        return; // skip this modules
-    }
-    
-    if (!_module) {
-        self.addNotification("error", "Can not load index.js from " + moduleFilename, "core");
-        return; // skip this modules
-    }
-    
-    // Monkey-patch module with basePath method
-    _module.prototype.moduleBasePath = function () {
-        return folder + moduleClassName;
-    };
-
     moduleMeta.id = moduleClassName;
 
     // Grab _module and clear it out
     self.modules[moduleClassName] = {
         meta: moduleMeta,
-        classRef: _module
+        location: folder + moduleClassName
     };
-
-    _module = undefined;
 };
+
 
 AutomationController.prototype.instantiateModule = function (instanceModel) {
     var self = this,
@@ -254,26 +215,125 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
     }
 };
 
+AutomationController.prototype.loadModule = function(module, rootModule) {
+        if (rootModule && rootModule === module) {
+                console.log("Circular dependencies detected!");
+                return false;
+        }
+        
+        if (module.failed) return false; // already tried to load, and failed
+        if (this.loadedModules.indexOf(module) >= 0) return true; // already loaded
+        
+        rootModule = rootModule || module;
+
+        if (module.meta.dependencies instanceof Array) {
+                for (var i in module.meta.dependencies) {
+                        var dep = module.meta.dependencies[i];
+                        
+                        var depModule = this.modules[dep];
+                        if (!depModule) {
+                                this.addNotification("error", "Dependency " + dep + " not found for module " + module.meta.id, "core");
+                                module.failed = true;
+                                return false;
+                        }
+                        
+                        if (!this.loadModule(depModule, rootModule)) {
+                                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not loaded", "core");
+                                module.failed = true;
+                                return false;
+                        }
+                }
+        }
+
+        console.log("Loading module " + module.meta.id + " from " + module.location);
+        try {
+            executeFile(module.location + "/index.js");
+        } catch (e) {
+            this.addNotification("error", "Can not load " + module.meta.id + ": " + e.toString(), "core");
+            console.log(e.stack);
+            module.failed = true;
+            return false; // skip this modules
+        }
+        
+        if (!_module) {
+            this.addNotification("error", "Invalid module " + module.meta.id, "core");
+            module.failed = true;
+            return false; // skip this modules
+        }
+        
+        // Monkey-patch module with basePath method
+        _module.prototype.moduleBasePath = function () {
+            return module.location;
+        };
+
+        module.classRef = _module;
+        
+        _module = undefined;
+
+        // Loading instances
+        
+        var count = 0;
+        this.instances.filter(function(x) { return x.moduleId === module.meta.id; }).forEach(function(x) {
+            if (this.instantiateModule(x) !== null) {
+                count++;
+            }
+        }, this);
+
+        if (count)
+            this.loadedModules.push(module);
+        return true;
+}
+
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
         module;
 
-    console.log("--- Automatic modules instantiation ---");
-    self._autoLoadModules.forEach(function (moduleClassName) {
-        module = _.find(self.modules, function (module) { return module.meta.id === moduleClassName; });
-        if (!!module && !_.any(self.instances, function (model) { return model.moduleId === module.meta.id; })) {
-            self.createInstance(module.meta.id, module.meta.defaults);
-        }
-    });
+    this.loadedModules = [];
 
+    Object.getOwnPropertyNames(this.modules).forEach(function(m) { this.loadModule(this.modules[m]); }, this);
+
+    /*
     console.log("--- User configured modules instantiation ---");
     if (self.instances.length > 0) {
-        self.instances.forEach(function (instance) {
-            self.instantiateModule(instance);
+        var _instances = self.instances.map(function(inst) { return { loaded: false, instance: inst} }),
+            _orderedInstances = [];
+        
+        // here _orderedInstances is LIFO
+        _instances.forEach(function(inst) {
+            var i = _orderedInstances.length;
+            
+            inst.instance.dependencies.forEach(function(dep) {
+                var _i = _orderedInstances.map(function(x) { return x.instance.moduleId }).indexOf(dep);
+                
+                if (_i !== -1 && _i < i) {
+                    i = _i;
+                }
+            });
+            _orderedInstances.splice(i, 0, inst);
         });
+        
+        _orderedInstances.reverse(); // now it is FIFO
+        _orderedInstances.forEach(function(inst) {
+            // check if at least one instance of dependacies module was loaded
+            var cantStart = fasle;
+            inst.instance.dependencies.forEach(function(dep) {
+                var _i = _orderedInstances.filter(function(x) { return inst.loaded; }).map(function(x) { return x.instance.moduleId }).indexOf(dep);
+                
+                if (_i !== -1) {
+                    cantStart = true;
+                }
+            });
+            if (cantStart) {
+                if (self.instantiateModule(inst.instance) !== null) {
+                    inst.loaded = true;
+                }
+            }
+        }
     } else {
         console.log("--! No user-configured instances found");
     }
+    */
+    
 };
 
 AutomationController.prototype.moduleInstance = function (instanceId) {
