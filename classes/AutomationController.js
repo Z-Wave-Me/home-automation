@@ -591,6 +591,9 @@ AutomationController.prototype.getListProfiles = function () {
             name: 'Default',
             description: 'This is default profile. Default profile created automatically.',
             positions: [],
+            groups: {
+                instances: []
+            },
             active: true
         })
     }
@@ -607,15 +610,24 @@ AutomationController.prototype.getProfile = function (id) {
 
 AutomationController.prototype.createProfile = function (object) {
     var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
-        profile;
+        profile = {
+            id: id,
+            name: object.name,
+            description: object.description,
+            positions: object.positions,
+            active: object.active,
+            groups: object.groups
+        };
 
-    this.profiles.push({
-        id: id,
-        name: object.name,
-        description: object.description || null,
-        positions: object.positions || [],
-        active: object.active || false
+    _.defaults(profile, {
+        name: '',
+        description: '',
+        positions: [],
+        groups: {instances: []},
+        active: false
     });
+
+    this.profiles.push(profile);
 
     this.saveConfig();
     return profile;
@@ -628,7 +640,8 @@ AutomationController.prototype.updateProfile = function (object, id) {
         active = _.find(this.profiles, function (profile) {
             return profile.active;
         }),
-        index;
+        index,
+        that = this;
 
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
@@ -642,10 +655,13 @@ AutomationController.prototype.updateProfile = function (object, id) {
         if (object.hasOwnProperty('positions')) {
             this.profiles[index].positions = object.positions;
         }
+        if (object.hasOwnProperty('groups') && _.isObject(object.groups)) {
+            this.profiles[index].groups = object.groups;
+        }
         if (object.hasOwnProperty('active')) {
             if (object.active) {
                 _.each(this.profiles, function (model) {
-                    if (model.id === this.profiles[index].id) {
+                    if (model.id === that.profiles[index].id) {
                         model.active = object.active;
                     } else {
                         model.active = false;
@@ -660,7 +676,16 @@ AutomationController.prototype.updateProfile = function (object, id) {
                 }
             }
         }
+
+        _.defaults(this.profiles[index], {
+            name: '',
+            description: '',
+            positions: [],
+            groups: {instances: []},
+            active: false
+        });
     }
+
 
     this.saveConfig();
     return this.profiles[index];

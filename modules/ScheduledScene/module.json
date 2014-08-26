@@ -1,0 +1,54 @@
+{
+    "autoload":false,
+    "singleton": false,
+    "userView": true,
+    "defaults": {
+        "title": "Scheduler",
+        "description": "Execute scheduled scene.",
+        "weekdays": [1, 2, 3, 4, 5, 6, 0],
+        "time": "00:00",
+        "scene": ""
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "weekdays": {
+                    "type": "array",
+                    "enum": [1, 2, 3, 4, 5, 6, 0],
+	            "required": true
+            },
+            "time": {
+                    "type": "string",
+	            "required": true
+            },
+            "scene": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_toggleButton:deviceId",
+                    "required": true
+            }
+        },
+        "required": true
+    },
+    "options": {
+        "fields": {
+            "weekdays": {
+                    "type": "checkbox",
+                    "optionLabels": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+            },
+            "time": {
+                    "type": "time",
+                    "maskString": "99:99",
+                    "timeFormat": "hh:mm",
+                    "timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
+            },
+            "scene": {
+                    "label": "Activate scene",
+                    "type": "select",
+                    "datasource": "namespaces",
+                    "field": "optionLabels",
+                    "optionLabels": "namespaces:devices_toggleButton:deviceName"
+            }
+        }
+    }
+}

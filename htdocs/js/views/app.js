@@ -17,7 +17,7 @@ define([
             var that = this,
                 query = that.getQueryParams(document.location.search);
 
-            _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure');
+            _.bindAll(this, 'render', 'addJqueryMethod', 'preFilterAjax', 'buildStructure', 'successHandler', 'errorHandler');
             log("App Initialize");
 
             that.apiPort = query.hasOwnProperty('port') ? query.port : window.location.port;
@@ -144,7 +144,30 @@ define([
 
             return params;
         },
+        successHandler: function () {
+            if (window.App.errorConnection) {
+                window.App.errorConnection = false;
+
+                window.App.Devices.updateTime = null;
+                _.each(['Locations', 'Devices', 'Profiles', 'Notifications', 'Modules', 'Instances', 'Namespaces'], function (hash) {
+                    if (window.App.hasOwnProperty(hash)) {
+                        window.App[hash].reset();
+                        window.App[hash].fetch();
+                    }
+                });
+
+                window.App.Notifications.trigger('connection:ok');
+            }
+        },
+        errorHandler: function () {
+            if (!window.App.errorConnection) {
+                window.App.errorConnection = true;
+                window.App.Notifications.trigger('connection:error');
+            }
+        },
         buildStructure: function () {
+            var that = this;
+
             if (!window.App) {
                 window.App = {
                     Devices: new Devices(),
@@ -165,7 +188,8 @@ define([
                         HOST: this.apiHost,
                         PORT: this.apiPort,
                         URL: this.apiUrl
-                    }
+                    },
+                    errorConnection: false
                 };
             }
 
@@ -173,39 +197,53 @@ define([
                 window.App.Devices.fetch({
                     remove: false,
                     merge: true,
-                    data: {limit: 0}
+                    data: {limit: 0},
+                    error: that.errorHandler,
+                    success: that.successHandler
                 });
 
                 window.App.Notifications.fetch({
                     remove: false,
-                    merge: true
+                    merge: true,
+                    error: that.errorHandler,
+                    success: that.successHandler
                 });
             }, 1000);
 
             window.App.Locations.fetch({
                 remove: false,
-                merge: true
+                merge: true,
+                error: that.errorHandler,
+                success: that.successHandler
             });
 
             window.App.Profiles.fetch({
                 remove: false,
-                merge: true
+                merge: true,
+                error: that.errorHandler,
+                success: that.successHandler
             });
 
             window.App.Namespaces.fetch({
                 remove: false,
                 merge: true,
                 success: function () {
+                    that.successHandler();
                     window.App.Modules.fetch({
                         remove: false,
-                        merge: true
+                        merge: true,
+                        success:  that.successHandler,
+                        error: that.errorHandler
                     });
 
                     window.App.Instances.fetch({
                         remove: false,
-                        merge: true
+                        merge: true,
+                        success:  that.successHandler,
+                        error: that.errorHandler
                     });
-                }
+                },
+                error: that.errorHandler
             });
         }
     });

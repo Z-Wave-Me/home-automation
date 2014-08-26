@@ -67,6 +67,8 @@ define([
                 that.Devices.trigger('normal');
                 that.Devices.lock = true;
                 that.WidgetsModule.render(forceView);
+                that.Devices.trigger('filter');
+                that.Locations.trigger('filter');
             }
         }
     });

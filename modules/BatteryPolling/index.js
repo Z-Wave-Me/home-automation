@@ -34,7 +34,7 @@ BatteryPolling.prototype.init = function (config) {
     // polling function
     this.onPoll = function () {
         self.controller.devices.filter(function (el) {
-            return el.get("deviceType") === "battery";
+            return el.get("deviceType") === "battery" && (el.id != "BatteryPolling_" + self.id);
         }).map(function(el) {
             el.performCommand("update");
         });

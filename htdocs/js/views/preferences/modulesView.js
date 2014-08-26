@@ -13,9 +13,14 @@ define([
         initialize: function () {
             var that = this;
 
+            _.bindAll(this, 'addGroup', 'render', 'renderInstances', 'renderInstanceList', 'saveState');
+
             // Default collections and models
             that.Instances = window.App.Instances;
             that.Modules = window.App.Modules;
+            that.Profiles = window.App.Profiles;
+
+            that.groupTemplate = '<li class="group-container" data-id="<%= groupId %>"><div class="group-name down"><%= groupId %></div><div data-id="<%= groupId %>" class="instances-container"></div></li>'
 
             // cached objects
             that.$leftList = that.$el.find('.items-list');
@@ -53,28 +58,85 @@ define([
                     });
                 }
             });
+
+            that.$el.find('.add-folder-button').off().on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var profile = that.Profiles.getActive(),
+                    groupId  = _.uniqueId('newGroup_'),
+                    groups = that.getGroups();
+
+                if (!groups.hasOwnProperty(groupId)) {
+                    groups[groupId] = [];
+                }
+
+                delete groups['other'];
+
+                profile.save({groups: _.extend(profile.get('groups'), {instances: groups})}, {
+                    success: function () {
+                        that.addGroup(groupId);
+                    }
+                });
+            }).show();
         },
 
         renderInstances: function () {
-            var that = this;
+            var that = this,
+                $containers;
 
             that.$el.find('.items-list').empty();
+
+            Object.keys(that.getGroups()).forEach(that.addGroup);
+
+            $containers = that.$el.find( ".instances-container" );
+
+            $containers.sortable({
+                connectWith: '.instances-container',
+                items: '.instance-item',
+                dropOnEmpty: true,
+                start: function (event, ui) {
+                    that.$el.find( ".instances-container").addClass('drop');
+                },
+                stop: function (event, ui) {
+                    that.$el.find( ".instances-container").removeClass('drop');
+                },
+                update: function (event, ui) {
+                    var groups = that.getGroups(),
+                        active = that.Profiles.getActive();
+
+                    _.each(Object.keys(groups), function (grp) {
+                        groups[grp] = _.map(that.$el.find('.group-container[data-id="' + grp + '"]').find('.instances-container').children(), function (child) {
+                            return $(child).data('id');
+                        });
+                    });
+
+                    delete groups.other;
+
+                    active.save({groups: _.extend(active.get('groups'), {instances: groups})});
+                }
+            }).disableSelection();
+
 
             that.Instances.each(function (instance) {
                 that.renderInstanceList(instance);
             });
+
             if (!Boolean(that.Instances.length)) {
                 that.newInstance();
             } else {
-                that.$el.find('.items-list').children()[0].click();
+                if (that.$el.find('.items-list').children().length > 0) {
+                    that.$el.find('.items-list').children()[0].click();
+                }
             }
         },
 
         renderInstanceList: function (instance) {
-            var $instance,
-                that = this;
 
-            $instance = $("<li class='instance-item'><div class='text-title pull-left'>" + instance.get('params').title + "</div><div class='circle pull-left'></li>");
+            var $instance,
+                that = this,
+                group = that.getGroup(instance.id);
+
+            $instance = $("<li class='instance-item' data-id='" + instance.id + "'><div class='text-title pull-left'>" + instance.get('params').title + "</div><div class='circle pull-left'></li>");
 
             if (instance.get('params').status === 'enable') {
                 $instance.addClass('enable');
@@ -147,7 +209,7 @@ define([
                 });
             });
 
-            that.$el.find('.items-list').append($instance);
+            that.$el.find('.group-container[data-id="' + group + '"]').find('.instances-container').append($instance);
         },
 
         newInstance: function () {
@@ -215,6 +277,52 @@ define([
 
             that.$el.find('.items-list').find('li').removeClass('active');
             that.$el.find('.content-body').empty().append($schema);
+        },
+
+        addGroup: function (groupId) {
+            var that = this,
+                $template = $(_.template(that.groupTemplate, {groupId: groupId}));
+
+
+            $template.find('.group-name').on('click', function (e) {
+                e.preventDefault();
+
+                if ($(this).hasClass('down')) {
+                    $template.find('.instances-container').stop().slideUp('fast');
+                } else {
+                    $template.find('.instances-container').stop().slideDown('fast');
+                }
+
+                $(this).toggleClass('down').disableSelection();
+            });
+
+            if (that.$el.find('.group-container[data-id="other"]').exists()) {
+                $template.insertBefore(that.$el.find('.group-container[data-id="other"]'));
+            } else {
+                that.$el.find('.items-list').append($template);
+            }
+
+        },
+
+        getGroups: function () {
+            var that = this,
+                activeProfile = that.Profiles.getActive();
+
+            return _.defaults(activeProfile.get('groups').instances, {other: []});
+        },
+
+        getGroup: function (instanceId) {
+            var that = this,
+                groups = that.getGroups(),
+                group = _.find(Object.keys(groups), function (key) {
+                    return groups[key].indexOf(instanceId) !== -1;
+                });
+
+            return group || 'other';
+        },
+
+        saveState: function () {
+
         }
     });
 });

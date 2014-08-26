@@ -146,13 +146,17 @@
 }
 
 .popover-events {
-  max-width: 300px;
+  width: 325px;
+  min-width: 325px;
+  max-width: 325px;
   padding: 0;
   overflow: initial;
+  top: 34px;
   .popover-content {
-    width: 93.5%;
+    width: 94%;
     border-radius: 0;
     background-color: #fff;
+    overflow: hidden;
   }
   .hide-all-button {
     padding-left: 10px;
@@ -334,6 +338,11 @@
         text-align: center;
         background-color: #bbc2c4;
         cursor: pointer;
+        &.add-folder-button {
+          display: none;
+          background: #bbc2c4 url(@add-folder) no-repeat center center;
+          background-size: 17px auto;
+        }
       }
     }
   }
@@ -394,11 +403,68 @@
           height: 26px;
           line-height: 26px;
           width: 215px;
-          overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
           padding-left: 3px;
-          &.instance-item {
+          &.group-container {
+            display: block;
+            float: left;
+            height: 100%;
+            color: rgba(55, 86, 102, 0.9);
+            .group-name {
+              width: 90%;
+              height: 19px;
+              line-height: 19px;
+              padding: 3px 5px;
+              font-size: 16px;
+              vertical-align: middle;
+              margin: 2px 0;
+              text-indent: 4px;
+              &:before {
+                content:"";
+                float: left;
+                width:0;
+                height:0;
+                border: 0;
+                border-top: 6px solid transparent;
+                border-bottom: 6px solid transparent;
+                border-left: 12px solid black;
+                margin-top: 2px;
+              }
+              &.down  {
+                &:before {
+                  content:"";
+                  display: block;
+                  width:0;
+                  height:0;
+                  border: 0;
+                  margin-top: 4px;
+                  border-left: 6px solid transparent;
+                  border-right: 6px solid transparent;
+                  border-top: 12px solid black;
+                }
+              }
+            }
+            .instances-container {
+              padding-left: 4px;
+              width: 100%;
+              float: left;
+              display: block;
+              &.drop {
+                border: 1px dashed #000;
+                background-color: rgba(55, 86, 102, 0.1);
+                min-height: 10px;
+              }
+            }
+          }
+          .instance-item {
+            font-size: 14px;
+            height: 26px;
+            line-height: 26px;
+            vertical-align: middle;
+            white-space: nowrap;
+            width: 220px;
+            text-overflow: ellipsis;
             .circle {
               content: "";
               border-radius: 50%;
@@ -407,12 +473,27 @@
               width: 12px;
               display: block;
               float: right;
-              margin-top: 8.5px;
-              margin-right: 14px;
+              margin-top: 8px;
+              margin-right: 23px;
+              z-index: 1000;
+              position: relative;
             }
             &.enable {
               .circle {
                 background-color: green;
+              }
+            }
+
+            &.ui-sortable-helper {
+              &:after, &:before, .circle {
+                display: none;
+                background: transparent;
+              }
+              .text-title {
+                color: #000;
+                &:after {
+                  display: none;
+                }
               }
             }
           }
@@ -421,6 +502,9 @@
             overflow: hidden;
             text-overflow: clip;
             color: '-linear-gradient(rgba(255,255,255,1), rgba(255,255,255,0))';
+            height: 27px;
+            line-height: 27px;
+            vertical-align: middle;
             &:after {
               position: relative;
               display: block;
@@ -444,8 +528,10 @@
             .circle {
               width: 18px;
               height: 18px;
-              margin-top: 8px;
-              margin-right: 10px;
+              margin-right: 20px;
+              padding: 0;
+              position: absolute;
+              left: 215px;
             }
             &:after {
               content: "";
@@ -470,11 +556,14 @@
             &.instance-item {
               &:after {
                 top: -1px;
-                left: 25px;
+                left: 15px;
                 float: none;
               }
             }
             .text-title {
+              height: 34px;
+              line-height: 34px;
+              vertical-align: middle;
               &:after {
                 background: linear-gradient(to left, #bbc2c4 20%, rgba(255, 255, 255, 0) 48%);
               }

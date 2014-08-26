@@ -7,7 +7,12 @@ define([
 
         defaults: {
             name: 'New Profile',
-            description: 'Description profile'
+            description: 'Description profile',
+            groups: {
+                instances: {
+                    other: []
+                }
+            }
         },
 
         methodToURL: {
