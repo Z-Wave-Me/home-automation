@@ -15,19 +15,28 @@ define([
             render: function () {
                 var __ = Ctx.React.DOM,
                     state = this.getState(),
+                    primaryFilter = state.val('primaryFilter'),
+                    secondaryFilter = state.val('secondaryFilter'),
                     itemsBinding = state.sub('devices'),
                     items = itemsBinding.val(),
                     renderWidget,
                     isShown,
                     profiles = Sticky.get('App.Modules.ServerSync').getCollection('Profiles'),
-                    positions = profiles ? profiles.getActive().get('positions') : [];
-
+                    positions = profiles && Boolean(profiles.getActive()) ? profiles.getActive().get('positions') : [];
 
                 isShown = function (item) {
                     if (state.val('nowShowing') === 'dashboard') {
                         return positions.indexOf(item.get('id')) !== -1 ? true : null;
                     } else {
-                        return true;
+                        if (primaryFilter === 'rooms') {
+                            return item.get('location') === secondaryFilter;
+                        } else if (primaryFilter === 'types') {
+                            return item.get('deviceType') === secondaryFilter;
+                        } else if (primaryFilter === 'tags') {
+                            return item.get('tags').indexOf(secondaryFilter) !== -1;
+                        } else {
+                            return true;
+                        }
                     }
                 };
 

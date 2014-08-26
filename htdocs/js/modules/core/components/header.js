@@ -1,14 +1,23 @@
-define([], function () {
+define([
+    // components
+    './filters'
+], function (
+    FiltersComponent
+    ) {
     'use strict';
 
     return function (Ctx, _options) {
         var that = this,
-            options = _options || {};
+            options = _options || {},
+            Filters = new FiltersComponent(Ctx);
 
         return Ctx.createClass({
             onShowPreferences: function () {
                 this.getState().set('overlayShow', true);
                 return false;
+            },
+            isShownFilters: function () {
+                return this.getState().val('nowShowing') === 'widgets' ? Filters({state: state}) : null;
             },
             render: function () {
                 window.state = this.getState();
@@ -47,8 +56,7 @@ define([], function () {
                             )
                         )
                     ),
-                    _.div({className: 'header-sub-container main-filter-container clearfix'}),
-                    _.div({className: 'header-sub-container bottom-filter-container clearfix'})
+                    this.isShownFilters()
                 );
             }
         });

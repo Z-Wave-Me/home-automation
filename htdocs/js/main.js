@@ -162,10 +162,19 @@ require([
             notificationsSeverity: 'ok', // ok, warning, error, debug
             notificationsMessage: 'ok',
             devices: [],
+            namespaces: [],
+            modules: [],
+            instances: [],
+            locations: [],
+            profiles: [],
+            primaryFilter: 'all',
+            secondaryFilter: '',
             devicesCount: 0,
             devicesUpdateTime: 0,
             overlayShow: false,
-            overlayShowName: null
+            overlayShowName: null,
+            deviceTypes: [],
+            deviceTags: []
         }, {
             requestAnimationFrameEnabled: true
         }),
