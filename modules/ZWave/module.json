@@ -1,0 +1,8 @@
+{
+    "dependencies": [],
+    "singleton": true,
+    "userView": false,
+    "defaults": {
+        "title": "Z-Wave binding"
+    }
+}
