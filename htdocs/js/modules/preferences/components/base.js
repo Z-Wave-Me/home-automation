@@ -1,38 +1,21 @@
 define([
     //libs
-    'backbone'
 ], function (
     // libs
-    Backbone
     ) {
     'use strict';
 
-    return Backbone.View.extend({
-        initialize: function (options, context) {
-            _.bindAll(this, '_createClass', 'getClass');
-            var that = this;
+    return function (Ctx, _options) {
+        var that = this,
+            options = _options || {};
 
-            _.extend(that, {
-                options: _.extend({}, options || {}),
-                Ctx: context
-            });
+        return Ctx.createClass({
+            render: function () {
+                var state = this.getState(),
+                    _ = Ctx.React.DOM;
 
-            that._createClass();
-        },
-        getClass: function (state) {
-            return this.MoreartyClass({state: state});
-        },
-        _createClass: function () {
-            var that = this;
-
-            that.MoreartyClass = that.Ctx.createClass({
-                render: function () {
-                    var state = this.getState(),
-                        _ = that.Ctx.React.DOM;
-
-                    return _.div({ className: 'preferences-overlay clearfix' });
-                }
-            });
-        }
-    });
+                return _.div({ className: 'preferences-overlay clearfix' });
+            }
+        });
+    }
 });

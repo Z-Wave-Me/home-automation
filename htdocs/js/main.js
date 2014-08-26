@@ -175,7 +175,7 @@ require([
             },
 
             render: function () {
-                var App = Sticky.get('App.Modules.Core').getClass();
+                var App = Sticky.get('App.Modules.Core');
                 return App({ state: Ctx.state()});
             }
         });
@@ -191,19 +191,19 @@ require([
             module: ServerSyncModule
         },
         {
-            name: 'App.Modules.Core',
-            module: CoreModule
-        },
-        {
             name: 'App.Modules.Preferences',
             module: PreferencesModule
         },
         {
             name: 'App.Modules.Widgets',
             module: WidgetsModule
+        },
+        {
+            name: 'App.Modules.Core',
+            module: CoreModule
         }
     ].forEach(function (options) {
-        Sticky.set(options.name, options.module, options.params || {}, Ctx);
+        Sticky.set(options.name, options.module, Ctx, options.params);
     });
 
     // render core components

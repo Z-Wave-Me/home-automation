@@ -9,12 +9,13 @@ define([
     'use strict';
 
     return Backbone.View.extend({
-        initialize: function (options, Ctx) {
+        initialize: function (Ctx, _options) {
             _.bindAll(this, 'start', 'refresh',
                 'regCollection', 'getCollection', 'registerHandler',
                 '_preFilterAjax', '_getQueryParams');
 
             var that = this,
+                options = _options || {},
                 query = that._getQueryParams(window.location.search),
                 collection_default_path = 'modules/serversync/collections/',
                 arrayCollections = [
@@ -171,7 +172,7 @@ define([
             });
         },
         getCollection: function (collectionName) {
-            return this.collections[collectionName].collection;
+            return this.collections.hasOwnProperty(collectionName) ? this.collections[collectionName].collection : null;
         },
         registerHandler: function (collectionName, eventName, handler) {
             this.listenTo(this.collections[collectionName].collection, eventName, handler);
