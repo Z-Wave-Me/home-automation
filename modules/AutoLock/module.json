@@ -1,0 +1,43 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Auto Lock",
+		"description": "Door/Window Sensor automatically closes lock when door is closed",
+		"BinarySensor": null,
+		"DoorLock": null
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"BinarySensor": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_sensorBinary:deviceId",
+				"required": true
+			},
+			"DoorLock": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_doorlock:deviceId",
+				"required": true
+			}
+		},
+		"required": true
+	},
+	"options": {
+		"fields": {
+			"BinarySensor": {
+				"label": "Door/Window Sensor",
+				"type": "select",
+				"datasource": "namespaces"
+			},
+			"DoorLock": {
+				"label": "Door Lock",
+				"type": "select",
+				"datasource": "namespaces"
+			}
+		}
+	}
+}
