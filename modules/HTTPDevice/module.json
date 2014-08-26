@@ -1,7 +1,7 @@
 {
-	"autoload": false,
 	"singleton": false,
 	"userView": true,
+	"dependencies": [],
 	"defaults": {
 		"title": "HTTP device",
 		"description": "Create virtual device based on HTTP data.",
@@ -12,25 +12,23 @@
 
 		"getter_sensorBinary": "",
 		"getterParser_sensorBinary": "",
-		"getterPollInterval_sensortBinary": "",
+		"getterPollInterval_sensortBinary": 0,
 
 		"getter_sensorMultilevel": "",
 		"getterParser_sensorMultilevel": "",
-		"getterPollInterval_sensortMultilevel": "",
+		"getterPollInterval_sensorMultilevel": 0,
 		"scale_sensorMultilevel": "",
 
 		"setterOn_switchBinary": "",
 		"setterOff_switchBinary": "",
 		"getter_switchBinary": "",
 		"getterParser_switchBinary": "",
-		"getterPollInterval_switchtBinary": "",
+		"getterPollInterval_switchtBinary": 0,
 
-		"setterOn_switchMultilevel": "",
-		"setterOn_switchMultilevel": "",
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
 		"getterParser_switchMultilevel": "",
-		"getterPollInterval_switchtMultilevel": "",
+		"getterPollInterval_switchtMultilevel": 0,
 
 		"method": "GET"
 	},
@@ -62,7 +60,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_sensorBinary": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},
@@ -78,7 +76,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_sensorMultilevel": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},
@@ -109,7 +107,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_switchBinary": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},
@@ -130,7 +128,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_switchMultilevel": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},

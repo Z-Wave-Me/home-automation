@@ -1,5 +1,5 @@
 {
-    "autoload": false,
+    "dependencies": [],
     "userView": true,
     "singleton": false,
     "defaults": {

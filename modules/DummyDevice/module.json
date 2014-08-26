@@ -1,7 +1,7 @@
 {
-	"autoload" : false,
 	"singleton" : false,
 	"userView" : true,
+	"dependencies": [],
 	"defaults" : {
 		"title" : "Dummy device",
 		"description" : "Create a Dummy device",

@@ -1,7 +1,7 @@
 {
-    "autoload": false,
     "userView": true,
     "singleton": false,
+    "dependencies": [],
     "defaults": {
         "title": "Auto Off",
         "description": "Turns off automatically devices after a defined time",

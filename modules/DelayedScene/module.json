@@ -1,7 +1,7 @@
 {
-	"autoload": false,
 	"singleton": false,
 	"userView": true,
+	"dependencies": [],
 	"defaults": {
 		"title": "Delayed Scene",
 		"description": "Activate scene after a defined timeout after",

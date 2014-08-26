@@ -1,6 +1,5 @@
 {
-    "autoload": true,
-    "autoloadPriority": 100,
+    "dependencies": ["ZWave"],
     "singleton": true,
     "userView": false,
     "defaults": {

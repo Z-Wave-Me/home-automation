@@ -1,6 +1,6 @@
 {
-    "autoload": false,
     "singleton": false,
+    "dependencies": [],
     "userView": true,
     "defaults": {
         "title": "Web Camera",

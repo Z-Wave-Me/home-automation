@@ -1,7 +1,7 @@
 {
-	"autoload": false,
 	"singleton": false,
 	"userView": true,
+	"dependencies": [],
 	"defaults": {
 		"title": "Group devices",
 		"description": "Group several devices together",

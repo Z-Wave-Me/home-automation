@@ -1,6 +1,6 @@
 {
-    "autoload": false,
     "singleton": true,
+    "dependencies": ["Cron"],
     "userView": true,
     "defaults": {
         "title": "Battery Polling",

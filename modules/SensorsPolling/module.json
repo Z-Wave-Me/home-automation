@@ -1,5 +1,5 @@
 {
-    "autoload": false,
+    "dependencies": ["Cron"],
     "singleton": true,
     "userView": true,
     "defaults": {

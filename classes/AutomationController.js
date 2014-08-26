@@ -139,7 +139,7 @@ AutomationController.prototype.loadModules = function (callback) {
     }).map(function (item) {
         return item[1];
     });
-
+    
     if (callback) callback();
 };
 
@@ -147,7 +147,14 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
     var self = this;
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
-        _st = fs.stat(moduleMetaFilename);
+        _st;
+    
+    _st = fs.stat(folder + moduleClassName);
+    if (!_st && "file" === _st.type) {
+        return; // skip files in modules folders
+    }
+    
+    _st = fs.stat(moduleMetaFilename);
 
     if (!_st || "file" !== _st.type || 2 > _st.size) {
         console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
