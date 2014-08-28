@@ -174,7 +174,84 @@ require([
             overlayShow: false,
             overlayShowName: null,
             deviceTypes: [],
-            deviceTags: []
+            deviceTags: [],
+            preferences: Immutable.Map({
+                activeNodeTreeId: 1,
+                backButtonEnabled: false,
+                adding: false,
+                editing: false,
+                duplicating: false,
+                tree: Immutable.Map({
+                    id: 1,
+                    options: {
+                        name: 'main',
+                        leftPanel: false,
+                        searchPanel: false,
+                        componentName: '_main'
+                    },
+                    children: [
+                        {
+                            id: 2,
+                            options: {
+                                name: 'general',
+                                leftPanel: true,
+                                searchPanel: true,
+                                button: ['add', 'remove'],
+                                component: '_main_general'
+                            }
+                        },
+                        {
+                            id: 3,
+                            options: {
+                                name: 'rooms',
+                                leftPanel: true,
+                                searchPanel: true,
+                                button: ['add', 'remove'],
+                                component: '_main_rooms'
+                            },
+                            children: [
+                                {
+                                    id: 5,
+                                    options: {
+                                        name: 'general',
+                                        leftPanel: true,
+                                        searchPanel: true,
+                                        button: ['add', 'remove'],
+                                        component: '_main_rooms_general'
+                                    }
+                                },
+                                {
+                                    id: 6,
+                                    options: {
+                                        name: 'devices',
+                                        leftPanel: true,
+                                        searchPanel: true,
+                                        component: '_main_rooms_devices'
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            id: 4,
+                            options: {
+                                name: 'widgets',
+                                leftPanel: true,
+                                searchPanel: true,
+                                component: '_main_widgets'
+                            }
+                        },
+                        {
+                            id: 5,
+                            options: {
+                                name: 'automation',
+                                leftPanel: true,
+                                searchPanel: true,
+                                component: '_main_automation'
+                            }
+                        }
+                    ]
+                })
+            }),
         }, {
             requestAnimationFrameEnabled: true
         }),

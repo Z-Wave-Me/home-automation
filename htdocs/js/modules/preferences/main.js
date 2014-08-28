@@ -25,7 +25,8 @@ define([
                 var _ = Ctx.React.DOM,
                     state = this.getState(),
                     overlay_show = state.val('overlayShow'),
-                    overlay_name = state.val('overlayShowName');
+                    overlay_name = state.val('overlayShowName'),
+                    overlay_back_button_enabled = state.sub('preferences').val('backButtonEnabled');
 
                 return (
                     _.div({
@@ -35,14 +36,14 @@ define([
                         _.div({className: 'overlay-wrapper'},
                             _.div({className: 'overlay-top'},
                                 _.div({className: 'overlay-left-top-panel overlay-top-panel'},
-                                    _.span({className: 'overlay-back-button', onClick: this.back}, '←')
+                                    _.span({className: overlay_back_button_enabled ? 'overlay-back-button' : 'overlay-back-button hidden', onClick: this.back}, '←')
                                 ),
                                 _.div({className: 'overlay-center-top-panel overlay-top-panel'},
                                     _.span({className: 'overlay-close-button', onClick: this.closeOverlay}, '✖')
                                 ),
                                 _.div({className: 'overlay-right-top-panel overlay-top-panel'})
                             ),
-                            Base({state: this.getState()})
+                            overlay_show ? Base({state: this.getState()}) : null
                         )
                     )
                 );

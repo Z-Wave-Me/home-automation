@@ -18,7 +18,7 @@ define([], function () {
                     typesBinding = state.sub('deviceTypes'),
                     types = typesBinding.val();
 
-                return _.div({className: 'header-sub-container bottom-filter-container clearfix'},
+                return _.div({className: 'secondary-filters'},
                     types
                         .map(function (type) {
                             return _.div({

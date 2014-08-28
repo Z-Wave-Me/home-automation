@@ -4,6 +4,13 @@ define([], function (
 
     return function (Ctx) {
         return Ctx.createClass({
+            onToggleHovering: function (hovering) {
+                var state = this.getState(),
+                    item = state.val();
+
+                item.set('hovering', hovering);
+                return false;
+            },
             render: function () {
                 var _ = Ctx.React.DOM,
                     state = this.getState(),
@@ -15,10 +22,10 @@ define([], function (
                     level = item.get('metrics').level;
 
                 return (
-                    _.div({className: 'content'},
+                    _.div({className: 'content', onMouseOver: this.onToggleHovering.bind(null, true), onBlur: this.onToggleHovering.bind(null, false)},
                         _.span({className: 'text title-container'}, title),
-                        _.progress({className: 'progress-bar', value: level, min: 0, max: 100}),
-                        _.input({className: 'input-range hidden', type: 'range', min: 0, max: 0, value: level, step: 1, style: styles})
+                        _.progress({className: item.get('hovering') ? 'hidden' : 'progress-bar', value: level, min: 0, max: 100}),
+                        _.input({className: item.get('hovering') ? 'input-range' : 'hidden', type: 'range', min: 0, max: 0, value: level, step: 1, style: styles})
                     )
                 )
             }

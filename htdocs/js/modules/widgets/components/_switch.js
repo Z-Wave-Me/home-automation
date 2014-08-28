@@ -17,8 +17,8 @@ define([], function (
                         _.div({className: 'colors-container just-hidden'},
                             _.div({className: 'picker'})
                         ),
-                        _.a({href: '#', className: 'action', title: level.toUpperCase()},
-                            _.span({className: 'switch-door'},
+                        _.a({href: '#', className: level.toLowerCase() === 'on' ? 'action active' : 'active', title: level.toUpperCase()},
+                            _.span({className: level.toLowerCase() === 'on' ? 'switch-door active' : 'switch-door'},
                                 _.span({className: 'bubble'}),
                                 _.span({className: 'text'}, level.toUpperCase())
                             )

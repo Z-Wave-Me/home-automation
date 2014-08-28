@@ -18,7 +18,7 @@ define([], function () {
                     locationsBinding = state.sub('locations'),
                     locations = locationsBinding.val();
 
-                return _.div({className: 'header-sub-container bottom-filter-container clearfix'},
+                return _.div({className: 'secondary-filters'},
                     locations.map(function (item) {
                         return _.div({
                             ref: 'secondaryFilter',

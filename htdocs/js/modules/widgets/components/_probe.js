@@ -9,10 +9,10 @@ define([], function (
                     state = this.getState(),
                     item = state.val(),
                     title = item.get('metrics').title,
-                    level = item.get('metrics').level,
+                    level = Sticky.get('App.Helpers.JS').isFloat(item.get('metrics').level) ? item.get('metrics').level.toFixed(1) : item.get('metrics').level,
                     scaleTitle =
                             item.get('metrics').hasOwnProperty('scaleTitle') &&
-                            item.get('metrics').scaleTitle.length > 0 ? ' ' + item.get('metrics').scaleTitle : '';
+                            String(item.get('metrics').scaleTitle).length > 0 ? ' ' + String(item.get('metrics').scaleTitle) : '';
 
                 return (
                     _.div({className: 'content'},

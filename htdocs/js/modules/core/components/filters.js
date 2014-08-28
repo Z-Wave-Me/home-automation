@@ -41,24 +41,22 @@ define([
 
                 SecondaryFilters = function () {
                     if (primaryFilter === 'rooms') {
-                        return FilterRooms({state: state});
+                        return state.val('locations').length > 0 ? FilterRooms({state: state}) : null;
                     } else if (primaryFilter === 'types') {
-                        return FilterTypes({state: state});
+                        return state.val('deviceTypes').length > 0 ? FilterTypes({state: state}) : null;
                     } else if (primaryFilter === 'tags') {
-                        return FilterTags({state: state});
+                        return state.val('deviceTags').length > 0 ? FilterTags({state: state}) : null;
                     } else {
                         return null;
                     }
                 };
 
-                return _.div({className: 'filters-container clearfix'},
-                    _.div({className: 'header-sub-container main-filter-container clearfix'},
-                        _.div({className: 'primary-filters'},
-                            _.span({onClick: this.setPrimaryFilter.bind(null, 'all'), className: primaryFilter === 'all' ? 'primary-filter selected' : 'primary-filter'}, 'All'),
-                            _.span({onClick: this.setPrimaryFilter.bind(null, 'rooms'), className: primaryFilter === 'rooms' ? 'primary-filter selected' : 'primary-filter'}, 'Rooms'),
-                            _.span({onClick: this.setPrimaryFilter.bind(null, 'types'), className: primaryFilter === 'types' ? 'primary-filter selected' : 'primary-filter'}, 'Types'),
-                            _.span({onClick: this.setPrimaryFilter.bind(null, 'tags'), className: primaryFilter === 'tags' ? 'primary-filter selected' : 'primary-filter'}, 'Tags')
-                        )
+                return _.div({className: 'filters-container'},
+                    _.div({className: 'primary-filters'},
+                        _.span({onClick: this.setPrimaryFilter.bind(null, 'all'), className: primaryFilter === 'all' ? 'primary-filter selected' : 'primary-filter'}, 'All'),
+                        _.span({onClick: this.setPrimaryFilter.bind(null, 'rooms'), className: primaryFilter === 'rooms' ? 'primary-filter selected' : 'primary-filter'}, 'Rooms'),
+                        _.span({onClick: this.setPrimaryFilter.bind(null, 'types'), className: primaryFilter === 'types' ? 'primary-filter selected' : 'primary-filter'}, 'Types'),
+                        _.span({onClick: this.setPrimaryFilter.bind(null, 'tags'), className: primaryFilter === 'tags' ? 'primary-filter selected' : 'primary-filter'}, 'Tags')
                     ),
                     SecondaryFilters()
                 )

@@ -1,3 +1,6 @@
+@primary-filter-height: 36px;
+@secondary-filter-height: 26px;
+
 #header-region {
   background-color: #192226;
   display: block;
@@ -140,6 +143,66 @@
         width: 100px;
         margin-left: 5px;
         color: @gray;
+      }
+    }
+  }
+  .header-sub-container {
+    display: block;
+    width: 100%;
+    float: left;
+  }
+  .filters-container {
+    display: block;
+    width: 100%;
+    height: @primary-filter-height + @secondary-filter-height;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    line-height: 22px;
+    .primary-filters {
+      width: 100%;
+      display: inline-block;
+      text-align: center;
+      background-color: #eee;
+      height: @primary-filter-height;
+      line-height: @primary-filter-height;
+      vertical-align: middle;
+      margin: 0;
+      padding: 0;
+      border: none;
+      .primary-filter {
+        display: inline-block;
+        margin: 0 4.5px;
+        cursor: pointer;
+        color: #375765;
+        font-weight: bold;
+        font-size: 13.5px;
+        &.selected {
+          color: #000;
+        }
+      }
+    }
+    .secondary-filters {
+      width: 100%;
+      display: inline-block;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #c3c9cc;
+      height: @secondary-filter-height;
+      line-height: @secondary-filter-height;
+      margin: 0;
+      padding: 0;
+      border: none;
+      .secondary-filter {
+        display: inline-block;
+        margin: 0 4.5px;
+        cursor: pointer;
+        color: #375765;
+        font-weight: bold;
+        font-size: 12.5px;
+        &.selected {
+          color: #000;
+        }
       }
     }
   }

@@ -86,10 +86,10 @@ define([
                     dependencies: collectionObject.dependencies || null
                 };
 
-                console.log(collectionObject.name + ' collection initialized')
+                //console.log(collectionObject.name + ' collection initialized');
 
                 if (collectionObject.name === 'Notifications') {
-                    that.registerHandler(collectionObject.name , 'change add remove', function () {
+                    that.registerHandler(collectionObject.name , 'add', function () {
                         state.update('notifications.' + collectionObject.name.toLowerCase(), function () {
                             return that.collections[collectionObject.name].collection.toJSON();
                         });

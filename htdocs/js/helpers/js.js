@@ -33,6 +33,12 @@ define([], function () {
                 }
 
                 return flatten(array, i+1);
+            },
+            isFloat: function isFloat(n) {
+                return n === +n && n !== (n|0);
+            },
+            isInteger: function(n) {
+                return n === +n && n === (n|0);
             }
         };
 

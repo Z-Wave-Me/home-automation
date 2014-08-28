@@ -11,7 +11,7 @@
         "react": "0.11.1",
         "jsx-requirejs-plugin": "0.2.2",
         "less": "1.7.4",
-        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.2.3",
+        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.2.4",
         "immutable": "git://github.com/facebook/immutable-js.git#2.0.15",
         "director": "1.2.2"
     }

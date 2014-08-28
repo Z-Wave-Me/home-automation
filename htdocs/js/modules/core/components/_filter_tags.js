@@ -18,15 +18,17 @@ define([], function () {
                     tagsBinding = state.sub('deviceTags'),
                     tags = tagsBinding.val();
 
-                return _.div({className: 'header-sub-container bottom-filter-container clearfix'},
-                    tags
-                        .map(function (tag) {
-                            return _.div({
-                                onClick: that.setSecondaryFilter.bind(null, tag),
-                                className: secondaryFilter === tag ? 'secondary-filter selected' : 'secondary-filter',
-                                key: tag
-                            }, tag);
-                        })
+                return (
+                    _.div({className: 'secondary-filters'},
+                        tags
+                            .map(function (tag) {
+                                return _.div({
+                                    onClick: that.setSecondaryFilter.bind(null, tag),
+                                    className: secondaryFilter === tag ? 'secondary-filter selected' : 'secondary-filter',
+                                    key: tag
+                                }, tag);
+                            })
+                    )
                 )
             }
         });

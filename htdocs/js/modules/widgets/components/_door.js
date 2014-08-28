@@ -9,7 +9,7 @@ define([], function (
                     state = this.getState(),
                     item = state.val(),
                     title = item.get('metrics').title,
-                    level = item.get('metrics').level;
+                    level = item.get('metrics').level || item.get('metrics').mode;
 
                 return (
                     _.div({className: 'content'},
