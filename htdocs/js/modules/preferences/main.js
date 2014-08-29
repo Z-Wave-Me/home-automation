@@ -12,9 +12,14 @@ define([
             options = _options || {},
             Base = new BaseComponent(Ctx);
 
+
         return Ctx.createClass({
+            componentDidMount: function () {
+                Ctx.History.init(state.sub('preferences').sub('activeNodeTreeId'), state.sub('preferences').sub('activeNodeTreeIdHistory'))
+            },
             back: function () {
                 var state = this.getState();
+                Ctx.History.undo(state.sub('preferences').sub('activeNodeTreeId'), state.sub('preferences').sub('activeNodeTreeIdHistory'))
                 console.log('Back!');
             },
             closeOverlay: function () {
@@ -31,7 +36,7 @@ define([
                 return (
                     _.div({
                             className: overlay_show ? ['overlay', 'show'].join(' ') : 'overlay',
-                                'data-overlay-name': overlay_name || 'default'
+                            'data-overlay-name': overlay_name || 'default'
                         },
                         _.div({className: 'overlay-wrapper'},
                             _.div({className: 'overlay-top'},

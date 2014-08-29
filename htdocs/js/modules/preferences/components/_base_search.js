@@ -10,13 +10,22 @@ define([
             options = _options || {};
 
         return Ctx.createClass({
+            setSearchString: function (event) {
+                var search_string = event.target.value;
+                this.getState().sub('preferences').set('searchString', search_string);
+            },
             render: function () {
                 var state = this.getState(),
-                    preferences_tree = state.sub('preferencesTree'),
-                    preferences_options = state.sub('preferencesOptions'),
                     _ = Ctx.React.DOM;
 
-                return _.div({ className: 'main-component' }, 'MainRooms');
+                return _.div({ className: 'base-search-component' },
+                    _.input({
+                        className: 'search-input',
+                        type: 'search',
+                        placeholder: 'search',
+                        onKeyPress: Ctx.Callback.onKey(this.setSearchString)
+                    })
+                );
             }
         });
     }

@@ -177,10 +177,14 @@ require([
             deviceTags: [],
             preferences: Immutable.Map({
                 activeNodeTreeId: 1,
+                activeNodeTreeIdHistory: 1,
                 backButtonEnabled: false,
                 adding: false,
                 editing: false,
                 duplicating: false,
+                searchString: '',
+                leftPanelItems: '',
+                leftPanelItemSelectedId: null,
                 tree: Immutable.Map({
                     id: 1,
                     options: {
@@ -196,9 +200,10 @@ require([
                                 name: 'general',
                                 leftPanel: true,
                                 searchPanel: true,
-                                button: ['add', 'remove'],
-                                component: '_main_general'
-                            }
+                                buttons: ['add', 'remove'],
+                                componentName: '_main_general'
+                            },
+                            children: []
                         },
                         {
                             id: 3,
@@ -206,8 +211,8 @@ require([
                                 name: 'rooms',
                                 leftPanel: true,
                                 searchPanel: true,
-                                button: ['add', 'remove'],
-                                component: '_main_rooms'
+                                buttons: ['add', 'remove'],
+                                componentName: '_main_rooms'
                             },
                             children: [
                                 {
@@ -216,9 +221,10 @@ require([
                                         name: 'general',
                                         leftPanel: true,
                                         searchPanel: true,
-                                        button: ['add', 'remove'],
-                                        component: '_main_rooms_general'
-                                    }
+                                        buttons: ['add', 'remove'],
+                                        componentName: '_main_rooms_general'
+                                    },
+                                    children: []
                                 },
                                 {
                                     id: 6,
@@ -226,8 +232,9 @@ require([
                                         name: 'devices',
                                         leftPanel: true,
                                         searchPanel: true,
-                                        component: '_main_rooms_devices'
-                                    }
+                                        componentName: '_main_rooms_devices'
+                                    },
+                                    children: []
                                 }
                             ]
                         },
@@ -237,8 +244,9 @@ require([
                                 name: 'widgets',
                                 leftPanel: true,
                                 searchPanel: true,
-                                component: '_main_widgets'
-                            }
+                                componentName: '_main_widgets'
+                            },
+                            children: []
                         },
                         {
                             id: 5,
@@ -246,12 +254,13 @@ require([
                                 name: 'automation',
                                 leftPanel: true,
                                 searchPanel: true,
-                                component: '_main_automation'
-                            }
+                                componentName: '_main_automation'
+                            },
+                            children: []
                         }
                     ]
                 })
-            }),
+            })
         }, {
             requestAnimationFrameEnabled: true
         }),

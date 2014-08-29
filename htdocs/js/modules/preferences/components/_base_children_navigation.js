@@ -12,11 +12,11 @@ define([
         return Ctx.createClass({
             render: function () {
                 var state = this.getState(),
-                    preferences_tree = state.sub('preferencesTree'),
-                    preferences_options = state.sub('preferencesOptions'),
+                    activeNode = this.getActiveNodeTree(),
+                    preferences_tree = state.sub('preferences'),
                     _ = Ctx.React.DOM;
 
-                return _.div({ className: 'preferences-panel clearfix' });
+                return _.div({ className: 'base-children-component clearfix' });
             }
         });
     }
