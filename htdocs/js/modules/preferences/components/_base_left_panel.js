@@ -15,8 +15,13 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, _base_mixin],
+        setActiveLeftPanelItemSelectedId: function (id) {
+            var binding = this.getDefaultBinding();
+            binding.sub('preferences').set('leftPanelItemSelectedId', id);
+        },
         getModels: function () {
-            var _ = React.DOM,
+            var that = this,
+                _ = React.DOM,
                 binding = this.getDefaultBinding(),
                 activeNode = this.getActiveNodeTree()[0],
                 name = activeNode.options.name,
@@ -26,6 +31,7 @@ define([
 
             renderModel = function (item, index) {
                 var searchString = binding.sub('preferences').val('searchString').toLowerCase(),
+                    leftPanelItemSelectedId = binding.sub('preferences').val('leftPanelItemSelectedId'),
                     title;
 
                 if (name === 'rooms') {
@@ -36,13 +42,16 @@ define([
                     title = item.toObject().metrics.title;
                 } else if (name === 'automation') {
                     title = item.toObject().params.title;
+                    console.log(item.toObject())
                 }
 
                 if ((searchString.length > 1 && searchString.indexOf(title.toLowerCase()) !== -1) || searchString.length < 2) {
                     return _.li({
-                            key: index
+                            className: leftPanelItemSelectedId === item.get('id') ? 'item-model selected' : 'item-model',
+                            key: index,
+                            onClick: that.setActiveLeftPanelItemSelectedId.bind(null, item.get('id'))
                         },
-                        title
+                        _.span({ className: 'title-item'}, title)
                     );
                 } else {
                     return null;

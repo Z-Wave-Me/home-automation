@@ -11,7 +11,7 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin],
         render: function () {
-            var _ = Ctx.React.DOM,
+            var _ = React.DOM,
                 binding = this.getDefaultBinding(),
                 item = binding.val(),
                 title = item.get('metrics').title;

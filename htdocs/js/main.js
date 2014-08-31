@@ -216,7 +216,7 @@ require([
                             },
                             children: [
                                 {
-                                    id: 5,
+                                    id: 6,
                                     options: {
                                         name: 'general',
                                         leftPanel: true,
@@ -227,7 +227,7 @@ require([
                                     children: []
                                 },
                                 {
-                                    id: 6,
+                                    id: 7,
                                     options: {
                                         name: 'devices',
                                         leftPanel: true,
@@ -286,10 +286,6 @@ require([
         {
             name: 'App.Modules.ServerSync',
             module: ServerSync
-        },
-        {
-            name: 'App.Modules.Preferences',
-            module: Preferences
         }
     ].forEach(function (options) {
         Sticky.set(options.name, options.module, Ctx, options.params);

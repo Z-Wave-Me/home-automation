@@ -1,3 +1,6 @@
+@list-item-height-selected: 34px;
+@list-item-height: 26px;
+
 .overlay {
   display: none;
   width: 100%;
@@ -66,8 +69,12 @@
   .left-panel-container {
     display: block;
     float: left;
-    width: 130px;
-    height: 20%;
+    min-width: 190px;
+    width: 17%;
+    height: 80%;
+    overflow: hidden;
+    overflow-y: auto;
+    border-right: 1px solid #ccc;
     // search panel
     .search-input {
       -webkit-appearance: textfield;
@@ -108,6 +115,62 @@
     }
     .search-input::-webkit-input-placeholder {
       color: #999;
+    }
+    // left-panel-list
+    .left-panel-list {
+      list-style-type: none;
+      text-decoration: none;
+      cursor: pointer;
+      padding: 0;
+      li {
+        cursor: pointer;
+        color: #375666;
+        font-size: 14px;
+        height: @list-item-height;
+        line-height: @list-item-height;
+        min-width: 170px;
+        max-width: 17%;
+        padding-left: 3px;
+        float: left;
+        .title-item {
+          width: 160px;
+          overflow: hidden;
+          white-space: nowrap;
+          display: block;
+          height: @list-item-height;
+          line-height: @list-item-height;
+          background-image: linear-gradient(to left, rgba(237, 237, 237, 0.95) 20%, rgba(255, 255, 255, 0) 48%);
+        }
+        &.selected {
+          cursor: default;
+          font-size: 18px;
+          height: @list-item-height-selected;
+          line-height: @list-item-height-selected;
+          color: #222;
+          background-color: #bbc2c4;
+          .title-item {
+            height: @list-item-height-selected;
+            line-height: @list-item-height-selected;
+            background-image: linear-gradient(to left, #bbc2c4 20%, rgba(255, 255, 255, 0) 48%);
+          }
+          &:after {
+            content: "";
+            border: 0.53em dashed transparent;
+            display: inline-block;
+            font-size: 1.79em;
+            background-color: #ededed;
+            height: 0;
+            line-height: 0;
+            position: relative;
+            vertical-align: middle;
+            width: 0;
+            border-left: 0.3em solid #bbc2c4;
+            float: right;
+            right: -26px;
+            top: -@list-item-height-selected;
+          }
+        }
+      }
     }
   }
   .right-panel-container {

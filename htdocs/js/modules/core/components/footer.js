@@ -10,6 +10,7 @@ define([
     'use strict';
 
     return React.createClass({
+        mixins: [Morearty.Mixin],
         render: function () {
             var _ = React.DOM;
 

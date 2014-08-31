@@ -85,8 +85,6 @@ define([
                     dependencies: collectionObject.dependencies || null
                 };
 
-                //console.log(collectionObject.name + ' collection initialized');
-
                 if (collectionObject.name === 'Notifications') {
                     that.registerHandler(collectionObject.name , 'error', function () {
                         binding.update('notificationsSeverity', function () {

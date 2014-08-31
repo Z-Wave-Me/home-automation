@@ -11,9 +11,9 @@ define([
     React,
     Morearty,
     // components
-    FilterRoomsClass,
-    FilterTagsClass,
-    FilterTypesClass
+    FilterRooms,
+    FilterTags,
+    FilterTypes
     ) {
     'use strict';
 
@@ -21,7 +21,7 @@ define([
         mixins: [Morearty.Mixin],
         setPrimaryFilter: function (filter) {
             var binding = this.getDefaultBinding();
-            this.getDefaultBinding().set('primaryFilter', filter);
+            binding.set('primaryFilter', filter);
             if (filter === 'rooms') {
                 binding.set('secondaryFilter', binding.sub('locations').val().get(0).get('id'));
             } else if (filter === 'tags') {
@@ -35,11 +35,8 @@ define([
         },
         render: function () {
             var binding = this.getDefaultBinding(),
-                _ = Ctx.React.DOM,
+                _ = React.DOM,
                 SecondaryFilters,
-                FilterRooms = new FilterRoomsClass(Ctx),
-                FilterTags = new FilterTagsClass(Ctx),
-                FilterTypes = new FilterTypesClass(Ctx),
                 primaryFilter = binding.val('primaryFilter');
 
             SecondaryFilters = function () {
