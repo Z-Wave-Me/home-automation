@@ -1,53 +1,55 @@
 define([
+    //libs
+    'react',
+    'morearty',
     //components
     './components/base'
 ], function (
+    //libs
+    React,
+    Morearty,
     // components
-    BaseWidgetView
+    BaseWidget
     ) {
     'use strict';
 
-    return function (Ctx, _options) {
-        var options = _options || {},
-            BaseWidget = new BaseWidgetView(Ctx);
+    return React.createClass({
+        mixins: [Morearty.Mixin],
+        render: function () {
+            var __ = React.DOM,
+                binding = this.getDefaultBinding(),
+                primaryFilter = binding.val('primaryFilter'),
+                secondaryFilter = binding.val('secondaryFilter'),
+                itemsBinding = binding.sub('devices'),
+                items = itemsBinding.val(),
+                renderWidget,
+                isShown,
+                profiles = Sticky.get('App.Modules.ServerSync').getCollection('Profiles'),
+                positions = profiles && Boolean(profiles.getActive()) ? profiles.getActive().get('positions') : [];
 
-        return Ctx.createClass({
-            render: function () {
-                var __ = Ctx.React.DOM,
-                    state = this.getState(),
-                    primaryFilter = state.val('primaryFilter'),
-                    secondaryFilter = state.val('secondaryFilter'),
-                    itemsBinding = state.sub('devices'),
-                    items = itemsBinding.val(),
-                    renderWidget,
-                    isShown,
-                    profiles = Sticky.get('App.Modules.ServerSync').getCollection('Profiles'),
-                    positions = profiles && Boolean(profiles.getActive()) ? profiles.getActive().get('positions') : [];
-
-                isShown = function (item) {
-                    if (state.val('nowShowing') === 'dashboard') {
-                        return positions.indexOf(item.get('id')) !== -1 ? true : null;
+            isShown = function (item) {
+                if (binding.val('nowShowing') === 'dashboard') {
+                    return positions.indexOf(item.get('id')) !== -1 ? true : null;
+                } else {
+                    if (primaryFilter === 'rooms') {
+                        return item.get('location') === secondaryFilter;
+                    } else if (primaryFilter === 'types') {
+                        return item.get('deviceType') === secondaryFilter;
+                    } else if (primaryFilter === 'tags') {
+                        return item.get('tags').indexOf(secondaryFilter) !== -1;
                     } else {
-                        if (primaryFilter === 'rooms') {
-                            return item.get('location') === secondaryFilter;
-                        } else if (primaryFilter === 'types') {
-                            return item.get('deviceType') === secondaryFilter;
-                        } else if (primaryFilter === 'tags') {
-                            return item.get('tags').indexOf(secondaryFilter) !== -1;
-                        } else {
-                            return true;
-                        }
+                        return true;
                     }
-                };
+                }
+            };
 
-                renderWidget = function (item, index) {
-                    return isShown(item) ? BaseWidget({ key: index, state: itemsBinding.sub(index) }) : null;
-                };
+            renderWidget = function (item, index) {
+                return isShown(item) ? BaseWidget({ key: index, binding: itemsBinding.sub(index) }) : null;
+            };
 
-                return __.section({id: 'devices-container', className: 'widgets'},
-                    items.map(renderWidget).toArray()
-                );
-            }
-        });
-    };
+            return __.section({id: 'devices-container', className: 'widgets'},
+                items.map(renderWidget).toArray()
+            );
+        }
+    });
 });

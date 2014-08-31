@@ -73,11 +73,10 @@ define([
             Backbone.sync = bbSync;
 
             that.arrayCollections.forEach(that.regCollection);
-            window.state = that.Ctx;
         },
         regCollection: function (collectionObject) {
             var that = this,
-                state = that.Ctx.state();
+                binding = that.Ctx.getBinding();
 
             require([collectionObject.path], function (collection) {
                 that.collections[collectionObject.name] = {
@@ -89,20 +88,11 @@ define([
                 //console.log(collectionObject.name + ' collection initialized');
 
                 if (collectionObject.name === 'Notifications') {
-                    that.registerHandler(collectionObject.name , 'add', function () {
-                        state.update('notifications.' + collectionObject.name.toLowerCase(), function () {
-                            return that.collections[collectionObject.name].collection.toJSON();
-                        });
-                        state.update('notificationsCount', function () {
-                            return that.collections[collectionObject.name].collection.length;
-                        });
-                    });
-
                     that.registerHandler(collectionObject.name , 'error', function () {
-                        state.update('notificationsSeverity', function () {
+                        binding.update('notificationsSeverity', function () {
                             return 'error';
                         });
-                        state.update('notificationsMessage', function () {
+                        binding.update('notificationsMessage', function () {
                             return 'No connection';
                         });
                     });
@@ -112,7 +102,7 @@ define([
                             className,
                             message;
 
-                        state.update('notificationsSeverity', function () {
+                        binding.update('notificationsSeverity', function () {
                             counts = that.collections[collectionObject.name].groupCount();
 
                             if (counts.error > 0) {
@@ -122,10 +112,11 @@ define([
                             } else {
                                 className = 'ok';
                             }
+
                             return className;
                         });
 
-                        state.update('notificationsMessage', function () {
+                        binding.update('notificationsMessage', function () {
                             counts = that.collections[collectionObject.name].groupCount();
 
                             if (counts.error > 0) {
@@ -141,15 +132,15 @@ define([
                 }
 
                 that.registerHandler(collectionObject.name , 'add', function (model) {
-                    state.update(collectionObject.name.toLowerCase(), function (devices) {
-                        return devices.push(that.Ctx.Imm.Map(model.toJSON()));
+                    binding.update(collectionObject.name.toLowerCase(), function (items) {
+                        return items.push(that.Ctx.Imm.Map(model.toJSON()));
                     });
-                    state.set(collectionObject.name + 'Count', that.collections[collectionObject.name].collection.length);
+                    binding.set(collectionObject.name + 'Count', that.collections[collectionObject.name].collection.length);
 
                     if (collectionObject.name === 'Devices') {
-                        state.set('devicesUpdateTime', that.collections[collectionObject.name].collection.updateTime || 0);
-                        state.set('deviceTags', _.uniq(_.flatten(that.collections[collectionObject.name].collection.map(function (device) { return device.get('tags'); }))));
-                        state.set('deviceTypes', _.uniq(_.flatten(that.collections[collectionObject.name].collection.map(function (device) { return device.get('deviceType'); }))));
+                        binding.set('devicesUpdateTime', that.collections[collectionObject.name].collection.updateTime || 0);
+                        binding.set('deviceTags', _.uniq(_.flatten(that.collections[collectionObject.name].collection.map(function (device) { return device.get('tags'); }))));
+                        binding.set('deviceTypes', _.uniq(_.flatten(that.collections[collectionObject.name].collection.map(function (device) { return device.get('deviceType'); }))));
                     }
                 });
 

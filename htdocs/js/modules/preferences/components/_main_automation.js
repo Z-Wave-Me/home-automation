@@ -1,23 +1,21 @@
 define([
-    //libs
+    // libs
+    'react',
+    'morearty'
 ], function (
     // libs
+    React,
+    Morearty
     ) {
     'use strict';
 
-    return function (Ctx, _options) {
-        var that = this,
-            options = _options || {};
+    return React.createClass({
+        mixins: [Morearty.Mixin],
+        render: function () {
+            var binding = this.getDefaultBinding(),
+                _ = React.DOM;
 
-        return Ctx.createClass({
-            render: function () {
-                var state = this.getState(),
-                    preferences_tree = state.sub('preferencesTree'),
-                    preferences_options = state.sub('preferencesOptions'),
-                    _ = Ctx.React.DOM;
-
-                return _.div({ className: 'main-component' }, 'MainAutomations');
-            }
-        });
-    }
+            return _.div({ className: 'main-component' }, 'MainAutomations');
+        }
+    });
 });

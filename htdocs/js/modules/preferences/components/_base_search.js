@@ -1,32 +1,33 @@
 define([
-    //libs
+    // libs
+    'react',
+    'morearty'
 ], function (
     // libs
+    React,
+    Morearty
     ) {
     'use strict';
 
-    return function (Ctx, _options) {
-        var that = this,
-            options = _options || {};
+    return React.createClass({
+        mixins: [Morearty.Mixin],
+        setSearchString: function (event) {
+            this.getDefaultBinding().sub('preferences').update('searchString', function () {
+                return event.target.value;
+            });
+        },
+        render: function () {
+            var binding = this.getDefaultBinding(),
+                _ = React.DOM;
 
-        return Ctx.createClass({
-            setSearchString: function (event) {
-                var search_string = event.target.value;
-                this.getState().sub('preferences').set('searchString', search_string);
-            },
-            render: function () {
-                var state = this.getState(),
-                    _ = Ctx.React.DOM;
-
-                return _.div({ className: 'base-search-component' },
-                    _.input({
-                        className: 'search-input',
-                        type: 'search',
-                        placeholder: 'search',
-                        onKeyPress: Ctx.Callback.onKey(this.setSearchString)
-                    })
-                );
-            }
-        });
-    }
+            return _.div({ className: 'base-search-component' },
+                _.input({
+                    className: 'search-input',
+                    type: 'search',
+                    placeholder: 'search',
+                    onKeyPress: Morearty.Callback.onKey(this.setSearchString)
+                })
+            );
+        }
+    });
 });

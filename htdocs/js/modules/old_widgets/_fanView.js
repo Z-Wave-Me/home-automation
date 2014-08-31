@@ -38,7 +38,7 @@ define([
 
             that.listenTo(that.model, 'change:metrics', function () {
                 that.$template.find('.title-container').text(that.model.get('metrics').title);
-                if (that.model.get('metrics').state !== true || that.model.get('metrics').state !== 'true') {
+                if (that.model.get('metrics').binding.!== true || that.model.get('metrics').binding.!== 'true') {
                     that.$template.find('select').val('-1');
                 } else {
                     that.$template.find('select').val(that.model.get('metrics').currentMode);

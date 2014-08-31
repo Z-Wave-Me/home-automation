@@ -5,17 +5,17 @@ define([], function () {
         var that = this,
             options = _options || {};
 
-        return Ctx.createClass({
+        return Ctx.React.createClass({
             setSecondaryFilter: function (value) {
-                this.getState().set('secondaryFilter', value);
+                this.getDefaultBinding().set('secondaryFilter', value);
                 return false;
             },
             render: function () {
                 var that = this,
-                    state = this.getState(),
+                    binding = this.getDefaultBinding(),
                     _ = Ctx.React.DOM,
-                    secondaryFilter = state.val('secondaryFilter'),
-                    typesBinding = state.sub('deviceTypes'),
+                    secondaryFilter = binding.val('secondaryFilter'),
+                    typesBinding = binding.sub('deviceTypes'),
                     types = typesBinding.val();
 
                 return _.div({className: 'secondary-filters'},

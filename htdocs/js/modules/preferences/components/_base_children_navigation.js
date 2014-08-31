@@ -1,23 +1,22 @@
 define([
-    //libs
+    // libs
+    'react',
+    'morearty'
 ], function (
     // libs
+    React,
+    Morearty
     ) {
     'use strict';
 
-    return function (Ctx, _options) {
-        var that = this,
-            options = _options || {};
+    return React.createClass({
+        mixins: [Morearty.Mixin],
+        render: function () {
+            var binding = this.getDefaultBinding(),
+                _ = React.DOM;
 
-        return Ctx.createClass({
-            render: function () {
-                var state = this.getState(),
-                    activeNode = this.getActiveNodeTree(),
-                    preferences_tree = state.sub('preferences'),
-                    _ = Ctx.React.DOM;
-
-                return _.div({ className: 'base-children-component clearfix' });
-            }
-        });
-    }
+            return _.div({ className: 'base-children-component clearfix' });
+        }
+    });
 });
+

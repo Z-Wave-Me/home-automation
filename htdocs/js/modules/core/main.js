@@ -1,50 +1,51 @@
 define([
     //libs
+    'react',
+    'morearty',
     // components
     './components/header',
     './components/main',
-    './components/footer'
+    './components/footer',
+    'Preferences'
 ], function (
     // libs
+    React,
+    Morearty,
     // components
-    HeaderComponent,
-    MainComponent,
-    FooterComponent
+    Header,
+    Main,
+    Footer,
+    Preferences
     ) {
     'use strict';
 
-    return function (Ctx, _options) {
-        var that = this,
-            options = _options || {},
-            Header = new HeaderComponent(Ctx),
-            Main = new MainComponent(Ctx),
-            Footer = new FooterComponent(Ctx),
-            Preferences = Sticky.get('App.Modules.Preferences');
+    return React.createClass({
+        mixins: [Morearty.Mixin],
+        componentDidMount: function () {
+            var binding = this.getDefaultBinding();
 
-        that._routes = Object.freeze({
-            'DASHBOARD': 'dashboard',
-            'WIDGETS': 'widgets'
-        });
+            this._routes = Object.freeze({
+                'DASHBOARD': 'dashboard',
+                'WIDGETS': 'widgets'
+            });
 
-        return Ctx.createClass({
-            componentDidMount: function () {
-                var state = this.getState();
-                Router({
-                    '/': state.set.bind(state, 'nowShowing', that._routes.DASHBOARD),
-                    '/dashboard': state.set.bind(state, 'nowShowing', that._routes.DASHBOARD),
-                    '/widgets': state.set.bind(state, 'nowShowing', that._routes.WIDGETS)
-                }).init();
-            },
+            Router({
+                '/': binding.set.bind(binding, 'nowShowing', this._routes.DASHBOARD),
+                '/dashboard': binding.set.bind(binding, 'nowShowing', this._routes.DASHBOARD),
+                '/widgets': binding.set.bind(binding, 'nowShowing', this._routes.WIDGETS)
+            }).init();
+        },
 
-            render: function () {
-                var __ = Ctx.React.DOM;
-                return __.div({ className: 'applications wrapper', 'data-app-id': 'home-automation' },
-                    Header({state: this.getState()}),
-                    Main({state: this.getState()}),
-                    Footer({state: this.getState()}),
-                    Preferences({state: this.getState()})
-                );
-            }
-        });
-    }
+        render: function () {
+            var _ = React.DOM,
+                binding = this.getDefaultBinding();
+
+            return _.div({ className: 'applications wrapper', 'data-app-id': 'home-automation' },
+                Header({binding: binding}),
+                Main({binding: binding}),
+                Footer({binding: binding}),
+                Preferences({binding: binding})
+            );
+        }
+    });
 });

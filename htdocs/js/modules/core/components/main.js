@@ -1,22 +1,29 @@
-define([], function () {
+define([
+    // libs
+    'react',
+    'morearty',
+    // components
+    'Widgets'
+], function (
+    // libs
+    React,
+    Morearty,
+    // components
+    Widgets
+    ) {
     'use strict';
 
-    return function (Ctx, _options) {
-        var that = this,
-            options = _options || {},
-            Widgets = Sticky.get('App.Modules.Widgets');
+    return React.createClass({
+        mixins: [Morearty.Mixin],
+        render: function () {
+            var binding = this.getDefaultBinding(),
+                _ = React.DOM;
 
-        return Ctx.createClass({
-            render: function () {
-                var state = this.getState(),
-                    _ = Ctx.React.DOM;
-
-                return _.div({ className: 'main-container clearfix' },
-                    _.div({id: 'main-region', className: 'main wrapper clearfix'},
-                        Widgets({state: state})
-                    )
-                );
-            }
-        });
-    }
+            return _.div({ className: 'main-container clearfix' },
+                _.div({id: 'main-region', className: 'main wrapper clearfix'},
+                    Widgets({binding: binding})
+                )
+            );
+        }
+    });
 });

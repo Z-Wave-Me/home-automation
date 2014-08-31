@@ -28,7 +28,7 @@ define([
                 var that = this;
                 that.context.createClass({
                     componentDidMount: function () {
-                        var state = this.getState();
+                        var state = this.getBinding();
                         Router({
                             '/': state.set.bind(state, 'nowShowing', this.NOW_SHOWING.DASHBOARD),
                             '/dashboard': state.set.bind(state, 'nowShowing', this.NOW_SHOWING.DASHBOARD),

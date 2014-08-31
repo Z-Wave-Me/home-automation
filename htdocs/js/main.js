@@ -106,19 +106,19 @@ requirejs.config({
     // modules
     packages: [
         {
-            name: 'PreferencesModule', // default 'packagename'
+            name: 'Preferences', // default 'packagename'
             location: 'modules/preferences'//,
         },
         {
-            name: 'ServerSyncModule', // default 'packagename'
+            name: 'ServerSync', // default 'packagename'
             location: 'modules/serversync'//,
         },
         {
-            name: 'CoreModule',
+            name: 'App',
             location: 'modules/core'
         },
         {
-            name: 'WidgetsModule',
+            name: 'Widgets',
             location: 'modules/widgets'
         }
     ]
@@ -132,10 +132,9 @@ require([
     'director',
     'sticky',
     // modules
-    'CoreModule',
-    'PreferencesModule',
-    'ServerSyncModule',
-    'WidgetsModule',
+    'App',
+    'Preferences',
+    'ServerSync',
     // helpers
     'helpers/js'
 ], function (
@@ -146,16 +145,16 @@ require([
     Director,
     Sticky,
     // modules
-    CoreModule,
-    PreferencesModule,
-    ServerSyncModule,
-    WidgetsModule,
+    App,
+    Preferences,
+    ServerSync,
     // helpers
     HelpersJS
     ) {
     'use strict';
 
     var Ctx = Morearty.createContext(React, Immutable, {
+            // common
             nowShowing: 'dashboard', // start route
             notifications: [],
             notificationsCount: 0,
@@ -175,6 +174,7 @@ require([
             overlayShowName: null,
             deviceTypes: [],
             deviceTags: [],
+            // preferences
             preferences: Immutable.Map({
                 activeNodeTreeId: 1,
                 activeNodeTreeIdHistory: 1,
@@ -264,14 +264,16 @@ require([
         }, {
             requestAnimationFrameEnabled: true
         }),
-        Bootstrap = Ctx.createClass({
+        Bootstrap = React.createClass({
+            mixins: [Morearty.Mixin],
             componentWillMount: function () {
                 Ctx.init(this);
             },
 
             render: function () {
-                var App = Sticky.get('App.Modules.Core');
-                return App({ state: Ctx.state()});
+                return React.withContext({ morearty: Ctx }, function () {
+                    return App({ binding: Ctx.getBinding() });
+                });
             }
         });
 
@@ -283,19 +285,11 @@ require([
         },
         {
             name: 'App.Modules.ServerSync',
-            module: ServerSyncModule
+            module: ServerSync
         },
         {
             name: 'App.Modules.Preferences',
-            module: PreferencesModule
-        },
-        {
-            name: 'App.Modules.Widgets',
-            module: WidgetsModule
-        },
-        {
-            name: 'App.Modules.Core',
-            module: CoreModule
+            module: Preferences
         }
     ].forEach(function (options) {
         Sticky.set(options.name, options.module, Ctx, options.params);
