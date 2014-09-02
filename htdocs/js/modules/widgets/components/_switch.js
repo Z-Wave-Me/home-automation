@@ -1,15 +1,20 @@
 define([
     // libs
     'react',
-    'morearty'
+    'morearty',
+    // mixins
+    'mixins/sync/sync-layer'
 ], function (
     React,
-    Morearty
+    Morearty,
+    // mixins
+    SyncLayerMixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin],
+        _serviceId: 'devices',
+        mixins: [Morearty.Mixin, SyncLayerMixin],
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),

@@ -12,13 +12,12 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin],
         setSearchString: function (event) {
-            this.getDefaultBinding().sub('preferences').update('searchString', function () {
+            this.getDefaultBinding().update('searchString', function () {
                 return event.target.value;
             });
         },
         render: function () {
-            var binding = this.getDefaultBinding(),
-                _ = React.DOM;
+            var _ = React.DOM;
 
             return _.div({ className: 'base-search-component' },
                 _.input({

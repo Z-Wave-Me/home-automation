@@ -16,8 +16,7 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, _base_mixin],
         render: function () {
-            var binding = this.getDefaultBinding(),
-                activeNode = this.getActiveNode(),
+            var activeNode = this.getActiveNode(),
                 _ = React.DOM;
 
             return _.div({ className: 'button-container-component' },

@@ -37,14 +37,29 @@ define([
         },
 
         render: function () {
-            var _ = React.DOM,
+            var that = this,
+                _ = React.DOM,
                 binding = this.getDefaultBinding();
 
             return _.div({ className: 'applications wrapper', 'data-app-id': 'home-automation' },
-                Header({binding: binding}),
-                Main({binding: binding}),
+                Header({
+                    binding: {
+                        default: binding,
+                        data: that.getBinding('data')
+                    }
+                }),
+                Main({
+                    binding: {
+                        default: binding,
+                        data: that.getBinding('data')
+                    }
+                }),
                 Footer({binding: binding}),
-                Preferences({binding: binding})
+                Preferences({binding: {
+                    default: binding,
+                    data: that.getBinding('data'),
+                    preferences: that.getBinding('preferences')
+                }})
             );
         }
     });

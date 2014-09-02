@@ -136,7 +136,12 @@ require([
     'Preferences',
     'ServerSync',
     // helpers
-    'helpers/js'
+    'helpers/js',
+    // contexts
+    'state/default',
+    'state/preferences',
+    'state/services',
+    'state/data'
 ], function (
     // libraries
     Morearty,
@@ -149,118 +154,20 @@ require([
     Preferences,
     ServerSync,
     // helpers
-    HelpersJS
+    HelpersJS,
+    // bindings
+    defaultBinding,
+    preferencesBinding,
+    servicesBinding,
+    dataBinding
     ) {
     'use strict';
 
     var Ctx = Morearty.createContext(React, Immutable, {
-            // common
-            nowShowing: 'dashboard', // start route
-            notifications: [],
-            notificationsCount: 0,
-            notificationsSeverity: 'ok', // ok, warning, error, debug
-            notificationsMessage: 'ok',
-            devices: [],
-            namespaces: [],
-            modules: [],
-            instances: [],
-            locations: [],
-            profiles: [],
-            primaryFilter: 'all',
-            secondaryFilter: '',
-            devicesCount: 0,
-            devicesUpdateTime: 0,
-            overlayShow: false,
-            overlayShowName: null,
-            deviceTypes: [],
-            deviceTags: [],
-            // preferences
-            preferences: Immutable.Map({
-                activeNodeTreeId: 1,
-                activeNodeTreeIdHistory: 1,
-                backButtonEnabled: false,
-                adding: false,
-                editing: false,
-                duplicating: false,
-                searchString: '',
-                leftPanelItems: '',
-                leftPanelItemSelectedId: null,
-                tree: Immutable.Map({
-                    id: 1,
-                    options: {
-                        name: 'main',
-                        leftPanel: false,
-                        searchPanel: false,
-                        componentName: '_main'
-                    },
-                    children: [
-                        {
-                            id: 2,
-                            options: {
-                                name: 'general',
-                                leftPanel: true,
-                                searchPanel: true,
-                                buttons: ['add', 'remove'],
-                                componentName: '_main_general'
-                            },
-                            children: []
-                        },
-                        {
-                            id: 3,
-                            options: {
-                                name: 'rooms',
-                                leftPanel: true,
-                                searchPanel: true,
-                                buttons: ['add', 'remove'],
-                                componentName: '_main_rooms'
-                            },
-                            children: [
-                                {
-                                    id: 6,
-                                    options: {
-                                        name: 'general',
-                                        leftPanel: true,
-                                        searchPanel: true,
-                                        buttons: ['add', 'remove'],
-                                        componentName: '_main_rooms'
-                                    },
-                                    children: []
-                                },
-                                {
-                                    id: 7,
-                                    options: {
-                                        name: 'devices',
-                                        leftPanel: false,
-                                        searchPanel: false,
-                                        componentName: '_main_rooms_devices'
-                                    },
-                                    children: []
-                                }
-                            ]
-                        },
-                        {
-                            id: 4,
-                            options: {
-                                name: 'widgets',
-                                leftPanel: true,
-                                searchPanel: true,
-                                componentName: '_main_widgets'
-                            },
-                            children: []
-                        },
-                        {
-                            id: 5,
-                            options: {
-                                name: 'automation',
-                                leftPanel: true,
-                                searchPanel: true,
-                                componentName: '_main_automation'
-                            },
-                            children: []
-                        }
-                    ]
-                })
-            })
+            default: defaultBinding,
+            preferences: preferencesBinding,
+            services: servicesBinding,
+            data: dataBinding
         }, {
             requestAnimationFrameEnabled: true
         }),
@@ -272,7 +179,14 @@ require([
 
             render: function () {
                 return React.withContext({ morearty: Ctx }, function () {
-                    return App({ binding: Ctx.getBinding() });
+                    return App({
+                        binding: {
+                            default: Ctx.getBinding().sub('default'),
+                            preferences: Ctx.getBinding().sub('preferences'),
+                            services: Ctx.getBinding().sub('services'),
+                            data: Ctx.getBinding().sub('data')
+                        }
+                    });
                 });
             }
         });

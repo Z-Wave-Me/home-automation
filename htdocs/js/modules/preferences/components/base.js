@@ -40,6 +40,8 @@ define([
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
+                preferencesBinding = this.getBinding('preferences'),
+                dataBinding = this.getBinding('data'),
                 activeNode = this.getActiveNodeTree(),
                 components = {
                     '_main': _main,
@@ -56,19 +58,25 @@ define([
                 activeNode[0].options.leftPanel ? _.div({className: 'left-panel-container'},
                     // search
                     activeNode[0].options.searchPanel ?
-                        _base_search({binding: binding})
+                        _base_search({binding: preferencesBinding})
                         : null,
                     // list block
-                    _base_left_panel({binding: binding})
+                    _base_left_panel({binding: { default: binding, data: dataBinding, preferences: preferencesBinding }})
                 ) : null,
-                // main component
+                // right panel
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container' : 'panel-container'},
                     // children panel
                         activeNode[0].hasOwnProperty('children') && activeNode[0].children.length > 0 && activeNode[0].id !== 1 ?
-                        _base_children_navigation({binding: binding})
+                        _base_children_navigation({binding: preferencesBinding})
                         : null,
                     // main component
-                    components[activeNode[0].options.componentName]({binding: binding})
+                    components[activeNode[0].options.componentName]({
+                        binding: {
+                            default: binding,
+                            data: dataBinding,
+                            preferences: preferencesBinding
+                        }
+                    })
                 )
             );
         }

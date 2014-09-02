@@ -16,8 +16,7 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, _base_mixin],
         render: function () {
-            var binding = this.getDefaultBinding(),
-                _ = React.DOM;
+            var _ = React.DOM;
 
             return _.div({ className: 'main-component' },
                 _.div({ className: 'line-container'},

@@ -33,7 +33,7 @@ define([
                     _.progress({className: item.get('hovering') ? 'hidden' : 'progress-bar', value: level, min: 0, max: 100}),
                     _.input({className: item.get('hovering') ? 'input-range' : 'hidden', type: 'range', min: 0, max: 0, value: level, step: 1, style: styles})
                 )
-                )
+            )
         }
     });
 });

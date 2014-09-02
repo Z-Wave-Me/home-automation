@@ -20,32 +20,23 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin],
         setPrimaryFilter: function (filter) {
-            var binding = this.getDefaultBinding();
-            binding.set('primaryFilter', filter);
-            if (filter === 'rooms') {
-                binding.set('secondaryFilter', binding.sub('locations').val().get(0).get('id'));
-            } else if (filter === 'tags') {
-                binding.set('secondaryFilter', binding.val('deviceTags')[0]);
-            } else if (filter === 'types') {
-                binding.set('secondaryFilter', binding.val('deviceTypes')[0]);
-            } else {
-                binding.set('secondaryFilter', '');
-            }
+            this.getDefaultBinding().set('primaryFilter', filter);
             return false;
         },
         render: function () {
             var binding = this.getDefaultBinding(),
+                dataBinding = this.getBinding('data'),
                 _ = React.DOM,
                 SecondaryFilters,
                 primaryFilter = binding.val('primaryFilter');
 
             SecondaryFilters = function () {
                 if (primaryFilter === 'rooms') {
-                    return binding.val('locations').length > 0 ? FilterRooms({binding: binding}) : null;
+                    return dataBinding.val('locations').toArray().length > 0 ? FilterRooms({binding: { default: binding, data: dataBinding }}) : null;
                 } else if (primaryFilter === 'types') {
-                    return binding.val('deviceTypes').length > 0 ? FilterTypes({binding: binding}) : null;
+                    return dataBinding.val('deviceTypes').length > 0 ? FilterTypes({binding: { default: binding, data: dataBinding }}) : null;
                 } else if (primaryFilter === 'tags') {
-                    return binding.val('deviceTags').length > 0 ? FilterTags({binding: binding}) : null;
+                    return dataBinding.val('deviceTags').length > 0 ? FilterTags({binding: { default: binding, data: dataBinding }}) : null;
                 } else {
                     return null;
                 }

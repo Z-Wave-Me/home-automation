@@ -16,13 +16,13 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, _base_mixin],
         setActiveLeftPanelItemSelectedId: function (id) {
-            var binding = this.getDefaultBinding();
-            binding.sub('preferences').set('leftPanelItemSelectedId', id);
+            this.getBinding('preferences').set('leftPanelItemSelectedId', id);
         },
         getModels: function () {
             var that = this,
                 _ = React.DOM,
-                binding = this.getDefaultBinding(),
+                preferencesBinding = this.getBinding('preferences'),
+                dataBinding = this.getBinding('data'),
                 activeNode = this.getActiveNodeTree()[0],
                 name = activeNode.options.name,
                 itemsBinding,
@@ -30,8 +30,8 @@ define([
                 renderModel;
 
             renderModel = function (item, index) {
-                var searchString = binding.sub('preferences').val('searchString').toLowerCase(),
-                    leftPanelItemSelectedId = binding.sub('preferences').val('leftPanelItemSelectedId'),
+                var searchString = preferencesBinding.val('searchString').toLowerCase(),
+                    leftPanelItemSelectedId = preferencesBinding.val('leftPanelItemSelectedId'),
                     title;
 
                 if (name === 'rooms') {
@@ -42,7 +42,6 @@ define([
                     title = item.toObject().metrics.title;
                 } else if (name === 'automation') {
                     title = item.toObject().params.title;
-                    console.log(item.toObject())
                 }
 
                 if ((searchString.length > 1 && searchString.indexOf(title.toLowerCase()) !== -1) || searchString.length < 2) {
@@ -60,13 +59,13 @@ define([
             };
 
             if (name === 'rooms') {
-                itemsBinding = binding.sub('locations');
+                itemsBinding = dataBinding.sub('locations');
             } else if (name === 'general') {
-                itemsBinding = binding.sub('profiles');
+                itemsBinding = dataBinding.sub('profiles');
             } else if (name === 'widgets') {
-                itemsBinding = binding.sub('devices');
+                itemsBinding = dataBinding.sub('devices');
             } else if (name === 'automation') {
-                itemsBinding = binding.sub('instances');
+                itemsBinding = dataBinding.sub('instances');
             }
 
             items = itemsBinding.val();
@@ -78,9 +77,6 @@ define([
             )
         },
         render: function () {
-            var binding = this.getDefaultBinding(),
-                preferences = binding.sub('preferences');
-
             return this.getModels();
         }
     });

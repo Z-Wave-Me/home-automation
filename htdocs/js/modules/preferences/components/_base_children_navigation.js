@@ -17,7 +17,6 @@ define([
         mixins: [Morearty.Mixin, _base_mixin],
         render: function () {
             var that = this,
-                binding = this.getDefaultBinding(),
                 activeNode = this.getActiveNodeTree()[0],
                 _ = React.DOM;
 

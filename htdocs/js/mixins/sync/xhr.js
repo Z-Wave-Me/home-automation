@@ -8,39 +8,39 @@ define([], function () {
                 apiPort = query.hasOwnProperty('port') ? query.port : window.location.port,
                 apiHost = query.hasOwnProperty('host') ? query.host : window.location.hostname,
                 url =
-                        window.location.protocol + '//' + // protocol
-                        apiHost + // host
-                        Boolean(apiPort) ? ':' + apiPort : '' + // port
-                        '/ZAutomation/api/v1' + options.url; // apiURL
+                        window.location.protocol + '//' +
+                        apiHost +
+                        (Boolean(apiPort) ? ':' + apiPort : '')
+                        + '/ZAutomation/api/v1' + options.url;
 
-            xhr.setRequestHeader('Content-Type', 'application/json');
+            options.params = options.params || {};
 
             if (!options.hasOwnProperty('url') || !options.hasOwnProperty('method')) {
                 return;
             }
 
             if (options.hasOwnProperty('cache') && options.cache === false) {
-                options.params = options.params || {};
                 options.params.nocache = Math.random();
             }
 
-            if (options.hasOwnProperty('params')) {
+            if (Object.keys(options.params).length > 0) {
                 url = url + '?' + this._serialiseObject(options.params);
             }
 
             xhr.open(options.method, url, true);
-            xhr.onload = function (e) {
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function (e) {
                 if (xhr.readyState === 4) {
                     if (xhr.status < 400) {
                         if (Boolean(options.success) && typeof options.success === 'function') {
-                            options.success(xhr.responseText);
+                            options.success(xhr.responseText ? JSON.parse(xhr.responseText) : xhr.responseText);
                         } else {
                             //console.debug('options.success is not function')
                         }
                         //console.log(xhr.responseText);
                     } else {
                         if (Boolean(options.error) && typeof options.error === 'function') {
-                            options.error(xhr.responseText);
+                            options.error(xhr.responseText.length > 0 ? JSON.parse(xhr.responseText) : xhr.responseText);
                         } else {
                             //console.debug('options.error is not function')
                         }

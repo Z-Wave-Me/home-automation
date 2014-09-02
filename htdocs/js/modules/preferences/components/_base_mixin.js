@@ -17,19 +17,19 @@ define([], function () {
             return null;
         },
         setActiveNode: function (nodeId) {
-            var binding = this.getDefaultBinding();
+            var binding = this.getMoreartyContext().getBinding().sub('preferences');
 
-            binding.sub('preferences').set('activeNodeTreeId', nodeId);
+            binding.set('activeNodeTreeId', nodeId);
             if (nodeId === 1) {
-                binding.sub('preferences').set('backButtonEnabled', false);
+                binding.set('backButtonEnabled', false);
             } else {
-                binding.sub('preferences').set('backButtonEnabled', true);
+                binding.set('backButtonEnabled', true);
             }
         },
         getActiveNodeTree: function () {
-            var binding = this.getDefaultBinding(),
-                activeNodeTreeId = binding.sub('preferences').val('activeNodeTreeId'),
-                activeNode = this.searchTree(binding.sub('preferences').sub('tree').val().toObject(), activeNodeTreeId);
+            var binding = this.getMoreartyContext().getBinding().sub('preferences'),
+                activeNodeTreeId = binding.val('activeNodeTreeId'),
+                activeNode = this.searchTree(binding.sub('tree').val().toObject(), activeNodeTreeId);
 
             return activeNode;
         }

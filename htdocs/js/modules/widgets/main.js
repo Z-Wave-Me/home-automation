@@ -18,9 +18,10 @@ define([
         render: function () {
             var __ = React.DOM,
                 binding = this.getDefaultBinding(),
+                dataBinding = this.getBinding('data'),
                 primaryFilter = binding.val('primaryFilter'),
                 secondaryFilter = binding.val('secondaryFilter'),
-                itemsBinding = binding.sub('devices'),
+                itemsBinding = dataBinding.sub('devices'),
                 items = itemsBinding.val(),
                 renderWidget,
                 isShown,

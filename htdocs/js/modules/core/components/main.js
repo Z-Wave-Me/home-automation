@@ -17,11 +17,12 @@ define([
         mixins: [Morearty.Mixin],
         render: function () {
             var binding = this.getDefaultBinding(),
+                dataBinding = this.getBinding('data'),
                 _ = React.DOM;
 
             return _.div({ className: 'main-container clearfix' },
                 _.div({id: 'main-region', className: 'main wrapper clearfix'},
-                    Widgets({binding: binding})
+                    Widgets({binding: { default: binding, data: dataBinding }})
                 )
             );
         }

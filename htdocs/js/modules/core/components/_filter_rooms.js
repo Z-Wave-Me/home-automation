@@ -11,6 +11,14 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin],
+        componentDidMount: function () {
+            var binding = this.getDefaultBinding(),
+                dataBinding = this.getBinding('data');
+
+            if (dataBinding.val('locations').toArray().length > 0) {
+                binding.set('secondaryFilter', dataBinding.sub('locations').val().get(0).get('id'));
+            }
+        },
         setSecondaryFilter: function (value) {
             this.getDefaultBinding().set('secondaryFilter', value);
             return false;
@@ -18,9 +26,10 @@ define([
         render: function () {
             var that = this,
                 binding = this.getDefaultBinding(),
+                dataBinding = this.getBinding('data'),
                 _ = React.DOM,
                 secondaryFilter = binding.val('secondaryFilter'),
-                locationsBinding = binding.sub('locations'),
+                locationsBinding = dataBinding.sub('locations'),
                 locations = locationsBinding.val();
 
             return _.div({className: 'secondary-filters'},

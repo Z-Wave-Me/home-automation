@@ -76,7 +76,7 @@ define([
         },
         regCollection: function (collectionObject) {
             var that = this,
-                binding = that.Ctx.getBinding();
+                binding = that.Ctx.getBinding().sub('data');
 
             require([collectionObject.path], function (collection) {
                 that.collections[collectionObject.name] = {
@@ -167,7 +167,7 @@ define([
         },
         start: function () {
             var that = this,
-                default_sync_interval = 1000, // default interval ms
+                default_sync_interval = 10000, // default interval ms
                 filtered_collection_names = _.filter(Object.keys(that.collections), function (key) {
                     return that.collections[key].interval;
                 }); // only collection with interval
