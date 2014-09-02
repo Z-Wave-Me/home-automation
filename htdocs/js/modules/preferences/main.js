@@ -19,6 +19,14 @@ define([
             var ctx = this.getMoreartyContext(),
                 binding = this.getDefaultBinding();
 
+            binding.addListener('overlayShow', function (newValue, oldValue, absolutePath, relativePath) {
+                if (newValue) {
+                    document.getElementById('body').style.overflow = 'hidden';
+                } else {
+                    document.getElementById('body').style.overflow = 'auto';
+                }
+            });
+
             ctx.History.init(binding.sub('preferences').sub('activeNodeTreeId'), binding.sub('preferences').sub('activeNodeTreeIdHistory'))
         },
         back: function () {

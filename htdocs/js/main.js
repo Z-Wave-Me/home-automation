@@ -222,7 +222,7 @@ require([
                                         leftPanel: true,
                                         searchPanel: true,
                                         buttons: ['add', 'remove'],
-                                        componentName: '_main_rooms_general'
+                                        componentName: '_main_rooms'
                                     },
                                     children: []
                                 },
@@ -230,8 +230,8 @@ require([
                                     id: 7,
                                     options: {
                                         name: 'devices',
-                                        leftPanel: true,
-                                        searchPanel: true,
+                                        leftPanel: false,
+                                        searchPanel: false,
                                         componentName: '_main_rooms_devices'
                                     },
                                     children: []

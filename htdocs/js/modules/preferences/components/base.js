@@ -52,10 +52,6 @@ define([
                 };
 
             return _.div({ className: 'preferences-overlay clearfix' },
-                // children panel
-                    activeNode[0].hasOwnProperty('children') && activeNode[0].id !== 1 ?
-                    _base_children_navigation({binding: binding.sub('preferences')})
-                    : null,
                 // leftpanel
                 activeNode[0].options.leftPanel ? _.div({className: 'left-panel-container'},
                     // search
@@ -67,6 +63,11 @@ define([
                 ) : null,
                 // main component
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container' : 'panel-container'},
+                    // children panel
+                        activeNode[0].hasOwnProperty('children') && activeNode[0].children.length > 0 && activeNode[0].id !== 1 ?
+                        _base_children_navigation({binding: binding})
+                        : null,
+                    // main component
                     components[activeNode[0].options.componentName]({binding: binding})
                 )
             );

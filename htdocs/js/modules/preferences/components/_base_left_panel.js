@@ -71,8 +71,10 @@ define([
 
             items = itemsBinding.val();
 
-            return _.ul({ className: 'left-panel-list' },
-                items.map(renderModel).toArray()
+            return _.div({className: 'left-panel-list-container'},
+                _.ul({ className: 'left-panel-list' },
+                    items.map(renderModel).toArray()
+                )
             )
         },
         render: function () {
