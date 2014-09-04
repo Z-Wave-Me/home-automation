@@ -120,6 +120,10 @@ requirejs.config({
         {
             name: 'Widgets',
             location: 'modules/widgets'
+        },
+        {
+            name: 'CommonMixins',
+            location: 'mixins/common'
         }
     ]
 });

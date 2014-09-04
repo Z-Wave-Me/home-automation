@@ -5,7 +5,8 @@ define([
     // components
     './_filter_rooms',
     './_filter_tags',
-    './_filter_types'
+    './_filter_types',
+    'Preferences/components/_base_search'
 ], function (
     // libs
     React,
@@ -13,7 +14,8 @@ define([
     // components
     FilterRooms,
     FilterTags,
-    FilterTypes
+    FilterTypes,
+    BaseSearch
     ) {
     'use strict';
 
@@ -43,11 +45,19 @@ define([
             };
 
             return _.div({className: 'filters-container'},
-                _.div({className: 'primary-filters'},
+                _.div({className: 'panel-filter left-filter'}),
+                _.div({className: 'panel-filter primary-filters'},
                     _.span({onClick: this.setPrimaryFilter.bind(null, 'all'), className: primaryFilter === 'all' ? 'primary-filter selected' : 'primary-filter'}, 'All'),
                     _.span({onClick: this.setPrimaryFilter.bind(null, 'rooms'), className: primaryFilter === 'rooms' ? 'primary-filter selected' : 'primary-filter'}, 'Rooms'),
                     _.span({onClick: this.setPrimaryFilter.bind(null, 'types'), className: primaryFilter === 'types' ? 'primary-filter selected' : 'primary-filter'}, 'Types'),
                     _.span({onClick: this.setPrimaryFilter.bind(null, 'tags'), className: primaryFilter === 'tags' ? 'primary-filter selected' : 'primary-filter'}, 'Tags')
+                ),
+                _.div({className: 'panel-filter right-filter'},
+                    BaseSearch({
+                        binding: {
+                            default: this.getDefaultBinding()
+                        }
+                    })
                 ),
                 SecondaryFilters()
             )

@@ -2,19 +2,19 @@ define([
     // libs
     'react',
     'morearty',
-    // components
-    './_base_mixin'
+    // mixins
+    './../mixins/base_mixin'
 ], function (
     // libs
     React,
     Morearty,
-    // components
-    _base_mixin
+    // mixins
+    base_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin, _base_mixin],
+        mixins: [Morearty.Mixin, base_mixin],
         setActiveLeftPanelItemSelectedId: function (id) {
             this.getBinding('preferences').set('leftPanelItemSelectedId', id);
         },

@@ -3,21 +3,24 @@ define([
     'react',
     'morearty',
     // components
-    './components/base'
+    './components/base',
+    // mixins
+    './mixins/base_mixin'
 ], function (
     // libs
     React,
     Morearty,
     // components
-    Base
+    Base,
+    // mixins
+    base_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin],
+        mixins: [Morearty.Mixin, base_mixin],
         componentDidMount: function () {
-            var ctx = this.getMoreartyContext(),
-                binding = this.getDefaultBinding();
+            var binding = this.getDefaultBinding();
 
             binding.addListener('overlayShow', function (newValue, oldValue, absolutePath, relativePath) {
                 if (newValue) {
@@ -26,14 +29,10 @@ define([
                     document.getElementById('body').style.overflow = 'auto';
                 }
             });
-
-            ctx.History.init(binding.sub('activeNodeTreeId'), binding.sub('activeNodeTreeIdHistory'))
         },
         back: function () {
-            var ctx = this.getMoreartyContext(),
-                binding = this.getBinding('preferences');
-
-            ctx.History.undo(binding.sub('activeNodeTreeId'), binding.sub('activeNodeTreeIdHistory'))
+            this.getBinding('preferences').set('backButtonEnabled', false);
+            this.setActiveNode(1); // 1 - main panel
         },
         closeOverlay: function () {
             this.getDefaultBinding().set('overlayShow', false);

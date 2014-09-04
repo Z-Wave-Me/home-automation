@@ -25,8 +25,14 @@ define([
                 items = itemsBinding.val(),
                 renderWidget,
                 isShown,
+                isSearchMatch,
                 profiles = Sticky.get('App.Modules.ServerSync').getCollection('Profiles'),
                 positions = profiles && Boolean(profiles.getActive()) ? profiles.getActive().get('positions') : [];
+
+            isSearchMatch = function (item) {
+                var searchString = binding.val('searchString');
+                return searchString.length > 0 ? item.get('metrics').title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1 : true;
+            };
 
             isShown = function (item) {
                 if (binding.val('nowShowing') === 'dashboard') {
@@ -45,7 +51,7 @@ define([
             };
 
             renderWidget = function (item, index) {
-                return isShown(item) ? BaseWidget({ key: index, binding: itemsBinding.sub(index) }) : null;
+                return isShown(item) && isSearchMatch(item) ? BaseWidget({ key: index, binding: itemsBinding.sub(index) }) : null;
             };
 
             return __.section({id: 'devices-container', className: 'widgets'},

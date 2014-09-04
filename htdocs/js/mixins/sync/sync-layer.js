@@ -1,19 +1,22 @@
 define([
-    './xhr'
+    './xhr',
+    './model',
+    './collection'
 ], function (
-    Xhr
+    Xhr,
+    Model,
+    Collection
     ) {
     "use strict";
 
     return {
         // interfaces
+        model: Model,
+        collection: Collection,
         xhr: Xhr,
         // public
-        isModel: function () {
-            return this.getDefaultBinding().val('id');
-        },
         isAllowMethod: function (method) {
-            var isModel = this.isModel(),
+            var isModel = this.Model.isModel(),
                 service = this.getService();
             if (service) {
                 if (isModel) {
@@ -42,7 +45,7 @@ define([
                 url;
 
             if (!this.isAllowMethod('READ')) {
-                console.debug('HTTP method is not allow');
+                console.debug('HTTP method is not allowed');
                 return;
             }
 

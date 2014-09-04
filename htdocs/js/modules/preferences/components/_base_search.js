@@ -11,10 +11,12 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin],
+        componentDidUpdate: function () {
+            //this.getDefaultBinding().set('searchString', '');
+        },
         setSearchString: function (event) {
-            this.getDefaultBinding().update('searchString', function () {
-                return event.target.value;
-            });
+            this.getDefaultBinding().set('searchString', event.target.value);
+            return false;
         },
         render: function () {
             var _ = React.DOM;
@@ -24,7 +26,7 @@ define([
                     className: 'search-input',
                     type: 'search',
                     placeholder: 'search',
-                    onKeyPress: Morearty.Callback.onKey(this.setSearchString)
+                    onChange: this.setSearchString
                 })
             );
         }

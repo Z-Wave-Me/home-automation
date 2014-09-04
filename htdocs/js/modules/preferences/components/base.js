@@ -4,17 +4,17 @@ define([
     'morearty',
     // components
     './_main',
-    './_main_general',
-    './_main_rooms',
-    './_main_rooms_general',
-    './_main_rooms_devices',
-    './_main_widgets',
-    './_main_automation',
+    './general/main_general',
+    './rooms/main_rooms',
+    './rooms/_main_rooms_general',
+    './rooms/_main_rooms_devices',
+    './widgets/main_widgets',
+    './automation/main_automation',
     './_base_button',
     './_base_children_navigation',
     './_base_left_panel',
     './_base_search',
-    './_base_mixin'
+    './../mixins/base_mixin'
 ], function (
     // libs
     React,
@@ -31,12 +31,13 @@ define([
     _base_children_navigation,
     _base_left_panel,
     _base_search,
-    _base_mixin
+    // mixins
+    base_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin, _base_mixin],
+        mixins: [Morearty.Mixin, base_mixin],
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
@@ -61,7 +62,9 @@ define([
                         _base_search({binding: preferencesBinding})
                         : null,
                     // list block
-                    _base_left_panel({binding: { default: binding, data: dataBinding, preferences: preferencesBinding }})
+                    _base_left_panel({binding: { default: binding, data: dataBinding, preferences: preferencesBinding }}),
+                    // buttons
+                    activeNode[0].options.buttons ?  _base_button({ binding: { default: preferencesBinding}}) : null
                 ) : null,
                 // right panel
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container' : 'panel-container'},

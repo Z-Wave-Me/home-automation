@@ -20,8 +20,10 @@ define([
             return false;
         },
         isShownFilters: function () {
-            return this.getDefaultBinding().val('nowShowing') === 'widgets' ?
-                Filters({binding: { default: this.getDefaultBinding(), data: this.getBinding('data') }}) : null;
+            var binding = this.getDefaultBinding();
+
+            return binding.val('nowShowing') === 'widgets' ?
+                Filters({binding: { default: binding, data: this.getBinding('data') }}) : null;
         },
         render: function () {
             var binding = this.getDefaultBinding(),

@@ -3,18 +3,18 @@ define([
     'react',
     'morearty',
     // mixins
-    './_base_mixin'
+    './../mixins/base_mixin'
 ], function (
     // libs
     React,
     Morearty,
-    _base_mixin
     // mixins
+    base_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin, _base_mixin],
+        mixins: [Morearty.Mixin, base_mixin],
         render: function () {
             var that = this,
                 activeNode = this.getActiveNodeTree()[0],

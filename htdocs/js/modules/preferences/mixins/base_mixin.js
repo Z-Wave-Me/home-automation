@@ -32,6 +32,9 @@ define([], function () {
                 activeNode = this.searchTree(binding.sub('tree').val().toObject(), activeNodeTreeId);
 
             return activeNode;
+        },
+        setActiveNodeTreeStatus: function (status) {
+            this.getMoreartyContext().getBinding().sub('preferences').set('activeNodeTreeStatus', status);
         }
     }
 });

@@ -15,7 +15,7 @@ define([
             var binding = this.getDefaultBinding(),
                 _ = React.DOM;
 
-            return _.div({ className: 'main-component' }, 'MainGeneral');
+            return _.div({ className: 'main-component' }, 'normal');
         }
     });
 });

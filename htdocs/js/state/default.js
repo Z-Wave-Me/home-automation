@@ -21,6 +21,7 @@ define([
         profiles: [],
         primaryFilter: 'all',
         secondaryFilter: '',
+        searchString: '',
         overlayShow: false,
         overlayShowName: null
     };
