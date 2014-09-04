@@ -38,13 +38,13 @@
 					"type": "select",
                             		"datasource": "namespaces",
 		                        "field": "optionLabels",
-                                        "optionLabels": "namespaces:devices_sensor:deviceName,namespaces:devices_sensorMultilevel:deviceName"
+                                        "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
             		    }
                     }
             },
             "period": {
                 "label": "Poll period",
-                "optionLabels": ["1 minute", "2 minute", "5 minute", "10 minute", "20 minute", "30 minute", "60 minute", "1 hour", "2 hours", "4 hours", "6 hours", "twice per day", "daily", "weekly"]
+                "optionLabels": ["1 minute", "2 minute", "5 minute", "10 minute", "20 minute", "30 minute", "1 hour", "2 hours", "4 hours", "6 hours", "twice per day", "daily", "weekly"]
             }
         }
     }
