@@ -49,32 +49,35 @@ SensorsPollingLogging.prototype.init = function (config) {
         month: null
     });
 
+    this.handler = function (vDev) {
+        if (self.config.logTo === "JSONFile") {
+            var storedLog = loadObject("SensorValueLogging_" + vDev.id + "_" + self.id);
+            if (!storedLog) {
+                storedLog = {
+                    deviceId: vDev.id,
+                    deviceName: vDev.get("metrics:title"),
+                    sensorData: []
+                };
+            };
+            storedLog.sensorData.push({"time": Date.now(), "value": vDev.get("metrics:level")});
+            saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
+            storedLog = null;
+        };
+        if (self.config.logTo === "HTTPGET") {
+            http.request({
+                method: 'GET',
+                url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.get('metrics:level'))
+            });
+        };
+        vDev.off("change:metrics:level", self.handler);
+    };
+
     this.onPoll = function () {
         self.config.devices.forEach(function(vDevId) {
             var vDev = this.controller.devices.get(vDevId);
-            
-            if (vDev)
-            {
+            if (vDev) {
+                vDev.on("change:metrics:level",self.handler);
                 vDev.performCommand("update");
-                if (self.config.logTo === "JSONFile") {
-                    var storedLog = loadObject("SensorValueLogging_" + vDev.id + "_" + self.id);
-                    if (!storedLog) {
-                        storedLog = {
-                            deviceId: vDev.id,
-                            deviceName: vDev.get("metrics:title"),
-                            sensorData: []
-                        };
-                    }
-                    storedLog.sensorData.push({"time": Date.now(), "value": vDev.get("metrics:level")});
-                    saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
-                    storedLog = null;
-                }
-                if (self.config.logTo === "HTTPGET") {
-                    http.request({
-                        method: 'GET',
-                        url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.get('metrics:level'))
-                    });
-                }
             };
         });
     };
