@@ -62,7 +62,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                     self.handler(val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                 }, "");
                 controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchBinary"], "level", function(type) {
-                    self.handler(this.value ? "on" : "off", [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
+                    self.handler(this.value ? "on" : "off", {}, [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
                 }, "");
                 controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "level", function(type) {
                     var val, par = {};
