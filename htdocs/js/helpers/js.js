@@ -28,11 +28,11 @@ define([], function () {
                     return array;
 
                 if(Array.isArray(array[i])) {
-                    return flatten(array.slice(0,i)
+                    return this.flatten(array.slice(0,i)
                         .concat(array[i], array.slice(i+1)), i);
                 }
 
-                return flatten(array, i+1);
+                return this.flatten(array, i+1);
             },
             isFloat: function isFloat(n) {
                 return n === +n && n !== (n|0);

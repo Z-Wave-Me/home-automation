@@ -26,8 +26,7 @@ define([
                 renderWidget,
                 isShown,
                 isSearchMatch,
-                profiles = Sticky.get('App.Modules.ServerSync').getCollection('Profiles'),
-                positions = profiles && Boolean(profiles.getActive()) ? profiles.getActive().get('positions') : [];
+                positions = dataBinding.val('devicesOnDashboard');
 
             isSearchMatch = function (item) {
                 var searchString = binding.val('searchString');

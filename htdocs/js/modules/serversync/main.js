@@ -148,7 +148,9 @@ define([
                             that.registerHandler(that.collections[key].dependencies, 'success', that.collections[collectionObject.name].collection.fetch);
                         }
                     });
-                    that.start();
+                    setTimeout(function () {
+                        //that.start();
+                    }, 2000)
                 }
             });
         },

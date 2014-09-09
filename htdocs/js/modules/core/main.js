@@ -6,7 +6,9 @@ define([
     './components/header',
     './components/main',
     './components/footer',
-    'Preferences'
+    'Preferences',
+    // mixins
+    'mixins/sync/sync-layer'
 ], function (
     // libs
     React,
@@ -15,14 +17,17 @@ define([
     Header,
     Main,
     Footer,
-    Preferences
+    Preferences,
+    // mixins
+    sync_layer_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin],
+        mixins: [Morearty.Mixin, sync_layer_mixin],
         componentDidMount: function () {
-            var binding = this.getDefaultBinding();
+            var binding = this.getDefaultBinding(),
+                dataBinding = this.getBinding('data');
 
             this._routes = Object.freeze({
                 'DASHBOARD': 'dashboard',
@@ -34,8 +39,10 @@ define([
                 '/dashboard': binding.set.bind(binding, 'nowShowing', this._routes.DASHBOARD),
                 '/widgets': binding.set.bind(binding, 'nowShowing', this._routes.WIDGETS)
             }).init();
-        },
 
+            // enable autosync after update collection
+            this.enableAutoSync();
+        },
         render: function () {
             var that = this,
                 _ = React.DOM,

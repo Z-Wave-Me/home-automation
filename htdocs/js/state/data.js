@@ -1,4 +1,4 @@
-define([], function () {
+define(['immutable'], function (Immutable) {
     'use strict';
 
     return {
@@ -9,7 +9,8 @@ define([], function () {
         locations: [],
         profiles: [],
         deviceTypes: [],
-        deviceTags: []
+        deviceTags: [],
+        devicesOnDashboard: []
     };
 });
 

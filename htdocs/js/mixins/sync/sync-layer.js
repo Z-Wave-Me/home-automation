@@ -1,16 +1,19 @@
 define([
-    './xhr'
+    './xhr',
+    './autosync'
 ], function (
-    Xhr
+    Xhr,
+    AutoSync
     ) {
     "use strict";
 
     return {
         // interfaces
+        autoSync: AutoSync,
         xhr: Xhr,
         // public
-        getService: function () {
-            var serviceId = this._serviceId,
+        getService: function (_serviceId) {
+            var serviceId = _serviceId || this._serviceId,
                 binding = this.getMoreartyContext().getBinding().sub('services').sub('collections'),
                 service = binding.val().toArray().filter(function (service) {
                     return serviceId === service.toObject().id;
@@ -21,13 +24,13 @@ define([
         fetch: function (_options, command) {
             var that = this,
                 Immutable = this.getMoreartyContext().Imm,
-                service = this.getService(),
+                service = this.getService(_options.serviceId || null),
                 url;
 
-            if (!this._isAllowMethod('READ')) {
-                console.debug('HTTP method is not allowed');
-                return;
-            }
+            //if (!this._isAllowMethod('READ', _options.serviceId || null)) {
+             //   console.debug('HTTP method is not allowed');
+            //    return;
+            //}
 
             if (service) {
                 url = this.isModel() ? service.url + '/' + this.getDefaultBinding().val('id') : service.url;
@@ -106,7 +109,11 @@ define([
             }
         },
         isModel: function () {
-            return this.getDefaultBinding().val('id') || this.isModel;
+            return this.getDefaultBinding().val('id') || this._isModel;
+        },
+        enableAutoSync: function () {
+            this.autoSync.init.call(this);
+            this.autoSync.pull.call(this);
         }
     };
 });
