@@ -38,6 +38,10 @@ define([
                 error: this.where({level: 'error'}).length,
                 warning: this.where({level: 'warning'}).length
             };
+        },
+
+        initialized: function () {
+            var that = this;
         }
 
     });

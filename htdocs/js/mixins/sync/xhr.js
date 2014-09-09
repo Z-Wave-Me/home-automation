@@ -3,7 +3,8 @@ define([], function () {
 
     return ({
         request: function (options) {
-            var xhr = new XMLHttpRequest(),
+            var that = this,
+                xhr = new XMLHttpRequest(),
                 query = this._getQueryParams(window.location.search),
                 apiPort = query.hasOwnProperty('port') ? query.port : window.location.port,
                 apiHost = query.hasOwnProperty('host') ? query.host : window.location.hostname,
@@ -33,14 +34,14 @@ define([], function () {
                 if (xhr.readyState === 4) {
                     if (xhr.status < 400) {
                         if (Boolean(options.success) && typeof options.success === 'function') {
-                            options.success(xhr.responseText ? JSON.parse(xhr.responseText) : xhr.responseText);
+                            options.success(that._parse(xhr.responseText));
                         } else {
                             //console.debug('options.success is not function')
                         }
                         //console.log(xhr.responseText);
                     } else {
                         if (Boolean(options.error) && typeof options.error === 'function') {
-                            options.error(xhr.responseText.length > 0 ? JSON.parse(xhr.responseText) : xhr.responseText);
+                            options.error(that._parse(xhr.responseText));
                         } else {
                             //console.debug('options.error is not function')
                         }
@@ -76,6 +77,13 @@ define([], function () {
             }
 
             return params;
+        },
+        _parse: function (str) {
+            try {
+                return JSON.parse(str);
+            } catch (e) {
+                return false;
+            }
         }
     });
 });

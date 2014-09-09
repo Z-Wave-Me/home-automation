@@ -35,6 +35,9 @@ define([], function () {
         },
         setActiveNodeTreeStatus: function (status) {
             this.getMoreartyContext().getBinding().sub('preferences').set('activeNodeTreeStatus', status);
+        },
+        setLeftPanelItemSelectedId: function (id) {
+            this.getMoreartyContext().getBinding().sub('preferences').set('leftPanelItemSelectedId', id);
         }
     }
 });

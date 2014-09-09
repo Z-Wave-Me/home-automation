@@ -16,7 +16,9 @@ define([
         duplicating: false,
         searchString: '',
         leftPanelItems: '',
+        itemBindingTemp: {},
         leftPanelItemSelectedId: null,
+        defaultProfileId: localStorage.getItem('defaultProfileId'),
         tree: Immutable.Map({
             id: 1,
             options: {

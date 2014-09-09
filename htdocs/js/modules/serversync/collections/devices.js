@@ -50,6 +50,7 @@ define([
         },
 
         initialize: function () {
+            var that = this;
             _.bindAll(this, 'parse');
             log('init devices');
         }

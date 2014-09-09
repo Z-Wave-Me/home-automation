@@ -33,6 +33,10 @@ define([
 
         parse: function (response, xhr) {
             return response.data || response;
+        },
+
+        initialized: function () {
+            var that = this;
         }
 
     });

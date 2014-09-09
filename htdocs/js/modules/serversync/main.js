@@ -182,7 +182,7 @@ define([
             // register intervals
             setInterval(function () {
                 filtered_collection_names.forEach(function (key) {
-                    that.collections[key].collection.fetch();
+                    //that.collections[key].collection.fetch();
                 });
             }, default_sync_interval);
         },

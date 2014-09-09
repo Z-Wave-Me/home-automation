@@ -11,9 +11,6 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin],
-        componentDidUpdate: function () {
-            //this.getDefaultBinding().set('searchString', '');
-        },
         setSearchString: function (event) {
             this.getDefaultBinding().set('searchString', event.target.value);
             return false;

@@ -33,6 +33,7 @@ define([
         },
 
         initialize: function () {
+           var that = this;
            log('Init ProfilesCollection');
         },
 

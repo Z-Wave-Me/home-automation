@@ -30,6 +30,9 @@ define([
 
         parse: function (response, xhr) {
             return response.data;
+        },
+        initialized: function () {
+            var that = this;
         }
 
     });

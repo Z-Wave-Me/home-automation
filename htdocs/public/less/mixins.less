@@ -20,6 +20,12 @@
   box-shadow: 0px 1px 0px 0px rgba( 170, 170, 170, .702 );
   background: url(@widget);
   position: relative;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
   &.dashboard {
     float: none;
     //left: 0;
@@ -56,6 +62,7 @@
       color: rgb( 102, 102, 102 );
       margin-left: 4%;
       .switch {
+        cursor: pointer;
         display: block;
         border-radius: 12px;
         background-color: rgb( 190, 190, 190 );
@@ -91,6 +98,17 @@
           text-decoration: none;
           color: #333;
         }
+        &.active {
+          background-color: #40e8f0;
+          .bubble {
+            float: right;
+          }
+          .text {
+            margin-right: 0;
+            margin-left: 17%;
+            float: left;
+          }
+        }
       }
       .title-metrics {
         width: 180px;
@@ -98,19 +116,8 @@
         float: left;
         overflow: hidden;
         text-overflow: ellipsis;
-	white-space: nowrap;
+	    white-space: nowrap;
         height: 46px;
-      }
-      .switch.active {
-        background-color: #40e8f0;
-        .bubble {
-          float: right;
-        }
-        .text {
-          margin-right: 0;
-          margin-left: 17%;
-          float: left;
-        }
       }
       .switch-door {
         .switch;

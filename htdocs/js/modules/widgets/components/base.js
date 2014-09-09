@@ -6,8 +6,7 @@ define([
     './_probe',
     './_switch',
     './_multilevel',
-    './_control',
-    './_door'
+    './_control'
 ], function (
     // libs
     React,
@@ -47,6 +46,10 @@ define([
                 iconClass = cssClasses.join(' ');
             }
 
+            if (item.get('id').indexOf('Remote') !== -1) {
+                return null;
+            }
+
             if (item.get('deviceType') === "sensorBinary" ||
                 item.get('deviceType') === "sensorMultilevel" ||
                 item.get('deviceType') === "battery") {
@@ -57,9 +60,7 @@ define([
                 Widget = Multilevel;
             } else if (item.get('deviceType') === "thermostat") {
                 Widget = Probe;
-            } else if (item.get('deviceType') === "doorlock") {
-                Widget = Door;
-            } else if (item.get('deviceType') === "switchBinary" || item.get('deviceType') === "switchRGBW") {
+            } else if (item.get('deviceType') === "switchBinary" || item.get('deviceType') === "switchRGBW" || item.get('deviceType') === "doorlock") {
                 Widget = Switch;
             } else if (item.get('deviceType') === "toggleButton") {
                 Widget = Probe;

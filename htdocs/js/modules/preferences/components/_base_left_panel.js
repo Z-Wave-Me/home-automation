@@ -15,8 +15,12 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin],
+        componentDidMount: function () {
+            this.refs.leftPanelList.getDOMNode().firstChild.click(); // focus on show
+        },
         setActiveLeftPanelItemSelectedId: function (id) {
             this.getBinding('preferences').set('leftPanelItemSelectedId', id);
+            this.setActiveNodeTreeStatus('normal');
         },
         getModels: function () {
             var that = this,
@@ -32,6 +36,7 @@ define([
             renderModel = function (item, index) {
                 var searchString = preferencesBinding.val('searchString').toLowerCase(),
                     leftPanelItemSelectedId = preferencesBinding.val('leftPanelItemSelectedId'),
+                    statusNode = preferencesBinding.val('activeNodeTreeStatus'),
                     title;
 
                 if (name === 'rooms') {
@@ -46,7 +51,7 @@ define([
 
                 if ((searchString.length > 1 && searchString.indexOf(title.toLowerCase()) !== -1) || searchString.length < 2) {
                     return _.li({
-                            className: leftPanelItemSelectedId === item.get('id') ? 'item-model selected' : 'item-model',
+                            className: leftPanelItemSelectedId === item.get('id') && statusNode !== 'adding' ? 'item-model selected' : 'item-model',
                             key: index,
                             onClick: that.setActiveLeftPanelItemSelectedId.bind(null, item.get('id'))
                         },
@@ -71,7 +76,7 @@ define([
             items = itemsBinding.val();
 
             return _.div({className: 'left-panel-list-container'},
-                _.ul({ className: 'left-panel-list' },
+                _.ul({ ref: 'leftPanelList', className: 'left-panel-list' },
                     items.map(renderModel).toArray()
                 )
             )

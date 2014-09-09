@@ -15,12 +15,36 @@ define([
     return React.createClass({
         _serviceId: 'devices',
         mixins: [Morearty.Mixin, SyncLayerMixin],
+        toggleSwitch: function () {
+            var that = this,
+                binding = this.getDefaultBinding(),
+                metrics = binding.sub('metrics').val(),
+                command = binding.sub('metrics').val().level === 'on' ? 'off' : 'on';
+
+            metrics.level = command;
+
+            that.fetch({
+                success: function () {
+                    binding.atomically()
+                        .set('metrics', metrics)
+                        .commit();
+                    that.forceUpdate();
+                }
+            }, command);
+
+            return false;
+        },
         render: function () {
             var _ = React.DOM,
+                cx = React.addons.classSet,
                 binding = this.getDefaultBinding(),
-                item = binding.val(),
-                title = item.get('metrics').title,
-                level = item.get('metrics').level;
+                title = binding.val().get('metrics').title,
+                level = binding.val().get('metrics').level,
+                classes = cx({
+                    switch: true,
+                    active: binding.val().get('metrics').level === 'on'
+                });
+
 
             return (
                 _.div({className: 'content'},
@@ -28,11 +52,9 @@ define([
                     _.div({className: 'colors-container just-hidden'},
                         _.div({className: 'picker'})
                     ),
-                    _.a({href: '#', className: level.toLowerCase() === 'on' ? 'action active' : 'active', title: level.toUpperCase()},
-                        _.span({className: level.toLowerCase() === 'on' ? 'switch-door active' : 'switch-door'},
-                            _.span({className: 'bubble'}),
-                            _.span({className: 'text'}, level.toUpperCase())
-                        )
+                    _.span({onClick: this.toggleSwitch, className: classes},
+                        _.span({className: 'bubble'}),
+                        _.span({className: 'text'}, level.toUpperCase())
                     )
                 )
             )

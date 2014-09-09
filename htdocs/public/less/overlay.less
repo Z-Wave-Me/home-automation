@@ -214,98 +214,96 @@
         border: 0;
         border-bottom: 1px solid #e5e5e5;
       }
-      .form-data {
-        .form-group {
-          padding: 4px 0;
+      .form-group {
+        padding: 4px 0;
+      }
+      .input-label {
+        display: inline-block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #000;
+        font-size: 13px;
+        line-height: 15px;
+        vertical-align: middle;
+        padding-left: 1px;
+      }
+      .input-value {
+        display: block;
+        width: 250px;
+        height: 18px;
+        padding: 6px 12px;
+        font-size: 13px;
+        line-height: 22px;
+        color: #555;
+        vertical-align: middle;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+        box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
+        -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        outline: none;
+        &.textarea-type {
+          width: 350px;
+          height: 55px;
         }
+      }
+      .button, .button.disabled:hover {
+        display: block;
+        text-decoration: none;
+        border: solid 1px #b7b7b7;
+        border-radius: 4px;
+        padding: 5px 8px;
+        font-size: 13px;
+        text-align: center;
+        color: #434343;
+        background: #fff;
+        outline: none;
+        background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fff), color-stop(100%, #ededed));
+        background-image: -webkit-linear-gradient(top, #fff, #ededed);
+        background-image: -moz-linear-gradient(top, #fff, #ededed);
+        background-image: -ms-linear-gradient(top, #fff, #ededed);
+        background-image: -o-linear-gradient(top, #fff, #ededed);
+        background-image: linear-gradient(top, #fff, #ededed);
+        &.disabled {
+          opacity: 0.65;
+        }
+        &:hover {
+          background: #dcdcdc;
+          background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fff), color-stop(100%, #dcdcdc));
+          background-image: -webkit-linear-gradient(top, #fff, #dcdcdc);
+          background-image: -moz-linear-gradient(top, #fff, #dcdcdc);
+          background-image: -ms-linear-gradient(top, #fff, #dcdcdc);
+          background-image: -o-linear-gradient(top, #fff, #dcdcdc);
+          background-image: linear-gradient(top, #fff, #dcdcdc);
+        }
+      }
+      .buttons-group {
+        display: inline-block;
+        border-top: 1px solid #e5e5e5;
+        position: relative;
+        bottom: 0;
+        .button {
+          float: left;
+          margin-right: 7px;
+        }
+      }
+      .checkbox-group {
+        line-height: 14px;
+        vertical-align: middle;
+        height: 14px;
+        margin: 10px 0;
         .input-label {
-          display: inline-block;
-          margin-bottom: 5px;
-          font-weight: bold;
-          color: #000;
-          font-size: 13px;
-          line-height: 15px;
-          vertical-align: middle;
-          padding-left: 1px;
-        }
-        .input-value {
-          display: block;
-          width: 250px;
-          height: 18px;
-          padding: 6px 12px;
-          font-size: 13px;
-          line-height: 22px;
-          color: #555;
-          vertical-align: middle;
-          background-color: #fff;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-          box-shadow: inset 0 1px 1px rgba(0,0,0,0.075);
-          -webkit-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-          transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
-          outline: none;
-          &.textarea-type {
-            width: 350px;
-            height: 55px;
-          }
-        }
-        .button, .button.disabled:hover {
-          display: block;
-          text-decoration: none;
-          border: solid 1px #b7b7b7;
-          border-radius: 4px;
-          padding: 5px 8px;
-          font-size: 13px;
-          text-align: center;
-          color: #434343;
-          background: #fff;
-          outline: none;
-          background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fff), color-stop(100%, #ededed));
-          background-image: -webkit-linear-gradient(top, #fff, #ededed);
-          background-image: -moz-linear-gradient(top, #fff, #ededed);
-          background-image: -ms-linear-gradient(top, #fff, #ededed);
-          background-image: -o-linear-gradient(top, #fff, #ededed);
-          background-image: linear-gradient(top, #fff, #ededed);
-          &.disabled {
-            opacity: 0.65;
-          }
-          &:hover {
-            background: #dcdcdc;
-            background-image: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #fff), color-stop(100%, #dcdcdc));
-            background-image: -webkit-linear-gradient(top, #fff, #dcdcdc);
-            background-image: -moz-linear-gradient(top, #fff, #dcdcdc);
-            background-image: -ms-linear-gradient(top, #fff, #dcdcdc);
-            background-image: -o-linear-gradient(top, #fff, #dcdcdc);
-            background-image: linear-gradient(top, #fff, #dcdcdc);
-          }
-        }
-        .buttons-group {
-          display: inline-block;
-          border-top: 1px solid #e5e5e5;
-          position: relative;
-          bottom: 0;
-          .button {
-            float: left;
-            margin-right: 7px;
-          }
-        }
-        .checkbox-group {
-          line-height: 14px;
-          vertical-align: middle;
+          margin: 0;
+          font-size: 11px;
           height: 14px;
-          margin: 10px 0;
-          .input-label {
-            margin: 0;
-            font-size: 11px;
-            height: 14px;
-          }
-          .checkbox-type {
-            height: 14px;
-            width: 14px;
-            line-height: 14px;
-            margin: 0 3px 0 0;
-          }
+        }
+        .checkbox-type {
+          height: 14px;
+          width: 14px;
+          line-height: 14px;
+          margin: 0 3px 0 0;
         }
       }
     }
