@@ -8,6 +8,7 @@ define(['immutable'], function (Immutable) {
         instances: [],
         locations: [],
         profiles: [],
+        notifications: [],
         deviceTypes: [],
         deviceTags: [],
         devicesOnDashboard: []

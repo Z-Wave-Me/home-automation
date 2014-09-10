@@ -48,19 +48,14 @@ define([
         },
         push: function (_options) {
             var that = this,
-                isModel = this.isModel(),
-                Immutable = this.getMoreartyContext().Imm,
-                service = this.getService(),
+                isModel = that.isModel() || _options.data.id,
+                service = that.getService(_options.serviceId || null),
+                isNew = _options.data.hasOwnProperty('id') && _options.data.id === -1,
                 url;
 
             if (service) {
-                url = isModel ? service.url + '/' + this.getDefaultBinding().val('id') : service.url;
-
-                this._read(url, function (response) {
-                    that.getDefaultBinding().update(function () {
-                        return Immutable.Map(response.data);
-                    })
-                }, _options);
+                url = isModel && !isNew ? service.url + '/' + _options.data.id || that.getDefaultBinding().val('id') : service.url;
+                that._save(url, _options);
             } else {
                 console.debug('incorrect _serviceId')
             }
@@ -76,13 +71,19 @@ define([
                 data: null
             })
         },
-        _save: function (url, data, callback, _options) {
+        _save: function (url, _options) {
+            var isNew = _options.data.hasOwnProperty('id') && _options.data.id === -1;
+
+            if (isNew) {
+                delete _options.data.id;
+            }
+
             this.xhr.request({
                 url: url,
-                success: callback,
+                success: _options.success,
                 params: _options.params,
-                method: Boolean(data.id) ? 'PUT' : 'POST',
-                data: data
+                method: !isNew ? 'PUT' : 'POST',
+                data: JSON.stringify(_options.data)
             })
         },
         _destroy: function (url, callback, _options) {

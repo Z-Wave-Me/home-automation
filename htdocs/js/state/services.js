@@ -27,6 +27,7 @@ define([], function () {
                 id: 'devices',
                 url: '/devices',
                 autoSync: true,
+                sinceField: 'devicesUpdateTime',
                 methods: ['READ'],
                 modelsDiffField: 'deviceType',
                 postSyncHandler: function (ctx, response) {
@@ -40,8 +41,18 @@ define([], function () {
                         })));
 
                     dataBinding.set('devicesUpdateTime', response.data.updateTime || 0);
-                    dataBinding.set('deviceTags', tags);
-                    dataBinding.set('deviceTypes', types);
+
+                    dataBinding.update('deviceTags', function (deviceTags) {
+                        return helpers.arrayUnique(helpers.flatten(tags.concat(deviceTags))).filter(function (type) {
+                            return typeof type === 'string';
+                        });
+                    });
+
+                    dataBinding.update('deviceTypes', function (deviceTypes) {
+                        return helpers.arrayUnique(helpers.flatten(types.concat(deviceTypes))).filter(function (type) {
+                            return typeof type === 'string';
+                        });
+                    });
                 },
                 parse: function (response) {
                     return response.data.devices;
@@ -52,7 +63,7 @@ define([], function () {
                         methods: ['READ', 'UPDATE']
                     }
                 ],
-                delay: 1000
+                delay: 2000
             },
             {
                 id: 'locations',
@@ -91,6 +102,7 @@ define([], function () {
                 id: 'notifications',
                 url: '/notifications',
                 autoSync: true,
+                sinceField: 'notificationsUpdateTime',
                 methods: ['READ', 'UPDATE', 'DELETE'],
                 models: [
                     {
@@ -98,6 +110,9 @@ define([], function () {
                         methods: ['READ', 'UPDATE', 'DELETE']
                     }
                 ],
+                postSyncHandler: function (ctx, response) {
+                    ctx.getBinding().sub('data').set('notificationsUpdateTime', response.data.updateTime || 0);
+                },
                 parse: function (response) {
                     return response.data.notifications;
                 }
