@@ -33,7 +33,7 @@ define([
                 cx = React.addons.classSet;
 
 
-            return _.div({ className: 'preview-data profile normal-status' },
+            return _.div({ className: 'preview-data profile normal-status clearfix' },
                 _.div({ className: 'data-group'},
                     _.span({ className: 'label-item label-name' }, 'Name'),
                     _.span({ className: 'value-item'}, title)

@@ -15,7 +15,7 @@ define([
             var binding = this.getDefaultBinding(),
                 _ = React.DOM;
 
-            return _.div({ className: 'main-component' }, 'MainRooms');
+            return _.div({ className: 'main-component clearfix' }, 'MainRooms');
         }
     });
 });

@@ -67,41 +67,6 @@
       opacity: 0.6;
     }
   }
-  .base-children-component {
-    display: block;
-    float: left;
-    width: 100%;
-    height: 18px;
-    text-align: center;
-    line-height: 18px;
-    vertical-align: middle;
-    .children-container {
-      display: inline-block;
-      margin: 0 auto;
-      height: 21px;
-      min-width: 50px;
-      border: 1px solid #222;
-      border-radius: 8px;
-      .child-node {
-        display: block;
-        float: left;
-        font-size: 12px;
-        font-weight: bold;
-        padding: 2px;
-        border-right: 1px solid #222;
-        cursor: pointer;
-        &.selected {
-          background-color: #222;
-          color: #fff;
-        }
-        &:first-child {
-        }
-        &:last-child {
-          border-right: none;
-        }
-      }
-    }
-  }
   .left-panel-container {
     display: block;
     float: left;
@@ -198,9 +163,17 @@
   .right-panel-container {
     display: block;
     float: left;
-    width: 80%;
+    width: 72%;
+    margin-left: 5%;
+    .title-children {
+      font-size: 19px;
+      display: block;
+      width: 100%;
+      float: left;
+      margin: 4px 0;
+    }
     .main-component {
-      width: 90%;
+      width: 100%;
       margin: 0 auto;
       color: #555;
       .legend {
@@ -314,7 +287,7 @@
         padding-left: 10px;
         transition: background-color 0.3s ease;
         &:hover {
-          background-color: #ccc;
+          background-color: rgba(204, 204, 204, 0.5);
         }
         .label-item {
           display: block;

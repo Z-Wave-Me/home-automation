@@ -19,7 +19,7 @@ define([
                 widgetBinding = this.getBinding('widget'),
                 _ = React.DOM;
 
-            return _.div({ className: 'main-component' }, 123);
+            return _.div({ className: 'main-component clearfix' }, 123);
         }
     });
 });

@@ -18,7 +18,7 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
-        componentDidMount: function () {
+        componentWillMount: function () {
             this._item = this.getItem();
         },
         getItem: function () {
@@ -35,13 +35,15 @@ define([
         render: function () {
             var that = this,
                 item = that._item,
-                binding = that.getDefaultBinding(),
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
-                _ = React.DOM;
+                _ = React.DOM,
+                title, description;
 
-            return _.div({ className: 'form-data profile adding-status' },
-                _.legend({ className: 'legend'}, 'Create profile'),
+            title = item.get('name');
+            description = item.get('description');
+
+            return _.div({ className: 'form-data profile adding-status clearfix' },
                 _.div({ key: 'form-name-input', className: 'form-group' },
                     _.label({ htmlFor: 'profile-name', className: 'input-label'}, 'Name'),
                     _.input({
@@ -49,7 +51,8 @@ define([
                         id: 'profile-name',
                         className: 'input-value',
                         type: 'text',
-                        placeholder: 'Name'
+                        placeholder: 'Name',
+                        value: title
                     })
                 ),
                 _.div({ key: 'form-description-input', className: 'form-group' },
@@ -60,7 +63,8 @@ define([
                         className: 'input-value textarea-type',
                         col: 3,
                         row: 3,
-                        placeholder: 'Description'
+                        placeholder: 'Description',
+                        value: description
                     })
                 ),
                 /*_.div({ key: 'form-default-profile-input', className: 'form-group' },

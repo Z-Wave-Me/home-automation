@@ -28,7 +28,7 @@ define([
                 _ = React.DOM;
 
             this.getWidget();
-            return _.div({ className: 'main-component' }, 'MainWidgets');
+            return _.div({ className: 'main-component clearfix' }, 'MainWidgets');
         }
     });
 });

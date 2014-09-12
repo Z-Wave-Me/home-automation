@@ -48,29 +48,7 @@ define([
                         buttons: ['add', 'remove'],
                         componentName: '_main_rooms'
                     },
-                    children: [
-                        {
-                            id: 6,
-                            options: {
-                                name: 'general',
-                                leftPanel: true,
-                                searchPanel: true,
-                                buttons: ['add', 'remove'],
-                                componentName: '_main_rooms'
-                            },
-                            children: []
-                        },
-                        {
-                            id: 7,
-                            options: {
-                                name: 'devices',
-                                leftPanel: false,
-                                searchPanel: false,
-                                componentName: '_main_rooms_devices'
-                            },
-                            children: []
-                        }
-                    ]
+                    children: []
                 },
                 {
                     id: 4,

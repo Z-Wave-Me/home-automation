@@ -6,12 +6,9 @@ define([
     './_main',
     './general/main_general',
     './rooms/main_rooms',
-    './rooms/_main_rooms_general',
-    './rooms/_main_rooms_devices',
     './widgets/main_widgets',
     './automation/main_automation',
     './_base_button',
-    './_base_children_navigation',
     './_base_left_panel',
     './_base_search',
     './../mixins/base_mixin'
@@ -23,12 +20,9 @@ define([
     _main,
     _main_general,
     _main_rooms,
-    _main_rooms_general,
-    _main_rooms_devices,
     _main_widgets,
     _main_automation,
     _base_button,
-    _base_children_navigation,
     _base_left_panel,
     _base_search,
     // mixins
@@ -44,15 +38,22 @@ define([
                 preferencesBinding = this.getBinding('preferences'),
                 dataBinding = this.getBinding('data'),
                 activeNode = this.getActiveNodeTree(),
+                baseTitle = activeNode[0].options.name.toUpperCase(),
                 components = {
                     '_main': _main,
                     '_main_general': _main_general,
                     '_main_rooms': _main_rooms,
-                    '_main_rooms_general': _main_rooms_general,
-                    '_main_rooms_devices': _main,
                     '_main_widgets': _main_widgets,
                     '_main_automation': _main_automation
                 };
+
+            if (preferencesBinding.val('activeNodeTreeStatus') === 'editing') {
+                baseTitle += ':EDIT';
+            } else if (preferencesBinding.val('activeNodeTreeStatus') === 'adding') {
+                baseTitle += ':CREATE';
+            } else if (preferencesBinding.val('activeNodeTreeStatus') === 'pending') {
+                baseTitle += ':DELETE';
+            }
 
             return _.div({ className: 'preferences-overlay clearfix' },
                 // leftpanel
@@ -67,11 +68,8 @@ define([
                     activeNode[0].options.buttons ?  _base_button({ binding: { default: preferencesBinding}}) : null
                 ) : null,
                 // right panel
-                _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container' : 'panel-container'},
-                    // children panel
-                    activeNode[0].hasOwnProperty('children') && activeNode[0].children.length > 0 && activeNode[0].id !== 1 ?
-                        _base_children_navigation({binding: preferencesBinding})
-                        : null,
+                _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container cleafix' : 'panel-container'},
+                    activeNode[0].options.leftPanel ? _.h2({ className: 'title-children clearfix'}, baseTitle) : null,
                     // main component
                     components[activeNode[0].options.componentName]({
                         binding: {

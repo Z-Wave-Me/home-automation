@@ -16,7 +16,8 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin],
         render: function () {
-            var _ = React.DOM;
+            var _ = React.DOM,
+                activeNode = this.getActiveNodeTree();
 
             return _.div({ className: 'main-component' },
                 _.div({ className: 'line-container'},

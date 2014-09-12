@@ -32,7 +32,7 @@ define([
                 }
             };
 
-            return _.div({ className: 'main-component' },
+            return _.div({ className: 'main-component clearfix' },
                 getComponent()
             );
         }
