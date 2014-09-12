@@ -21,14 +21,13 @@ define([
         mixins: [Morearty.Mixin, DataLayerMixin],
         getWidget: function () {
             var selectedId = this.getBinding('preferences').val('leftPanelItemSelectedId'),
-                device = this.getModel(selectedId, 'devices');
+                device = this.getModelFromCollection(selectedId, 'devices');
         },
         render: function () {
             var binding = this.getDefaultBinding(),
                 _ = React.DOM;
 
             this.getWidget();
-
             return _.div({ className: 'main-component' }, 'MainWidgets');
         }
     });

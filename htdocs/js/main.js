@@ -13,8 +13,6 @@ requirejs.config({
         alpaca: 'libs/alpaca/alpaca-full',
         ace: 'libs/acejs/ace',
         react: '../bower_components/react/react-with-addons',
-        jsx: '../bower_components/jsx-requirejs-plugin/js/jsx',
-        JSXTransformer: '../bower_components/jsx-requirejs-plugin/js/JSXTransformer-0.11.0',
         'theme-chrome': 'libs/acejs/theme-chrome',
         'mode-javascript': 'libs/acejs/mode-javascript',
         'mode-json': 'libs/acejs/mode-json',
@@ -89,8 +87,7 @@ requirejs.config({
             deps: ['jquery']
         },
         react: {
-            exports: 'React',
-            deps: ['jsx', 'JSXTransformer']
+            exports: 'React'
         },
         director: {
             exports: 'Router'

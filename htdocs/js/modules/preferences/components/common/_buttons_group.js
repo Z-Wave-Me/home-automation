@@ -37,25 +37,33 @@ define([
             var _ = React.DOM,
                 binding = this.getDefaultBinding();
 
+
             if (binding.val('activeNodeTreeStatus') === 'editing' || binding.val('activeNodeTreeStatus') === 'adding') {
                 return [
-                    _.button({
+                    _.div({
                         key: 'save-button',
-                        className: 'save-button button action',
+                        className: 'modern-button green-mode center',
                         onClick: this.save
                     }, 'Save'),
-                    _.button({
+                    _.div({
                         key: 'cancel-button',
-                        className: 'cancel-button button action',
+                        className: 'modern-button light-mode center',
                         onClick: this.setActiveNodeTreeStatus.bind(null, 'normal')
                     }, 'Cancel')
                 ];
             } else {
-                return _.button({
-                    key: 'edit-button',
-                    className: 'edit-button button action',
-                    onClick: this.setActiveNodeTreeStatus.bind(null, 'editing')
-                }, 'Edit');
+                return [
+                    _.div({
+                        key: 'edit-button',
+                        className: 'modern-button dark-mode center',
+                        onClick: this.setActiveNodeTreeStatus.bind(null, 'editing')
+                    }, 'Edit'),
+                    _.div({
+                        key: 'delete-button',
+                        className: 'modern-button red-mode center',
+                        onClick: this.delete
+                    }, 'Delete')
+                ]
             }
         },
         render: function () {

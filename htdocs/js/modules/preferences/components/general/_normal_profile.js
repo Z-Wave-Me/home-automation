@@ -26,15 +26,11 @@ define([
                 _ = React.DOM,
                 node = this.getModelFromCollection(null, 'profiles'),
                 id = node ? node.get('id') : '',
-                title = node ? node.get('title') : '',
+                title = node ? node.get('name') : '',
                 description = node ? node.get('description') : '',
                 defaultProfileId = this.getBinding('preferences').val().get('defaultProfileId'),
                 isActive = id === defaultProfileId,
-                cx = React.addons.classSet,
-                buttonClasses = cx({
-                    'button': true,
-                    'disabled': isActive
-                });
+                cx = React.addons.classSet;
 
 
             return _.div({ className: 'preview-data profile normal-status' },
@@ -44,10 +40,11 @@ define([
                 ),
                 _.div({ className: 'data-group left-group'},
                     _.span({ className: 'label-item label-name' }, 'Description'),
-                    _.span({ className: 'label-item label-description' }, description)
+                    _.span({ className: 'value-item label-description' }, description)
                 ),
                 _.div({ className: 'data-group left-group'},
-                    _.button({ className: buttonClasses}, isActive ? 'This is default profile' : 'Make as default profile')
+                    _.label({ className: 'label-item label-remember' }, 'default profile'),
+                    _.input({ className: 'value-item', type: 'checkbox', value: isActive})
                 ),
                 _button_group({
                     binding: {

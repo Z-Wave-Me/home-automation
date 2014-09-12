@@ -262,3 +262,66 @@ input[type='range']::-moz-focusring {
 .search-input::-webkit-input-placeholder {
   color: #999;
 }
+
+.modern-button {
+  border: 0 none;
+  border-radius: 2px 2px 2px 2px;
+  color: #FFFFFF;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Arial,sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 20px;
+  margin-bottom: 0;
+  margin-top: 10px;
+  padding: 7px 10px;
+  text-transform: none;
+  transition: all 0.3s ease 0s;
+  -moz-transition: all 0.3s ease 0s;
+  -webkit-transition: all 0.3s ease 0s;
+  width: 16.795%;
+  /* auto */
+  text-align: center;
+  /* DELETE WHEN WIDTH AUTO */
+  &.red-mode {
+    background: none repeat scroll 0 0 #E0645C;
+    color: #FFFFFF;
+    &:hover {
+      background: none repeat scroll 0 0 #999999;
+      color: #FFFFFF;
+    }
+  }
+  &.dark-mode {
+    background: none repeat scroll 0 0 #444444;
+    color: #FFFFFF;
+    &:hover {
+      background: none repeat scroll 0 0 #2DB6CF;
+      color: #FFFFFF;
+    }
+  }
+  &.light-mode {
+    background: none repeat scroll 0 0 #999999;
+    color: #FFFFFF;
+    &:hover {
+      background: none repeat scroll 0 0 #444444;
+      color: #FFFFFF;
+    }
+  }
+  &.green-mode {
+    background: none repeat scroll 0 0 #46b98a;
+    color: #FFFFFF;
+    &:hover {
+      background: none repeat scroll 0 0 #444444;
+      color: #FFFFFF;
+    }
+  }
+  &.blue-mode {
+    background: none repeat scroll 0 0 #2DB6CF;
+    color: #FFFFFF;
+    &:hover {
+      background: none repeat scroll 0 0 #444444;
+      color: #FFFFFF;
+    }
+  }
+}

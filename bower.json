@@ -10,8 +10,8 @@
         "jquery": "2.1.1",
         "react": "0.11.1",
         "less": "1.7.4",
-        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.3.1",
-        "immutable": "git://github.com/facebook/immutable-js.git#2.0.16",
+        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.3.2",
+        "immutable": "2.0.17",
         "director": "1.2.2"
     }
 }
