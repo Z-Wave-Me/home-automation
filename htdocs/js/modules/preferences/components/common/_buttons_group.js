@@ -21,10 +21,8 @@ define([
         mixins: [Morearty.Mixin, base_mixin, sync_layer_mixin, data_layer_mixin],
         save: function () {
             var Immutable = this.getMoreartyContext().Immutable,
-                binding = this.getDefaultBinding(),
                 itemBinding = this.getBinding('item'),
-                itemsBinding = this.getBinding('items'),
-                adding = binding.val('activeNodeTreeStatus') === 'adding';
+                itemsBinding = this.getBinding('items');
 
             itemsBinding.update(function (items) {
                return items.push(Immutable.Map(itemBinding.val().toJS()));
@@ -36,7 +34,6 @@ define([
         getButtons: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding();
-
 
             if (binding.val('activeNodeTreeStatus') === 'editing' || binding.val('activeNodeTreeStatus') === 'adding') {
                 return [
@@ -51,6 +48,20 @@ define([
                         onClick: this.setActiveNodeTreeStatus.bind(null, 'normal')
                     }, 'Cancel')
                 ];
+
+            } else if (binding.val('activeNodeTreeStatus') === 'pending') {
+                return [
+                    _.div({
+                        key: 'yes-button',
+                        className: 'modern-button red-mode center',
+                        onClick: this.remove
+                    }, 'Yes'),
+                    _.div({
+                        key: 'cancel-button',
+                        className: 'modern-button light-mode center',
+                        onClick: this.setActiveNodeTreeStatus.bind(null, 'normal')
+                    }, 'No')
+                ];
             } else {
                 return [
                     _.div({
@@ -61,7 +72,7 @@ define([
                     _.div({
                         key: 'delete-button',
                         className: 'modern-button red-mode center',
-                        onClick: this.delete
+                        onClick: this.setActiveNodeTreeStatus.bind(null, 'pending')
                     }, 'Delete')
                 ]
             }

@@ -69,7 +69,7 @@ define([
                 // right panel
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container' : 'panel-container'},
                     // children panel
-                        activeNode[0].hasOwnProperty('children') && activeNode[0].children.length > 0 && activeNode[0].id !== 1 ?
+                    activeNode[0].hasOwnProperty('children') && activeNode[0].children.length > 0 && activeNode[0].id !== 1 ?
                         _base_children_navigation({binding: preferencesBinding})
                         : null,
                     // main component

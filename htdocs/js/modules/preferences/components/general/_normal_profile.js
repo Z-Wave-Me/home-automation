@@ -43,7 +43,7 @@ define([
                     _.span({ className: 'value-item label-description' }, description)
                 ),
                 _.div({ className: 'data-group left-group'},
-                    _.label({ className: 'label-item label-remember' }, 'default profile'),
+                    _.label({ className: 'label-item label-remember' }, 'Active'),
                     _.input({ className: 'value-item', type: 'checkbox', value: isActive})
                 ),
                 _button_group({

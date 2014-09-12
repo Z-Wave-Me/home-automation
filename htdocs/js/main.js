@@ -18,7 +18,7 @@ requirejs.config({
         'mode-json': 'libs/acejs/mode-json',
         'worker-javascript': 'libs/acejs/worker-javascript',
         text: '../bower_components/requirejs-text/text',
-        immutable: '../bower_components/immutable/dist/immutable',
+        immutable: '../bower_components/immutable/dist/Immutable',
         director: '../bower_components/director/build/director',
         morearty: '../bower_components/moreartyjs/dist/morearty',
         templates: '../templates'

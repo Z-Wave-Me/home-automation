@@ -14,7 +14,7 @@ define([], function () {
                             return String(profile.id) === localStorage.getItem('defaultProfileId');
                         })[0];
 
-                    dataBinding.set('devicesOnDashboard', activeProfile.positions ? activeProfile.positions : []);
+                    dataBinding.set('devicesOnDashboard', activeProfile ? activeProfile.positions : []);
                 },
                 models: [
                     {
@@ -29,7 +29,6 @@ define([], function () {
                 autoSync: true,
                 sinceField: 'devicesUpdateTime',
                 methods: ['READ'],
-                modelsDiffField: 'deviceType',
                 postSyncHandler: function (ctx, response) {
                     var dataBinding = ctx.getBinding().sub('data'),
                         helpers = Sticky.get('App.Helpers.JS'),

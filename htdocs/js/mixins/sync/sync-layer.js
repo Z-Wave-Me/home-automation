@@ -60,6 +60,9 @@ define([
                 console.debug('incorrect _serviceId')
             }
         },
+        remove: function (_options) {
+
+        },
         // private
         _read: function (url, _options) {
             this.xhr.request({
