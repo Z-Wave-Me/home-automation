@@ -16,12 +16,14 @@ define([], function () {
 
                     dataBinding.set('devicesOnDashboard', activeProfile ? activeProfile.positions : []);
                 },
-                models: [
-                    {
-                        type: 'default',
-                        methods: ['READ', 'UPDATE', 'DELETE']
+                model: {
+                    methods: ['READ', 'UPDATE', 'DELETE'],
+                    defaults: {
+                        id: null,
+                        name: 'Default profile',
+                        description: 'Default profile description'
                     }
-                ]
+                }
             },
             {
                 id: 'devices',
@@ -68,12 +70,14 @@ define([], function () {
                 id: 'locations',
                 url: '/locations',
                 methods: ['READ', 'CREATE'],
-                models: [
-                    {
-                        type: 'default',
-                        methods: ['READ', 'UPDATE', 'DELETE']
+                model: {
+                    methods: ['READ', 'UPDATE', 'DELETE'],
+                    defaults: {
+                        id: null,
+                        name: 'Default name',
+                        icon: null
                     }
-                ]
+                }
             },
             {
                 id: 'modules',
@@ -95,7 +99,7 @@ define([], function () {
                         type: 'default',
                         methods: ['READ', 'UPDATE', 'DELETE']
                     }
-                ]
+                ],
             },
             {
                 id: 'notifications',

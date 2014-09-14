@@ -3,7 +3,7 @@ define([
     'react',
     'morearty',
     // mixins
-    './../mixins/base_mixin'
+    '../mixins/base_mixin'
 ], function (
     // libs
     React,
@@ -16,8 +16,7 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin],
         render: function () {
-            var _ = React.DOM,
-                activeNode = this.getActiveNodeTree();
+            var _ = React.DOM;
 
             return _.div({ className: 'main-component' },
                 _.div({ className: 'line-container'},

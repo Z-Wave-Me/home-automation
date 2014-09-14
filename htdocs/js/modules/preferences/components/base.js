@@ -3,35 +3,37 @@ define([
     'react',
     'morearty',
     // components
-    './_main',
-    './general/main_general',
-    './rooms/main_rooms',
-    './widgets/main_widgets',
-    './automation/main_automation',
-    './_base_button',
-    './_base_left_panel',
-    './_base_search',
-    './../mixins/base_mixin'
+    './main_menu',
+    './models/_profile',
+    './models/_room',
+    './models/_widget',
+    './models/_automation',
+    './common/_base_button',
+    './common/_base_left_panel',
+    './common/_base_search',
+    '../mixins/base_mixin',
+    'mixins/data/data-layer'
 ], function (
     // libs
     React,
     Morearty,
     // components
-    _main,
-    _main_general,
-    _main_rooms,
-    _main_widgets,
-    _main_automation,
+    main_menu,
+    _profile,
+    _room,
+    _widget,
+    _automation,
     _base_button,
     _base_left_panel,
     _base_search,
     // mixins
-    base_mixin
+    base_mixin,
+    data_layer_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin, base_mixin],
+        mixins: [Morearty.Mixin, base_mixin, data_layer_mixin],
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
@@ -40,16 +42,14 @@ define([
                 activeNode = this.getActiveNodeTree(),
                 baseTitle = activeNode[0].options.name.toUpperCase(),
                 components = {
-                    '_main': _main,
-                    '_main_general': _main_general,
-                    '_main_rooms': _main_rooms,
-                    '_main_widgets': _main_widgets,
-                    '_main_automation': _main_automation
+                    'main_menu': main_menu,
+                    '_profile': _profile,
+                    '_room': _room,
+                    '_widget': _widget,
+                    '_automation': _automation
                 };
 
-            if (preferencesBinding.val('activeNodeTreeStatus') === 'editing') {
-                baseTitle += ':EDIT';
-            } else if (preferencesBinding.val('activeNodeTreeStatus') === 'adding') {
+            if (preferencesBinding.val('activeNodeTreeStatus') === 'adding') {
                 baseTitle += ':CREATE';
             } else if (preferencesBinding.val('activeNodeTreeStatus') === 'pending') {
                 baseTitle += ':DELETE';
@@ -65,19 +65,20 @@ define([
                     // list block
                     _base_left_panel({binding: { default: binding, data: dataBinding, preferences: preferencesBinding }}),
                     // buttons
-                    activeNode[0].options.buttons ?  _base_button({ binding: { default: preferencesBinding}}) : null
+                    activeNode[0].options.buttons ? _base_button({ binding: { default: preferencesBinding}}) : null
                 ) : null,
                 // right panel
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container cleafix' : 'panel-container'},
                     activeNode[0].options.leftPanel ? _.h2({ className: 'title-children clearfix'}, baseTitle) : null,
                     // main component
-                    components[activeNode[0].options.componentName]({
-                        binding: {
-                            default: binding,
-                            data: dataBinding,
-                            preferences: preferencesBinding
-                        }
-                    })
+                    preferencesBinding.val('leftPanelItemSelectedId') || activeNode[0].options.name === 'main' ?
+                        components[activeNode[0].options.componentName]({
+                            binding: {
+                                default: binding,
+                                data: dataBinding,
+                                preferences: preferencesBinding
+                            }
+                        }) : null
                 )
             );
         }

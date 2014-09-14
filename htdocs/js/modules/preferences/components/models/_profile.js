@@ -19,35 +19,24 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
         componentWillMount: function () {
-            this._item = this.getItem();
-        },
-        getItem: function () {
-            var Immutable = this.getMoreartyContext().Immutable,
-                adding = this.getBinding('preferences').val('activeNodeTreeStatus') === 'adding';
-
-            if (adding) {
-                this.getBinding('preferences').set('itemBindingTemp', Immutable.Map({id: -1, name: '', description: ''}));
-                return this.getBinding('preferences').sub('itemBindingTemp');
-            } else {
-                return this.getModelFromCollection(null, 'profiles');
-            }
+            this._item = this.getItem('profiles');
         },
         render: function () {
             var that = this,
-                item = that._item,
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
+                itemBinding = that._item,
                 _ = React.DOM,
                 title, description;
 
-            title = item.get('name');
-            description = item.get('description');
+            title = itemBinding.get('name');
+            description = itemBinding.get('description');
 
             return _.div({ className: 'form-data profile adding-status clearfix' },
                 _.div({ key: 'form-name-input', className: 'form-group' },
                     _.label({ htmlFor: 'profile-name', className: 'input-label'}, 'Name'),
                     _.input({
-                        onChange: Morearty.Callback.set(item, 'name'),
+                        onChange: Morearty.Callback.set(itemBinding, 'name'),
                         id: 'profile-name',
                         className: 'input-value',
                         type: 'text',
@@ -58,7 +47,7 @@ define([
                 _.div({ key: 'form-description-input', className: 'form-group' },
                     _.label({ htmlFor: 'profile-description', className: 'input-label'}, 'Description'),
                     _.textarea({
-                        onChange: Morearty.Callback.set(item, 'description'),
+                        onChange: Morearty.Callback.set(itemBinding, 'description'),
                         id: 'profile-description',
                         className: 'input-value textarea-type',
                         col: 3,

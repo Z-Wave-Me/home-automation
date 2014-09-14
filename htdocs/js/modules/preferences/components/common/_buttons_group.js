@@ -3,7 +3,7 @@ define([
     'react',
     'morearty',
     // mixins
-    './../../mixins/base_mixin',
+    '../../mixins/base_mixin',
     'mixins/sync/sync-layer',
     'mixins/data/data-layer'
 ], function (
@@ -35,7 +35,7 @@ define([
             var _ = React.DOM,
                 binding = this.getDefaultBinding();
 
-            if (binding.val('activeNodeTreeStatus') === 'editing' || binding.val('activeNodeTreeStatus') === 'adding') {
+            if (binding.val('activeNodeTreeStatus') === 'adding') {
                 return [
                     _.div({
                         key: 'save-button',
@@ -48,7 +48,6 @@ define([
                         onClick: this.setActiveNodeTreeStatus.bind(null, 'normal')
                     }, 'Cancel')
                 ];
-
             } else if (binding.val('activeNodeTreeStatus') === 'pending') {
                 return [
                     _.div({
@@ -65,16 +64,16 @@ define([
             } else {
                 return [
                     _.div({
-                        key: 'edit-button',
-                        className: 'modern-button dark-mode center',
-                        onClick: this.setActiveNodeTreeStatus.bind(null, 'editing')
-                    }, 'Edit'),
+                        key: 'save-button',
+                        className: 'modern-button green-mode center',
+                        onClick: this.save
+                    }, 'Save'),
                     _.div({
                         key: 'delete-button',
                         className: 'modern-button red-mode center',
                         onClick: this.setActiveNodeTreeStatus.bind(null, 'pending')
                     }, 'Delete')
-                ]
+                ];
             }
         },
         render: function () {

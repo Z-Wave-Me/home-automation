@@ -25,7 +25,7 @@ define([
                 name: 'main',
                 leftPanel: false,
                 searchPanel: false,
-                componentName: '_main'
+                componentName: 'main_menu'
             },
             children: [
                 {
@@ -35,7 +35,7 @@ define([
                         leftPanel: true,
                         searchPanel: true,
                         buttons: ['add', 'remove'],
-                        componentName: '_main_general'
+                        componentName: '_profile'
                     },
                     children: []
                 },
@@ -46,7 +46,7 @@ define([
                         leftPanel: true,
                         searchPanel: true,
                         buttons: ['add', 'remove'],
-                        componentName: '_main_rooms'
+                        componentName: '_room'
                     },
                     children: []
                 },
@@ -56,7 +56,7 @@ define([
                         name: 'widgets',
                         leftPanel: true,
                         searchPanel: true,
-                        componentName: '_main_widgets'
+                        componentName: '_widget'
                     },
                     children: []
                 },
@@ -66,7 +66,7 @@ define([
                         name: 'automation',
                         leftPanel: true,
                         searchPanel: true,
-                        componentName: '_main_automation'
+                        componentName: '_automation'
                     },
                     children: []
                 }

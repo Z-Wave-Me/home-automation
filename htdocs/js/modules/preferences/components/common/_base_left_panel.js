@@ -3,7 +3,7 @@ define([
     'react',
     'morearty',
     // mixins
-    './../mixins/base_mixin'
+    '../../mixins/base_mixin'
 ], function (
     // libs
     React,
@@ -32,6 +32,7 @@ define([
                 itemsBinding,
                 items,
                 renderModel;
+
 
             renderModel = function (item, index) {
                 var searchString = preferencesBinding.val('searchString').toLowerCase(),

@@ -6,7 +6,7 @@ define([
     './_filter_rooms',
     './_filter_tags',
     './_filter_types',
-    'Preferences/components/_base_search'
+    'Preferences/components/common/_base_search'
 ], function (
     // libs
     React,
