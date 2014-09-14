@@ -1,4 +1,4 @@
-/*** ZWave Gate module ********************************************************
+/*** Z-Wave Binding module ********************************************************
 
 Version: 2.0.0
 -------------------------------------------------------------------------------
@@ -21,24 +21,36 @@ _module = ZWave;
 ZWave.prototype.init = function (config) {
     ZWave.super_.prototype.init.call(this, config);
 
-    zway = new ZWaveBinding('zway', '/dev/ttyUSB0', {
-        configFolder: 'config',
-        translationsFolder: 'translations',
-        zddxFolder: 'ZDDX',
-        terminationCallback: this.terminating
+    var self = this;
+    
+    this.zway = new ZWaveBinding(this.config.name, this.config.port, {
+        configFolder: this.config.config || 'config',
+        translationsFolder: this.config.translations || 'translations',
+        zddxFolder: this.config.ZDDX || 'ZDDX',
+        terminationCallback: function() {
+            self.terminating.call(self);
+        }
     });
     
-    zway.discover();
+    this.zway.discover();
+    
+    zway = this.zway;
 };
 
 ZWave.prototype.stop = function () {
     console.log("--- ZWave.stop()");
     ZWave.super_.prototype.stop.call(this);
 
-    this.terminating();
 };
 
 ZWave.prototype.terminating = function () {
     console.log("Terminating Z-Wave binding");
+
+    this.zway.stop();
+    this.zway = null;
     zway = null;
+
+    if (this.config.closeOnExit) {
+        exit();
+    }
 };

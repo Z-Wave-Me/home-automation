@@ -452,15 +452,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         Object.keys(that.controller.modules).sort().forEach(function (className) {
             module = that.controller.modules[className].meta;
-            if (module.hasOwnProperty('userView') && module.userView) {
-                module.className = className;
-                if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
-                    module.created = true;
-                } else {
-                    module.created = false;
-                }
-                reply.data.push(module);
+            module.className = className;
+            if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+                module.created = true;
+            } else {
+                module.created = false;
             }
+            reply.data.push(module);
         });
 
         this.initResponse(reply);
@@ -470,7 +468,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var that = this,
             reply = {
                 error: null,
-                data: _.filter(that.controller.instances, function (instance) { return instance.userView; }),
+                data: that.controller.instances,
                 code: 200
             };
 

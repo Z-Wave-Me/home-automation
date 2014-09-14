@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"userView": true,
 	"defaults": {
 		"title": "RGB",
 		"description": "Creates RGB device based on three different dimmers",

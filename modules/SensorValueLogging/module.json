@@ -1,6 +1,5 @@
 {
     "dependencies": [],
-    "userView": true,
     "singleton": false,
     "defaults": {
         "title": "Sensor values logging",

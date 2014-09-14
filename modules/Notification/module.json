@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"userView": true,
 	"defaults": {
 		"title": "Notification",
 		"description": "Send email or sms",

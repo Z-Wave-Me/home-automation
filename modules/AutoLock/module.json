@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"userView": true,
 	"defaults": {
 		"title": "Auto Lock",
 		"description": "Door/Window Sensor automatically closes lock when door is closed",

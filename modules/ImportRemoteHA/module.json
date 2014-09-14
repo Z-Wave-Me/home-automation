@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"userView": true,
 	"defaults": {
 		"title": "Import from remote Z-Way HA",
 		"description": "Create virtual device based remote Z-Way HA server.",

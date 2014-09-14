@@ -1,8 +1,12 @@
 {
     "dependencies": ["ZWave"],
     "singleton": true,
-    "userView": false,
     "defaults": {
-        "title": "Z-Wave device dead detection"
+        "title": "Z-Wave device dead detection",
+	"description": "Detects Z-Wave dead devices and sends notifications"
+    },
+    "schema": {
+    },
+    "options": {
     }
 }

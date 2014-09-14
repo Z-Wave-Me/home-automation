@@ -1,4 +1,4 @@
-/*** ZWave Gate module ********************************************************
+/*** Z-Wave Gate module ********************************************************
 
 Version: 2.0.0
 -------------------------------------------------------------------------------
@@ -16,7 +16,9 @@ function ZWaveGate (id, controller) {
         "InstanceAdded": 0x04,
         "InstanceRemoved": 0x08,
         "CommandAdded": 0x10,
-        "CommandRemoved": 0x20
+        "CommandRemoved": 0x20,
+        "ZDDXSaved": 0x100,
+        "EnumerateExisting": 0x200
     };
 
     this.ZWAY_DATA_CHANGE_TYPE = {
@@ -64,6 +66,12 @@ ZWaveGate.prototype.init = function (config) {
     // Bind to all future CommandClasses changes
     this.zwayBinding = zway.bind(function (type, nodeId, instanceId, commandClassId) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
+            // Ignore Static PC Controllers
+            if (2 === zway.devices[nodeId].data.basicType.value && 1 === zway.devices[nodeId].data.specificType.value) {
+                console.log("Device", nodeId, "is a Static PC Controller, ignoring");
+                return;
+            }
+            
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
                 if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
                     self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
@@ -74,38 +82,8 @@ ZWaveGate.prototype.init = function (config) {
         } else {
             self.parseDelCommandClass(nodeId, instanceId, commandClassId);
         }
-    }, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"]);
+    }, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
 
-    // Iterate all existing Command Classes
-    Object.keys(zway.devices).forEach(function (nodeId) {
-        nodeId = parseInt(nodeId, 10);
-        var device = zway.devices[nodeId];
-
-        // Ignore Static PC Controllers
-        if (2 === device.data.basicType.value && 1 === device.data.specificType.value) {
-            console.log("Device", nodeId, "is a Static PC Controller, ignoring");
-            return;
-        }
-
-        Object.keys(device.instances).forEach(function (instanceId) {
-            instanceId = parseInt(instanceId, 10);
-            var instance = device.instances[instanceId];
-
-            Object.keys(instance.commandClasses).forEach(function (commandClassId) {
-                commandClassId = parseInt(commandClassId, 10);
-                var commandClass = instance.commandClasses[commandClassId];
-                
-                self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
-                    if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
-                    } else {
-                        self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
-                    }
-                }, "value");
-            });
-        });
-    });
-    
     this.controller.on("ZWaveGate.dataBind", this.dataBind);
     this.controller.on("ZWaveGate.dataUnbind", this.dataUnbind);
 };

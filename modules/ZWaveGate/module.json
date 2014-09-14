@@ -1,8 +1,12 @@
 {
     "dependencies": ["ZWave"],
     "singleton": true,
-    "userView": false,
     "defaults": {
-        "title": "Z-Wave device creator"
+        "title": "Z-Wave Gate device creator",
+	"description": "Creates widgets based on Z-Wave devices"
+    },
+    "schema": {
+    },
+    "options": {
     }
 }

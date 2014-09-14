@@ -1,7 +1,6 @@
 {
     "singleton": false,
     "dependencies": [],
-    "userView": true,
     "defaults": {
         "title": "Web Camera",
         "description": "This module include configuration for a camera and create camera device",

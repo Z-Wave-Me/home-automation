@@ -1,7 +1,6 @@
 {
     "autoload":false,
     "singleton": false,
-    "userView": true,
     "defaults": {
         "title": "Scheduler",
         "description": "Execute scheduled scene.",

@@ -1,6 +1,5 @@
 {
 	"singleton": false,
-	"userView": true,
 	"dependencies": [],
 	"defaults": {
 		"title": "Delayed Scene",

@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"userView": true,
 	"defaults": {
 		"title": "Logical rules",
 		"description": "Logical rules allows to trigger scenes based on devices status.",

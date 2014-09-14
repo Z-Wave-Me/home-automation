@@ -1,8 +1,70 @@
 {
     "dependencies": [],
     "singleton": true,
-    "userView": false,
     "defaults": {
-        "title": "Z-Wave binding"
+        "title": "Z-Wave binding",
+        "description": "Loads Z-Wave engine",
+        "name": "zway",
+        "port": "/dev/ttyUSB0",
+	"config": "config",
+	"translations": "translations",
+	"ZDDX": "ZDDX",
+	"closeOnExit": true
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "port": {
+                "type": "string",
+                "required": true
+            },
+            "name": {
+                "type": "string",
+                "required": true
+            },
+            "config": {
+                "type": "string",
+                "required": true
+            },
+            "translations": {
+                "type": "string",
+                "required": true
+            },
+            "ZDDX": {
+                "type": "string",
+                "required": true
+            },
+            "closeOnExit": {
+                "type": "boolean"
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "port": {
+                "label": "Serial port to Z-Wave dongle"
+            },
+            "name": {
+                "label": "Internal name",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "config": {
+                "label": "Path to config folder",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "translations": {
+                "label": "Path to dictionaries folder",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "ZDDX": {
+                "label": "Path to ZDDX database",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "closeOnExit": {
+		"label": "",
+                "rightLabel": "Turn Z-Way server off on dongle loss"
+            }
+        }
     }
 }

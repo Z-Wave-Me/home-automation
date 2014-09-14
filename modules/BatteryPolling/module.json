@@ -1,7 +1,6 @@
 {
     "singleton": true,
     "dependencies": ["Cron"],
-    "userView": true,
     "defaults": {
         "title": "Battery Polling",
         "description": "Battery Polling notifications",

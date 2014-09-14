@@ -1,8 +1,12 @@
 {
     "singleton": true,
-    "userView": false,
     "dependencies": [],
     "defaults": {
-        "title": "Cron scheduler"
+        "title": "Cron scheduler",
+	"desription": "Scheduler used by other modules"
+    },
+    "schema": {
+    },
+    "options": {
     }
 }

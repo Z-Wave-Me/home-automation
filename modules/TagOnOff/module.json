@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"userView": true,
 	"defaults": {
 		"title": "Tag devices with On/Off",
 		"description": "Mark devices with On/Off tags depending on their state.",

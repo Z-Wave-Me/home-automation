@@ -71,7 +71,7 @@ describe("ZAutomation API", function () {
 
         it("creates new instance", function (done) {
             // create BatteryPolling
-            var module = _.find(modules, function (ins) { return !Boolean(ins.singleton) && Boolean(ins.userView); }),
+            var module = _.find(modules, function (ins) { return !Boolean(ins.singleton); }),
                 json = {
                     moduleId: module.id,
                     params: _.extend(module.defaults, {

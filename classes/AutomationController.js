@@ -188,7 +188,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         } catch (e) {
             self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
             console.log(e.stack);
-            return null;
+            return null; // not loaded
         }
 
         console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
@@ -196,7 +196,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         if (module.meta.singleton) {
             if (in_array(self._loadedSingletons, module.meta.id)) {
                 console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
-                return;
+                return null; // not loaded
             }
 
             self._loadedSingletons.push(module.meta.id);
@@ -207,7 +207,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         } catch (e) {
             self.addNotification("error", "Can not init module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
             console.log(e.stack);
-            return null;
+            return null; // not loaded
         }
         
         self.registerInstance(instance);
@@ -241,6 +241,12 @@ AutomationController.prototype.loadModule = function(module, rootModule) {
                                 this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not loaded", "core");
                                 module.failed = true;
                                 return false;
+                        }
+                        
+                        if (this.loadedModules.map(function(x) { return x.meta.id == module.meta.id }).length > 0) {
+                                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not instanciated", "core");
+                                module.failed = true;
+                                return false;                          
                         }
                 }
         }
@@ -281,6 +287,7 @@ AutomationController.prototype.loadModule = function(module, rootModule) {
 
         if (count)
             this.loadedModules.push(module);
+        console.log(">>>>>", this.loadedModules.map(function(x){return x.meta.id})); //!!
         return true;
 }
 
@@ -291,49 +298,6 @@ AutomationController.prototype.instantiateModules = function () {
     this.loadedModules = [];
 
     Object.getOwnPropertyNames(this.modules).forEach(function(m) { this.loadModule(this.modules[m]); }, this);
-
-    /*
-    console.log("--- User configured modules instantiation ---");
-    if (self.instances.length > 0) {
-        var _instances = self.instances.map(function(inst) { return { loaded: false, instance: inst} }),
-            _orderedInstances = [];
-        
-        // here _orderedInstances is LIFO
-        _instances.forEach(function(inst) {
-            var i = _orderedInstances.length;
-            
-            inst.instance.dependencies.forEach(function(dep) {
-                var _i = _orderedInstances.map(function(x) { return x.instance.moduleId }).indexOf(dep);
-                
-                if (_i !== -1 && _i < i) {
-                    i = _i;
-                }
-            });
-            _orderedInstances.splice(i, 0, inst);
-        });
-        
-        _orderedInstances.reverse(); // now it is FIFO
-        _orderedInstances.forEach(function(inst) {
-            // check if at least one instance of dependacies module was loaded
-            var cantStart = fasle;
-            inst.instance.dependencies.forEach(function(dep) {
-                var _i = _orderedInstances.filter(function(x) { return inst.loaded; }).map(function(x) { return x.instance.moduleId }).indexOf(dep);
-                
-                if (_i !== -1) {
-                    cantStart = true;
-                }
-            });
-            if (cantStart) {
-                if (self.instantiateModule(inst.instance) !== null) {
-                    inst.loaded = true;
-                }
-            }
-        }
-    } else {
-        console.log("--! No user-configured instances found");
-    }
-    */
-    
 };
 
 AutomationController.prototype.moduleInstance = function (instanceId) {
@@ -371,7 +335,6 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
             id: id,
             moduleId: moduleId,
             params: params,
-            userView: module.meta.userView
         };
 
         self.instances.push(instance);

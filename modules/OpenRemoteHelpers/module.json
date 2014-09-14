@@ -2,6 +2,11 @@
     "dependencies": [],
     "singleton": true,
     "defaults": {
-        "title": "OpenRemote helper"
+        "title": "OpenRemote helper",
+	"description": "Set of helpers for OpenRemote server"
+    },
+    "schema": {
+    },
+    "options": {
     }
 }

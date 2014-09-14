@@ -1,0 +1,26 @@
+{
+    "singleton": false,
+    "dependencies": [],
+    "defaults": {
+        "title": "HomeKit Gate",
+        "description": "Announces all widgets to HomeKit",
+	"name": "RaZberry"
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "required": true
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "name": {
+                "label": "Name as it appears in iOS devices"
+            }
+        }
+    }
+}

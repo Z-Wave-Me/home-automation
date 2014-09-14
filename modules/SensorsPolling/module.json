@@ -1,7 +1,6 @@
 {
     "dependencies": ["Cron"],
     "singleton": true,
-    "userView": true,
     "defaults": {
         "title": "Poll sensors periodically",
         "description": "Regular sensors polling",

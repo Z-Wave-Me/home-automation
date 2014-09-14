@@ -1,7 +1,6 @@
 {
 	"dependencies": [],
 	"singleton": true,
-	"userView": true,
 	"defaults": {
 		"title": "Security notifications -- unfinished!!!",
 		"description": "Notify on changes of sensors and switches state",
