@@ -109,7 +109,7 @@ JS.Run = function(url) {
     		body: r 
     	};
     } catch (e) {
-    	return { status: 500, body: e };
+    	return { status: 500, body: e.toString() };
     }
 };
 
