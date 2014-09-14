@@ -23,26 +23,40 @@ define([
         getInitialState: function () {
             return { profile: this.getItem('locations') };
         },
+        preventDefault: function (e) {
+            e.preventDefault();
+        },
         handleFile: function(e) {
+            this.preventDefault(e);
+
             var that = this,
                 reader = new FileReader(),
-                file = e.target.files[0];
+                file = e.hasOwnProperty('dataTransfer') ? e.dataTransfer.files[0] : e.target.files[0];
 
             reader.onload = function(upload) {
-                that.state.profile.set('icon', String(upload.target.result));
+                that.state.profile.set('icon', upload.target.result);
                 that.forceUpdate();
             };
 
             reader.readAsDataURL(file);
         },
+        handleClick: function () {
+            this.refs.fileInput.getDOMNode().click();
+        },
         render: function () {
             var that = this,
+                cx = React.addons.classSet,
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
                 _ = React.DOM,
                 item = that.state.profile,
                 title = item.val('title'),
-                icon = item.val('icon');
+                icon = item.val('icon'),
+                classes = cx({
+                    'preview': true,
+                    'placehold': !icon
+                });
+
 
             return _.div({ className: 'model-component' },
                 _.div({ className: 'form-data profile adding-status clearfix' },
@@ -59,14 +73,14 @@ define([
                     ),
                     _.div({ key: 'form-icon-input', className: 'form-group' },
                         _.label({ htmlFor: 'profile-description', className: 'input-label'}, 'Icon:'),
-                        _.div({ className: 'dropzone', onClick: this.handleClick},
+                        _.div({ onDrop: this.handleFile, onDragOver: this.preventDefault, className: 'dropzone', onClick: this.handleClick},
                             _.div({className: 'pull-left text-container'},
                                 _.span({ className: 'text-zone primary'}, _.strong({}, 'Drop file'), ' to upload'),
                                 _.span({ className: 'text-zone secondary'}, '(or click)')
                             ),
-                            _.div({className: 'preview', style: icon ? {'background-image': icon} : {}})
+                            _.div({className: classes, style: icon ? {'background-image': 'url(' + icon + ')'} : {}})
                         ),
-                        _.input({ref: 'file-input', className: 'hidden', type: 'file', onChange: this.handleFile})
+                        _.input({ref: 'fileInput', className: 'hidden', type: 'file', onChange: this.handleFile})
                     ),
                     /*
                     _inline_input({
