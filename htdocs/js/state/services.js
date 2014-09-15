@@ -58,12 +58,17 @@ define([], function () {
                 parse: function (response) {
                     return response.data.devices;
                 },
-                models: [
-                    {
-                        type: 'default',
-                        methods: ['READ', 'UPDATE']
+                model: {
+                    methods: ['READ', 'UPDATE', 'DELETE'],
+                    defaults: {
+                        id: null,
+                        deviceType: 'none',
+                        location: null,
+                        metrics: {title: 'noname'},
+                        tags: [],
+                        permanently_hidden: false
                     }
-                ],
+                },
                 delay: 2000
             },
             {

@@ -64,11 +64,6 @@ define([
             } else {
                 return [
                     _.div({
-                        key: 'save-button',
-                        className: 'modern-button green-mode center',
-                        onClick: this.save
-                    }, 'Save'),
-                    _.div({
                         key: 'delete-button',
                         className: 'modern-button red-mode center',
                         onClick: this.setActiveNodeTreeStatus.bind(null, 'pending')

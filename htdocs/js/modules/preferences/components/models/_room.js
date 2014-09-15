@@ -21,7 +21,13 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
         getInitialState: function () {
-            return { profile: this.getItem('locations') };
+            return { location: this.getItem('locations') };
+        },
+        componentDidMount: function () {
+            var that = this;
+            that.getBinding('preferences').addListener('leftPanelItemSelectedId', function () {
+                that.setState({location: that.getItem('locations')});
+            });
         },
         preventDefault: function (e) {
             e.preventDefault();
@@ -33,8 +39,12 @@ define([
                 reader = new FileReader(),
                 file = e.hasOwnProperty('dataTransfer') ? e.dataTransfer.files[0] : e.target.files[0];
 
+            if (!Boolean(file)) {
+                return false;
+            }
+
             reader.onload = function(upload) {
-                that.state.profile.set('icon', upload.target.result);
+                that.state.location.set('icon', upload.target.result);
                 that.forceUpdate();
             };
 
@@ -49,7 +59,7 @@ define([
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
                 _ = React.DOM,
-                item = that.state.profile,
+                item = that.state.location,
                 title = item.val('title'),
                 icon = item.val('icon'),
                 classes = cx({
@@ -57,14 +67,13 @@ define([
                     'placehold': !icon
                 });
 
-
             return _.div({ className: 'model-component' },
-                _.div({ className: 'form-data profile adding-status clearfix' },
+                _.div({ className: 'form-data room adding-status clearfix' },
                     _.div({ key: 'form-name-input', className: 'form-group' },
-                        _.label({ htmlFor: 'profile-name', className: 'input-label'}, 'Name:'),
+                        _.label({ htmlFor: 'room-name', className: 'input-label'}, 'Name:'),
                         _.input({
                             onChange: Morearty.Callback.set(item, 'title'),
-                            id: 'profile-name',
+                            id: 'room-name',
                             className: 'input-value',
                             type: 'text',
                             placeholder: 'Name',
@@ -72,7 +81,7 @@ define([
                         })
                     ),
                     _.div({ key: 'form-icon-input', className: 'form-group' },
-                        _.label({ htmlFor: 'profile-description', className: 'input-label'}, 'Icon:'),
+                        _.label({ htmlFor: 'room-description', className: 'input-label'}, 'Icon:'),
                         _.div({ onDrop: this.handleFile, onDragOver: this.preventDefault, className: 'dropzone', onClick: this.handleClick},
                             _.div({className: 'pull-left text-container'},
                                 _.span({ className: 'text-zone primary'}, _.strong({}, 'Drop file'), ' to upload'),
@@ -96,7 +105,7 @@ define([
                     _buttons_group({
                         binding: {
                             default: preferencesBinding,
-                            item: that.state.profile,
+                            item: item,
                             items: dataBinding.sub('locations')
                         }
                     })

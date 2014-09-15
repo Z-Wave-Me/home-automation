@@ -9,38 +9,38 @@ define([], function () {
                 dataBinding = ctx.getBinding().sub('data'),
                 collections = servicesBinding.sub('collections');
 
-            collections.val().forEach(function (collection, index) {
-                var obj = collection.toJS();
+            // add collection
+            collections.val().forEach(function (collection) {
+                dataBinding.addListener(collection.get('id'), function (data, previousData, absolutePath, relativePath) {
+                    var subPath = parseInt(relativePath.split('.')[0]),
+                        model,
+                        modelBinding;
 
-                dataBinding.addListener(obj.id, function (data, previousData) {
-                    var collection = data.toJS();
+                    if ((subPath - 0) === subPath && (''+subPath).replace(/^\s+|\s+$/g, "").length > 0) {
+                        modelBinding = dataBinding.sub(collection.get('id')).sub(subPath);
+                        model = modelBinding.val().toJS();
 
-                    collection
-                        .filter(function (model) {
-                            return model.id === -1 || model._new;
-                        })
-                        .forEach(function (model) {
-                            that.push({
-                                data: model,
-                                serviceId: obj.id,
-                                success: function (response) {
-                                    var data = response.data;
-                                    dataBinding.sub(obj.id).sub(collection.indexOf(model)).update(function (dataObject) {
-                                        Object.keys(response.data).forEach(function (key) {
-                                            dataObject.set(key, data[key]);
-                                        });
-
-                                        return dataObject;
-                                    });
-                                }
-                            })
+                        that.push({
+                            data: model,
+                            serviceId: collection.get('id'),
+                            success: function (response) {
+                                Object.keys(response.data).forEach(function (key) {
+                                    modelBinding.set(key, response.data[key]);
+                                });
+                            }
                         });
+                    }
                 });
-            })
+            });
+
+            // add local data
+            that.getBinding('preferences').addListener('defaultProfileId', function (profileId) {
+                localStorage.setItem('defaultProfileId', String(profileId));
+            });
         },
         pull: function () {
             var that = this,
-                ctx = this.getMoreartyContext(),
+                ctx = that.getMoreartyContext(),
                 Immutable = ctx.Immutable,
                 servicesBinding = ctx.getBinding().sub('services'),
                 dataBinding = ctx.getBinding().sub('data'),
@@ -56,6 +56,7 @@ define([], function () {
                                 if (response.data) {
                                     var models = obj.hasOwnProperty('parse') ? obj.parse(response) : response.data;
                                     models.forEach(function (jsonModel) {
+                                        jsonModel._changed = false;
                                         dataBinding.sub(obj.id).update(function (items) {
                                             return items.push(Immutable.Map(jsonModel));
                                         });
