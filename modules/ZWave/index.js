@@ -41,6 +41,7 @@ ZWave.prototype.stop = function () {
     console.log("--- ZWave.stop()");
     ZWave.super_.prototype.stop.call(this);
 
+    this.terminating();
 };
 
 ZWave.prototype.terminating = function () {
@@ -49,8 +50,4 @@ ZWave.prototype.terminating = function () {
     this.zway.stop();
     this.zway = null;
     zway = null;
-
-    if (this.config.closeOnExit) {
-        exit();
-    }
 };

@@ -1,6 +1,6 @@
 {
     "dependencies": [],
-    "singleton": true,
+    "singleton": false,
     "defaults": {
         "title": "Z-Wave binding",
         "description": "Loads Z-Wave engine",
@@ -33,9 +33,6 @@
             "ZDDX": {
                 "type": "string",
                 "required": true
-            },
-            "closeOnExit": {
-                "type": "boolean"
             }
         },
         "required": false
@@ -46,24 +43,24 @@
                 "label": "Serial port to Z-Wave dongle"
             },
             "name": {
+		"hidden": true,
                 "label": "Internal name",
 		"helper": "Don't change unless you know what you are doing"
             },
             "config": {
+		"hidden": true,
                 "label": "Path to config folder",
 		"helper": "Don't change unless you know what you are doing"
             },
             "translations": {
+		"hidden": true,
                 "label": "Path to dictionaries folder",
 		"helper": "Don't change unless you know what you are doing"
             },
             "ZDDX": {
+		"hidden": true,
                 "label": "Path to ZDDX database",
 		"helper": "Don't change unless you know what you are doing"
-            },
-            "closeOnExit": {
-		"label": "",
-                "rightLabel": "Turn Z-Way server off on dongle loss"
             }
         }
     }

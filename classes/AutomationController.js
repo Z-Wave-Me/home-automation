@@ -287,7 +287,6 @@ AutomationController.prototype.loadModule = function(module, rootModule) {
 
         if (count)
             this.loadedModules.push(module);
-        console.log(">>>>>", this.loadedModules.map(function(x){return x.meta.id})); //!!
         return true;
 }
 
