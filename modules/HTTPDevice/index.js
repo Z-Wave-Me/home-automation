@@ -108,14 +108,10 @@ HTTPDevice.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 HTTPDevice.prototype.update = function (vDev) {
-	var self = this,
+    var self = this,
         deviceType = vDev.get("deviceType"),
         url = this.config["getter_" + deviceType],
         parser = this.config["getterParser_" + deviceType];
-    
-    if (!parser && (deviceType == "sensorMultilevel" || deviceType == "switchMultilevel")) {
-        parser = "parseInt(%%)";
-    }
     
     if (url) {
         http.request({
@@ -163,7 +159,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
     
     if (url) {
     	if (subst) {
-    		url = url.replace(/%%/g, subst);
+    		url = url.replace(/\$\$/g, subst);
     	}
         http.request({
             url: url,
