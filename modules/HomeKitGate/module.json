@@ -4,7 +4,7 @@
     "defaults": {
         "title": "HomeKit Gate",
         "description": "Announces all widgets to HomeKit",
-	"name": "RaZberry"
+        "name": "RaZberry"
     },
     "schema": {
         "type": "object",
