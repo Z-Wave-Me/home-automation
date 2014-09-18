@@ -29,6 +29,9 @@ Description:
 Author: Pieter E. Zanstra
 Converted into Z-Way HA module: Poltorak Serguei
 
+Version 1.01.01       2014-09-09 (Yurkin Vitaliy aivs@z-wave.me)
+Added metrics command to get metrics (/ZAutomation/api/v1/devices/ZWayVDev_22:2:48:1/metrics/level)
+
 Version 1.01.01	      2014-02-28
 Testing all functions and bugfixing (Yurkin Vitaliy aivs@z-wave.me)
 
@@ -203,14 +206,14 @@ OpenRemoteHelpers.prototype.init = function (config) {
 
             case "ThermostatSetMode":
                 var mode = I; // there are usually no instances for thermostats
-		if (! zway.devices[N].ThermostatMode.data[mode]) {
-		    for (var m in zway.devices[N].ThermostatMode.data) {
-		        if (zway.devices[N].ThermostatMode.data[m] && zway.devices[N].ThermostatMode.data[m].modeName && zway.devices[N].ThermostatMode.data[m].modeName.value.toLowerCase() == mode.toLowerCase()) {
-		            mode = m;
-		            break;
+        		if (! zway.devices[N].ThermostatMode.data[mode]) {
+        		    for (var m in zway.devices[N].ThermostatMode.data) {
+        		        if (zway.devices[N].ThermostatMode.data[m] && zway.devices[N].ThermostatMode.data[m].modeName && zway.devices[N].ThermostatMode.data[m].modeName.value.toLowerCase() == mode.toLowerCase()) {
+        		            mode = m;
+        		            break;
+                                }
+                            }
                         }
-                    }
-                }
                 zway.devices[N].ThermostatMode.Set(mode);
                 return mode;
 
@@ -273,6 +276,10 @@ OpenRemoteHelpers.prototype.init = function (config) {
             case "DoorStatus":
                 // there are usually no instances for door locks
                 return zway.devices[N].DoorLock.data.level.value ? "on" : "off";
+
+            case "metrics":
+                // used HA API for all device to get metrics
+                return this.controller.devices.get(N).get("metrics:level")
         }
     };
 };
