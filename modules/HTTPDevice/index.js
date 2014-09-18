@@ -135,8 +135,8 @@ HTTPDevice.prototype.update = function (vDev) {
                             }
                         }
                         if (deviceType === "switchMultilevel" || deviceType === "sensorMultilevel") {
-                            if (parseFloat(data) != NaN) {
-                                data = parseFloat(data)
+                            if (parseFloat(_data) != NaN) {
+                                data = parseFloat(_data)
                             }
                         }
                     }
