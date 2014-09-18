@@ -187,7 +187,7 @@
 			},
 			"getterParser_sensorMultilevel": {
 				"label": "Inline Javascript to parse incoming data to number",
-				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level or (%% === "true")?"on":"off"",
+				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level or (%% === \"true\")?\"on\":\"off\"",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
