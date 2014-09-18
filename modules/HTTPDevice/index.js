@@ -123,8 +123,31 @@ HTTPDevice.prototype.update = function (vDev) {
             method: this.config.method,
             async: true,
             success: function(response) {
-            	var data = typeof(response.data) == "object" ? "(" + JSON.stringify(response.data) + ")": response.data.toString();
-                vDev.set("metrics:level", parser ? eval(parser.replace(/%%/g, data)) : response.data);
+                var data = null;
+                if (parser) {
+                    data = (function($$) {
+                        return eval(parser);
+                    })(response.data);
+                } else {
+                    if (typeof(response.data) === "string") {
+                        var _data = response.data.trim();
+                        if (deviceType === "switchBinary" || deviceType === "sensorBinary") {
+                            if (_data === "1" || _data === "on" || _data === "true") {
+                                data = "on";
+                            } else if (_data === "0" || _data === "off" || _data === "false") {
+                                data = "off";
+                            }
+                        }
+                        if (deviceType === "switchMultilevel" || deviceType === "sensorMultilevel") {
+                            if (parseFloat(data) != NaN) {
+                                data = parseFloat(data)
+                            }
+                        }
+                    }
+                }
+                if (data !== null) {
+                    vDev.set("metrics:level", data);
+                }
             },
             error: function(response) {
                 console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
