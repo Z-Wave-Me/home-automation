@@ -239,6 +239,25 @@
 							}
 						}
 					},
+					"locks": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_doorlock:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "number",
+									"required": true,
+									"enum": ["close", "open"]
+								}
+							}
+						}
+					},
 					"scenes": {
 						"type": "array",
 						"items": {
@@ -470,6 +489,26 @@
 									"status": {
 										"label": "State",
 										"type": "integer"
+									}
+								}
+							}
+						}
+					},
+					"locks": {
+						"label": "List of locks",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_doorlock:deviceName"
+									},
+									"status": {
+										"label": "",
+										"optionLabels": ["Close", "Open"]
 									}
 								}
 							}
