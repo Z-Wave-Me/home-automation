@@ -165,7 +165,7 @@
 			},
 			"getterParser_sensorBinary": {
 				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
-				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level or (%% === "true")?"on":"off"",
+				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level or (%% === \"true\")?\"on\":\"off\"",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
@@ -187,7 +187,7 @@
 			},
 			"getterParser_sensorMultilevel": {
 				"label": "Inline Javascript to parse incoming data to number",
-				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level or (%% === \"true\")?\"on\":\"off\"",
+				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
@@ -229,7 +229,7 @@
 			},
 			"getterParser_switchBinary": {
 				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
-				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level",
+				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level or (%% === \"true\")?\"on\":\"off\"",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
