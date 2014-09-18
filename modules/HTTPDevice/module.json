@@ -11,7 +11,7 @@
 
 		"getter_sensorBinary": "",
 		"getterParser_sensorBinary": "",
-		"getterPollInterval_sensortBinary": 0,
+		"getterPollInterval_sensorBinary": 0,
 
 		"getter_sensorMultilevel": "",
 		"getterParser_sensorMultilevel": "",
@@ -22,12 +22,12 @@
 		"setterOff_switchBinary": "",
 		"getter_switchBinary": "",
 		"getterParser_switchBinary": "",
-		"getterPollInterval_switchtBinary": 0,
+		"getterPollInterval_switchBinary": 0,
 
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
 		"getterParser_switchMultilevel": "",
-		"getterPollInterval_switchtMultilevel": 0,
+		"getterPollInterval_switchMultilevel": 0,
 
 		"method": "GET"
 	},
@@ -162,7 +162,7 @@
 			},
 			"getterParser_sensorBinary": {
 				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
-				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level",
+				"helper": "Can be empty to use string as is. Example: $$.split(\":\")[1] or $$.data.metrics.level or $$ === \"ON\" ? \"on\" : \"off\"",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
@@ -184,7 +184,7 @@
 			},
 			"getterParser_sensorMultilevel": {
 				"label": "Inline Javascript to parse incoming data to number",
-				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level",
+				"helper": "Can be empty to use parseFloat() function. Example: $$.split(\":\")[1] or parseInt($$, 16) or $$.data.metrics.level or parseFloat($$.findOne(\"/A/B[C='123']/D/text()\"))",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
@@ -226,7 +226,7 @@
 			},
 			"getterParser_switchBinary": {
 				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
-				"helper": "Can be empty to use string as is. Example: %%.split(\":\")[1] or %%.data.metrics.level",
+				"helper": "Can be empty to use string as is. Example: $$.split(\":\")[1] or $$.data.metrics.level or $$ === \"ON\" ? \"on\" : \"off\"",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
@@ -241,8 +241,8 @@
 
 			"setterLevel_switchMultilevel": {
 				"label": "URL for action",
-				"placeholder": "http://192.168.0.100/action/set/%%",
-				"helper": "%% is used to represent level in the URL. For example: http://host/dimmer/level/%%/set",
+				"placeholder": "http://192.168.0.100/action/set/$$",
+				"helper": "$$ is used to represent level in the URL. For example: http://host/dimmer/level/$$/set",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
@@ -256,7 +256,7 @@
 			},
 			"getterParser_switchMultilevel": {
 				"label": "Inline Javascript to parse incoming data to number",
-				"helper": "Can be empty to use parseInt() function. Example: %%.split(\":\")[1] or parseInt(%%, 16) or %%.data.metrics.level",
+				"helper": "Can be empty to use parseFloat() function. Example: $$.split(\":\")[1] or parseInt($$, 16) or $$.data.metrics.level or parseFloat($$.findOne(\"/A/B[C='123']/D/text()\"))",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
