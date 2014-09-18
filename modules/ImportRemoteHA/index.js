@@ -36,20 +36,6 @@ ImportRemoteHA.prototype.init = function (config) {
     this.lastRequest = 0;
     this.timer = null;
 
-    // pre-render saved vDev to allow bindings to them
-    this.config.renderDevices.forEach(function(item) {
-        if (self.skipDevice(item.id)) {
-            return;
-        }
-        
-        self.controller.devices.create(item.deviceId, {
-            deviceType: item.deviceType,
-            metrics: {}
-        }, function(command, args) {
-            self.handleCommand(this, command, args);
-        });
-    });
-    
     this.requestUpdate();
 };
 
@@ -137,7 +123,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     return;
                 }
 
-                self.controller.devices.create(localId, {
+                self.controller.devices.create(localId, {}, {
                     deviceType: item.deviceType,
                     metrics: item.metrics
                 }, function(command, args) {

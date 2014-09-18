@@ -7,7 +7,7 @@ Copyright: (c) ZWave.Me, 2013-2014
 
 ******************************************************************************/
 
-VirtualDevice = function (deviceId, controller, defaults, handler) {
+VirtualDevice = function (deviceId, controller, defaults, overlay, handler) {
     this.id = deviceId;
     this.handler = handler;
     this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
@@ -26,6 +26,9 @@ VirtualDevice = function (deviceId, controller, defaults, handler) {
     };
     this.changed = {};
     this.defaults = defaults || {};
+    this.overlay = overlay;
+    this.overlay_metrics = overlay.metrics;
+    delete overlay.metrics;
     this._previousAttributes = {};
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
@@ -69,15 +72,20 @@ function setObj(obj, arr, param) {
     return obj;
 }
 
-inherits(VirtualDevice, EventEmitter2);
-
 _.extend(VirtualDevice.prototype, {
     initialize: function () {
         'use strict';
         _.bindAll(this, 'get', 'set');
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
+        _.extend(this.attributes, this.overlay);
+        _.extend(this.attributes.metrics, this.overlay_metrics);
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
+        
+        // cleanup
+        delete this.overlay;
+        delete this.overlay_metrics;
+        delete this.defaults;
     },
     setReady: function () {
         this.ready = true;
@@ -153,19 +161,12 @@ _.extend(VirtualDevice.prototype, {
         if (!options.silent) {
             if (changes.length) {
                 that.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
-                if (!!that.collection) {
-                    that.collection.emit('change', that);
-                    that.collection.emit('all', that);
-                }
-                that.emit('change', that);
-                that.emit('all', that);
             }
 
             changes.forEach(function (key) {
                 if (!!that.collection) {
-                    that.collection.emit('change:' + key, that);
+                    that.emit('change:' + key, that);
                 }
-                that.emit('change:' + key, that);
             });
         }
 
@@ -209,26 +210,6 @@ _.extend(VirtualDevice.prototype, {
     deviceIcon: function () {
         return this.metrics.icon = this.deviceType;
     },
-    setMetricValue: function (name, value) {
-        console.log("Deprecated setMetricValue(\"xx\") should be replaced by set(\"metrics:xx\")");
-        
-        var metrics = this.get('metrics');
-        metrics[name] = value;
-        this.controller.emit("device.metricUpdated", this.id, name, value);
-        this.set({
-            updateTime: Math.floor(new Date().getTime() / 1000),
-            metrics: metrics
-        });
-        this.collection.emit("change:metrics:" + name, this, {name: value});
-        this.emit("change:metrics:" + name, this, {name: value});
-        this.collection.emit("change", this, {name: value});
-        this.emit("change", this, {name: value});
-    },
-    getMetricValue: function (name) {
-        console.log("Deprecated getMetricValue(\"xx\") should be replaced by get(\"metrics:xx\")");
-        
-        return this.metrics[name];
-    },
     performCommand: function () {
         console.log("--- ", this.id, "performCommand processing:", JSON.stringify(arguments));
         if (typeof(this.handler) === "function") {
@@ -251,5 +232,16 @@ _.extend(VirtualDevice.prototype, {
         if (indx !== -1) {
             this.attributes.tags.splice(indx, 1);
         }
-    }
+    },
+    
+    // wrappers for events
+    on: function(eventName, func) {
+        return this.collection.on(this.id + ":" + eventName, func);
+    },
+    off: function(eventName, func) {
+        return this.collection.off(this.id + ":" + eventName, func);
+    },
+    emit: function(eventName, that) {
+        return this.collection.emit(this.id + ":" + eventName, that);
+    }    
 });

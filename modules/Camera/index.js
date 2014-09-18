@@ -50,6 +50,11 @@ _.extend(Camera.prototype, {
         this.vDev = this.controller.devices.create("CameraDevice_" + this.id, {
             deviceType: "camera",
             metrics: {
+                icon: 'camera',
+                title: 'Camera ' + this.id
+            }
+        }, {
+            metrics: {
                 url: config.url,
                 hasZoomIn: !!config.zoomInUrl,
                 hasZoomOut: !!config.zoomOutUrl,
@@ -58,9 +63,7 @@ _.extend(Camera.prototype, {
                 hasUp: !!config.upUrl,
                 hasDown: !!config.downUrl,
                 hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
-                hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length),
-                icon: 'camera',
-                title: 'Camera ' + this.id
+                hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length)
             }
         }, function(command) {
             var reqUrl = null;

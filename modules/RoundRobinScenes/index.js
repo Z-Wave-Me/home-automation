@@ -35,11 +35,10 @@ RoundRobinScenes.prototype.init = function (config) {
     this.vDev = this.controller.devices.create("RoundRobinScene_" + this.id, {
         deviceType: "toggleButton",
         metrics: {
-            level: '',
             icon: '',
             title: 'Round Robin Scene ' + this.id
         }
-    }, function() {
+    }, {}, function() {
         self.currentSceneIndex++;
         self.currentSceneIndex %= self.config.scenes.length;
         

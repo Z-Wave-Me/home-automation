@@ -192,12 +192,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             defaults = {
                 deviceType: "switchBinary",
                 metrics: {
-                    level: '',
                     icon: 'switch',
                     title: 'Switch ' + vDevIdNI
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, function (command) {
+            var vDev = self.controller.devices.create(vDevId, defaults, {}, function (command) {
                 if ("on" === command) {
                     cc.Set(true);
                 } else if ("off" === command) {
@@ -214,12 +213,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             defaults = {
                 deviceType: "switchMultilevel",
                 metrics: {
-                    level: '',
                     icon: isBlind ? 'blinds' : 'multilevel',
                     title: (isBlind ? 'Blinds' : 'Dimmer') + ' ' + vDevIdNI
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, function(command, args) {
+            var vDev = self.controller.devices.create(vDevId, defaults, {}, function(command, args) {
                 var newVal;
                 // up, down for Blinds
                 if ("on" === command || "up" === command) {
@@ -315,7 +313,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                             defaults.metrics.icon = "motion";
                     }
                     
-                    var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, function(command) {
+                    var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, {}, function(command) {
                         if (command === "update") {
                             cc.Get(sensorTypeId);
                         }
@@ -364,7 +362,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (sensorTypeId == 5) {
                             defaults.metrics.icon = "humidity";
                     }
-                    var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, function(command) {
+                    var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, {}, function(command) {
                         if (command === "update") {
                             cc.Get(sensorTypeId);
                         }
@@ -404,7 +402,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
                     defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
                     defaults.metrics.title =  'Meter ' + vDevIdNI + separ + vDevIdC + separ + scaleId;
-                    var vDev = self.controller.devices.create(vDevId + separ + scaleId, defaults, function(command) {
+                    var vDev = self.controller.devices.create(vDevId + separ + scaleId, defaults, {}, function(command) {
                         if (command === "update") {
                             cc.Get(scaleId);
                         }
@@ -438,7 +436,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     title: 'Battery ' + vDevIdNI
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, function(command) {
+            var vDev = self.controller.devices.create(vDevId, defaults, {}, function(command) {
                         if (command === "update") {
                             cc.Get();
                         }
@@ -458,7 +456,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 }
             };
 
-            var vDev = self.controller.devices.create(vDevId, defaults, function(command) {
+            var vDev = self.controller.devices.create(vDevId, defaults, {}, function(command) {
                 if ("open" === command) {
                     cc.Set(0);
                 } else if ("close" === command) {
@@ -483,7 +481,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     title: 'Fan ' + vDevIdNI
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, "fan");
+            var vDev = self.controller.devices.create(vDevId, defaults, {}, "fan");
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
                     vDev.set("metrics:currentMode", this.value);
@@ -582,7 +580,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 defaults.metrics.scaleTitle = scaleTitle;
             }
             
-            var vDev = self.controller.devices.create(deviceName, defaults, function(command, args) {
+            var vDev = self.controller.devices.create(deviceName, defaults, {}, function(command, args) {
                 if (command === "setMode" && withMode) {
                     instance.ThermostatMode.Set(args.mode);
                 } else if (command === "setTemp" && withTemp) {

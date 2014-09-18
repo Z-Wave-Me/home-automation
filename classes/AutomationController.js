@@ -243,7 +243,7 @@ AutomationController.prototype.loadModule = function(module, rootModule) {
                                 return false;
                         }
                         
-                        if (this.loadedModules.map(function(x) { return x.meta.id == module.meta.id }).length > 0) {
+                        if (!this.loadedModules.some(function(x) { return x.meta.id === dep })) {
                                 this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not instanciated", "core");
                                 module.failed = true;
                                 return false;                          

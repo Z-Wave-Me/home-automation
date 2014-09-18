@@ -34,8 +34,10 @@ OpenWeather.prototype.init = function (config) {
     this.vDev = self.controller.devices.create("OpenWeather_" + this.id, {
         deviceType: "sensorMultilevel",
         metrics: {
-            // level is not mentioned, since we want saved last value to be used
             probeTitle: 'Temperature',
+        }
+    }, {
+        metrics: {
             scaleTitle: this.config.units === "celsius" ? '°C' : '°F',
             title: this.config.city
         }

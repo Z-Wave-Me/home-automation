@@ -30,16 +30,13 @@ DummyDevice.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create(
-        "DummyDevice_" + (this.config.deviceType === "switchMultilevel" ? "ml" : "bn") + "_" + this.id, { // different names to rebuild UI on change
-        deviceType: this.config.deviceType,
+    this.vDev = this.controller.devices.create("DummyDevice_" + this.id, {
         metrics: {
-            probeTitle: '',
-            scaleTitle: '',
             level: 'off',
-            icon: '',
             title: 'Dummy ' + this.id
         }
+    }, {
+        deviceType: this.config.deviceType
     }, function(command, args) {
         var level = command;
         if (this.get('deviceType') === "switchMultilevel") {

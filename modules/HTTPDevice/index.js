@@ -48,23 +48,24 @@ HTTPDevice.prototype.init = function (config) {
             break;
     }
     
-    var defaults = {
-        deviceType: deviceType,
+    var config_metrics = {};
+    
+    if (deviceType === "sensorMultilevel") {
+        config_metrics = { scaleTitle: this.config.scale_sensorMultilevel || "" };
+    }
+    if (deviceType === "sensorBinary") {
+        config_metrics = { scaleTitle: "" };
+    }
+
+    var vDev = self.controller.devices.create("HTTP_Device_" + deviceType + "_" + this.id, {
         metrics: {
-            // level is not here to load last data and then get update from HTTP
             icon: icon,
             title: 'HTTP device ' + this.id
         }
-    };
-    
-    if (deviceType === "sensorMultilevel") {
-        defaults.metrics.scaleTitle = this.config.scale_sensorMultilevel || "";
-    }
-    if (deviceType === "sensorBinary") {
-        defaults.metrics.scaleTitle = "";
-    }
-
-    var vDev = self.controller.devices.create("HTTP_Device_" + deviceType + "_" + this.id, defaults, function(command, args) {
+    }, {
+        deviceType: deviceType,
+        metrics: config_metrics
+    }, function(command, args) {
         var vDevType = deviceType;
         
         if (command === "update" && (vDevType === "sensorBinary" || vDevType === "sensorMultilevel" || vDevType === "switchBinary" || vDevType === "switchMultilevel")) {

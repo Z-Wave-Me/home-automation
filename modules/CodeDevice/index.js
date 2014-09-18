@@ -51,7 +51,6 @@ CodeDevice.prototype.init = function (config) {
     var defaults = {
         deviceType: deviceType,
         metrics: {
-            // level is not here to load last data and then get update from Code
             icon: icon,
             title: 'Code device ' + this.id
         }
@@ -64,7 +63,7 @@ CodeDevice.prototype.init = function (config) {
         defaults.metrics.scaleTitle = "";
     }
 
-    var vDev = self.controller.devices.create("Code_Device_" + deviceType + "_" + this.id, defaults, function(command, args) {
+    var vDev = self.controller.devices.create("Code_Device_" + deviceType + "_" + this.id, defaults, {}, function(command, args) {
         var vDevType = deviceType;
         
         if (command === "update" && (vDevType === "sensorBinary" || vDevType === "sensorMultilevel" || vDevType === "switchBinary" || vDevType === "switchMultilevel")) {

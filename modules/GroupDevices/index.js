@@ -30,16 +30,13 @@ GroupDevices.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create(
-        "GroupDevices_" + (this.config.isDimmable ? "bn" : "ml") + "_" + this.id, { // different names to rebuild UI on change
-        deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary",
+    this.vDev = this.controller.devices.create("GroupDevices_" + this.id, {
         metrics: {
-            probeTitle: '',
-            scaleTitle: '',
-            level: '',
             icon: '',
             title: 'Group ' + this.id
         }
+    }, {
+        deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary"
     }, function(command, args) {
         self.config.devices.forEach(function(dev) {
             var vDev = self.controller.devices.get(dev.device);
@@ -75,18 +72,18 @@ GroupDevices.prototype.init = function (config) {
         }
         this.set("metrics:level", level);
     });
-        
-    this.config.devices.forEach(function(dev) {
-        var _vDev = this.controller.devices.get(dev.device);
-        
-        _vDev.on("change:metrics:level", function() {
-            var res = false;
-            self.config.devices.forEach(function(xdev) {
-                res |= xdev.invert ^ self.controller.devices.get(xdev.device);
-            });
-            
-            self.vDev.set("metrics:level", res);
+
+    this.handler = function() {
+        var res = false;
+        self.config.devices.forEach(function(xdev) {
+            res |= xdev.invert ^ self.controller.devices.get(xdev.device);
         });
+        
+        self.vDev.set("metrics:level", res);
+    };
+    
+    this.config.devices.forEach(function(dev) {
+        this.controller.devices.on(dev.device, "change:metrics:level", this.handler);
     });
 };
 
@@ -95,6 +92,10 @@ GroupDevices.prototype.stop = function () {
         this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
+
+    this.config.devices.forEach(function(dev) {
+        this.controller.devices.off(dev.device, "change:metrics:level", this.handler);
+    });
 
     GroupDevices.super_.prototype.stop.call(this);
 };

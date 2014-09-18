@@ -45,13 +45,11 @@ SecurityMode.prototype.init = function (config) {
         "SecurityMode_"+ this.id, {
         deviceType: "switchBinary",
         metrics: {
-            probeTitle: '',
-            scaleTitle: '',
             level: 'off',
             icon: '',
             title: 'SecurityMode ' + this.id
         }
-    }, function(command, args) {
+    }, {}, function(command, args) {
         this.set("metrics:level", command);
     });
 
@@ -106,17 +104,11 @@ SecurityMode.prototype.attachDetach = function (test, attachOrDetach) {
     }
     
     if (attachOrDetach) {
-        vDev.on("change:metrics:level", this._testRule);
+        this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
+        this.controller.devices.on(test.device, "change:metrics:change", this._testRule);
     } else {
-        vDev.off("change:metrics:level", this._testRule);
-    }
-
-    if (vDev.get("deviceType") === "switchControl") {
-        if (attachOrDetach) {
-            vDev.on("change:metrics:change", this._testRule);
-        } else {
-            vDev.off("change:metrics:change", this._testRule);
-        }
+        this.controller.devices.off(test.device, "change:metrics:level", this._testRule);
+        this.controller.devices.off(test.device, "change:metrics:change", this._testRule);
     }
 };
 

@@ -88,25 +88,12 @@ LogicalRules.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
-    var vDev = this.controller.devices.get(test.device);
-    
-    if (!vDev) {
-        this.controller.addNotification("error", "Can not get vDev " + test.device, "module");
-        return;
-    }
-    
     if (attachOrDetach) {
-        vDev.on("change:metrics:level", this._testRule);
+        this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
+        this.controller.devices.on(test.device, "change:metrics:change", this._testRule);
     } else {
-        vDev.off("change:metrics:level", this._testRule);
-    }
-
-    if (vDev.get("deviceType") === "switchControl") {
-        if (attachOrDetach) {
-            vDev.on("change:metrics:change", this._testRule);
-        } else {
-            vDev.off("change:metrics:change", this._testRule);
-        }
+        this.controller.devices.off(test.device, "change:metrics:level", this._testRule);
+        this.controller.devices.off(test.device, "change:metrics:change", this._testRule);
     }
 };
 

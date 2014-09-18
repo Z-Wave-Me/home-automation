@@ -103,7 +103,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                     level: "",
                     change: ""
                 }
-            }, self.widgetHandler);
+            }, {}, self.widgetHandler);
         }
     });
     
@@ -164,7 +164,7 @@ SwitchControlGenerator.prototype.handler = function(cmd, par, ids) {
                 level: "",
                 change: ""
             }
-        }, this.widgetHandler);
+        }, {}, this.widgetHandler);
         
         this.config.generated.push(name);
         this.saveConfig();

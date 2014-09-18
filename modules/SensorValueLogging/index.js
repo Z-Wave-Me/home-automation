@@ -31,16 +31,6 @@ SensorValueLogging.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     SensorValueLogging.super_.prototype.init.call(this, config);
 
-    var device = this.controller.devices.get(this.config.device)
-        deviceType = device.get("deviceType");
-
-    // Check if device is a switch
-    if ("sensorBinary" !== deviceType && "sensorMultilevel" !== deviceType) {
-        // Exit initializer due to invalid device type
-        console.log("ERROR", "SensorValueLogging Device", this.config.device, "isn't a sensor", "(" + deviceType + ").");
-        return;
-    }
-
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
@@ -68,14 +58,13 @@ SensorValueLogging.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    device.on("change:metrics:level", this.handler);
+    this.controller.devices.on(this.config.device, "change:metrics:level", this.handler);
 };
 
 SensorValueLogging.prototype.stop = function () {
     SensorValueLogging.super_.prototype.stop.call(this);
 
-    if (this.handler && this.controller.devices.get(this.config.device))
-        this.controller.devices.get(this.config.device).off("change:metrics:level", this.handler);
+    this.controller.devices.off(this.config.device, "change:metrics:level", this.handler);
 };
 
 // ----------------------------------------------------------------------------

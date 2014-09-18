@@ -37,7 +37,7 @@ Notification.prototype.init = function (config) {
             icon: '',
             title: 'Notification ' + this.id
         }
-    }, function () {
+    }, {}, function () {
         var email = self.config.email,
             phone   = self.config.phone;
 
