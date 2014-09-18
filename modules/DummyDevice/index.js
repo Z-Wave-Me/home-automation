@@ -32,7 +32,7 @@ DummyDevice.prototype.init = function (config) {
 
     this.vDev = this.controller.devices.create(
         "DummyDevice_" + (this.config.deviceType === "switchMultilevel" ? "ml" : "bn") + "_" + this.id, { // different names to rebuild UI on change
-        deviceType: "switchBinary",
+        deviceType: this.config.deviceType,
         metrics: {
             probeTitle: '',
             scaleTitle: '',
