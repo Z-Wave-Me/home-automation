@@ -429,27 +429,6 @@ AutomationController.prototype.deleteInstance = function (id) {
     this.emit('core.instanceDeleted', id);
 };
 
-AutomationController.prototype.registerDevice = function (device) {
-    this.devices[device.id] = device;
-    this.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
-
-    this.emit('core.deviceRegistered', device.id);
-};
-
-AutomationController.prototype.removeDevice = function (id) {
-    var vdev = this.devices[id];
-    
-    if (!vdev)
-        return;
-    
-    vdev.destroy();
-    delete this.devices[id];
-
-    this.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
-
-    this.emit('core.deviceRemoved', id);
-};
-
 AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
 }

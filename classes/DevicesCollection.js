@@ -48,6 +48,7 @@ _.extend(DevicesCollection.prototype, {
             vDev.init();
             that.add(vDev);
             that.updateLength();
+            that.emit('created', vDev);
         } else {
             console.log("Error creating device");
         }
@@ -134,7 +135,7 @@ _.extend(DevicesCollection.prototype, {
         delete model.cid;
 
         // events
-        that.emit('remove', model);
+        that.emit('removed', model);
         that.controller.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
         return model;
     },
@@ -167,6 +168,9 @@ _.extend(DevicesCollection.prototype, {
     },
     each: function (callback) {
         return _.each(this.models, callback);
+    },
+    forEach: function (callback) {
+        return _.forEach(this.models, callback);
     },
     on: function () {
         var vDevId = "",
