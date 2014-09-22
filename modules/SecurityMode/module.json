@@ -89,14 +89,14 @@
 				"type": "object",
 				"properties": {
 					"phone": {
-            			"required": true,
+            			"required": false,
             			"pattern": "[1-9][0-9]*"
         			},
         			"message": {
             			"required": false
         			},
         			"api_key": {
-            			"required": true,
+            			"required": false,
             			"pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
         			},
 					"switches": {
