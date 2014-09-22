@@ -37,10 +37,10 @@ SecurityMode.prototype.init = function (config) {
 
     var self = this;
 
-    this.api_key = config.action.api_key.toString();
-    this.phone = config.action.phone.toString();
-    this.message = config.action.message.toString();
-
+    if (config.action.api_key) {this.api_key = config.action.api_key.toString();};
+    if (config.action.phone) {this.phone = config.action.phone.toString();};
+    if (config.action.message) {this.message = config.action.message.toString();}
+    
     this.vDev = this.controller.devices.create(
         "SecurityMode_"+ this.id, {
         deviceType: "switchBinary",
@@ -141,15 +141,17 @@ SecurityMode.prototype.testRule = function (tree) {
     if (topLevel && res) {
         var self = this;
 
-        http.request({
-            method: 'POST',
-            url: "http://sms.ru/sms/send",
-            data: {
-                api_id: self.api_key,
-                to: self.phone,
-                text: self.message
-            }
-        });
+        if (self.api_key && self.phone && self.message) {
+            http.request({
+                method: 'POST',
+                url: "http://sms.ru/sms/send",
+                data: {
+                    api_id: self.api_key,
+                    to: self.phone,
+                    text: self.message
+                }
+            });
+        };
 
         tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);

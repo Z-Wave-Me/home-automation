@@ -34,7 +34,7 @@ OpenWeather.prototype.init = function (config) {
     this.vDev = self.controller.devices.create("OpenWeather_" + this.id, {
         deviceType: "sensorMultilevel",
         metrics: {
-            probeTitle: 'Temperature',
+            probeTitle: 'Temperature'
         }
     }, {
         metrics: {
