@@ -165,8 +165,9 @@ _.extend(VirtualDevice.prototype, {
 
             changes.forEach(function (key) {
                 if (!!that.collection) {
-                    that.emit('change:' + key, that);
+                    that.collection.emit('change:' + key, that);
                 }
+                that.emit('change:' + key, that);
             });
         }
 
