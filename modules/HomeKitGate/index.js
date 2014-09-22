@@ -34,7 +34,7 @@ HomeKitGate.prototype.init = function (config) {
 
     this.hk = new HomeKit(this.config.name, function(r) {
         if (r.method == "GET" && r.path == "/accessories") {
-            return this.accessories.serialize(r);
+        	return this.accessories.serialize(r);
         } else if (r.method == "PUT" && r.path == "/characteristics" && r.data && r.data.characteristics) {
             r.data.characteristics.forEach(function (c) {
                 if (typeof c.value !== "undefined") {   
@@ -64,44 +64,136 @@ HomeKitGate.prototype.init = function (config) {
                     ]
                 };
             }
+        } else if (r.path == "/identify") {
+        	console.log(this.name, "PIN:", this.pin);
         }
     });
 
     this.hk.accessories = new HKAccessoryCollection(this.hk);
+	
+	// add main accessory
+	this.hk.accessories.addAccessory("RaZberry", "z-wave.me", "RaZberry", "RaZberry");
 
-    {
-        with (this.hk.accessories) {
-            with (addAccessory("RaZberry", "z-wave.me", "ZME-RAZ01-EU", "ZMERAZ01EU12345")) {
-                with (addService(HomeKit.Services.Lightbulb, "Bedroom")) {
-                    addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
-                        get: function() { return true; },
-                        set: function(value) { debugPrint(value); }
-                    });
-                    with (addCharacteristic(HomeKit.Characteristics.Brightness, "float", 50, [ "pr", "pw" ])) {
-                        minValue = 1;
-                        maxValue = 99;
-                        minStep = 1;   
-                    };
-                };
-            };
-        };   
-    };
-        
-    console.log(this.hk.name, "PIN:", this.hk.pin);
+	this.mapping = {}
+
+	var self = this;	
+	
+	var onDeviceAddedCore = function (vDev) {
+		var title = vDev.get("metrics:title") || vDev.id;
+		var manufacturer = "z-wave.me"; // todo
+		var deviceType = vDev.get("deviceType") || "virtualDevice";
+		
+		var m = self.mapping[vDev.id] = {};
+		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, deviceType, vDev.id);
+		
+		if (deviceType === "sensorMultilevel" && vDev.id.substring(0, 12) === "OpenWeather_") {
+			var serviceUUID = "00000001-0000-1000-8000-0026BB7652FF";
+		
+			var service = accessory.addService(serviceUUID, "Temperature");
+			
+			m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+				get: function() { return vDev.get("metrics:level"); }
+			});
+		}
+		else if (deviceType == "sensorMultilevel") {
+			var serviceUUID = "00000002-0000-1000-8000-0026BB7652FF";
+		
+			var service = accessory.addService(serviceUUID, "Multilevel Sensor");
+			
+			m.level = service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
+				get: function() { return vDev.get("metrics:level"); }
+			});
+		}
+		else if (deviceType == "switchBinary") {
+			var serviceUUID = "00000003-0000-1000-8000-0026BB7652FF";
+		
+			var service = accessory.addService(serviceUUID, "Binary Switch");
+			
+			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+				get: function() { return vDev.get("metrics:level") === "on"; },
+				set: function(value) { vDev.set("metrics:level", value ? "on" : "off"); }
+			});
+		}
+		else if (deviceType == "switchMultilevel") {
+			var serviceUUID = "00000004-0000-1000-8000-0026BB7652FF";
+		
+			var service = accessory.addService(serviceUUID, "Multilevel Switch");
+			
+			m.level = service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
+				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; },
+				set: function(value) { vDev.set("metrics:level", value); }
+			});
+		}
+		// todo
+	}
+	
+	this.onDeviceAdded = function (vDev) {
+		console.log("added", vDev.id);
+		onDeviceAddedCore(vDev);
+		
+		// update device tree
+		self.hk.update();
+	};
+	
+	this.onDeviceRemoved = function (vDev) {
+		console.log("removed", vDev.id);
+		var m = self.mapping[vDev.id];
+		if (m) {
+			var accessory = m.$accessory;
+			if (accessory)
+				accessory.remove();
+			
+			delete self.mapping[vDev.id];
+		}
+		
+		// update device tree
+		self.hk.update();
+	}
+	
+	this.onLevelChanged = function (vDev) {
+		console.log("updated", vDev.id);
+		var m = self.mapping[vDev.id];
+		if (!m) return;
+		
+		var accessory = m.$accessory;
+		if (!accessory) return;
+		
+		var characteristics = m.level;
+		if (!characteristics) return;
+		
+		self.hk.update(accessory.aid, characteristics.iid);
+	}
+	
+	// add existing devices
+	this.controller.devices.each(onDeviceAddedCore);
+	
+	// listen for future device collection changes
+	this.controller.devices.on("created", this.onDeviceAdded);
+	this.controller.devices.on("removed", this.onDeviceRemoved);
+	this.controller.devices.on("change:metrics:level", this.onLevelChanged);
+	
+	// update device tree
+    this.hk.update();
+    
+    console.log("HomeKit PIN:", this.hk.pin);
 };
 
 HomeKitGate.prototype.stop = function () {
     HomeKitGate.super_.prototype.stop.call(this);
 
+	this.controller.devices.off("created", this.onDeviceAdded);
+	this.controller.devices.off("removed", this.onDeviceRemoved);
+	this.controller.devices.off("change:metrics:level", this.onLevelChanged);
+
     if (this.hk) {
         this.hk.stop();
     }
+    
+    delete this.mapping;
+    delete this.onDeviceAdded;
+    delete this.onDeviceRemoved;
+    delete this.onLevelChanged;
 };
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
-
-// This module doesn't have any additional methods
-
-
-

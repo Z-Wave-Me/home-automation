@@ -1,5 +1,5 @@
 {
-    "singleton": false,
+    "singleton": true,
     "dependencies": [],
     "defaults": {
         "title": "HomeKit Gate",
