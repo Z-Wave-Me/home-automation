@@ -28,20 +28,92 @@ define([], function () {
             }
 
         },
-        getItem: function (serviceId) {
+        getItem: function (serviceId, itemId) {
             var ctx = this.getMoreartyContext(),
                 Immutable = ctx.Immutable,
-                service = ctx.getBinding().sub('services').sub('collections').val().toArray().filter(function (service) {
+                filterObject = ctx.getBinding().sub('services').sub('collections').val().toArray().filter(function (service) {
                     return serviceId === service.get('id');
-                })[0].toJS(),
+                }),
+                service = Array.isArray(filterObject) && filterObject.length > 0 ? filterObject[0].toJS() : null,
                 adding = ctx.getBinding().sub('preferences').val('activeNodeTreeStatus') === 'adding',
-                default_model_options = service.model.default;
+                default_model_options = service ? service.model.default : null;
+
+
+            if (service === null) {
+                return;
+            }
 
             if (adding) {
                 return Immutable.Map(default_model_options);
             } else {
-                return this.getModelFromCollection(null, serviceId);
+                return this.getModelFromCollection(itemId || null, serviceId);
             }
+        },
+        getActiveProfile: function () {
+            var ctx = this.getMoreartyContext(),
+                activeId = localStorage.getItem('defaultProfileId'),
+                filter = ctx.getBinding().sub('data').sub('profiles').val().toArray().filter(function (profile) {
+                    return String(profile.get('id')) === String(activeId);
+                }),
+                index;
+
+            if (filter.length > 0) {
+                index = ctx.getBinding().sub('data').sub('profiles').val().toArray().indexOf(filter[0]);
+                return ctx.getBinding().sub('data').sub('profiles').sub(index);
+            } else {
+                return null;
+            }
+        },
+        showInDashBoard: function (deviceId) {
+            var profile = this.getActiveProfile();
+            if (profile) {
+                return profile.val('positions').indexOf(deviceId) !== -1;
+            } else {
+                return false;
+            }
+        },
+        updateObjectAsNamespace: function (dataObject) {
+            var that = this;
+
+            function r(obj) {
+                for (var property in obj) {
+                    if (obj.hasOwnProperty(property)) {
+                        if (typeof obj[property] == "object") {
+                            r(obj[property]);
+                        } else if (typeof obj[property] === 'string') {
+                            if (obj[property].indexOf('namespace') !== -1) {
+                                obj[property] = that._getNamespace(obj[property].split(':'));
+                            }
+                        }
+                    }
+                }
+            }
+
+            r(dataObject);
+
+            return dataObject;
+        },
+        _getNamespace: function (path) {
+            var ctx = this.getMoreartyContext(),
+                namespaces = ctx.getBinding().sub('data').sub('namespaces'),
+                filter = namespaces.val().toArray().filter(function (namespace) {
+                    return namespace.get('id') === path[1];
+                }),
+                index,
+                namespace;
+
+
+            if (filter.length > 0) {
+                index = filter.indexOf(filter[0]);
+                namespace = namespaces.sub(index);
+
+                return namespace.val('params').map(function (param) {
+                    return param[path[2]];
+                });
+            } else {
+                return null;
+            }
+
         }
     };
 });

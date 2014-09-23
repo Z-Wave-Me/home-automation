@@ -5,7 +5,8 @@ define([
     // components
     '../common/_buttons_group',
     '../common/_inline_input',
-    'mixins/data/data-layer'
+    'mixins/data/data-layer',
+    'mixins/sync/sync-layer'
 ], function (
     // libs
     React,
@@ -14,21 +15,14 @@ define([
     _buttons_group,
     _inline_input,
     // mixins
-    data_layer_mixin
+    data_layer_mixin,
+    sync_layer_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin, data_layer_mixin],
-        getInitialState: function () {
-            return { device: this.getItem('devices') };
-        },
-        componentDidMount: function () {
-            var that = this;
-            that.getBinding('preferences').addListener('leftPanelItemSelectedId', function () {
-                that.setState({device: that.getItem('devices')});
-            });
-        },
+        mixins: [Morearty.Mixin, sync_layer_mixin, data_layer_mixin],
+        displayName: '_widget',
         preventDefault: function (e) {
             e.preventDefault();
         },
@@ -44,7 +38,7 @@ define([
             }
 
             reader.onload = function(upload) {
-                that.state.device.sub('metrics').set('icon', upload.target.result);
+                that.props.model.sub('metrics').set('icon', upload.target.result);
                 that.forceUpdate();
             };
 
@@ -53,26 +47,51 @@ define([
         handleClick: function () {
             this.refs.fileInput.getDOMNode().click();
         },
-        render: function () {
+        showInDashboardHandle: function (event) {
+            var showInDashboard = event.target.checked,
+                activeProfile = this.getActiveProfile(),
+                deviceId = this.props.model.val('id'),
+                positions = activeProfile.val('positions');
 
+            if (showInDashboard) {
+                if (positions.indexOf(deviceId) === -1) {
+                    positions.push(deviceId);
+                }
+            } else {
+                positions = positions.filter(function (id) {
+                   return id !== deviceId;
+                });
+            }
+
+            activeProfile.set('positions', positions);
+
+            this.save({
+                model: activeProfile,
+                serviceId: 'profiles'
+            });
+        },
+        render: function () {
             var that = this,
                 cx = React.addons.classSet,
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
                 _ = React.DOM,
-                item = that.state.device,
-                title = item.val('metrics').title,
-                icon = item.val('metrics').icon,
+                item = that.props.model,
+                id = item.val('id'),
+                title = id ? item.val('metrics').title : null,
+                icon = id ? item.val('metrics').icon : null,
+                deviceType = item.val('deviceType'),
                 classes = cx({
                     'preview': true,
                     'placehold': !icon
                 });
 
+
             return _.div({ className: 'model-component' },
-                _.div({ className: 'form-data room adding-status clearfix' },
+                _.div({ className: 'form-data widget-form adding-status clearfix' },
                     _.div({ key: 'form-id-input', className: 'data-group'},
                         _.span({className: 'label-item'}, 'deviceId'),
-                        _.span({className: 'value-item'}, item.val('id'))
+                        _.span({className: 'value-item'}, id)
                     ),
                     _.div({ key: 'form-deviceType-input', className: 'data-group'},
                         _.span({className: 'label-item'}, 'deviceType'),
@@ -100,23 +119,38 @@ define([
                         ),
                         _.input({ref: 'fileInput', className: 'hidden', type: 'file', onChange: this.handleFile})
                     ),
+                    _.div({ key: 'form-dashboard-input', className: 'form-group' },
+                        _.div({className: 'checkbox-group'},
+                            _.input({
+                                id: 'showInDashboard',
+                                className: 'checkbox-type',
+                                type: 'checkbox',
+                                name: 'showInDashboard',
+                                checked: this.showInDashBoard(id),
+                                onChange: this.showInDashboardHandle
+                            }),
+                            _.label({htmlFor: 'showInDashboard', className: 'input-label'}, 'Show in dashboard')
+                        )
+                    ),
                     /*
-                    _inline_input({
+                     _inline_input({
+                     binding: {
+                     default: preferencesBinding,
+                     item: item,
+                     items: dataBinding.sub('devices')
+                     },
+                     sourceId: 'devices',
+                     destinationId: 'locations'
+                     }),
+                     */
+                    _buttons_group({
                         binding: {
                             default: preferencesBinding,
                             item: item,
                             items: dataBinding.sub('devices')
                         },
-                        sourceId: 'devices',
-                        destinationId: 'locations'
-                    }),
-                    */
-                    _buttons_group({
-                        binding: {
-                            default: preferencesBinding,
-                            item: item,
-                            items: dataBinding.sub('locations')
-                        }
+                        model: item,
+                        serviceId: this.props.serviceId
                     })
                 )
             );

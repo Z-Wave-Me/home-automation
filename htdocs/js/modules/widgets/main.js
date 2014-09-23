@@ -2,19 +2,33 @@ define([
     //libs
     'react',
     'morearty',
-    //components
-    './components/base'
+    // components
+    './components/base',
+    // mixins
+    'mixins/data/data-layer'
 ], function (
     //libs
     React,
     Morearty,
     // components
-    BaseWidget
+    BaseWidget,
+    // mixins
+    data_layer_mixin
     ) {
     'use strict';
 
     return React.createClass({
-        mixins: [Morearty.Mixin],
+        mixins: [Morearty.Mixin, data_layer_mixin],
+        componentWillMount: function () {
+            var that = this,
+                profile = this.getActiveProfile();
+
+            if (profile) {
+                profile.addListener('positions', function () {
+                    that.forceUpdate();
+                });
+            }
+        },
         render: function () {
             var __ = React.DOM,
                 binding = this.getDefaultBinding(),

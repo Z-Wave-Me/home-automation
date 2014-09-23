@@ -16,7 +16,20 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin],
         componentDidMount: function () {
-            this.refs.leftPanelList.getDOMNode().firstChild.click(); // focus on show
+            var selectedId = this.getBinding('preferences').val('leftPanelItemSelectedId');
+
+            if (selectedId && this.refs['listSelected_' + selectedId] !== undefined) {
+                this.refs['listSelected_' + selectedId].getDOMNode().click();
+            } else {
+                this.refs.leftPanelList.getDOMNode().firstChild.click(); // focus on show
+            }
+        },
+        componentWillMount: function () {
+            var that = this;
+
+            this.getBinding('preferences').addListener('searchString', function () {
+                that.forceUpdate();
+            });
         },
         setActiveLeftPanelItemSelectedId: function (id) {
             this.getBinding('preferences').set('leftPanelItemSelectedId', id);
@@ -38,22 +51,25 @@ define([
                 var searchString = preferencesBinding.val('searchString').toLowerCase(),
                     leftPanelItemSelectedId = preferencesBinding.val('leftPanelItemSelectedId'),
                     statusNode = preferencesBinding.val('activeNodeTreeStatus'),
-                    title;
+                    title,
+                    obj = item.toObject();
 
                 if (name === 'rooms') {
-                    title = item.toObject().title;
+                    title = obj.title;
                 } else if (name === 'general') {
-                    title = item.toObject().name;
+                    title = obj.name;
                 } else if (name === 'widgets') {
-                    title = item.toObject().metrics.title;
+                    title = obj.metrics.title;
                 } else if (name === 'automation') {
-                    title = item.toObject().params.title;
+                    title = obj.params.title;
                 }
 
-                if ((searchString.length > 1 && searchString.indexOf(title.toLowerCase()) !== -1) || searchString.length < 2) {
+
+                if ((searchString.length > 2 && title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1) || searchString.length <= 2) {
                     return _.li({
                             className: leftPanelItemSelectedId === item.get('id') && statusNode !== 'adding' ? 'item-model selected' : 'item-model',
                             key: index,
+                            ref: 'listSelected_' + item.get('id'),
                             onClick: that.setActiveLeftPanelItemSelectedId.bind(null, item.get('id'))
                         },
                         _.span({ className: 'title-item'}, title)

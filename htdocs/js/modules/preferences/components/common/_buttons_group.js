@@ -19,17 +19,33 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin, sync_layer_mixin, data_layer_mixin],
-        save: function () {
-            var Immutable = this.getMoreartyContext().Immutable,
-                itemBinding = this.getBinding('item'),
-                itemsBinding = this.getBinding('items');
+        getInitialState: function () {
+            return { loading: false };
+        },
+        saveHandler: function () {
+            var that = this;
 
-            itemsBinding.update(function (items) {
-               return items.push(Immutable.Map(itemBinding.val().toJS()));
+            this.replaceState({ loading: true });
+
+            that.save({
+                success: function () {
+                    that.setLeftPanelItemSelectedId(that.props.model.val('id'));
+                    that.setActiveNodeTreeStatus('normal');
+                    that.replaceState({ loading: false });
+                }
             });
 
-            this.setActiveNodeTreeStatus('normal');
-            this.setLeftPanelItemSelectedId(itemBinding.val().get('id'));
+            return false;
+        },
+        removeHandler: function () {
+            var that = this;
+            that.remove({
+                success: function () {
+                    that.setLeftPanelItemSelectedId(that.props.model.val('id'));
+                    that.setActiveNodeTreeStatus('normal');
+                    that.replaceState({ loading: false });
+                }
+            })
         },
         getButtons: function () {
             var _ = React.DOM,
@@ -40,8 +56,9 @@ define([
                     _.div({
                         key: 'save-button',
                         className: 'modern-button green-mode center',
-                        onClick: this.save
-                    }, 'Save'),
+                        onClick: this.saveHandler }, 'Save',
+                        this.state.loading ? _.div({ className: 'spinner' }) : null
+                    ),
                     _.div({
                         key: 'cancel-button',
                         className: 'modern-button light-mode center',
@@ -53,7 +70,7 @@ define([
                     _.div({
                         key: 'yes-button',
                         className: 'modern-button red-mode center',
-                        onClick: this.remove
+                        onClick: this.removeHandler
                     }, 'Yes'),
                     _.div({
                         key: 'cancel-button',
@@ -63,6 +80,13 @@ define([
                 ];
             } else {
                 return [
+                    _.div({
+                        key: 'save-button',
+                        className: 'modern-button green-mode center',
+                        onClick: this.saveHandler
+                    }, 'Save',
+                        this.state.loading ? _.div({ className: 'spinner' }) : null
+                    ),
                     _.div({
                         key: 'delete-button',
                         className: 'modern-button red-mode center',

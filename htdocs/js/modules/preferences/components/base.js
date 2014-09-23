@@ -34,6 +34,33 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin, data_layer_mixin],
+        getDefaultState: function() {
+            return {
+                model: null,
+                serviceId: null
+            }
+        },
+        componentWillMount: function () {
+            var that = this;
+
+            that.listenerId = that.getBinding('preferences').addListener('leftPanelItemSelectedId', function () {
+                var nodeObject = that.getActiveNodeTree(),
+                    node = Array.isArray(nodeObject) ? nodeObject[0] : null;
+
+                if (node) {
+                    that.replaceState({
+                        model: that.getItem(node.options.serviceId),
+                        serviceId: node.options.serviceId
+                    });
+                    that.forceUpdate();
+                }
+            });
+        },
+        componentWillUnmount: function () {
+            if (this.listenerId) {
+                this.getBinding('preferences').removeListener(this.listenerId);
+            }
+        },
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
@@ -71,13 +98,15 @@ define([
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container cleafix' : 'panel-container'},
                     activeNode[0].options.leftPanel ? _.h2({ className: 'title-children clearfix'}, baseTitle) : null,
                     // main component
-                    preferencesBinding.val('leftPanelItemSelectedId') || activeNode[0].options.name === 'main' ?
+                    preferencesBinding.val('leftPanelItemSelectedId') && this.state !== null || activeNode[0].options.name === 'main' ?
                         components[activeNode[0].options.componentName]({
                             binding: {
                                 default: binding,
                                 data: dataBinding,
                                 preferences: preferencesBinding
-                            }
+                            },
+                            model: this.state !== null ? this.state.model : null,
+                            serviceId: this.state !== null ? this.state.serviceId : null
                         }) : null
                 )
             );

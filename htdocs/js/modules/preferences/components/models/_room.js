@@ -20,15 +20,6 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
-        getInitialState: function () {
-            return { location: this.getItem('locations') };
-        },
-        componentDidMount: function () {
-            var that = this;
-            that.getBinding('preferences').addListener('leftPanelItemSelectedId', function () {
-                that.setState({location: that.getItem('locations')});
-            });
-        },
         preventDefault: function (e) {
             e.preventDefault();
         },
@@ -44,7 +35,7 @@ define([
             }
 
             reader.onload = function(upload) {
-                that.state.location.set('icon', upload.target.result);
+                that.props.model.set('icon', upload.target.result);
                 that.forceUpdate();
             };
 
@@ -59,7 +50,7 @@ define([
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
                 _ = React.DOM,
-                item = that.state.location,
+                item = that.props.model,
                 title = item.val('title'),
                 icon = item.val('icon'),
                 classes = cx({
@@ -68,7 +59,7 @@ define([
                 });
 
             return _.div({ className: 'model-component' },
-                _.div({ className: 'form-data room adding-status clearfix' },
+                _.div({ className: 'form-data room clearfix' },
                     _.div({ key: 'form-name-input', className: 'form-group' },
                         _.label({ htmlFor: 'room-name', className: 'input-label'}, 'Name:'),
                         _.input({
@@ -107,7 +98,9 @@ define([
                             default: preferencesBinding,
                             item: item,
                             items: dataBinding.sub('locations')
-                        }
+                        },
+                        model: item,
+                        serviceId: this.props.serviceId
                     })
                 )
             );

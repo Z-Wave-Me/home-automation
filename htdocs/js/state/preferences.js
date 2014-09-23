@@ -35,7 +35,8 @@ define([
                         leftPanel: true,
                         searchPanel: true,
                         buttons: ['add', 'remove'],
-                        componentName: '_profile'
+                        componentName: '_profile',
+                        serviceId: 'profiles'
                     },
                     children: []
                 },
@@ -46,7 +47,8 @@ define([
                         leftPanel: true,
                         searchPanel: true,
                         buttons: ['add', 'remove'],
-                        componentName: '_room'
+                        componentName: '_room',
+                        serviceId: 'locations'
                     },
                     children: []
                 },
@@ -56,7 +58,8 @@ define([
                         name: 'widgets',
                         leftPanel: true,
                         searchPanel: true,
-                        componentName: '_widget'
+                        componentName: '_widget',
+                        serviceId: 'devices'
                     },
                     children: []
                 },
@@ -66,7 +69,8 @@ define([
                         name: 'automation',
                         leftPanel: true,
                         searchPanel: true,
-                        componentName: '_automation'
+                        componentName: '_automation',
+                        serviceId: 'instances'
                     },
                     children: []
                 }

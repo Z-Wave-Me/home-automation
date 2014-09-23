@@ -3,25 +3,29 @@ requirejs.config({
     paths : {
         // Major libraries
         jquery: '../bower_components/jquery/dist/jquery',
+        // backbone
         underscore: '../bower_components/lodash/dist/lodash.underscore',
         backbone: '../bower_components/backbone/backbone',
+        // advanced libs
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
-        'colpick': 'libs/vendor/jquery.colpick',
-        sticky: 'libs/home-automation/sticky',
-        dragsort : 'libs/vendor/jquery.dragsort',
-        magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         alpaca: 'libs/alpaca/alpaca-full',
-        ace: 'libs/acejs/ace',
+        // react
         react: '../bower_components/react/react-with-addons',
-        'theme-chrome': 'libs/acejs/theme-chrome',
-        'mode-javascript': 'libs/acejs/mode-javascript',
-        'mode-json': 'libs/acejs/mode-json',
-        'worker-javascript': 'libs/acejs/worker-javascript',
-        text: '../bower_components/requirejs-text/text',
+        morearty: '../bower_components/moreartyjs/dist/morearty',
         immutable: '../bower_components/immutable/dist/Immutable',
         director: '../bower_components/director/build/director',
-        morearty: '../bower_components/moreartyjs/dist/morearty',
-        templates: '../templates'
+        // ace
+        ace: '../bower_components/ace-builds/src/ace',
+        'theme-chrome': '../bower_components/ace-builds/src/theme-chrome',
+        'mode-javascript': '../bower_components/ace-builds/src/mode-javascript',
+        'mode-json': '../bower_components/ace-builds/src/mode-json',
+        'worker-javascript': '../bower_components/ace-builds/src/worker-javascript',
+        // require
+        text: '../bower_components/requirejs-text/text',
+        // templates
+        templates: '../templates',
+        // temp
+        sticky: 'libs/home-automation/sticky'
     },
     map: {
         '*': {

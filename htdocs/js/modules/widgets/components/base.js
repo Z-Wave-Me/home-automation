@@ -32,7 +32,7 @@ define([
                 widgetSize = 'widget-small',
                 Widget;
 
-            if (item.get('metrics').icon.indexOf('http') !== -1) {
+            if (item.get('metrics').hasOwnProperty('icon') && item.get('metrics').icon.indexOf('http') !== -1) {
                 iconClass = 'customIcon';
                 styles = {'background-image': 'url(' + item.get('metrics').icon + ')'};
             } else {

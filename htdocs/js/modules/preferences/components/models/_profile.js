@@ -4,7 +4,9 @@ define([
     'morearty',
     // components
     '../common/_buttons_group',
-    'mixins/data/data-layer'
+    // mixins
+    'mixins/data/data-layer',
+    'mixins/sync/sync-layer'
 ], function (
     // libs
     React,
@@ -18,24 +20,15 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
-        getInitialState: function () {
-            return { profile: this.getItem('profiles') };
-        },
-        componentDidMount: function () {
-            var that = this;
-            that.getBinding('preferences').addListener('leftPanelItemSelectedId', function () {
-                that.setState({profile: that.getItem('profiles')});
-            });
-        },
         setAsDefaultProfile: function (event) {
-            this.getBinding('preferences').set('defaultProfileId', event.target.checked ? this.state.profile.val('id') : null);
+            this.getBinding('preferences').set('defaultProfileId', event.target.checked ? this.props.model.val('id') : null);
             return false;
         },
         render: function () {
             var that = this,
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
-                itemBinding = that.state.profile,
+                itemBinding = that.props.model,
                 _ = React.DOM,
                 defaultProfileId = that.getBinding('preferences').val('defaultProfileId'),
                 title, description;
@@ -44,7 +37,7 @@ define([
             description = itemBinding.val('description');
 
             return _.div({ className: 'model-component'},
-                _.div({ className: 'form-data profile adding-status clearfix' },
+                _.div({ className: 'form-data profile clearfix' },
                     _.div({ key: 'form-name-input', className: 'form-group' },
                         _.label({ htmlFor: 'profile-name', className: 'input-label'}, 'Name'),
                         _.input({
@@ -86,7 +79,9 @@ define([
                             default: preferencesBinding,
                             item: itemBinding,
                             items: dataBinding.sub('profiles')
-                        }
+                        },
+                        model: this.props.model,
+                        serviceId: this.props.serviceId
                     })
                 )
             );

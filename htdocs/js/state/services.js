@@ -85,26 +85,40 @@ define([], function () {
                 }
             },
             {
+                id: 'namespaces',
+                url: '/namespaces',
+                methods: ['READ'],
+                model: {
+                    methods: ['READ'],
+                    defaults: null
+                }
+            },
+            {
                 id: 'modules',
                 url: '/modules',
                 methods: ['READ'],
-                models: [
-                    {
-                        type: 'default',
-                        methods: ['READ']
+                model: {
+                    methods: ['READ', 'UPDATE', 'DELETE'],
+                    defaults: {
+                        id: null,
+                        name: 'Default name',
+                        icon: null
                     }
-                ]
+                }
             },
             {
                 id: 'instances',
                 url: '/instances',
                 methods: ['READ', 'CREATE'],
-                models: [
-                    {
-                        type: 'default',
-                        methods: ['READ', 'UPDATE', 'DELETE']
+                model: {
+                    methods: ['READ', 'UPDATE', 'DELETE'],
+                    defaults: {
+                        id: null,
+                        moduleId: null,
+                        params: {},
+                        group: 'default_group'
                     }
-                ],
+                }
             },
             {
                 id: 'notifications',
