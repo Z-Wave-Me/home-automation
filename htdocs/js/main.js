@@ -130,16 +130,11 @@ requirejs.config({
 });
 
 require([
-    // components
-    'morearty',
+    // libraries
     'react',
     'immutable',
     'director',
     'sticky',
-    // modules
-    'App',
-    'Preferences',
-    'ServerSync',
     // helpers
     'helpers/js',
     // contexts
@@ -149,15 +144,10 @@ require([
     'state/data'
 ], function (
     // libraries
-    Morearty,
     React,
     Immutable,
     Director,
     Sticky,
-    // modules
-    App,
-    Preferences,
-    ServerSync,
     // helpers
     HelpersJS,
     // bindings
@@ -168,51 +158,29 @@ require([
     ) {
     'use strict';
 
-    var Ctx = Morearty.createContext(React, Immutable, {
+    window.React = React;
+    window.Immutable = Immutable;
+
+    require(['morearty'], function (Morearty) {
+        var Ctx = Morearty.createContext({
             default: defaultBinding,
             preferences: preferencesBinding,
             services: servicesBinding,
             data: dataBinding
         }, {
             requestAnimationFrameEnabled: true
-        }),
-        Bootstrap = React.createClass({
-            mixins: [Morearty.Mixin],
-            componentWillMount: function () {
-                Ctx.init(this);
-            },
-
-            render: function () {
-                return React.withContext({ morearty: Ctx }, function () {
-                    return App({
-                        binding: {
-                            default: Ctx.getBinding().sub('default'),
-                            preferences: Ctx.getBinding().sub('preferences'),
-                            services: Ctx.getBinding().sub('services'),
-                            data: Ctx.getBinding().sub('data')
-                        }
-                    });
-                });
-            }
         });
 
-    // reg module in global namespace
-    [
-        {
-            name: 'App.Helpers.JS',
-            module: HelpersJS
-        },
-        {
-            name: 'App.Modules.ServerSync',
-            module: ServerSync
-        }
-    ].forEach(function (options) {
-        Sticky.set(options.name, options.module, Ctx, options.params);
-    });
+        // reg module in global namespace
+        Sticky.set('App.Helpers.JS', HelpersJS, Ctx, {});
 
-    // render core components
-    Ctx.React.renderComponent(
-        Bootstrap(),
-        document.getElementById('app-container')
-    );
+        require(['./bootstrap'], function (Bootstrap) {
+            // render bootstrap
+            React.renderComponent(
+                Bootstrap({ctx: Ctx}),
+                document.getElementById('app-container')
+            );
+        });
+
+    });
 });

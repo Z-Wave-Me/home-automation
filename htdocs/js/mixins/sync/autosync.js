@@ -45,7 +45,6 @@ define([], function () {
         pull: function () {
             var that = this,
                 ctx = that.getMoreartyContext(),
-                Immutable = ctx.Immutable,
                 servicesBinding = ctx.getBinding().sub('services'),
                 dataBinding = ctx.getBinding().sub('data'),
                 collections = servicesBinding.sub('collections');

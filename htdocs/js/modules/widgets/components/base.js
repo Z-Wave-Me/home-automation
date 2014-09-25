@@ -6,7 +6,8 @@ define([
     './_probe',
     './_switch',
     './_multilevel',
-    './_control'
+    './_control',
+    './_camera'
 ], function (
     // libs
     React,
@@ -16,7 +17,7 @@ define([
     Switch,
     Multilevel,
     Control,
-    Door
+    Camera
     ) {
     'use strict';
 
@@ -65,7 +66,7 @@ define([
             } else if (item.get('deviceType') === "toggleButton") {
                 Widget = Probe;
             } else if (item.get('deviceType') === "camera") {
-                Widget = Probe;
+                Widget = Camera;
                 widgetSize = 'widget';
             } else if (item.get('deviceType') === "switchControl") {
                 Widget = Control;
@@ -78,10 +79,10 @@ define([
                     _.div({className: 'border-widget border-widget-sprite small-border'},
                         _.span({className: 'selection-button border-widget-sprite button-select-border'})
                     ),
-                    _.div({className: 'content-widget'},
-                        _.div({className: 'container-icon'},
+                        _.div({className: 'content-widget'},
+                        widgetSize === 'widget-small' ?  _.div({className: 'container-icon'},
                             _.div({className: iconClass, style: styles})
-                        ),
+                        ) : null,
                         Widget({binding: binding})
                     )
                 )
