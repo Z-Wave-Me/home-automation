@@ -3,11 +3,11 @@
 @border-position: 4px;
 
 .popover {
+  display: block;
   position: absolute;
   margin-top: 100px;
   left: 0;
   z-index: 1010;
-  display: none;
   min-width: 22.7%;
   padding: 1px;
   text-align: left;
@@ -147,14 +147,12 @@
 }
 
 .popover-events {
-  width: 325px;
-  min-width: 325px;
-  max-width: 325px;
+  width: 324px;
   padding: 0;
   overflow: initial;
   top: 34px;
   .popover-content {
-    width: 93.5%;
+    width: 306px;
     border-radius: 0;
     background-color: #fff;
     overflow: hidden;
@@ -172,10 +170,73 @@
       color: rgba(0, 186, 196, 0.6)
     }
   }
+  .filter-events {
+    width: 96%;
+    outline: none;
+    border: 0;
+    font-size: 12px;
+    line-height: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin: 2px 0;
+    background: #eee;
+    border-radius: 2px;
+    padding: 2px 6px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.4) inset, 0 1px 0 rgba(255,255,255,.2);
+    &:focus {
+      outline: 0;
+      background: #fff;
+      box-shadow: 0 0 2px rgba(0,0,0,.8) inset;
+    }
+  }
   .events-container {
     height: 200px;
     overflow-y: scroll;
     padding-right: 1px;
+  }
+  .button-container {
+    display: block;
+    width: 100%;
+    height: 20px;
+    line-height: 20px;
+    padding: 3px;
+    vertical-align: middle;
+    .button {
+      display: inline-block;
+      float: left;
+      width: auto;
+      height: 20px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+      font-size: 12px;
+      line-height: 20px;
+      color: #444;
+      padding: 2px 5px;
+      color: rgba(0,0,0,.8);
+      border: 1px solid rgba(0,0,0,0);
+      background-color: #E6E6E6;
+      text-decoration: none;
+      border-radius: 2px;
+      outline: none;
+      vertical-align: middle;
+      margin-right: 5px;
+      &:hover {
+        background-image: -webkit-gradient(linear,0 0,0 100%,from(transparent),color-stop(40%,rgba(0,0,0,.05)),to(rgba(0,0,0,.1)));
+        background-image: -webkit-linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+        background-image: -moz-linear-gradient(top,rgba(0,0,0,.05) 0,rgba(0,0,0,.1));
+        background-image: -o-linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+        background-image: linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+        border: 1px solid #999;
+      }
+      &.disabled {
+        border: 0;
+        background-image: none;
+        -khtml-opacity: .4;
+        -moz-opacity: .4;
+        opacity: .4;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+    }
   }
   .event-item {
     display: block;
@@ -184,6 +245,10 @@
     font-size: 13px;
     line-height: 15px;
     text-align: left;
+    transition: all .3 ease;
+    &:hover {
+      background-color: rgba(204, 204, 204, 0.3);
+    }
     .time-field {
       font-weight: bold;
       margin-right: 5px;

@@ -9,19 +9,39 @@ define([
 
     return {
         nowShowing: 'dashboard', // start route
-        notificationsCount: 0,
-        notificationsSeverity: 'ok', // ok, warning, error, debug
-        notificationsMessage: 'ok',
-        notifications: [],
-        devices: [],
-        namespaces: [],
-        modules: [],
-        instances: [],
-        locations: [],
-        profiles: [],
+        // notifications
+        notifications: {
+            count: 0,
+            severity: 'ok',
+            show_popup: false,
+            severity_modes: {
+                'error_connection': {
+                    message: 'No connection',
+                    color: 'red'
+                },
+                ok: {
+                    message: 'Ok',
+                    color: 'grey'
+                },
+                warning: {
+                    message: 'Warning',
+                    color: 'yellow'
+                },
+                critical: {
+                    message: 'Critical',
+                    color: 'red'
+                },
+                debug: {
+                    message: 'Debug',
+                    color: 'blue'
+                }
+            }
+        },
+        // menu settings
         primaryFilter: 'all',
         secondaryFilter: '',
         searchString: '',
+        //
         overlayShow: false,
         overlayShowName: null
     };

@@ -107,11 +107,15 @@ requirejs.config({
     // modules
     packages: [
         {
-            name: 'Preferences', // default 'packagename'
+            name: 'Preferences',
             location: 'modules/preferences'//,
         },
         {
-            name: 'ServerSync', // default 'packagename'
+            name: 'Notifications',
+            location: 'modules/notifications'//,
+        },
+        {
+            name: 'ServerSync',
             location: 'modules/serversync'//,
         },
         {

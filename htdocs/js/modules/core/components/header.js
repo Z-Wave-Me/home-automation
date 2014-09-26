@@ -1,12 +1,10 @@
 define([
     //libs
-    'react',
     'morearty',
     // components
     './filters'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     Filters
@@ -19,6 +17,14 @@ define([
             this.getDefaultBinding().set('overlayShow', true);
             return false;
         },
+        toggleShowNotificationsPopup: function () {
+            var binding = this.getDefaultBinding(),
+                show = binding.sub('notifications').val('show_popup');
+
+            binding.sub('notifications').set('show_popup', !show);
+
+            return false;
+        },
         isShownFilters: function () {
             var binding = this.getDefaultBinding();
 
@@ -28,9 +34,11 @@ define([
         render: function () {
             var binding = this.getDefaultBinding(),
                 nowShowing = binding.val('nowShowing'),
-                notifications_count = binding.val('notificationsCount'),
-                notifications_severity = binding.val('notificationsSeverity'),
-                notifications_message = binding.val('notificationsMessage'),
+                notifications = binding.sub('notifications'),
+                notifications_count = notifications.val('count'),
+                notifications_severity = notifications.val('severity'),
+                notification_mode = notifications.sub('severity_modes').sub(notifications_severity),
+                notifications_message = notification_mode.val('message'),
                 _ = React.DOM;
 
             if (notifications_count === 0 && notifications_message !== 'no connection') {
@@ -51,7 +59,7 @@ define([
                         )
                     ),
                     _.section({className: 'user-panel-section'},
-                        _.div({className: 'events-container ' + notifications_severity.toLowerCase()},
+                        _.div({ onClick: this.toggleShowNotificationsPopup, className: 'events-container ' + notifications_severity.toLowerCase()},
                             _.span({className: 'events-counter'}, notifications_count),
                             _.span({className: 'events-message'}, notifications_message.toUpperCase())
                         ),
