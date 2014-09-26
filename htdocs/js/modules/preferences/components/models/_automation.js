@@ -34,7 +34,7 @@ define([
                 module = that.getItem('modules', instanceJson.moduleId),
                 moduleJson = module.val().toJS();
 
-            var params = _.extend(instanceJson.params, {
+            var params = Sticky.get('App.Helpers.JS').extend(instanceJson.params, {
                 title: instanceJson.params.title || moduleJson.defaults.title,
                 description: instanceJson.params.description || moduleJson.defaults.description,
                 status: instanceJson.params.status || moduleJson.defaults.status

@@ -21,9 +21,11 @@ define([
 
             return service.length > 0 ? service[0].toObject() : null;
         },
-        fetch: function (_options, command) {
-            var service = this.getService(_options.serviceId || null),
+        fetch: function (options, command) {
+            var service = this.getService(options.serviceId || null),
                 url;
+
+            options = options || {};
 
             if (service) {
                 url = this.isModel() ? service.url + '/' + this.getDefaultBinding().val('id') : service.url;
@@ -32,7 +34,7 @@ define([
                     url += '/command/' + command;
                 }
 
-                this._read(url, _options);
+                this._read(url, options);
             } else {
                 console.debug('incorrect _serviceId')
             }

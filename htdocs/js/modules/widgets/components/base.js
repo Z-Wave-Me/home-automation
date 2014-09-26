@@ -7,7 +7,8 @@ define([
     './_switch',
     './_multilevel',
     './_control',
-    './_camera'
+    './_camera',
+    './_toggle'
 ], function (
     // libs
     React,
@@ -17,7 +18,8 @@ define([
     Switch,
     Multilevel,
     Control,
-    Camera
+    Camera,
+    Toggle
     ) {
     'use strict';
 
@@ -64,7 +66,7 @@ define([
             } else if (item.get('deviceType') === "switchBinary" || item.get('deviceType') === "switchRGBW" || item.get('deviceType') === "doorlock") {
                 Widget = Switch;
             } else if (item.get('deviceType') === "toggleButton") {
-                Widget = Probe;
+                Widget = Toggle;
             } else if (item.get('deviceType') === "camera") {
                 Widget = Camera;
                 widgetSize = 'widget';
