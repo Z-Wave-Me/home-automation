@@ -20,13 +20,8 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, sync_layer_mixin, popup_mixin],
         hideNotificationsPopup: function () { // rewrite method
-            this.state.show.set(false);
+            this.getDefaultBinding().sub('notifications').set('show_popup', false);
             return false;
-        },
-        getInitialState: function () {
-            return {
-                show: this.getDefaultBinding().sub('notifications').sub('show_popup')
-            }
         },
         componentWillMount: function () {
             var that = this,
@@ -34,12 +29,8 @@ define([
             
             notifications_binding.set('searchString', '');
             notifications_binding.set('full_view_notice_id', null);
+
             notifications_binding.addListener('searchString', function () {
-                if (that.isMounted()) {
-                    that.forceUpdate();
-                }
-            });
-            this.getBinding('data').addListener('notifications', function () {
                 if (that.isMounted()) {
                     that.forceUpdate();
                 }
@@ -47,22 +38,23 @@ define([
         },
         getEvent: function (notification, index) {
             var notifications_options = this.getDefaultBinding().sub('notifications'),
-                search_string = notifications_options.val('searchString') || '';
+                notifications = this.getBinding('data').sub('notifications'),
+                search_string = notifications_options.val('searchString') || '',
+                EventComponent = null,
+                notice = notifications.sub(index);
 
-            if (notification.get('redeemed') || (notification.get('message').toLowerCase().indexOf(search_string.toLowerCase()) === -1 && search_string.length > 2)) {
-                return null;
-            } else {
-                return (
-                    Event({
-                        binding: {
-                            notification: this.getBinding('data').sub('notifications').sub(index),
-                            index: index,
-                            notifications: this.getBinding('data').sub('notifications'),
-                            notifications_options: notifications_options
-                        }
-                    })
-                )
+            if (!notice.val('redeemed') || (notice.val('message').toLowerCase().indexOf(search_string.toLowerCase()) !== -1 && search_string.length > 2)) {
+                EventComponent = Event({
+                    binding: {
+                        notification: notice,
+                        notifications: notifications,
+                        notifications_options: notifications_options
+                    },
+                    index: index
+                });
             }
+
+            return EventComponent;
         },
         componentDidMount: function () {
             var popup = this.refs.popup.getDOMNode(),
@@ -76,7 +68,8 @@ define([
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
                 notifications_binding = this.getBinding('data').sub('notifications'),
-                notifications = notifications_binding.val();
+                notifications = notifications_binding.val(),
+                show = this.getDefaultBinding().sub('notifications').sub('show_popup');
 
             return _.div({
                     className: 'overlay transparent show',

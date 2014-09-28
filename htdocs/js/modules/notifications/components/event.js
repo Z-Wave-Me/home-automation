@@ -18,23 +18,23 @@ define([
         setFullViewItem: function (id) {
             if (this.isMounted()) {
                 this.getBinding('notifications_options').set('full_view_notice_id', id);
-                this.forceUpdate();
             }
+            return false;
         },
-        hideNotice: function () {
+        setRedeemedNotification: function () {
             var that = this,
-                model = this.getBinding('notifications').sub(this.getBinding('index'));
+                model = this.getBinding('notification');
 
             model.set('redeemed', true);
 
             that.save({
                 serviceId: 'notifications',
                 model: model,
-                collection: this.getBinding('notifications'),
+                collection: that.getBinding('notifications'),
                 success: function (obj) {
                     if (obj.val('redeemed')) {
                         that.setFullViewItem(null);
-                        that.getBinding('data').sub('notifications').delete(that.getBinding('index'));
+                        model.delete();
                     }
                 }
             });
@@ -51,25 +51,24 @@ define([
         render: function () {
             var _ = React.DOM,
                 notification = this.getBinding('notification'),
-                index = this.getBinding('index'),
-                full_view = this.getBinding('notifications_options').val('full_view_notice_id') === notification.val('id'),
+                index = this.props.index,
                 time_date = new Date(notification.val('timestamp'));
 
             time_date = time_date.getDate() + "/" + LZ(time_date.getMonth() + 1) + "/" + (time_date.getYear() - 100) + "-" + LZ(time_date.getHours()) + ":" + LZ(time_date.getMinutes());
 
-            if (full_view) {
+            if (this.getBinding('notifications_options').val('full_view_notice_id') === notification.val('id')) {
                 return (
                     _.div({className: 'event-item full-view', id: notification.val('id'), key: 'notice-' + index },
                         _.span({className: 'content-container'},
                             _.div({key: 'type-value', className: 'type-value'}, 'Type: ' + notification.val('type')),
                             _.div({key: 'time-value', className: 'time-value'}, 'Timestamp: ' + time_date),
-                            _.label({key: 'message-label',className: 'label'}, 'Message:'),
+                            _.label({key: 'message-label', className: 'label'}, 'Message:'),
                             _.div({key: 'message-value', className: 'message-value'}, notification.val('message'))
                         ),
                         _.span({className: 'actions-container'},
                             _.span({
                                 className: 'action-button',
-                                onClick: this.hideNotice
+                                onClick: this.setRedeemedNotification
                             }, 'HIDE'),
                             _.span({
                                 onClick: this.setFullViewItem.bind(null, null),
