@@ -25,13 +25,17 @@ define([
         saveHandler: function () {
             var that = this;
 
-            this.replaceState({ loading: true });
+            if (this.isMounted()) {
+                this.setState({ loading: true });
+            }
 
             that.save({
-                success: function () {
-                    that.setLeftPanelItemSelectedId(that.props.model.val('id'));
+                success: function (model) {
+                    that.setLeftPanelItemSelectedId(model.val('id'));
                     that.setActiveNodeTreeStatus('normal');
-                    that.replaceState({ loading: false });
+                    if (that.isMounted()) {
+                        that.setState({ loading: false });
+                    }
                 }
             });
 
@@ -40,10 +44,15 @@ define([
         removeHandler: function () {
             var that = this;
             that.remove({
+                model: that.getBinding('item'),
+                collection: that.getBinding('items'),
+                serviceId: that.props.serviceId,
                 success: function () {
-                    that.setLeftPanelItemSelectedId(that.props.model.val('id'));
+                    that.getBinding('item').delete();
                     that.setActiveNodeTreeStatus('normal');
-                    that.replaceState({ loading: false });
+                    if (that.isMounted()) {
+                        that.setState({ loading: false });
+                    }
                 }
             })
         },
@@ -51,7 +60,7 @@ define([
             var _ = React.DOM,
                 binding = this.getDefaultBinding();
 
-            if (binding.val('activeNodeTreeStatus') === 'adding') {
+            if (binding.val('activeNodeTreeStatus') === 'add') {
                 return [
                     _.div({
                         key: 'save-button',

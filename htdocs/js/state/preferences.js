@@ -8,7 +8,7 @@ define([
 
     return Immutable.Map({
         activeNodeTreeId: 1,
-        activeNodeTreeStatus: 'normal', // editing, adding, removing
+        activeNodeTreeStatus: 'normal', // update, add, remove
         activeNodeTreeIdHistory: 1,
         backButtonEnabled: false,
         adding: false,

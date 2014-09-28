@@ -2,6 +2,7 @@ define([
     //libs
     'morearty',
     // components
+    './components/event',
     // mixins
     'mixins/sync/sync-layer',
     'mixins/ui/popup'
@@ -9,6 +10,7 @@ define([
     // libs
     Morearty,
     // components
+    Event,
     // mixins
     sync_layer_mixin,
     popup_mixin
@@ -17,12 +19,13 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, sync_layer_mixin, popup_mixin],
+        hideNotificationsPopup: function () { // rewrite method
+            this.state.show.set(false);
+            return false;
+        },
         getInitialState: function () {
-            var binding = this.getDefaultBinding(),
-                notifications = binding.sub('notifications');
-
             return {
-                show: notifications.sub('show_popup')
+                show: this.getDefaultBinding().sub('notifications').sub('show_popup')
             }
         },
         componentWillMount: function () {
@@ -30,28 +33,35 @@ define([
                 notifications_binding = this.getDefaultBinding().sub('notifications');
             
             notifications_binding.set('searchString', '');
+            notifications_binding.set('full_view_notice_id', null);
             notifications_binding.addListener('searchString', function () {
-                that.forceUpdate();
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+            this.getBinding('data').addListener('notifications', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
             });
         },
         getEvent: function (notification, index) {
-            var _ = React.DOM,
-                binding = this.getDefaultBinding(),
-                notifications = binding.sub('notifications'),
-                timedate = new Date(notification.get('timestamp')),
-                searchString = notifications.val('searchString') || '';
+            var notifications_options = this.getDefaultBinding().sub('notifications'),
+                search_string = notifications_options.val('searchString') || '';
 
-            timedate = timedate.getDate() + "/" + LZ(timedate.getMonth() + 1) + "/" + (timedate.getYear() - 100) + "-" + LZ(timedate.getHours()) + ":" + LZ(timedate.getMinutes());
-
-            if (searchString.indexOf(notification.get('message')) === -1 && searchString.length > 2) {
+            if (notification.get('redeemed') || notification.get('message').toLowerCase().indexOf(search_string.toLowerCase()) === -1 || search_string.length > 2) {
                 return null;
             } else {
-                return _.span({className: 'event-item', id: notification.get('id'), key: 'notice-' + index },
-                    _.span({className: 'time-filed'}, timedate),
-                    _.span({className: 'type-filed'}, '[' + notification.get('type') + '] '),
-                    _.span({className: 'message-field'}, notification.get('message')),
-                    _.span({className: 'read'}, 'hide')
-                );
+                return (
+                    Event({
+                        binding: {
+                            notification: this.getBinding('data').sub('notifications').sub(index),
+                            index: index,
+                            notifications: this.getBinding('data').sub('notifications'),
+                            notifications_options: notifications_options
+                        }
+                    })
+                )
             }
         },
         componentDidMount: function () {
@@ -70,7 +80,7 @@ define([
 
             return _.div({
                     className: 'overlay transparent show',
-                    onClick: this.hidePopup
+                    onClick: this.hideNotificationsPopup
                 },
                 _.div({onClick: this.stopPropagationAndPreventDefault, ref: 'popup', className: 'popover bottom popover-events'},
                     _.div({className: 'arrow'}),
@@ -78,7 +88,7 @@ define([
                         _.input({
                             className: 'filter-events',
                             placeholder: 'filter here',
-                            onChange: Morearty.Callback.set(notifications_binding, 'searchString')
+                            onChange: Morearty.Callback.set(binding.sub('notifications'), 'searchString')
                         }),
                         _.div({className: 'events-container'},
                             notifications.map(this.getEvent).toArray()

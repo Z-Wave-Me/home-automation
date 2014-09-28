@@ -50,7 +50,7 @@ define([
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
                 _ = React.DOM,
-                item = that.props.model,
+                item = that.getBinding('item'),
                 title = item.val('title'),
                 icon = item.val('icon'),
                 classes = cx({

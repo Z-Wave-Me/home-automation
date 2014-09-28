@@ -40,25 +40,31 @@ define([
                 serviceId: null
             }
         },
+        updateNodeHandler: function () {
+            var that = this,
+                nodeObject = that.getActiveNodeTree(),
+                node = Array.isArray(nodeObject) ? nodeObject[0] : null;
+
+            if (node) {
+                that.replaceState({
+                    model: that.getItem(node.options.serviceId),
+                    serviceId: node.options.serviceId
+                });
+                that.forceUpdate();
+            }
+        },
         componentWillMount: function () {
             var that = this;
-
-            that.listenerId = that.getBinding('preferences').addListener('leftPanelItemSelectedId', function () {
-                var nodeObject = that.getActiveNodeTree(),
-                    node = Array.isArray(nodeObject) ? nodeObject[0] : null;
-
-                if (node) {
-                    that.replaceState({
-                        model: that.getItem(node.options.serviceId),
-                        serviceId: node.options.serviceId
-                    });
-                    that.forceUpdate();
-                }
-            });
+            that.listeners = that.listeners || [];
+            that.listeners.push(that.getBinding('preferences').addListener('leftPanelItemSelectedId', that.updateNodeHandler));
+            that.listeners.push(that.getBinding('preferences').addListener('activeNodeTreeStatus', that.updateNodeHandler))
         },
         componentWillUnmount: function () {
-            if (this.listenerId) {
-                this.getBinding('preferences').removeListener(this.listenerId);
+            var that = this;
+            if (that.listeners.length > 0) {
+                that.listeners.forEach(function (listenerId) {
+                    that.getBinding('preferences').removeListener(listenerId);
+                });
             }
         },
         render: function () {
@@ -76,7 +82,7 @@ define([
                     '_automation': _automation
                 };
 
-            if (preferencesBinding.val('activeNodeTreeStatus') === 'adding') {
+            if (preferencesBinding.val('activeNodeTreeStatus') === 'add') {
                 baseTitle += ':CREATE';
             } else if (preferencesBinding.val('activeNodeTreeStatus') === 'pending') {
                 baseTitle += ':DELETE';
@@ -103,9 +109,9 @@ define([
                             binding: {
                                 default: binding,
                                 data: dataBinding,
-                                preferences: preferencesBinding
+                                preferences: preferencesBinding,
+                                item: this.state !== null ? this.state.model : null
                             },
-                            model: this.state !== null ? this.state.model : null,
                             serviceId: this.state !== null ? this.state.serviceId : null
                         }) : null
                 )

@@ -11,13 +11,16 @@
   z-index: 1000;
   overflow: hidden;
   background-color: @overlay-backround-color;
+  &.fixed {
+    position: fixed;
+  }
   &.show {
     background-color: rgba(237, 237, 237, 0.95);
-    -webkit-transition: background-color 1000ms linear;
-    -moz-transition: background-color 1000ms linear;
-    -o-transition: background-color 1000ms linear;
-    -ms-transition: background-color 1000ms linear;
-    transition: background-color 1000ms linear;
+    -webkit-transition: all 1000ms linear;
+    -moz-transition: all 1000ms linear;
+    -o-transition: all 1000ms linear;
+    -ms-transition: all 1000ms linear;
+    transition: all 1000ms linear;
     display: block;
   }
   &.transparent {

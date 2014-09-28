@@ -76,7 +76,7 @@ define([
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
                 _ = React.DOM,
-                item = that.props.model,
+                item = that.getBinding('item'),
                 id = item.val('id'),
                 title = id ? item.val('metrics').title : null,
                 icon = id ? item.val('metrics').icon : null,

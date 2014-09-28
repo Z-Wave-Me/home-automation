@@ -7,9 +7,11 @@ define([], function () {
             e.preventDefault();
             e.nativeEvent.stopImmediatePropagation();
         },
-        hidePopup: function (e) {
-            this.state.show.set(false);
-            return false;
+        toggleShowPopup: function (e) {
+            if (this.isMounted()) {
+                this.setState({show: !this.state.show});
+                this.forceUpdate();
+            }
         }
     }
 });

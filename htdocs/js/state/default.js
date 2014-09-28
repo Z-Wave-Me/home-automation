@@ -35,7 +35,14 @@ define([
                     message: 'Debug',
                     color: 'blue'
                 }
-            }
+            },
+            filters: {
+                ok: true,
+                warning: true,
+                critical: true,
+                debug: true
+            },
+            full_view_notice_id: null
         },
         // menu settings
         primaryFilter: 'all',

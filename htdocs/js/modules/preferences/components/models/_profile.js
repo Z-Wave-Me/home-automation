@@ -28,13 +28,12 @@ define([
             var that = this,
                 preferencesBinding = that.getBinding('preferences'),
                 dataBinding = that.getBinding('data'),
-                itemBinding = that.props.model,
+                itemBinding = that.getBinding('item'),
                 _ = React.DOM,
                 defaultProfileId = that.getBinding('preferences').val('defaultProfileId'),
-                title, description;
-
-            title = itemBinding.val('name');
-            description = itemBinding.val('description');
+                id = itemBinding.val('id'),
+                title = itemBinding.val('name'),
+                description = itemBinding.val('description');
 
             return _.div({ className: 'model-component'},
                 _.div({ className: 'form-data profile clearfix' },
@@ -46,6 +45,7 @@ define([
                             className: 'input-value',
                             type: 'text',
                             placeholder: 'Name',
+                            autoFocus: true,
                             value: title
                         })
                     ),
@@ -68,7 +68,7 @@ define([
                                 className: 'checkbox-type',
                                 type: 'checkbox',
                                 name: 'makeAsDefault',
-                                checked: String(defaultProfileId) === String(itemBinding.val('id')),
+                                checked: String(defaultProfileId) === String(id),
                                 onChange: this.setAsDefaultProfile
                             }),
                             _.label({htmlFor: 'makeAsDefault', className: 'input-label'}, 'Make as default profile')
@@ -80,7 +80,7 @@ define([
                             item: itemBinding,
                             items: dataBinding.sub('profiles')
                         },
-                        model: this.props.model,
+                        model: itemBinding,
                         serviceId: this.props.serviceId
                     })
                 )

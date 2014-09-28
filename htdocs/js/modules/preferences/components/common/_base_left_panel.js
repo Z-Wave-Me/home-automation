@@ -67,7 +67,7 @@ define([
 
                 if ((searchString.length > 2 && title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1) || searchString.length <= 2) {
                     return _.li({
-                            className: leftPanelItemSelectedId === item.get('id') && statusNode !== 'adding' ? 'item-model selected' : 'item-model',
+                            className: leftPanelItemSelectedId === item.get('id') && statusNode !== 'add' ? 'item-model selected' : 'item-model',
                             key: index,
                             ref: 'listSelected_' + item.get('id'),
                             onClick: that.setActiveLeftPanelItemSelectedId.bind(null, item.get('id'))

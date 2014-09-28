@@ -57,7 +57,8 @@ define([
             }
 
             if (Boolean(model)) {
-                url = model.val('id') ? service.url + '/' + model.val('id') : service.url;
+                var modelId = model.hasOwnProperty('get') ? model.get('id') : model.val('id');
+                url = modelId ? service.url + '/' + modelId : service.url;
             } else if (collection) {
                 url = service.url;
             }
@@ -80,15 +81,15 @@ define([
                     }
                 },
                 params: options.params || {},
-                method: model && model.val('id') ? 'PUT' : 'POST',
-                data: JSON.stringify(model ? model.val().toJS() : collection.val().toJS())
+                method: model && modelId ? 'PUT' : 'POST',
+                data: JSON.stringify(model ? this._objToJSON(model) : this._objToJSON(collection))
             });
         },
         remove: function (options) {
             var that = this,
-                model = that.props.model,
-                collection = that.props.collection,
-                serviceId = that.props.serviceId,
+                model = options.model,
+                collection = options.collection,
+                serviceId = options.serviceId,
                 service = that.getService(serviceId),
                 url;
 
@@ -101,16 +102,6 @@ define([
             that.xhr.request({
                 url: url,
                 success: function (response) {
-                    if (model) {
-                        collection.update(function (collection) {
-                           return collection.filter(function (m) {
-                               return m.val('id') !== model.val('id');
-                           });
-                        });
-                    } else if (collection) {
-                        collection.clear();
-                    }
-
                     if (typeof options.success === 'function') {
                         options.success(response.data, model || collection)
                     }
@@ -140,6 +131,13 @@ define([
         },
         isModel: function () {
             return this.getDefaultBinding().val('id') || this._isModel;
+        },
+        _objToJSON: function (obj) {
+            if (obj.hasOwnProperty('_path')) {
+                return obj.val().toJS();
+            } else {
+                return obj.toJS();
+            }
         },
         enableAutoSync: function () {
             this.autoSync.init.call(this);
