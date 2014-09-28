@@ -49,7 +49,7 @@ define([
             var notifications_options = this.getDefaultBinding().sub('notifications'),
                 search_string = notifications_options.val('searchString') || '';
 
-            if (notification.get('redeemed') || notification.get('message').toLowerCase().indexOf(search_string.toLowerCase()) === -1 || search_string.length > 2) {
+            if (notification.get('redeemed') || (notification.get('message').toLowerCase().indexOf(search_string.toLowerCase()) === -1 && search_string.length > 2)) {
                 return null;
             } else {
                 return (
