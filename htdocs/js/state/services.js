@@ -20,8 +20,8 @@ define([], function () {
                     methods: ['READ', 'UPDATE', 'DELETE'],
                     defaults: {
                         id: null,
-                        name: 'Default profile',
-                        description: 'Default profile description'
+                        name: '',
+                        description: ''
                     }
                 }
             },

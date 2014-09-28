@@ -28,6 +28,11 @@ define([], function () {
             }
 
         },
+        addModelToCollection: function (collection, model) {
+            collection.update(function (collection) {
+                collection.push(Immutable.Map(model.val().toJS()));
+            });
+        },
         getItem: function (serviceId, itemId) {
             var ctx = this.getMoreartyContext(),
                 preferences = ctx.getBinding().sub('preferences'),

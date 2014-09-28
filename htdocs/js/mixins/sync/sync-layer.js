@@ -45,10 +45,11 @@ define([
             options = options || {};
 
             var that = this,
-                model = options.hasOwnProperty('model') ? options.model : that.props.model,
-                collection = options.hasOwnProperty('collection') ? options.collection : that.props.collection,
-                serviceId = options.hasOwnProperty('serviceId') ? options.serviceId : that.props.serviceId,
+                model = options.model,
+                collection = options.collection,
+                serviceId =  options.serviceId,
                 service = that.getService(serviceId),
+                modelId = model.val('id'),
                 url;
 
             if (!Boolean(serviceId)) {
@@ -57,7 +58,6 @@ define([
             }
 
             if (Boolean(model)) {
-                var modelId = model.hasOwnProperty('get') ? model.get('id') : model.val('id');
                 url = modelId ? service.url + '/' + modelId : service.url;
             } else if (collection) {
                 url = service.url;
@@ -82,7 +82,7 @@ define([
                 },
                 params: options.params || {},
                 method: model && modelId ? 'PUT' : 'POST',
-                data: JSON.stringify(model ? this._objToJSON(model) : this._objToJSON(collection))
+                data: JSON.stringify(model.val().toJS())
             });
         },
         remove: function (options) {
@@ -131,13 +131,6 @@ define([
         },
         isModel: function () {
             return this.getDefaultBinding().val('id') || this._isModel;
-        },
-        _objToJSON: function (obj) {
-            if (obj.hasOwnProperty('_path')) {
-                return obj.val().toJS();
-            } else {
-                return obj.toJS();
-            }
         },
         enableAutoSync: function () {
             this.autoSync.init.call(this);

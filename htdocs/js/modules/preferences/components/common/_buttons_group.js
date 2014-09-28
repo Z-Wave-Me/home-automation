@@ -23,14 +23,24 @@ define([
             return { loading: false };
         },
         saveHandler: function () {
-            var that = this;
+            var that = this,
+                item = this.getBinding('item'),
+                items = this.getBinding('items'),
+                isNew = Boolean(item.val('id'));
 
             if (this.isMounted()) {
                 this.setState({ loading: true });
             }
 
             that.save({
+                model: item,
+                collection: items,
+                serviceId: this.props.serviceId,
                 success: function (model) {
+                    if (isNew) {
+                        that.addModelToCollection(items, item);
+                        that.clearTempModel();
+                    }
                     that.setLeftPanelItemSelectedId(model.val('id'));
                     that.setActiveNodeTreeStatus('normal');
                     if (that.isMounted()) {

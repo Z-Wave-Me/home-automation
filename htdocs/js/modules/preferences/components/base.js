@@ -34,38 +34,38 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin, data_layer_mixin],
-        getDefaultState: function() {
-            return {
-                model: null,
-                serviceId: null
-            }
+        components: {
+            'main_menu': main_menu,
+            '_profile': _profile,
+            '_room': _room,
+            '_widget': _widget,
+            '_automation': _automation
         },
-        updateNodeHandler: function () {
+        getComponent:function (node) {
             var that = this,
-                nodeObject = that.getActiveNodeTree(),
-                node = Array.isArray(nodeObject) ? nodeObject[0] : null;
+                components = this.components,
+                data_binding = this.getBinding('data'),
+                preferences_binding = this.getBinding('preferences'),
+                component,
+                item = node.options.name === 'main' ? null : that.getItem(node.options.serviceId);
 
-            if (node) {
-                that.replaceState({
-                    model: that.getItem(node.options.serviceId),
+            if (node.options.name === 'main') {
+                component = components[node.options.componentName]();
+            } else if (item) {
+                component = components[node.options.componentName]({
+                    binding: {
+                        default: this.getDefaultBinding(),
+                        data: data_binding,
+                        preferences: preferences_binding,
+                        item: item
+                    },
                     serviceId: node.options.serviceId
                 });
-                that.forceUpdate();
+            } else {
+                component = null;
             }
-        },
-        componentWillMount: function () {
-            var that = this;
-            that.listeners = that.listeners || [];
-            that.listeners.push(that.getBinding('preferences').addListener('leftPanelItemSelectedId', that.updateNodeHandler));
-            that.listeners.push(that.getBinding('preferences').addListener('activeNodeTreeStatus', that.updateNodeHandler))
-        },
-        componentWillUnmount: function () {
-            var that = this;
-            if (that.listeners.length > 0) {
-                that.listeners.forEach(function (listenerId) {
-                    that.getBinding('preferences').removeListener(listenerId);
-                });
-            }
+
+            return component;
         },
         render: function () {
             var _ = React.DOM,
@@ -73,14 +73,7 @@ define([
                 preferencesBinding = this.getBinding('preferences'),
                 dataBinding = this.getBinding('data'),
                 activeNode = this.getActiveNodeTree(),
-                baseTitle = activeNode[0].options.name.toUpperCase(),
-                components = {
-                    'main_menu': main_menu,
-                    '_profile': _profile,
-                    '_room': _room,
-                    '_widget': _widget,
-                    '_automation': _automation
-                };
+                baseTitle = activeNode[0].options.name.toUpperCase();
 
             if (preferencesBinding.val('activeNodeTreeStatus') === 'add') {
                 baseTitle += ':CREATE';
@@ -104,16 +97,7 @@ define([
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container cleafix' : 'panel-container'},
                     activeNode[0].options.leftPanel ? _.h2({ className: 'title-children clearfix'}, baseTitle) : null,
                     // main component
-                    preferencesBinding.val('leftPanelItemSelectedId') && this.state !== null || activeNode[0].options.name === 'main' ?
-                        components[activeNode[0].options.componentName]({
-                            binding: {
-                                default: binding,
-                                data: dataBinding,
-                                preferences: preferencesBinding,
-                                item: this.state !== null ? this.state.model : null
-                            },
-                            serviceId: this.state !== null ? this.state.serviceId : null
-                        }) : null
+                    this.getComponent(activeNode[0])
                 )
             );
         }

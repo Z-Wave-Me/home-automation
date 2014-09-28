@@ -43,7 +43,7 @@ define([
                 EventComponent = null,
                 notice = notifications.sub(index);
 
-            if (!notice.val('redeemed') || (notice.val('message').toLowerCase().indexOf(search_string.toLowerCase()) !== -1 && search_string.length > 2)) {
+            if ((notice.val('message').toLowerCase().indexOf(search_string.toLowerCase()) !== -1 && search_string.length > 2) || search_string.length <=2) {
                 EventComponent = Event({
                     binding: {
                         notification: notice,
