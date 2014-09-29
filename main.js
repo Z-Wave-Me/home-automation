@@ -243,8 +243,7 @@ function WebServerRequestHandler(req) {
 }
 
 ws = new WebServer(8083, WebServerRequestHandler, {
-	document_root: "htdocs",
-	enable_proxy: "yes"
+	document_root: "htdocs"
 });
 
 //--- Load configuration
