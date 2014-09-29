@@ -40,6 +40,21 @@ define([], function () {
             // add local data
             that.getBinding('preferences').addListener('defaultProfileId', function (profileId) {
                 localStorage.setItem('defaultProfileId', String(profileId));
+                var profiles = dataBinding.sub('profiles'),
+                    filter = profiles.filter(function (profile) {
+                        return String(profile.get('id')) === String(profileId);
+                    });
+
+                dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
+            });
+
+            dataBinding.addListener('profiles', function (profiles) {
+                var activeId = localStorage.getItem('defaultProfileId'),
+                    filter = profiles.filter(function (profile) {
+                        return String(profile.get('id')) === String(activeId);
+                    });
+
+                dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
             });
         },
         pull: function () {

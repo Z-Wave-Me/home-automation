@@ -8,14 +8,6 @@ define([], function () {
                 id: 'profiles',
                 url: '/profiles',
                 methods: ['READ', 'CREATE'],
-                postSyncHandler: function (ctx, response) {
-                    var dataBinding = ctx.getBinding().sub('data'),
-                        activeProfile = response.data.filter(function (profile) {
-                            return String(profile.id) === localStorage.getItem('defaultProfileId');
-                        })[0];
-
-                    dataBinding.set('devicesOnDashboard', activeProfile ? activeProfile.positions : []);
-                },
                 model: {
                     methods: ['READ', 'UPDATE', 'DELETE'],
                     defaults: {

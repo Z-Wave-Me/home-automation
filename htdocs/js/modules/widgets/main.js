@@ -24,17 +24,9 @@ define([
             var that = this,
                 profile;
 
-            this.getBinding('data').addListener('profiles', function () {
-                if (that.profileEvent === null) {
-                    profile = that.getActiveProfile();
-                    if (profile) {
-                        that.profileEvent = profile.addListener('positions', function () {
-                            if (that.isMounted()) {
-                                that.forceUpdate();
-                            }
-                        });
-                    }
-
+            this.getBinding('data').addListener('devicesOnDashboard', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
                 }
             });
 
