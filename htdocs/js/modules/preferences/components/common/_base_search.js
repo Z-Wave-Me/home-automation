@@ -1,20 +1,14 @@
 define([
     // libs
-    'react',
     'morearty'
 ], function (
     // libs
-    React,
     Morearty
     ) {
     'use strict';
 
     return React.createClass({
         mixins: [Morearty.Mixin],
-        setSearchString: function (event) {
-            this.getDefaultBinding().set('searchString', event.target.value);
-            return false;
-        },
         render: function () {
             var _ = React.DOM;
 
@@ -23,7 +17,7 @@ define([
                     className: 'search-input',
                     type: 'search',
                     placeholder: 'search',
-                    onChange: this.setSearchString
+                    onChange: Morearty.Callback.set(this.getBinding('preferences'), 'searchStringLeftPanel')
                 })
             );
         }

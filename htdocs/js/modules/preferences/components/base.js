@@ -41,13 +41,30 @@ define([
             '_widget': _widget,
             '_automation': _automation
         },
+        getInitialState: function () {
+            return {
+                model: this.getItem(this.getActiveNodeTree()[0].options.serviceId)
+            }
+        },
+        updateComponentAfterExecutionListener: function () {
+            var that = this;
+            if (that.isMounted()) {
+                that.setState({model: that.getItem(that.getActiveNodeTree()[0].options.serviceId)});
+                that.forceUpdate();
+            }
+        },
+        componentWillMount: function () {
+            var that = this;
+            that.getBinding('preferences').addListener('leftPanelItemSelectedId', that.updateComponentAfterExecutionListener);
+            that.getBinding('preferences').addListener('activeNodeTreeStatus', that.updateComponentAfterExecutionListener);
+        },
         getComponent:function (node) {
             var that = this,
                 components = this.components,
                 data_binding = this.getBinding('data'),
                 preferences_binding = this.getBinding('preferences'),
                 component,
-                item = node.options.name === 'main' ? null : that.getItem(node.options.serviceId);
+                item = node.options.name === 'main' ? null : this.state.model;
 
             if (node.options.name === 'main') {
                 component = components[node.options.componentName]();
@@ -86,7 +103,11 @@ define([
                 activeNode[0].options.leftPanel ? _.div({className: 'left-panel-container'},
                     // search
                     activeNode[0].options.searchPanel ?
-                        _base_search({binding: preferencesBinding})
+                        _base_search({
+                            binding: {
+                                preferences: preferencesBinding
+                            }
+                        })
                         : null,
                     // list block
                     _base_left_panel({binding: { default: binding, data: dataBinding, preferences: preferencesBinding }}),

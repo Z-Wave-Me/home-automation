@@ -82,7 +82,7 @@ define([
                 },
                 params: options.params || {},
                 method: model && modelId ? 'PUT' : 'POST',
-                data: JSON.stringify(model.val().toJS())
+                data: JSON.stringify(that._compat(model.val().toJS()))
             });
         },
         remove: function (options) {
@@ -135,6 +135,14 @@ define([
         enableAutoSync: function () {
             this.autoSync.init.call(this);
             this.autoSync.pull.call(this);
+        },
+        _compat: function (o) {
+            Object.keys(o).forEach(function(k) {
+                if (!o[k]) {
+                    delete o[k];
+                }
+            });
+            return o;
         }
     };
 });

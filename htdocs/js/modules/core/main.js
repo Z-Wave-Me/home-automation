@@ -57,7 +57,8 @@ define([
                 Main({
                     binding: {
                         default: binding,
-                        data: that.getBinding('data')
+                        data: that.getBinding('data'),
+                        preferences: that.getBinding('preferences')
                     }
                 }),
                 Footer({binding: binding}),

@@ -658,7 +658,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = ex.message;
             }
 
-            if (reqObj.hasOwnProperty('name') && reqObj.hasOwnProperty('description') && reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('positions') && reqObj.hasOwnProperty('groups')) {
+            if (reqObj.hasOwnProperty('name')) {
                 profile = that.controller.updateProfile(reqObj, profileId);
                 if (profile !== undefined && profile.id !== undefined) {
                     reply.data = profile;
@@ -669,7 +669,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 500;
-                reply.error = "Argument description, active, id, widgets is required";
+                reply.error = "Argument id, positions is required";
             }
 
             this.initResponse(reply);

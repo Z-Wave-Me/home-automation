@@ -19,14 +19,34 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
+        profileEvent: null,
         componentWillMount: function () {
             var that = this,
-                profile = this.getActiveProfile();
+                profile;
 
-            if (profile) {
-                profile.addListener('positions', function () {
+            this.getBinding('data').addListener('profiles', function () {
+                if (that.profileEvent === null) {
+                    profile = that.getActiveProfile();
+                    if (profile) {
+                        that.profileEvent = profile.addListener('positions', function () {
+                            if (that.isMounted()) {
+                                that.forceUpdate();
+                            }
+                        });
+                    }
+
+                }
+            });
+
+            that.getBinding('preferences').addListener('defaultProfileId', function () {
+                if (that.isMounted()) {
                     that.forceUpdate();
-                });
+                }
+            });
+        },
+        componentWillUnmount: function () {
+            if (this.profileEvent) {
+                this.getActiveProfile().removeListener(this.profileEvent);
             }
         },
         render: function () {

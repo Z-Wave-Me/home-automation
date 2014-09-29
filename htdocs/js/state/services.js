@@ -21,7 +21,8 @@ define([], function () {
                     defaults: {
                         id: null,
                         name: '',
-                        description: ''
+                        description: '',
+                        positions: []
                     }
                 }
             },

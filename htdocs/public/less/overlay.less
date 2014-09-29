@@ -329,13 +329,13 @@
         color: #555;
         vertical-align: middle;
         border-radius: 5px;
-        max-width: 450px;
-        width: auto;
-        line-height: 22px;
-        height: auto;
+        width: 362px;
         cursor: text;
+        line-height: 23px;
+        height: 23px;
+        margin-top: 1px;
         .tag {
-          margin-right: 2px;
+          margin-right: 4px;
           background-color: #5bc0de;
           display: inline-block;
           padding: .2em .6em .3em;
@@ -344,7 +344,7 @@
           line-height: 16px;
           color: #fff;
           text-align: center;
-          vertical-align: baseline;
+          vertical-align: middle;
           border-radius: .25em;
           &:hover {
             cursor: pointer;
@@ -364,21 +364,6 @@
               }
             }
           }
-        }
-        .text-input {
-          display: inline-block;
-          vertical-align: baseline;
-          line-height: 15px;
-          margin-top: 2px;
-          padding: 8px 4px;
-          height: 16px;
-          font-size: 75%;
-          font-weight: 400;
-          min-width: 100px;
-          color: rgba(0, 0, 0, 0.8);
-          box-sizing: border-box;
-          outline: none;
-          border-radius: 2px;
         }
       }
       .dropzone {
@@ -452,6 +437,118 @@
             -webkit-transform: scale(1.0);
             opacity: 0;
           }
+      }
+    }
+  }
+  /* autocomplete */
+  .text-input-autocomplete {
+    display: inline-block;
+    margin-top: 1px;
+    margin-left: 1px;
+    font-size: 75%;
+    font-weight: 400;
+    min-width: 100px;
+    color: rgba(0, 0, 0, 0.8);
+    box-sizing: border-box;
+    outline: none;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    padding: 4px 6px;
+    margin-bottom: 10px;
+    color: #555;
+    vertical-align: middle;
+    border-radius: 5px;
+    width: 250px;
+    line-height: 23px;
+    height: auto;
+    cursor: text;
+    &.focus {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-left-color: @blue;
+      border-top-color: @blue;
+      border-right-color: @blue;
+    }
+  }
+  .autocomplete-box {
+    position: absolute;
+    right: 272px;
+    width: 248px;
+    top: 296px;
+    bottom: auto;
+    display: block;
+    z-index: 2000;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    border: 1px solid @blue;
+    border-top: none;
+    .close-button {
+      background: transparent;
+      border: none;
+      color: #000;
+      height: 14px;
+      width: 14px;
+      margin: 0;
+      padding: 0;
+      font-size: 14px;
+      line-height: 14px;
+      display: inline-block;
+      position: absolute;
+      top: 0px;
+      right: 5px;
+      margin-top: -20px;
+      z-index: 2001;
+    }
+    .result-list {
+      max-height: 200px;
+      padding: 4px;
+      margin: 0;
+      position: relative;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+      background-color: #fff;
+      border-bottom-left-radius: 5px;
+      border-bottom-right-radius: 5px;
+      .result-dept {
+        list-style: none;
+        display: list-item;
+        background-image: none;
+        .result-label {
+          padding: 2px 3px 3px;
+          margin: 0;
+          cursor: pointer;
+          height: 16px;
+          line-height: 16px;
+          font-weight: bolder;
+          font-size: 14px;
+          vertical-align: middle;
+          color: #000;
+          &.no-matches {
+            background: #f4f4f4;
+          }
+        }
+        .result-sub {
+          margin: 0;
+          padding-left: 0;
+          .result-item {
+            padding: 4px 0px 4px 15px;
+            font-size: 12px;
+            height: 14px;
+            line-height: 14px;
+            vertical-align: middle;
+            cursor: pointer;
+            &:hover {
+              background: #3875d7;
+              color: #fff;
+            }
+            .strong-deviceId {
+              font-weight: bold;
+              font-size: 11px;
+            }
+          }
+        }
       }
     }
   }

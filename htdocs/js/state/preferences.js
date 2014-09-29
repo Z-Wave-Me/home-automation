@@ -15,6 +15,7 @@ define([
         editing: false,
         duplicating: false,
         searchString: '',
+        searchStringLeftPanel: '',
         leftPanelItems: '',
         itemBindingTemp: {},
         leftPanelItemSelectedId: null,
