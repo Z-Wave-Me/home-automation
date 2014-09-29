@@ -30,7 +30,8 @@ _.extend(Camera.prototype, {
     init: function (config) {
         Camera.super_.prototype.init.call(this, config);
 
-        var that = this;
+        var that = this,
+            vDevId = "CameraDevice_" + this.id;
         
         var opener = function(command) {
             config.doorDevices.forEach(function(el) {
@@ -47,7 +48,12 @@ _.extend(Camera.prototype, {
             });
         };
         
-        this.vDev = this.controller.devices.create("CameraDevice_" + this.id, {
+        
+        this.proxy_url = "/" + vDevId + "/stream";
+        
+        ws.proxify(this.proxy_url, config.url, config.user, config.password);
+        
+        this.vDev = this.controller.devices.create(vDevId, {
             deviceType: "camera",
             metrics: {
                 icon: 'camera',
@@ -55,7 +61,7 @@ _.extend(Camera.prototype, {
             }
         }, {
             metrics: {
-                url: config.url,
+                url: this.proxy_url,
                 hasZoomIn: !!config.zoomInUrl,
                 hasZoomOut: !!config.zoomOutUrl,
                 hasLeft: !!config.leftUrl,
@@ -71,7 +77,7 @@ _.extend(Camera.prototype, {
             if (command == "zoomIn") {
                 url = config.zoomInUrl;
             } else if (command == "zoomOut") {
-                url = config.zoomInUrl;
+                url = config.zoomOutUrl;
             } else if (command == "left") {
                 url = config.leftUrl;
             } else if (command == "right") {
@@ -91,7 +97,11 @@ _.extend(Camera.prototype, {
             if (url) {
                 http.request({
                     url: url,
-                    async: true
+                    async: true,
+                    auth: {
+                        login: config.user,
+                        password: config.password
+                    }
                 });
             }
         });
@@ -99,6 +109,8 @@ _.extend(Camera.prototype, {
     stop: function () {
         Camera.super_.prototype.stop.call(this);
 
+        ws.proxify(this.proxy_url, null);
+        
         if (this.vDev) {
             this.controller.devices.remove(this.vDev.id);
             this.vDev = null;

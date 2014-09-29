@@ -13,6 +13,8 @@
 	"downUrl": "",
 	"openUrl": "",
 	"closeUrl": "",
+	"user": "",
+	"password": "",
 	"doorDevices": []
     },
     "schema": {
@@ -52,6 +54,12 @@
             },
             "closeUrl": {
                 "format": "uri",
+                "required": false
+            },
+            "user": {
+                "required": false
+            },
+            "password": {
                 "required": false
             },
             "doorDevices": {
@@ -111,6 +119,16 @@
             "closeUrl": {
                 "label": "Close URL",
                 "type": "url",
+                "required": false
+            },
+            "user": {
+                "label": "Username for HTTP authentication",
+		"helper": "Leave empty if camera is not protected by a password",
+                "required": false
+            },
+            "password": {
+                "label": "Password for HTTP authentication",
+		"helper": "Leave empty if camera is not protected by a password",
                 "required": false
             },
             "doorDevices": {
