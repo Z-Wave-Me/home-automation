@@ -33,9 +33,11 @@ define([
         back: function () {
             this.getBinding('preferences').set('backButtonEnabled', false);
             this.setActiveNode(1); // 1 - main panel
+            this.clearTemporaryData();
         },
         closeOverlay: function () {
             this.getDefaultBinding().set('overlayShow', false);
+            this.clearTemporaryData();
         },
         render: function () {
             var _ = React.DOM,

@@ -21,10 +21,9 @@ define([
         mixins: [Morearty.Mixin, data_layer_mixin],
         profileEvent: null,
         componentWillMount: function () {
-            var that = this,
-                profile;
+            var that = this;
 
-            this.getBinding('data').addListener('devicesOnDashboard', function () {
+            that.getBinding('data').addListener('devicesOnDashboard', function () {
                 if (that.isMounted()) {
                     that.forceUpdate();
                 }

@@ -97,7 +97,7 @@ define([
                         ),
                         _.input({
                             className: classes_input_autocomplete,
-                            placeholder: 'deviceId',
+                            placeholder: 'Device name',
                             onChange: Morearty.Callback.set(preferencesBinding, 'temp_string'),
                             value: temp_string
                         }),

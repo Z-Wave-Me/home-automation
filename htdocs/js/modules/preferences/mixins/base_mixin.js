@@ -38,6 +38,13 @@ define([], function () {
         },
         setLeftPanelItemSelectedId: function (id) {
             this.getMoreartyContext().getBinding().sub('preferences').set('leftPanelItemSelectedId', id);
+        },
+        clearTemporaryData:function () {
+            this.setActiveNodeTreeStatus('normal');
+            this.getMoreartyContext().getBinding().sub('preferences').set('searchString', '');
+            this.getMoreartyContext().getBinding().sub('preferences').set('searchStringLeftPanel', '');
+            this.setLeftPanelItemSelectedId(null);
+            this.setLeftPanelItemSelectedId('');
         }
     }
 });
