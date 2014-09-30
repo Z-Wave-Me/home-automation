@@ -47,7 +47,7 @@ define([
         // menu settings
         primaryFilter: 'all',
         secondaryFilter: '',
-        searchString: '',
+        searchStringMainPanel: '',
         //
         overlayShow: false,
         overlayShowName: null

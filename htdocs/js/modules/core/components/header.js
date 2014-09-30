@@ -32,14 +32,23 @@ define([
                 Filters({binding: { default: binding, data: this.getBinding('data') }}) : null;
         },
         render: function () {
-            var binding = this.getDefaultBinding(),
+            var _ = React.DOM,
+                cx = React.addons.classSet,
+                binding = this.getDefaultBinding(),
                 nowShowing = binding.val('nowShowing'),
                 notifications = binding.sub('notifications'),
                 notifications_count = notifications.val('count'),
                 notifications_severity = notifications.val('severity'),
                 notification_mode = notifications.sub('severity_modes').sub(notifications_severity),
-                notifications_message = notification_mode.val('message'),
-                _ = React.DOM;
+                // TODO: rewrite after added severity in backend
+                notifications_message = notifications_count === 0 ? notification_mode.val('message') : 'warning',
+                events_class = cx({
+                    'events-container': true,
+                    ok: notifications_severity.toLowerCase() === 'ok' && notifications_count === 0,
+                    // TODO: rewrite after added severity in backend
+                    warning: notifications_severity.toLowerCase() === 'warning' || notifications_count > 0,
+                    critical: notifications_severity.toLowerCase() === 'critical' || notifications_message === 'no connection'
+                });
 
             if (notifications_count === 0 && notifications_message !== 'no connection') {
                 notifications_count = '✔';
@@ -50,7 +59,12 @@ define([
             return _.header({ id: 'header-region', className: 'clearfix' },
                 _.div({className: 'header-sub-container top-container clearfix'},
                     _.div({className: 'company-block', title: 'Z-Wave.me'},
-                        _.a({className: 'company-logo', href: '/', title: 'Z-Wave.me', alt: 'Z-Wave.me'})
+                        _.a({
+                            className: 'company-logo',
+                            href: '/',
+                            title: 'Z-Wave.me',
+                            alt: 'Z-Wave.me'
+                        })
                     ),
                     _.nav({className: 'main-navigation'},
                         _.ul({ className: 'navigation-menu' },
@@ -59,7 +73,7 @@ define([
                         )
                     ),
                     _.section({className: 'user-panel-section'},
-                        _.div({ onClick: this.toggleShowNotificationsPopup, className: 'events-container ' + notifications_severity.toLowerCase()},
+                        _.div({ onClick: this.toggleShowNotificationsPopup, className: events_class},
                             _.span({className: 'events-counter'}, notifications_count),
                             _.span({className: 'events-message'}, notifications_message.toUpperCase())
                         ),

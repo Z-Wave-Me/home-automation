@@ -17,7 +17,7 @@ define([
                     className: 'search-input',
                     type: 'search',
                     placeholder: 'search',
-                    onChange: Morearty.Callback.set(this.getBinding('preferences'), 'searchStringLeftPanel')
+                    onChange: Morearty.Callback.set(this.props.search_attr)
                 })
             );
         }

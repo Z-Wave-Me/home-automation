@@ -106,7 +106,8 @@ define([
                         _base_search({
                             binding: {
                                 preferences: preferencesBinding
-                            }
+                            },
+                            search_attr: preferencesBinding.sub('searchStringLeftPanel')
                         })
                         : null,
                     // list block

@@ -54,7 +54,7 @@ define([
                 positions = dataBinding.val('devicesOnDashboard');
 
             isSearchMatch = function (item) {
-                var searchString = binding.val('searchString');
+                var searchString = binding.val('searchStringMainPanel');
                 return searchString.length > 0 ? item.get('metrics').title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1 : true;
             };
 

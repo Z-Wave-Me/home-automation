@@ -5,6 +5,7 @@ define([], function () {
         init: function () {
             var that = this,
                 ctx = this.getMoreartyContext(),
+                defaultBinding = ctx.getBinding().sub('default'),
                 servicesBinding = ctx.getBinding().sub('services'),
                 dataBinding = ctx.getBinding().sub('data'),
                 collections = servicesBinding.sub('collections');
@@ -40,8 +41,9 @@ define([], function () {
             // add local data
             that.getBinding('preferences').addListener('defaultProfileId', function (profileId) {
                 localStorage.setItem('defaultProfileId', String(profileId));
-                var profiles = dataBinding.sub('profiles'),
-                    filter = profiles.filter(function (profile) {
+                var profiles = dataBinding.sub('profiles');
+
+                var filter = profiles.val().filter(function (profile) {
                         return String(profile.get('id')) === String(profileId);
                     });
 
@@ -56,6 +58,10 @@ define([], function () {
 
                 dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
             });
+
+            dataBinding.addListener('notifications', function () {
+                defaultBinding.sub('notifications').set('count', dataBinding.sub('notifications').val().toArray().length)
+            })
         },
         pull: function () {
             var that = this,

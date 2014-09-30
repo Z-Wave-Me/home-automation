@@ -126,7 +126,9 @@ define([], function () {
                     }
                 ],
                 postSyncHandler: function (ctx, response) {
-                    ctx.getBinding().sub('data').set('notificationsUpdateTime', response.data.updateTime || 0);
+                    var data_binding = ctx.getBinding().sub('data')
+
+                    data_binding.set('notificationsUpdateTime', response.data.updateTime || 0);
                 },
                 parse: function (response) {
                     return response.data.notifications;
