@@ -78,7 +78,7 @@ define([], function () {
                             params: obj.sinceField ? { since: dataBinding.val().get(obj.sinceField) || 0 } : null,
                             success: function (response) {
                                 if (response.data) {
-                                    var models = obj.hasOwnProperty('parse') ? obj.parse(response) : response.data;
+                                    var models = obj.hasOwnProperty('parse') ? obj.parse(response, ctx) : response.data;
                                     models.forEach(function (jsonModel) {
                                         jsonModel._changed = false;
                                         dataBinding.sub(obj.id).update(function (items) {
@@ -88,7 +88,7 @@ define([], function () {
                                 }
 
                                 if (obj.hasOwnProperty('postSyncHandler')) {
-                                    obj.postSyncHandler(ctx, response);
+                                    obj.postSyncHandler(ctx, response, dataBinding.sub(obj.id));
                                 }
                             }
                         })

@@ -25,20 +25,40 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin, data_layer_mixin],
-        renderAlpaca: function (leftPanelItemSelectedId) {
-            var that = this,
-                el = that.refs.alpacaNode.getDOMNode(),
-                $el = $(el),
-                instance = !leftPanelItemSelectedId ? that.props.model : that.getItem('instances', leftPanelItemSelectedId),
-                instanceJson = instance.val().toJS(),
-                module = that.getItem('modules', instanceJson.moduleId),
-                moduleJson = module.val().toJS();
+        componentDidMount: function () {
+            this.renderAlpaca(this.getBinding('preferences').val('leftPanelItemSelectedId'));
+        },
+        componentWillMount: function () {
+            var that = this;
 
-            var params = Sticky.get('App.Helpers.JS').extend(instanceJson.params, {
-                title: instanceJson.params.title || moduleJson.defaults.title,
-                description: instanceJson.params.description || moduleJson.defaults.description,
-                status: instanceJson.params.status || moduleJson.defaults.status
+            that.listenerId = that.getBinding('preferences').addListener('leftPanelItemSelectedId', function (leftPanelItemSelectedId) {
+                if (that.isMounted()) {
+                    that.renderAlpaca(leftPanelItemSelectedId);
+                    that.forceUpdate();
+                }
             });
+        },
+        componentWillUnmount: function () {
+            if (this.listenerId) {
+                this.getBinding('preferences').removeListener(this.listenerId);
+            }
+        },
+        renderAlpaca: function (instanceId) {
+            var that = this, instanceJson, module, moduleJson, params, $el,
+                instance = that.getModelFromCollection(instanceId, 'instances')
+
+            if (!instance || !instanceId) {
+                return;
+            }
+
+            instanceJson = instance.val().toJS();
+            module = that.getModelFromCollection(instanceJson.moduleId, 'modules');
+            moduleJson = module.val().toJS();
+            params = Sticky.get('App.Helpers.JS').extend(instanceJson.params, {
+                title: instanceJson.params.title || moduleJson.defaults.title,
+                description: instanceJson.params.description || moduleJson.defaults.description
+            });
+            $el = $(that.refs.alpacaNodeRef.getDOMNode());
 
             $el.empty().alpaca({
                 data: that.updateObjectAsNamespace(params),
@@ -52,52 +72,53 @@ define([
                 }
             });
         },
-        componentDidMount: function () {
-            this.renderAlpaca();
-        },
-        componentWillMount: function () {
-            var that = this;
+        onStatusModuleHandler: function (event) {
+            var instanceId = this.getBinding('preferences').val('leftPanelItemSelectedId'),
+                instance = this.getModelFromCollection(instanceId, 'instances');
 
-            that.listenerId = that.getBinding('preferences').addListener('leftPanelItemSelectedId', function (leftPanelItemSelectedId) {
-                that.renderAlpaca(leftPanelItemSelectedId);
-                that.forceUpdate();
+            instance.update('params', function (params) {
+                params.status = event.target.checked ? 'enable' : 'disable';
+                return params;
             });
-        },
-        componentWillUnmount: function () {
-            if (this.listenerId) {
-                this.getBinding('preferences').removeListener(this.listenerId);
-            }
+
+            this.forceUpdate();
+            return false;
         },
         render: function () {
             var that = this,
-                preferencesBinding = that.getBinding('preferences'),
-                dataBinding = that.getBinding('data'),
                 _ = React.DOM,
-                item = that.props.model;
+                instanceId = this.getBinding('preferences').val('leftPanelItemSelectedId'),
+                data_binding = that.getBinding('data'),
+                preferencesBinding = that.getBinding('preferences'),
+                item_binding = this.getModelFromCollection(instanceId, 'instances'),
+                add_mode = preferencesBinding.val('activeNodeTreeStatus') === 'add';
 
             return _.div({ className: 'model-component' },
                 _.div({ className: 'form-data automation clearfix' },
-                    _.div({ key: 'form-name-input', className: 'form-group' },
-                        _.label({ htmlFor: 'instance-name', className: 'input-label'}, 'Name:'),
-                        _.input({
-                            id: 'instance-name',
-                            className: 'input-value',
-                            type: 'text',
-                            placeholder: 'Instance name',
-                            value: item.val('params').title,
-                            onChange: Morearty.Callback.set(item.sub('params'), 'title')
-                        })
-                    ),
                     _.div({ key: 'alpaca-container-key', className: 'form-group' },
-                        _.div({ key: 'alpacaNode', id: 'alpaca-main', className: 'alpaca-main', ref: 'alpacaNode'})
+                        _.div({ key: 'alpacaNode', id: 'alpaca-main', className: 'alpaca-main', ref: 'alpacaNodeRef'})
                     ),
+                    !add_mode ? _.div({ key: 'form-default-profile-input', className: 'form-group' },
+                        _.label({className: 'switch-container'},
+                            _.input({
+                                    className: 'ios-switch green',
+                                    type: 'checkbox',
+                                    checked: item_binding.val('params').status === 'enable',
+                                    onChange: that.onStatusModuleHandler
+                                },
+                                _.div({},
+                                    _.div({className: 'bubble-switch'})
+                                )
+                            ),
+                            'On/Off'
+                        )
+                    ) : null,
                     _buttons_group({
                         binding: {
                             default: preferencesBinding,
-                            item: item,
-                            items: dataBinding.sub('instances')
+                            item: item_binding,
+                            items: data_binding.sub('instances')
                         },
-                        model: item,
                         serviceId: this.props.serviceId
                     })
                 )
