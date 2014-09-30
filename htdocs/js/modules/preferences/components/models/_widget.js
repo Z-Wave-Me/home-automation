@@ -23,6 +23,20 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, sync_layer_mixin, data_layer_mixin],
         displayName: '_widget',
+        componentWillMount: function () {
+            var that = this,
+                preferences_binding = that.getBinding('preferences');
+
+            preferences_binding.addListener('activeNodeTreeStatus', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+            preferences_binding.set('temp_string', '');
+        },
+        componentWillUnmount: function () {
+            this.getBinding('preferences').delete('temp_string')
+        },
         preventDefault: function (e) {
             e.preventDefault();
         },
@@ -47,28 +61,50 @@ define([
         handleClick: function () {
             this.refs.fileInput.getDOMNode().click();
         },
-        showInDashboardHandle: function (event) {
+        showInDashboardHandler: function (event) {
             var showInDashboard = event.target.checked,
                 activeProfile = this.getActiveProfile(),
-                deviceId = this.props.model.val('id'),
-                positions = activeProfile.val('positions');
+                deviceId = this.getBinding('item').val('id'),
+                positions = activeProfile ? activeProfile.val('positions') : null;
 
-            if (showInDashboard) {
-                if (positions.indexOf(deviceId) === -1) {
-                    positions.push(deviceId);
+            if (positions) {
+                if (showInDashboard) {
+                    if (positions.indexOf(deviceId) === -1) {
+                        positions.push(deviceId);
+                    }
+                } else {
+                    positions = positions.filter(function (id) {
+                        return id !== deviceId;
+                    });
                 }
-            } else {
-                positions = positions.filter(function (id) {
-                   return id !== deviceId;
-                });
-            }
 
-            activeProfile.set('positions', positions);
+                activeProfile.set('positions', positions);
+
+                this.save({
+                    model: activeProfile,
+                    serviceId: 'profiles'
+                });
+                if (this.isMounted()) {
+                    this.forceUpdate();
+                }
+            }
+            return false;
+        },
+        PermanentlyHiddenHandler: function (event) {
+            var permanently_hidden = event.target.checked;
+
+            this.getBinding('item').set('permanently_hidden', permanently_hidden);
 
             this.save({
-                model: activeProfile,
-                serviceId: 'profiles'
+                model: this.getBinding('item'),
+                serviceId: 'devices'
             });
+
+            if (this.isMounted()) {
+                this.forceUpdate();
+            }
+
+            return false;
         },
         render: function () {
             var that = this,
@@ -119,18 +155,31 @@ define([
                         ),
                         _.input({ref: 'fileInput', className: 'hidden', type: 'file', onChange: this.handleFile})
                     ),
-                    _.div({ key: 'form-dashboard-input', className: 'form-group' },
-                        _.div({className: 'checkbox-group'},
-                            _.input({
-                                id: 'showInDashboard',
-                                className: 'checkbox-type',
+                    _.label({className: 'switch-container'},
+                        _.input({
+                                className: 'ios-switch green',
                                 type: 'checkbox',
-                                name: 'showInDashboard',
                                 checked: this.showInDashBoard(id),
-                                onChange: this.showInDashboardHandle
-                            }),
-                            _.label({htmlFor: 'showInDashboard', className: 'input-label'}, 'Show in dashboard')
-                        )
+                                onChange: this.showInDashboardHandler
+                            },
+                            _.div({},
+                                _.div({className: 'bubble-switch'})
+                            )
+                        ),
+                        'Show in dashboard'
+                    ),
+                    _.label({className: 'switch-container'},
+                        _.input({
+                                className: 'ios-switch green',
+                                type: 'checkbox',
+                                checked: item.val('permanently_hidden'),
+                                onChange: this.PermanentlyHiddenHandler
+                            },
+                            _.div({},
+                                _.div({className: 'bubble-switch'})
+                            )
+                        ),
+                        'Permanently hidden'
                     ),
                     /*
                      _inline_input({

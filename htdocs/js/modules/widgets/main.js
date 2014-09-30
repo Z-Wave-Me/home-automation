@@ -59,19 +59,24 @@ define([
             };
 
             isShown = function (item) {
-                if (binding.val('nowShowing') === 'dashboard') {
-                    return positions.indexOf(item.get('id')) !== -1 ? true : null;
-                } else {
-                    if (primaryFilter === 'rooms') {
-                        return item.get('location') === secondaryFilter;
-                    } else if (primaryFilter === 'types') {
-                        return item.get('deviceType') === secondaryFilter;
-                    } else if (primaryFilter === 'tags') {
-                        return item.get('tags').indexOf(secondaryFilter) !== -1;
+                if (!item.get('permanently_hidden')) {
+                    if (binding.val('nowShowing') === 'dashboard') {
+                        return positions.indexOf(item.get('id')) !== -1 ? true : null;
                     } else {
-                        return true;
+                        if (primaryFilter === 'rooms') {
+                            return item.get('location') === secondaryFilter;
+                        } else if (primaryFilter === 'types') {
+                            return item.get('deviceType') === secondaryFilter;
+                        } else if (primaryFilter === 'tags') {
+                            return item.get('tags').indexOf(secondaryFilter) !== -1;
+                        } else {
+                            return true;
+                        }
                     }
+                } else {
+                    return false;
                 }
+
             };
 
             renderWidget = function (item, index) {

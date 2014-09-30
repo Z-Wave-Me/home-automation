@@ -19,6 +19,7 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, base_mixin, sync_layer_mixin, data_layer_mixin],
+        displayName: '_buttons_group',
         getInitialState: function () {
             return { loading: false };
         },

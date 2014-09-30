@@ -82,7 +82,7 @@ define([
                 },
                 params: options.params || {},
                 method: model && modelId ? 'PUT' : 'POST',
-                data: JSON.stringify(that._compat(model.val().toJS()))
+                data: JSON.stringify(this._compat(model.val().toJS()))
             });
         },
         remove: function (options) {
@@ -138,7 +138,7 @@ define([
         },
         _compat: function (o) {
             Object.keys(o).forEach(function(k) {
-                if (!o[k]) {
+                if (o[k] === undefined) {
                     delete o[k];
                 }
             });

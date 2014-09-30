@@ -22,20 +22,21 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
+        isplayName: '_profile',
         setAsDefaultProfile: function (event) {
             this.getBinding('preferences').set('defaultProfileId', event.target.checked ? this.getBinding('item').val('id') : null);
             return false;
         },
         componentWillMount: function () {
             var that = this,
-                preferences_bindnig = that.getBinding('preferences');
+                preferences_binding = that.getBinding('preferences');
 
-            preferences_bindnig.addListener('activeNodeTreeStatus', function () {
+            preferences_binding.addListener('activeNodeTreeStatus', function () {
                 if (that.isMounted()) {
                     that.forceUpdate();
                 }
             });
-            preferences_bindnig.set('temp_string', '');
+            preferences_binding.set('temp_string', '');
         },
         componentWillUnmount: function () {
             this.getBinding('preferences').delete('temp_string')
@@ -112,16 +113,18 @@ define([
                         ) : null
                     ) : null,
                     !add_mode ? _.div({ key: 'form-default-profile-input', className: 'form-group' },
-                        _.div({className: 'checkbox-group'},
+                        _.label({className: 'switch-container'},
                             _.input({
-                                id: 'makeAsDefault',
-                                className: 'checkbox-type',
-                                type: 'checkbox',
-                                name: 'makeAsDefault',
-                                checked: String(default_profile_id) === String(id),
-                                onChange: that.setAsDefaultProfile
-                            }),
-                            _.label({htmlFor: 'makeAsDefault', className: 'input-label'}, 'Make as default profile')
+                                    className: 'ios-switch green',
+                                    type: 'checkbox',
+                                    checked: String(default_profile_id) === String(id),
+                                    onChange: that.setAsDefaultProfile
+                                },
+                                _.div({},
+                                    _.div({className: 'bubble-switch'})
+                                )
+                            ),
+                            'Make as default profile'
                         )
                     ) : null,
                     _buttons_group({

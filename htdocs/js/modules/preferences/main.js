@@ -22,7 +22,7 @@ define([
         componentDidMount: function () {
             var binding = this.getDefaultBinding();
 
-            binding.addListener('overlayShow', function (newValue, oldValue, absolutePath, relativePath) {
+            binding.addListener('overlayShow', function (newValue) {
                 if (newValue) {
                     document.getElementById('body').style.overflow = 'hidden';
                 } else {
