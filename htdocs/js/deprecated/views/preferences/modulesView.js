@@ -1,5 +1,5 @@
 define([
-    'backbone',
+    '../../../../bower_components/backbone/backbone',
     'text!templates/popups/_room.html',
     'text!templates/popups/_schema.html',
     'models/instance',

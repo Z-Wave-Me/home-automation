@@ -1,6 +1,6 @@
 define([
     //libs
-    'backbone',
+    '../../../../bower_components/backbone/backbone',
     '../models/notice'
 ], function (Backbone, NoticeM) {
     'use strict';

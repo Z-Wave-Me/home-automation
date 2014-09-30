@@ -1,20 +1,20 @@
 define([
     //libs
-    'backbone',
-    '../models/namespace'
-], function (Backbone, NamespaceM) {
+    '../../../../bower_components/backbone/backbone',
+    '../models/module'
+], function (Backbone, ModuleM) {
     'use strict';
 
-    var NamespacesCollection =  Backbone.Collection.extend({
+    var ModulesCollection =  Backbone.Collection.extend({
 
         // model reference
-        model: NamespaceM,
+        model: ModuleM,
 
         methodToURL: {
-            'read': '/namespaces',
-            'create': '/namespaces',
-            'update': '/namespaces',
-            'delete': '/namespaces'
+            'read': '/modules',
+            'create': '/modules',
+            'update': '/modules',
+            'delete': '/modules'
         },
 
         url: function () {
@@ -31,11 +31,12 @@ define([
         parse: function (response, xhr) {
             return response.data;
         },
+
         initialized: function () {
             var that = this;
         }
 
     });
 
-    return NamespacesCollection;
+    return ModulesCollection;
 });

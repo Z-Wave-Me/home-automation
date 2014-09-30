@@ -115,20 +115,12 @@ requirejs.config({
             location: 'modules/notifications'//,
         },
         {
-            name: 'ServerSync',
-            location: 'modules/serversync'//,
-        },
-        {
             name: 'App',
             location: 'modules/core'
         },
         {
             name: 'Widgets',
             location: 'modules/widgets'
-        },
-        {
-            name: 'CommonMixins',
-            location: 'mixins/common'
         }
     ]
 });
@@ -137,6 +129,7 @@ require([
     // libraries
     'react',
     'immutable',
+    'alpaca',
     'director',
     'sticky',
     // helpers
@@ -150,6 +143,7 @@ require([
     // libraries
     React,
     Immutable,
+    Alpaca,
     Director,
     Sticky,
     // helpers

@@ -1,6 +1,6 @@
 define([
     // components
-    'backbone',
+    '../../../bower_components/backbone/backbone',
     'helpers/bb-sync'
 ], function (
     Backbone,
