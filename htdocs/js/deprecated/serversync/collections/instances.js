@@ -1,20 +1,20 @@
 define([
     //libs
-    'backbone',
-    '../models/module'
-], function (Backbone, ModuleM) {
+    '../../../../bower_components/backbone/backbone',
+    '../models/instance'
+], function (Backbone, InstanceM) {
     'use strict';
 
-    var ModulesCollection =  Backbone.Collection.extend({
+    var InstancesCollection =  Backbone.Collection.extend({
 
         // model reference
-        model: ModuleM,
+        model: InstanceM,
 
         methodToURL: {
-            'read': '/modules',
-            'create': '/modules',
-            'update': '/modules',
-            'delete': '/modules'
+            'read': '/instances',
+            'create': '/instances',
+            'update': '/instances',
+            'delete': '/instances'
         },
 
         url: function () {
@@ -38,5 +38,5 @@ define([
 
     });
 
-    return ModulesCollection;
+    return InstancesCollection;
 });

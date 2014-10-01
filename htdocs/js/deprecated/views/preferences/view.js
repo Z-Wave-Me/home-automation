@@ -1,5 +1,5 @@
 define([
-    'backbone',
+    '../../../../bower_components/backbone/backbone',
     'helpers/modal',
     'helpers/apis',
     'models/location',

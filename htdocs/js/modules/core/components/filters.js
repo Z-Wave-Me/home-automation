@@ -56,7 +56,8 @@ define([
                     BaseSearch({
                         binding: {
                             default: this.getDefaultBinding()
-                        }
+                        },
+                        search_attr: this.getDefaultBinding().sub('searchStringMainPanel')
                     })
                 ),
                 SecondaryFilters()

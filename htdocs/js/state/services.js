@@ -8,20 +8,13 @@ define([], function () {
                 id: 'profiles',
                 url: '/profiles',
                 methods: ['READ', 'CREATE'],
-                postSyncHandler: function (ctx, response) {
-                    var dataBinding = ctx.getBinding().sub('data'),
-                        activeProfile = response.data.filter(function (profile) {
-                            return String(profile.id) === localStorage.getItem('defaultProfileId');
-                        })[0];
-
-                    dataBinding.set('devicesOnDashboard', activeProfile ? activeProfile.positions : []);
-                },
                 model: {
                     methods: ['READ', 'UPDATE', 'DELETE'],
                     defaults: {
                         id: null,
-                        name: 'Default profile',
-                        description: 'Default profile description'
+                        name: '',
+                        description: '',
+                        positions: []
                     }
                 }
             },
@@ -55,7 +48,7 @@ define([], function () {
                         });
                     });
                 },
-                parse: function (response) {
+                parse: function (response, ctx) {
                     return response.data.devices;
                 },
                 model: {
@@ -104,6 +97,42 @@ define([], function () {
                         name: 'Default name',
                         icon: null
                     }
+                },
+                parse: function (response, ctx) {
+
+                    var helper = Sticky.get('App.Helpers.JS');
+
+                    var obj = response.data.map(function (model) {
+
+                        var schema = model.schema,
+                            options = model.options;
+
+                        model.schema.properties = helper.defaults({}, {
+                            title: {
+                                "type": "string",
+                                "required": true
+                            },
+                            description: {
+                                "type": "string",
+                                "required": true
+                            }
+                        }, schema.properties);
+
+                        model.options.fields = helper.defaults({}, {
+                            title: {
+                                "type": "text",
+                                "label": "Title"
+                            },
+                            description: {
+                                "type": "textarea",
+                                "label": "Description"
+                            }
+                        }, options.fields);
+
+                        return helper.getNamespacesData(ctx, model);
+                    });
+
+                    return obj;
                 }
             },
             {
@@ -133,7 +162,9 @@ define([], function () {
                     }
                 ],
                 postSyncHandler: function (ctx, response) {
-                    ctx.getBinding().sub('data').set('notificationsUpdateTime', response.data.updateTime || 0);
+                    var data_binding = ctx.getBinding().sub('data')
+
+                    data_binding.set('notificationsUpdateTime', response.data.updateTime || 0);
                 },
                 parse: function (response) {
                     return response.data.notifications;

@@ -5,6 +5,7 @@ define([], function () {
         init: function () {
             var that = this,
                 ctx = this.getMoreartyContext(),
+                defaultBinding = ctx.getBinding().sub('default'),
                 servicesBinding = ctx.getBinding().sub('services'),
                 dataBinding = ctx.getBinding().sub('data'),
                 collections = servicesBinding.sub('collections');
@@ -40,7 +41,27 @@ define([], function () {
             // add local data
             that.getBinding('preferences').addListener('defaultProfileId', function (profileId) {
                 localStorage.setItem('defaultProfileId', String(profileId));
+                var profiles = dataBinding.sub('profiles');
+
+                var filter = profiles.val().filter(function (profile) {
+                        return String(profile.get('id')) === String(profileId);
+                    });
+
+                dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
             });
+
+            dataBinding.addListener('profiles', function (profiles) {
+                var activeId = localStorage.getItem('defaultProfileId'),
+                    filter = profiles.filter(function (profile) {
+                        return String(profile.get('id')) === String(activeId);
+                    });
+
+                dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
+            });
+
+            dataBinding.addListener('notifications', function () {
+                defaultBinding.sub('notifications').set('count', dataBinding.sub('notifications').val().toArray().length)
+            })
         },
         pull: function () {
             var that = this,
@@ -57,7 +78,7 @@ define([], function () {
                             params: obj.sinceField ? { since: dataBinding.val().get(obj.sinceField) || 0 } : null,
                             success: function (response) {
                                 if (response.data) {
-                                    var models = obj.hasOwnProperty('parse') ? obj.parse(response) : response.data;
+                                    var models = obj.hasOwnProperty('parse') ? obj.parse(response, ctx) : response.data;
                                     models.forEach(function (jsonModel) {
                                         jsonModel._changed = false;
                                         dataBinding.sub(obj.id).update(function (items) {
@@ -67,7 +88,7 @@ define([], function () {
                                 }
 
                                 if (obj.hasOwnProperty('postSyncHandler')) {
-                                    obj.postSyncHandler(ctx, response);
+                                    obj.postSyncHandler(ctx, response, dataBinding.sub(obj.id));
                                 }
                             }
                         })

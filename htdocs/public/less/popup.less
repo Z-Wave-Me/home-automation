@@ -3,11 +3,11 @@
 @border-position: 4px;
 
 .popover {
+  display: block;
   position: absolute;
   margin-top: 100px;
   left: 0;
   z-index: 1010;
-  display: none;
   min-width: 22.7%;
   padding: 1px;
   text-align: left;
@@ -147,17 +147,16 @@
 }
 
 .popover-events {
-  width: 325px;
-  min-width: 325px;
-  max-width: 325px;
+  width: 450px;
   padding: 0;
   overflow: initial;
-  top: 34px;
+  top: 40px;
   .popover-content {
-    width: 93.5%;
+    width: 430px;
     border-radius: 0;
     background-color: #fff;
     overflow: hidden;
+    padding-bottom: 2px;
   }
   .hide-all-button {
     padding-left: 10px;
@@ -172,10 +171,73 @@
       color: rgba(0, 186, 196, 0.6)
     }
   }
+  .filter-events {
+    width: 97%;
+    outline: none;
+    border: 0;
+    font-size: 12px;
+    line-height: 18px;
+    height: 18px;
+    vertical-align: middle;
+    margin: 2px 0;
+    background: #eee;
+    border-radius: 2px;
+    padding: 2px 6px;
+    box-shadow: 0 1px 1px rgba(0,0,0,.4) inset, 0 1px 0 rgba(255,255,255,.2);
+    &:focus {
+      outline: 0;
+      background: #fff;
+      box-shadow: 0 0 2px rgba(0,0,0,.8) inset;
+    }
+  }
   .events-container {
     height: 200px;
     overflow-y: scroll;
     padding-right: 1px;
+  }
+  .button-container {
+    display: inline-block;
+    width: 100%;
+    height: 20px;
+    line-height: 20px;
+    padding: 2px 0;
+    vertical-align: middle;
+    margin: 0;
+    .button {
+      float: left;
+      display: inline-block;
+      width: auto;
+      height: 20px;
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+      font-size: 12px;
+      color: #444;
+      color: rgba(0,0,0,.8);
+      border: 1px solid rgba(0,0,0,0);
+      background-color: #E6E6E6;
+      text-decoration: none;
+      border-radius: 2px;
+      outline: none;
+      vertical-align: middle;
+      margin-right: 5px;
+      padding: 2px 7px;
+      &:hover {
+        background-image: -webkit-gradient(linear,0 0,0 100%,from(transparent),color-stop(40%,rgba(0,0,0,.05)),to(rgba(0,0,0,.1)));
+        background-image: -webkit-linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+        background-image: -moz-linear-gradient(top,rgba(0,0,0,.05) 0,rgba(0,0,0,.1));
+        background-image: -o-linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+        background-image: linear-gradient(transparent,rgba(0,0,0,.05) 40%,rgba(0,0,0,.1));
+        border: 1px solid #999;
+      }
+      &.disabled {
+        border: 0;
+        background-image: none;
+        -khtml-opacity: .4;
+        -moz-opacity: .4;
+        opacity: .4;
+        cursor: not-allowed;
+        box-shadow: none;
+      }
+    }
   }
   .event-item {
     display: block;
@@ -183,10 +245,56 @@
     width: 100%;
     font-size: 13px;
     line-height: 15px;
+    height: 15px;
     text-align: left;
-    .time-field {
-      font-weight: bold;
-      margin-right: 5px;
+    transition: all .3 ease;
+    cursor: pointer;
+    margin: 1px 0;
+    padding: 2px 0;
+    overflow: hidden;
+    vertical-align: middle;
+    &:hover {
+      background-color: rgba(204, 204, 204, 0.3);
+      .action {
+        opacity: 1;
+      }
+    }
+    .action {
+      cursor: pointer;
+      display: block;
+      float: right;
+      opacity: 0;
+      height: 16px;
+      width: 16px;
+      background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAAKklEQVQ4jWNgGDZgPwMDw38S8V4GBgYGJqgBLGRYSo4eGoLRMBgNA4oAAAe1KG+zgbMAAAAAAElFTkSuQmCC);
+      background-repeat: no-repeat;
+      transition: opacity 0.3 ease;
+      margin-right: 2px;
+    }
+    .content-container {
+      display: block;
+      float: left;
+      width: 410px;
+      .time-field {
+        font-weight: bold;
+        margin-right: 5px;
+        display: block;
+        float:left;
+      }
+      .type-filed {
+        font-weight: bold;
+        display: block;
+        float:left;
+        margin-right: 3px;
+      }
+      .message-field {
+        display: block;
+        float:left;
+        text-overflow: ellipsis;
+        word-wrap: break-word;
+        height: 16px;
+        max-width: 295px;
+      }
     }
     &.debug {
       .time-field {
@@ -203,14 +311,57 @@
         color: @blue;
       }
     }
-    .read {
-      cursor: pointer;
-      color: @blue;
-      display: block;
-      float: right;
-      display: block;
+    &.full-view {
+      height: auto;
+      border-top: 1px solid transparent;
+      border-bottom: 1px solid transparent;
+      opacity: 0.6;
+      cursor: normal;
       &:hover {
-        opacity: 0.7;
+        background-color: transparent;
+        border-color: @gray;
+        opacity: 1;
+      }
+      .content-container {
+
+        .type-value,
+        .time-value,
+        .message-value {
+          display: block;
+          font-size: 13px;
+          line-height: 14px;
+          vertical-align: middle;
+          font-weight: normal;
+          padding: 1px 0;
+          width: 100%;
+          max-width: auto;
+          max-height: auto;
+        }
+        .label {
+          width: 100%;
+        }
+        .message-value {
+          height: auto;
+          width: 100%;
+        }
+        .label {
+          font-size: 14px;
+          width: 100%;
+        }
+      }
+      .action-button {
+        display: block;
+        float: left;
+        padding: 2px 5px;
+        color: @gray;
+        cursor: pointer;
+        border-radius: 5px;
+        border: 1px solid @gray;
+        margin-right: 5px;
+        &:hover {
+          color: @blue;
+          border-color: @blue;
+        }
       }
     }
   }
@@ -875,7 +1026,13 @@
 }
 
 .popover-camera {
-  margin-top: 0;
+  position:fixed;
+  top:50px;
+  left:50%;
+  width:800px;  /* adjust as per your needs */
+  height:460px;   /* adjust as per your needs */
+  margin-left:-400px;   /* negative half of width above */
+  margin-top: 0px;
   .image-container {
     text-align: center;
     margin: 5px 10px;

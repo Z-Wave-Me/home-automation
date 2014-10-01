@@ -45,10 +45,11 @@ define([
             options = options || {};
 
             var that = this,
-                model = options.hasOwnProperty('model') ? options.model : that.props.model,
-                collection = options.hasOwnProperty('collection') ? options.collection : that.props.collection,
-                serviceId = options.hasOwnProperty('serviceId') ? options.serviceId : that.props.serviceId,
+                model = options.model,
+                collection = options.collection,
+                serviceId =  options.serviceId,
                 service = that.getService(serviceId),
+                modelId = model.val('id'),
                 url;
 
             if (!Boolean(serviceId)) {
@@ -57,7 +58,7 @@ define([
             }
 
             if (Boolean(model)) {
-                url = model.val('id') ? service.url + '/' + model.val('id') : service.url;
+                url = modelId ? service.url + '/' + modelId : service.url;
             } else if (collection) {
                 url = service.url;
             }
@@ -80,15 +81,15 @@ define([
                     }
                 },
                 params: options.params || {},
-                method: model && model.val('id') ? 'PUT' : 'POST',
-                data: JSON.stringify(model ? model.val().toJS() : collection.val().toJS())
+                method: model && modelId ? 'PUT' : 'POST',
+                data: JSON.stringify(this._compat(model.val().toJS()))
             });
         },
         remove: function (options) {
             var that = this,
-                model = that.props.model,
-                collection = that.props.collection,
-                serviceId = that.props.serviceId,
+                model = options.model,
+                collection = options.collection,
+                serviceId = options.serviceId,
                 service = that.getService(serviceId),
                 url;
 
@@ -101,16 +102,6 @@ define([
             that.xhr.request({
                 url: url,
                 success: function (response) {
-                    if (model) {
-                        collection.update(function (collection) {
-                           return collection.filter(function (m) {
-                               return m.val('id') !== model.val('id');
-                           });
-                        });
-                    } else if (collection) {
-                        collection.clear();
-                    }
-
                     if (typeof options.success === 'function') {
                         options.success(response.data, model || collection)
                     }
@@ -144,6 +135,14 @@ define([
         enableAutoSync: function () {
             this.autoSync.init.call(this);
             this.autoSync.pull.call(this);
+        },
+        _compat: function (o) {
+            Object.keys(o).forEach(function(k) {
+                if (o[k] === undefined) {
+                    delete o[k];
+                }
+            });
+            return o;
         }
     };
 });

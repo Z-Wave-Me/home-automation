@@ -591,11 +591,7 @@ AutomationController.prototype.getListProfiles = function () {
             id: 1,
             name: 'Default',
             description: 'This is default profile. Default profile created automatically.',
-            positions: [],
-            groups: {
-                instances: []
-            },
-            active: true
+            positions: []
         })
     }
     return this.profiles;
@@ -615,17 +611,13 @@ AutomationController.prototype.createProfile = function (object) {
             id: id,
             name: object.name,
             description: object.description,
-            positions: object.positions,
-            active: object.active,
-            groups: object.groups
+            positions: object.positions
         };
 
     _.defaults(profile, {
         name: '',
         description: '',
-        positions: [],
-        groups: {instances: []},
-        active: false
+        positions: []
     });
 
     this.profiles.push(profile);
@@ -681,12 +673,9 @@ AutomationController.prototype.updateProfile = function (object, id) {
         _.defaults(this.profiles[index], {
             name: '',
             description: '',
-            positions: [],
-            groups: {instances: []},
-            active: false
+            positions: []
         });
     }
-
 
     this.saveConfig();
     return this.profiles[index];

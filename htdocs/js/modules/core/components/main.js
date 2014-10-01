@@ -22,7 +22,7 @@ define([
 
             return _.div({ className: 'main-container clearfix' },
                 _.div({id: 'main-region', className: 'main wrapper clearfix'},
-                    Widgets({binding: { default: binding, data: dataBinding }})
+                    Widgets({binding: { default: binding, data: dataBinding, preferences: this.getBinding('preferences')}})
                 )
             );
         }

@@ -19,14 +19,25 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin, data_layer_mixin],
+        profileEvent: null,
         componentWillMount: function () {
-            var that = this,
-                profile = this.getActiveProfile();
+            var that = this;
 
-            if (profile) {
-                profile.addListener('positions', function () {
+            that.getBinding('data').addListener('devicesOnDashboard', function () {
+                if (that.isMounted()) {
                     that.forceUpdate();
-                });
+                }
+            });
+
+            that.getBinding('preferences').addListener('defaultProfileId', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+        },
+        componentWillUnmount: function () {
+            if (this.profileEvent) {
+                this.getActiveProfile().removeListener(this.profileEvent);
             }
         },
         render: function () {
@@ -43,24 +54,29 @@ define([
                 positions = dataBinding.val('devicesOnDashboard');
 
             isSearchMatch = function (item) {
-                var searchString = binding.val('searchString');
+                var searchString = binding.val('searchStringMainPanel');
                 return searchString.length > 0 ? item.get('metrics').title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1 : true;
             };
 
             isShown = function (item) {
-                if (binding.val('nowShowing') === 'dashboard') {
-                    return positions.indexOf(item.get('id')) !== -1 ? true : null;
-                } else {
-                    if (primaryFilter === 'rooms') {
-                        return item.get('location') === secondaryFilter;
-                    } else if (primaryFilter === 'types') {
-                        return item.get('deviceType') === secondaryFilter;
-                    } else if (primaryFilter === 'tags') {
-                        return item.get('tags').indexOf(secondaryFilter) !== -1;
+                if (!item.get('permanently_hidden')) {
+                    if (binding.val('nowShowing') === 'dashboard') {
+                        return positions.indexOf(item.get('id')) !== -1 ? true : null;
                     } else {
-                        return true;
+                        if (primaryFilter === 'rooms') {
+                            return item.get('location') === secondaryFilter;
+                        } else if (primaryFilter === 'types') {
+                            return item.get('deviceType') === secondaryFilter;
+                        } else if (primaryFilter === 'tags') {
+                            return item.get('tags').indexOf(secondaryFilter) !== -1;
+                        } else {
+                            return true;
+                        }
                     }
+                } else {
+                    return false;
                 }
+
             };
 
             renderWidget = function (item, index) {

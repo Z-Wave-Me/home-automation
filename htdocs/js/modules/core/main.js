@@ -1,23 +1,23 @@
 define([
     //libs
-    'react',
     'morearty',
     // components
     './components/header',
     './components/main',
     './components/footer',
     'Preferences',
+    'Notifications',
     // mixins
     'mixins/sync/sync-layer'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     Header,
     Main,
     Footer,
     Preferences,
+    Notifications,
     // mixins
     sync_layer_mixin
     ) {
@@ -26,8 +26,7 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin, sync_layer_mixin],
         componentDidMount: function () {
-            var binding = this.getDefaultBinding(),
-                dataBinding = this.getBinding('data');
+            var binding = this.getDefaultBinding();
 
             this._routes = Object.freeze({
                 'DASHBOARD': 'dashboard',
@@ -58,7 +57,8 @@ define([
                 Main({
                     binding: {
                         default: binding,
-                        data: that.getBinding('data')
+                        data: that.getBinding('data'),
+                        preferences: that.getBinding('preferences')
                     }
                 }),
                 Footer({binding: binding}),
@@ -66,7 +66,14 @@ define([
                     default: binding,
                     data: that.getBinding('data'),
                     preferences: that.getBinding('preferences')
-                }})
+                }}),
+                binding.sub('notifications').val('show_popup') ? Notifications({
+                    binding: {
+                        default: binding,
+                        data: that.getBinding('data'),
+                        preferences: that.getBinding('preferences')
+                    }
+                }) : null
             );
         }
     });

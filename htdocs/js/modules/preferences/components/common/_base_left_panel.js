@@ -26,9 +26,10 @@ define([
         },
         componentWillMount: function () {
             var that = this;
-
-            this.getBinding('preferences').addListener('searchString', function () {
-                that.forceUpdate();
+            that.getBinding('preferences').addListener('searchStringLeftPanel', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
             });
         },
         setActiveLeftPanelItemSelectedId: function (id) {
@@ -48,7 +49,7 @@ define([
 
 
             renderModel = function (item, index) {
-                var searchString = preferencesBinding.val('searchString').toLowerCase(),
+                var searchString = preferencesBinding.val('searchStringLeftPanel').toLowerCase(),
                     leftPanelItemSelectedId = preferencesBinding.val('leftPanelItemSelectedId'),
                     statusNode = preferencesBinding.val('activeNodeTreeStatus'),
                     title,
@@ -67,7 +68,7 @@ define([
 
                 if ((searchString.length > 2 && title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1) || searchString.length <= 2) {
                     return _.li({
-                            className: leftPanelItemSelectedId === item.get('id') && statusNode !== 'adding' ? 'item-model selected' : 'item-model',
+                            className: leftPanelItemSelectedId === item.get('id') && statusNode !== 'add' ? 'item-model selected' : 'item-model',
                             key: index,
                             ref: 'listSelected_' + item.get('id'),
                             onClick: that.setActiveLeftPanelItemSelectedId.bind(null, item.get('id'))

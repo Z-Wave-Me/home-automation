@@ -1,38 +1,46 @@
 define([
     //libs
-    'backbone'
+    '../../../../bower_components/backbone/backbone'
 ], function (Backbone) {
     'use strict';
+    var Device =  Backbone.Model.extend({
 
-    var Instance =  Backbone.Model.extend({
+        defaults: {
+            deviceType: null,
+            lock: true,
+            metrics: {}
+        },
 
         methodToURL: {
-            'read': '/instances/',
-            'create': '/instances',
-            'update': '/instances/',
-            'delete': '/instances/'
+            'read': '/devices',
+            'create': '/devices',
+            'update': '/devices',
+            'delete': '/devices'
         },
 
         url: function () {
-            var url = !this.isNew() ? this.get('id') : '';
+            var url = !this.isNew() ? '/' + this.get('id') : '';
             return url;
         },
 
         sync: function (method, model, options) {
             options = options || {};
             options.url = model.methodToURL[method.toLowerCase()] + this.url();
+
             Backbone.sync(method, model, options);
         },
 
         initialize: function () {
-            this.listenTo(this, 'error', function (model, err) {
-                log("ERROR: " + err);
+            this.bind('error', function (model, err) {
+                log("ERROR: ");
+                log(err);
             });
         },
         parse: function (response, xhr) {
             return response.data || response;
         }
+
     });
 
-    return Instance;
+    return Device;
 });

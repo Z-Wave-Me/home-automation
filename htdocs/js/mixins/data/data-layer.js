@@ -28,23 +28,23 @@ define([], function () {
             }
 
         },
+        addModelToCollection: function (collection, model) {
+            collection.update(function (collection) {
+                collection.push(Immutable.Map(model.val().toJS()));
+            });
+        },
         getItem: function (serviceId, itemId) {
             var ctx = this.getMoreartyContext(),
-                Immutable = ctx.Immutable,
+                preferences = ctx.getBinding().sub('preferences'),
                 filterObject = ctx.getBinding().sub('services').sub('collections').val().toArray().filter(function (service) {
                     return serviceId === service.get('id');
                 }),
                 service = Array.isArray(filterObject) && filterObject.length > 0 ? filterObject[0].toJS() : null,
-                adding = ctx.getBinding().sub('preferences').val('activeNodeTreeStatus') === 'adding',
-                default_model_options = service ? service.model.default : null;
+                default_model_options = service ? service.model.defaults : null;
 
-
-            if (service === null) {
-                return;
-            }
-
-            if (adding) {
-                return Immutable.Map(default_model_options);
+            if (preferences.val('activeNodeTreeStatus') === 'add') {
+                preferences.set('temp', Immutable.Map(default_model_options));
+                return preferences.sub('temp');
             } else {
                 return this.getModelFromCollection(itemId || null, serviceId);
             }

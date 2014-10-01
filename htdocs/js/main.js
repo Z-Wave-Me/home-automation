@@ -107,12 +107,12 @@ requirejs.config({
     // modules
     packages: [
         {
-            name: 'Preferences', // default 'packagename'
+            name: 'Preferences',
             location: 'modules/preferences'//,
         },
         {
-            name: 'ServerSync', // default 'packagename'
-            location: 'modules/serversync'//,
+            name: 'Notifications',
+            location: 'modules/notifications'//,
         },
         {
             name: 'App',
@@ -121,10 +121,6 @@ requirejs.config({
         {
             name: 'Widgets',
             location: 'modules/widgets'
-        },
-        {
-            name: 'CommonMixins',
-            location: 'mixins/common'
         }
     ]
 });
@@ -133,6 +129,7 @@ require([
     // libraries
     'react',
     'immutable',
+    'alpaca',
     'director',
     'sticky',
     // helpers
@@ -146,6 +143,7 @@ require([
     // libraries
     React,
     Immutable,
+    Alpaca,
     Director,
     Sticky,
     // helpers
