@@ -10,7 +10,7 @@ Copyright: (c) ZWave.Me, 2013-2014
 VirtualDevice = function (deviceId, controller, defaults, overlay, handler) {
     this.id = deviceId;
     this.handler = handler;
-    this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime"];
+    this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime", "permanently_hidden"];
     this.controller = controller;
     this.collection = this.controller.devices;
     this.metrics = {};
@@ -22,6 +22,7 @@ VirtualDevice = function (deviceId, controller, defaults, overlay, handler) {
         id: this.id,
         metrics: this.metrics,
         tags: [],
+        permanently_hidden: false,
         location: null
     };
     this.changed = {};

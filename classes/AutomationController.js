@@ -438,7 +438,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 }
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags");
+    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden");
     this.saveConfig();
     return this.vdevInfo[id];
 }

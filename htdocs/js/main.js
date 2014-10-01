@@ -1,26 +1,44 @@
 requirejs.config({
     baseUrl: "js",
     paths : {
-        backbone : 'libs/backbone/backbone-min',
-        underscore : 'libs/backbone/underscore-min',
-        jquery : 'libs/vendor/jquery-2.1.1.min',
+        // Major libraries
+        jquery: '../bower_components/jquery/dist/jquery',
+        // backbone
+        underscore: '../bower_components/lodash/dist/lodash.underscore',
+        backbone: '../bower_components/backbone/backbone',
+        // advanced libs
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
-        'colpick': 'libs/vendor/jquery.colpick',
-        cookie : 'libs/vendor/jquery.cookie',
-        dragsort : 'libs/vendor/jquery.dragsort',
-        magicsuggest: 'libs/vendor/magicsuggest-1.3.1',
         alpaca: 'libs/alpaca/alpaca-full',
-        ace: 'libs/acejs/ace',
-        'theme-chrome': 'libs/acejs/theme-chrome',
-        'mode-javascript': 'libs/acejs/mode-javascript',
-        'mode-json': 'libs/acejs/mode-json',
-        'worker-javascript': 'libs/acejs/worker-javascript',
-        text: 'libs/require/requirejs-text',
-        templates: '../templates'
+        // react
+        react: '../bower_components/react/react-with-addons',
+        morearty: '../bower_components/moreartyjs/dist/morearty',
+        immutable: '../bower_components/immutable/dist/Immutable',
+        director: '../bower_components/director/build/director',
+        // ace
+        ace: '../bower_components/ace-builds/src/ace',
+        'theme-chrome': '../bower_components/ace-builds/src/theme-chrome',
+        'mode-javascript': '../bower_components/ace-builds/src/mode-javascript',
+        'mode-json': '../bower_components/ace-builds/src/mode-json',
+        'worker-javascript': '../bower_components/ace-builds/src/worker-javascript',
+        // require
+        text: '../bower_components/requirejs-text/text',
+        // templates
+        templates: '../templates',
+        // temp
+        sticky: 'libs/home-automation/sticky'
+    },
+    map: {
+        '*': {
+            'lodash': 'underscore',
+            'Backbone': 'backbone'
+        }
     },
     shim : {
         jquery : {
             exports : '$'
+        },
+        'jquery.cookie': {
+            deps: ['jquery']
         },
         'jquery-ui': {
             deps: ['jquery']
@@ -39,7 +57,7 @@ requirejs.config({
         },
         drags: {
             deps: ['jquery'],
-            exporst: '$.drags'
+            exports: '$.drags'
         },
         underscore : {
             exports : '_'
@@ -47,6 +65,9 @@ requirejs.config({
         backbone : {
             deps : ['jquery', 'underscore'],
             exports : 'Backbone'
+        },
+        sticky: {
+            exports: 'Sticky'
         },
         ace: {
             deps : ['jquery']
@@ -68,18 +89,98 @@ requirejs.config({
         },
         'colpick': {
             deps: ['jquery']
+        },
+        react: {
+            exports: 'React'
+        },
+        director: {
+            exports: 'Router'
+        },
+        immutable: {
+            exports: 'Immutable'
+        },
+        morearty: {
+            exports: 'Morearty',
+            deps: ['immutable', 'react']
         }
-    }
+    },
+    // modules
+    packages: [
+        {
+            name: 'Preferences', // default 'packagename'
+            location: 'modules/preferences'//,
+        },
+        {
+            name: 'ServerSync', // default 'packagename'
+            location: 'modules/serversync'//,
+        },
+        {
+            name: 'App',
+            location: 'modules/core'
+        },
+        {
+            name: 'Widgets',
+            location: 'modules/widgets'
+        },
+        {
+            name: 'CommonMixins',
+            location: 'mixins/common'
+        }
+    ]
 });
 
 require([
-    'backbone',
-    'views/app',
-    'router',
-    'vm'
-], function (Backbone, AppView, Router, Vm) {
+    // libraries
+    'react',
+    'immutable',
+    'director',
+    'sticky',
+    // helpers
+    'helpers/js',
+    // contexts
+    'state/default',
+    'state/preferences',
+    'state/services',
+    'state/data'
+], function (
+    // libraries
+    React,
+    Immutable,
+    Director,
+    Sticky,
+    // helpers
+    HelpersJS,
+    // bindings
+    defaultBinding,
+    preferencesBinding,
+    servicesBinding,
+    dataBinding
+    ) {
     'use strict';
-    AppView = Vm.create({}, 'AppView', AppView);
-    Router.initialize({appView: AppView});
-    AppView.render();
+
+    window.React = React;
+    window.Immutable = Immutable;
+
+    require(['morearty'], function (Morearty) {
+        var Ctx = Morearty.createContext({
+            default: defaultBinding,
+            preferences: preferencesBinding,
+            services: servicesBinding,
+            data: dataBinding
+        }, {
+            requestAnimationFrameEnabled: true
+        });
+
+        // reg module in global namespace
+        Sticky.set('App.Helpers.JS', HelpersJS, Ctx, {});
+
+        require(['./bootstrap'], function (Bootstrap) {
+            // render bootstrap
+            React.renderComponent(
+                Bootstrap({ctx: Ctx}),
+                document.getElementById('app-container')
+            );
+        });
+
+    });
 });

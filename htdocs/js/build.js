@@ -71,6 +71,9 @@ require.config({
             deps: ['jquery']
         }
     },
+    onBuildWrite: function (moduleName, path, singleContents) {
+        return singleContents.replace(/jsx!/g, '');
+    },
     optimize: "uglify2",
     uglify: {
         toplevel: true,
