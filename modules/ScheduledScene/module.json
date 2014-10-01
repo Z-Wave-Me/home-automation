@@ -1,6 +1,15 @@
 {
-    "autoload":false,
     "singleton": false,
+    "category": "scheduling",
+    "author": "Z-Wave.Me",
+    "homepage: "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.0",
+    "maturity" "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Scheduler",
         "description": "Execute scheduled scene.",

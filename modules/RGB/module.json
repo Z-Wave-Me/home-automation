@@ -1,6 +1,16 @@
 {
 	"dependencies": [],
 	"singleton": false,
+	"category": "devices",
+	"author": "Z-Wave.Me",
+	"homepage: "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity" "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
 	"defaults": {
 		"title": "RGB",
 		"description": "Creates RGB device based on three different dimmers",
