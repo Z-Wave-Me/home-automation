@@ -23,7 +23,7 @@ define([
 
             return (
                 _.div({className: 'content'},
-                    _.span({className: 'title-metrics'}, this.getDefaultBinding().sub('mertics').val('title')),
+                    _.span({className: 'title-metrics'}, this.getDefaultBinding().sub('metrics').val('title')),
                     _.span({className: 'switch-door bubble-door active', onClick: this.toggleSwitch.bind(null, 'on')},
                         _.span({className: 'bubble'})
                     )
