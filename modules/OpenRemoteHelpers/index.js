@@ -290,6 +290,8 @@ OpenRemoteHelpers.prototype.stop = function () {
     OpenRemote = null;
 };
 
+allowExternalAccess("OpenRemote");
+
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
