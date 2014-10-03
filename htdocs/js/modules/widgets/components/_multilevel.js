@@ -21,33 +21,26 @@ define([
         },
         onChangeLevel: function (event) {
             var that = this,
-                level = event.target.value,
-                binding = this.getDefaultBinding(),
-                metrics = binding.sub('metrics').val();
-
-            metrics.level = level;
+                metrics_binding = this.getDefaultBinding().sub('metrics');
 
             that.fetch({
                 params: {
-                    level: level
+                    level: event.target.value
                 },
-                success: function () {
-                    binding.atomically()
-                        .set('metrics', metrics)
-                        .commit();
-                    that.forceUpdate();
-                }
+                model: this.getDefaultBinding(),
+                serviceId: 'devices'
             }, 'exact');
 
-
+            metrics_binding.set('level', event.target.value);
+            that.forceUpdate();
         },
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
                 cx = React.addons.classSet,
-                item = binding.val(),
-                title = item.get('metrics').title,
-                level = item.get('metrics').level,
+                item_binding = binding,
+                title = item_binding.sub('metrics').val('title'),
+                level = item_binding.sub('metrics').val('level'),
                 styles = {
                     'background-image': '-webkit-gradient(linear,left top,  right top, color-stop(' + level / 100 + ', rgb( 64, 232, 240 )), color-stop(' + level / 100 + ', rgb( 190, 190, 190 )))'
                 },

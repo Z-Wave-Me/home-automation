@@ -43,19 +43,18 @@ define([
         render: function () {
             var __ = React.DOM,
                 binding = this.getDefaultBinding(),
-                dataBinding = this.getBinding('data'),
-                primaryFilter = binding.val('primaryFilter'),
-                secondaryFilter = binding.val('secondaryFilter'),
-                itemsBinding = dataBinding.sub('devices'),
-                items = itemsBinding.val(),
-                renderWidget,
-                isShown,
-                isSearchMatch,
-                positions = dataBinding.val('devicesOnDashboard');
+                data_binding = this.getBinding('data'),
+                primary_filter = binding.val('primaryFilter'),
+                secondary_filter = binding.val('secondaryFilter'),
+                items_binding = data_binding.sub('devices'),
+                positions = data_binding.val('devicesOnDashboard'),
+                isShown, isSearchMatch;
 
             isSearchMatch = function (item) {
-                var searchString = binding.val('searchStringMainPanel');
-                return searchString.length > 0 ? item.get('metrics').title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1 : true;
+                var search_string = binding.val('searchStringMainPanel'),
+                    title = item.get('metrics').get('title');
+
+                return search_string.length > 0 ? title.toLowerCase().indexOf(search_string.toLowerCase()) !== -1 : true;
             };
 
             isShown = function (item) {
@@ -63,12 +62,12 @@ define([
                     if (binding.val('nowShowing') === 'dashboard') {
                         return positions.indexOf(item.get('id')) !== -1 ? true : null;
                     } else {
-                        if (primaryFilter === 'rooms') {
-                            return item.get('location') === secondaryFilter;
-                        } else if (primaryFilter === 'types') {
-                            return item.get('deviceType') === secondaryFilter;
-                        } else if (primaryFilter === 'tags') {
-                            return item.get('tags').indexOf(secondaryFilter) !== -1;
+                        if (primary_filter === 'rooms') {
+                            return item.get('location') === secondary_filter;
+                        } else if (primary_filter === 'types') {
+                            return item.get('deviceType') === secondary_filter;
+                        } else if (primary_filter === 'tags') {
+                            return item.get('tags').indexOf(secondary_filter) !== -1;
                         } else {
                             return true;
                         }
@@ -79,12 +78,10 @@ define([
 
             };
 
-            renderWidget = function (item, index) {
-                return isShown(item) && isSearchMatch(item) ? BaseWidget({ key: index, binding: itemsBinding.sub(index) }) : null;
-            };
-
             return __.section({id: 'devices-container', className: 'widgets'},
-                items.map(renderWidget).toArray()
+                items_binding.val().map(function (item, index) {
+                    return isShown(item) && isSearchMatch(item) ? BaseWidget({ key: index, binding: { default: items_binding.sub(index)} }) : null;
+                }).toArray()
             );
         }
     });

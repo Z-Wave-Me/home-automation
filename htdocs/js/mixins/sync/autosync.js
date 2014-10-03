@@ -44,8 +44,8 @@ define([], function () {
                 var profiles = dataBinding.sub('profiles');
 
                 var filter = profiles.val().filter(function (profile) {
-                        return String(profile.get('id')) === String(profileId);
-                    });
+                    return String(profile.get('id')) === String(profileId);
+                });
 
                 dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
             });
@@ -79,11 +79,8 @@ define([], function () {
                             success: function (response) {
                                 if (response.data) {
                                     var models = obj.hasOwnProperty('parse') ? obj.parse(response, ctx) : response.data;
-                                    models.forEach(function (jsonModel) {
-                                        jsonModel._changed = false;
-                                        dataBinding.sub(obj.id).update(function (items) {
-                                            return items.push(Immutable.Map(jsonModel));
-                                        });
+                                    dataBinding.update(obj.id, function () {
+                                        return Immutable.fromJS(models);
                                     });
                                 }
 

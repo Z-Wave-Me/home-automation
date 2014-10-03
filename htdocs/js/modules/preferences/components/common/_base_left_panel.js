@@ -53,7 +53,7 @@ define([
                     leftPanelItemSelectedId = preferencesBinding.val('leftPanelItemSelectedId'),
                     statusNode = preferencesBinding.val('activeNodeTreeStatus'),
                     title,
-                    obj = item.toObject();
+                    obj = item.toJS();
 
                 if (name === 'rooms') {
                     title = obj.title;
@@ -64,7 +64,6 @@ define([
                 } else if (name === 'automation') {
                     title = obj.params.title;
                 }
-
 
                 if ((searchString.length > 2 && title.toLowerCase().indexOf(searchString.toLowerCase()) !== -1) || searchString.length <= 2) {
                     return _.li({

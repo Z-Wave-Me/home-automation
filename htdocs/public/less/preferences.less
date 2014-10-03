@@ -1,3 +1,7 @@
+@list-item-height: 30px;
+@on-color: #00e359;
+@off-color: #00e359;
+
 .main-component {
   display: block;
   width: 50%;
@@ -23,5 +27,144 @@
         text-align: center;
       }
     }
+  }
+}
+
+.automation-component {
+  .header-component {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border-bottom: 1px;
+    float: left;
+    padding: 0 5px;
+  }
+  .pull-left,
+  .pull-right {
+    width: 50%;
+  }
+  .pull-right {
+    text-align: right;
+  }
+  /*
+    Instances list
+  */
+  .instances-list {
+    display: block;
+    float: left;
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+    overflow: hidden;
+    overflow-y: auto;
+    height: 480px;
+    width: 100%;
+  }
+  .instance-item {
+    display: block;
+    width: 100%;
+    float: left;
+    cursor: pointer;
+    height: @list-item-height;
+    line-height: @list-item-height;
+    vertical-align: middle;
+    font-size: 12.5px;
+    margin: 0;
+    padding: 0;
+    transition: height 0.3 ease;
+    .instance-icon {
+      display: block;
+      margin: 0 5px;
+      float: left;
+    }
+    .instance-title {
+      display: block;
+      margin: 0 5px;
+      float: left;
+      font-weight: bold;
+    }
+    .module-title {
+      display: block;
+      float: left;
+      font-size: 11px;
+    }
+    &:nth-child(odd){
+      background: rgba(50,50,50,0.05);
+    }
+    &:nth-child(even) {
+      background: rgba(50,50,50,0.1);
+    }
+    &.hovered {
+      background: rgba(50,50,50,0.14);
+    }
+    &.selected {
+      height: 450px;
+      background: rgba(50,50,50,0.14);
+      .header-item {
+        //border-bottom: 1px solid rgba(50,50,50,0.3);
+      }
+    }
+  }
+  .header-item {
+    height: @list-item-height;
+    display: block;
+    margin: 0;
+    padding: 0;
+    .instance-status {
+      display: block;
+      float: left;
+      width: 10px;
+      height: @list-item-height;
+      background: red;
+      border: none;
+      &.enable {
+        background: green;
+      }
+    }
+    .instance-status-checkbox {
+      display: block;
+      float: right;
+      height: @list-item-height;
+      margin: 0;
+      line-height: @list-item-height;
+      padding: 0;
+      width: 55px;
+      cursor: pointer;
+      .switch-container {
+        text-align: center;
+      }
+    }
+  }
+  .panel-instances {
+    display: block;
+    float: left;
+    height: 390px;
+  }
+  .left-panel-instance {
+    width: 24%;
+    border-right: 1px solid rgba(50,50,50,0.3);
+    margin-left: 1%;
+    .button {
+      height: 34px;
+    }
+    .spinner {
+      top: 0;
+      position: absolute;
+    }
+  }
+  .right-panel-instances {
+    width: 74%;
+    margin-right: 1%;
+  }
+  .form-group {
+    .input-value {
+      width: 85%;
+    }
+  }
+  .modern-button {
+    width: 87%;
+    font-size: 14px;
+    position: relative;
+    bottom: 0;
   }
 }

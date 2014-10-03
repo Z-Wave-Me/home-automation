@@ -129,7 +129,6 @@ require([
     // libraries
     'react',
     'immutable',
-    'alpaca',
     'director',
     'sticky',
     // helpers
@@ -143,7 +142,6 @@ require([
     // libraries
     React,
     Immutable,
-    Alpaca,
     Director,
     Sticky,
     // helpers

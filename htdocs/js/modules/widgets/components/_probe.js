@@ -13,12 +13,14 @@ define([
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
-                item = binding.val(),
-                title = item.get('metrics').title,
-                level = Sticky.get('App.Helpers.JS').isFloat(item.get('metrics').level) ? item.get('metrics').level.toFixed(1) : item.get('metrics').level,
+                metrics_binding = binding.sub('metrics'),
+                title = metrics_binding.val('title'),
+                level = Sticky.get('App.Helpers.JS').isFloat(metrics_binding.val('level')) ?
+                    binding.sub('metrics').val('level').toFixed(1) : metrics_binding.val('level'),
                 scaleTitle =
-                        item.get('metrics').hasOwnProperty('scaleTitle') &&
-                    String(item.get('metrics').scaleTitle).length > 0 ? ' ' + String(item.get('metrics').scaleTitle) : '';
+                        binding.sub('metrics').hasOwnProperty('scaleTitle') &&
+                    String(metrics_binding.val('scaleTitle')).length > 0 ?
+                            ' ' + String(metrics_binding.val('scaleTitle')) : '';
 
             return (
                 _.div({className: 'content'},
@@ -27,7 +29,7 @@ define([
                         _.span({className: 'probe-value'}, level + scaleTitle)
                     )
                 )
-                )
+            );
         }
     });
 });

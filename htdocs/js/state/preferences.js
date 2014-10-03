@@ -26,7 +26,8 @@ define([
                 name: 'main',
                 leftPanel: false,
                 searchPanel: false,
-                componentName: 'main_menu'
+                componentName: 'main_menu',
+                noRequiredModel: true
             },
             children: [
                 {
@@ -68,10 +69,11 @@ define([
                     id: 5,
                     options: {
                         name: 'automation',
-                        leftPanel: true,
-                        searchPanel: true,
-                        componentName: '_automation',
-                        serviceId: 'instances'
+                        leftPanel: false,
+                        searchPanel: false,
+                        componentName: 'instances_menu',
+                        serviceId: 'instances',
+                        noRequiredModel: true
                     },
                     children: []
                 }

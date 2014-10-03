@@ -114,8 +114,8 @@ define([
                 _ = React.DOM,
                 item = that.getBinding('item'),
                 id = item.val('id'),
-                title = id ? item.val('metrics').title : null,
-                icon = id ? item.val('metrics').icon : null,
+                title = id ? item.sub('metrics').val('title') : null,
+                icon = id ? item.sub('metrics').val('icon') : null,
                 deviceType = item.val('deviceType'),
                 classes = cx({
                     'preview': true,

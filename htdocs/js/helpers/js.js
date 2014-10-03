@@ -49,6 +49,14 @@ define([], function () {
 
                 return this.flatten(array, i+1);
             },
+            omit: function(obj) {
+                var copy = {};
+                var keys = Array.prototype.concat.apply(Array.prototype, Array.prototype.slice.call(arguments, 1));
+                for (var key in obj) {
+                    if (keys.indexOf(key)) copy[key] = obj[key];
+                }
+                return copy;
+            },
             isFloat: function isFloat(n) {
                 return n === +n && n !== (n|0);
             },
