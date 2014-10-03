@@ -94,7 +94,7 @@ define([
                                         onClick: that.removeTagHandler.bind(null, label)
                                     })
                                 );
-                            })
+                            }).toArray()
                         ),
                         _.input({
                             className: classes_input_autocomplete,
@@ -146,7 +146,7 @@ define([
                 temp_string = that.getBinding('preferences').val('temp_string'),
                 filtered_devices = devices_binding.val().filter(function (device) {
                     return item_binding.val('positions').indexOf(device.get('id')) === -1 &&
-                        device.get('metrics').title.toLowerCase().indexOf(temp_string.toLowerCase()) !== -1;
+                        device.get('metrics').get('title').toLowerCase().indexOf(temp_string.toLowerCase()) !== -1;
                 }),
                 deviceTypes = Sticky.get('App.Helpers.JS').arrayUnique(filtered_devices.map(function (device) {
                     return device.get('deviceType');
@@ -177,13 +177,12 @@ define([
                 );
             }
         },
-        addTagHandler: function (label) {
+        addTagHandler: function (deviceId) {
             var that = this,
                 item_binding = that.getBinding('item');
 
             item_binding.update('positions', function (positions) {
-                positions.push(label);
-                return positions;
+                return positions.push(deviceId);
             });
 
             that.forceUpdate();
@@ -193,9 +192,9 @@ define([
                 item_binding = that.getBinding('item');
 
             item_binding.update('positions', function (positions) {
-               return positions.filter(function (deviceId) {
-                  return deviceId !== label;
-               });
+                return positions.filter(function (deviceId) {
+                    return deviceId !== label;
+                }).toVector();
             });
 
             that.forceUpdate();

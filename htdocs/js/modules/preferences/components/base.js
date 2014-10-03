@@ -4,6 +4,7 @@ define([
     'morearty',
     // components
     './main_menu',
+    './instances_menu',
     './models/_profile',
     './models/_room',
     './models/_widget',
@@ -19,6 +20,7 @@ define([
     Morearty,
     // components
     main_menu,
+    instances_menu,
     _profile,
     _room,
     _widget,
@@ -36,6 +38,7 @@ define([
         mixins: [Morearty.Mixin, base_mixin, data_layer_mixin],
         components: {
             'main_menu': main_menu,
+            'instances_menu': instances_menu,
             '_profile': _profile,
             '_room': _room,
             '_widget': _widget,
@@ -64,11 +67,17 @@ define([
                 data_binding = this.getBinding('data'),
                 preferences_binding = this.getBinding('preferences'),
                 component,
-                item = node.options.name === 'main' ? null : this.state.model;
+                item = node.options.noRequiredModel ? null : this.state.model;
 
-            if (node.options.name === 'main') {
-                component = components[node.options.componentName]();
-            } else if (item) {
+            if (node.options.noRequiredModel) {
+                component = components[node.options.componentName]({
+                    binding: {
+                        default: this.getDefaultBinding(),
+                        data: data_binding,
+                        preferences: preferences_binding
+                    }
+                });
+            } else if (item && !node.options.no_required_model) {
                 component = components[node.options.componentName]({
                     binding: {
                         default: this.getDefaultBinding(),
@@ -105,7 +114,7 @@ define([
                     activeNode[0].options.searchPanel ?
                         _base_search({
                             binding: {
-                                preferences: preferencesBinding
+                                default: preferencesBinding
                             },
                             search_attr: preferencesBinding.sub('searchStringLeftPanel')
                         })

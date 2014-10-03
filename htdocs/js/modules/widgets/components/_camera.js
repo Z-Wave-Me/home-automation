@@ -72,11 +72,11 @@ define([
             var that = this,
                 _ = React.DOM,
                 binding = this.getDefaultBinding(),
-                item = binding.val(),
+                item = binding,
                 options = that.state.options;
 
             return Object.keys(options).map(function (option) {
-                if (item.get('metrics')[option]) {
+                if (item.sub('metrics').val(option)) {
                     return _.span({
                         key: option.command,
                         ref: option.command,
@@ -93,12 +93,11 @@ define([
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
-                item = binding.val(),
-                title = item.get('metrics').title,
-                url = item.get('metrics').url;
+                title = binding.sub('metrics').val('title'),
+                url = binding.sub('metrics').val('url');
 
             return (
-                _.div({key: 'container-camera-' + item.get('id')},
+                _.div({key: 'container-camera-' + binding.val('id')},
                     _.div({key: 'control', className: 'control-block camera-block'},
                         _.span({ className: 'title-container'}, title),
                         _.div({className: 'control-buttons'},

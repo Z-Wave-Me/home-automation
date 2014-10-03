@@ -11,18 +11,15 @@ define([
     return React.createClass({
         mixins: [Morearty.Mixin],
         render: function () {
-            var _ = React.DOM,
-                binding = this.getDefaultBinding(),
-                item = binding.val(),
-                title = item.get('metrics').title;
+            var _ = React.DOM;
 
             return (
                 _.div({className: 'content'},
-                    _.span({className: 'title-container'}, title),
+                    _.span({className: 'title-container'}, this.getDefaultBinding().sub('metrics').val('title')),
                     _.button({className: 'quad-button up-button'}, 'Up'),
                     _.button({className: 'quad-button down-button'}, 'Down')
                 )
-                )
+            );
         }
     });
 });

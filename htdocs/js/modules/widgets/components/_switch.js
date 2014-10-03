@@ -38,8 +38,8 @@ define([
             var _ = React.DOM,
                 cx = React.addons.classSet,
                 binding = this.getDefaultBinding(),
-                title = binding.val().get('metrics').title,
-                level = binding.val().get('metrics').level,
+                title = binding.sub('metrics').val('title'),
+                level = binding.sub('metrics').val('level'),
                 classes = cx({
                     switch: true,
                     active: binding.val().get('metrics').level === 'on'

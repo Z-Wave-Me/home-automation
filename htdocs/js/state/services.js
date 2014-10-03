@@ -99,40 +99,9 @@ define([], function () {
                     }
                 },
                 parse: function (response, ctx) {
-
-                    var helper = Sticky.get('App.Helpers.JS');
-
-                    var obj = response.data.map(function (model) {
-
-                        var schema = model.schema,
-                            options = model.options;
-
-                        model.schema.properties = helper.defaults({}, {
-                            title: {
-                                "type": "string",
-                                "required": true
-                            },
-                            description: {
-                                "type": "string",
-                                "required": true
-                            }
-                        }, schema.properties);
-
-                        model.options.fields = helper.defaults({}, {
-                            title: {
-                                "type": "text",
-                                "label": "Title"
-                            },
-                            description: {
-                                "type": "textarea",
-                                "label": "Description"
-                            }
-                        }, options.fields);
-
-                        return helper.getNamespacesData(ctx, model);
+                    return response.data.map(function (model) {
+                        return Sticky.get('App.Helpers.JS').getNamespacesData(ctx, model);
                     });
-
-                    return obj;
                 }
             },
             {

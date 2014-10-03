@@ -28,64 +28,66 @@ define([
         render: function () {
             var _ = React.DOM,
                 binding = this.getDefaultBinding(),
-                item = binding.val(),
-                iconClass,
-                cssClasses = [],
-                styles,
-                widgetSize = 'widget-small',
+                metrics_binding = binding.sub('metrics'),
+                device_type = binding.val('deviceType'),
+                icon = metrics_binding.val('icon') || null,
+                custom_icon = icon !== null ? icon.indexOf('http:') !== -1 : false,
+                cx = React.addons.classSet,
+                widget_classes = cx({
+                    'widget-object': true,
+                    show: true,
+                    clear: true,
+                    'widget-small': device_type !== 'camera',
+                    widget: device_type === 'camera'
+                }) + ' ' + device_type,
+                icon_classes = cx({
+                    customIcon: custom_icon,
+                    'icon-base': !custom_icon
+                }),
+                styles = custom_icon ?
+                    {
+                        'background-image': 'url(' + icon + ')'
+                    } : null,
                 Widget;
 
-            if (item.get('metrics').hasOwnProperty('icon') && item.get('metrics').icon.indexOf('http') !== -1) {
-                iconClass = 'customIcon';
-                styles = {'background-image': 'url(' + item.get('metrics').icon + ')'};
-            } else {
-                cssClasses.push('icon-base');
-                cssClasses.push(item.get('metrics').icon);
-
-                if (item.get('deviceType') !== item.get('metrics').icon) {
-                    cssClasses.push(item.get('deviceType'));
-                }
-
-                iconClass = cssClasses.join(' ');
-            }
-
-            if (item.get('id').indexOf('Remote') !== -1) {
-                return null;
-            }
-
-            if (item.get('deviceType') === "sensorBinary" ||
-                item.get('deviceType') === "sensorMultilevel" ||
-                item.get('deviceType') === "battery") {
+            if (device_type === "sensorBinary" ||
+                device_type === "sensorMultilevel" ||
+                device_type === "battery") {
                 Widget = Probe;
-            } else if (item.get('deviceType') === "fan") {
+            } else if (device_type === "fan") {
                 Widget = Probe;
-            } else if (item.get('deviceType') === "switchMultilevel") {
+            } else if (device_type === "switchMultilevel") {
                 Widget = Multilevel;
-            } else if (item.get('deviceType') === "thermostat") {
+            } else if (device_type === "thermostat") {
                 Widget = Probe;
-            } else if (item.get('deviceType') === "switchBinary" || item.get('deviceType') === "switchRGBW" || item.get('deviceType') === "doorlock") {
+            } else if (device_type === "switchBinary" || device_type === "switchRGBW" || device_type === "doorlock") {
                 Widget = Switch;
-            } else if (item.get('deviceType') === "toggleButton") {
+            } else if (device_type === "toggleButton") {
                 Widget = Toggle;
-            } else if (item.get('deviceType') === "camera") {
+            } else if (device_type === "camera") {
                 Widget = Camera;
-                widgetSize = 'widget';
-            } else if (item.get('deviceType') === "switchControl") {
+            } else if (device_type === "switchControl") {
                 Widget = Control;
             } else {
                 //Widget = new Probe(Ctx);
             }
 
+            //sensorMultilevel widget-small widget-object show clear
+
             return (
-                _.div({id: item.get('id'), className: item.get('deviceType') + ' ' + widgetSize + ' widget-object show clear'},
+                _.div({id: binding.val('id'), className: widget_classes},
                     _.div({className: 'border-widget border-widget-sprite small-border'},
                         _.span({className: 'selection-button border-widget-sprite button-select-border'})
                     ),
                         _.div({className: 'content-widget'},
-                        widgetSize === 'widget-small' ?  _.div({className: 'container-icon'},
-                            _.div({className: iconClass, style: styles})
+                        device_type !== 'camera' ?  _.div({className: 'container-icon'},
+                            _.div({className: icon_classes, style: styles})
                         ) : null,
-                        Widget({binding: binding})
+                        Widget({
+                            binding: {
+                                default: binding
+                            }
+                        })
                     )
                 )
             );
