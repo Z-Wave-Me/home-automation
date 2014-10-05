@@ -1,4 +1,4 @@
-define([
+    define([
     // libs
     'react',
     'morearty',
@@ -18,16 +18,12 @@ define([
         toggleSwitch: function () {
             var that = this,
                 binding = this.getDefaultBinding(),
-                metrics = binding.sub('metrics').val(),
-                command = binding.sub('metrics').val().level === 'on' ? 'off' : 'on';
-
-            metrics.level = command;
+                command = binding.sub('metrics').val('level') === 'on' ? 'off' : 'on';
 
             that.fetch({
+                model: binding,
                 success: function () {
-                    binding.atomically()
-                        .set('metrics', metrics)
-                        .commit();
+                    binding.sub('metrics').set('level', command);
                     that.forceUpdate();
                 }
             }, command);
@@ -42,7 +38,7 @@ define([
                 level = binding.sub('metrics').val('level'),
                 classes = cx({
                     switch: true,
-                    active: binding.val().get('metrics').level === 'on'
+                    active: level === 'on'
                 });
 
 
