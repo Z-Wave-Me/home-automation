@@ -62,11 +62,15 @@ define([
                             ),
                             _.div({className: 'overlay-center-top-panel overlay-top-panel'},
                                 _.span({
+                                    className: 'overlay-top-panel overlay-panel-title'
+                                }, this.getActiveNodeTree()[0].options.name)
+                            ),
+                            _.div({className: 'overlay-right-top-panel overlay-top-panel'},
+                                _.span({
                                     className: 'overlay-close-button',
                                     onClick: this.closeOverlay
                                 }, '✖')
-                            ),
-                            _.div({className: 'overlay-right-top-panel overlay-top-panel'})
+                            )
                         ),
                         overlay_show ? Base({
                             binding: {

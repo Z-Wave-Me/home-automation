@@ -20,25 +20,25 @@ define([
                 _.div({ className: 'line-container'},
                     _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 2)},
                         _.span({ className: 'container-icon general-icon'}),
-                        _.span({ className: 'title-menu-item'}, 'GENERAL')
+                        _.span({ className: 'title-menu-item'}, 'Profiles')
                     ),
                     _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 3)},
                         _.span({ className: 'container-icon rooms-icon'}),
-                        _.span({ className: 'title-menu-item'}, 'ROOMS')
+                        _.span({ className: 'title-menu-item'}, 'Rooms')
                     ),
                     _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 4)},
                         _.span({ className: 'container-icon switch-icon'}),
-                        _.span({ className: 'title-menu-item'}, 'WIDGETS')
+                        _.span({ className: 'title-menu-item'}, 'Widgets')
                     )
                 ),
                 _.div({ className: 'line-container'},
                     _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 5)},
                         _.span({ className: 'container-icon modules-icon'}),
-                        _.span({ className: 'title-menu-item'}, 'AUTOMATION')
+                        _.span({ className: 'title-menu-item'}, 'Automation')
                     ),
                     _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 6)},
                         _.span({ className: 'container-icon modules-icon'}),
-                        _.span({ className: 'title-menu-item'}, 'MODULES')
+                        _.span({ className: 'title-menu-item'}, 'Modules')
                     )
                 )
             );
