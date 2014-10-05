@@ -3,17 +3,17 @@
     "dependencies": [],
     "category": "scheduling",
     "author": "Z-Wave.Me",
-    "homepage: "http://razberry.z-wave.me",
+    "homepage": "http://razberry.z-wave.me",
     "icon": "",
     "version": "1.0.0",
-    "maturity" "stable",
+    "maturity": "stable",
     "repository": {
             "type": "git",
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
         "title": "Cron scheduler",
-	"desription": "Scheduler used by other modules"
+	"desсription": "Scheduler used by other modules"
     },
     "schema": {
     },

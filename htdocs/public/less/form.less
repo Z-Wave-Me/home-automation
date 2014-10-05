@@ -489,3 +489,35 @@
     &:extend(.input-select);
   }
 }
+
+.alpaca-fieldset-item-container {
+  display: inline-block;
+  float: left;
+  width: 50%;
+}
+
+.alpaca-fieldset-array-item-toolbar {
+  button {
+    &:extend(.modern-button);
+    color: #000;
+    padding: 5px 3px;
+    width: auto;
+    height: auto;
+    font-size: 11px;
+    line-height: 14px;
+    margin-right: 2px;
+    font-weight: normal;
+    &.alpaca-fieldset-array-item-toolbar-add {
+      background: none repeat scroll 0 0 #46b98a;
+      color: #FFFFFF;
+    }
+    &.alpaca-fieldset-array-item-toolbar-remove {
+      background: none repeat scroll 0 0 #E0645C;
+      color: #FFFFFF;
+    }
+    &:hover {
+      background: none repeat scroll 0 0 #444444;
+      color: #FFFFFF;
+    }
+  }
+}

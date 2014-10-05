@@ -5,6 +5,7 @@ define([
     // components
     './main_menu',
     './instances_menu',
+    './modules_menu',
     './models/_profile',
     './models/_room',
     './models/_widget',
@@ -21,6 +22,7 @@ define([
     // components
     main_menu,
     instances_menu,
+    modules_menu,
     _profile,
     _room,
     _widget,
@@ -39,6 +41,7 @@ define([
         components: {
             'main_menu': main_menu,
             'instances_menu': instances_menu,
+            'modules_menu': modules_menu,
             '_profile': _profile,
             '_room': _room,
             '_widget': _widget,

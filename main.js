@@ -67,8 +67,12 @@ function actualize (config) {
     if (config.hasOwnProperty('profiles')) {
         if (config.profiles.length > 0) {
             config.profiles.forEach(function (profile) {
-                if (!_.isObject(profile.groups) || !profile.groups.hasOwnProperty('instances')) {
-                    profile.groups = {instances: {}}
+                if (profile.hasOwnProperty('groups')) {
+                    delete profile.groups;
+                }
+
+                if (profile.hasOwnProperty('active')) {
+                    delete profile.active;
                 }
 
                 if (_.isArray(profile.positions)) {
@@ -79,6 +83,31 @@ function actualize (config) {
                     profile.positions = [];
                 }
 
+            });
+        }
+    }
+
+    // instances
+    if (config.hasOwnProperty('instances')) {
+        console.log('123')
+        if (config.instances.length > 0) {
+            config.instances = config.instances.map(function (instance) {
+
+                // move title and description params
+                ['title', 'description'].forEach(function (param) {
+                    if (instance.params.hasOwnProperty(param)) {
+                        instance[param] = instance.params[param];
+                        delete instance.params[param];
+                    }
+                });
+
+                // move status
+                if (instance.params.hasOwnProperty('status')) {
+                    instance.active = instance.params.status === 'enable';
+                    delete instance.params.status;
+                }
+
+                return instance;
             });
         }
     }

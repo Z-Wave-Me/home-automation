@@ -76,10 +76,7 @@ define([
             var instanceId = this.getBinding('preferences').val('leftPanelItemSelectedId'),
                 instance = this.getModelFromCollection(instanceId, 'instances');
 
-            instance.update('params', function (params) {
-                params.status = event.target.checked ? 'enable' : 'disable';
-                return params;
-            });
+            instance.set('active', event.target.checked);
 
             this.forceUpdate();
             return false;
@@ -103,7 +100,7 @@ define([
                             _.input({
                                     className: 'ios-switch green',
                                     type: 'checkbox',
-                                    checked: item_binding.val('params').status === 'enable',
+                                    checked: item_binding.val('active'),
                                     onChange: that.onStatusModuleHandler
                                 },
                                 _.div({},

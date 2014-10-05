@@ -179,14 +179,14 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         instance = null;
 
     if (!module) {
-        self.addNotification("error", "Can not instanciate module: module not found in the list of all modules", "core");
+        self.addNotification("error", "Can not instantiate module: module not found in the list of all modules", "core");
     }
     
-    if ((instanceModel.params.hasOwnProperty('status') && instanceModel.params.status === 'enable') || !instanceModel.params.hasOwnProperty('status')) {
+    if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
         } catch (e) {
-            self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+            self.addNotification("error", "Can not instantiate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -373,7 +373,7 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
     if (instance !== undefined) { // is registered
         this.stopInstance(instance);
 
-        if (config.status === 'enable') { // here we read new config instead of existing
+        if (Boolean(instance.active)) { // here we read new config instead of existing
             instance.init(config);
         } else {
             instance.saveNewConfig(config);
@@ -387,7 +387,7 @@ AutomationController.prototype.reconfigureInstance = function (id, config) {
         result = this.instances[index];
     } else if (!instance && index !== -1) { // is not registered
         this.instances[index].params = config;
-        if (config.status === 'enable') {
+        if (Boolean(instance.active)) {
             this.instantiateModule(this.instances[index]);
         }
         result = this.instances[index];
