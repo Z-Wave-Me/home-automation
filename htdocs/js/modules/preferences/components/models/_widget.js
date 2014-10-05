@@ -64,26 +64,26 @@ define([
         showInDashboardHandler: function (event) {
             var showInDashboard = event.target.checked,
                 activeProfile = this.getActiveProfile(),
-                deviceId = this.getBinding('item').val('id'),
-                positions = activeProfile ? activeProfile.val('positions') : null;
+                deviceId = this.getBinding('item').val('id')
 
-            if (positions) {
+            if (activeProfile) {
                 if (showInDashboard) {
-                    if (positions.indexOf(deviceId) === -1) {
-                        positions.push(deviceId);
-                    }
+                    activeProfile.update('positions', function (positions) {
+                        return positions.push(deviceId)
+                    });
                 } else {
-                    positions = positions.filter(function (id) {
-                        return id !== deviceId;
+                    activeProfile.update('positions', function (positions) {
+                        return positions.filter(function (id) {
+                            return deviceId !== id;
+                        }).toVector();
                     });
                 }
-
-                activeProfile.set('positions', positions);
 
                 this.save({
                     model: activeProfile,
                     serviceId: 'profiles'
                 });
+
                 if (this.isMounted()) {
                     this.forceUpdate();
                 }

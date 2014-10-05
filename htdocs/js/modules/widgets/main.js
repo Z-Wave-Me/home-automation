@@ -29,7 +29,25 @@ define([
                 }
             });
 
+            that.getBinding('data').addListener('devices', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
             that.getBinding('preferences').addListener('defaultProfileId', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
+            that.getDefaultBinding().addListener('primaryFilter', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
+            that.getDefaultBinding().addListener('secondaryFilter', function () {
                 if (that.isMounted()) {
                     that.forceUpdate();
                 }
@@ -67,7 +85,7 @@ define([
                         } else if (primary_filter === 'types') {
                             return item.get('deviceType') === secondary_filter;
                         } else if (primary_filter === 'tags') {
-                            return item.get('tags').indexOf(secondary_filter) !== -1;
+                            return item.get('tags').toJS().indexOf(secondary_filter) !== -1;
                         } else {
                             return true;
                         }

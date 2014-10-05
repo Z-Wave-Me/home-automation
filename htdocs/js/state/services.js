@@ -35,18 +35,9 @@ define([], function () {
                         })));
 
                     dataBinding.set('devicesUpdateTime', response.data.updateTime || 0);
-
-                    dataBinding.update('deviceTags', function (deviceTags) {
-                        return helpers.arrayUnique(helpers.flatten(tags.concat(deviceTags))).filter(function (type) {
-                            return typeof type === 'string';
-                        });
-                    });
-
-                    dataBinding.update('deviceTypes', function (deviceTypes) {
-                        return helpers.arrayUnique(helpers.flatten(types.concat(deviceTypes))).filter(function (type) {
-                            return typeof type === 'string';
-                        });
-                    });
+                    dataBinding.merge('deviceTags', Immutable.fromJS(tags));
+                    dataBinding.merge('deviceTypes', Immutable.fromJS(types));
+                    dataBinding.merge('devices', Immutable.fromJS(response.data.devices));
                 },
                 parse: function (response, ctx) {
                     return response.data.devices;
