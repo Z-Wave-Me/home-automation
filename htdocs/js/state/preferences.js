@@ -76,6 +76,18 @@ define([
                         noRequiredModel: true
                     },
                     children: []
+                },
+                {
+                    id: 6,
+                    options: {
+                        name: 'modules',
+                        leftPanel: false,
+                        searchPanel: false,
+                        componentName: 'modules_menu',
+                        serviceId: 'modules',
+                        noRequiredModel: true
+                    },
+                    children: []
                 }
             ]
         })

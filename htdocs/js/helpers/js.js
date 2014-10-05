@@ -70,9 +70,7 @@ define([], function () {
             getNamespacesData: function (ctx, model) {
                 var data_binding = ctx.getBinding().sub('data'),
                     namespaces = data_binding.sub('namespaces'),
-                    schema = model.schema,
                     options = model.options,
-                    defaults = model.defaults,
                     defaultObject = {
                         "focus": true,
                         "type": "object",
@@ -84,7 +82,6 @@ define([], function () {
                         "toolbarSticky": true,
                         "renderForm": false
                     },
-                    prop,
                     namespace;
 
                 function r(obj) {

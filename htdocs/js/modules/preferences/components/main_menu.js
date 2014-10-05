@@ -35,6 +35,10 @@ define([
                     _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 5)},
                         _.span({ className: 'container-icon modules-icon'}),
                         _.span({ className: 'title-menu-item'}, 'AUTOMATION')
+                    ),
+                    _.div({ className: 'main-menu-item', onClick: this.setActiveNode.bind(null, 6)},
+                        _.span({ className: 'container-icon modules-icon'}),
+                        _.span({ className: 'title-menu-item'}, 'MODULES')
                     )
                 )
             );

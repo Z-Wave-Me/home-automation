@@ -138,7 +138,7 @@ define([
 
             $instance = $("<li class='instance-item' data-id='" + instance.id + "'><div class='text-title pull-left'>" + instance.get('params').title + "</div><div class='circle pull-left'></li>");
 
-            if (instance.get('params').status === 'enable') {
+            if (instance.get('active')) {
                 $instance.addClass('enable');
             } else {
                 $instance.removeClass('enable')
@@ -188,7 +188,7 @@ define([
                                                 $template.hide('fast', function () {
                                                     $template.off().remove();
                                                     $instance.removeClass('active');
-                                                    if (instance.get('params').status === 'enable') {
+                                                    if (instance.get('active')) {
                                                         $instance.addClass('enable');
                                                     } else {
                                                         $instance.removeClass('enable')

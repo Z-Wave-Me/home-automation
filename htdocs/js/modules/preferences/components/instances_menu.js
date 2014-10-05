@@ -44,10 +44,12 @@ define([
         },
         componentWillUnmount: function () {
             var preferences_binding = this.getBinding('preferences');
-            preferences_binding.delete('show_turned_off');
-            preferences_binding.delete('search_string_on_instance_page');
-            preferences_binding.delete('hover_instance_id');
-            preferences_binding.delete('select_instance_id');
+            preferences_binding.atomically()
+                .delete('show_turned_off')
+                .delete('search_string_on_instance_page')
+                .delete('hover_instance_id')
+                .delete('select_instance_id')
+                .commit();
         },
         render: function () {
             var _ = React.DOM,
@@ -58,7 +60,7 @@ define([
             return _.div({ className: 'automation-component' },
                 _.div({className: 'header-component'},
                     _.div({className: 'pull-left'},
-                        _.div({ key: 'form-default-profile-input', className: 'form-group' },
+                        _.div({ key: 'form-instance-show-turned-off-container', className: 'form-group' },
                             _.label({className: 'switch-container'},
                                 _.input({
                                         className: 'ios-switch',
@@ -103,8 +105,8 @@ define([
                 selected = preferences_binding.val('select_instance_id') === id,
                 status_classes = cx({
                     'instance-status': true,
-                    enable: params_binding.val('status') === 'enable',
-                    disable: params_binding.val('status') === 'disable'
+                    enable: item_binding.val('active'),
+                    disable: !item_binding.val('active')
                 }),
                 state_class = cx({
                     'instance-item': true,
@@ -131,7 +133,7 @@ define([
                             _.input({
                                     className: 'ios-switch green',
                                     type: 'checkbox',
-                                    checked: params_binding.val('status') === 'enable',
+                                    checked: item_binding.val('active'),
                                     readOnly: true
                                 },
                                 _.div({},
@@ -186,8 +188,9 @@ define([
         },
         onToggleSelectItemList: function (id) {
             var selected = this.getBinding('preferences').val('select_instance_id') === id;
+            this.getBinding('preferences').sub('select_instance_id').set(selected ? null : id);
+
             if (!selected) {
-                this.getBinding('preferences').sub('select_instance_id').set(id);
                 this.forceUpdate(function () {
                     this.renderAlpaca(id);
                 });
@@ -224,18 +227,26 @@ define([
             return false;
         },
         onStatusModuleHandler: function (instance, event) {
-            this.preventDefault(event);
+            var that = this;
+            that.preventDefault(event);
 
             instance.sub('params').update('status', function (status) {
-                return status === 'disable' ? 'enable' : 'disable';
+                return !status;
             });
 
-            this.save({
+            that.save({
                 model: instance,
-                serviceId: 'instances'
+                serviceId: 'instances',
+                success: function (model, response) {
+                    instance.update(function () {
+                        return Immutable.fromJS(response);
+                    });
+
+                    that.forceUpdate();
+                }
             });
 
-            this.forceUpdate();
+            that.forceUpdate();
 
             return false;
         },
@@ -256,17 +267,16 @@ define([
 
         },
         isShown: function (instance) {
-            var params_binding = instance.sub('params'),
-                module_id = instance.val('moduleId'),
+            var module_id = instance.val('moduleId'),
                 search_string = this.getBinding('preferences').val('search_string_on_instance_page'),
                 module = this.getModelFromCollection(module_id, 'modules'),
                 show_turned_off = this.getBinding('preferences').val('show_turned_off');
 
             if (search_string.length > 1) {
-                return (params_binding.val('title').toLowerCase().indexOf(search_string) !== -1 ||
+                return (instance.val('title').toLowerCase().indexOf(search_string) !== -1 ||
                     module.sub('defaults').val('title').toLowerCase().indexOf(search_string) !== -1);
             } else {
-                if (show_turned_off || (!show_turned_off && params_binding.val('status') === 'enable')) {
+                if (show_turned_off || (!show_turned_off && instance.val('active'))) {
                     return true;
                 }
             }
