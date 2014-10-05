@@ -103,7 +103,7 @@ define([
                 url: url,
                 success: function (response) {
                     if (typeof options.success === 'function') {
-                        options.success(response.data, model || collection)
+                        options.success(model || collection, response.data)
                     }
                 },
                 params: options.params || {},

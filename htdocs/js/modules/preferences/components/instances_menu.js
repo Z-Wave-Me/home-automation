@@ -123,7 +123,7 @@ define([
                 _.div({className: 'header-item', onClick: this.onToggleSelectItemList.bind(null, id)},
                     _.span({className: status_classes}),
                     _.span({className: 'instance-icon'}, icon),
-                    _.span({className: 'instance-title'}, params_binding.val('title')),
+                    _.span({className: 'instance-title'}, params_binding.val('title') || module_binding.sub('defaults').val('title')),
                     _.span({className: 'module-title'}, '(' + module_binding.sub('defaults').val('title') + ')'),
                     hovered || selected ? _.span({
                             className: 'instance-status-checkbox',
@@ -152,8 +152,8 @@ define([
                             className: 'input-value',
                             type: 'text',
                             placeholder: 'Title',
-                            value: params_binding.val('title'),
-                            onChange: Morearty.Callback.set(params_binding, 'title')
+                            value: item_binding.val('title'),
+                            onChange: Morearty.Callback.set(item_binding, 'title')
                         })
                     ),
                     _.div({key: 'form-group-description', className: 'form-group'},
@@ -162,8 +162,8 @@ define([
                             key: 'description-input',
                             className: 'input-value textarea-type',
                             placeholder: 'Description',
-                            value: params_binding.val('description'),
-                            onChange: Morearty.Callback.set(params_binding, 'description')
+                            value: item_binding.val('description'),
+                            onChange: Morearty.Callback.set(item_binding, 'description')
                         })
                     ),
                     _.div({key: 'form-group-moduleId', className: 'form-group inline'},
@@ -175,6 +175,12 @@ define([
                             className: 'modern-button green-mode center',
                             onClick: this.onSaveInstanceHandler.bind(null, item_binding)
                         }, 'Save', this.state.loading ? _.div({ className: 'spinner' }) : null
+                    ),
+                    _.div({
+                            key: 'remove-button',
+                            className: 'modern-button red-mode center',
+                            onClick: this.onRemoveInstanceHandler.bind(null, item_binding)
+                        }, 'Remove', this.state.loading ? _.div({ className: 'spinner' }) : null
                     )
                 ) : null,
                 // right panel
@@ -207,14 +213,10 @@ define([
             instanceJson = instance.val().toJS();
             module = that.getModelFromCollection(instanceJson.moduleId, 'modules');
             moduleJson = module.val().toJS();
-            params = Sticky.get('App.Helpers.JS').extend(instanceJson.params, {
-                title: instanceJson.params.title || moduleJson.defaults.title,
-                description: instanceJson.params.description || moduleJson.defaults.description
-            });
             $el = $(that.refs.alpacaNodeRef.getDOMNode());
 
             $el.empty().alpaca({
-                data: that.updateObjectAsNamespace(Sticky.get('App.Helpers.JS').omit(params, 'title', 'description')),
+                data: that.updateObjectAsNamespace(instanceJson.params),
                 schema: that.updateObjectAsNamespace(moduleJson.schema),
                 options: that.updateObjectAsNamespace(moduleJson.options),
                 postRender: function (form) {
@@ -230,8 +232,8 @@ define([
             var that = this;
             that.preventDefault(event);
 
-            instance.sub('params').update('status', function (status) {
-                return !status;
+            instance.update('active', function (active) {
+                return !active;
             });
 
             that.save({
@@ -252,7 +254,6 @@ define([
         },
         onSaveInstanceHandler: function (item_binding) {
             var that = this;
-            that.setState({'loading': true});
 
             if (this.state.form !== null) {
                 item_binding.sub('params').merge(that.state.form.getValue());
@@ -264,7 +265,24 @@ define([
                     }
                 });
             }
+        },
+        onRemoveInstanceHandler: function (item_binding) {
+            var that = this;
 
+            if (this.state.form !== null) {
+                item_binding.sub('params').merge(that.state.form.getValue());
+                that.remove({
+                    model: item_binding,
+                    serviceId: 'instances'
+                });
+                that.getBinding('preferences').set('select_instance_id', null);
+                that.getBinding('data').update('instances', function (instances) {
+                    return instances.filter(function (instance) {
+                        return instance.get('id') !== item_binding.val('id');
+                    }).toVector();
+                });
+                that.forceUpdate();
+            }
         },
         isShown: function (instance) {
             var module_id = instance.val('moduleId'),

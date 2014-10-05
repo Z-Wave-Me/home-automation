@@ -47,9 +47,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations/remove", this.removeLocation());
         this.router.get("/locations/update", this.updateLocation());
         this.router.get("/modules", this.listModules);
+        this.router.get("/modules/categories", this.listModulesCategories);
         this.router.get("/instances", this.listInstances);
         this.router.post("/instances", this.createInstance());
-        this.router.get("/schemas", this.listSchemas);
 
         // TODO: Should we remove these as they are no longer available?
         // this.router.post("/namespaces", this.createNamespace());
@@ -78,6 +78,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/instances/:instance_id", this.getInstanceFunc, [parseInt]);
         this.router.put("/instances/:instance_id", this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.deleteInstanceFunc, [parseInt]);
+
+        this.router.get("/modules/:module_id", this.getModuleFunc);
+
+        this.router.get("/modules/categories/:category_id", this.getModuleCategoryFunc);
 
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
     },
@@ -463,6 +467,58 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.initResponse(reply);
     },
+    getModuleFunc: function (moduleId) {
+        var that = this;
+        return function () {
+            var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+
+            if (!that.controller.modules.hasOwnProperty(moduleId)) {
+                reply.code = 404;
+                reply.error = "Instance " + moduleId + " not found";
+            } else {
+                reply.code = 200;
+                reply.data = that.controller.modules[moduleId];
+            }
+
+            this.initResponse(reply);
+        };
+    },
+    // modules categories
+    listModulesCategories: function () {
+        var that = this,
+            reply = {
+                error: null,
+                data: that.controller.getListModulesCategories(),
+                code: 200
+            };
+
+        this.initResponse(reply);
+    },
+    getModuleCategoryFunc: function (categoryId) {
+        var that = this;
+        return function () {
+            var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                category = that.controller.getListModulesCategories(categoryId);
+
+            if (!Boolean(category)) {
+                reply.code = 404;
+                reply.error = "Categories " + categoryId + " not found";
+            } else {
+                reply.code = 200;
+                reply.data = category;
+            }
+
+            this.initResponse(reply);
+        };
+    },
     // instances
     listInstances: function () {
         var that = this,
@@ -537,7 +593,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 404;
                 reply.error = "Instance " + instanceId + " doesn't exist";
             } else {
-                instance = that.controller.reconfigureInstance(instanceId, reqObj.params);
+                instance = that.controller.reconfigureInstance(instanceId, reqObj);
                 if (instance) {
                     reply.code = 200;
                     reply.data = instance;

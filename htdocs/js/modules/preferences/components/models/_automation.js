@@ -54,14 +54,10 @@ define([
             instanceJson = instance.val().toJS();
             module = that.getModelFromCollection(instanceJson.moduleId, 'modules');
             moduleJson = module.val().toJS();
-            params = Sticky.get('App.Helpers.JS').extend(instanceJson.params, {
-                title: instanceJson.params.title || moduleJson.defaults.title,
-                description: instanceJson.params.description || moduleJson.defaults.description
-            });
             $el = $(that.refs.alpacaNodeRef.getDOMNode());
 
             $el.empty().alpaca({
-                data: that.updateObjectAsNamespace(params),
+                data: that.updateObjectAsNamespace(instanceJson.params),
                 schema: that.updateObjectAsNamespace(moduleJson.schema),
                 options: that.updateObjectAsNamespace(moduleJson.options),
                 postRender: function (form) {

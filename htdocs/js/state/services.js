@@ -87,6 +87,15 @@ define([], function () {
                 }
             },
             {
+                id: 'modules_categories',
+                url: '/modules/categories',
+                methods: ['READ'],
+                model: {
+                    methods: ['READ'],
+                    defaults: {}
+                }
+            },
+            {
                 id: 'modules',
                 url: '/modules',
                 methods: ['READ'],

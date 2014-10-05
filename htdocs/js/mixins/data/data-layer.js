@@ -26,7 +26,6 @@ define([], function () {
             } else {
                 return null;
             }
-
         },
         addModelToCollection: function (collection, model) {
             collection.update(function (collection) {
@@ -68,6 +67,20 @@ define([], function () {
             var profile = this.getActiveProfile();
             if (profile) {
                 return profile.val('positions').indexOf(deviceId) !== -1;
+            } else {
+                return false;
+            }
+        },
+        isUsedSingletonModule: function (moduleId) {
+            var ctx = this.getMoreartyContext(),
+                instances_binding = ctx.getBinding().sub('data').sub('instances'),
+                module = this.getModelFromCollection(moduleId, 'modules'),
+                is_singleton = module.val('singleton');
+
+            if (is_singleton) {
+                return instances_binding.val().some(function (instance) {
+                    return instance.get('moduleId') === moduleId;
+                });
             } else {
                 return false;
             }

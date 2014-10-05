@@ -15,6 +15,7 @@ function AutomationController () {
     this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
     this.instances = config.instances || [];
+    this.modules_categories = config.modules_categories || [];
     this.namespaces = namespaces || [];
     this.registerInstances = [];
     this.files = files || {};
@@ -51,7 +52,8 @@ AutomationController.prototype.saveConfig = function () {
         "vdevInfo": this.vdevInfo,
         "locations": this.locations,
         "profiles": this.profiles,
-        "instances": this.instances
+        "instances": this.instances,
+        "modules_categories": this.modules_categories
     };
 
     saveObject("config.json", cfgObject);
@@ -333,7 +335,8 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
         instance = {
             id: id,
             moduleId: moduleId,
-            params: params,
+            active: true,
+            params: params
         };
 
         self.instances.push(instance);
@@ -352,6 +355,7 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
 AutomationController.prototype.stopInstance = function (instance) {
     try {
         instance.stop();
+        delete this.registerInstances[instance.id];
     } catch (e) {
         this.addNotification("error", "Can not stop module " + ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(), "core");
         console.log(e.stack);
@@ -365,34 +369,42 @@ AutomationController.prototype.stopInstance = function (instance) {
     }
 };
 
-AutomationController.prototype.reconfigureInstance = function (id, config) {
-    var instance = this.registerInstances[id],
-        index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
+AutomationController.prototype.reconfigureInstance = function (id, instanceObject) {
+    var register_instance = this.registerInstances[id],
+        instance = _.find(this.instances, function (model) { return model.id === id; }),
+        index = this.instances.indexOf(instance),
+        config = instanceObject.params,
         result;
 
-    if (instance !== undefined) { // is registered
-        this.stopInstance(instance);
 
-        if (Boolean(instance.active)) { // here we read new config instead of existing
-            instance.init(config);
+    if (instance) {
+        if (register_instance) {
+            this.stopInstance(register_instance);
+        }
+
+        _.extend(this.instances[index], {
+            title: instanceObject.title,
+            description: instanceObject.description,
+            active: instanceObject.active,
+            params: config
+        });
+
+        if (!!register_instance) {
+            if (this.instances[index].active) { // here we read new config instead of existing
+                register_instance.init(config);
+            } else {
+                register_instance.saveNewConfig(config);
+            }
         } else {
-            instance.saveNewConfig(config);
+            if (this.instances[index].active) {
+                this.instantiateModule(this.instances[index]);
+            }
         }
 
-        if (config.hasOwnProperty('params')) {
-            this.instances[index].params = config;
-        }
-
-        this.emit('core.instanceReconfigured', id);
         result = this.instances[index];
-    } else if (!instance && index !== -1) { // is not registered
-        this.instances[index].params = config;
-        if (Boolean(instance.active)) {
-            this.instantiateModule(this.instances[index]);
-        }
-        result = this.instances[index];
-        this.emit('core.instanceReconfigured', id);
+        this.emit('core.instanceReconfigured', id)
     } else {
+        result = null;
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
     }
 
@@ -749,6 +761,21 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
             params: reqObj
         })
         result = null;
+    }
+
+    return result;
+};
+
+AutomationController.prototype.getListModulesCategories = function (id) {
+    var result = null,
+        categories = this.modules_categories;
+
+    if (Boolean(id)) {
+        result = _.find(categories, function (category) {
+            return category.id === id;
+        });
+    } else {
+        result = categories;
     }
 
     return result;

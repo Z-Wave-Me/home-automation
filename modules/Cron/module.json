@@ -13,7 +13,7 @@
     },
     "defaults": {
         "title": "Cron scheduler",
-	"desсription": "Scheduler used by other modules"
+	    "description": "Scheduler used by other modules"
     },
     "schema": {
     },
