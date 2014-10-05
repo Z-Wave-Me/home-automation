@@ -25,8 +25,8 @@ AutomationModule.prototype.defaultConfig = function (config) {
     var result = {};
 
     var self = this;
-    if (this.meta.hasOwnProperty("defaults") && "object" === typeof this.meta.defaults) {
-        Object.keys(this.meta.defaults).forEach(function (key) {
+    if (this.meta.hasOwnProperty("defaults") && _.isObject(this.meta.defaults)) {
+        _.omit(Object.keys(this.meta.defaults), 'title', 'description').forEach(function (key) {
             result[key] = self.meta.defaults[key];
         });
     }

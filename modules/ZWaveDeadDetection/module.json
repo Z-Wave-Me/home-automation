@@ -13,10 +13,8 @@
     },
     "defaults": {
         "title": "Z-Wave device dead detection",
-	"description": "Detects Z-Wave dead devices and sends notifications"
+	    "description": "Detects Z-Wave dead devices and sends notifications"
     },
-    "schema": {
-    },
-    "options": {
-    }
+    "schema": {},
+    "options": {}
 }

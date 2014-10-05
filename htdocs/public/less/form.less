@@ -484,6 +484,20 @@
   }
 }
 
+.alpaca-fieldset {
+  border-radius: 10px;
+  margin: 20px;
+  padding: 20px;
+  position: relative;
+  border: 1px groove threedface;
+}
+
+.alpaca-fieldset-legend {
+  padding: 3px 3px;
+  border-top: none;
+  font-weight: bold;
+}
+
 .alpaca-controlfield-select {
   select {
     &:extend(.input-select);
@@ -493,10 +507,11 @@
 .alpaca-fieldset-item-container {
   display: inline-block;
   float: left;
-  width: 50%;
+  width: 100%;
 }
 
-.alpaca-fieldset-array-item-toolbar {
+.alpaca-fieldset-array-item-toolbar,
+.alpaca-fieldset-array-toolbar {
   button {
     &:extend(.modern-button);
     color: #000;
