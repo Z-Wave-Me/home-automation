@@ -35,17 +35,17 @@ define([], function () {
                         })));
 
                     dataBinding.set('devicesUpdateTime', response.data.updateTime || 0);
-
-                    dataBinding.update('deviceTags', function (deviceTags) {
-                        return helpers.arrayUnique(helpers.flatten(tags.concat(deviceTags))).filter(function (type) {
-                            return typeof type === 'string';
+                    dataBinding.merge('deviceTags', Immutable.fromJS(tags));
+                    dataBinding.merge('deviceTypes', Immutable.fromJS(types));
+                    response.data.devices.forEach(function(device) {
+                        var filtered = dataBinding.sub('devices').val().filter(function (d) {
+                            return d.get('id') === device.id;
                         });
-                    });
 
-                    dataBinding.update('deviceTypes', function (deviceTypes) {
-                        return helpers.arrayUnique(helpers.flatten(types.concat(deviceTypes))).filter(function (type) {
-                            return typeof type === 'string';
-                        });
+                        if (filtered.first()) {
+                            var index = dataBinding.sub('devices').val().indexOf(filtered.first());
+                            dataBinding.sub('devices').sub(index).set(Immutable.fromJS(device));
+                        }
                     });
                 },
                 parse: function (response, ctx) {

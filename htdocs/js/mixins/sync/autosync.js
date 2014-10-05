@@ -79,9 +79,7 @@ define([], function () {
                             success: function (response) {
                                 if (response.data) {
                                     var models = obj.hasOwnProperty('parse') ? obj.parse(response, ctx) : response.data;
-                                    dataBinding.update(obj.id, function () {
-                                        return Immutable.fromJS(models);
-                                    });
+                                    dataBinding.merge(obj.id, Immutable.fromJS(models));
                                 }
 
                                 if (obj.hasOwnProperty('postSyncHandler')) {
@@ -91,14 +89,12 @@ define([], function () {
                         })
                     });
 
-                /*
                 if (obj.autoSync) {
                     setInterval(func, obj.delay || 2000);
                 } else {
                     setTimeout(func, obj.delay || 0);
-                }*/
-
-                setTimeout(func, obj.delay || 0);
+                }
+                //setTimeout(func, obj.delay || 0);
             });
         },
         equals: function ( x, y ) {

@@ -11,12 +11,20 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin],
+        componentWillMount: function () {
+            var that = this;
+            that.getBinding('data').addListener('deviceTypes', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+        },
         componentDidMount: function () {
             var binding = this.getDefaultBinding(),
                 dataBinding = this.getBinding('data');
 
             if (dataBinding.val('deviceTypes').length > 0) {
-                binding.set('secondaryFilter', dataBinding.val('deviceTypes')[0]);
+                binding.set('secondaryFilter', dataBinding.val('deviceTypes').first());
             }
         },
         setSecondaryFilter: function (value) {
@@ -30,7 +38,7 @@ define([
                 _ = React.DOM,
                 secondaryFilter = binding.val('secondaryFilter'),
                 typesBinding = dataBinding.sub('deviceTypes'),
-                types = typesBinding.val();
+                types = typesBinding.val().toJS();
 
             return _.div({className: 'secondary-filters'},
                 types

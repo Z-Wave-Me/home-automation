@@ -11,6 +11,14 @@ define([
 
     return React.createClass({
         mixins: [Morearty.Mixin],
+        componentWillMount: function () {
+            var that = this;
+            that.getBinding('data').addListener('locations', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+        },
         componentDidMount: function () {
             var binding = this.getDefaultBinding(),
                 dataBinding = this.getBinding('data');
