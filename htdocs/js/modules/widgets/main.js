@@ -93,12 +93,12 @@ define([
                 } else {
                     return false;
                 }
-
             };
 
             return __.section({id: 'devices-container', className: 'widgets'},
                 items_binding.val().map(function (item, index) {
-                    return isShown(item) && isSearchMatch(item) ? BaseWidget({ key: index, binding: { default: items_binding.sub(index)} }) : null;
+                    return isShown(item) && isSearchMatch(item) ?
+                        BaseWidget({ key: index, binding: { default: items_binding.sub(index)} }) : null;
                 }).toArray()
             );
         }

@@ -37,7 +37,16 @@ define([], function () {
                     dataBinding.set('devicesUpdateTime', response.data.updateTime || 0);
                     dataBinding.merge('deviceTags', Immutable.fromJS(tags));
                     dataBinding.merge('deviceTypes', Immutable.fromJS(types));
-                    dataBinding.merge('devices', Immutable.fromJS(response.data.devices));
+                    response.data.devices.forEach(function(device) {
+                        var filtered = dataBinding.sub('devices').val().filter(function (d) {
+                            return d.get('id') === device.id;
+                        });
+
+                        if (filtered.first()) {
+                            var index = dataBinding.sub('devices').val().indexOf(filtered.first());
+                            dataBinding.sub('devices').sub(index).set(Immutable.fromJS(device));
+                        }
+                    });
                 },
                 parse: function (response, ctx) {
                     return response.data.devices;
