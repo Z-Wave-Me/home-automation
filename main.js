@@ -107,6 +107,11 @@ function actualize (config) {
                     delete instance.params.status;
                 }
 
+                // delete userView
+                if (instance.hasOwnProperty('userView')) {
+                    delete instance.userView;
+                }
+
                 return instance;
             });
         }
