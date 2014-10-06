@@ -101,14 +101,7 @@ define([
                 binding = this.getDefaultBinding(),
                 preferencesBinding = this.getBinding('preferences'),
                 dataBinding = this.getBinding('data'),
-                activeNode = this.getActiveNodeTree(),
-                baseTitle = activeNode[0].options.name.toUpperCase();
-
-            if (preferencesBinding.val('activeNodeTreeStatus') === 'add') {
-                baseTitle += ':CREATE';
-            } else if (preferencesBinding.val('activeNodeTreeStatus') === 'pending') {
-                baseTitle += ':DELETE';
-            }
+                activeNode = this.getActiveNodeTree();
 
             return _.div({ className: 'preferences-overlay clearfix' },
                 // leftpanel
@@ -129,7 +122,7 @@ define([
                 ) : null,
                 // right panel
                 _.div({className: activeNode[0].options.leftPanel ? 'right-panel-container cleafix' : 'panel-container'},
-                    activeNode[0].options.leftPanel ? _.h2({ className: 'title-children clearfix'}, baseTitle) : null,
+                    null,
                     // main component
                     this.getComponent(activeNode[0])
                 )

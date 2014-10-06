@@ -23,7 +23,7 @@ define([
         tree: Immutable.Map({
             id: 1,
             options: {
-                name: 'main',
+                name: 'Preferences',
                 leftPanel: false,
                 searchPanel: false,
                 componentName: 'main_menu',
@@ -33,7 +33,7 @@ define([
                 {
                     id: 2,
                     options: {
-                        name: 'general',
+                        name: 'Profiles',
                         leftPanel: true,
                         searchPanel: true,
                         buttons: ['add', 'remove'],
@@ -45,7 +45,7 @@ define([
                 {
                     id: 3,
                     options: {
-                        name: 'rooms',
+                        name: 'Rooms',
                         leftPanel: true,
                         searchPanel: true,
                         buttons: ['add', 'remove'],
@@ -57,7 +57,7 @@ define([
                 {
                     id: 4,
                     options: {
-                        name: 'widgets',
+                        name: 'Widgets',
                         leftPanel: true,
                         searchPanel: true,
                         componentName: '_widget',
@@ -68,7 +68,7 @@ define([
                 {
                     id: 5,
                     options: {
-                        name: 'automation',
+                        name: 'Automation',
                         leftPanel: false,
                         searchPanel: false,
                         componentName: 'instances_menu',
@@ -80,7 +80,7 @@ define([
                 {
                     id: 6,
                     options: {
-                        name: 'modules',
+                        name: 'Modules',
                         leftPanel: false,
                         searchPanel: false,
                         componentName: 'modules_menu',
