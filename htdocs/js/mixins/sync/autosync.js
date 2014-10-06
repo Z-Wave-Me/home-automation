@@ -41,11 +41,11 @@ define([], function () {
             // add local data
             that.getBinding('preferences').addListener('defaultProfileId', function (profileId) {
                 localStorage.setItem('defaultProfileId', String(profileId));
-                var profiles = dataBinding.sub('profiles');
 
-                var filter = profiles.val().filter(function (profile) {
-                    return String(profile.get('id')) === String(profileId);
-                });
+                var profiles = dataBinding.sub('profiles'),
+                    filter = profiles.val().filter(function (profile) {
+                        return String(profile.get('id')) === String(profileId);
+                    });
 
                 dataBinding.set('devicesOnDashboard', filter.toArray().length > 0 ? filter.toArray()[0].get('positions') : []);
             });
@@ -77,20 +77,20 @@ define([], function () {
                             serviceId: obj.id,
                             params: obj.sinceField ? { since: dataBinding.val().get(obj.sinceField) || 0 } : null,
                             success: function (response) {
-                                if (response.data) {
-                                    var models = obj.hasOwnProperty('parse') ? obj.parse(response, ctx) : response.data;
-                                    dataBinding.merge(obj.id, Immutable.fromJS(models));
-                                }
-
                                 if (obj.hasOwnProperty('postSyncHandler')) {
-                                    obj.postSyncHandler(ctx, response, dataBinding.sub(obj.id));
+                                    obj.postSyncHandler.call(that, ctx, response, dataBinding.sub(obj.id));
+                                } else {
+                                    if (response.data) {
+                                        var models = obj.hasOwnProperty('parse') ? obj.parse(response, ctx) : response.data;
+                                        dataBinding.merge(obj.id, Immutable.fromJS(models));
+                                    }
                                 }
                             }
                         })
                     });
 
                 if (obj.autoSync) {
-                    setInterval(func, obj.delay || 2000);
+                    setInterval(func, obj.delay || 1000);
                 } else {
                     setTimeout(func, obj.delay || 0);
                 }

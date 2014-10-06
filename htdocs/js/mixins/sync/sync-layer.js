@@ -143,6 +143,48 @@ define([
                 }
             });
             return o;
+        },
+        _addModel: function (model, collection_name) {
+            var that = this,
+                ctx = that.getMoreartyContext(),
+                dataBinding = ctx.getBinding().sub('data'),
+                collection_binding = dataBinding.sub(collection_name);
+
+            collection_binding.update(function (collection) {
+                return collection.push(Immutable.fromJS(model));
+            });
+        },
+        _updateModel: function (model, collection_name) {
+            var that = this,
+                ctx = that.getMoreartyContext(),
+                dataBinding = ctx.getBinding().sub('data'),
+                collection_binding = dataBinding.sub(collection_name),
+                index = that._getIndexModelFromCollection(model.id, collection_name);
+
+            collection_binding.sub(index).set(Immutable.fromJS(model));
+        },
+        _removeModel: function (ids, collection_name) {
+            var that = this,
+                ctx = that.getMoreartyContext(),
+                dataBinding = ctx.getBinding().sub('data'),
+                collection_binding = dataBinding.sub(collection_name);
+
+            ids = Array.isArray(ids) ? ids : [ids];
+
+            ids.forEach(function (id) {
+                var index = this._getIndexModelFromCollection(id, collection_name);
+                collection_binding.sub(index).delete();
+            });
+        },
+        _getIndexModelFromCollection: function (modelId, collection_name) {
+            var that = this,
+                ctx = that.getMoreartyContext(),
+                dataBinding = ctx.getBinding().sub('data'),
+                collection_binding = dataBinding.sub(collection_name);
+
+            return collection_binding.val().findIndex(function (device) {
+                return modelId === device.get('id');
+            });
         }
     };
 });

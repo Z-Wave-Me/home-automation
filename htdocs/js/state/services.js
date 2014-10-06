@@ -25,7 +25,10 @@ define([], function () {
                 sinceField: 'devicesUpdateTime',
                 methods: ['READ'],
                 postSyncHandler: function (ctx, response) {
-                    var dataBinding = ctx.getBinding().sub('data'),
+                    var that = this,
+                        remove_devices_ids,
+                        dataBinding = ctx.getBinding().sub('data'),
+                        devices_binding = dataBinding.sub('devices'),
                         helpers = Sticky.get('App.Helpers.JS'),
                         tags = helpers.arrayUnique(helpers.flatten(response.data.devices.map(function(device) {
                             return device.tags;
@@ -34,19 +37,43 @@ define([], function () {
                             return device.deviceType;
                         })));
 
+                    // set updateTime
                     dataBinding.set('devicesUpdateTime', response.data.updateTime || 0);
-                    dataBinding.merge('deviceTags', Immutable.fromJS(tags));
-                    dataBinding.merge('deviceTypes', Immutable.fromJS(types));
-                    response.data.devices.forEach(function(device) {
-                        var filtered = dataBinding.sub('devices').val().filter(function (d) {
-                            return d.get('id') === device.id;
-                        });
 
-                        if (filtered.first()) {
-                            var index = dataBinding.sub('devices').val().indexOf(filtered.first());
-                            dataBinding.sub('devices').sub(index).set(Immutable.fromJS(device));
+                    // update devices
+                    response.data.devices.forEach(function(device) {
+                        var index = that._getIndexModelFromCollection(device.id, 'devices');
+                        if (index !== -1) {
+                            that._updateModel(device, 'devices');
+                        } else {
+                            that._addModel(device, 'devices');
                         }
                     });
+
+                    // remove old device
+                    if (response.data.structureChanged) {
+                        remove_devices_ids = devices_binding.val().filter(function (device) {
+                            return response.data.devices.every(function (d) {
+                                return device.get('id') !== d.id;
+                            });
+                        }).map(function (device) {
+                            return device.id;
+                        }).toJS();
+
+                        if (remove_devices_ids.length > 0) {
+                            that._removeModel(remove_devices_ids, 'devices');
+                        }
+                    }
+
+                    // update tags
+                    if (tags.length > 0) {
+                        dataBinding.merge('deviceTags', Immutable.fromJS(tags));
+                    }
+
+                    // update types
+                    if (types.length > 0) {
+                        dataBinding.merge('deviceTypes', Immutable.fromJS(types));
+                    }
                 },
                 parse: function (response, ctx) {
                     return response.data.devices;
