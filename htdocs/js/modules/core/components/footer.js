@@ -1,10 +1,9 @@
 define([
     // libs
-    'react',
+
     'morearty'
 ], function (
     // libs
-    React,
     Morearty
     ) {
     'use strict';

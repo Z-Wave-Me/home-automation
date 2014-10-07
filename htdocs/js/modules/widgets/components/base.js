@@ -1,7 +1,6 @@
 define([
     // libs
-    'react',
-    'morearty',
+'morearty',
     // components
     './_probe',
     './_switch',
@@ -11,7 +10,6 @@ define([
     './_toggle'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     Probe,

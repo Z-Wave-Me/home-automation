@@ -288,10 +288,11 @@ define([
             var module_id = instance.val('moduleId'),
                 search_string = this.getBinding('preferences').val('search_string_on_instance_page'),
                 module = this.getModelFromCollection(module_id, 'modules'),
-                show_turned_off = this.getBinding('preferences').val('show_turned_off');
+                show_turned_off = this.getBinding('preferences').val('show_turned_off'),
+                title = instance.val('title') || '';
 
             if (search_string.length > 1) {
-                return (instance.val('title').toLowerCase().indexOf(search_string) !== -1 ||
+                return (title.toLowerCase().indexOf(search_string) !== -1 ||
                     module.sub('defaults').val('title').toLowerCase().indexOf(search_string) !== -1);
             } else {
                 if (show_turned_off || (!show_turned_off && instance.val('active'))) {

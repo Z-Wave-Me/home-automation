@@ -1,11 +1,9 @@
     define([
     // libs
-    'react',
-    'morearty',
+'morearty',
     // mixins
     'mixins/sync/sync-layer'
 ], function (
-    React,
     Morearty,
     // mixins
     SyncLayerMixin
