@@ -55,13 +55,13 @@ define([
                     title,
                     obj = item.toJS();
 
-                if (name === 'rooms') {
+                if (activeNode.options.serviceId === 'locations') {
                     title = obj.title;
-                } else if (name === 'general') {
+                } else if (activeNode.options.serviceId === 'profiles') {
                     title = obj.name;
-                } else if (name === 'widgets') {
+                } else if (activeNode.options.serviceId === 'devices') {
                     title = obj.metrics.title;
-                } else if (name === 'automation') {
+                } else if (activeNode.options.serviceId === 'instances') {
                     title = obj.params.title;
                 }
 
@@ -80,21 +80,11 @@ define([
 
             };
 
-            if (name === 'rooms') {
-                itemsBinding = dataBinding.sub('locations');
-            } else if (name === 'general') {
-                itemsBinding = dataBinding.sub('profiles');
-            } else if (name === 'widgets') {
-                itemsBinding = dataBinding.sub('devices');
-            } else if (name === 'automation') {
-                itemsBinding = dataBinding.sub('instances');
-            }
-
-            items = itemsBinding.val();
+            itemsBinding = dataBinding.sub(activeNode.options.serviceId);
 
             return _.div({className: 'left-panel-list-container'},
                 _.ul({ ref: 'leftPanelList', className: 'left-panel-list' },
-                    items.map(renderModel).toArray()
+                    itemsBinding.val().map(renderModel).toArray()
                 )
             )
         },
