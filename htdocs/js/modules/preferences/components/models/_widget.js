@@ -117,10 +117,16 @@ define([
                 title = id ? item.sub('metrics').val('title') : null,
                 icon = id ? item.sub('metrics').val('icon') : null,
                 deviceType = item.val('deviceType'),
+                temp_string = preferencesBinding.val('temp_string'),
+                current_tags = item.val('tags'),
                 classes = cx({
                     'preview': true,
                     'placehold': !icon
-                });
+                }),
+                classes_input_autocomplete = cx({
+                    'text-input-autocomplete': true,
+                    'focus': temp_string.length > 1
+                });;
 
 
             return _.div({ className: 'model-component' },
@@ -143,6 +149,34 @@ define([
                             placeholder: 'Name',
                             value: title
                         })
+                    ),
+                    _.div({ key: 'form-device-input', className: 'form-group' },
+                        _.div({ className: 'tagsinput'},
+                            current_tags.map(function (label) {
+                                return _.span({ key: label, className: 'tag label label-info'}, label,
+                                    _.span({
+                                        className: 'tag-remove',
+                                        onClick: that.removeTagHandler.bind(null, label)
+                                    })
+                                );
+                            }).toArray()
+                        ),
+                        _.input({
+                            className: classes_input_autocomplete,
+                            placeholder: 'Device name',
+                            onChange: Morearty.Callback.set(preferencesBinding, 'temp_string'),
+                            onKeyPress: Morearty.Callback.onEnter(this.onAddNewTagHandler),
+                            value: temp_string
+                        }),
+                        temp_string.length > 1 ? _.div({className: 'autocomplete-box autocomplete-device'},
+                            _.button({
+                                className: 'close-button',
+                                onClick: that.onBlurHandler
+                            }, '✖'),
+                            _.ul({className: 'result-list'},
+                                that.getTagsAvailable()
+                            )
+                        ) : null
                     ),
                     _.div({ key: 'form-icon-input', className: 'form-group' },
                         _.label({ htmlFor: 'room-description', className: 'input-label'}, 'Icon:'),
@@ -203,6 +237,77 @@ define([
                     })
                 )
             );
+        },
+        getTagsAvailable: function () {
+            var that = this,
+                _ = React.DOM,
+                item_binding = that.getBinding('item'),
+                current_tags = item_binding.val('tags'),
+                available_tags = that.getBinding('data').sub('deviceTags').val().filter(function (t) {
+                    return current_tags.indexOf(t) === -1;
+                }),
+                temp_string = that.getBinding('preferences').val('temp_string').toLowerCase(),
+                filtered_tags = available_tags.filter(function (tag) {
+                    return temp_string.length > 1 ? tag.toLowerCase().indexOf(temp_string) !== -1 : true;
+                });
+
+            if (filtered_tags.toArray().length > 0) {
+                return _.li({className: 'result-dept'},
+                    _.ul({className: 'result-sub'},
+                        filtered_tags.map(function (tag, index) {
+                            return _.li({
+                                    key: 'device-autocomplete-' + index,
+                                    className: 'result-item',
+                                    onClick: that.addTagHandler.bind(null, tag)
+                                },
+                                _.strong({ className: 'strong-deviceId' }, tag)
+                            );
+                        }).toArray()
+                    )
+                );
+            } else {
+                return _.li({className: 'result-dept'},
+                    _.div({className: 'result-label no-matches'}, 'no matches')
+                );
+            }
+        },
+        onAddNewTagHandler: function (event) {
+            var tag = event.target.value,
+                item_binding = this.getBinding('item');
+
+            item_binding.update('tags', function (tags) {
+                if (tags.indexOf(tag) === -1) {
+                    return tags.push(tag);
+                } else {
+                    return tags;
+                }
+            });
+
+            this.getBinding('preferences').set('temp_string', '');
+        },
+        addTagHandler: function (tag) {
+            var item_binding = this.getBinding('item');
+
+            item_binding.update('tags', function (tags) {
+                if (tags.indexOf(tag) === -1) {
+                    return tags.push(tag);
+                } else {
+                    return tags;
+                }
+            });
+
+            return false;
+        },
+        removeTagHandler: function (label) {
+            var item_binding = this.getBinding('item');
+
+            item_binding.update('tags', function (tags) {
+               return tags.filter(function (tag) {
+                   return tag !== label;
+               })
+            });
+
+            return false;
         }
     });
 });

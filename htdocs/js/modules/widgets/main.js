@@ -68,9 +68,9 @@ define([
                 positions = data_binding.val('devicesOnDashboard'),
                 isShown, isSearchMatch;
 
-            isSearchMatch = function (item) {
+            isSearchMatch = function (index) {
                 var search_string = binding.val('searchStringMainPanel'),
-                    title = item.get('metrics').get('title');
+                    title = items_binding.sub(index).sub('metrics').val('title');
 
                 return search_string.length > 0 ? title.toLowerCase().indexOf(search_string.toLowerCase()) !== -1 : true;
             };
@@ -97,7 +97,7 @@ define([
 
             return __.section({id: 'devices-container', className: 'widgets'},
                 items_binding.val().map(function (item, index) {
-                    return isShown(item) && isSearchMatch(item) ?
+                    return isShown(item) && isSearchMatch(index) ?
                         BaseWidget({ key: index, binding: { default: items_binding.sub(index)} }) : null;
                 }).toArray()
             );

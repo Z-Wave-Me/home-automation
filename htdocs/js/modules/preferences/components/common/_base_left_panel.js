@@ -42,9 +42,7 @@ define([
                 preferencesBinding = this.getBinding('preferences'),
                 dataBinding = this.getBinding('data'),
                 activeNode = this.getActiveNodeTree()[0],
-                name = activeNode.options.name,
                 itemsBinding,
-                items,
                 renderModel;
 
 

@@ -38,14 +38,13 @@ define([
                 collection: items,
                 serviceId: this.props.serviceId,
                 success: function (model, response) {
+                    var index = that._getIndexModelFromCollection(response.id, that.props.serviceId);
 
-                    Object.keys(response).forEach(function (key) {
-                        model.set(key, response[key]);
-                    });
-
-                    if (isNew) {
-                        that.addModelToCollection(items, model);
+                    if (index === -1) {
+                        that._addModel(response, that.props.serviceId);
                         that.setLeftPanelItemSelectedId(model.val('id'));
+                    } else {
+                        that._updateModel(response, that.props.serviceId);
                     }
 
                     that.setActiveNodeTreeStatus('normal');
