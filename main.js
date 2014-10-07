@@ -165,6 +165,12 @@ function actualize (config) {
                 "icon": ""
             },
             {
+                "id": "climate",
+                "name": "Climate",
+                "description": "Climate control",
+                "icon": ""
+            },
+            {
                 "id": "environment",
                 "name": "Environment",
                 "description": "Environment related date",
