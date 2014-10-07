@@ -159,14 +159,9 @@ module.exports = function (grunt) {
         connect: {
             options: {
                 port: 8900,
-                livereload: 35729,
-                hostname: 'localhost'
-            },
-            livereload: {
-                options: {
-                    open: true,
-                    base: [__dirname]
-                }
+                hostname: 'localhost',
+                open: true,
+                base: [__dirname + '/htdocs']
             }
         }
     });
@@ -184,11 +179,8 @@ module.exports = function (grunt) {
     grunt.registerTask('default', ['clean', 'copy', 'mkdir', 'index', 'less', 'requirejs', 'htmlmin', 'index', 'manifest']);
     grunt.registerTask('mocha', ['mochaTest']);
     grunt.registerTask('serve', function (target) {
-        if (target === 'dist') {
-            return grunt.task.run(['build', 'connect:dist:keepalive']);
-        }
         grunt.task.run([
-            'connect:livereload',
+            'connect'
         ]);
     });
 };
