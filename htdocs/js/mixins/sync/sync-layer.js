@@ -159,7 +159,9 @@ define([
                 ctx = that.getMoreartyContext(),
                 dataBinding = ctx.getBinding().sub('data'),
                 collection_binding = dataBinding.sub(collection_name),
-                index = that._getIndexModelFromCollection(model.id, collection_name);
+                index = collection_binding.val().findIndex(function (device) {
+                    return model.id === device.get('id');
+                });
 
             collection_binding.sub(index).set(Immutable.fromJS(model));
         },
@@ -170,9 +172,10 @@ define([
                 collection_binding = dataBinding.sub(collection_name);
 
             ids = Array.isArray(ids) ? ids : [ids];
-
             ids.forEach(function (id) {
-                var index = this._getIndexModelFromCollection(id, collection_name);
+                var index = collection_binding.val().findIndex(function (device) {
+                    return id === device.get('id');
+                });
                 collection_binding.sub(index).delete();
             });
         },

@@ -28,14 +28,7 @@ define([], function () {
                     var that = this,
                         remove_devices_ids,
                         dataBinding = ctx.getBinding().sub('data'),
-                        devices_binding = dataBinding.sub('devices'),
-                        helpers = Sticky.get('App.Helpers.JS'),
-                        tags = helpers.arrayUnique(helpers.flatten(response.data.devices.map(function(device) {
-                            return device.tags;
-                        }))),
-                        types = helpers.arrayUnique(helpers.flatten(response.data.devices.map(function(device) {
-                            return device.deviceType;
-                        })));
+                        devices_binding = dataBinding.sub('devices');
 
                     // set updateTime
                     dataBinding.set('devicesUpdateTime', response.data.updateTime || 0);
@@ -66,13 +59,38 @@ define([], function () {
                     }
 
                     // update tags
-                    if (tags.length > 0) {
-                        dataBinding.merge('deviceTags', Immutable.fromJS(tags));
+                    if (devices_binding.val()) {
+                        dataBinding.update('deviceTags', function () {
+                            return devices_binding.val().reduce(function (memo, device) {
+                                memo = memo || Immutable.Vector();
+
+                                var device_tags = device.get('tags');
+
+                                if (device_tags.length > 0) {
+                                    var filtered_tags = device_tags.filter(function (t) {
+                                        return memo.indexOf(t) === -1;
+                                    });
+                                    return memo.concat(filtered_tags.toJS());
+                                } else {
+                                    return memo;
+                                }
+                            }).sort();
+                        });
                     }
 
                     // update types
-                    if (types.length > 0) {
-                        dataBinding.merge('deviceTypes', Immutable.fromJS(types));
+                    if (devices_binding.val()) {
+                        dataBinding.update('deviceTypes', function () {
+                            return devices_binding.val().reduce(function (memo, device) {
+                                memo = memo || Immutable.Vector();
+
+                                if (memo.indexOf(device.get('deviceType')) === -1) {
+                                    return memo.push(device.get('deviceType'));
+                                } else {
+                                    return memo;
+                                }
+                            }).sort();
+                        });
                     }
                 },
                 parse: function (response, ctx) {
