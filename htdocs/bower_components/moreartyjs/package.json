@@ -1,0 +1,65 @@
+{
+  "name": "morearty",
+  "version": "0.4.2",
+  "description": "Better state management for React in pure JavaScript.",
+  "homepage": "https://github.com/Tvaroh/moreartyjs",
+  "author": "Alexander Semenov",
+  "keywords": [
+    "moreartyjs",
+    "morearty",
+    "react",
+    "immutable",
+    "persistent"
+  ],
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "npm test && npm run build:dev && npm run uglify",
+    "build:dev": "browserify src/Morearty.js -t browserify-shim -s Morearty -o dist/morearty.js",
+    "doc": "rm -rf ./doc && jsdoc src/* INDEX.md --destination doc",
+    "jshint": "jshint src/* test/*",
+    "test": "npm run jshint && mocha -b -R spec test/*",
+    "uglify": "uglifyjs dist/morearty.js -m -o dist/morearty.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Tvaroh/moreartyjs"
+  },
+  "bugs": "https://github.com/Tvaroh/moreartyjs/issues",
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "files": [
+    "src/*",
+    "README.md",
+    "index.js",
+    "dist/morearty.js",
+    "dist/morearty.min.js"
+  ],
+  "devDependencies": {
+    "browserify": "~5.10.1",
+    "chai": "^1.9.1",
+    "domino": "^1.0.17",
+    "jquery": "^2.1.1",
+    "jsdoc": "^3.3.0-alpha9",
+    "jshint": "~2.5.4",
+    "mocha": "~1.21.4",
+    "react": "^0.11.2",
+    "sinon": "^1.10.2",
+    "uglify-js": "^2.4.13",
+    "browserify-shim": "^3.7.0"
+  },
+  "peerDependencies": {
+    "immutable": "^2.0.x",
+    "react": "^0.11.x"
+  },
+  "browserify-shim": {
+    "react": "global:React",
+    "immutable": "global:Immutable"
+  }
+}
