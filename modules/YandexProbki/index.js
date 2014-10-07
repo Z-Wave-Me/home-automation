@@ -31,18 +31,24 @@ YandexProbki.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = self.controller.devices.create("YandexProbki_" + this.id, {
-        deviceType: "sensorMultilevel",
-        metrics: {
-            probeTitle: 'Yandex.Jams',
-            scaleTitle: ""
-        }
-    }, {
-        metrics: {
-            title: this.config.city,
-            icon: "http://cdn1.iconfinder.com/data/icons/softwaredemo/PNG/48x48/Circle_Grey.png"
-        }
+    this.vDev = self.controller.devices.create({
+        deviceId: "YandexProbki_" + this.id,
+        defaults: {
+            deviceType: "sensorMultilevel",
+            metrics: {
+                probeTitle: 'Yandex.Jams',
+                scaleTitle: ""
+            }
+        },
+        overlay: {
+            metrics: {
+                title: this.config.city,
+                icon: "http://cdn1.iconfinder.com/data/icons/softwaredemo/PNG/48x48/Circle_Grey.png"
+            }
+        },
+        moduleId: this.id
     });
+
     this.timer = setInterval(function() {
         self.fetchJams(self);
     }, 600*1000);

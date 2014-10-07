@@ -41,17 +41,21 @@ SecurityMode.prototype.init = function (config) {
     if (config.action.phone) {this.phone = config.action.phone.toString();};
     if (config.action.message) {this.message = config.action.message.toString();}
     
-    this.vDev = this.controller.devices.create(
-        "SecurityMode_"+ this.id, {
-        deviceType: "switchBinary",
-        metrics: {
-            level: 'off',
-            icon: '',
-            title: 'SecurityMode ' + this.id
-        }
-    }, {}, function(command, args) {
-        this.set("metrics:level", command);
-    });
+    this.vDev = this.controller.devices.create({
+            deviceId: "SecurityMode_"+ this.id,
+            defaults: {
+                deviceType: "switchBinary",
+                metrics: {
+                    level: 'off',
+                    icon: '',
+                    title: 'SecurityMode ' + this.id
+                }
+            },
+            handler: function(command, args) {
+                this.set("metrics:level", command);
+            },
+            moduleId: this.id
+        });
 
     self.attachDetach(this.vDev.id, true);
 

@@ -30,26 +30,32 @@ DummyDevice.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create("DummyDevice_" + this.id, {
-        metrics: {
-            level: 'off',
-            title: 'Dummy ' + this.id
-        }
-    }, {
-        deviceType: this.config.deviceType
-    }, function(command, args) {
-        var level = command;
-        if (this.get('deviceType') === "switchMultilevel") {
-            if (command === "on") {
-                level = 99;
-            } else if (command === "off") {
-                level = 0;
-            } else {
-                level = args.level;
+    this.vDev = this.controller.devices.create({
+        deviceId: "DummyDevice_" + this.id,
+        defaults: {
+            metrics: {
+                level: 'off',
+                title: 'Dummy ' + this.id
             }
-        }
-        this.set("metrics:level", level);
-    });
+        },
+        overlay: {
+            deviceType: this.config.deviceType
+        },
+        handler: function(command, args) {
+            var level = command;
+            if (this.get('deviceType') === "switchMultilevel") {
+                if (command === "on") {
+                    level = 99;
+                } else if (command === "off") {
+                    level = 0;
+                } else {
+                    level = args.level;
+                }
+            }
+            this.set("metrics:level", level);
+        },
+        moduleId: this.id
+    })
 };
 
 DummyDevice.prototype.stop = function () {

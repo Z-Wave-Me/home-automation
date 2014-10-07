@@ -95,15 +95,21 @@ SwitchControlGenerator.prototype.init = function (config) {
 
     this.config.generated.forEach(function(name) {
         if (self.config.banned.indexOf(name) === -1) {
-            self.controller.devices.create(name, {
-                deviceType: "switchControl",
-                metrics: {
-                    icon: '',
-                    title: name,
-                    level: "",
-                    change: ""
-                }
-            }, {}, self.widgetHandler);
+            self.controller.devices.create({
+                deviceId: name,
+                defaults: {
+                    deviceType: "switchControl",
+                    metrics: {
+                        icon: '',
+                        title: name,
+                        level: "",
+                        change: ""
+                    }
+                },
+                overlay: {},
+                handler: self.widgetHandler,
+                moduleId: this.id
+            });
         }
     });
     

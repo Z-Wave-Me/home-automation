@@ -46,23 +46,29 @@ RGB.prototype.init = function (config) {
         return Math.round(color * 99.0 / 255.0);
     }
     
-    this.vDev = this.controller.devices.create("RGB_" + this.id, {
-        deviceType: "switchRGBW",
-        metrics: {
-            icon: '',
-            title: 'RGB ' + this.id
-        }
-    }, {}, function (command, args) {
-        if (command === "on" || command === "off") {
-            self.controller.devices.get(this.config.red).performCommand(command);
-            self.controller.devices.get(this.config.green).performCommand(command);
-            self.controller.devices.get(this.config.blue).performCommand(command);
-        }
-        if (command === "exact") {
-            self.controller.devices.get(this.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
-            self.controller.devices.get(this.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
-            self.controller.devices.get(this.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
-        }
+    this.vDev = this.controller.devices.create({
+        deviceId: "RGB_" + this.id,
+        defaults: {
+            deviceType: "switchRGBW",
+            metrics: {
+                icon: '',
+                title: 'RGB ' + this.id
+            }
+        },
+        overlay: {},
+        handler:  function (command, args) {
+            if (command === "on" || command === "off") {
+                self.controller.devices.get(this.config.red).performCommand(command);
+                self.controller.devices.get(this.config.green).performCommand(command);
+                self.controller.devices.get(this.config.blue).performCommand(command);
+            }
+            if (command === "exact") {
+                self.controller.devices.get(this.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
+                self.controller.devices.get(this.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
+                self.controller.devices.get(this.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+            }
+        },
+        moduleId: this.id
     });
     
 

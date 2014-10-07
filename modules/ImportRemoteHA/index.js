@@ -123,11 +123,16 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     return;
                 }
 
-                self.controller.devices.create(localId, {}, {
-                    deviceType: item.deviceType,
-                    metrics: item.metrics
-                }, function(command, args) {
-                    self.handleCommand(this, command, args);
+                self.controller.devices.create({
+                    deviceId: localId,
+                    defaults: {
+                        deviceType: item.deviceType,
+                        metrics: item.metrics
+                    },
+                    handler: function(command, args) {
+                        self.handleCommand(this, command, args);
+                    },
+                    moduleId: this.id
                 });
 
                 self.config.renderDevices.push({deviceId: localId, deviceType: item.deviceType});

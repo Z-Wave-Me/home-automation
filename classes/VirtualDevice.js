@@ -7,33 +7,49 @@ Copyright: (c) ZWave.Me, 2013-2014
 
 ******************************************************************************/
 
-VirtualDevice = function (deviceId, controller, defaults, overlay, handler) {
-    this.id = deviceId;
-    this.handler = handler;
-    this.accessAttrs = ["id", "deviceType", "metrics", "location", "tags", "updateTime", "permanently_hidden"];
-    this.controller = controller;
-    this.collection = this.controller.devices;
-    this.metrics = {};
-    this.ready = false;
-    this.location = null;
-    this.tags = [];
-    this.updateTime = 0;
-    this.attributes = {
-        id: this.id,
-        metrics: this.metrics,
+VirtualDevice = function (options) {
+    _.extend(this, options, {
+        id: options.deviceId,
+        accessAttrs: [
+            'id',
+            'deviceType',
+            'metrics',
+            'location',
+            'tags',
+            'updateTime',
+            'permanently_hidden',
+            'creatorId'
+        ],
+        collection: options.controller.devices,
+        metrics: {},
+        ready: false,
+        location: null,
         tags: [],
-        permanently_hidden: false,
-        location: null
-    };
-    this.changed = {};
-    this.defaults = defaults || {};
-    this.overlay = overlay;
-    this.overlay_metrics = overlay.metrics;
-    delete overlay.metrics;
-    this._previousAttributes = {};
+        updateTime: 0,
+        attributes: {
+            id: options.deviceId,
+            metrics: this.metrics,
+            tags: [],
+            permanently_hidden: false,
+            location: null
+        },
+        changed: {},
+        overlay: options.overlay || {},
+        defaults: options.defaults || {},
+        overlay_metrics: options.hasOwnProperty('overlay') ? options.overlay.metrics : {},
+        _previousAttributes: {}
+    });
+
+    delete options.overlay.metrics;
+
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
     }
+
+    if (!!options.moduleId) {
+        this.attributes.creatorId = options.moduleId;
+    }
+
     this.initialize.apply(this, arguments);
     return this;
 };
@@ -82,6 +98,8 @@ _.extend(VirtualDevice.prototype, {
         _.extend(this.attributes.metrics, this.overlay_metrics);
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
+
+        this.attributes = this._sortObjectByKey(this.attributes);
         
         // cleanup
         delete this.overlay;
@@ -214,7 +232,7 @@ _.extend(VirtualDevice.prototype, {
     },
     performCommand: function () {
         console.log("--- ", this.id, "performCommand processing:", JSON.stringify(arguments));
-        if (typeof(this.handler) === "function") {
+        if (typeof this.handler === "function") {
             try {
                 return this.handler.apply(this, arguments);
             } catch(e) {
@@ -245,5 +263,22 @@ _.extend(VirtualDevice.prototype, {
     },
     emit: function(eventName, that) {
         return this.collection.emit(this.id + ":" + eventName, that);
-    }    
+    },
+    _sortObjectByKey: function(o){
+        var sorted = {},
+            key, a = [];
+
+        for (key in o) {
+            if (o.hasOwnProperty(key)) {
+                a.push(key);
+            }
+        }
+
+        a.sort();
+
+        for (key = 0; key < a.length; key++) {
+            sorted[a[key]] = o[a[key]];
+        }
+        return sorted;
+    }
 });

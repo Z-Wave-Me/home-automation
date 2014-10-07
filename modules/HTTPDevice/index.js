@@ -57,34 +57,40 @@ HTTPDevice.prototype.init = function (config) {
         config_metrics = { scaleTitle: "" };
     }
 
-    var vDev = self.controller.devices.create("HTTP_Device_" + deviceType + "_" + this.id, {
-        metrics: {
-            icon: icon,
-            title: 'HTTP device ' + this.id
-        }
-    }, {
-        deviceType: deviceType,
-        metrics: config_metrics
-    }, function(command, args) {
-        var vDevType = deviceType;
-        
-        if (command === "update" && (vDevType === "sensorBinary" || vDevType === "sensorMultilevel" || vDevType === "switchBinary" || vDevType === "switchMultilevel")) {
-            self.update(this);
-        }
-        
-        if (command === "on" && (vDevType === "toggleButton" || vDevType === "switchBinary")) {
-            self.act(this, "On", null, (vDevType === "switchBinary" ? "on" : null));
-        }
+    var vDev = self.controller.devices.create({
+        deviceId: "HTTP_Device_" + deviceType + "_" + this.id,
+        defaults: {
+            metrics: {
+                icon: icon,
+                title: 'HTTP device ' + this.id
+            }
+        },
+        overlay: {
+            deviceType: deviceType,
+            metrics: config_metrics
+        },
+        handler: function (command, args) {
+            var vDevType = deviceType;
+
+            if (command === "update" && (vDevType === "sensorBinary" || vDevType === "sensorMultilevel" || vDevType === "switchBinary" || vDevType === "switchMultilevel")) {
+                self.update(this);
+            }
+
+            if (command === "on" && (vDevType === "toggleButton" || vDevType === "switchBinary")) {
+                self.act(this, "On", null, (vDevType === "switchBinary" ? "on" : null));
+            }
 
 
-        if (command === "off" && vDevType === "switchBinary") {
-            self.act(this, "Off", null, "off");
-        }
+            if (command === "off" && vDevType === "switchBinary") {
+                self.act(this, "Off", null, "off");
+            }
 
-        if ((command === "off" || command === "on" || command === "exact") && vDevType === "switchMultilevel") {
-        	var level = command === "exact" ? parseInt(args.level, 10) : (command === "on" ? 99 : 0);
-            self.act(this, "Level", level, level);
-        }
+            if ((command === "off" || command === "on" || command === "exact") && vDevType === "switchMultilevel") {
+                var level = command === "exact" ? parseInt(args.level, 10) : (command === "on" ? 99 : 0);
+                self.act(this, "Level", level, level);
+            }
+        },
+        moduleId: this.id
     });
     
     if (vDev && this.config["getter_" + deviceType] && this.config["getterPollInterval_" + deviceType]) {

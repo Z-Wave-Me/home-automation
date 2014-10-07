@@ -37,12 +37,12 @@ _.extend(DevicesCollection.prototype, {
     updateLength: function () {
         this.length = _.size(this.models);
     },
-    create: function (deviceId, defaults, overlay, handler) {
+    create: function (options) {
         var that = this,
             vDev = null;
 
-        console.log("Creating device " + defaults.deviceType + " " + deviceId);
-        vDev = new VirtualDevice(deviceId, that.controller, defaults, overlay, handler);
+        console.log("Creating device " + options.defaults.deviceType + " " + options.deviceId);
+        vDev = new VirtualDevice(_.extend(options, {controller: that.controller}));
 
         if (vDev !== null) {
             vDev.init();

@@ -542,7 +542,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 instance;
 
             if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
-                instance = that.controller.createInstance(reqObj.moduleId, reqObj.params);
+                instance = that.controller.createInstance(reqObj);
                 if (instance) {
                     reply.code = 201;
                     reply.data = instance;

@@ -61,7 +61,7 @@ define([], function () {
                     // update tags
                     if (devices_binding.val()) {
                         dataBinding.update('deviceTags', function () {
-                            return devices_binding.val().reduce(function (memo, device) {
+                            var tags = devices_binding.val().reduce(function (memo, device) {
                                 memo = memo || Immutable.Vector();
 
                                 var device_tags = device.get('tags');
@@ -74,14 +74,16 @@ define([], function () {
                                 } else {
                                     return memo;
                                 }
-                            }).sort();
+                            }) || Immutable.Vector();
+
+                            return tags.sort();
                         });
                     }
 
                     // update types
                     if (devices_binding.val()) {
                         dataBinding.update('deviceTypes', function () {
-                            return devices_binding.val().reduce(function (memo, device) {
+                            var types = devices_binding.val().reduce(function (memo, device) {
                                 memo = memo || Immutable.Vector();
 
                                 if (memo.indexOf(device.get('deviceType')) === -1) {
@@ -89,7 +91,9 @@ define([], function () {
                                 } else {
                                     return memo;
                                 }
-                            }).sort();
+                            }) || Immutable.Vector();
+
+                            return types.sort();
                         });
                     }
                 },

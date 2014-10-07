@@ -41,15 +41,19 @@ BatteryPolling.prototype.init = function (config) {
     };
 
     // create vDev
-    this.vDev = this.controller.devices.create("BatteryPolling_" + this.id, {
-        deviceType: "battery",
-        metrics: {
-            probeTitle: "Battery",
-            scaleTitle: "%",
-            title: "Battery digest " + this.id
-        }
-    }, {
-    }, this.onPoll);
+    this.vDev = this.controller.devices.create({
+        deviceId: "BatteryPolling_" + this.id,
+        defaults: {
+            deviceType: "battery",
+            metrics: {
+                probeTitle: "Battery",
+                scaleTitle: "%",
+                title: "Battery digest " + this.id
+            }
+        },
+        handler: this.onPoll,
+        moduleId: this.id
+    });
 
     this.onMetricUpdated = function (vDev) {
         if (!vDev || vDev.id === self.vDev.id) {

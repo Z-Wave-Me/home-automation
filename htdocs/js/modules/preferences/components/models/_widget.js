@@ -117,6 +117,8 @@ define([
                 title = id ? item.sub('metrics').val('title') : null,
                 icon = id ? item.sub('metrics').val('icon') : null,
                 deviceType = item.val('deviceType'),
+                creatorId = item.val('creatorId'),
+                creatorIndex = creatorId ? this._getIndexModelFromCollection(creatorId, 'instances') : null,
                 temp_string = preferencesBinding.val('temp_string'),
                 current_tags = item.val('tags'),
                 classes = cx({
@@ -139,6 +141,10 @@ define([
                         _.span({className: 'label-item'}, 'deviceType'),
                         _.span({className: 'value-item'}, item.val('deviceType'))
                     ),
+                    creatorIndex !== -1 ? _.div({ key: 'form-creatorId-input', className: 'data-group'},
+                        _.span({className: 'label-item'}, 'creatorId'),
+                        _.span({className: 'value-item'}, (dataBinding.sub('instances').sub(creatorIndex).val('title') || '') + ' [' + creatorId + ']')
+                    ) : null,
                     _.div({ key: 'form-name-input', className: 'form-group' },
                         _.label({ htmlFor: 'room-name', className: 'input-label'}, 'Name:'),
                         _.input({
@@ -307,6 +313,10 @@ define([
                })
             });
 
+            return false;
+        },
+        onBlurHandler: function () {
+            this.getBinding('preferences').set('temp_string', '');
             return false;
         }
     });

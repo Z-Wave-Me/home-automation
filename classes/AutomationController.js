@@ -323,21 +323,18 @@ AutomationController.prototype.registerInstance = function (instance) {
     }
 };
 
-AutomationController.prototype.createInstance = function (moduleId, params) {
+AutomationController.prototype.createInstance = function (reqObj) {
     //var instance = this.instantiateModule(id, className, config),
     var self = this,
         id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
         instance = null,
-        module = _.find(self.modules, function (module) { return module.meta.id === moduleId; }),
+        module = _.find(self.modules, function (module) { return module.meta.id === reqObj.moduleId; }),
         result;
 
     if (!!module) {
-        instance = {
-            id: id,
-            moduleId: moduleId,
-            active: true,
-            params: params
-        };
+        instance = _.extend(reqObj, {
+            id: id
+        });
 
         self.instances.push(instance);
         self.saveConfig();
@@ -345,7 +342,7 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
         self.instantiateModule(instance);
         result = instance;
     } else {
-        self.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
+        self.emit('core.error', new Error("Cannot create module " + reqObj.moduleId + " instance with id " + id));
         result = false;
     }
 
