@@ -1,7 +1,6 @@
 define([
     // libs
-    'react',
-    'morearty',
+'morearty',
     // components
     './main_menu',
     './instances_menu',
@@ -17,7 +16,6 @@ define([
     'mixins/data/data-layer'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     main_menu,

@@ -16,4 +16,5 @@ storage/*
 !storage/.keep
 .idea/
 .idea
+dist/
 

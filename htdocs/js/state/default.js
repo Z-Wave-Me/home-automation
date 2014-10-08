@@ -1,14 +1,14 @@
-define([
-    // libs
-    'immutable'
-], function (
-    // libs
-    Immutable
-    ) {
+define([], function () {
     'use strict';
 
     return {
         nowShowing: 'dashboard', // start route
+        // system
+        system: {
+            network_connected: false,
+            loaded: false,
+            loaded_percentage: 0
+        },
         // notifications
         notifications: {
             count: 0,

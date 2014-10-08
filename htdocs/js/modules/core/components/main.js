@@ -1,12 +1,10 @@
 define([
     // libs
-    'react',
-    'morearty',
+'morearty',
     // components
     'Widgets'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     Widgets

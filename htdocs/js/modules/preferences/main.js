@@ -1,14 +1,12 @@
 define([
     // libs
-    'react',
-    'morearty',
+'morearty',
     // components
     './components/base',
     // mixins
     './mixins/base_mixin'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     Base,

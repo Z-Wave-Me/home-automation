@@ -1,7 +1,6 @@
 define([
     // libs
-    'react',
-    'morearty',
+'morearty',
     // components
     '../common/_buttons_group',
     '../common/_inline_input',
@@ -10,7 +9,6 @@ define([
     'mixins/sync/sync-layer'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     _buttons_group,

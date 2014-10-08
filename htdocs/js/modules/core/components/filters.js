@@ -1,7 +1,6 @@
 define([
     //libs
-    'react',
-    'morearty',
+'morearty',
     // components
     './_filter_rooms',
     './_filter_tags',
@@ -9,7 +8,6 @@ define([
     'Preferences/components/common/_base_search'
 ], function (
     // libs
-    React,
     Morearty,
     // components
     FilterRooms,

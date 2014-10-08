@@ -2,7 +2,7 @@ define([], function () {
     'use strict';
 
     return {
-        defaultInterval: 10000,
+        defaultInterval: 2000,
         collections: [
             {
                 id: 'profiles',
@@ -16,7 +16,8 @@ define([], function () {
                         description: '',
                         positions: []
                     }
-                }
+                },
+                loaded: false
             },
             {
                 id: 'devices',
@@ -111,7 +112,8 @@ define([], function () {
                         permanently_hidden: false
                     }
                 },
-                delay: 2000
+                delay: 2000,
+                loaded: false
             },
             {
                 id: 'locations',
@@ -124,7 +126,8 @@ define([], function () {
                         name: 'Default name',
                         icon: null
                     }
-                }
+                },
+                loaded: false
             },
             {
                 id: 'namespaces',
@@ -133,7 +136,8 @@ define([], function () {
                 model: {
                     methods: ['READ'],
                     defaults: null
-                }
+                },
+                loaded: false
             },
             {
                 id: 'modules_categories',
@@ -142,7 +146,8 @@ define([], function () {
                 model: {
                     methods: ['READ'],
                     defaults: {}
-                }
+                },
+                loaded: false
             },
             {
                 id: 'modules',
@@ -160,7 +165,8 @@ define([], function () {
                     return response.data.map(function (model) {
                         return Sticky.get('App.Helpers.JS').getNamespacesData(ctx, model);
                     });
-                }
+                },
+                loaded: false
             },
             {
                 id: 'instances',
@@ -174,7 +180,8 @@ define([], function () {
                         params: {},
                         group: 'default_group'
                     }
-                }
+                },
+                loaded: false
             },
             {
                 id: 'notifications',
@@ -195,7 +202,8 @@ define([], function () {
                 },
                 parse: function (response) {
                     return response.data.notifications;
-                }
+                },
+                loaded: false
             }
         ]
     };
