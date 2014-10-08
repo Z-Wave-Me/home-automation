@@ -61,7 +61,7 @@ define([], function () {
                                     }
                                 }
 
-                                if (obj.loaded === false) {
+                                if (collections.sub(index).val('loaded')=== false) {
                                     collections.sub(index).set('loaded', true);
                                     ctx.getBinding().sub('default').sub('system').update('loaded_percentage', function (percantage) {
                                         return percantage + ((1 / collections.val().toArray().length) * 100);
