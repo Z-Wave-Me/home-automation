@@ -1,103 +1,104 @@
-/* global: _, $, define */
 define([
-    "backbone",
-    "modules/widgets/_probeView",
-    "modules/widgets/_fanView",
-    "modules/widgets/_multilevelView",
-    "modules/widgets/_thermostatView",
-    "modules/widgets/_doorView",
-    "modules/widgets/_switchView",
-    "modules/widgets/_switchControlView",
-    "modules/widgets/_toggleView",
-    "modules/widgets/_cameraView"
-], function (Backbone, ProbeWidgetView, FanWidgetView, MultilevelWidgetView, ThermostatView, DoorLockView, SwitchView, SwitchControlView, ToggleView, CameraView) {
+    //libs
+'morearty',
+    // components
+    './components/base',
+    // mixins
+    'mixins/data/data-layer'
+], function (
+    //libs
+    Morearty,
+    // components
+    BaseWidget,
+    // mixins
+    data_layer_mixin
+    ) {
     'use strict';
 
-    return Backbone.View.extend({
-        el: '#devices-container',
-        initialize: function () {
-            _.bindAll(this, 'render', 'renderWidget', 'show', 'checkFilter');
+    return React.createClass({
+        mixins: [Morearty.Mixin, data_layer_mixin],
+        profileEvent: null,
+        componentWillMount: function () {
             var that = this;
-            that.Devices = window.App.Devices;
-        },
-        render: function (forceView) {
-            var that = this;
-            if (that.Devices.length > 0) {
-                if (!$("#devices-container").exists()) {
-                    $('#main-region').append('<section id="devices-container" class="widgets"></section>');
-                }
 
-                that.Devices.each(function (device) {
-                    that.renderWidget(device, forceView);
-                });
+            that.getBinding('data').addListener('devicesOnDashboard', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
+            that.getBinding('data').addListener('devices', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
+            that.getBinding('preferences').addListener('defaultProfileId', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
+            that.getDefaultBinding().addListener('primaryFilter', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+
+            that.getDefaultBinding().addListener('secondaryFilter', function () {
+                if (that.isMounted()) {
+                    that.forceUpdate();
+                }
+            });
+        },
+        componentWillUnmount: function () {
+            if (this.profileEvent) {
+                this.getActiveProfile().removeListener(this.profileEvent);
             }
         },
-        renderWidget: function (model, forceView) {
-            var that = this,
-                modelView = model.view || null;
+        render: function () {
+            var __ = React.DOM,
+                binding = this.getDefaultBinding(),
+                data_binding = this.getBinding('data'),
+                primary_filter = binding.val('primaryFilter'),
+                secondary_filter = binding.val('secondaryFilter'),
+                items_binding = data_binding.sub('devices'),
+                positions = data_binding.val('devicesOnDashboard'),
+                isShown, isSearchMatch;
 
-            if (!modelView) {
-                if (model.get('deviceType') === "sensorBinary" || model.get('deviceType') === "sensorMultilevel" || model.get('deviceType') === "battery") {
-                    modelView = new ProbeWidgetView({model: model});
-                } else if (model.get('deviceType') === "fan") {
-                    modelView = new FanWidgetView({model: model});
-                } else if (model.get('deviceType') === "switchMultilevel") {
-                    modelView = new MultilevelWidgetView({model: model});
-                } else if (model.get('deviceType') === "thermostat") {
-                    modelView = new ThermostatView({model: model});
-                } else if (model.get('deviceType') === "doorlock") {
-                    modelView = new DoorLockView({model: model});
-                } else if (model.get('deviceType') === "switchBinary" || model.get('deviceType') === "switchRGBW") {
-                    modelView = new SwitchView({model: model});
-                } else if (model.get('deviceType') === "toggleButton") {
-                    modelView = new ToggleView({model: model});
-                } else if (model.get('deviceType') === "camera") {
-                    modelView = new CameraView({model: model});
-                } else if (model.get('deviceType') === "switchControl") {
-                    modelView = new SwitchControlView({model: model});
+            isSearchMatch = function (index) {
+                var search_string = binding.val('searchStringMainPanel'),
+                    title = items_binding.sub(index).sub('metrics').val('title');
+
+                return search_string.length > 0 ? title.toLowerCase().indexOf(search_string.toLowerCase()) !== -1 : true;
+            };
+
+            isShown = function (item) {
+                if (!item.get('permanently_hidden')) {
+                    if (binding.val('nowShowing') === 'dashboard') {
+                        return positions.indexOf(item.get('id')) !== -1 ? true : null;
+                    } else {
+                        if (primary_filter === 'rooms') {
+                            return item.get('location') === secondary_filter;
+                        } else if (primary_filter === 'types') {
+                            return item.get('deviceType') === secondary_filter;
+                        } else if (primary_filter === 'tags') {
+                            return item.get('tags').toJS().indexOf(secondary_filter) !== -1;
+                        } else {
+                            return true;
+                        }
+                    }
                 } else {
-                    //log(model);
+                    return false;
                 }
-            }
+            };
 
-            if (modelView) {
-                if (!model.view) {
-                    model.view = modelView;
-                    modelView.render();
-                }
-
-                that.listenTo(model, 'remove', function () {
-                    modelView.getTemplate().fadeOut(function () {
-                        modelView.getTemplate().remove();
-                    });
-                });
-
-                that.show(modelView, forceView);
-            }
-        },
-        show: function (modelView, forceView) {
-            var that = this,
-                $template = modelView.getTemplate();
-
-            if (App.Profiles.getDevice(modelView.model.id) || (forceView && that.checkFilter(modelView.model))) {
-                $template.fadeIn().addClass('show');
-            } else {
-                $template.fadeOut().removeClass('show');
-            }
-        },
-        checkFilter: function (model) {
-            var result = true,
-                filters = window.App.filters;
-
-            if (filters.locations) {
-                result = (model.get('location') === window.App.Locations.activeRoom) || window.App.Locations.activeRoom === 'all';
-            } else if (filters.tags) {
-                result = (model.get('tags').indexOf(window.App.Devices.activeTag) !== -1) || window.App.Devices.activeTag === 'all';
-            } else if (filters.types) {
-                result = (model.get('deviceType') === window.App.Devices.activeType) || window.App.Devices.activeType === 'all';
-            }
-
-            return result;
+            return __.section({id: 'devices-container', className: 'widgets'},
+                items_binding.val().map(function (item, index) {
+                    return isShown(item) && isSearchMatch(index) ?
+                        BaseWidget({ key: index, binding: { default: items_binding.sub(index)} }) : null;
+                }).toArray()
+            );
         }
     });
 });

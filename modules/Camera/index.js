@@ -30,7 +30,8 @@ _.extend(Camera.prototype, {
     init: function (config) {
         Camera.super_.prototype.init.call(this, config);
 
-        var that = this;
+        var that = this,
+            vDevId = "CameraDevice_" + this.id;
         
         var opener = function(command) {
             config.doorDevices.forEach(function(el) {
@@ -47,55 +48,75 @@ _.extend(Camera.prototype, {
             });
         };
         
-        this.vDev = this.controller.devices.create("CameraDevice_" + this.id, {
-            deviceType: "camera",
-            metrics: {
-                url: config.url,
-                hasZoomIn: !!config.zoomInUrl,
-                hasZoomOut: !!config.zoomOutUrl,
-                hasLeft: !!config.leftUrl,
-                hasRight: !!config.rightUrl,
-                hasUp: !!config.upUrl,
-                hasDown: !!config.downUrl,
-                hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
-                hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length),
-                icon: 'camera',
-                title: 'Camera ' + this.id
-            }
-        }, function(command) {
-            var reqUrl = null;
-            
-            if (command == "zoomIn") {
-                url = config.zoomInUrl;
-            } else if (command == "zoomOut") {
-                url = config.zoomInUrl;
-            } else if (command == "left") {
-                url = config.leftUrl;
-            } else if (command == "right") {
-                url = config.rightUrl;
-            } else if (command == "up") {
-                url = config.upUrl;
-            } else if (command == "down") {
-                url = config.downUrl;
-            } else if (command == "open") {
-                url = config.openUrl;
-                opener(command);
-            } else if (command == "close") {
-                url = config.closeUrl;
-                opener(command);
-            }
-            
-            if (url) {
-                http.request({
-                    url: url,
-                    async: true
-                });
-            }
+        
+        this.proxy_url = "/" + vDevId + "/stream";
+        
+        ws.proxify(this.proxy_url, config.url, config.user, config.password);
+
+        this.vDev = this.controller.devices.create({
+            deviceId: vDevId,
+            defaults: {
+                deviceType: "camera",
+                metrics: {
+                    icon: 'camera',
+                    title: 'Camera ' + this.id
+                }
+            },
+            overlay: {
+                metrics: {
+                    url: this.proxy_url,
+                    hasZoomIn: !!config.zoomInUrl,
+                    hasZoomOut: !!config.zoomOutUrl,
+                    hasLeft: !!config.leftUrl,
+                    hasRight: !!config.rightUrl,
+                    hasUp: !!config.upUrl,
+                    hasDown: !!config.downUrl,
+                    hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
+                    hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length)
+                }
+            },
+            handler: function(command) {
+                var url = null;
+
+                if (command == "zoomIn") {
+                    url = config.zoomInUrl;
+                } else if (command == "zoomOut") {
+                    url = config.zoomOutUrl;
+                } else if (command == "left") {
+                    url = config.leftUrl;
+                } else if (command == "right") {
+                    url = config.rightUrl;
+                } else if (command == "up") {
+                    url = config.upUrl;
+                } else if (command == "down") {
+                    url = config.downUrl;
+                } else if (command == "open") {
+                    url = config.openUrl;
+                    opener(command);
+                } else if (command == "close") {
+                    url = config.closeUrl;
+                    opener(command);
+                }
+
+                if (url) {
+                    http.request({
+                        url: url,
+                        async: true,
+                        auth: {
+                            login: config.user,
+                            password: config.password
+                        }
+                    });
+                }
+            },
+            moduleId: this.id
         });
     },
     stop: function () {
         Camera.super_.prototype.stop.call(this);
 
+        ws.proxify(this.proxy_url, null);
+        
         if (this.vDev) {
             this.controller.devices.remove(this.vDev.id);
             this.vDev = null;

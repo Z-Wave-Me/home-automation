@@ -67,8 +67,12 @@ function actualize (config) {
     if (config.hasOwnProperty('profiles')) {
         if (config.profiles.length > 0) {
             config.profiles.forEach(function (profile) {
-                if (!_.isObject(profile.groups) || !profile.groups.hasOwnProperty('instances')) {
-                    profile.groups = {instances: {}}
+                if (profile.hasOwnProperty('groups')) {
+                    delete profile.groups;
+                }
+
+                if (profile.hasOwnProperty('active')) {
+                    delete profile.active;
                 }
 
                 if (_.isArray(profile.positions)) {
@@ -78,13 +82,173 @@ function actualize (config) {
                 } else {
                     profile.positions = [];
                 }
-
             });
         }
     }
 
+    // instances
+    if (config.hasOwnProperty('instances')) {
+        if (config.instances.length > 0) {
+            config.instances.forEach(function (instance) {
+                // move title and description params
+                instance.title = instance.params.title;
+                instance.description = instance.params.description;
+                delete instance.params.title;
+                delete instance.params.description;
+
+                // move status
+                if (instance.params.hasOwnProperty('status')) {
+                    instance.active = instance.params.status === 'enable';
+                    delete instance.params.status;
+                } else if (!instance.hasOwnProperty('active')) {
+                    instance.active = true;
+                }
+
+                // delete userView
+                if (instance.hasOwnProperty('userView')) {
+                    delete instance.userView;
+                }
+            });
+        }
+    }
+
+    // add local modules_categories
+    // TODO: temp data.
+    //if (!config.hasOwnProperty('modules_categories')) {
+        config.modules_categories = [
+            {
+                "id": "automation",
+                "name": "Automation",
+                "description": "Create home automation rules",
+                "icon": ""
+            },
+            {
+                "id": "security",
+                "name": "Security",
+                "description": "Enhance security",
+                "icon": ""
+            },
+            {
+                "id": "peripherals",
+                "name": "Peripherals",
+                "description": "Z-Wave and other peripherals",
+                "icon": ""
+            },
+            {
+                "id": "surveillance",
+                "name": "Video surevillance",
+                "description": "Support for cameras",
+                "icon": ""
+            },
+            {
+                "id": "logging",
+                "name": "Data logging",
+                "description": "Logging to third party services",
+                "icon": ""
+            },
+            {
+                "id": "scripting",
+                "name": "Scripting",
+                "description": "Create custom scripts",
+                "icon": ""
+            },
+            {
+                "id": "devices",
+                "name": "Devices",
+                "description": "Create devices",
+                "icon": ""
+            },
+            {
+                "id": "scheduling",
+                "name": "Schedulers",
+                "description": "Time related functions",
+                "icon": ""
+            },
+            {
+                "id": "climate",
+                "name": "Climate",
+                "description": "Climate control",
+                "icon": ""
+            },
+            {
+                "id": "environment",
+                "name": "Environment",
+                "description": "Environment related date",
+                "icon": ""
+            },
+            {
+                "id": "scenes",
+                "name": "Scenes",
+                "description": "Light scenes",
+                "icon": ""
+            },
+            {
+                "id": "notifications",
+                "name": "Notifications",
+                "description": "SMS, E-mail and push notifications",
+                "icon": ""
+            },
+            {
+                "id": "tagging",
+                "name": "Tagging",
+                "description": "Tagging widgets",
+                "icon": ""
+            }
+        ];
+    //}
+
     return config;
 }
+
+//--- Init JS handler
+
+allowExternalAccess("JS");
+allowExternalAccess("JS.Run");
+
+JS = function() {
+    return { status: 400, body: "Bad JS request" };
+};
+
+JS.Run = function(url) {
+	// skip trailing slash
+    url = url.substring(1);
+    try {
+    	var r = executeJS(url, "JS/Run");
+    	return { 
+    		status: 200, 
+    		headers: { 
+    			"Content-Type": "application/json",
+    			"Connection": "keep-alive"
+    		},
+    		body: r 
+    	};
+    } catch (e) {
+    	return { status: 500, body: e.toString() };
+    }
+};
+
+// init WebServer
+
+function WebServerRequestHandler(req) {
+	var q = req.url.substring(1).replace(/\//g, '.');
+	if (!q) return null;
+	
+	var found = null;
+	if (listExternalAccess().some(function(ext) {
+		found = ext;
+		return (ext.length < q.length && q.slice(0, ext.length + 1) === ext + ".") || (ext === q);
+	}) && found) {
+		var cache = this.evalCache || (this.evalCache = {});
+		var handler = cache[found] || (cache[found] = evalPath(found));
+		return handler(req.url.substring(found.length + 1), req);
+	}
+	
+	return null;
+}
+
+ws = new WebServer(8083, WebServerRequestHandler, {
+	document_root: "htdocs"
+});
 
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
@@ -154,12 +318,16 @@ if (!config) {
     controller.start();
 
     //--- load Z-Way utilities
-    (fs.list("z-way-utils/") || []).forEach(function (file) {
-        try {
-            executeFile("z-way-utils/" + file);
-        } catch (e) {
-            controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
-            console.log(e.stack);
-        }
-    });
+    if (typeof zway !== "undefined") {
+        (fs.list("z-way-utils/") || []).forEach(function (file) {
+            try {
+                executeFile("z-way-utils/" + file);
+            } catch (e) {
+                controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
+                console.log(e.stack);
+            }
+        });
+    } else {
+        console.log("Z-Way object is not loaded. Skipping Z-Way Utilities");
+    }
 }

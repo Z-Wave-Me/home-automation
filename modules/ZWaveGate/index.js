@@ -1,4 +1,4 @@
-/*** ZWave Gate module ********************************************************
+/*** Z-Wave Gate module ********************************************************
 
 Version: 2.0.0
 -------------------------------------------------------------------------------
@@ -16,7 +16,9 @@ function ZWaveGate (id, controller) {
         "InstanceAdded": 0x04,
         "InstanceRemoved": 0x08,
         "CommandAdded": 0x10,
-        "CommandRemoved": 0x20
+        "CommandRemoved": 0x20,
+        "ZDDXSaved": 0x100,
+        "EnumerateExisting": 0x200
     };
 
     this.ZWAY_DATA_CHANGE_TYPE = {
@@ -64,6 +66,12 @@ ZWaveGate.prototype.init = function (config) {
     // Bind to all future CommandClasses changes
     this.zwayBinding = zway.bind(function (type, nodeId, instanceId, commandClassId) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
+            // Ignore Static PC Controllers
+            if (2 === zway.devices[nodeId].data.basicType.value && 1 === zway.devices[nodeId].data.specificType.value) {
+                console.log("Device", nodeId, "is a Static PC Controller, ignoring");
+                return;
+            }
+            
             self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
                 if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
                     self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
@@ -74,38 +82,8 @@ ZWaveGate.prototype.init = function (config) {
         } else {
             self.parseDelCommandClass(nodeId, instanceId, commandClassId);
         }
-    }, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"]);
+    }, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
 
-    // Iterate all existing Command Classes
-    Object.keys(zway.devices).forEach(function (nodeId) {
-        nodeId = parseInt(nodeId, 10);
-        var device = zway.devices[nodeId];
-
-        // Ignore Static PC Controllers
-        if (2 === device.data.basicType.value && 1 === device.data.specificType.value) {
-            console.log("Device", nodeId, "is a Static PC Controller, ignoring");
-            return;
-        }
-
-        Object.keys(device.instances).forEach(function (instanceId) {
-            instanceId = parseInt(instanceId, 10);
-            var instance = device.instances[instanceId];
-
-            Object.keys(instance.commandClasses).forEach(function (commandClassId) {
-                commandClassId = parseInt(commandClassId, 10);
-                var commandClass = instance.commandClasses[commandClassId];
-                
-                self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
-                    if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
-                    } else {
-                        self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
-                    }
-                }, "value");
-            });
-        });
-    });
-    
     this.controller.on("ZWaveGate.dataBind", this.dataBind);
     this.controller.on("ZWaveGate.dataUnbind", this.dataUnbind);
 };
@@ -209,23 +187,43 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             console.log("Removing SwitchBinary due to SwitchMultilevel existence");
             this.controller.devices.remove(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"]);
         }
+        
+        var vendorName = "";
+        if (zway.devices[nodeId].data.vendorString.value)
+            vendorName = zway.devices[nodeId].data.vendorString.value;
 
+        function compileTitle() {
+            var args = new Array();
+            if (vendorName)
+                args.push(vendorName);
+            for (var i = 0; i < arguments.length; i++)
+                args.push(arguments[i]);
+            return args.join(' ');
+        }
+        
         if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
             defaults = {
                 deviceType: "switchBinary",
                 metrics: {
-                    level: '',
                     icon: 'switch',
-                    title: 'Switch ' + vDevIdNI
+                    title: compileTitle('Switch', vDevIdNI)
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, function (command) {
-                if ("on" === command) {
-                    cc.Set(true);
-                } else if ("off" === command) {
-                    cc.Set(false);
-                }
+
+            var vDev = self.controller.devices.create({
+                deviceId: vDevId,
+                defaults: defaults,
+                overlay: {},
+                handler: function (command) {
+                    if ("on" === command) {
+                        cc.Set(true);
+                    } else if ("off" === command) {
+                        cc.Set(false);
+                    }
+                },
+                moduleId: this.id
             });
+
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "level", function () {
                     vDev.set("metrics:level", this.value ? "on" : "off");
@@ -236,69 +234,77 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             defaults = {
                 deviceType: "switchMultilevel",
                 metrics: {
-                    level: '',
                     icon: isBlind ? 'blinds' : 'multilevel',
-                    title: (isBlind ? 'Blinds' : 'Dimmer') + ' ' + vDevIdNI
+                    title: compileTitle(isBlind ? 'Blind' : 'Dimmer', vDevIdNI)
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, function(command, args) {
-                var newVal;
-                // up, down for Blinds
-                if ("on" === command || "up" === command) {
-                    newVal = 255;
-                } else if ("off" === command || "down" === command) {
-                    newVal = 0;
-                } else if ("min" === command) {
-                    newVal = 10;
-                } else if ("max" === command || "upMax" === command) {
-                    newVal = 99;
-                } else if ("increase" === command) {
-                    newVal = this.metrics.level + 10;
-                    if (0 !== newVal % 10) {
-                        newVal = Math.round(newVal / 10) * 10;
-                    }
-                    if (newVal > 99) {
-                        newVal = 99;
-                    }
 
-                } else if ("decrease" === command) {
-                    newVal = this.metrics.level - 10;
-                    if (newVal < 0) {
-                        newVal = 0;
-                    }
-                    if (0 !== newVal % 10) {
-                        newVal = Math.round(newVal / 10) * 10;
-                    }
-                } else if ("exact" === command) {
-                    newVal = parseInt(args.level, 10);
-                    if (newVal < 0) {
-                        newVal = 0;
-                    } else if (newVal === 255) {
+
+            var vDev = self.controller.devices.create({
+                deviceId: vDevId,
+                defaults: defaults,
+                overlay: {},
+                handler: function(command, args) {
+                    var newVal;
+                    // up, down for Blinds
+                    if ("on" === command || "up" === command) {
                         newVal = 255;
-                    } else if (newVal > 99) {
-                        if (newVal === 100) {
-                            newVal = 99;
-                        } else {
-                            newVal = null;
+                    } else if ("off" === command || "down" === command) {
+                        newVal = 0;
+                    } else if ("min" === command) {
+                        newVal = 10;
+                    } else if ("max" === command || "upMax" === command) {
+                        newVal = 99;
+                    } else if ("increase" === command) {
+                        newVal = this.metrics.level + 10;
+                        if (0 !== newVal % 10) {
+                            newVal = Math.round(newVal / 10) * 10;
                         }
-                        
-                    } 
-                }
-                // Commands for Blinds
-                else if ("stop" === command) {
-                    cc.StopLevelChange();
-                }
-                else if ("startUp" === command) {
-                    cc.StartLevelChange(0);
-                }
-                else if ("startDown" === command) {
-                    cc.StartLevelChange(1);
-                }
+                        if (newVal > 99) {
+                            newVal = 99;
+                        }
 
-                if (0 === newVal || !!newVal) {
-                    cc.Set(newVal);
-                }
+                    } else if ("decrease" === command) {
+                        newVal = this.metrics.level - 10;
+                        if (newVal < 0) {
+                            newVal = 0;
+                        }
+                        if (0 !== newVal % 10) {
+                            newVal = Math.round(newVal / 10) * 10;
+                        }
+                    } else if ("exact" === command) {
+                        newVal = parseInt(args.level, 10);
+                        if (newVal < 0) {
+                            newVal = 0;
+                        } else if (newVal === 255) {
+                            newVal = 255;
+                        } else if (newVal > 99) {
+                            if (newVal === 100) {
+                                newVal = 99;
+                            } else {
+                                newVal = null;
+                            }
+
+                        }
+                    }
+                    // Commands for Blinds
+                    else if ("stop" === command) {
+                        cc.StopLevelChange();
+                    }
+                    else if ("startUp" === command) {
+                        cc.StartLevelChange(0);
+                    }
+                    else if ("startDown" === command) {
+                        cc.StartLevelChange(1);
+                    }
+
+                    if (0 === newVal || !!newVal) {
+                        cc.Set(newVal);
+                    }
+                },
+                moduleId: this.id
             });
+
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "level", function() {
                     vDev.set("metrics:level", this.value);
@@ -319,7 +325,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 sensorTypeId = parseInt(sensorTypeId, 10);
                 if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
                     defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-                    defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                    defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
                     // aivs // Motion icon for Sensor Binary by default
                     defaults.metrics.icon = "motion";
 
@@ -337,11 +343,18 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                             defaults.metrics.icon = "motion";
                     }
                     
-                    var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, function(command) {
-                        if (command === "update") {
-                            cc.Get(sensorTypeId);
-                        }
+                    var vDev = self.controller.devices.create({
+                        deviceId: vDevId + separ + sensorTypeId,
+                        defaults: defaults,
+                        overlay: {},
+                        handler: function(command) {
+                            if (command === "update") {
+                                cc.Get(sensorTypeId);
+                            }
+                        },
+                        moduleId: this.id
                     });
+
                     if (vDev) {
                         self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function(type) {
                             if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -376,7 +389,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
                     defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
                     defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-                    defaults.metrics.title =  'Sensor ' + vDevIdNI + separ + vDevIdC + separ + sensorTypeId;
+                    defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
                     if (sensorTypeId == 1) {
                             defaults.metrics.icon = "temperature";
                     } else if (sensorTypeId == 3) {
@@ -386,11 +399,19 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     } else if (sensorTypeId == 5) {
                             defaults.metrics.icon = "humidity";
                     }
-                    var vDev = self.controller.devices.create(vDevId + separ + sensorTypeId, defaults, function(command) {
-                        if (command === "update") {
-                            cc.Get(sensorTypeId);
-                        }
+
+                    var vDev = self.controller.devices.create({
+                        deviceId: vDevId + separ + sensorTypeId,
+                        defaults: defaults,
+                        overlay: {},
+                        handler: function(command) {
+                            if (command === "update") {
+                                cc.Get(sensorTypeId);
+                            }
+                        },
+                        moduleId: this.id
                     });
+
                     if (vDev) {
                         self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function(type) {
                             if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -425,12 +446,20 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 if (!isNaN(scaleId) && !self.controller.devices.get(vDevId + separ + scaleId)) {
                     defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
                     defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-                    defaults.metrics.title =  'Meter ' + vDevIdNI + separ + vDevIdC + separ + scaleId;
-                    var vDev = self.controller.devices.create(vDevId + separ + scaleId, defaults, function(command) {
-                        if (command === "update") {
-                            cc.Get(scaleId);
-                        }
+                    defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
+                    
+                    var vDev = self.controller.devices.create({
+                        deviceId: vDevId + separ + scaleId,
+                        defaults: defaults,
+                        overlay: {},
+                        handler: function(command) {
+                            if (command === "update") {
+                                cc.Get(scaleId);
+                            }
+                        },
+                        moduleId: this.id
                     });
+
                     if (vDev) {
                         self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, scaleId + ".val", function(type) {
                             if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -457,14 +486,22 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     scaleTitle: '%',
                     level: '',
                     icon: 'battery',
-                    title: 'Battery ' + vDevIdNI
+                    title: compileTitle('Battery', vDevIdNI)
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, function(command) {
-                        if (command === "update") {
-                            cc.Get();
-                        }
-                    });
+
+            var vDev = self.controller.devices.create({
+                deviceId: vDevId,
+                defaults: defaults,
+                overlay: {},
+                handler: function(command) {
+                    if (command === "update") {
+                        cc.Get();
+                    }
+                },
+                moduleId: this.id
+            });
+
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "last", function() {
                     vDev.set("metrics:level", this.value);
@@ -476,16 +513,22 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 metrics: {
                     mode: '',
                     icon: 'door',
-                    title: 'Door Lock ' + vDevIdNI
+                    title: compileTitle('Door Lock', vDevIdNI)
                 }
             };
 
-            var vDev = self.controller.devices.create(vDevId, defaults, function(command) {
-                if ("open" === command) {
-                    cc.Set(0);
-                } else if ("close" === command) {
-                    cc.Set(255);
-                }
+            var vDev = self.controller.devices.create({
+                deviceId: vDevId,
+                defaults: defaults,
+                overlay: {},
+                handler: function(command) {
+                    if ("open" === command) {
+                        cc.Set(0);
+                    } else if ("close" === command) {
+                        cc.Set(255);
+                    }
+                },
+                moduleId: this.id
             });
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
@@ -505,7 +548,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     title: 'Fan ' + vDevIdNI
                 }
             };
-            var vDev = self.controller.devices.create(vDevId, defaults, "fan");
+            var vDev = self.controller.devices.create(vDevId, defaults, {}, "fan");
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
                     vDev.set("metrics:currentMode", this.value);
@@ -550,7 +593,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     mode: null,
                     modes: {},
                     icon: 'thermostat',
-                    title: 'Thermostat ' + vDevIdNI
+                    title: compileTitle('Thermostat', vDevIdNI)
                 }
             };
             
@@ -603,16 +646,22 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             if (scaleTitle) {
                 defaults.metrics.scaleTitle = scaleTitle;
             }
-            
-            var vDev = self.controller.devices.create(deviceName, defaults, function(command, args) {
-                if (command === "setMode" && withMode) {
-                    instance.ThermostatMode.Set(args.mode);
-                } else if (command === "setTemp" && withTemp) {
-                    instance.ThermostatSetPoint.Set(parseInt(args.mode), parseFloat(args.temp));
-                    if (instance.ThermostatMode.data.mode != args.mode) {
+
+            var vDev = self.controller.devices.create({
+                deviceId: deviceName,
+                defaults: defaults,
+                overlay: {},
+                handler: function(command, args) {
+                    if (command === "setMode" && withMode) {
                         instance.ThermostatMode.Set(args.mode);
+                    } else if (command === "setTemp" && withTemp) {
+                        instance.ThermostatSetPoint.Set(parseInt(args.mode), parseFloat(args.temp));
+                        if (instance.ThermostatMode.data.mode != args.mode) {
+                            instance.ThermostatMode.Set(args.mode);
+                        }
                     }
-                }
+                },
+                moduleId: this.id
             });
             
             if (vDev) {

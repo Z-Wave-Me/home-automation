@@ -1,9 +1,20 @@
 {
-    "autoload": true,
-    "autoloadPriority": 100,
+    "dependencies": ["ZWave"],
     "singleton": true,
-    "userView": false,
+    "category": "peripherals",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "2.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
-        "title": "Z-Wave device creator"
-    }
+        "title": "Z-Wave Gate device creator",
+	    "description": "Creates widgets based on Z-Wave devices"
+    },
+    "schema": {},
+    "options": {}
 }

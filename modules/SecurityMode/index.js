@@ -37,23 +37,25 @@ SecurityMode.prototype.init = function (config) {
 
     var self = this;
 
-    this.api_key = config.action.api_key.toString();
-    this.phone = config.action.phone.toString();
-    this.message = config.action.message.toString();
-
-    this.vDev = this.controller.devices.create(
-        "SecurityMode_"+ this.id, {
-        deviceType: "switchBinary",
-        metrics: {
-            probeTitle: '',
-            scaleTitle: '',
-            level: 'off',
-            icon: '',
-            title: 'SecurityMode ' + this.id
-        }
-    }, function(command, args) {
-        this.set("metrics:level", command);
-    });
+    if (config.action.api_key) {this.api_key = config.action.api_key.toString();};
+    if (config.action.phone) {this.phone = config.action.phone.toString();};
+    if (config.action.message) {this.message = config.action.message.toString();}
+    
+    this.vDev = this.controller.devices.create({
+            deviceId: "SecurityMode_"+ this.id,
+            defaults: {
+                deviceType: "switchBinary",
+                metrics: {
+                    level: 'off',
+                    icon: '',
+                    title: 'SecurityMode ' + this.id
+                }
+            },
+            handler: function(command, args) {
+                this.set("metrics:level", command);
+            },
+            moduleId: this.id
+        });
 
     self.attachDetach(this.vDev.id, true);
 
@@ -106,17 +108,11 @@ SecurityMode.prototype.attachDetach = function (test, attachOrDetach) {
     }
     
     if (attachOrDetach) {
-        vDev.on("change:metrics:level", this._testRule);
+        this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
+        this.controller.devices.on(test.device, "change:metrics:change", this._testRule);
     } else {
-        vDev.off("change:metrics:level", this._testRule);
-    }
-
-    if (vDev.get("deviceType") === "switchControl") {
-        if (attachOrDetach) {
-            vDev.on("change:metrics:change", this._testRule);
-        } else {
-            vDev.off("change:metrics:change", this._testRule);
-        }
+        this.controller.devices.off(test.device, "change:metrics:level", this._testRule);
+        this.controller.devices.off(test.device, "change:metrics:change", this._testRule);
     }
 };
 
@@ -149,15 +145,17 @@ SecurityMode.prototype.testRule = function (tree) {
     if (topLevel && res) {
         var self = this;
 
-        http.request({
-            method: 'POST',
-            url: "http://sms.ru/sms/send",
-            data: {
-                api_id: self.api_key,
-                to: self.phone,
-                text: self.message
-            }
-        });
+        if (self.api_key && self.phone && self.message) {
+            http.request({
+                method: 'POST',
+                url: "http://sms.ru/sms/send",
+                data: {
+                    api_id: self.api_key,
+                    to: self.phone,
+                    text: self.message
+                }
+            });
+        };
 
         tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);

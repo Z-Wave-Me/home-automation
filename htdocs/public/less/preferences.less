@@ -1,0 +1,341 @@
+@list-item-height: 30px;
+@on-color: #00e359;
+@off-color: #00e359;
+
+.main-component {
+  display: block;
+  width: 50%;
+  height: 100%;
+  margin: 0 auto;
+  .line-container {
+    display: block;
+    float: left;
+    width: 100%;
+    height: 120px;
+    .main-menu-item {
+      display: inline-block;
+      width: 80px;
+      margin: 10px 40px;
+      text-align: center;
+      cursor: pointer;
+      .title-menu-item {
+        font-size: 13px;
+        opacity: 0.6;
+      }
+      .container-icon {
+        display: inline-block;
+        text-align: center;
+      }
+    }
+  }
+}
+
+.automation-component {
+  .header-component,
+  .footer-component {
+    display: block;
+    width: 100%;
+    margin: 0;
+    border-bottom: 1px;
+    float: left;
+    padding: 0 5px;
+  }
+  .pull-left,
+  .pull-right {
+    width: 50%;
+  }
+  .pull-right {
+    text-align: right;
+  }
+  /*
+    Instances list
+  */
+  .instances-list {
+    display: block;
+    float: left;
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0;
+    overflow: hidden;
+    overflow-y: auto;
+    height: 480px;
+    width: 100%;
+  }
+  .instance-item {
+    display: block;
+    width: 100%;
+    float: left;
+    cursor: pointer;
+    height: @list-item-height;
+    line-height: @list-item-height;
+    vertical-align: middle;
+    font-size: 12.5px;
+    margin: 0;
+    padding: 0;
+    transition: height 0.3 ease;
+    .instance-icon {
+      display: block;
+      margin: 0 5px;
+      float: left;
+    }
+    .instance-title {
+      display: block;
+      margin: 0 5px;
+      float: left;
+      font-weight: bold;
+    }
+    .module-title {
+      display: block;
+      float: left;
+      font-size: 11px;
+    }
+    &:nth-child(odd){
+      background: rgba(50,50,50,0.05);
+    }
+    &:nth-child(even) {
+      background: rgba(50,50,50,0.1);
+    }
+    &.hovered {
+      background: rgba(50,50,50,0.14);
+    }
+    &.selected {
+      height: 450px;
+      background: rgba(50,50,50,0.14);
+      .header-item {
+        //border-bottom: 1px solid rgba(50,50,50,0.3);
+      }
+    }
+  }
+  .header-item {
+    height: @list-item-height;
+    display: block;
+    margin: 0;
+    padding: 0;
+    .instance-status {
+      display: block;
+      float: left;
+      width: 10px;
+      height: @list-item-height;
+      background: red;
+      border: none;
+      &.enable {
+        background: green;
+      }
+    }
+    .instance-status-checkbox {
+      display: block;
+      float: right;
+      height: @list-item-height;
+      margin: 0;
+      line-height: @list-item-height;
+      padding: 0;
+      width: 55px;
+      cursor: pointer;
+      .switch-container {
+        text-align: center;
+      }
+    }
+  }
+  .panel-instances {
+    display: block;
+    float: left;
+    height: 390px;
+  }
+  .left-panel-instance {
+    width: 24%;
+    border-right: 1px solid rgba(50,50,50,0.3);
+    margin-left: 1%;
+    .button {
+      height: 34px;
+    }
+    .spinner {
+      top: 0;
+      position: absolute;
+    }
+  }
+  .right-panel-instances {
+    width: 74%;
+    margin-right: 1%;
+  }
+  .form-group {
+    .input-value {
+      width: 85%;
+    }
+  }
+  .modern-button {
+    width: 87%;
+    font-size: 14px;
+    position: relative;
+    bottom: 0;
+  }
+}
+
+.modules-component {
+  .header-component {
+    text-align: center;
+    height: 16px;
+    line-height: 16px;
+    vertical-align: middle;
+    margin-bottom: 10px;
+  }
+  .main-component {
+    width: 100%;
+    height: 460px;
+    overflow: hidden;
+    margin-bottom: 5px;
+  }
+  .step-title {
+    display: block;
+    font-size: 13px;
+    font-weight: bold;
+    line-height: 16px;
+  }
+  .step-container {
+    height: 100%;
+    width: 100%;
+    display: block;
+    overflow: hidden;
+  }
+  .category-modules-list {
+    overflow-y: auto;
+    height: 100%;
+    /* grid */
+    .row {
+      display: flex;
+      flex-flow: row wrap;
+      margin: 0 -10px;
+      margin-bottom: 10px;
+    }
+    .row:last-child {
+      margin-bottom: 0;
+    }
+    [class*="col-"] {
+      padding: 10px;
+      width: 100%;
+    }
+
+    @media all and ( min-width: 600px ) {
+      /* set col widths */
+      .col-2-3 {
+        width: 66.66%;
+      }
+      .col-1-2 {
+        width: 50%;
+      }
+      .col-1-3 {
+        width: 33.33%;
+      }
+      .col-1-4 {
+        width: 25%;
+      }
+      .col-1-8 {
+        width: 12.5%;
+      }
+
+    }
+  }
+  .category-module-item {
+    list-style-type: none;
+    display: block;
+    float: left;
+    width: 100%;
+    overflow: hidden;
+    .category-header {
+      width: 100%;
+      background: rgba(50, 50, 50, 0.1);
+      display: block;
+      float: left;
+      line-height: 22px;
+      height: 22px;
+      padding: 4px 0;
+      vertical-align: middle;
+      .category-name,
+      .category-description,
+      .count-modules {
+        display: block;
+        float: left;
+        font-size: 14px;
+        font-weight: bold;
+        margin-left: 5px;
+        vertical-align: middle;
+      }
+      .category-description {
+        font-size: 13px;
+        font-weight: normal;
+        margin-top: 1.4px;
+      }
+      .count-modules {
+        float: right;
+        font-size: 12px;
+      }
+    }
+    .row {
+      float: left;
+      margin: 0;
+      padding: 0;
+      border-bottom: 1px solid rgba(50, 50, 50, 0.1);
+      &:last-child {
+        border: none;
+      }
+    }
+  }
+  .module-container {
+    box-sizing: border-box;
+    border-right: 1px solid rgba(50, 50, 50, 0.1);
+    padding: 3px;
+    &:nth-of-type(3n+3) {
+      border-right: none;
+    }
+    .data-group {
+      &:hover {
+        background: none;
+        .label-item,
+        .value-item {
+          background: none;
+        }
+      }
+      width: 100%;
+    }
+    .label-item {
+      width: 30%;
+    }
+    .value-item {
+      width: 70%;
+    }
+    .no-inline {
+      .label-item,
+      .value-item {
+        width: 100%;
+        float: left;
+      }
+    }
+    .link {
+      color: #0e62cd;
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    .buttons-container {
+      width: 100%;
+      display: inline-block;
+      vertical-align: bottom;
+      .modern-button {
+        vertical-align: middle;
+        width: auto;
+      }
+    }
+  }
+  .model-component {
+    display: block;
+    width: 380px;
+    margin: 0 auto;
+  }
+  .center {
+    margin: 10px auto;
+    display: block;
+  }
+  .alpaca-main {
+    min-height: 400px;
+  }
+}

@@ -45,17 +45,11 @@ DelayedScene.prototype.init = function (config) {
         // If someone knows how to track many handlers and remove them from a list upon fire - you are welcome to improve the code.
     };
 
-    var t_vDev = this.controller.devices.get(this.config.triggerScene);
-    if (t_vDev) {
-        t_vDev.on("change:metrics:level", this.triggerHandler);
-    }
+    this.controller.devices.on(this.config.triggerScene, "change:metrics:level", this.triggerHandler);
 };
 
 DelayedScene.prototype.stop = function () {    
-    var t_vDev = this.controller.devices.get(this.config.triggerScene);
-    if (t_vDev) {
-        t_vDev.off("change:metrics:level", this.triggerHandler);
-    }
+    this.controller.devices.off(this.config.triggerScene, "change:metrics:level", this.triggerHandler);
 
     if (this.timer) {
         clearTimeout(this.timer);

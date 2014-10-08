@@ -37,17 +37,18 @@ _.extend(DevicesCollection.prototype, {
     updateLength: function () {
         this.length = _.size(this.models);
     },
-    create: function (deviceId, defaults, handler) {
+    create: function (options) {
         var that = this,
             vDev = null;
 
-        console.log("Creating device " + defaults.deviceType + " " + deviceId);
-        vDev = new VirtualDevice(deviceId, that.controller, defaults, handler);
+        console.log("Creating device " + options.defaults.deviceType + " " + options.deviceId);
+        vDev = new VirtualDevice(_.extend(options, {controller: that.controller}));
 
         if (vDev !== null) {
             vDev.init();
             that.add(vDev);
             that.updateLength();
+            that.emit('created', vDev);
         } else {
             console.log("Error creating device");
         }
@@ -134,8 +135,7 @@ _.extend(DevicesCollection.prototype, {
         delete model.cid;
 
         // events
-        that.emit('remove', model);
-        that.emit('all', model);
+        that.emit('removed', model);
         that.controller.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
         return model;
     },
@@ -168,21 +168,40 @@ _.extend(DevicesCollection.prototype, {
     },
     each: function (callback) {
         return _.each(this.models, callback);
+    },
+    forEach: function (callback) {
+        return _.forEach(this.models, callback);
+    },
+    on: function () {
+        var vDevId = "",
+            args = [];
+        
+        Array.prototype.push.apply(args, arguments);
+        
+        if (args.length < 2 || args.length > 3) {
+            throw "Invalid number of arguments to on()";
+        }
+        
+        if (args.length > 2) {
+            vDevId = args.shift() + ":";
+        }
+        
+        return EventEmitter2.prototype.on.call(this, vDevId + args[0], args[1]);
+    },
+    off: function () {
+        var vDevId = "",
+            args = [];
+        
+        Array.prototype.push.apply(args, arguments);
+        
+        if (args.length < 2 || args.length > 3) {
+            throw "Invalid number of arguments to off()";
+        }
+        
+        if (args.length > 2) {
+            vDevId = args.shift() + ":";
+        }
+        
+        return EventEmitter2.prototype.off.call(this, vDevId + args[0], args[1]);
     }
 });
-
-/*
-advances method:
-add
-remove
-get
-reset
-destroy
-set
-at - index
-pop
-sync
-trigger
-on
-off
- */

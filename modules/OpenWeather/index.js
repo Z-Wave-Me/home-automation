@@ -31,15 +31,23 @@ OpenWeather.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = self.controller.devices.create("OpenWeather_" + this.id, {
-        deviceType: "sensorMultilevel",
-        metrics: {
-            // level is not mentioned, since we want saved last value to be used
-            probeTitle: 'Temperature',
-            scaleTitle: this.config.units === "celsius" ? '°C' : '°F',
-            title: this.config.city
-        }
+    this.vDev = self.controller.devices.create({
+        deviceId: "OpenWeather_" + this.id,
+        defaults: {
+            deviceType: "sensorMultilevel",
+            metrics: {
+                probeTitle: 'Temperature'
+            }
+        },
+        overlay: {
+            metrics: {
+                scaleTitle: this.config.units === "celsius" ? '°C' : '°F',
+                title: this.config.city
+            }
+        },
+        moduleId: this.id
     });
+
     this.timer = setInterval(function() {
         self.fetchWeather(self);
     }, 3600*1000);

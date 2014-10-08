@@ -1,4 +1,4 @@
-/*** ZWave Gate module ********************************************************
+/*** Z-Wave Dead Detection module ********************************************************
 
 Version: 2.0.0
 -------------------------------------------------------------------------------
@@ -16,7 +16,9 @@ function ZWaveDeadDetection (id, controller) {
         "InstanceAdded": 0x04,
         "InstanceRemoved": 0x08,
         "CommandAdded": 0x10,
-        "CommandRemoved": 0x20
+        "CommandRemoved": 0x20,
+        "ZDDXSaved": 0x100,
+        "EnumerateExisting": 0x200
     };
 
 
@@ -52,12 +54,7 @@ ZWaveDeadDetection.prototype.init = function (config) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
             self.attach(nodeId);
         }
-    }, this.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]);
-
-    // Iterate all existing devices
-    Object.keys(zway.devices).forEach(function (nodeId) {
-        self.attach(parseInt(nodeId, 10));
-    });
+    }, this.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
 };
 
 ZWaveDeadDetection.prototype.stop = function () {

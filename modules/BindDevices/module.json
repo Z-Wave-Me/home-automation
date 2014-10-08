@@ -1,7 +1,16 @@
 {
-	"autoload": false,
 	"singleton": false,
-	"userView": true,
+	"dependencies": [],
+	"category": "automation",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
 	"defaults": {
 		"title": "Bind devices",
 		"description": "Bind actions on one device to others",

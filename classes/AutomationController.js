@@ -15,6 +15,7 @@ function AutomationController () {
     this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
     this.instances = config.instances || [];
+    this.modules_categories = config.modules_categories || [];
     this.namespaces = namespaces || [];
     this.registerInstances = [];
     this.files = files || {};
@@ -26,7 +27,6 @@ function AutomationController () {
     this.notifications = [];
     this.lastStructureChangeTime = 0;
 
-    this._autoLoadModules = [];
     this._loadedSingletons = [];
 }
 
@@ -52,7 +52,8 @@ AutomationController.prototype.saveConfig = function () {
         "vdevInfo": this.vdevInfo,
         "locations": this.locations,
         "profiles": this.profiles,
-        "instances": this.instances
+        "instances": this.instances,
+        "modules_categories": this.modules_categories
     };
 
     saveObject("config.json", cfgObject);
@@ -71,13 +72,21 @@ AutomationController.prototype.start = function () {
     console.log("Loading modules...");
     this.instantiateModules();
 
+    allowExternalAccess("ZAutomation");
+    allowExternalAccess("ZAutomation.api");
+    allowExternalAccess("ZAutomation.storage");
+	
+    ZAutomation = function() {
+        return { status: 400, body: "Invalid ZAutomation request" };
+    };
+	
     // Run webserver
-    console.log("Starting webserver...");
-    api = new ZAutomationAPIWebRequest(this).handlerFunc();
-
+    console.log("Starting automation...");
+    ZAutomation.api = new ZAutomationAPIWebRequest(this).handlerFunc();
+    
     // Run storage
     console.log("Starting storage...");
-    storage = new ZAutomationStorageWebRequest().handlerFunc();
+    ZAutomation.storage = new ZAutomationStorageWebRequest().handlerFunc();	
 
     // Notify core
     this.emit("core.start");
@@ -85,9 +94,8 @@ AutomationController.prototype.start = function () {
 
 AutomationController.prototype.stop = function () {
     // Remove API webserver
-    console.log("Stopping webserver...");
-    api = null;
-    storage = null;
+    console.log("Stopping automation...");
+    ZAutomation = null;
 
     var self = this;
 
@@ -113,34 +121,28 @@ AutomationController.prototype.loadModules = function (callback) {
     var self = this;
 
     fs.list("modules/").forEach(function (moduleClassName) {
-        self.loadModulesFromFolder(moduleClassName, "modules/");
+        self.loadModuleFromFolder(moduleClassName, "modules/");
     });
 
     (fs.list("userModules/") || []).forEach(function (moduleClassName) {
-        self.loadModulesFromFolder(moduleClassName, "userModules/");
-    });
-
-    // Sort and clarify automatically loaded modules list
-    this._autoLoadModules = this._autoLoadModules.sort(function (a, b) {
-        if (a[0] < b[0]) {
-            return -1;
-        } else if (a[0] > b[0]) {
-            return 1;
-        }
-
-        return 0;
-    }).map(function (item) {
-        return item[1];
+        self.loadModuleFromFolder(moduleClassName, "userModules/");
     });
 
     if (callback) callback();
 };
 
-AutomationController.prototype.loadModulesFromFolder = function (moduleClassName, folder) {
+AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder) {
     var self = this;
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
-        _st = fs.stat(moduleMetaFilename);
+        _st;
+    
+    _st = fs.stat(folder + moduleClassName);
+    if (_st && "file" === _st.type) {
+        return; // skip files in modules folders
+    }
+    
+    _st = fs.stat(moduleMetaFilename);
 
     if (!_st || "file" !== _st.type || 2 > _st.size) {
         console.log("ERROR: Cannot read module metadata from", moduleMetaFilename);
@@ -148,18 +150,13 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
     }
 
     try {
-        var moduleMeta = loadJSON(moduleMetaFilename);
+        var moduleMeta = fs.loadJSON(moduleMetaFilename);
     } catch (e) {
         self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
         console.log(e.stack);
         return; // skip this modules
     }
     if (moduleMeta.hasOwnProperty("skip"), !!moduleMeta["skip"]) return;
-
-    if (moduleMeta.hasOwnProperty("autoload") && !!moduleMeta["autoload"]) {
-        var _priority = moduleMeta.hasOwnProperty("autoloadPriority") ? moduleMeta["autoloadPriority"] : 1000;
-        self._autoLoadModules.push([_priority, moduleClassName]);
-    }
 
     var moduleFilename = folder + moduleClassName + "/index.js";
     _st = fs.stat(moduleFilename);
@@ -168,35 +165,15 @@ AutomationController.prototype.loadModulesFromFolder = function (moduleClassName
         return;
     }
 
-    console.log("Loading module " + moduleClassName + " from " + moduleFilename);
-    try {
-        executeFile(moduleFilename);
-    } catch (e) {
-        self.addNotification("error", "Can not load index.js from " + moduleFilename + ": " + e.toString(), "core");
-        console.log(e.stack);
-        return; // skip this modules
-    }
-    
-    if (!_module) {
-        self.addNotification("error", "Can not load index.js from " + moduleFilename, "core");
-        return; // skip this modules
-    }
-    
-    // Monkey-patch module with basePath method
-    _module.prototype.moduleBasePath = function () {
-        return folder + moduleClassName;
-    };
-
     moduleMeta.id = moduleClassName;
 
     // Grab _module and clear it out
     self.modules[moduleClassName] = {
         meta: moduleMeta,
-        classRef: _module
+        location: folder + moduleClassName
     };
-
-    _module = undefined;
 };
+
 
 AutomationController.prototype.instantiateModule = function (instanceModel) {
     var self = this,
@@ -204,16 +181,16 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         instance = null;
 
     if (!module) {
-        self.addNotification("error", "Can not instanciate module: module not found in the list of all modules", "core");
+        self.addNotification("error", "Can not instantiate module: module not found in the list of all modules", "core");
     }
     
-    if ((instanceModel.params.hasOwnProperty('status') && instanceModel.params.status === 'enable') || !instanceModel.params.hasOwnProperty('status')) {
+    if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
         } catch (e) {
-            self.addNotification("error", "Can not instanciate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+            self.addNotification("error", "Can not instantiate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
             console.log(e.stack);
-            return null;
+            return null; // not loaded
         }
 
         console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
@@ -221,7 +198,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         if (module.meta.singleton) {
             if (in_array(self._loadedSingletons, module.meta.id)) {
                 console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
-                return;
+                return null; // not loaded
             }
 
             self._loadedSingletons.push(module.meta.id);
@@ -232,7 +209,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         } catch (e) {
             self.addNotification("error", "Can not init module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
             console.log(e.stack);
-            return null;
+            return null; // not loaded
         }
         
         self.registerInstance(instance);
@@ -240,26 +217,88 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
     }
 };
 
+AutomationController.prototype.loadModule = function(module, rootModule) {
+        if (rootModule && rootModule === module) {
+                console.log("Circular dependencies detected!");
+                return false;
+        }
+        
+        if (module.failed) return false; // already tried to load, and failed
+        if (this.loadedModules.indexOf(module) >= 0) return true; // already loaded
+        
+        rootModule = rootModule || module;
+
+        if (module.meta.dependencies instanceof Array) {
+                for (var i in module.meta.dependencies) {
+                        var dep = module.meta.dependencies[i];
+                        
+                        var depModule = this.modules[dep];
+                        if (!depModule) {
+                                this.addNotification("error", "Dependency " + dep + " not found for module " + module.meta.id, "core");
+                                module.failed = true;
+                                return false;
+                        }
+                        
+                        if (!this.loadModule(depModule, rootModule)) {
+                                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not loaded", "core");
+                                module.failed = true;
+                                return false;
+                        }
+                        
+                        if (!this.loadedModules.some(function(x) { return x.meta.id === dep })) {
+                                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not instanciated", "core");
+                                module.failed = true;
+                                return false;                          
+                        }
+                }
+        }
+
+        console.log("Loading module " + module.meta.id + " from " + module.location);
+        try {
+            executeFile(module.location + "/index.js");
+        } catch (e) {
+            this.addNotification("error", "Can not load " + module.meta.id + ": " + e.toString(), "core");
+            console.log(e.stack);
+            module.failed = true;
+            return false; // skip this modules
+        }
+        
+        if (!_module) {
+            this.addNotification("error", "Invalid module " + module.meta.id, "core");
+            module.failed = true;
+            return false; // skip this modules
+        }
+        
+        // Monkey-patch module with basePath method
+        _module.prototype.moduleBasePath = function () {
+            return module.location;
+        };
+
+        module.classRef = _module;
+        
+        _module = undefined;
+
+        // Loading instances
+        
+        var count = 0;
+        this.instances.filter(function(x) { return x.moduleId === module.meta.id; }).forEach(function(x) {
+            if (this.instantiateModule(x) !== null) {
+                count++;
+            }
+        }, this);
+
+        if (count)
+            this.loadedModules.push(module);
+        return true;
+}
+
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
         module;
 
-    console.log("--- Automatic modules instantiation ---");
-    self._autoLoadModules.forEach(function (moduleClassName) {
-        module = _.find(self.modules, function (module) { return module.meta.id === moduleClassName; });
-        if (!!module && !_.any(self.instances, function (model) { return model.moduleId === module.meta.id; })) {
-            self.createInstance(module.meta.id, module.meta.defaults);
-        }
-    });
+    this.loadedModules = [];
 
-    console.log("--- User configured modules instantiation ---");
-    if (self.instances.length > 0) {
-        self.instances.forEach(function (instance) {
-            self.instantiateModule(instance);
-        });
-    } else {
-        console.log("--! No user-configured instances found");
-    }
+    Object.getOwnPropertyNames(this.modules).forEach(function(m) { this.loadModule(this.modules[m]); }, this);
 };
 
 AutomationController.prototype.moduleInstance = function (instanceId) {
@@ -284,21 +323,18 @@ AutomationController.prototype.registerInstance = function (instance) {
     }
 };
 
-AutomationController.prototype.createInstance = function (moduleId, params) {
+AutomationController.prototype.createInstance = function (reqObj) {
     //var instance = this.instantiateModule(id, className, config),
     var self = this,
         id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
         instance = null,
-        module = _.find(self.modules, function (module) { return module.meta.id === moduleId; }),
+        module = _.find(self.modules, function (module) { return module.meta.id === reqObj.moduleId; }),
         result;
 
     if (!!module) {
-        instance = {
-            id: id,
-            moduleId: moduleId,
-            params: params,
-            userView: module.meta.userView
-        };
+        instance = _.extend(reqObj, {
+            id: id
+        });
 
         self.instances.push(instance);
         self.saveConfig();
@@ -306,7 +342,7 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
         self.instantiateModule(instance);
         result = instance;
     } else {
-        self.emit('core.error', new Error("Cannot create module " + moduleId + " instance with id " + id));
+        self.emit('core.error', new Error("Cannot create module " + reqObj.moduleId + " instance with id " + id));
         result = false;
     }
 
@@ -316,6 +352,7 @@ AutomationController.prototype.createInstance = function (moduleId, params) {
 AutomationController.prototype.stopInstance = function (instance) {
     try {
         instance.stop();
+        delete this.registerInstances[instance.id];
     } catch (e) {
         this.addNotification("error", "Can not stop module " + ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(), "core");
         console.log(e.stack);
@@ -329,34 +366,42 @@ AutomationController.prototype.stopInstance = function (instance) {
     }
 };
 
-AutomationController.prototype.reconfigureInstance = function (id, config) {
-    var instance = this.registerInstances[id],
-        index = this.instances.indexOf(_.find(this.instances, function (model) { return model.id === id; })),
+AutomationController.prototype.reconfigureInstance = function (id, instanceObject) {
+    var register_instance = this.registerInstances[id],
+        instance = _.find(this.instances, function (model) { return model.id === id; }),
+        index = this.instances.indexOf(instance),
+        config = instanceObject.params,
         result;
 
-    if (instance !== undefined) { // is registered
-        this.stopInstance(instance);
 
-        if (config.status === 'enable') { // here we read new config instead of existing
-            instance.init(config);
+    if (instance) {
+        if (register_instance) {
+            this.stopInstance(register_instance);
+        }
+
+        _.extend(this.instances[index], {
+            title: instanceObject.title,
+            description: instanceObject.description,
+            active: instanceObject.active,
+            params: config
+        });
+
+        if (!!register_instance) {
+            if (this.instances[index].active) { // here we read new config instead of existing
+                register_instance.init(config);
+            } else {
+                register_instance.saveNewConfig(config);
+            }
         } else {
-            instance.saveNewConfig(config);
+            if (this.instances[index].active) {
+                this.instantiateModule(this.instances[index]);
+            }
         }
 
-        if (config.hasOwnProperty('params')) {
-            this.instances[index].params = config;
-        }
-
-        this.emit('core.instanceReconfigured', id);
         result = this.instances[index];
-    } else if (!instance && index !== -1) { // is not registered
-        this.instances[index].params = config;
-        if (config.status === 'enable') {
-            this.instantiateModule(this.instances[index]);
-        }
-        result = this.instances[index];
-        this.emit('core.instanceReconfigured', id);
+        this.emit('core.instanceReconfigured', id)
     } else {
+        result = null;
         this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
     }
 
@@ -393,27 +438,6 @@ AutomationController.prototype.deleteInstance = function (id) {
     this.emit('core.instanceDeleted', id);
 };
 
-AutomationController.prototype.registerDevice = function (device) {
-    this.devices[device.id] = device;
-    this.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
-
-    this.emit('core.deviceRegistered', device.id);
-};
-
-AutomationController.prototype.removeDevice = function (id) {
-    var vdev = this.devices[id];
-    
-    if (!vdev)
-        return;
-    
-    vdev.destroy();
-    delete this.devices[id];
-
-    this.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
-
-    this.emit('core.deviceRemoved', id);
-};
-
 AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
 }
@@ -423,7 +447,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 }
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags");
+    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden");
     this.saveConfig();
     return this.vdevInfo[id];
 }
@@ -576,11 +600,7 @@ AutomationController.prototype.getListProfiles = function () {
             id: 1,
             name: 'Default',
             description: 'This is default profile. Default profile created automatically.',
-            positions: [],
-            groups: {
-                instances: []
-            },
-            active: true
+            positions: []
         })
     }
     return this.profiles;
@@ -600,17 +620,13 @@ AutomationController.prototype.createProfile = function (object) {
             id: id,
             name: object.name,
             description: object.description,
-            positions: object.positions,
-            active: object.active,
-            groups: object.groups
+            positions: object.positions
         };
 
     _.defaults(profile, {
         name: '',
         description: '',
-        positions: [],
-        groups: {instances: []},
-        active: false
+        positions: []
     });
 
     this.profiles.push(profile);
@@ -666,12 +682,9 @@ AutomationController.prototype.updateProfile = function (object, id) {
         _.defaults(this.profiles[index], {
             name: '',
             description: '',
-            positions: [],
-            groups: {instances: []},
-            active: false
+            positions: []
         });
     }
-
 
     this.saveConfig();
     return this.profiles[index];
@@ -745,6 +758,21 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
             params: reqObj
         })
         result = null;
+    }
+
+    return result;
+};
+
+AutomationController.prototype.getListModulesCategories = function (id) {
+    var result = null,
+        categories = this.modules_categories;
+
+    if (Boolean(id)) {
+        result = _.find(categories, function (category) {
+            return category.id === id;
+        });
+    } else {
+        result = categories;
     }
 
     return result;

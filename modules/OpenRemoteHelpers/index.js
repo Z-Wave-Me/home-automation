@@ -159,6 +159,13 @@ OpenRemoteHelpers.prototype.init = function (config) {
             case "SwitchMultilevelLevel":
                 return zway.devices[N].instances[I].SwitchMultilevel.data.level.value;
             
+            case "StartLevelChange":
+               var dir = params.shift();
+               return zway.devices[N].instances[I].SwitchMultilevel.StartLevelChange(dir);
+
+            case "StopLevelChange":
+               return zway.devices[N].instances[I].SwitchMultilevel.StopLevelChange();
+            
             case "AlarmStatus":
                 // there are usually no instances for alarms
                 return (zway.devices[N].AlarmSensor.data.level.value == 0) ? "off" : "on" ;
@@ -289,6 +296,8 @@ OpenRemoteHelpers.prototype.stop = function () {
 
     OpenRemote = null;
 };
+
+allowExternalAccess("OpenRemote");
 
 // ----------------------------------------------------------------------------
 // --- Module methods

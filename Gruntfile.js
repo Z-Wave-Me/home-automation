@@ -154,6 +154,15 @@ module.exports = function (grunt) {
         index: {
             src: 'index.tmpl.html',  // source template file
             dest: 'htdocs/dist/index.html'  // destination file (usually index.html)
+        },
+
+        connect: {
+            options: {
+                port: 8900,
+                hostname: 'localhost',
+                open: true,
+                base: [__dirname + '/htdocs']
+            }
         }
     });
 
@@ -169,4 +178,9 @@ module.exports = function (grunt) {
     //grunt.registerTask('default', ['clean', 'requirejs', 'less', 'htmlmin', 'css_img_2_data_uri', 'manifest']);
     grunt.registerTask('default', ['clean', 'copy', 'mkdir', 'index', 'less', 'requirejs', 'htmlmin', 'index', 'manifest']);
     grunt.registerTask('mocha', ['mochaTest']);
+    grunt.registerTask('serve', function (target) {
+        grunt.task.run([
+            'connect'
+        ]);
+    });
 };

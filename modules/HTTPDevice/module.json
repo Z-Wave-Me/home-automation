@@ -1,7 +1,16 @@
 {
-	"autoload": false,
 	"singleton": false,
-	"userView": true,
+	"dependencies": [],
+	"category": "devices",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
 	"defaults": {
 		"title": "HTTP device",
 		"description": "Create virtual device based on HTTP data.",
@@ -16,7 +25,7 @@
 
 		"getter_sensorMultilevel": "",
 		"getterParser_sensorMultilevel": "",
-		"getterPollInterval_sensortMultilevel": "",
+		"getterPollInterval_sensorMultilevel": 0,
 		"scale_sensorMultilevel": "",
 
 		"setterOn_switchBinary": "",
@@ -25,8 +34,6 @@
 		"getterParser_switchBinary": "",
 		"getterPollInterval_switchBinary": 0,
 
-		"setterOn_switchMultilevel": "",
-		"setterOn_switchMultilevel": "",
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
 		"getterParser_switchMultilevel": "",
@@ -62,7 +69,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_sensorBinary": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},
@@ -78,7 +85,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_sensorMultilevel": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},
@@ -109,7 +116,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_switchBinary": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},
@@ -130,7 +137,7 @@
 				"dependencies": "deviceType"
 			},
 			"getterPollInterval_switchMultilevel": {
-				"type": "string",
+				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
 			},

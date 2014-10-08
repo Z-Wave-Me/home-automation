@@ -48,42 +48,49 @@ HTTPDevice.prototype.init = function (config) {
             break;
     }
     
-    var defaults = {
-        deviceType: deviceType,
-        metrics: {
-            // level is not here to load last data and then get update from HTTP
-            icon: icon,
-            title: 'HTTP device ' + this.id
-        }
-    };
+    var config_metrics = {};
     
     if (deviceType === "sensorMultilevel") {
-        defaults.metrics.scaleTitle = this.config.scale_sensorMultilevel || "";
+        config_metrics = { scaleTitle: this.config.scale_sensorMultilevel || "" };
     }
     if (deviceType === "sensorBinary") {
-        defaults.metrics.scaleTitle = "";
+        config_metrics = { scaleTitle: "" };
     }
 
-    var vDev = self.controller.devices.create("HTTP_Device_" + deviceType + "_" + this.id, defaults, function(command, args) {
-        var vDevType = deviceType;
-        
-        if (command === "update" && (vDevType === "sensorBinary" || vDevType === "sensorMultilevel" || vDevType === "switchBinary" || vDevType === "switchMultilevel")) {
-            self.update(this);
-        }
-        
-        if (command === "on" && (vDevType === "toggleButton" || vDevType === "switchBinary")) {
-            self.act(this, "On", null, (vDevType === "switchBinary" ? "on" : null));
-        }
+    var vDev = self.controller.devices.create({
+        deviceId: "HTTP_Device_" + deviceType + "_" + this.id,
+        defaults: {
+            metrics: {
+                icon: icon,
+                title: 'HTTP device ' + this.id
+            }
+        },
+        overlay: {
+            deviceType: deviceType,
+            metrics: config_metrics
+        },
+        handler: function (command, args) {
+            var vDevType = deviceType;
+
+            if (command === "update" && (vDevType === "sensorBinary" || vDevType === "sensorMultilevel" || vDevType === "switchBinary" || vDevType === "switchMultilevel")) {
+                self.update(this);
+            }
+
+            if (command === "on" && (vDevType === "toggleButton" || vDevType === "switchBinary")) {
+                self.act(this, "On", null, (vDevType === "switchBinary" ? "on" : null));
+            }
 
 
-        if (command === "off" && vDevType === "switchBinary") {
-            self.act(this, "Off", null, "off");
-        }
+            if (command === "off" && vDevType === "switchBinary") {
+                self.act(this, "Off", null, "off");
+            }
 
-        if ((command === "off" || command === "on" || command === "exact") && vDevType === "switchMultilevel") {
-        	var level = command === "exact" ? parseInt(args.level, 10) : (command === "on" ? 99 : 0);
-            self.act(this, "Level", level, level);
-        }
+            if ((command === "off" || command === "on" || command === "exact") && vDevType === "switchMultilevel") {
+                var level = command === "exact" ? parseInt(args.level, 10) : (command === "on" ? 99 : 0);
+                self.act(this, "Level", level, level);
+            }
+        },
+        moduleId: this.id
     });
     
     if (vDev && this.config["getter_" + deviceType] && this.config["getterPollInterval_" + deviceType]) {
@@ -136,7 +143,7 @@ HTTPDevice.prototype.update = function (vDev) {
                         }
                         if (deviceType === "switchMultilevel" || deviceType === "sensorMultilevel") {
                             if (parseFloat(_data) != NaN) {
-                                data = parseFloat(_data)
+                                data = parseFloat(_data);
                             }
                         }
                     }

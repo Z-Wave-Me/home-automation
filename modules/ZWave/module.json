@@ -1,0 +1,77 @@
+{
+    "dependencies": [],
+    "singleton": false,
+    "category": "peripherals",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "2.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "Z-Wave binding",
+        "description": "Loads Z-Wave engine",
+        "name": "zway",
+        "port": "/dev/ttyUSB0",
+	"config": "config",
+	"translations": "translations",
+	"ZDDX": "ZDDX",
+	"closeOnExit": true
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "port": {
+                "type": "string",
+                "required": true
+            },
+            "name": {
+                "type": "string",
+                "required": true
+            },
+            "config": {
+                "type": "string",
+                "required": true
+            },
+            "translations": {
+                "type": "string",
+                "required": true
+            },
+            "ZDDX": {
+                "type": "string",
+                "required": true
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "port": {
+                "label": "Serial port to Z-Wave dongle"
+            },
+            "name": {
+		"hidden": true,
+                "label": "Internal name",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "config": {
+		"hidden": true,
+                "label": "Path to config folder",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "translations": {
+		"hidden": true,
+                "label": "Path to dictionaries folder",
+		"helper": "Don't change unless you know what you are doing"
+            },
+            "ZDDX": {
+		"hidden": true,
+                "label": "Path to ZDDX database",
+		"helper": "Don't change unless you know what you are doing"
+            }
+        }
+    }
+}

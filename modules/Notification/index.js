@@ -30,31 +30,37 @@ Notification.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create("Notification_" + this.id, {
-        deviceType: "toggleButton",
-        metrics: {
-            level: 'on', // it is always on, but usefull to allow bind
-            icon: '',
-            title: 'Notification ' + this.id
-        }
-    }, function () {
-        var email = self.config.email,
-            phone   = self.config.phone;
+    this.vDev = this.controller.devices.create({
+        deviceId: "Notification_" + this.id,
+        defaults: {
+            deviceType: "toggleButton",
+            metrics: {
+                level: 'on', // it is always on, but usefull to allow bind
+                icon: '',
+                title: 'Notification ' + this.id
+            }
+        },
+        overlay: {},
+        handler: function () {
+            var email = self.config.email,
+                phone   = self.config.phone;
 
-        console.log("email:",email);
-        console.log("phone:",phone);
+            console.log("email:",email);
+            console.log("phone:",phone);
 
-        http.request({
-            method: 'POST',
-            url: "http://sms.ru/sms/send",
-            data: {
-                api_id: self.config.api_key,
-                to: self.config.phone,
-                text: self.config.message
+            http.request({
+                method: 'POST',
+                url: "http://sms.ru/sms/send",
+                data: {
+                    api_id: self.config.api_key,
+                    to: self.config.phone,
+                    text: self.config.message
                 }
-        });
+            });
 
-        self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
+            self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
+        },
+        moduleId: this.id
     });
 };
 

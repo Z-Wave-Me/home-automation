@@ -1,0 +1,67 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "climate",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "Thermostat based on switch and sensor",
+		"description": "Create thermostat devices based on a switch and temperature sensor",
+		"switch": "",
+		"sensor": "",
+		"heaton": true
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"switch": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_switchBinary:deviceId",
+				"required": true
+			},
+			"sensor": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_sensorMultilevel:deviceId",
+				"required": true
+			},
+			"heaton": {
+				"type": "string",
+				"enum": [true, false],
+				"required": true
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"switch": {
+				"label": "Switch",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchBinary:deviceName"
+			},
+			"sensor": {
+				"label": "Temperature sensor",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchBinary:deviceName"
+			},
+			"heaton": {
+				"label": "Mode",
+				"type": "select",
+				"optionLabels": ["Heat", "Cool"]
+			}
+		}
+	}
+}

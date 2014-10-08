@@ -30,34 +30,40 @@ LightScene.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create("LightScene_" + this.id, {
-        deviceType: "toggleButton",
-        metrics: {
-            level: 'on', // it is always on, but usefull to allow bind
-            icon: '',
-            title: 'Light Scene ' + this.id
-        }
-    }, function () {
-        self.config.switches.forEach(function(devState) {
-            var vDev = self.controller.devices.get(devState.device);
-            if (vDev) {
-                vDev.performCommand(devState.status);
+    this.vDev = this.controller.devices.create({
+        deviceId: "LightScene_" + this.id,
+        defaults: {
+            deviceType: "toggleButton",
+            metrics: {
+                level: 'on', // it is always on, but usefull to allow bind
+                icon: '',
+                title: 'Light Scene ' + this.id
             }
-        });
-        self.config.dimmers.forEach(function(devState) {
-            var vDev = self.controller.devices.get(devState.device);
-            if (vDev) {
-                vDev.performCommand("exact", { level: devState.status });
-            }
-        });
-        self.config.scenes.forEach(function(scene) {
-            var vDev = self.controller.devices.get(scene);
-            if (vDev) {
-                vDev.performCommand("on");
-            }
-        });
+        },
+        overlay: {},
+        handler: function () {
+            self.config.switches.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    vDev.performCommand(devState.status);
+                }
+            });
+            self.config.dimmers.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    vDev.performCommand("exact", { level: devState.status });
+                }
+            });
+            self.config.scenes.forEach(function(scene) {
+                var vDev = self.controller.devices.get(scene);
+                if (vDev) {
+                    vDev.performCommand("on");
+                }
+            });
 
-        self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
+            self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
+        },
+        moduleId: this.id
     });
 };
 

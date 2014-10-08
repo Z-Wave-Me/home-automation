@@ -30,15 +30,6 @@ RGB.prototype.init = function (config) {
 
     var self = this;
 
-    this.red = this.controller.devices.get(this.config.red);
-    this.green = this.controller.devices.get(this.config.green);
-    this.blue = this.controller.devices.get(this.config.blue);
-    
-    if (!this.red || !this.green || !this.blue) {
-        this.controller.addNotification("warning", "Some channels do not exist for RGB module " + this.id, "module");
-        return;
-    }
-    
     function levelToColor(vDev) {
         var val = vDev.get("metrics:level");
         
@@ -55,63 +46,58 @@ RGB.prototype.init = function (config) {
         return Math.round(color * 99.0 / 255.0);
     }
     
-    this.vDev = this.controller.devices.create("RGB_" + this.id, {
-        deviceType: "switchRGBW",
-        metrics: {
-            level: (levelToColor(this.red) || levelToColor(this.green) || levelToColor(this.blue)) ? 'on' : 'off',
-            color: {
-                r: levelToColor(this.red),
-                g: levelToColor(this.green),
-                b: levelToColor(this.blue)
-            },
-            icon: '',
-            title: 'RGB ' + this.id
-        }
-    }, function (command, args) {
-        if (command === "on" || command === "off") {
-            self.red.performCommand(command);
-            self.green.performCommand(command);
-            self.blue.performCommand(command);
-        }
-        if (command === "exact") {
-            self.red.performCommand("exact", { level: colorToLevel(args.red) } );
-            self.green.performCommand("exact", { level: colorToLevel(args.green) } );
-            self.blue.performCommand("exact", { level: colorToLevel(args.blue) } );
-        }
+    this.vDev = this.controller.devices.create({
+        deviceId: "RGB_" + this.id,
+        defaults: {
+            deviceType: "switchRGBW",
+            metrics: {
+                icon: '',
+                title: 'RGB ' + this.id
+            }
+        },
+        overlay: {},
+        handler:  function (command, args) {
+            if (command === "on" || command === "off") {
+                self.controller.devices.get(this.config.red).performCommand(command);
+                self.controller.devices.get(this.config.green).performCommand(command);
+                self.controller.devices.get(this.config.blue).performCommand(command);
+            }
+            if (command === "exact") {
+                self.controller.devices.get(this.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
+                self.controller.devices.get(this.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
+                self.controller.devices.get(this.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+            }
+        },
+        moduleId: this.id
     });
     
 
     this.handleLevel = function() {
-        self.vDev.set("metrics:level", (levelToColor(self.red) || levelToColor(self.green) || levelToColor(self.blue)) ? 'on' : 'off');
+        self.vDev.set("metrics:level", (levelToColor(self.controller.devices.get(this.config.red)) || levelToColor(self.controller.devices.get(this.config.green)) || levelToColor(self.controller.devices.get(this.config.blue))) ? 'on' : 'off');
     };
     
     this.handleR = function () {
-        self.vDev.set("metrics:color:r", self.red.get("metrics:level"));
+        self.vDev.set("metrics:color:r", self.controller.devices.get(this.config.red).get("metrics:level"));
         self.handleLevel();
     };
     this.handleG = function () {
-        self.vDev.set("metrics:color:g", self.green.get("metrics:level"));
+        self.vDev.set("metrics:color:g", self.controller.devices.get(this.config.green).get("metrics:level"));
         self.handleLevel();
     };
     this.handleB = function () {
-        self.vDev.set("metrics:color:b", self.blue.get("metrics:level"));
+        self.vDev.set("metrics:color:b", self.controller.devices.get(this.config.blue).get("metrics:level"));
         self.handleLevel();
     };
-    this.red.on("change:metrics:level", this.handleR);
-    this.green.on("change:metrics:level", this.handleG);
-    this.blue.on("change:metrics:level", this.handleB);
+    this.controller.devices.on(this.config.red, "change:metrics:level", this.handleR);
+    this.controller.devices.on(this.config.green, "change:metrics:level", this.handleG);
+    this.controller.devices.on(this.config.blue, "change:metrics:level", this.handleB);
 };
 
 RGB.prototype.stop = function () {
-    if (this.red) {
-        this.red.off("change:metrics:level", this.handleR);
-    }
-    if (this.green) {
-        this.green.off("change:metrics:level", this.handleG);
-    }
-    if (this.blue) {
-        this.blue.off("change:metrics:level", this.handleB);
-    }
+    this.controller.devices.off(this.config.red, "change:metrics:level", this.handleR);
+    this.controller.devices.off(this.config.green, "change:metrics:level", this.handleG);
+    this.controller.devices.off(this.config.blue, "change:metrics:level", this.handleB);
+
     this.handleR = null;
     this.handleG = null;
     this.handleB = null;

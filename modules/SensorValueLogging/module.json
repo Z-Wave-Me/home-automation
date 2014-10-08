@@ -1,7 +1,16 @@
 {
-    "autoload": false,
-    "userView": true,
+    "dependencies": [],
     "singleton": false,
+    "category": "logging",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.1",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Sensor values logging",
         "description": "Store sensor values in JSON file or via HTTP requests to your server",

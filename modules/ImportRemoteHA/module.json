@@ -1,7 +1,16 @@
 {
-	"autoload": false,
+	"dependencies": [],
 	"singleton": false,
-	"userView": true,
+	"category": "peripherals",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
 	"defaults": {
 		"title": "Import from remote Z-Way HA",
 		"description": "Create virtual device based remote Z-Way HA server.",

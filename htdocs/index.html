@@ -3,23 +3,36 @@
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
 
-        <link rel="stylesheet/less" type="text/css" href="public/less/all.less">
-        <script src="js/libs/vendor/less-1.7.0.min.js"></script>
+    <link rel="stylesheet/less" type="text/css" href="public/less/all.less">
+    <script>
+        less = {
+            env: "development",
+            logLevel: 2,
+            async: true,
+            fileAsync: false,
+            poll: 2500,
+            functions: {},
+            dumpLineNumbers: "comments",
+            relativeUrls: false
+        };
+    </script>
+    <script src="bower_components/less/dist/less-1.7.4.min.js"></script>
 
-        <script src="js/libs/vendor/modernizr-2.8.2-respond-1.1.0.min.js"></script>
-        <script data-main="js/main" src="js/libs/require/require.js"></script>
-        <script src="js/utils.js"></script>
-    </head>
-    <body id="body">
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
-        <![endif]-->
-    </body>
+    <script src="js/libs/vendor/modernizr-2.8.2-respond-1.1.0.min.js"></script>
+    <script data-main="js/main" src="bower_components/requirejs/require.js"></script>
+    <script src="js/utils.js"></script>
+</head>
+<body id="body">
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+<![endif]-->
+<div id="app-container"></div>
+</body>
 </html>

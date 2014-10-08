@@ -1,7 +1,16 @@
 {
-    "autoload": false,
     "singleton": false,
-    "userView": true,
+    "dependencies": [],
+    "category": "surveillance",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Web Camera",
         "description": "This module include configuration for a camera and create camera device",
@@ -14,6 +23,8 @@
 	"downUrl": "",
 	"openUrl": "",
 	"closeUrl": "",
+	"user": "",
+	"password": "",
 	"doorDevices": []
     },
     "schema": {
@@ -53,6 +64,12 @@
             },
             "closeUrl": {
                 "format": "uri",
+                "required": false
+            },
+            "user": {
+                "required": false
+            },
+            "password": {
                 "required": false
             },
             "doorDevices": {
@@ -112,6 +129,16 @@
             "closeUrl": {
                 "label": "Close URL",
                 "type": "url",
+                "required": false
+            },
+            "user": {
+                "label": "Username for HTTP authentication",
+		"helper": "Leave empty if camera is not protected by a password",
+                "required": false
+            },
+            "password": {
+                "label": "Password for HTTP authentication",
+		"helper": "Leave empty if camera is not protected by a password",
                 "required": false
             },
             "doorDevices": {

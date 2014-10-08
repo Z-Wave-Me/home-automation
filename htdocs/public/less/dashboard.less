@@ -17,9 +17,7 @@
     clear: both;
     border-radius: inherit;
     border-bottom: 1px solid @border-color;
-
     .box-shadow(none);
-
     &:first-child {
       border-top: 1px solid @border-color;
     }
@@ -46,4 +44,22 @@
   .widgets {
     height: 480px;
   }
+}
+
+.fade-enter {
+  opacity: 0.01;
+  transition: opacity .3s ease-in;
+}
+
+.fade-enter.fade-enter-active {
+  opacity: 1;
+}
+
+.fade-leave {
+  opacity: 1;
+  transition: opacity .3s ease-in;
+}
+
+.fade-leave.fade-leave-active {
+  opacity: 0.01;
 }

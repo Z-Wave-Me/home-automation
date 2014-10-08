@@ -41,20 +41,27 @@ BatteryPolling.prototype.init = function (config) {
     };
 
     // create vDev
-    this.vDev = this.controller.devices.create("BatteryPolling_" + this.id, {
-        deviceType: "battery",
-        metrics: {
-            probeTitle: "Battery",
-            scaleTitle: "%",
-            level: "",
-            icon: "",
-            title: "Battery digest " + this.id
-        }
-    }, this.onPoll);
+    this.vDev = this.controller.devices.create({
+        deviceId: "BatteryPolling_" + this.id,
+        defaults: {
+            deviceType: "battery",
+            metrics: {
+                probeTitle: "Battery",
+                scaleTitle: "%",
+                title: "Battery digest " + this.id
+            }
+        },
+        handler: this.onPoll,
+        moduleId: this.id
+    });
 
     this.onMetricUpdated = function (vDev) {
         if (!vDev || vDev.id === self.vDev.id) {
             return; // prevent infinite loop with updates from itself and allows first fake update
+        }
+        
+        if (vDev.get("deviceType") !== "battery") {
+            return;
         }
         
         self.vDev.set("metrics:level", self.minimalBatteryValue());
@@ -64,11 +71,7 @@ BatteryPolling.prototype.init = function (config) {
     };
     
     // Setup event listeners
-    this.controller.devices.filter(function (el) {
-        return el.get("deviceType") === "battery";
-    }).map(function(el) {
-        el.on("change:metrics:level", self.onMetricUpdated);
-    });
+    this.controller.devices.on("change:metrics:level", self.onMetricUpdated);
 
     // set up cron handler
     this.controller.on("batteryPolling.poll", this.onPoll);
@@ -92,11 +95,7 @@ BatteryPolling.prototype.stop = function () {
     var self = this;
     
     this.controller.devices.remove(this.vDev.id);
-    this.controller.devices.filter(function (el) {
-        return el.get("deviceType") === "battery";
-    }).map(function(el) {
-        el.off("change:metrics:level", self.onMetricUpdated);
-    });
+    this.controller.devices.off("change:metrics:level", self.onMetricUpdated);
     this.controller.emit("cron.removeTask", "batteryPolling.poll");
     this.controller.off("batteryPolling.poll", this.onPoll);
 };

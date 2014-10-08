@@ -1,0 +1,19 @@
+{
+    "name": "Z-Wave",
+    "version": "1.7.1",
+    "directory": "htdocs/bower_components",
+    "dependencies": {
+        "lodash": "2.4.1",
+        "requirejs": "2.1.14",
+        "requirejs-text": "2.0.12",
+        "backbone": "1.1.2",
+        "jquery": "2.1.1",
+        "react": "0.11.2",
+        "less": "1.7.4",
+        "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.4.2",
+        "immutable": "2.0.17",
+        "director": "1.2.2",
+        "ace": "1.1.7",
+        "ace-builds":  "1.1.7"
+    }
+}
