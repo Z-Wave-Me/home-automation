@@ -3,9 +3,6 @@ requirejs.config({
     paths : {
         // Major libraries
         jquery: '../bower_components/jquery/dist/jquery',
-        // backbone
-        underscore: '../bower_components/lodash/dist/lodash.underscore',
-        backbone: '../bower_components/backbone/backbone',
         // advanced libs
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
         alpaca: 'libs/alpaca/alpaca-full',
@@ -27,44 +24,12 @@ requirejs.config({
         // temp
         sticky: 'libs/home-automation/sticky'
     },
-    map: {
-        '*': {
-            'lodash': 'underscore',
-            'Backbone': 'backbone'
-        }
-    },
     shim : {
         jquery : {
             exports : '$'
         },
-        'jquery.cookie': {
-            deps: ['jquery']
-        },
         'jquery-ui': {
             deps: ['jquery']
-        },
-        cookie : {
-            deps: ['jquery'],
-            exports : '$.cookie'
-        },
-        dragsort : {
-            deps: ['jquery'],
-            exports : '$.dragsort'
-        },
-        magicsuggest: {
-            deps: ['jquery'],
-            exports: '$.magicsuggest'
-        },
-        drags: {
-            deps: ['jquery'],
-            exports: '$.drags'
-        },
-        underscore : {
-            exports : '_'
-        },
-        backbone : {
-            deps : ['jquery', 'underscore'],
-            exports : 'Backbone'
         },
         sticky: {
             exports: 'Sticky'
@@ -86,9 +51,6 @@ requirejs.config({
         },
         alpaca: {
             deps: ['jquery', 'ace', 'mode-javascript', 'mode-json', 'jquery-ui', 'theme-chrome', 'worker-javascript']
-        },
-        'colpick': {
-            deps: ['jquery']
         },
         react: {
             exports: 'React'
