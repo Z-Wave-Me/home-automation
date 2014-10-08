@@ -114,7 +114,7 @@ function actualize (config) {
 
     // add local modules_categories
     // TODO: temp data.
-    if (!config.hasOwnProperty('modules_categories')) {
+    //if (!config.hasOwnProperty('modules_categories')) {
         config.modules_categories = [
             {
                 "id": "automation",
@@ -195,7 +195,7 @@ function actualize (config) {
                 "icon": ""
             }
         ];
-    }
+    //}
 
     return config;
 }
