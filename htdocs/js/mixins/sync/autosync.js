@@ -10,34 +10,6 @@ define([], function () {
                 dataBinding = ctx.getBinding().sub('data'),
                 collections = servicesBinding.sub('collections');
 
-            // add collection
-            /*collections.val().forEach(function (collection) {
-                dataBinding.addListener(collection.get('id'), function (data, previousData, absolutePath, relativePath) {
-                    var subPath = parseInt(relativePath.split('.')[0]),
-                        model,
-                        modelBinding;
-
-                    if ((subPath - 0) === subPath && (''+subPath).replace(/^\s+|\s+$/g, "").length > 0) {
-                        modelBinding = dataBinding.sub(collection.get('id')).sub(subPath);
-                        model = modelBinding.val().toJS();
-
-                        that.push({
-                            data: model,
-                            serviceId: collection.get('id'),
-                            success: function (response) {
-                                Object.keys(response.data).forEach(function (key) {
-                                    if (model[key] !== response.data[key] && !isObject(modelBinding.val(key))) {
-                                        modelBinding.set(key, response.data[key]);
-                                    } else if (isObject(model[key]) && !this.equal(modelBinding.val(key), response.data[key])) {
-                                        modelBinding.set(key, response.data[key]);
-                                    }
-                                });
-                            }
-                        });
-                    }
-                });
-            });*/
-
             // add local data
             that.getBinding('preferences').addListener('defaultProfileId', function (profileId) {
                 localStorage.setItem('defaultProfileId', String(profileId));
@@ -72,11 +44,14 @@ define([], function () {
 
             collections.val().forEach(function (collection, index) {
                 var obj = collection.toJS(),
-                    func = (function () {
+                    func = (function (callback) {
                         that.fetch({
                             serviceId: obj.id,
                             params: obj.sinceField ? { since: dataBinding.val().get(obj.sinceField) || 0 } : null,
                             success: function (response) {
+                                if (callback && typeof callback === 'function') {
+                                    callback(response);
+                                }
                                 if (obj.hasOwnProperty('postSyncHandler')) {
                                     obj.postSyncHandler.call(that, ctx, response, dataBinding.sub(obj.id));
                                 } else {
@@ -85,12 +60,31 @@ define([], function () {
                                         dataBinding.merge(obj.id, Immutable.fromJS(models));
                                     }
                                 }
+
+                                if (obj.loaded === false) {
+                                    collections.sub(index).set('loaded', true);
+                                    ctx.getBinding().sub('default').sub('system').update('loaded_percentage', function (percantage) {
+                                        return percantage + ((1 / collections.val().toArray().length) * 100);
+                                    });
+
+                                    if (collections.val().every(function (c) {
+                                        return c.get('loaded') === true;
+                                    })) {
+                                        ctx.getBinding().sub('default').sub('system').set('loaded', true);
+                                    }
+                                }
                             }
                         })
                     });
 
                 if (obj.autoSync) {
-                    setInterval(func, obj.delay || 1000);
+                    setTimeout(func.bind(this, function () {
+                        setInterval(function () {
+                            if (collections.sub(index).val('loaded')) {
+                                func();
+                            }
+                        }, obj.delay || 1000);
+                    }), 0);
                 } else {
                     setTimeout(func, obj.delay || 0);
                 }

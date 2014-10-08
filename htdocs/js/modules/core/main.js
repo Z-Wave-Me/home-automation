@@ -7,6 +7,7 @@ define([
     './components/footer',
     'Preferences',
     'Notifications',
+    'Load',
     // mixins
     'mixins/sync/sync-layer'
 ], function (
@@ -18,6 +19,7 @@ define([
     Footer,
     Preferences,
     Notifications,
+    Load,
     // mixins
     sync_layer_mixin
     ) {
@@ -63,6 +65,11 @@ define([
                 }),
                 Footer({binding: binding}),
                 Preferences({binding: {
+                    default: binding,
+                    data: that.getBinding('data'),
+                    preferences: that.getBinding('preferences')
+                }}),
+                Load({binding: {
                     default: binding,
                     data: that.getBinding('data'),
                     preferences: that.getBinding('preferences')

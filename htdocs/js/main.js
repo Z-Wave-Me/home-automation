@@ -121,6 +121,10 @@ requirejs.config({
         {
             name: 'Widgets',
             location: 'modules/widgets'
+        },
+        {
+            name: 'Load',
+            location: 'modules/load'
         }
     ]
 });
