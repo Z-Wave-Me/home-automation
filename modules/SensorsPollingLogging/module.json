@@ -1,19 +1,10 @@
 {
-    "dependencies": ["Cron"],
+    "autoload": false,
     "singleton": true,
-    "category": "scheduling",
-    "author": "Z-Wave.Me",
-    "homepage": "http://razberry.z-wave.me",
-    "icon": "",
-    "version": "1.0.0",
-    "maturity": "stable",
-    "repository": {
-            "type": "git",
-            "source": "https://github.com/Z-Wave-Me/home-automation"
-    },
+    "userView": true,
     "defaults": {
-        "title": "Poll sensors periodically",
-        "description": "Regular sensors polling",
+        "title": "Poll sensors and log values periodically",
+        "description": "Regular sensors polling and logging",
         "devices": [],
         "period": 60
     },
@@ -26,15 +17,24 @@
                             "field": "enum",
                             "datasource": "namespaces",
                             "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
-                            "required": true,
-                            "minItems": 1
+                            "required": true
                     }
-            },
+	     },
             "period": {
                 "type": "select",
                 "required": true,
 		"enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
-            }
+            },
+	    "logTo": {
+            	"enum": ["JSONFile", "HTTPGET"],
+            	"required": true
+            },
+            "url": {
+            	"type": "string",
+            	"depends": "logTo",
+            	"required": true,
+            	"dependencies": "logTo"
+	     }
         },
         "required": false
     },
@@ -54,6 +54,17 @@
             "period": {
                 "label": "Poll period",
                 "optionLabels": ["1 minute", "2 minute", "5 minute", "10 minute", "20 minute", "30 minute", "1 hour", "2 hours", "4 hours", "6 hours", "twice per day", "daily", "weekly"]
+            },
+            "logTo": {
+            	"label": "How to store:",
+            	"optionLables": ["to JSON file in storage", "send via HTTP request"]
+            },
+            "url": {
+            	"label": "HTTP request to do. Strings ${id} and ${value} are replaced by sensor ID and value correspondingly",
+            	"helper": "Example: http://mydomainname.org/path/to/something/${id}?myval=${value}",
+            	"dependencies": {
+            		"logTo": "HTTPGET"
+		}
             }
         }
     }
