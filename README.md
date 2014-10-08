@@ -1,4 +1,5 @@
 # Z-Way Home Automation Engine v1.0.1
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Z-Wave-Me/home-automation?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Links
 
