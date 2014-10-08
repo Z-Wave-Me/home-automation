@@ -172,6 +172,12 @@ LogicalRules.prototype.testRule = function (tree) {
                 vDev.performCommand("exact", { level: devState.status });
             }
         });
+        tree.action.locks.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                vDev.performCommand(devState.status);
+            }
+        });
         tree.action.scenes.forEach(function(scene) {
             var vDev = self.controller.devices.get(scene);
             if (vDev) {

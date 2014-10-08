@@ -1,0 +1,325 @@
+{
+	"autoload": false,
+	"singleton": false,
+	"userView": true,
+	"defaults": {
+		"title": "Security mode",
+		"description": "Security mode allows to trigger scenes based on devices status.",
+		"tests": [],
+		"action": {
+			      	"api_key": "",
+        			"phone": "",
+	    			"message": "Alert!"
+		}
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"tests": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"testType": {
+							"type": "string",
+							"enum": ["binary", "multilevel","remote"],
+							"required": true,
+							"default": "binary"
+						},
+						"testBinary": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"enum": ["on", "off"],
+									"required": true,
+									"default" : "on"
+								}
+							}
+						},
+						"testMultilevel": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"testOperator": {
+									"type": "string",
+									"enum": ["=", "!=", ">", ">=", "<", "<="],
+									"required": true
+								},
+								"testValue": {
+									"type": "number",
+									"required": true
+								}
+							}
+						},
+						"testRemote": {
+							"type": "object",
+							"dependencies": "testType",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchControl:deviceId",
+									"required": true
+								},
+								"testValue": {
+									"type": "string",
+									"enum": ["on", "off", "upstart", "upstop", "downstart", "downstop"],
+									"required": true
+								}
+							}
+						}
+					}
+				}
+			},
+			"action": {
+				"type": "object",
+				"properties": {
+					"phone": {
+            			"required": true,
+            			"pattern": "[1-9][0-9]*"
+        			},
+        			"message": {
+            			"required": false
+        			},
+        			"api_key": {
+            			"required": true,
+            			"pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
+        			},
+					"switches": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchBinary:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "number",
+									"required": true,
+									"enum": ["on", "off"],
+									"default": true
+								}
+							}
+						}
+					},
+					"dimmers": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"status": {
+									"required": true,
+									"minimum": 0,
+									"maximum": 99
+								}
+							}
+						}
+					},
+					"locks": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_doorlock:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "number",
+									"required": true,
+									"enum": ["open", "close"]
+								}
+							}
+						}
+					},
+					"scenes": {
+						"type": "array",
+						"items": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_toggleButton:deviceId",
+							"required": true
+						}
+					}
+				},
+				"required": false
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"tests": {
+				"label": "Sensors",
+				"fields": {
+					"item": {
+						"fields": {
+							"testType": {
+								"type": "select",
+								"default": ""
+							},
+							"testBinary": {
+								"label": "Binary condition",
+								"dependencies": {
+									"testType": "binary"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+									}
+								}
+							},
+							"testMultilevel": {
+								"label": "Multilevel condition",
+								"dependencies": {
+									"testType": "multilevel"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName"
+									},
+									"testOperator": {
+										"type": "select",
+										"optionLabels": ["=", "≠", ">", "≥", "<", "≤"]
+									}
+								}
+							},
+							"testRemote": {
+								"label": "Remote condition",
+								"dependencies": {
+									"testType": "remote"
+								},
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchControl:deviceName"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"action": {
+				"label": "Actions",
+				"fields": {
+					"phone": {
+                		"label": "Phone number to send SMS. In form of 79261234567"
+            		},
+            		"message": {
+                		"label": "Message"
+            		},
+            		"api_key": {
+                		"label": "API key from SMS.ru", "helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+            		},
+					"switches": {
+						"label": "List of switches",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchBinary:deviceName"
+									},
+									"status": {
+										"label": "",
+										"optionLabels": ["On", "Off"]
+									}
+								}
+							}
+						}
+					},
+					"dimmers": {
+						"label": "List of dimmers",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+									},
+									"status": {
+										"label": "State",
+										"type": "integer"
+									}
+								}
+							}
+						}
+					},
+					"locks": {
+						"label": "List of locks",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_doorlock:deviceName"
+									},
+									"status": {
+										"label": "",
+										"optionLabels": ["Open", "Close"]
+									}
+								}
+							}
+						}
+					},
+					"scenes": {
+						"label": "List of scenes to activate",
+						"fields": {
+							"item": {
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

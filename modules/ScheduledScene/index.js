@@ -39,7 +39,7 @@ ScheduledScene.prototype.init = function (config) {
     };
 
     // set up cron handler
-    this.controller.on("scheduledScene.run", this.runScene);
+    this.controller.on("scheduledScene.run."+self.id, this.runScene);
 
     // add cron schedule
     var wds = this.config.weekdays.map(function(x) { return parseInt(x, 10); });
@@ -49,7 +49,7 @@ ScheduledScene.prototype.init = function (config) {
     }
     
     wds.forEach(function(wd) {
-        this.controller.emit("cron.addTask", "scheduledScene.run", {
+        this.controller.emit("cron.addTask", "scheduledScene.run."+self.id, {
             minute: parseInt(self.config.time.split(":")[1], 10),
             hour: parseInt(self.config.time.split(":")[0], 10),
             weekDay: wd,
@@ -62,8 +62,8 @@ ScheduledScene.prototype.init = function (config) {
 ScheduledScene.prototype.stop = function () {
     ScheduledScene.super_.prototype.stop.call(this);
 
-    this.controller.emit("cron.removeTask", "scheduledScene.run");
-    this.controller.off("scheduledScene.run", this.runScene);
+    this.controller.emit("cron.removeTask", "scheduledScene.run."+this.id);
+    this.controller.off("scheduledScene.run."+this.id, this.runScene);
 };
 
 // ----------------------------------------------------------------------------
