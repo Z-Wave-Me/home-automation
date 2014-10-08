@@ -52,6 +52,7 @@ define([
                 .set('step', 1)
                 .set('moduleId', null)
                 .set('instance_temp', null)
+                .set('expanded', Immutable.Vector())
                 .commit();
 
             this.module_listener = this.getBinding('preferences').addListener('moduleId', function (moduleId) {
@@ -79,6 +80,7 @@ define([
                 .delete('step')
                 .delete('moduleId')
                 .delete('instance_temp')
+                .delete('expanded')
                 .commit();
         },
         render: function () {

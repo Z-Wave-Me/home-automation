@@ -249,6 +249,7 @@
       height: 22px;
       padding: 4px 0;
       vertical-align: middle;
+      cursor: pointer;
       .category-name,
       .category-description,
       .count-modules {
@@ -276,6 +277,11 @@
       border-bottom: 1px solid rgba(50, 50, 50, 0.1);
       &:last-child {
         border: none;
+      }
+    }
+    &.collapsed {
+      .category-header {
+        border-bottom: 1px solid rgba(50, 50, 50, 0.1);
       }
     }
   }

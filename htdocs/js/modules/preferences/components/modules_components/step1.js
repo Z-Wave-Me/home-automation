@@ -34,6 +34,7 @@ define([
         getCategory: function (category) {
             var that = this,
                 _ = React.DOM,
+                cx = React.addons.classSet,
                 data_binding = this.getBinding('data'),
                 modules_binding = data_binding.sub('modules'),
                 filtered_modules = modules_binding.val().filter(function (module) {
@@ -45,10 +46,19 @@ define([
                 portions =  Array.apply(null, {length: count_step}).map(Number.call, Number).map(function(step) {
                     var begin = step * number_step;
                     return filtered_modules.slice(begin, begin + number_step);
+                }),
+                is_expanded = this._isExpandedCategory(category.get('id')),
+                category_classes = cx({
+                    expanded: is_expanded,
+                    collapsed: !is_expanded,
+                    'category-module-item': true
                 });
 
-            return _.li({key: 'category-' + category.get('id'), className: 'category-module-item'},
-                _.div({className: 'category-header'},
+            return _.li({key: 'category-' + category.get('id'), className: category_classes},
+                _.div({
+                        className: 'category-header',
+                        onClick: this.onToggleExpanded.bind(null, category.get('id'))
+                    },
                     _.div({className: 'category-name'},
                         category.get('name')
                     ),
@@ -58,13 +68,13 @@ define([
                     _.div({className: 'count-modules'},
                             filtered_modules_length === 1 ? '1 module' : filtered_modules_length + ' modules')
                 ),
-                _.div({className: 'modules-list'},
+                is_expanded ? _.div({className: 'modules-list'},
                     portions.map(function (portion, index) {
                         return _.div({key: 'portion-' + portions.length + '-' + index, className: 'row'},
                             portion.map(that.getModule).toArray()
                         )
                     })
-                )
+                ) : null
             )
         },
         getModule: function (module) {
@@ -128,6 +138,31 @@ define([
             var preferences_binding = this.getDefaultBinding();
             preferences_binding.set('moduleId', moduleId);
             preferences_binding.set('step', 2);
+        },
+        onToggleExpanded: function (categoryId) {
+            var preferences_binding = this.getDefaultBinding(),
+                expanded = preferences_binding.sub('expanded'),
+                is_expanded = this._isExpandedCategory(categoryId);
+
+            if (!is_expanded) {
+                expanded.update(function (categories) {
+                    return categories.push(categoryId);
+                });
+            } else {
+                expanded.update(function (categories) {
+                    return categories.filter(function (id) {
+                        return id !== categoryId;
+                    }).toVector();
+                });
+            }
+
+            return false;
+        },
+        _isExpandedCategory: function (categoryId) {
+            var preferences_binding = this.getDefaultBinding(),
+                expanded = preferences_binding.sub('expanded');
+
+            return expanded.val().indexOf(categoryId) !== -1;
         }
     });
 });
