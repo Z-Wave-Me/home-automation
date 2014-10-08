@@ -52,10 +52,11 @@ define([
                     expanded: is_expanded,
                     collapsed: !is_expanded,
                     'category-module-item': true
-                });
+                }),
+                search_string = this.getDefaultBinding().val('search_string_on_modules_list');
 
             return _.li({key: 'category-' + category.get('id'), className: category_classes},
-                _.div({
+                search_string.length < 3 ? _.div({
                         className: 'category-header',
                         onClick: this.onToggleExpanded.bind(null, category.get('id'))
                     },
@@ -67,8 +68,8 @@ define([
                     ),
                     _.div({className: 'count-modules'},
                             filtered_modules_length === 1 ? '1 module' : filtered_modules_length + ' modules')
-                ),
-                is_expanded ? _.div({className: 'modules-list'},
+                ) : null,
+                is_expanded || search_string.length > 2 ? _.div({className: 'modules-list'},
                     portions.map(function (portion, index) {
                         return _.div({key: 'portion-' + portions.length + '-' + index, className: 'row'},
                             portion.map(that.getModule).toArray()
@@ -87,9 +88,13 @@ define([
                 homepage_url = module.get('homepage'),
                 version = module.get('version'),
                 maturity = module.get('maturity'),
-                is_used = this.isUsedSingletonModule(id);
+                is_used = this.isUsedSingletonModule(id),
+                search_string = this.getDefaultBinding().val('search_string_on_modules_list'),
+                is_match = search_string.length < 3 ? true :
+                    title.toLowerCase().indexOf(search_string.toLowerCase()) !== -1 ||
+                        id.toLowerCase().indexOf(search_string.toLowerCase()) !== -1;
 
-            return _.div({key: 'module-' + id, className: 'col-1-3 module-container'},
+            return is_match ? _.div({key: 'module-' + id, className: 'col-1-3 module-container'},
                 _.span({key: 'data-group-id', className: 'data-group'},
                     _.span({key: 'label-item-id', className: 'label-item'}, 'id: '),
                     _.span({key: 'value-item-id', className: 'value-item'}, id)
@@ -132,7 +137,7 @@ define([
                             onClick: this.onSelectModuleHandler.bind(null, id)
                         }, 'SELECT')
                 )
-            )
+            ) : null;
         },
         onSelectModuleHandler: function (moduleId) {
             var preferences_binding = this.getDefaultBinding();

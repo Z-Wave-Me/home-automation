@@ -53,6 +53,7 @@ define([
                 .set('moduleId', null)
                 .set('instance_temp', null)
                 .set('expanded', Immutable.Vector())
+                .set('search_string_on_modules_list', '')
                 .commit();
 
             this.module_listener = this.getBinding('preferences').addListener('moduleId', function (moduleId) {
@@ -81,6 +82,7 @@ define([
                 .delete('moduleId')
                 .delete('instance_temp')
                 .delete('expanded')
+                .delete('search_string_on_modules_list')
                 .commit();
         },
         render: function () {
@@ -92,7 +94,10 @@ define([
 
             return _.div({ className: 'modules-component' },
                 _.div({className: 'header-component'},
-                    _.span({className: 'step-title'}, step.description)
+                    _.span({className: 'step-title'}, step.description),
+                    _base_search({
+                        search_attr: preferences_binding.sub('search_string_on_modules_list')
+                    })
                 ),
                 _.div({className: 'main-component'},
                     step.component({
