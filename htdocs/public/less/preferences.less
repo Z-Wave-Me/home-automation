@@ -274,7 +274,14 @@
       float: left;
       margin: 0;
       padding: 0;
+      width: 100%;
       border-bottom: 1px solid rgba(50, 50, 50, 0.1);
+      > div {
+        float: left;
+        display: block;
+        margin-bottom: -1000px;
+        padding-bottom: 1010px;
+      }
       &:last-child {
         border: none;
       }
@@ -293,6 +300,7 @@
       border-right: none;
     }
     .data-group {
+      display: block;
       &:hover {
         background: none;
         .label-item,
@@ -329,6 +337,12 @@
       .modern-button {
         vertical-align: middle;
         width: auto;
+      }
+      .is-used {
+      	display: inline-block;
+      	vertical-align: middle;
+      	margin-top: 10px; /* to match those of modern-button */
+      	font-weight: bold;
       }
     }
   }
