@@ -71,23 +71,22 @@ AutomationController.prototype.start = function () {
     // Run all modules
     console.log("Loading modules...");
     this.instantiateModules();
-
-    allowExternalAccess("ZAutomation");
-    allowExternalAccess("ZAutomation.api");
-    allowExternalAccess("ZAutomation.storage");
 	
     ZAutomation = function() {
         return { status: 400, body: "Invalid ZAutomation request" };
     };
-	
+	ws.allowExternalAccess("ZAutomation");
+    
     // Run webserver
     console.log("Starting automation...");
     ZAutomation.api = new ZAutomationAPIWebRequest(this).handlerFunc();
+    ws.allowExternalAccess("ZAutomation.api");
     
     // Run storage
     console.log("Starting storage...");
     ZAutomation.storage = new ZAutomationStorageWebRequest().handlerFunc();	
-
+	ws.allowExternalAccess("ZAutomation.storage");
+    
     // Notify core
     this.emit("core.start");
 };
@@ -96,6 +95,10 @@ AutomationController.prototype.stop = function () {
     // Remove API webserver
     console.log("Stopping automation...");
     ZAutomation = null;
+    
+    ws.revokeExternalAccess("ZAutomation");
+    ws.revokeExternalAccess("ZAutomation.api");
+    ws.revokeExternalAccess("ZAutomation.storage");
 
     var self = this;
 

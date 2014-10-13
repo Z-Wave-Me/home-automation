@@ -54,12 +54,12 @@ ZWave.prototype.terminating = function () {
 
 // Init Z-Wave API url handlers
 
-allowExternalAccess("ZWaveAPI");
-allowExternalAccess("ZWaveAPI.Run");
-allowExternalAccess("ZWaveAPI.Data");
-allowExternalAccess("ZWaveAPI.InspectQueue");
-allowExternalAccess("ZWaveAPI.Backup");
-allowExternalAccess("ZWaveAPI.Restore");
+ws.allowExternalAccess("ZWaveAPI");
+ws.allowExternalAccess("ZWaveAPI.Run");
+ws.allowExternalAccess("ZWaveAPI.Data");
+ws.allowExternalAccess("ZWaveAPI.InspectQueue");
+ws.allowExternalAccess("ZWaveAPI.Backup");
+ws.allowExternalAccess("ZWaveAPI.Restore");
 
 ZWaveAPI = function() {
     return { status: 400, body: "Bad ZWaveAPI request" };
@@ -68,7 +68,7 @@ ZWaveAPI = function() {
 ZWaveAPI.Run = function(url) {
     url = "zway." + url.substring(1);
     try {
-    	var r = executeJS(url);
+    	var r = eval(url);
     	return { 
     		status: 200, 
     		headers: { 
