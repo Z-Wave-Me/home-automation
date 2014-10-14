@@ -7,7 +7,8 @@ define([
     './_multilevel',
     './_control',
     './_camera',
-    './_toggle'
+    './_toggle',
+    './_thermostat'
 ], function (
     // libs
     Morearty,
@@ -17,7 +18,8 @@ define([
     Multilevel,
     Control,
     Camera,
-    Toggle
+    Toggle,
+    Thermostat
     ) {
     'use strict';
 
@@ -57,7 +59,7 @@ define([
             } else if (device_type === "switchMultilevel") {
                 Widget = Multilevel;
             } else if (device_type === "thermostat") {
-                Widget = Probe;
+                Widget = Thermostat;
             } else if (device_type === "switchBinary" || device_type === "switchRGBW" || device_type === "doorlock") {
                 Widget = Switch;
             } else if (device_type === "toggleButton") {

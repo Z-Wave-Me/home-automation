@@ -6,6 +6,7 @@ requirejs.config({
         // advanced libs
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
         alpaca: 'libs/alpaca/alpaca-full',
+        d3: '../bower_components/d3/d3',
         // react
         react: '../bower_components/react/react-with-addons',
         morearty: '../bower_components/moreartyjs/dist/morearty',
@@ -143,6 +144,5 @@ require([
                 document.getElementById('app-container')
             );
         });
-
     });
 });

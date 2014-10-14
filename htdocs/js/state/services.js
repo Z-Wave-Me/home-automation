@@ -62,8 +62,8 @@ define([], function () {
                     // update tags
                     if (devices_binding.val()) {
                         dataBinding.update('deviceTags', function () {
-                            var tags = devices_binding.val().reduce(function (memo, device) {
-                                memo = memo || Immutable.Vector();
+                            var tags = devices_binding.val().reduce(function (memo, device, index) {
+                                memo = index === 1 ? Immutable.Vector() : memo;
 
                                 var device_tags = device.get('tags');
 
@@ -84,8 +84,8 @@ define([], function () {
                     // update types
                     if (devices_binding.val()) {
                         dataBinding.update('deviceTypes', function () {
-                            var types = devices_binding.val().reduce(function (memo, device) {
-                                memo = memo || Immutable.Vector();
+                            var types = devices_binding.val().reduce(function (memo, device, index) {
+                                memo = index === 1 ? Immutable.Vector() : memo;
 
                                 if (memo.indexOf(device.get('deviceType')) === -1) {
                                     return memo.push(device.get('deviceType'));
