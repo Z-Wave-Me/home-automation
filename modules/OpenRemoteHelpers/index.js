@@ -289,15 +289,15 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 return this.controller.devices.get(N).get("metrics:level")
         }
     };
+    ws.allowExternalAccess("OpenRemote");
 };
 
 OpenRemoteHelpers.prototype.stop = function () {
     OpenRemoteHelpers.super_.prototype.stop.call(this);
-
+	
+	ws.revokeExternalAccess("OpenRemote");
     OpenRemote = null;
 };
-
-allowExternalAccess("OpenRemote");
 
 // ----------------------------------------------------------------------------
 // --- Module methods

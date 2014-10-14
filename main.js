@@ -200,33 +200,6 @@ function actualize (config) {
     return config;
 }
 
-//--- Init JS handler
-
-allowExternalAccess("JS");
-allowExternalAccess("JS.Run");
-
-JS = function() {
-    return { status: 400, body: "Bad JS request" };
-};
-
-JS.Run = function(url) {
-	// skip trailing slash
-    url = url.substring(1);
-    try {
-    	var r = executeJS(url, "JS/Run");
-    	return { 
-    		status: 200, 
-    		headers: { 
-    			"Content-Type": "application/json",
-    			"Connection": "keep-alive"
-    		},
-    		body: r 
-    	};
-    } catch (e) {
-    	return { status: 500, body: e.toString() };
-    }
-};
-
 // init WebServer
 
 function WebServerRequestHandler(req) {
@@ -234,7 +207,7 @@ function WebServerRequestHandler(req) {
 	if (!q) return null;
 	
 	var found = null;
-	if (listExternalAccess().some(function(ext) {
+	if (this.externalNames.some(function(ext) {
 		found = ext;
 		return (ext.length < q.length && q.slice(0, ext.length + 1) === ext + ".") || (ext === q);
 	}) && found) {
@@ -249,6 +222,49 @@ function WebServerRequestHandler(req) {
 ws = new WebServer(8083, WebServerRequestHandler, {
 	document_root: "htdocs"
 });
+
+ws.externalNames = [];
+ws.allowExternalAccess = function(name) {
+	var idx = this.externalNames.indexOf(name);
+	if (idx >= 0) return;
+	
+	this.externalNames.push(name);
+	this.externalNames.sort(function(x, y) {
+		return (y.length - x.length) || (x > y ? 1 : -1);
+	});
+};
+ws.revokeExternalAccess = function(name) {
+	var idx = this.externalNames.indexOf(name);
+	if (idx === -1) return;
+	
+	this.externalNames.splice(idx, 1);
+};
+
+//--- Init JS handler
+
+JS = function() {
+    return { status: 400, body: "Bad JS request" };
+};
+ws.allowExternalAccess("JS");
+
+JS.Run = function(url) {
+	// skip trailing slash
+    url = url.substring(1);
+    try {
+    	var r = eval(url);
+    	return { 
+    		status: 200, 
+    		headers: { 
+    			"Content-Type": "application/json",
+    			"Connection": "keep-alive"
+    		},
+    		body: r 
+    	};
+    } catch (e) {
+    	return { status: 500, body: e.toString() };
+    }
+};
+ws.allowExternalAccess("JS.Run");
 
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
