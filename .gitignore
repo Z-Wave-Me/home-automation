@@ -2,10 +2,6 @@
 node_modules
 npm-debug.log
 config.json
-htdocs/dist/
-htdocs/dist
-htdocs/js/_precompiled.js
-bower_components
 htdocs/bower_components
 .SyncId
 .SyncIgnore
@@ -16,5 +12,4 @@ storage/*
 !storage/.keep
 .idea/
 .idea
-dist/
-
+dist

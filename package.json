@@ -9,18 +9,29 @@
     "mocha": "~1.14.0",
     "request": "~2.42.x",
     "should": ">=2.1.0",
-    "underscore": "*",
-    "gulp": "*",
-    "gulp-less": "*",
-    "gulp-minify-css": "*",
-    "gulp-sourcemaps": "*",
-    "gulp-css-base64": "*"
+    "underscore": "latest",
+    "gulp": "latest",
+    "gulp-less": "latest",
+    "gulp-minify-css": "latest",
+    "gulp-sourcemaps": "latest",
+    "gulp-css-base64": "latest",
+    "gulp-requirejs": "latest",
+    "gulp-concat": "latest",
+    "gulp-uglify": "latest",
+    "gulp-autoprefixer": "latest",
+    "gulp-connect": "latest",
+    "gulp-mocha": "latest",
+    "gulp-jscs": "latest",
+    "gulp-jshint": "latest",
+    "gulp-manifest": "latest",
+    "gulp-rename": "latest",
+    "jshint-stylish": "latest"
   },
   "scripts": {
-    "build": "./node_modules/.bin/grunt",
-    "start": "./node_modules/.bin/grunt server",
+    "build": "./node_modules/.bin/gulp",
+    "start": "./node_modules/.bin/gulp develop_server",
     "postinstall": "./node_modules/.bin/bower --quiet install",
-    "test": "./node_modules/.bin/mocha -R spec apitests/index.js"
+    "test": "./node_modules/.bin/gulp mocha"
   },
   "repository": {
     "type": "git",

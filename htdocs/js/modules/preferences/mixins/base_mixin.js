@@ -29,7 +29,7 @@ define([], function () {
         getActiveNodeTree: function () {
             var binding = this.getMoreartyContext().getBinding().sub('preferences'),
                 activeNodeTreeId = binding.val('activeNodeTreeId'),
-                activeNode = this.searchTree(binding.sub('tree').val().toObject(), activeNodeTreeId);
+                activeNode = this.searchTree(binding.sub('tree').val().toJS(), activeNodeTreeId);
 
             return activeNode;
         },

@@ -3,6 +3,7 @@ requirejs.config({
     paths : {
         // Major libraries
         jquery: '../bower_components/jquery/dist/jquery',
+        requireLib: '../bower_components/requirejs/require',
         // advanced libs
         'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
         alpaca: 'libs/alpaca/alpaca-full',

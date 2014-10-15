@@ -1,4 +1,4 @@
-define(['immutable'], function (Immutable) {
+define([], function () {
     'use strict';
 
     return {

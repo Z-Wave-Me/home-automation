@@ -1,12 +1,7 @@
-define([
-    // libs
-    'immutable'
-], function (
-    Immutable
-    ) {
+define([], function () {
     'use strict';
 
-    return Immutable.Map({
+    return {
         activeNodeTreeId: 1,
         activeNodeTreeStatus: 'normal', // update, add, remove
         activeNodeTreeIdHistory: 1,
@@ -20,7 +15,7 @@ define([
         itemBindingTemp: {},
         leftPanelItemSelectedId: null,
         defaultProfileId: localStorage.getItem('defaultProfileId'),
-        tree: Immutable.Map({
+        tree: {
             id: 1,
             options: {
                 name: 'Preferences',
@@ -90,7 +85,7 @@ define([
                     children: []
                 }
             ]
-        })
-    });
+        }
+    };
 });
 

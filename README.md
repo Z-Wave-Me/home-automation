@@ -21,9 +21,9 @@ Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home
         $ cd /path/to/automationFolder
         $ npm install
 
-    -   Compile front-end to /path/to/automationFolder/htdocs/dist.
+    -   Compile front-end to /path/to/automationFolder/dist.
 
-        $ grunt
+        $ gulp
 
 ## Running api-tests
 
@@ -31,4 +31,4 @@ Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home
 
     - Running tests
 
-        $ grunt mocha
+        $ gulp mocha
