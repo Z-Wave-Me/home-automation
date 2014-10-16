@@ -54,7 +54,10 @@ gulp.task("build", function () {
 });
 
 gulp.task('manifest', function(){
-    gulp.src(['dist/*'])
+    gulp.src([
+        'dist/*',
+        'dist/**/*.*'
+    ])
         .pipe(manifest({
             hash: true,
             preferOnline: true,
@@ -106,7 +109,9 @@ gulp.task('watch', function () {
 
 
 // tasks
-gulp.task('default', ['less', 'build', 'manifest', 'create_index']);
+gulp.task('default', ['less', 'build', 'create_index'], function () {
+    gulp.run('manifest');
+});
 gulp.task('develop_server', ['connect', 'watch']);
 gulp.task('mocha', function () {
     return gulp.src('apitests/index.js', {read: false})
