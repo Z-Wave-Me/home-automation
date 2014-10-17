@@ -14,19 +14,6 @@ Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home
 
 ## Precompiling client-side application
 
-    -   Install node.js
-
-    -   Install npm-packages
-
-        $ cd /path/to/automationFolder
-        $ npm install
-
-    -   Compile front-end to /path/to/automationFolder/dist.
-
-        $ gulp
-
-## Running api-tests
-
     - Install node.js and npm-packages
 
     - Running tests
