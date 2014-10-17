@@ -1,8 +1,6 @@
 .DS_Store
-node_modules
 npm-debug.log
 config.json
-htdocs/bower_components
 .SyncId
 .SyncIgnore
 .SyncTrash
@@ -10,6 +8,6 @@ zwayTree.json
 ha-*.json
 storage/*
 !storage/.keep
-.idea/
 .idea
-dist
+htdocs
+node_modules
