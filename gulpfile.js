@@ -1,4 +1,5 @@
-var gulp = require('gulp'),
+var BUILD_DIRECTORY = './dist',
+    gulp = require('gulp'),
     less = require('gulp-less'),
     minifyCSS = require('gulp-minify-css'),
     sourcemaps = require('gulp-sourcemaps'),
@@ -12,7 +13,9 @@ var gulp = require('gulp'),
     jshint = require('gulp-jshint'),
     jscs = require('gulp-jscs'),
     manifest = require('gulp-manifest'),
-    rename = require("gulp-rename");
+    rename = require("gulp-rename"),
+    runSequence = require('run-sequence'),
+    rimraf = require('gulp-rimraf');
 
 gulp.task('less', function () {
     gulp.src('./htdocs/public/less/all.less')
@@ -25,10 +28,10 @@ gulp.task('less', function () {
         }))
         //.pipe(sourcemaps.write('./'))
         .pipe(minifyCSS({keepBreaks:true}))
-        .pipe(gulp.dest('./dist/public/css'));
+        .pipe(gulp.dest(BUILD_DIRECTORY + '/public/css'));
 
-    gulp.src('./htdocs/public/fonts/*')
-        .pipe(gulp.dest('./dist/public/fonts'));
+    return gulp.src('./htdocs/public/fonts/*')
+        .pipe(gulp.dest(BUILD_DIRECTORY + '/public/fonts'));
 });
 
 gulp.task("build", function () {
@@ -49,14 +52,15 @@ gulp.task("build", function () {
         out: 'main-built.js'
     })
         .pipe(uglify())
-        .pipe(gulp.dest('./dist/js')); // pipe it to the output DIR
+        .pipe(gulp.dest(BUILD_DIRECTORY + '/js')); // pipe it to the output DIR
 
 });
 
-gulp.task('manifest', function(){
-    gulp.src([
-        'dist/*',
-        'dist/**/*.*'
+
+gulp.task('manifest', function () {
+    return gulp.src([
+        BUILD_DIRECTORY + '/*',
+        BUILD_DIRECTORY + '/**/*.*'
     ])
         .pipe(manifest({
             hash: true,
@@ -65,13 +69,18 @@ gulp.task('manifest', function(){
             filename: 'app.manifest',
             exclude: 'app.manifest'
         }))
-        .pipe(gulp.dest('dist'));
+        .pipe(gulp.dest(BUILD_DIRECTORY));
 });
 
 gulp.task('create_index', function () {
     return gulp.src("./index.tmpl.html")
         .pipe(rename("index.html"))
-        .pipe(gulp.dest("./dist"));
+        .pipe(gulp.dest(BUILD_DIRECTORY));
+});
+
+gulp.task('clean', function () {
+    return gulp.src(BUILD_DIRECTORY, {read: false})
+        .pipe(rimraf());
 });
 
 
@@ -91,7 +100,7 @@ gulp.task('jscs', function () {
 
 gulp.task('connect', function() {
     connect.server({
-        root: 'htdocs',
+        root: 'dist',
         livereload: true
     });
 });
@@ -107,10 +116,9 @@ gulp.task('watch', function () {
     ], ['reload']);
 });
 
-
 // tasks
-gulp.task('default', ['less', 'build', 'create_index'], function () {
-    gulp.run('manifest');
+gulp.task('default', function (callback) {
+    runSequence('clean', ['less', 'build', 'create_index'], 'manifest', callback);
 });
 gulp.task('develop_server', ['connect', 'watch']);
 gulp.task('mocha', function () {

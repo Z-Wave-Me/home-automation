@@ -25,7 +25,9 @@
     "gulp-jshint": "latest",
     "gulp-manifest": "latest",
     "gulp-rename": "latest",
-    "jshint-stylish": "latest"
+    "gulp-rimraf": "latest",
+    "jshint-stylish": "latest",
+    "run-sequence": "latest"
   },
   "scripts": {
     "build": "./node_modules/.bin/gulp",
