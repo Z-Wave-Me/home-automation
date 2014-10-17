@@ -26,6 +26,7 @@
     "gulp-manifest": "latest",
     "gulp-rename": "latest",
     "gulp-rimraf": "latest",
+    "gulp-htmlmin": "latest",
     "jshint-stylish": "latest",
     "run-sequence": "latest"
   },

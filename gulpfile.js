@@ -15,7 +15,8 @@ var BUILD_DIRECTORY = './dist',
     manifest = require('gulp-manifest'),
     rename = require("gulp-rename"),
     runSequence = require('run-sequence'),
-    rimraf = require('gulp-rimraf');
+    rimraf = require('gulp-rimraf'),
+    htmlmin = require('gulp-htmlmin');
 
 gulp.task('less', function () {
     gulp.src('./htdocs/public/less/all.less')
@@ -42,11 +43,6 @@ gulp.task("build", function () {
         mainConfigFile: 'htdocs/js/main.js',
         include: [
             'requireLib',
-            'Preferences',
-            'Notifications',
-            'App',
-            'Widgets',
-            'Load',
             './bootstrap'
         ],
         out: 'main-built.js'
@@ -55,7 +51,6 @@ gulp.task("build", function () {
         .pipe(gulp.dest(BUILD_DIRECTORY + '/js')); // pipe it to the output DIR
 
 });
-
 
 gulp.task('manifest', function () {
     return gulp.src([
@@ -72,17 +67,26 @@ gulp.task('manifest', function () {
         .pipe(gulp.dest(BUILD_DIRECTORY));
 });
 
-gulp.task('create_index', function () {
-    return gulp.src("./index.tmpl.html")
+gulp.task('create_index', function() {
+    return gulp.src('./index.tmpl.html')
+        .pipe(htmlmin({collapseWhitespace: true}))
         .pipe(rename("index.html"))
         .pipe(gulp.dest(BUILD_DIRECTORY));
+});
+
+gulp.task('copy_other', function() {
+    return gulp.src([
+        './htdocs/favicon.ico',
+        './htdocs/robots.txt',
+        './htdocs/apple-touch-icon-precomposed.png'
+    ])
+        .pipe(gulp.dest('./dist'));
 });
 
 gulp.task('clean', function () {
     return gulp.src(BUILD_DIRECTORY, {read: false})
         .pipe(rimraf());
 });
-
 
 // validate
 gulp.task('lint', function() {
@@ -97,7 +101,6 @@ gulp.task('jscs', function () {
 });
 
 // server
-
 gulp.task('connect', function() {
     connect.server({
         root: 'dist',
@@ -118,7 +121,7 @@ gulp.task('watch', function () {
 
 // tasks
 gulp.task('default', function (callback) {
-    runSequence('clean', ['less', 'build', 'create_index'], 'manifest', callback);
+    runSequence('clean', ['less', 'build', 'create_index'], 'manifest', 'copy_other', callback);
 });
 gulp.task('develop_server', ['connect', 'watch']);
 gulp.task('mocha', function () {

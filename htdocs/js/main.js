@@ -5,7 +5,7 @@ requirejs.config({
         jquery: '../bower_components/jquery/dist/jquery',
         requireLib: '../bower_components/requirejs/require',
         // advanced libs
-        'jquery-ui': 'libs/vendor/jquery-ui-1.10.4.custom',
+        'jquery-ui': '../bower_components/jquery-ui/jquery-ui',
         alpaca: 'libs/alpaca/alpaca-full',
         d3: '../bower_components/d3/d3',
         // react
@@ -19,10 +19,6 @@ requirejs.config({
         'mode-javascript': '../bower_components/ace-builds/src/mode-javascript',
         'mode-json': '../bower_components/ace-builds/src/mode-json',
         'worker-javascript': '../bower_components/ace-builds/src/worker-javascript',
-        // require
-        text: '../bower_components/requirejs-text/text',
-        // templates
-        templates: '../templates',
         // temp
         sticky: 'libs/home-automation/sticky'
     },

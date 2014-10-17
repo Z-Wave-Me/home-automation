@@ -5,9 +5,9 @@
     "dependencies": {
         "lodash": "2.4.1",
         "requirejs": "2.1.15",
-        "requirejs-text": "2.0.12",
         "backbone": "1.1.2",
         "jquery": "2.1.1",
+        "jquery-ui": "1.11.2",
         "react": "0.11.2",
         "less": "1.7.4",
         "moreartyjs": "git://github.com/Tvaroh/moreartyjs.git#0.4.4",
