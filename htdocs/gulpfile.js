@@ -124,8 +124,4 @@ gulp.task('default', function (callback) {
     runSequence('clean', ['less', 'build', 'create_index'], 'manifest', 'copy_other', callback);
 });
 gulp.task('develop_server', ['connect', 'watch']);
-gulp.task('mocha', function () {
-    return gulp.src('apitests/index.js', {read: false})
-        .pipe(mocha({reporter: 'nyan'}));
-});
 gulp.task('validate', ['lint', 'jscs']);
