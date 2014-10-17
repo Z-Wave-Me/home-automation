@@ -9,5 +9,4 @@ ha-*.json
 storage/*
 !storage/.keep
 .idea
-htdocs
 node_modules
