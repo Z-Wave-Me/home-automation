@@ -1,0 +1,3 @@
+[submodule "htdocs"]
+	path = htdocs
+	url = https://github.com/Z-Wave-Me/home-automation-ui
