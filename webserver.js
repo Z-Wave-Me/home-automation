@@ -181,12 +181,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: 200
-            };
+            },
+            result_execution_command;
 
         return function () {
 
             if (that.controller.devices.has(vDevId)) {
-                reply.data = !!that.controller.devices.get(vDevId).performCommand.call(that.controller.devices.get(vDevId), commandId, that.req.query);
+                result_execution_command = that.controller.devices.get(vDevId).performCommand.call(that.controller.devices.get(vDevId), commandId, that.req.query);
+                reply.data = !!result_execution_command ? result_execution_command : null;
             } else {
                 reply.data = null;
                 reply.code = 404;

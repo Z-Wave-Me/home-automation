@@ -52,21 +52,25 @@ RGB.prototype.init = function (config) {
             deviceType: "switchRGBW",
             metrics: {
                 icon: '',
-                title: 'RGB ' + this.id
+                title: 'RGB ' + this.id,
+                color: {r: 0, g: 0, b: 0},
+                level: 'off'
             }
         },
         overlay: {},
         handler:  function (command, args) {
             if (command === "on" || command === "off") {
-                self.controller.devices.get(this.config.red).performCommand(command);
-                self.controller.devices.get(this.config.green).performCommand(command);
-                self.controller.devices.get(this.config.blue).performCommand(command);
+                self.controller.devices.get(self.config.red).performCommand(command);
+                self.controller.devices.get(self.config.green).performCommand(command);
+                self.controller.devices.get(self.config.blue).performCommand(command);
             }
             if (command === "exact") {
-                self.controller.devices.get(this.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
-                self.controller.devices.get(this.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
-                self.controller.devices.get(this.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+                self.controller.devices.get(self.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
+                self.controller.devices.get(self.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
+                self.controller.devices.get(self.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
             }
+
+            return self.vDev.toJSON();
         },
         moduleId: this.id
     });
@@ -77,20 +81,20 @@ RGB.prototype.init = function (config) {
     };
     
     this.handleR = function () {
-        self.vDev.set("metrics:color:r", self.controller.devices.get(this.config.red).get("metrics:level"));
+        self.vDev.set("metrics:color:r", self.controller.devices.get(self.config.red).get("metrics:level"));
         self.handleLevel();
     };
     this.handleG = function () {
-        self.vDev.set("metrics:color:g", self.controller.devices.get(this.config.green).get("metrics:level"));
+        self.vDev.set("metrics:color:g", self.controller.devices.get(self.config.green).get("metrics:level"));
         self.handleLevel();
     };
     this.handleB = function () {
-        self.vDev.set("metrics:color:b", self.controller.devices.get(this.config.blue).get("metrics:level"));
+        self.vDev.set("metrics:color:b", self.controller.devices.get(self.config.blue).get("metrics:level"));
         self.handleLevel();
     };
-    this.controller.devices.on(this.config.red, "change:metrics:level", this.handleR);
-    this.controller.devices.on(this.config.green, "change:metrics:level", this.handleG);
-    this.controller.devices.on(this.config.blue, "change:metrics:level", this.handleB);
+    this.controller.devices.on(self.config.red, "change:metrics:level", this.handleR);
+    this.controller.devices.on(self.config.green, "change:metrics:level", this.handleG);
+    this.controller.devices.on(self.config.blue, "change:metrics:level", this.handleB);
 };
 
 RGB.prototype.stop = function () {
