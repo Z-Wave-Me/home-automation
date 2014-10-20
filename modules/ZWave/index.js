@@ -73,13 +73,18 @@ ZWave.prototype.stop = function () {
 
     this.communicationStatistics = null;
     
+    this.stopped = true;
     this.zway.stop();
+    this.zway = null;
+    zway = null;
 };
 
 ZWave.prototype.terminating = function () {
-    console.log("Terminating Z-Wave binding");
-    this.zway = null;
-    zway = null;
+    if (!this.stopped) {
+    	console.log("Terminating Z-Wave binding");
+    	this.zway = null;
+    	zway = null;
+    }
 };
 
 ZWave.prototype.defineHandlers = function () {
