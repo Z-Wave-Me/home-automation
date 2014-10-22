@@ -72,6 +72,10 @@ ZWave.prototype.stop = function () {
     ws.revokeExternalAccess("ZWaveAPI.CommunicationStatistics");
 
     this.communicationStatistics = null;
+    this.ZWaveAPI = null;
+
+    ZWaveAPI = null; // delete global
+    delete ZWaveAPI;
     
     this.stopped = true;
     this.zway.stop();
