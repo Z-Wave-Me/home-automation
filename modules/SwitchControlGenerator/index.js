@@ -154,7 +154,7 @@ SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
 };
 
 SwitchControlGenerator.prototype.handler = function(cmd, par, ids) {
-    var postfix = ids.join(":"),
+    var postfix = ids.join("-"),
         name = "Remote_" + this.id + "_" + postfix;
     
     if (this.config.generated.indexOf(name) === -1) {

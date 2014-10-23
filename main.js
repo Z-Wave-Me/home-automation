@@ -200,6 +200,9 @@ function actualize (config) {
     return config;
 }
 
+// do transition script to adopt old versions to new
+executeFile("updateBackendConfig.js");
+
 // init WebServer
 
 function WebServerRequestHandler(req) {

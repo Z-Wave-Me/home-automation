@@ -166,7 +166,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         instance = zway.devices[nodeId].instances[instanceId],
         instanceCommandClasses = Object.keys(instance.commandClasses),
         cc = instance.commandClasses[commandClassId],
-        separ = ":",
+        separ = "-",
         vDevIdPrefix = "ZWayVDev_",
         vDevIdNI = nodeId + separ + instanceId,
         vDevIdC = commandClassId,
@@ -576,7 +576,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 scaleTitle = null,
                 withMode = in_array(instanceCommandClasses, this.CC["ThermostatMode"]),
                 withTemp = in_array(instanceCommandClasses, this.CC["ThermostatSetPoint"]),
-                deviceNamePrefix = "ZWayVDev_" + nodeId + ":" + instanceId + ":Thermostat:",
+                deviceNamePrefix = "ZWayVDev_" + nodeId + "-" + instanceId + ":Thermostat:",
                 deviceName = deviceNamePrefix + (withMode ? "M" : "") +  (withTemp ? "T" : "");
 
             if (withMode && !instance.ThermostatMode.data.interviewDone.value || withTemp && !instance.ThermostatSetPoint.data.interviewDone.value) {
@@ -692,7 +692,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             }
         }
     } catch (e) {
-        controller.addNotification("error", "Can not create vDev based on " + nodeId + ":" + instanceId + ":" + commandClassId + ": " + e.toString(), "core");
+        controller.addNotification("error", "Can not create vDev based on " + nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(), "core");
         console.log(e.stack);
     }
 };
@@ -703,7 +703,7 @@ ZWaveGate.prototype.parseDelCommandClass = function (nodeId, instanceId, command
     commandClassId = parseInt(commandClassId, 10);
 
     var self = this,
-        separ = ":",
+        separ = "-",
         vDevIdPrefix = "ZWayVDev_",
         vDevIdNI = nodeId + separ + instanceId,
         vDevIdC = commandClassId,
