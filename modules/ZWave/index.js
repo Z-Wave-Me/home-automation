@@ -20,16 +20,20 @@ _module = ZWave;
 ZWave.prototype.init = function (config) {
     ZWave.super_.prototype.init.call(this, config);
 
+	this.startBinding();
+};
+
+ZWave.prototype.startBinding = function () {
     var self = this;
     
     try {
 	    this.zway = new ZWaveBinding(this.config.name, this.config.port, {
-		configFolder: this.config.config || 'config',
-		translationsFolder: this.config.translations || 'translations',
-		zddxFolder: this.config.ZDDX || 'ZDDX',
-		terminationCallback: function() {
-		    self.terminating.call(self);
-		}
+			configFolder: this.config.config || 'config',
+			translationsFolder: this.config.translations || 'translations',
+			zddxFolder: this.config.ZDDX || 'ZDDX',
+			terminationCallback: function() {
+				self.terminating.call(self);
+			}
 	    });
     } catch(e) {
     	this.controller.addNotification("critical", "Can not start Z-Wave binding: " + e.toString(), "z-wave");
@@ -41,6 +45,7 @@ ZWave.prototype.init = function (config) {
     
     zway = this.zway;
     
+    this.stopped = false;
     this.defineHandlers();
 
     // TODO: these paths needs to be fixed in future to allow multiple Z-Way running. Also check z-way-utils to allow them to work in multi-stick environment.
@@ -62,6 +67,10 @@ ZWave.prototype.stop = function () {
     console.log("--- ZWave.stop()");
     ZWave.super_.prototype.stop.call(this);
 
+	this.stopBinding();
+};
+
+ZWave.prototype.stopBinding = function () {
     ws.revokeExternalAccess("ZWaveAPI");
     ws.revokeExternalAccess("ZWaveAPI.Run");
     ws.revokeExternalAccess("ZWaveAPI.Data");
@@ -73,45 +82,51 @@ ZWave.prototype.stop = function () {
 
     this.communicationStatistics = null;
     this.ZWaveAPI = null;
-
-    ZWaveAPI = null; // delete global
+    
     delete ZWaveAPI;
+    delete zway;
     
     this.stopped = true;
-    this.zway.stop();
+    if (this.zway)
+    	this.zway.stop();
     this.zway = null;
-    zway = null;
 };
 
 ZWave.prototype.terminating = function () {
     if (!this.stopped) {
     	console.log("Terminating Z-Wave binding");
-    	this.zway = null;
-    	zway = null;
+    	this.stopBinding();
+    	
+    	var self = this;
+		setTimeout(function() {
+			// retry open after 5 seconds
+			console.log("Restarting Z-Wave binding");
+			self.startBinding();
+		}, 5000);
     }
 };
 
 ZWave.prototype.defineHandlers = function () {
-	var zway = this.zway; // use own zway object (for multiple sticks)
-	
+	var zway = this.zway;
+
 	this.ZWaveAPI = function() {
-	    return { status: 400, body: "Bad ZWaveAPI request" };
+	    return { status: 400, body: "Bad ZWaveAPI request " };
 	};
 
 	this.ZWaveAPI.Run = function(url) {
 	    url = "zway." + url.substring(1);
 	    try {
-		var r = eval(url);
-		return { 
-			status: 200, 
-			headers: { 
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
-			},
-			body: r 
-		};
+			var r = eval(url);
+			return { 
+				status: 200, 
+				headers: { 
+					"Content-Type": "application/json",
+					"Connection": "keep-alive"
+				},
+				body: r 
+			};
 	    } catch (e) {
-		return { status: 500, body: e.toString() };
+			return { status: 500, body: e.toString() };
 	    }
 	};
 
@@ -123,7 +138,7 @@ ZWave.prototype.defineHandlers = function () {
 				"Content-Type": "application/json",
 				"Connection": "keep-alive"
 			},
-			body: zway.data(timestamp)    	
+			body: zway.data(timestamp)  	
 		};
 	};
 

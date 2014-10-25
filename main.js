@@ -200,9 +200,6 @@ function actualize (config) {
     return config;
 }
 
-// do transition script to adopt old versions to new
-executeFile("updateBackendConfig.js");
-
 // init WebServer
 
 function WebServerRequestHandler(req) {
@@ -228,6 +225,10 @@ ws = new WebServer(8083, WebServerRequestHandler, {
 
 ws.externalNames = [];
 ws.allowExternalAccess = function(name) {
+	// refresh cache anyways, even if adding duplicate name
+	if (this.evalCache)
+		delete this.evalCache[name];
+
 	var idx = this.externalNames.indexOf(name);
 	if (idx >= 0) return;
 	
@@ -237,6 +238,10 @@ ws.allowExternalAccess = function(name) {
 	});
 };
 ws.revokeExternalAccess = function(name) {
+	// remove cached handler (if any)
+	if (this.evalCache)
+		delete this.evalCache[name];
+
 	var idx = this.externalNames.indexOf(name);
 	if (idx === -1) return;
 	
