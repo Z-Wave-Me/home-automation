@@ -468,7 +468,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     var now = new Date(), notice;
 
     notice = {
-        id: now.getTime(),
+        id: Math.floor(now.getTime() / 1000),
         timestamp: now.toISOString(),
         level: severity,
         message: message,
@@ -611,11 +611,9 @@ AutomationController.prototype.getListProfiles = function () {
 };
 
 AutomationController.prototype.getProfile = function (id) {
-    var profile = this.profiles.filter(function (profile) {
+    return _.find(this.profiles, function (profile) {
         return profile.id === parseInt(id);
-    });
-
-    return profile[0] || null;
+    }) || null;
 };
 
 AutomationController.prototype.createProfile = function (object) {
@@ -643,9 +641,6 @@ AutomationController.prototype.updateProfile = function (object, id) {
     var profile = _.find(this.profiles, function (profile) {
             return profile.id === parseInt(id);
         }),
-        active = _.find(this.profiles, function (profile) {
-            return profile.active;
-        }),
         index,
         that = this;
 
@@ -661,27 +656,6 @@ AutomationController.prototype.updateProfile = function (object, id) {
         if (object.hasOwnProperty('positions')) {
             this.profiles[index].positions = object.positions;
         }
-        if (object.hasOwnProperty('groups') && _.isObject(object.groups)) {
-            this.profiles[index].groups = object.groups;
-        }
-        if (object.hasOwnProperty('active')) {
-            if (object.active) {
-                _.each(this.profiles, function (model) {
-                    if (model.id === that.profiles[index].id) {
-                        model.active = object.active;
-                    } else {
-                        model.active = false;
-                    }
-                });
-            } else {
-                if (Boolean(active) && active.id !== profile.id) {
-                    profile.active = object.active;
-                } else if (Boolean(active) && active.id === profile.id && !Boolean(object.active)) {
-                    profile.active = object.active;
-                    _.first(this.profiles).active = true;
-                }
-            }
-        }
 
         _.defaults(this.profiles[index], {
             name: '',
@@ -694,10 +668,10 @@ AutomationController.prototype.updateProfile = function (object, id) {
     return this.profiles[index];
 };
 
-AutomationController.prototype.removeProfile = function (id) {
+AutomationController.prototype.removeProfile = function (profileId) {
     var that = this;
     this.profiles = this.profiles.filter(function (profile) {
-        return profile.id !== parseInt(id) || that.profiles[0].id === profile.id;
+        return profile.id !== profileId;
     });
 
     this.saveConfig();

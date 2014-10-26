@@ -83,6 +83,8 @@ function actualize (config) {
                     profile.positions = [];
                 }
             });
+        } else {
+            config.profiles = [];
         }
     }
 

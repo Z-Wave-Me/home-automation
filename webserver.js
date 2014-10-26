@@ -199,8 +199,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // Notifications
     exposeNotifications: function () {
-        var nowTS = Math.floor(new Date().getTime() / 1000),
-            notifications,
+        var notifications,
             reply = {
                 error: null,
                 data: null
@@ -217,7 +216,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             notifications = that.controller.listNotifications(since, redeemed);
 
             reply.data = {
-                updateTime: nowTS,
+                updateTime: Math.floor(new Date().getTime() / 1000),
                 notifications: notifications
             };
 
@@ -638,25 +637,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                profiles,
+                profiles = that.controller.getListProfiles(),
                 profile;
 
-            if (profileId === undefined) {
-                profiles = that.controller.getListProfiles();
+            if (!_.isNumber(profileId)) {
                 if (!Array.isArray(profiles)) {
-                    reply.error = "Unknown error.";
+                    reply.error = "Unknown error. profiles isn't array";
                 } else {
                     reply.code = 200;
                     reply.data = profiles;
                 }
             } else {
                 profile = that.controller.getProfile(profileId);
-                if (profile && profile !== null && profile.id) {
+                if (profile !== null) {
                     reply.code = 200;
                     reply.data = profile;
                 } else {
                     reply.code = 404;
-                    reply.error = "Dashboard " + profile.id + " doesn't exist";
+                    reply.error = "Dashboard " + profileId + " doesn't exist";
                 }
             }
 
@@ -741,19 +739,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 profile;
 
-            if (profileId) {
+            if (_.isNumber(profileId)) {
                 profile = that.controller.getProfile(profileId);
-                if (profile) {
+                if (profile !== null) {
                     that.controller.removeProfile(profileId);
                     reply.data = null;
                     reply.code = 204;
                 } else {
                     reply.code = 404;
-                    reply.error = "Object (profile) " + profileId + " didn't created";
+                    reply.error = "Profile " + profileId + " didn't created";
                 }
             } else {
-                reply.code = 500;
-                reply.error = "Argument id widgets is required";
+                reply.error = "Argument `id` is required";
             }
 
             this.initResponse(reply);
