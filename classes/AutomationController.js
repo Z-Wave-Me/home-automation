@@ -584,7 +584,7 @@ AutomationController.prototype.getNotification = function (id) {
 };
 
 AutomationController.prototype.getCountNotifications = function () {
-    return this.notifications.length || [];
+    return this.notifications.length || 0;
 };
 
 AutomationController.prototype.updateNotification = function (id, object, callback) {
