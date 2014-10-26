@@ -126,6 +126,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
         }
+
+        if (Boolean(that.req.query.pagination)) {
+            reply.data.total_count = that.controller.devices.models.length;
+        }
+
         that.initResponse(reply);
     },
     getVDevFunc: function (vDevId) {
@@ -217,10 +222,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             reply.data = {
                 updateTime: Math.floor(new Date().getTime() / 1000),
-                notifications: notifications,
-                total_count: that.controller.getCountNotifications()
+                notifications: notifications
             };
-            
+
+            if (Boolean(that.req.query.pagination)) {
+                reply.data.total_count = that.controller.getCountNotifications();
+            }
+
             reply.code = 200;
 
             that.initResponse(reply);
