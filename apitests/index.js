@@ -19,5 +19,6 @@ describe("ZAutomation API", function () {
         profile_api_test = require("./profile_api_test"),
         devices_api_test = require("./devices_api_test"),
         notifications_api_test = require("./notifications_api_test"),
+        modules_api_test = require("./modules_api_test"),
         intances_api_test = require("./instances_api_test");
 });
