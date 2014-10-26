@@ -167,6 +167,16 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         }
     }
 
+    if (String(pagination) === 'true') {
+        _.extend(data, {
+            pager: {
+                offset: offset,
+                limit: limit,
+                page_total: response.data[mainKey].length
+            }
+        });
+    }
+
     reply = {
         data: data,
         code: response.code,

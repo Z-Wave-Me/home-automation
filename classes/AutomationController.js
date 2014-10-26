@@ -583,6 +583,10 @@ AutomationController.prototype.getNotification = function (id) {
     return filteredNotifications[0] || null;
 };
 
+AutomationController.prototype.getCountNotifications = function () {
+    return this.notifications.length || [];
+};
+
 AutomationController.prototype.updateNotification = function (id, object, callback) {
     var filteredNotifications = _.find(this.notifications, function (notification) {
             return parseInt(notification.id) === parseInt(id);

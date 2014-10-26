@@ -217,9 +217,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             reply.data = {
                 updateTime: Math.floor(new Date().getTime() / 1000),
-                notifications: notifications
+                notifications: notifications,
+                total_count: that.controller.getCountNotifications()
             };
-
+            
             reply.code = 200;
 
             that.initResponse(reply);
