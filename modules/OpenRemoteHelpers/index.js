@@ -284,6 +284,12 @@ OpenRemoteHelpers.prototype.init = function (config) {
                 // there are usually no instances for door locks
                 return zway.devices[N].DoorLock.data.level.value ? "on" : "off";
 
+			case "DeviceName":
+                return zway.devices[N].instances[I].NodeNaming.data.nodename.value;
+
+            case "DeviceLocation":
+               	return zway.devices[N].instances[I].NodeNaming.data.location.value;
+
             case "metrics":
                 // used HA API for all device to get metrics
                 return this.controller.devices.get(N).get("metrics:level")
