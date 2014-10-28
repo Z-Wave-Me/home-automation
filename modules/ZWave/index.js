@@ -114,7 +114,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.Run = function(url) {
-	    url = "zway." + url.substring(1);
+	    url = "with(zway) { " + url.substring(1) + " }";
 	    try {
 			var r = eval(url);
 			return { 
