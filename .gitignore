@@ -6,7 +6,7 @@ config.json
 .SyncTrash
 zwayTree.json
 ha-*.json
-storage/*
-!storage/.keep
+storage
+htdocs
 .idea
 node_modules
