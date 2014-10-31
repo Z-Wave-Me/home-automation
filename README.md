@@ -9,6 +9,8 @@ API Documentation: http://docs.zwayhomeautomation.apiary.io/
 
 Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home-automation/issues
 
+Z-Way server for Raspbian, Debian, Ubuntu, Voyage: http://razberry.z-wave.me/z-way-server/
+
 
 ## Precompiling client-side application
 
