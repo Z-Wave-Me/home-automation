@@ -68,7 +68,7 @@ ZWaveGate.prototype.init = function (config) {
         if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
             // Ignore Static PC Controllers
             if (2 === zway.devices[nodeId].data.basicType.value && 1 === zway.devices[nodeId].data.specificType.value) {
-                console.log("Device", nodeId, "is a Static PC Controller, ignoring");
+                // console.log("Device", nodeId, "is a Static PC Controller, ignoring");
                 return;
             }
             
@@ -180,11 +180,11 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
 
         // Ignore SwitchBinary if SwitchMultilevel exists
         if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instanceCommandClasses[this.CC["SwitchMultilevel"]].data.supported.value) {
-            console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
+            // console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
             return;
         }
         if (this.CC["SwitchMultilevel"] === commandClassId && this.controller.devices.get(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"])) {
-            console.log("Removing SwitchBinary due to SwitchMultilevel existence");
+            // console.log("Removing SwitchBinary due to SwitchMultilevel existence");
             this.controller.devices.remove(vDevIdPrefix + vDevIdNI + separ + this.CC["SwitchBinary"]);
         }
         

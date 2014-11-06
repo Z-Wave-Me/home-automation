@@ -103,6 +103,7 @@ AutomationModule.prototype.getMeta = function () {
     if (!this.meta) {
         var filePath = this.moduleBasePath() + "/module.json";
         this.meta = fs.loadJSON(filePath);
+        this.meta.id = this.constructor.name;
     }
     return this.meta;
 };
