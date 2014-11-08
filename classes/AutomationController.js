@@ -41,6 +41,20 @@ function wrap (self, func) {
 AutomationController.prototype.init = function () {
     var self = this;
 
+    this.devices.on('change', function (device) {
+        ws.push({
+            type: "devices",
+            data: device.toJSON()
+        });
+    });
+
+    this.on("notifications.push", function (notice) {
+        ws.push({
+            type: "notifications",
+            data: notice
+        });
+    });
+
     this.loadModules(function () {
         self.emit("core.init");
     });
