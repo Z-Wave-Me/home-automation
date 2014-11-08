@@ -40,7 +40,10 @@ VirtualDevice = function (options) {
         _previousAttributes: {}
     });
 
-    delete options.overlay.metrics;
+    if (options.hasOwnProperty('overlay')) {
+        delete options.overlay.metrics;
+    }
+
 
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
