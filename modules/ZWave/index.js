@@ -61,6 +61,7 @@ ZWave.prototype.startBinding = function () {
     ws.allowExternalAccess("ZWaveAPI.Restore");
     ws.allowExternalAccess("ZWaveAPI.CreateZDDX");
     ws.allowExternalAccess("ZWaveAPI.CommunicationStatistics");
+    ws.allowExternalAccess("ZWaveAPI.FirmwareUpdate");
 };
 
 ZWave.prototype.stop = function () {
@@ -79,6 +80,7 @@ ZWave.prototype.stopBinding = function () {
     ws.revokeExternalAccess("ZWaveAPI.Restore");
     ws.revokeExternalAccess("ZWaveAPI.CreateZDDX");
     ws.revokeExternalAccess("ZWaveAPI.CommunicationStatistics");
+    ws.revokeExternalAccess("ZWaveAPI.FirmwareUpdate");
 
     this.communicationStatistics = null;
     this.ZWaveAPI = null;
@@ -503,4 +505,53 @@ ZWave.prototype.defineHandlers = function () {
 			return that.communicationStatistics.get();
 		};
 	})(this);
+	
+	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
+		try {
+			var deviceId = parseInt(url.substring(1));
+			if (!deviceId)
+				throw "Invalid device id";
+				
+			var fwUpdate = zway.devices[deviceId].FirmwareUpdate;
+			if (!fwUpdate)
+				throw "Device doesn't support FW Update";
+		
+			var data = request && request.data;
+			if (!data)
+				throw "Invalid request";
+				
+			var manufacturerId = fwUpdate.data.manufacturerId.value;
+			var firmwareId = fwUpdate.data.firmwareId.value;
+			
+			if (!manufacturerId || !firmwareId)
+				throw "Either manufacturer or firmware id is not present";
+			
+			if (!fwUpdate.data.upgradeable.value)
+				throw "Firmware is not upgradeable";
+			
+			var targetId = parseInt(data.targetId);
+			
+			if (data.file && data.file.content) {
+				// update firmware from file
+				fwUpdate.Perform(manufacturerId, firmwareId, targetId, data.file.content);
+			} else if (data.url) {
+				// update firmware from url
+				http.request({
+					method: "GET",
+					url: data.url,
+					contentType: "application/octet-stream", // enforce binary response
+					async: true,
+					success: function (res) {
+						fwUpdate.Perform(manufacturerId, firmwareId, targetId, res.data);	
+					},
+					error: function (res) {
+						console.error("Failed to download firmware: " + res.statusText);	
+					}
+				});
+			}
+			return { status: 200, body: "Initiating update" };
+		} catch (e) {
+			return { status: 500, body: e.toString() };
+		}
+	};
 };	

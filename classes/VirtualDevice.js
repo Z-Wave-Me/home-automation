@@ -40,7 +40,10 @@ VirtualDevice = function (options) {
         _previousAttributes: {}
     });
 
-    delete options.overlay.metrics;
+    if (options.hasOwnProperty('overlay')) {
+        delete options.overlay.metrics;
+    }
+
 
     if (!!this.collection) {
         this.cid = _.uniqueId('c');
@@ -184,9 +187,9 @@ _.extend(VirtualDevice.prototype, {
 
             changes.forEach(function (key) {
                 if (!!that.collection) {
-                    that.collection.emit('change:' + key, that);
+                    that.collection.emit('change change:' + key, that);
                 }
-                that.emit('change:' + key, that);
+                that.emit('change change:' + key, that);
             });
         }
 
