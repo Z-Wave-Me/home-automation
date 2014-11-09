@@ -167,7 +167,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
         instanceCommandClasses = Object.keys(instance.commandClasses),
         cc = instance.commandClasses[commandClassId],
         separ = "-",
-        vDevIdPrefix = "ZWayVDev_",
+        vDevIdPrefix = "ZWayVDev_zway_",
         vDevIdNI = nodeId + separ + instanceId,
         vDevIdC = commandClassId,
         vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
@@ -511,7 +511,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             defaults = {
                 deviceType: 'doorlock',
                 metrics: {
-                    mode: '',
+                    level: '',
                     icon: 'door',
                     title: compileTitle('Door Lock', vDevIdNI)
                 }
@@ -532,7 +532,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
             });
             if (vDev) {
                 self.dataBind(self.dataBindings, nodeId, instanceId, commandClassId, "mode", function() {
-                    vDev.set("metrics:mode", this.value === 255 ? "close" : "open");
+                    vDev.set("metrics:level", this.value === 255 ? "close" : "open");
                 }, "value");
             }
     /*
@@ -571,12 +571,13 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 // !!! изменение
             }
     */
+    /*
         } else if (this.CC["ThermostatMode"] === commandClassId || this.CC["ThermostatSetPoint"] === commandClassId) {
             var currentMode = null,
                 scaleTitle = null,
                 withMode = in_array(instanceCommandClasses, this.CC["ThermostatMode"]),
                 withTemp = in_array(instanceCommandClasses, this.CC["ThermostatSetPoint"]),
-                deviceNamePrefix = "ZWayVDev_" + nodeId + "-" + instanceId + ":Thermostat:",
+                deviceNamePrefix = "ZWayVDev_zway_" + nodeId + "-" + instanceId + ":Thermostat:",
                 deviceName = deviceNamePrefix + (withMode ? "M" : "") +  (withTemp ? "T" : "");
 
             if (withMode && !instance.ThermostatMode.data.interviewDone.value || withTemp && !instance.ThermostatSetPoint.data.interviewDone.value) {
@@ -690,6 +691,7 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     });
                 }
             }
+        */
         }
     } catch (e) {
         controller.addNotification("error", "Can not create vDev based on " + nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(), "core");
@@ -704,7 +706,7 @@ ZWaveGate.prototype.parseDelCommandClass = function (nodeId, instanceId, command
 
     var self = this,
         separ = "-",
-        vDevIdPrefix = "ZWayVDev_",
+        vDevIdPrefix = "ZWayVDev_zway_",
         vDevIdNI = nodeId + separ + instanceId,
         vDevIdC = commandClassId,
         vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC;

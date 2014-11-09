@@ -155,7 +155,7 @@ SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
 
 SwitchControlGenerator.prototype.handler = function(cmd, par, ids) {
     var postfix = ids.join("-"),
-        name = "Remote_" + this.id + "_" + postfix;
+        name = "ZWayVDev_zway_Remote_" + postfix;
     
     if (this.config.generated.indexOf(name) === -1) {
         if (this.config.banned.indexOf(name) !== -1) {
