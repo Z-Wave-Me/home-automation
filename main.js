@@ -59,8 +59,6 @@ function get_values (obj) {
     return res;
 }
 
-// do transition script to adopt old versions to new
-executeFile("updateBackendConfig.js");
 
 // init WebServer
 
@@ -162,6 +160,9 @@ if (!config) {
 
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore-min.js");
+
+    // do transition script to adopt old versions to new
+    executeFile("updateBackendConfig.js");
 
     executeFile(config.classesPath + "/VirtualDevice.js");
 
