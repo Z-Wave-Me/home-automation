@@ -571,12 +571,12 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                 // !!! изменение
             }
     */
-    /*
+    
         } else if (this.CC["ThermostatMode"] === commandClassId || this.CC["ThermostatSetPoint"] === commandClassId) {
             var currentMode = null,
                 scaleTitle = null,
-                withMode = in_array(instanceCommandClasses, this.CC["ThermostatMode"]),
-                withTemp = in_array(instanceCommandClasses, this.CC["ThermostatSetPoint"]),
+                withMode = in_array(instanceCommandClasses, this.CC["ThermostatMode"].toString()),
+                withTemp = in_array(instanceCommandClasses, this.CC["ThermostatSetPoint"].toString()),
                 deviceNamePrefix = "ZWayVDev_zway_" + nodeId + "-" + instanceId + ":Thermostat:",
                 deviceName = deviceNamePrefix + (withMode ? "M" : "") +  (withTemp ? "T" : "");
 
@@ -684,14 +684,14 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                                 if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
                                     self.controller.devices.remove(deviceName);
                                 } else {
-                                    vDev.set("metrics:modes:" + mode + ":level", this.value);
+                                    vDev.set("metrics:modes[" + mode + "]:level", this.value);
                                 }
                             }, "value");
                         }
                     });
                 }
             }
-        */
+        
         }
     } catch (e) {
         controller.addNotification("error", "Can not create vDev based on " + nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(), "core");
