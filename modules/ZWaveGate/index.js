@@ -611,6 +611,10 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                     }
                 });
             }
+            else 
+            {
+                currentMode=1;
+            }
             
             if (withTemp) {
                 Object.keys(instance.ThermostatSetPoint.data).forEach(function (mode) {
@@ -671,7 +675,8 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                         if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
                             self.controller.devices.remove(deviceName);
                         } else {        
-                            vDev.set("metrics:mode", this.value);
+                            vDev.set("metrics:mode",currentMode);
+                           
                         }
                     }, "value");
                 }
@@ -684,7 +689,8 @@ ZWaveGate.prototype.parseAddCommandClass = function (nodeId, instanceId, command
                                 if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
                                     self.controller.devices.remove(deviceName);
                                 } else {
-                                    vDev.set("metrics:modes[" + mode + "]:level", this.value);
+                                    vDev.set("metrics:modes[" + mode + "]:level", defaults.metrics.modes[currentMode].level);
+                                
                                 }
                             }, "value");
                         }
