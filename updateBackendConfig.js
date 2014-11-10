@@ -74,9 +74,9 @@
             delete profile.active;
           }
 
-          if (_.isArray(profile.positions)) {
-            profile.positions = _.filter(profile.positions, function (position) {
-              return _.isString(position);
+          if (Array.isArray(profile.positions)) {
+            profile.positions = profile.positions.filter(function (position) {
+              return typeof position === 'string';
             });
           } else {
             profile.positions = [];
