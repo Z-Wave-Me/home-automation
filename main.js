@@ -160,6 +160,88 @@ if (!config) {
     config.classesPath = "classes";
     config.resourcesPath = "res";
 
+    // temp: add modules_categories
+    config.modules_categories = [
+        {
+            "id": "automation",
+            "name": "Automation",
+            "description": "Create home automation rules",
+            "icon": ""
+        },
+        {
+            "id": "security",
+            "name": "Security",
+            "description": "Enhance security",
+            "icon": ""
+        },
+        {
+            "id": "peripherals",
+            "name": "Peripherals",
+            "description": "Z-Wave and other peripherals",
+            "icon": ""
+        },
+        {
+            "id": "surveillance",
+            "name": "Video surevillance",
+            "description": "Support for cameras",
+            "icon": ""
+        },
+        {
+            "id": "logging",
+            "name": "Data logging",
+            "description": "Logging to third party services",
+            "icon": ""
+        },
+        {
+            "id": "scripting",
+            "name": "Scripting",
+            "description": "Create custom scripts",
+            "icon": ""
+        },
+        {
+            "id": "devices",
+            "name": "Devices",
+            "description": "Create devices",
+            "icon": ""
+        },
+        {
+            "id": "scheduling",
+            "name": "Schedulers",
+            "description": "Time related functions",
+            "icon": ""
+        },
+        {
+            "id": "climate",
+            "name": "Climate",
+            "description": "Climate control",
+            "icon": ""
+        },
+        {
+            "id": "environment",
+            "name": "Environment",
+            "description": "Environment related date",
+            "icon": ""
+        },
+        {
+            "id": "scenes",
+            "name": "Scenes",
+            "description": "Light scenes",
+            "icon": ""
+        },
+        {
+            "id": "notifications",
+            "name": "Notifications",
+            "description": "SMS, E-mail and push notifications",
+            "icon": ""
+        },
+        {
+            "id": "tagging",
+            "name": "Tagging",
+            "description": "Tagging widgets",
+            "icon": ""
+        }
+    ];
+
     //--- Load 3d-party dependencies
 
     executeFile(config.libPath + "/eventemitter2.js");
