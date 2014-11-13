@@ -134,6 +134,10 @@ JS.Run = function(url) {
 };
 ws.allowExternalAccess("JS.Run");
 
+
+// do transition script to adopt old versions to new
+executeFile("updateBackendConfig.js");
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
@@ -160,9 +164,6 @@ if (!config) {
 
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore-min.js");
-
-    // do transition script to adopt old versions to new
-    executeFile("updateBackendConfig.js");
 
     executeFile(config.classesPath + "/VirtualDevice.js");
 
