@@ -62,6 +62,7 @@ ZWave.prototype.startBinding = function () {
     ws.allowExternalAccess("ZWaveAPI.CreateZDDX");
     ws.allowExternalAccess("ZWaveAPI.CommunicationStatistics");
     ws.allowExternalAccess("ZWaveAPI.FirmwareUpdate");
+    // -- see below -- // ws.allowExternalAccess("ZWaveAPI.JSONtoXML");
 };
 
 ZWave.prototype.stop = function () {
@@ -81,6 +82,7 @@ ZWave.prototype.stopBinding = function () {
     ws.revokeExternalAccess("ZWaveAPI.CreateZDDX");
     ws.revokeExternalAccess("ZWaveAPI.CommunicationStatistics");
     ws.revokeExternalAccess("ZWaveAPI.FirmwareUpdate");
+    // -- see below -- // ws.revokeExternalAccess("ZWaveAPI.JSONtoXML");
 
     this.communicationStatistics = null;
     this.ZWaveAPI = null;
@@ -554,4 +556,101 @@ ZWave.prototype.defineHandlers = function () {
 			return { status: 500, body: e.toString() };
 		}
 	};
+
+	/*
+	// -- not used -- // 
+	this.ZWaveAPI.JSONtoXML = function(url, request) {
+		function hexByteToStr(n) {
+			return ("00" + parseInt(n).toString(16)).slice(-2);
+		}
+
+		function hexWordToStr(n) {
+			return ("0000" + parseInt(n).toString(16)).slice(-4);
+		}
+
+		function nic(name, id) {
+			return {
+				"name": name,
+				"attributes": {
+					"id": id,
+				},
+				"children": []
+			};
+		}
+		
+		function tagDH(name, invalidateTime, updateTime, type, value) {
+			switch (type) {
+				case "int[]":
+				case "float[]":
+				case "binary":
+					value = "[" + value.toString() + "]";
+					break;
+				case "string[]":
+					value = "[" + value.map(function(el) { return "&quot;" + el + "&quot;"; }).toString() + "]"
+					break;
+			}
+			
+			return {
+				"name": "data",
+				"attributes": {
+					"name": name,
+					"invalidateTime": invalidateTime,
+					"updateTime": updateTime,
+					"type": type,
+					"value": value
+				},
+				"children": []
+			};
+		}
+		
+		function treeDH(name, data) {
+			var tag = tagDH(name, data.invalidateTime, data.updateTime, data.type, data.value);
+			for (var key in data) {
+				if (["value", "type", "invalidateTime", "updateTime"].indexOf(key) != -1)
+					continue;
+				tag.children.push(treeDH(key, data[key]));
+			}
+			return tag;
+		}
+
+		z = fs.loadJSON(url.split("/")[1]);
+		var x = new ZXmlDocument();
+			
+		x.root = {
+			"name": "devicesData",
+			"children": []
+		};
+		
+		x.root.insertChild({
+			"name": "controller",
+			"children": []
+		});
+		
+		x.root.insertChild(treeDH("controller.data", z.controller.data));
+		
+		for (var nodeId in z.devices) {
+			var device = nic("device", nodeId);
+			device.children.push(treeDH("devices." + nodeId + ".data", z.devices[nodeId].data));
+			for (var instanceId in z.devices[nodeId].instances) {
+				var instance = nic("instance", instanceId);
+				instance.children.push(treeDH("devices." + nodeId + ".insances." + instanceId + ".data", z.devices[nodeId].instances[instanceId].data));
+				for (var ccId in z.devices[nodeId].instances[instanceId].commandClasses) {
+					var cc = nic("commandClass", hexWordToStr(ccId));
+					cc.children.push(treeDH("devices." + nodeId + ".insances." + instanceId + ".commandClasses." + ccId + ".data", z.devices[nodeId].instances[instanceId].commandClasses[ccId].data));
+					instance.children.push(cc);
+				}
+				device.children.push(instance);
+			}
+			x.root.insertChild(device);
+		}
+		
+		return {
+			"status": 200,
+			"body": x.toString(),
+			"headers": {
+				"Content-Type": "application/xml"
+			}
+		};
+	};
+	*/
 };	

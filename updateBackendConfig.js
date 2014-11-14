@@ -4,8 +4,8 @@
   var config = loadObject("config.json");
 
   function getNewID(id) {
-    var pattern1 = /^ZWayVDev_([0-9]+(:[0-9])+)$/,
-      pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9])+)$/;
+    var pattern1 = /^ZWayVDev_([0-9]+(:[0-9]+)+)$/,
+      pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9]+)+)$/;
     
     if (id.match(pattern1)) {
       return id.replace(pattern1, "ZWayVDev_zway_$1").replace(/:/g, "-");
@@ -25,6 +25,18 @@
         config.vdevInfo[_id] = config.vdevInfo[id];
         delete config.vdevInfo[id];
       }
+    });
+    
+    // Update IDs in profiles
+    
+    config.profiles.forEach(function(profile) {
+      profile.widgets.forEach(function(widget) {
+        var _id = getNewID(widget.id);
+        if (widget.id !== _id) {
+          console.log("Changing widget ID from " + widget.id + " to " + _id);
+          widget.id = _id;
+        }
+      });
     });
 
     // Update IDs in modules params
