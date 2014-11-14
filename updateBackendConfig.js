@@ -73,6 +73,57 @@
     for (var indx in config.instances) {
       fixObject(config.instances[indx].params);
     }
+
+    // profiles
+    if (config.hasOwnProperty('profiles')) {
+      if (config.profiles.length > 0) {
+        config.profiles.forEach(function (profile) {
+          if (profile.hasOwnProperty('groups')) {
+            delete profile.groups;
+          }
+
+          if (profile.hasOwnProperty('active')) {
+            delete profile.active;
+          }
+
+          if (Array.isArray(profile.positions)) {
+            profile.positions = profile.positions.filter(function (position) {
+              return typeof position === 'string';
+            });
+          } else {
+            profile.positions = [];
+          }
+        });
+      } else {
+        config.profiles = [];
+      }
+    }
+
+    // instances
+    if (config.hasOwnProperty('instances')) {
+      if (config.instances.length > 0) {
+        config.instances.forEach(function (instance) {
+          // move title and description params
+          instance.title = instance.params.title;
+          instance.description = instance.params.description;
+          delete instance.params.title;
+          delete instance.params.description;
+
+          // move status
+          if (instance.params.hasOwnProperty('status')) {
+            instance.active = instance.params.status === 'enable';
+            delete instance.params.status;
+          } else if (!instance.hasOwnProperty('active')) {
+            instance.active = true;
+          }
+
+          // delete userView
+          if (instance.hasOwnProperty('userView')) {
+            delete instance.userView;
+          }
+        });
+      }
+    }
     
     saveObject("config.json", config);
   }

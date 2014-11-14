@@ -59,151 +59,6 @@ function get_values (obj) {
     return res;
 }
 
-function actualize (config) {
-
-    console.log('Actualizing config');
-
-    // profiles
-    if (config.hasOwnProperty('profiles')) {
-        if (config.profiles.length > 0) {
-            config.profiles.forEach(function (profile) {
-                if (profile.hasOwnProperty('groups')) {
-                    delete profile.groups;
-                }
-
-                if (profile.hasOwnProperty('active')) {
-                    delete profile.active;
-                }
-
-                if (_.isArray(profile.positions)) {
-                    profile.positions = _.filter(profile.positions, function (position) {
-                        return _.isString(position);
-                    });
-                } else {
-                    profile.positions = [];
-                }
-            });
-        } else {
-            config.profiles = [];
-        }
-    }
-
-    // instances
-    if (config.hasOwnProperty('instances')) {
-        if (config.instances.length > 0) {
-            config.instances.forEach(function (instance) {
-                // move title and description params
-                instance.title = instance.params.title;
-                instance.description = instance.params.description;
-                delete instance.params.title;
-                delete instance.params.description;
-
-                // move status
-                if (instance.params.hasOwnProperty('status')) {
-                    instance.active = instance.params.status === 'enable';
-                    delete instance.params.status;
-                } else if (!instance.hasOwnProperty('active')) {
-                    instance.active = true;
-                }
-
-                // delete userView
-                if (instance.hasOwnProperty('userView')) {
-                    delete instance.userView;
-                }
-            });
-        }
-    }
-
-    // add local modules_categories
-    // TODO: temp data.
-    //if (!config.hasOwnProperty('modules_categories')) {
-        config.modules_categories = [
-            {
-                "id": "automation",
-                "name": "Automation",
-                "description": "Create home automation rules",
-                "icon": ""
-            },
-            {
-                "id": "security",
-                "name": "Security",
-                "description": "Enhance security",
-                "icon": ""
-            },
-            {
-                "id": "peripherals",
-                "name": "Peripherals",
-                "description": "Z-Wave and other peripherals",
-                "icon": ""
-            },
-            {
-                "id": "surveillance",
-                "name": "Video surevillance",
-                "description": "Support for cameras",
-                "icon": ""
-            },
-            {
-                "id": "logging",
-                "name": "Data logging",
-                "description": "Logging to third party services",
-                "icon": ""
-            },
-            {
-                "id": "scripting",
-                "name": "Scripting",
-                "description": "Create custom scripts",
-                "icon": ""
-            },
-            {
-                "id": "devices",
-                "name": "Devices",
-                "description": "Create devices",
-                "icon": ""
-            },
-            {
-                "id": "scheduling",
-                "name": "Schedulers",
-                "description": "Time related functions",
-                "icon": ""
-            },
-            {
-                "id": "climate",
-                "name": "Climate",
-                "description": "Climate control",
-                "icon": ""
-            },
-            {
-                "id": "environment",
-                "name": "Environment",
-                "description": "Environment related date",
-                "icon": ""
-            },
-            {
-                "id": "scenes",
-                "name": "Scenes",
-                "description": "Light scenes",
-                "icon": ""
-            },
-            {
-                "id": "notifications",
-                "name": "Notifications",
-                "description": "SMS, E-mail and push notifications",
-                "icon": ""
-            },
-            {
-                "id": "tagging",
-                "name": "Tagging",
-                "description": "Tagging widgets",
-                "icon": ""
-            }
-        ];
-    //}
-
-    return config;
-}
-
-// do transition script to adopt old versions to new
-executeFile("updateBackendConfig.js");
 
 // init WebServer
 
@@ -279,6 +134,10 @@ JS.Run = function(url) {
 };
 ws.allowExternalAccess("JS.Run");
 
+
+// do transition script to adopt old versions to new
+executeFile("updateBackendConfig.js");
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
@@ -301,13 +160,92 @@ if (!config) {
     config.classesPath = "classes";
     config.resourcesPath = "res";
 
+    // temp: add modules_categories
+    config.modules_categories = [
+        {
+            "id": "automation",
+            "name": "Automation",
+            "description": "Create home automation rules",
+            "icon": ""
+        },
+        {
+            "id": "security",
+            "name": "Security",
+            "description": "Enhance security",
+            "icon": ""
+        },
+        {
+            "id": "peripherals",
+            "name": "Peripherals",
+            "description": "Z-Wave and other peripherals",
+            "icon": ""
+        },
+        {
+            "id": "surveillance",
+            "name": "Video surevillance",
+            "description": "Support for cameras",
+            "icon": ""
+        },
+        {
+            "id": "logging",
+            "name": "Data logging",
+            "description": "Logging to third party services",
+            "icon": ""
+        },
+        {
+            "id": "scripting",
+            "name": "Scripting",
+            "description": "Create custom scripts",
+            "icon": ""
+        },
+        {
+            "id": "devices",
+            "name": "Devices",
+            "description": "Create devices",
+            "icon": ""
+        },
+        {
+            "id": "scheduling",
+            "name": "Schedulers",
+            "description": "Time related functions",
+            "icon": ""
+        },
+        {
+            "id": "climate",
+            "name": "Climate",
+            "description": "Climate control",
+            "icon": ""
+        },
+        {
+            "id": "environment",
+            "name": "Environment",
+            "description": "Environment related date",
+            "icon": ""
+        },
+        {
+            "id": "scenes",
+            "name": "Scenes",
+            "description": "Light scenes",
+            "icon": ""
+        },
+        {
+            "id": "notifications",
+            "name": "Notifications",
+            "description": "SMS, E-mail and push notifications",
+            "icon": ""
+        },
+        {
+            "id": "tagging",
+            "name": "Tagging",
+            "description": "Tagging widgets",
+            "icon": ""
+        }
+    ];
+
     //--- Load 3d-party dependencies
 
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore-min.js");
-
-    //---  Actualization config
-    config = actualize(config);
 
     executeFile(config.classesPath + "/VirtualDevice.js");
 
