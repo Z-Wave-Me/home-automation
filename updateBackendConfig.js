@@ -4,8 +4,8 @@
   var config = loadObject("config.json");
 
   function getNewID(id) {
-    var pattern1 = /^ZWayVDev_([0-9]+(:[0-9])+)$/,
-      pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9])+)$/;
+    var pattern1 = /^ZWayVDev_([0-9]+(:[0-9]+)+)$/,
+      pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9]+)+)$/;
     
     if (id.match(pattern1)) {
       return id.replace(pattern1, "ZWayVDev_zway_$1").replace(/:/g, "-");
@@ -17,6 +17,56 @@
   }
 
   if (config) {
+    // Change profiles data
+    if (config.hasOwnProperty('profiles')) {
+      if (config.profiles.length > 0) {
+        config.profiles.forEach(function (profile) {
+          if (profile.hasOwnProperty('groups')) {
+            delete profile.groups;
+          }
+
+          if (profile.hasOwnProperty('active')) {
+            delete profile.active;
+          }
+
+          if (Array.isArray(profile.positions)) {
+            profile.positions = profile.positions.filter(function (position) {
+              return typeof position === 'string';
+            });
+          } else {
+            profile.positions = [];
+          }
+        });
+      } else {
+        config.profiles = [];
+      }
+    }
+
+    // Change instances data
+    if (config.hasOwnProperty('instances')) {
+      if (config.instances.length > 0) {
+        config.instances.forEach(function (instance) {
+          // move title and description params
+          instance.title = instance.params.title;
+          instance.description = instance.params.description;
+          delete instance.params.title;
+          delete instance.params.description;
+
+          // move status
+          if (instance.params.hasOwnProperty('status')) {
+            instance.active = instance.params.status === 'enable';
+            delete instance.params.status;
+          } else if (!instance.hasOwnProperty('active')) {
+            instance.active = true;
+          }
+
+          // delete userView
+          if (instance.hasOwnProperty('userView')) {
+            delete instance.userView;
+          }
+        });
+      }
+    
     // Update IDs of devices created by SwitchControlGenerator and ZWaveGate
     Object.keys(config.vdevInfo).forEach(function(id) {
       var _id = getNewID(id);
@@ -25,6 +75,17 @@
         config.vdevInfo[_id] = config.vdevInfo[id];
         delete config.vdevInfo[id];
       }
+    });
+    
+    // Update IDs in profiles    
+    config.profiles && config.profiles.forEach(function(profile) {
+      profile.widgets && profile.widgets.forEach(function(widget) {
+        var _id = getNewID(widget.id);
+        if (widget.id !== _id) {
+          console.log("Changing widget ID from " + widget.id + " to " + _id);
+          widget.id = _id;
+        }
+      });
     });
 
     // Update IDs in modules params
@@ -61,56 +122,6 @@
     for (var indx in config.instances) {
       fixObject(config.instances[indx].params);
     }
-
-    // profiles
-    if (config.hasOwnProperty('profiles')) {
-      if (config.profiles.length > 0) {
-        config.profiles.forEach(function (profile) {
-          if (profile.hasOwnProperty('groups')) {
-            delete profile.groups;
-          }
-
-          if (profile.hasOwnProperty('active')) {
-            delete profile.active;
-          }
-
-          if (Array.isArray(profile.positions)) {
-            profile.positions = profile.positions.filter(function (position) {
-              return typeof position === 'string';
-            });
-          } else {
-            profile.positions = [];
-          }
-        });
-      } else {
-        config.profiles = [];
-      }
-    }
-
-    // instances
-    if (config.hasOwnProperty('instances')) {
-      if (config.instances.length > 0) {
-        config.instances.forEach(function (instance) {
-          // move title and description params
-          instance.title = instance.params.title;
-          instance.description = instance.params.description;
-          delete instance.params.title;
-          delete instance.params.description;
-
-          // move status
-          if (instance.params.hasOwnProperty('status')) {
-            instance.active = instance.params.status === 'enable';
-            delete instance.params.status;
-          } else if (!instance.hasOwnProperty('active')) {
-            instance.active = true;
-          }
-
-          // delete userView
-          if (instance.hasOwnProperty('userView')) {
-            delete instance.userView;
-          }
-        });
-      }
     }
     
     saveObject("config.json", config);
