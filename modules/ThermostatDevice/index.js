@@ -43,7 +43,8 @@ ThermostatDevice.prototype.init = function (config) {
             }
         },
         overlay: {},
-        handler: function () {
+        handler: function (command, args) {
+            self.vDev.set("metrics:level", args.level);
             self.checkTemp();
         },
         moduleId: this.id
@@ -69,7 +70,8 @@ ThermostatDevice.prototype.stop = function () {
 
 ThermostatDevice.prototype.checkTemp = function () {
     var vDevSwitch = this.controller.devices.get(this.config.switch),
-        vDevSensor = this.controller.devices.get(this.config.sensor);
+        vDevSensor = this.controller.devices.get(this.config.sensor),
+        vDev = this.vDev;
     
     if (vDevSwitch && vDevSensor && vDev) {
         if ((vDevSensor.get('metrics:level') + this.config.hysteresis < vDev.get('metrics:level')) && (vDevSwitch.get('metrics:level') == "off" && this.config.heaton || vDevSwitch.get('metrics:level') == "on" && !this.config.heaton)) {

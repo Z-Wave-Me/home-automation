@@ -34,8 +34,12 @@
 				"required": true
 			},
 			"heaton": {
-				"type": "string",
 				"enum": [true, false],
+				"required": true
+			},
+			"hysteresis": {
+				"minimum": 0.0,
+				"maximum": 5.0,
 				"required": true
 			}
 		},
@@ -61,6 +65,11 @@
 				"label": "Mode",
 				"type": "select",
 				"optionLabels": ["Heat", "Cool"]
+			},
+			"hysteresis": {
+				"label": "Hysteresis",
+				"type": "float",
+				"helper": "Maximal delta between current and target temperature after which thermostat should turn on/off"
 			}
 		}
 	}
