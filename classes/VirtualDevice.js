@@ -247,11 +247,11 @@ _.extend(VirtualDevice.prototype, {
     addTag: function (tag) {
         var tags = this.get('tags');
         tags.push(tag);
-        this.set('tags', _.uniq(tags));
+        this.set({'tags': _.uniq(tags)});
     },
     removeTag: function (tag) {
         var tags = this.get('tags');
-        this.set('tags', _.without(tags, tag));
+        this.set({'tags': _.without(tags, tag)});
     },
     
     // wrappers for events
