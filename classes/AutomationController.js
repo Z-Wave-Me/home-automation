@@ -732,7 +732,7 @@ AutomationController.prototype.getListNamespaces = function (id) {
     return result;
 };
 
-AutomationController.prototype.setNamespace = function (id, reqObj) {
+AutomationController.prototype.setNamespace = function (id, data) {
     var result = null,
         namespace,
         index;
@@ -745,14 +745,14 @@ AutomationController.prototype.setNamespace = function (id, reqObj) {
         });
         if (!!namespace) {
             index = this.namespaces.indexOf(namespace);
-            this.namespaces[index].params = reqObj.data;
+            this.namespaces[index].params = data;
             result = this.namespaces[index];
         }
     } else {
         this.namespaces.push({
             id: id,
-            params: reqObj
-        })
+            params: data
+        });
         result = null;
     }
 
