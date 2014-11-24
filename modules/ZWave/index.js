@@ -172,7 +172,11 @@ ZWave.prototype.stopBinding = function () {
 
 	this.stopped = true;
 	if (this.zway) {
-		this.zway.stop();
+		try {
+			this.zway.stop();
+		} catch(e) {
+			// Z-Way has already gone
+		}
 		this.zway = null;
 	}
 };
@@ -868,11 +872,16 @@ ZWave.prototype.deadDetectionStart = function () {
 
 ZWave.prototype.deadDetectionStop = function () {
 	// releasing bindings
-	if (this.deadDetectionDataBindings) {
-		this.dataUnbind(this.deadDetectionDataBindings);
-	}
-	if (this.zway) {
-		this.zway.unbind(this.zwayBinding);
+	try {
+		if (this.deadDetectionDataBindings) {
+			this.dataUnbind(this.deadDetectionDataBindings);
+		}
+		if (this.zway) {
+			this.zway.unbind(this.zwayBinding);
+		}
+	} catch(e) {
+		// Z-Way already gone, skip deallocation
+		this.zway = null;
 	}
 };
 
@@ -945,11 +954,16 @@ ZWave.prototype.gateDevicesStop = function () {
 	});
 	
 	// releasing bindings
-	if (this.gateDataBinding) {
-		this.dataUnbind(this.gateDataBinding);
-	}
-	if (this.zway) {
-		this.zway.unbind(this.gateBinding);
+	try {
+		if (this.gateDataBinding) {
+			this.dataUnbind(this.gateDataBinding);
+		}
+		if (this.zway) {
+			this.zway.unbind(this.gateBinding);
+		}
+	} catch(e) {
+		// Z-Way already gone, skip deallocation
+		this.zway = null;
 	}
 };
 
