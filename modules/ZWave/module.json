@@ -53,9 +53,8 @@
                 "label": "Serial port to Z-Wave dongle"
             },
             "name": {
-		"hidden": true,
                 "label": "Internal name",
-		"helper": "Don't change unless you know what you are doing"
+		"helper": "Chould be a valid JS key string. Don't change unless you know what you are doing"
             },
             "config": {
 		"hidden": true,

@@ -34,6 +34,7 @@ GroupDevices.prototype.init = function (config) {
         deviceId: "GroupDevices_" + this.id,
         defaults: {
             metrics: {
+                level: self.config.isDimmable ? 0 : "off",
                 icon: '',
                 title: 'Group ' + this.id
             }

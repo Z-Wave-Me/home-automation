@@ -45,6 +45,10 @@ function in_array (array, value) {
     return -1 !== array.indexOf(value);
 }
 
+function is_function (func) {
+    return !!(func && func.constructor && func.call && func.apply);
+}
+
 function has_key (obj, key) {
     return -1 !== Object.keys(obj).indexOf(key);
 }

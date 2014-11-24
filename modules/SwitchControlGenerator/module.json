@@ -14,12 +14,16 @@
 	"defaults": {
 		"title": "Trap events from Remotes and Sensors",
 		"description": "Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
+		"trapNew": true,
 		"generated": [],
 		"banned": []
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
+			"trapNew": {
+				"type": "boolean"
+			},
 			"banned": {
 				"type": "array",
 				"items": {
@@ -43,8 +47,12 @@
 	},
 	"options": {
 		"fields": {
+			"trapNew": {
+				"label": "",
+				"rightLabel": "Create control device for new remote controls and switches"
+			},
 			"banned": {
-				"label": "List of switches not to instanciate",
+				"label": "List of remotes and switches not to instanciate",
 				"fields": {
 					"item": {
 						"type": "select",
@@ -55,7 +63,7 @@
 				}
 			},
 			"generated": {
-				"label": "List of switches to instanciate (filled automatically)",
+				"label": "List of remotes and switches to instanciate (filled automatically)",
 				"fields": {
 					"item": {
 						"type": "select",
