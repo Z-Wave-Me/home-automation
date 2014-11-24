@@ -30,7 +30,12 @@ var console = {
 };
 
 function inherits (ctor, superCtor) {
-    ctor.super_ = superCtor;
+    Object.defineProperty(ctor, "super_", {
+        value: superCtor,
+        enumerable: false,
+        writable: false,
+        configurable: false
+    });
     ctor.prototype = Object.create(superCtor.prototype, {
         constructor: {
             value: ctor,

@@ -8,20 +8,13 @@ Copyright: (c) Z-Wave.Me, 2014
 ******************************************************************************/
 
 function ZWave (id, controller) {
+
+	// if called without "new", return list of loaded Z-Way instances
+	if (!(this instanceof ZWave))
+		return ZWave.list();
+
 	ZWave.super_.call(this, id, controller);
-}
 
-// Module inheritance and setup
-
-inherits(ZWave, AutomationModule);
-
-_module = ZWave;
-
-ZWave.prototype.init = function (config) {
-	ZWave.super_.prototype.init.call(this, config);
-
-	var self = this;
-	
 	this.ZWAY_DEVICE_CHANGE_TYPES = {
 		"DeviceAdded": 0x01,
 		"DeviceRemoved": 0x02,
@@ -58,8 +51,33 @@ ZWave.prototype.init = function (config) {
 		"DoorLock": 0x62,
 		"Battery": 0x80
 	};
+}
 
+// Module inheritance and setup
+
+inherits(ZWave, AutomationModule);
+
+_module = ZWave;
+
+Object.defineProperty(ZWave, "list", {
+	value: function () {
+		return Object.keys(ZWave);
+	},
+	enumerable: false,
+	writable: false,  
+	configurable: false 
+});
+ws.allowExternalAccess("ZWave.list");
+
+ZWave.prototype.init = function (config) {
+	ZWave.super_.prototype.init.call(this, config);
+
+	var self = this;
+	
 	this.startBinding();
+	if (!this.zway) {
+		return;
+	}
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
 		if (zwayName === self.config.name && self.zway) {
@@ -86,13 +104,13 @@ ZWave.prototype.startBinding = function () {
 				self.terminating.call(self);
 			}
 		});
+		
+		this.zway.discover();
 	} catch(e) {
 		this.controller.addNotification("critical", "Can not start Z-Wave binding: " + e.toString(), "z-wave");
 		this.zway = null;
 		return;
 	}
-
-	this.zway.discover();
 
 	this.fastAccess = false;
 	if (!global.zway) {
@@ -100,14 +118,10 @@ ZWave.prototype.startBinding = function () {
 		this.fastAccess = true;
 	}
 
-	// Change this to namespaces
-	if (!global.zways) {
-		global.zways = {};
-	}
-	global.zways[this.config.name] = {
+	global.ZWave[this.config.name] = {
 		"zway": this.zway,
-		"apiUrl": "ZWaveAPI_" + this.config.name,
-		"port": this.config.port
+		"port": this.config.port,
+		"fastAccess": this.fastAccess
 	};
 
 	this.stopped = false;
@@ -115,12 +129,13 @@ ZWave.prototype.startBinding = function () {
 
 	if (this.fastAccess) {
 		this.externalAPIAllow();
-		global.zway = this.zway; // global variable
+		global["zway"] = this.zway; // global variable
+		global["ZWaveAPI"] = this.ZWaveAPI;
 	}
 	this.externalAPIAllow(this.config.name);
+	_.extend(global["ZWave"][this.config.name], this.ZWaveAPI);
 
 	this.deadDetectionStart();
-
 	this.gateDevicesStart();
 
 	this.controller.emit("ZWave.register", this.config.name);
@@ -145,13 +160,14 @@ ZWave.prototype.stopBinding = function () {
 	if (this.fastAccess) {
 		this.externalAPIRevoke();
 		if (global.zway) {
-			delete global.zway;
+			delete global["zway"];
+			delete global["ZWaveAPI"];
 		}
 	}
 	
-	this.externalAPIRevoke(this.zwayName);
-	if (global.zways) {
-		delete global.zways[this.config.name];
+	this.externalAPIRevoke(this.config.name);
+	if (global.ZWave) {
+		delete global.ZWave[this.config.name];
 	}
 
 	this.stopped = true;
@@ -180,38 +196,33 @@ ZWave.prototype.terminating = function () {
 
 
 ZWave.prototype.externalAPIAllow = function (name) {
-	var _name = !!name ? ("-" + name) : "";
+	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
-	ws.allowExternalAccess("ZWaveAPI" + _name);
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".Run");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".Data");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".InspectQueue");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".Backup");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".Restore");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".CreateZDDX");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".CommunicationStatistics");
-	ws.allowExternalAccess("ZWaveAPI" + _name + ".FirmwareUpdate");
-	// -- see below -- // ws.allowExternalAccess("ZWaveAPI" + _name + ".JSONtoXML");
-
-	global["ZWaveAPI" + _name] = this.ZWaveAPI; // make it global
+	ws.allowExternalAccess(_name);
+	ws.allowExternalAccess(_name + ".Run");
+	ws.allowExternalAccess(_name + ".Data");
+	ws.allowExternalAccess(_name + ".InspectQueue");
+	ws.allowExternalAccess(_name + ".Backup");
+	ws.allowExternalAccess(_name + ".Restore");
+	ws.allowExternalAccess(_name + ".CreateZDDX");
+	ws.allowExternalAccess(_name + ".CommunicationStatistics");
+	ws.allowExternalAccess(_name + ".FirmwareUpdate");
+	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML");
 };
 
 ZWave.prototype.externalAPIRevoke = function (name) {
-	var _name = !!name ? ("-" + name) : "";
+	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
-	ws.revokeExternalAccess("ZWaveAPI" + _name);
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".Run");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".Data");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".InspectQueue");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".Backup");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".Restore");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".CreateZDDX");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".CommunicationStatistics");
-	ws.revokeExternalAccess("ZWaveAPI" + _name + ".FirmwareUpdate");
-	// -- see below -- // ws.revokeExternalAccess("ZWaveAPI" + _name + ".JSONtoXML");
-
-	this.ZWaveAPI = null;
-	delete global["ZWaveAPI" + _name];
+	ws.revokeExternalAccess(_name);
+	ws.revokeExternalAccess(_name + ".Run");
+	ws.revokeExternalAccess(_name + ".Data");
+	ws.revokeExternalAccess(_name + ".InspectQueue");
+	ws.revokeExternalAccess(_name + ".Backup");
+	ws.revokeExternalAccess(_name + ".Restore");
+	ws.revokeExternalAccess(_name + ".CreateZDDX");
+	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
+	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
+	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
 ZWave.prototype.defineHandlers = function () {

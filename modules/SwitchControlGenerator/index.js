@@ -61,7 +61,7 @@ SwitchControlGenerator.prototype.init = function (config) {
     this.bindings = [];
     
     this.zwayReg = function (zwayName) {
-        var zway = global.zways && global.zways[zwayName].zway;
+        var zway = global.ZWave && global.ZWave[zwayName].zway;
         
         if (!zway) {
             return;
@@ -132,11 +132,12 @@ SwitchControlGenerator.prototype.init = function (config) {
         self.bindings[zwayName] = null;
     };
     
-    this.controller.on("ZWave.unregister", this.zwayUnreg);
     this.controller.on("ZWave.register", this.zwayReg);
-    // wolk through existing zways
-    if (global.zways) {
-        for (var name in global.zways) {
+    this.controller.on("ZWave.unregister", this.zwayUnreg);
+
+    // walk through existing ZWave
+    if (global.ZWave) {
+        for (var name in global.ZWave) {
             this.zwayReg(name);
         }
     }
