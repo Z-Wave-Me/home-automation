@@ -126,7 +126,7 @@ SwitchControlGenerator.prototype.init = function (config) {
             self.controller.emit("ZWave.dataUnbind", self.bindings[zwayName]);
         }
         // remove devices
-        self.generated.filter(function(el) { return el.indexOf("ZWayVDev_" + zwayName + "_Remote_") === 0; }).forEach(function(name) {
+        self.generated.filter(function(el) { return el.indexOf("ZWayVDev_" + zwayName + "_Remote_" + self.id + "_") === 0; }).forEach(function(name) {
             self.controller.devices.remove(name);
         });
         self.bindings[zwayName] = null;
@@ -186,7 +186,7 @@ SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
 
 SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     var postfix = ids.join("-"),
-        name = "ZWayVDev_" + zwayName + "_Remote_" + postfix;
+        name = "ZWayVDev_" + zwayName + "_Remote_" + this.id + "_" + postfix;
     
     if (this.config.generated.indexOf(name) === -1) {
         if (!this.config.trapNew || this.config.banned.indexOf(name) !== -1) {
