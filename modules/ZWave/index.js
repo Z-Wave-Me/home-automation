@@ -147,8 +147,12 @@ ZWave.prototype.stop = function () {
 
 	this.stopBinding();
 
-	this.controller.off("ZWave.dataBind", this._dataBind);
-	this.controller.off("ZWave.dataUnbind", this._dataUnbind);
+	if (this._dataBind) {
+		this.controller.off("ZWave.dataBind", this._dataBind);
+	}
+	if (this._dataUnbind) {
+		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
+	}
 };
 
 ZWave.prototype.stopBinding = function () {
