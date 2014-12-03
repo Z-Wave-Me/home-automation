@@ -78,9 +78,9 @@ OpenWeather.prototype.fetchWeather = function(instance) {
         async: true,
         success: function(res) {
             try {
-                var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 : res.data.main.temp) * 10) / 10,
+                var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 : (res.data.main.temp - 273.15) * 1.8 + 32) * 10) / 10,
                     icon = "http://openweathermap.org/img/w/" + res.data.weather[0].icon + ".png";
-
+                
                 self.vDev.set("metrics:level", temp);
                 self.vDev.set("metrics:icon", icon);
             } catch (e) {
