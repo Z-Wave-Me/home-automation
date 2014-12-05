@@ -14,7 +14,7 @@
     "defaults": {
         "title": "Weather Informer",
         "description": "Weather informer provided by OpenWeatherMap.org",
-        "units": "celsius",
+        "units": "metric",
 	"city": "",
 	"country": ""
     },
@@ -31,7 +31,7 @@
             },
             "units": {
                 "type": "select",
-		"enum": ["celsius", "fahrenheit"],
+		"enum": ["metric", "imperial"],
                 "required": true
             }
         },

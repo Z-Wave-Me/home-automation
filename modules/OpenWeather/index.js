@@ -41,7 +41,7 @@ OpenWeather.prototype.init = function (config) {
         },
         overlay: {
             metrics: {
-                scaleTitle: this.config.units === "celsius" ? '°C' : '°F',
+                scaleTitle: this.config.units === "metric" ? '°C' : '°F',
                 title: this.config.city
             }
         },
@@ -74,11 +74,11 @@ OpenWeather.prototype.fetchWeather = function(instance) {
     var self = instance;
     
     http.request({
-        url: "http://api.openweathermap.org/data/2.5/weather?q=" + self.config.city + "," + self.config.country,
+        url: "http://api.openweathermap.org/data/2.5/weather?q=" + self.config.city + "," + self.config.country + "&units=" + self.config.units,
         async: true,
         success: function(res) {
             try {
-                var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 : res.data.main.temp) * 10) / 10,
+                var temp = res.data.main.temp,
                     icon = "http://openweathermap.org/img/w/" + res.data.weather[0].icon + ".png";
 
                 self.vDev.set("metrics:level", temp);
