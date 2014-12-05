@@ -75,21 +75,23 @@
           return el.id;
         }));
         
-        console.log("Adding module ZWave");
-        config.instances.push({
-          "params": {
-            "name": "zway",
-            "port": "/dev/ttyAMA0",
-            "config": "config",
-            "translations": "translations",
-            "ZDDX": "ZDDX",
-          },
-          "active": true,
-          "moduleId": "ZWave",
-          "title": "Z-Wave binding",
-          "description": "Loads Z-Wave engine\n(Added by backend updater script)",
-          "id": maxInstanceId + 1
-        });
+        if (toDelete.length) {
+          console.log("Adding module ZWave");
+          config.instances.push({
+            "params": {
+              "name": "zway",
+              "port": "/dev/ttyAMA0",
+              "config": "config",
+              "translations": "translations",
+              "ZDDX": "ZDDX",
+            },
+            "active": true,
+            "moduleId": "ZWave",
+            "title": "Z-Wave binding",
+            "description": "Loads Z-Wave engine\n(Added by backend updater script)",
+            "id": maxInstanceId + 1
+          });
+        }
       }
       
       // Change IDs to new notation
