@@ -68,7 +68,7 @@
 			},
 			"hysteresis": {
 				"label": "Hysteresis",
-				"type": "float",
+				"type": "number",
 				"helper": "Maximal delta between current and target temperature after which thermostat should turn on/off"
 			}
 		}

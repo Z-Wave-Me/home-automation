@@ -558,7 +558,7 @@ ZWave.prototype.defineHandlers = function () {
 			if (type === zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
 				self.attach(nodeId);
 			}
-		}, zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] || zw.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+		}, zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | zw.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
 	};
 
 	this.CommunicationStatistics.prototype.attach = function(nodeId) {
@@ -1375,7 +1375,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					withModeCool = false;
 				}
 
-				if (withModeOff) {
+				if (withModeOff && (withModeHeat || withModeCool)) {
 					defaults = {
 						deviceType: "switchBinary",
 						metrics: {
