@@ -40,12 +40,16 @@
 			"BinarySensor": {
 				"label": "Door/Window Sensor",
 				"type": "select",
-				"datasource": "namespaces"
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_sensorBinary:deviceName"
 			},
 			"DoorLock": {
 				"label": "Door Lock",
 				"type": "select",
-				"datasource": "namespaces"
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_doorlock:deviceName"
 			}
 		}
 	}
