@@ -38,8 +38,8 @@
 				"required": true
 			},
 			"hysteresis": {
-				"minimum": 0.0,
-				"maximum": 5.0,
+				"minimum": 0,
+				"maximum": 5,
 				"required": true
 			}
 		},
@@ -68,7 +68,7 @@
 			},
 			"hysteresis": {
 				"label": "Hysteresis",
-				"type": "float",
+				"type": "number",
 				"helper": "Maximal delta between current and target temperature after which thermostat should turn on/off"
 			}
 		}
