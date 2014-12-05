@@ -18,8 +18,7 @@
         "port": "/dev/ttyUSB0",
 	"config": "config",
 	"translations": "translations",
-	"ZDDX": "ZDDX",
-	"closeOnExit": true
+	"ZDDX": "ZDDX"
     },
     "schema": {
         "type": "object",
