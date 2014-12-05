@@ -41,7 +41,7 @@ _.extend(DevicesCollection.prototype, {
         var that = this,
             vDev = null;
 
-        console.log("Creating device " + options.defaults.deviceType + " " + options.deviceId);
+        console.log("Creating device " + (options.overlay.deviceType || options.defaults.deviceType) + " " + options.deviceId);
         vDev = new VirtualDevice(_.extend(options, {controller: that.controller}));
 
         if (vDev !== null) {
