@@ -64,12 +64,16 @@
 			"MotionSensor": {
 				"label": "Motion Sensor",
 				"type": "select",
-				"datasource": "namespaces"
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_sensorBinary:deviceName"
 			},
 			"Dimmer": {
 				"label": "Dimmer",
 				"type": "select",
-				"datasource": "namespaces"
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 			},
 			"Day": {
 				"label": "The time when the light is switched on for 100%",
@@ -93,7 +97,9 @@
 			"DimmerButton": {
 				"label": "Dimmer Button",
 				"type": "select",
-				"datasource": "namespaces"
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_switchControl:deviceName"
 			}
 		}
 	}
