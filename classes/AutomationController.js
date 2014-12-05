@@ -145,7 +145,9 @@ AutomationController.prototype.loadModules = function (callback) {
         self.loadModuleFromFolder(moduleClassName, "userModules/");
     });
 
-    if (callback) callback();
+    if (typeof callback === 'function') {
+        callback();
+    }
 };
 
 AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder) {
@@ -513,7 +515,10 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
         });
     }
 
-    callback(true);
+    if (typeof callback === 'function') {
+        callback(true);
+    }
+    
     this.saveNotifications();
 };
 
@@ -524,7 +529,9 @@ AutomationController.prototype.addLocation = function (title, icon, callback) {
     });
 
     if (locations.length > 0) {
-        callback(false)
+        if (typeof callback === 'function') {
+            callback(false)
+        }
     } else {
         var location = {
             id: id,
@@ -532,7 +539,9 @@ AutomationController.prototype.addLocation = function (title, icon, callback) {
             icon: icon || ''
         };
         this.locations.push(location);
-        callback(location);
+        if (typeof callback === 'function') {
+            callback(location);
+        }
         this.saveConfig();
         this.emit('location.added', id);
     }
@@ -556,10 +565,14 @@ AutomationController.prototype.removeLocation = function (id, callback) {
         });
 
         this.saveConfig();
-        callback(true);
+        if (typeof callback === 'function') {
+            callback(true);
+        }
         this.emit('location.removed', id);
     } else {
-        callback(false);
+        if (typeof callback === 'function') {
+            callback(false);
+        }
         this.emit('core.error', new Error("Cannot remove location "+id+" - doesn't exist"));
     }
 };
@@ -570,11 +583,15 @@ AutomationController.prototype.updateLocation = function (id, title, callback) {
     });
     if (locations.length > 0) {
         this.locations[this.locations.indexOf(locations[0])].title = title;
-        callback(this.locations[this.locations.indexOf(locations[0])]);
+        if (typeof callback === 'function') {
+            callback(this.locations[this.locations.indexOf(locations[0])]);
+        }
         this.saveConfig();
         this.emit('location.updated', id);
     } else {
-        callback(false);
+        if (typeof callback === 'function') {
+            callback(false);
+        }
         this.emit('core.error', new Error("Cannot update location "+id+" - doesn't exist"));
     }
 };
@@ -610,9 +627,13 @@ AutomationController.prototype.updateNotification = function (id, object, callba
     if (object.hasOwnProperty('redeemed')) {
         this.notifications[index].redeemed = object.redeemed;
         this.saveNotifications();
-        callback(this.notifications[index]);
+        if (typeof callback === 'function') {
+            callback(this.notifications[index]);
+        }
     } else {
-        callback(null);
+        if (typeof callback === 'function') {
+            callback(null);
+        }
     }
 };
 
@@ -712,7 +733,10 @@ AutomationController.prototype.generateNamespaces = function (callback) {
     that.setNamespace('devices_all', that.devices.map(function (device) {
         return {deviceId: device.id, deviceName: device.get('metrics:title')};
     }));
-    callback(that.namespaces);
+
+    if (typeof callback === 'function') {
+        callback(that.namespaces);
+    }
 };
 
 AutomationController.prototype.getListNamespaces = function (id) {
@@ -821,5 +845,7 @@ AutomationController.prototype.pushFile = function (file, callback) {
     }
     this.saveFiles();
     saveObject(id, file);
-    callback(this.files[id]);
+    if (typeof callback === 'function') {
+        callback(this.files[id]);
+    }
 };
