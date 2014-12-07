@@ -93,9 +93,19 @@
           });
         }
       }
+    }
       
-      // Change IDs to new notation
-      
+    // Add permanently_hidden property
+    Object.keys(config.vdevInfo).forEach(function(id) {
+      if (!config.vdevInfo[id].hasOwnProperty('permanently_hidden')) {
+        console.log("Adding to VDev " + id + " new property permanently_hidden");
+        config.vdevInfo[id].permanently_hidden = false;
+      }
+    });
+
+    // Change IDs to new notation
+
+    {      
       function getNewID(id) {
         var pattern1 = /^ZWayVDev_([0-9]+(:[0-9]+)+)$/,
           pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9]+)+)$/;
