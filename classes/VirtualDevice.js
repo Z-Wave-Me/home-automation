@@ -98,7 +98,7 @@ _.extend(VirtualDevice.prototype, {
         _.bindAll(this, 'get', 'set');
         _.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
         _.extend(this.attributes, this.overlay);
-        _.extend(this.attributes, { "metrics" : {} });
+        _.defaults(this.attributes, { "metrics" : {} });
         _.extend(this.attributes.metrics, this.overlay_metrics);
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics

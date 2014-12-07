@@ -292,18 +292,4 @@ if (!config) {
     //--- main
     controller.init();
     controller.start();
-
-    //--- load Z-Way utilities
-    if (typeof zway !== "undefined") {
-        (fs.list("z-way-utils/") || []).forEach(function (file) {
-            try {
-                executeFile("z-way-utils/" + file);
-            } catch (e) {
-                controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
-                console.log(e.stack);
-            }
-        });
-    } else {
-        console.log("Z-Way object is not loaded. Skipping Z-Way Utilities");
-    }
 }
