@@ -131,11 +131,11 @@
       
       // Update IDs in profiles    
       config.profiles && config.profiles.forEach(function(profile) {
-        profile.widgets && profile.widgets.forEach(function(widget) {
-          var _id = getNewID(widget.id);
-          if (widget.id !== _id) {
-            console.log("Changing widget ID from " + widget.id + " to " + _id);
-            widget.id = _id;
+        profile.positions && profile.positions.forEach(function(id, index) {
+          var _id = getNewID(id);
+          if (id !== _id) {
+            console.log("Changing widget ID from " + id + " to " + _id);
+            profile.positions[index] = _id;
           }
         });
       });
