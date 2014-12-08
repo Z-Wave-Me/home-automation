@@ -30,7 +30,7 @@ Author: Pieter E. Zanstra
 Converted into Z-Way HA module: Poltorak Serguei
 
 Version 1.01.01       2014-09-09 (Yurkin Vitaliy aivs@z-wave.me)
-Added metrics command to get metrics (/ZAutomation/api/v1/devices/ZWayVDev_22:2:48:1/metrics/level)
+Added metrics command to get metrics (http://192.168.0.85:8083/OpenRemote/metrics/ZWayVDev_zway_26-0-37)
 
 Version 1.01.01	      2014-02-28
 Testing all functions and bugfixing (Yurkin Vitaliy aivs@z-wave.me)
@@ -70,7 +70,7 @@ S		 Scale (e.g. Watt, kWh, etc.)
 Status functions that return the value "on" or "off" are to be used in OpenRemote with 
 sensors of the type:switch. Apply Regular expression: on|off in the http call. 		 
 
-OpenRemote usage: http://IP:8083/ZAutomation/OpenRemote/<Command>/N/I/...
+OpenRemote usage: http://IP:8083/OpenRemote/<Command>/N/I/...
 
 SwitchBinaryOn/N/I
 SwitchBinaryOff/N/I
