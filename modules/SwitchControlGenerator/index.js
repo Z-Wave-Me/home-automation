@@ -37,8 +37,38 @@ SwitchControlGenerator.prototype.init = function (config) {
         "SceneActivation": 0x2b
     };
     
+    this.config.generated.forEach(function(name) {
+        if (self.config.banned.indexOf(name) === -1) {
+            self.controller.devices.create({
+                deviceId: name,
+                defaults: {
+                    deviceType: "switchControl",
+                    metrics: {
+                        icon: '',
+                        title: name,
+                        level: "",
+                        change: ""
+                    }
+                },
+                overlay: {},
+                handler: self.widgetHandler,
+                moduleId: this.id
+            });
+        }
+    });
+    
+    this.generated = this.config.generated; // used to stop after config changed
     this.bindings = [];
-    try {
+    
+    this.zwayReg = function (zwayName) {
+        var zway = global.ZWave && global.ZWave[zwayName].zway;
+        
+        if (!zway) {
+            return;
+        }
+        
+        self.bindings[zwayName] = [];
+
         var ctrlNodeId = zway.controller.data.nodeId.value,
             insts = zway.devices[ctrlNodeId].instances;
         for (var i in insts) {
@@ -48,7 +78,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                     dataSML = insts[n].SwitchMultilevel.data,
                     dataSc = insts[n].SceneActivation.data;
                
-                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
                     var val, par = {};
                     
                     if (this.value === 0) {
@@ -59,12 +89,12 @@ SwitchControlGenerator.prototype.init = function (config) {
                         val = "exact";
                         par = { level: this.value };
                     }
-                    self.handler(val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                    self.handler(zwayName, val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                 }, "");
-                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchBinary"], "level", function(type) {
-                    self.handler(this.value ? "on" : "off", [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchBinary"], "level", function(type) {
+                    self.handler(zwayName, this.value ? "on" : "off", {}, [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
                 }, "");
-                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "level", function(type) {
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "level", function(type) {
                     var val, par = {};
                     
                     if (this.value === 0) {
@@ -75,57 +105,64 @@ SwitchControlGenerator.prototype.init = function (config) {
                         val = "exact";
                         par = { level: this.value };
                     }
-                    self.handler(val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    self.handler(zwayName, val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
-                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "startChange", function(type) {
-                    self.handler(this.value ? "downstart" : "upstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "startChange", function(type) {
+                    self.handler(zwayName, this.value ? "upstart" : "downstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
-                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SwitchMultilevel"], "stopChange", function(type) {
-                    self.handler(dataSML.startChange.value ? "downstop" : "upstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "stopChange", function(type) {
+                    self.handler(zwayName, dataSML.startChange.value ? "upstop" : "downstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
-                controller.emit("ZWaveGate.dataBind", self.bindings, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
-                    self.handler("on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
+                    self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
                 }, "");
             })(i);
         }
-    } catch(e) {
-        this.controller.addNotification("error", "SwitchControlGenerator failed to start: controller dataholder can not be loaded: " + e.toString(), "controller");
-        throw(e);
     };
-
-    this.config.generated.forEach(function(name) {
-        if (self.config.banned.indexOf(name) === -1) {
-            self.controller.devices.create(name, {
-                deviceType: "switchControl",
-                metrics: {
-                    icon: '',
-                    title: name,
-                    level: "",
-                    change: ""
-                }
-            }, self.widgetHandler);
-        }
-    });
     
-    this.generated = this.config.generated; // used to stop after config changed
+    this.zwayUnreg = function(zwayName) {
+        // detach handlers
+        if (self.bindings[zwayName]) {
+            self.controller.emit("ZWave.dataUnbind", self.bindings[zwayName]);
+        }
+        // remove devices
+        self.generated.filter(function(el) { return el.indexOf("ZWayVDev_" + zwayName + "_Remote_") === 0; }).forEach(function(name) {
+            self.controller.devices.remove(name);
+        });
+        self.bindings[zwayName] = null;
+    };
+    
+    this.controller.on("ZWave.register", this.zwayReg);
+    this.controller.on("ZWave.unregister", this.zwayUnreg);
+
+    // walk through existing ZWave
+    if (global.ZWave) {
+        for (var name in global.ZWave) {
+            this.zwayReg(name);
+        }
+    }
 };
 
 SwitchControlGenerator.prototype.stop = function () {
-    try {
-        controller.emit("ZWaveGate.dataUnbind", this.bindings);
-    } catch(e) {
-        this.controller.addNotification("error", "SwitchControlGenerator failed to stop: controller dataholder can not be unbinded: " + e.toString(), "controller");
-    };
+    // unsign event handlers
+    this.controller.off("ZWave.register", this.zwayReg);
+    this.controller.off("ZWave.unregister", this.zwayUnreg);
+
+    // detach handlers
+    for (var name in this.bindings) {
+        this.controller.emit("ZWave.dataUnbind", this.bindings[name]);
+    }
     
-    this.bindings = null;
+    this.bindings = [];
 
     var self = this;
     
+    // remove devices
     if (this.generated) {
         this.generated.forEach(function(name) {
             self.controller.devices.remove(name);
         });
-        this.generated = null;
+        this.generated = [];
     }
 
     SwitchControlGenerator.super_.prototype.stop.call(this);
@@ -147,24 +184,30 @@ SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
     }
 };
 
-SwitchControlGenerator.prototype.handler = function(cmd, par, ids) {
-    var postfix = ids.join(":"),
-        name = "Remote_" + this.id + "_" + postfix;
+SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
+    var postfix = ids.join("-"),
+        name = "ZWayVDev_" + zwayName + "_Remote_" + postfix;
     
     if (this.config.generated.indexOf(name) === -1) {
-        if (this.config.banned.indexOf(name) !== -1) {
+        if (!this.config.trapNew || this.config.banned.indexOf(name) !== -1) {
             return;
         }
 
-        this.controller.devices.create(name, {
-            deviceType: "switchControl",
-            metrics: {
-                icon: '',
-                title: name,
-                level: "",
-                change: ""
-            }
-        }, this.widgetHandler);
+        this.controller.devices.create({
+            deviceId: name,
+            defaults: {
+                deviceType: "switchControl",
+                metrics: {
+                    icon: '',
+                    title: name,
+                    level: "",
+                    change: ""
+                }
+            },
+            overlay: {},
+            handler: this.widgetHandler,
+            moduleId: this.id
+        });
         
         this.config.generated.push(name);
         this.saveConfig();

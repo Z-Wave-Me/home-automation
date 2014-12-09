@@ -1,0 +1,43 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "tagging",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "Tag devices with On/Off",
+		"description": "Mark devices with On/Off tags depending on their state.",
+		"tagOn": "On",
+		"tagOff": "Off"
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"tagOn": {
+				"type": "string",
+				"required": true
+			},
+			"tagOff": {
+				"type": "string",
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"tagOn": {
+				"label": "Tag for On state"
+			},
+			"tagOff": {
+				"label": "Tag for Off state"
+			}
+		}
+	}
+}

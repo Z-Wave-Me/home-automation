@@ -1,7 +1,16 @@
 {
-    "autoload": false,
-    "userView": true,
     "singleton": false,
+    "dependencies": [],
+    "category": "scheduling",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.1",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Auto Off",
         "description": "Turns off automatically devices after a defined time",

@@ -29,6 +29,9 @@ Description:
 Author: Pieter E. Zanstra
 Converted into Z-Way HA module: Poltorak Serguei
 
+Version 1.01.01       2014-09-09 (Yurkin Vitaliy aivs@z-wave.me)
+Added metrics command to get metrics (http://192.168.0.85:8083/OpenRemote/metrics/ZWayVDev_zway_26-0-37)
+
 Version 1.01.01	      2014-02-28
 Testing all functions and bugfixing (Yurkin Vitaliy aivs@z-wave.me)
 
@@ -67,7 +70,7 @@ S		 Scale (e.g. Watt, kWh, etc.)
 Status functions that return the value "on" or "off" are to be used in OpenRemote with 
 sensors of the type:switch. Apply Regular expression: on|off in the http call. 		 
 
-OpenRemote usage: http://IP:8083/ZAutomation/OpenRemote/<Command>/N/I/...
+OpenRemote usage: http://IP:8083/OpenRemote/<Command>/N/I/...
 
 SwitchBinaryOn/N/I
 SwitchBinaryOff/N/I
@@ -210,14 +213,14 @@ OpenRemoteHelpers.prototype.init = function (config) {
 
             case "ThermostatSetMode":
                 var mode = I; // there are usually no instances for thermostats
-		if (! zway.devices[N].ThermostatMode.data[mode]) {
-		    for (var m in zway.devices[N].ThermostatMode.data) {
-		        if (zway.devices[N].ThermostatMode.data[m] && zway.devices[N].ThermostatMode.data[m].modeName && zway.devices[N].ThermostatMode.data[m].modeName.value.toLowerCase() == mode.toLowerCase()) {
-		            mode = m;
-		            break;
+        		if (! zway.devices[N].ThermostatMode.data[mode]) {
+        		    for (var m in zway.devices[N].ThermostatMode.data) {
+        		        if (zway.devices[N].ThermostatMode.data[m] && zway.devices[N].ThermostatMode.data[m].modeName && zway.devices[N].ThermostatMode.data[m].modeName.value.toLowerCase() == mode.toLowerCase()) {
+        		            mode = m;
+        		            break;
+                                }
+                            }
                         }
-                    }
-                }
                 zway.devices[N].ThermostatMode.Set(mode);
                 return mode;
 
@@ -280,13 +283,25 @@ OpenRemoteHelpers.prototype.init = function (config) {
             case "DoorStatus":
                 // there are usually no instances for door locks
                 return zway.devices[N].DoorLock.data.level.value ? "on" : "off";
+
+			case "DeviceName":
+                return zway.devices[N].instances[I].NodeNaming.data.nodename.value;
+
+            case "DeviceLocation":
+               	return zway.devices[N].instances[I].NodeNaming.data.location.value;
+
+            case "metrics":
+                // used HA API for all device to get metrics
+                return this.controller.devices.get(N).get("metrics:level")
         }
     };
+    ws.allowExternalAccess("OpenRemote");
 };
 
 OpenRemoteHelpers.prototype.stop = function () {
     OpenRemoteHelpers.super_.prototype.stop.call(this);
-
+	
+	ws.revokeExternalAccess("OpenRemote");
     OpenRemote = null;
 };
 

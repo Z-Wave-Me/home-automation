@@ -1,0 +1,39 @@
+{
+	"singleton" : false,
+	"dependencies": [],
+	"category": "devices",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults" : {
+		"title" : "Dummy device",
+		"description" : "Create a Dummy device",
+		"deviceType" : "switchBinary"
+	},
+	"schema" : {
+		"type" : "object",
+		"properties" : {
+			"deviceType" : {
+				"type" : "string",
+				"enum" : ["switchBinary", "switchMultilevel"],
+				"default" : "switchBinary",
+				"required" : true
+			}
+		}
+	},
+	"options" : {
+		"fields" : {
+			"deviceType" : {
+				"label" : "Select device type",
+				"type" : "select",
+				"optionLabels" : ["Binary switch", "Multilevel switch"]
+			}
+		}
+	}
+}

@@ -1,0 +1,228 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "devices",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "Code device",
+		"description": "Create virtual device based on JavaScript code.",
+
+		"deviceType": "",
+
+		"setterOn_toggleButton": "",
+
+		"getter_sensorBinary": "",
+		"getterPollInterval_sensortBinary": 0,
+
+		"getter_sensorMultilevel": "",
+		"getterPollInterval_sensorMultilevel": 0,
+		"scale_sensorMultilevel": "",
+
+		"setterOn_switchBinary": "",
+		"setterOff_switchBinary": "",
+		"getter_switchBinary": "",
+		"getterPollInterval_switchtBinary": 0,
+
+		"setterLevel_switchMultilevel": "",
+		"getter_switchMultilevel": "",
+		"getterPollInterval_switchtMultilevel": 0
+	},
+	"schema": {
+		"label": "Select action condition",
+		"type": "object",
+		"properties": {
+			"deviceType": {
+				"type": "string",
+				"enum": ["toggleButton", "sensorBinary", "sensorMultilevel", "switchBinary", "switchMultilevel"],
+				"default": "toggleButton",
+				"required": true
+			},
+
+			"setterOn_toggleButton": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+
+			"getter_sensorBinary": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_sensorBinary": {
+				"type": "integer",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"getter_sensorMultilevel": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_sensorMultilevel": {
+				"type": "integer",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"scale_sensorMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"setterOn_switchBinary": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"setterOff_switchBinary": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getter_switchBinary": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_switchBinary": {
+				"type": "integer",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+
+			"setterLevel_switchMultilevel": {
+				"type": "string",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"getter_switchMultilevel": {
+				"type": "string",
+				"required": false,
+				"dependencies": "deviceType"
+			},
+			"getterPollInterval_switchMultilevel": {
+				"type": "integer",
+				"required": false,
+				"dependencies": "deviceType"
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"deviceType": {
+				"type": "select"
+			},
+
+			"setterOn_toggleButton": {
+				"label": "Code for action On",
+				"placeholder": "somefunction()",
+				"dependencies": {
+					"deviceType": "toggleButton"
+				}
+			},
+
+			"getter_sensorBinary": {
+				"label": "Code to get value",
+				"placeholder": "somefunction()",
+				"helper": "Should return \"on\"/\"off\" values",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+			"getterPollInterval_sensorBinary": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+
+			"getter_sensorMultilevel": {
+				"label": "Code to get value",
+				"placeholder": "somefunction()",
+				"helper": "Should return number",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+			"getterPollInterval_sensorMultilevel": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+			"scale_sensorMultilevel": {
+				"label": "Sensor scale",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
+
+			"setterOn_switchBinary": {
+				"label": "Code for action On",
+				"placeholder": "somefunction()",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"setterOff_switchBinary": {
+				"label": "Code for action Off",
+				"placeholder": "somefunction(%%)",
+				"helper": "%% will represent value",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"getter_switchBinary": {
+				"label": "Code to get value",
+				"placeholder": "somefunction()",
+				"helper": "Should return \"on\"/\"off\" values",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+			"getterPollInterval_switchBinary": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "switchBinary"
+				}
+			},
+
+			"setterLevel_switchMultilevel": {
+				"label": "Code for action",
+				"placeholder": "somefunction(%%)",
+				"helper": "%% will represent value",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			},
+			"getter_switchMultilevel": {
+				"label": "Code to get value",
+				"placeholder": "somefunction()",
+				"helper": "Should return value from 0 to 99",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			},
+			"getterPollInterval_switchMultilevel": {
+				"label": "Interval in seconds between polling requests",
+				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"dependencies": {
+					"deviceType": "switchMultilevel"
+				}
+			}
+		}
+	}
+}

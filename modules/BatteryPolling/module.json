@@ -1,7 +1,16 @@
 {
-    "autoload": false,
     "singleton": true,
-    "userView": true,
+    "dependencies": ["Cron"],
+    "category": "devices",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "2.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Battery Polling",
         "description": "Battery Polling notifications",
@@ -28,7 +37,7 @@
         "fields": {
             "launchWeekDay": {
                 "label": "Do battery polling on",
-		        "optionLabels": ["Monday", "Thuesday", "Wednesday", "Thurstday", "Friday", "Satrunday", "Sunday"]
+	        "optionLabels": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
             },
             "warningLevel": {
                 "label": "Warning Level",

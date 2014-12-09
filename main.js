@@ -30,7 +30,12 @@ var console = {
 };
 
 function inherits (ctor, superCtor) {
-    ctor.super_ = superCtor;
+    Object.defineProperty(ctor, "super_", {
+        value: superCtor,
+        enumerable: false,
+        writable: false,
+        configurable: false
+    });
     ctor.prototype = Object.create(superCtor.prototype, {
         constructor: {
             value: ctor,
@@ -43,6 +48,10 @@ function inherits (ctor, superCtor) {
 
 function in_array (array, value) {
     return -1 !== array.indexOf(value);
+}
+
+function is_function (func) {
+    return !!(func && func.constructor && func.call && func.apply);
 }
 
 function has_key (obj, key) {
@@ -58,6 +67,85 @@ function get_values (obj) {
 
     return res;
 }
+
+
+// init WebServer
+
+function WebServerRequestHandler(req) {
+	var q = req.url.substring(1).replace(/\//g, '.');
+	if (!q) return null;
+	
+	var found = null;
+	if (this.externalNames.some(function(ext) {
+		found = ext;
+		return (ext.length < q.length && q.slice(0, ext.length + 1) === ext + ".") || (ext === q);
+	}) && found) {
+		var cache = this.evalCache || (this.evalCache = {});
+		var handler = cache[found] || (cache[found] = evalPath(found));
+		return handler(req.url.substring(found.length + 1), req);
+	}
+	
+	return null;
+}
+
+ws = new WebServer(8083, WebServerRequestHandler, {
+	document_root: "htdocs"
+});
+
+ws.externalNames = [];
+ws.allowExternalAccess = function(name) {
+	// refresh cache anyways, even if adding duplicate name
+	if (this.evalCache)
+		delete this.evalCache[name];
+
+	var idx = this.externalNames.indexOf(name);
+	if (idx >= 0) return;
+	
+	this.externalNames.push(name);
+	this.externalNames.sort(function(x, y) {
+		return (y.length - x.length) || (x > y ? 1 : -1);
+	});
+};
+ws.revokeExternalAccess = function(name) {
+	// remove cached handler (if any)
+	if (this.evalCache)
+		delete this.evalCache[name];
+
+	var idx = this.externalNames.indexOf(name);
+	if (idx === -1) return;
+	
+	this.externalNames.splice(idx, 1);
+};
+
+//--- Init JS handler
+
+JS = function() {
+    return { status: 400, body: "Bad JS request" };
+};
+ws.allowExternalAccess("JS");
+
+JS.Run = function(url) {
+	// skip trailing slash
+    url = url.substring(1);
+    try {
+    	var r = eval(url);
+    	return { 
+    		status: 200, 
+    		headers: { 
+    			"Content-Type": "application/json",
+    			"Connection": "keep-alive"
+    		},
+    		body: r 
+    	};
+    } catch (e) {
+    	return { status: 500, body: e.toString() };
+    }
+};
+ws.allowExternalAccess("JS.Run");
+
+
+// do transition script to adopt old versions to new
+executeFile("updateBackendConfig.js");
 
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
@@ -81,13 +169,92 @@ if (!config) {
     config.classesPath = "classes";
     config.resourcesPath = "res";
 
+    // temp: add modules_categories
+    config.modules_categories = [
+        {
+            "id": "automation",
+            "name": "Automation",
+            "description": "Create home automation rules",
+            "icon": ""
+        },
+        {
+            "id": "security",
+            "name": "Security",
+            "description": "Enhance security",
+            "icon": ""
+        },
+        {
+            "id": "peripherals",
+            "name": "Peripherals",
+            "description": "Z-Wave and other peripherals",
+            "icon": ""
+        },
+        {
+            "id": "surveillance",
+            "name": "Video surevillance",
+            "description": "Support for cameras",
+            "icon": ""
+        },
+        {
+            "id": "logging",
+            "name": "Data logging",
+            "description": "Logging to third party services",
+            "icon": ""
+        },
+        {
+            "id": "scripting",
+            "name": "Scripting",
+            "description": "Create custom scripts",
+            "icon": ""
+        },
+        {
+            "id": "devices",
+            "name": "Devices",
+            "description": "Create devices",
+            "icon": ""
+        },
+        {
+            "id": "scheduling",
+            "name": "Schedulers",
+            "description": "Time related functions",
+            "icon": ""
+        },
+        {
+            "id": "climate",
+            "name": "Climate",
+            "description": "Climate control",
+            "icon": ""
+        },
+        {
+            "id": "environment",
+            "name": "Environment",
+            "description": "Environment related date",
+            "icon": ""
+        },
+        {
+            "id": "scenes",
+            "name": "Scenes",
+            "description": "Light scenes",
+            "icon": ""
+        },
+        {
+            "id": "notifications",
+            "name": "Notifications",
+            "description": "SMS, E-mail and push notifications",
+            "icon": ""
+        },
+        {
+            "id": "tagging",
+            "name": "Tagging",
+            "description": "Tagging widgets",
+            "icon": ""
+        }
+    ];
+
     //--- Load 3d-party dependencies
 
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore-min.js");
-
-    //--- Load router
-    //executeFile(config.libPath + "/Router.js");
 
     executeFile(config.classesPath + "/VirtualDevice.js");
 
@@ -125,14 +292,4 @@ if (!config) {
     //--- main
     controller.init();
     controller.start();
-
-    //--- load Z-Way utilities
-    (fs.list("z-way-utils/") || []).forEach(function (file) {
-        try {
-            executeFile("z-way-utils/" + file);
-        } catch (e) {
-            controller.addNotification("error", "Can not load z-way-utils file (" + file + "): " + e.toString(), "core");
-            console.log(e.stack);
-        }
-    });
 }

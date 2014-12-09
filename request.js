@@ -21,6 +21,7 @@ function ZAutomationWebRequest() {
         },
         body: null
     };
+    this.error = null;
 }
 
 ZAutomationWebRequest.prototype.handlerFunc = function () {
@@ -166,6 +167,16 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         }
     }
 
+    if (String(pagination) === 'true') {
+        _.extend(data, {
+            pager: {
+                offset: offset,
+                limit: limit,
+                page_total: response.data[mainKey].length
+            }
+        });
+    }
+
     reply = {
         data: data,
         code: response.code,
@@ -206,7 +217,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     // Fill internal structures
     this.req.url = url;
     this.req.method = request.method;
-    this.req.query = request.query;
+    this.req.query = request.query || {};
     this.req.body = request.body || "";
     this.emulateHTTP = false;
     this.emulateHTTPMethod = null;

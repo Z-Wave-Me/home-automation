@@ -1,27 +1,39 @@
 {
-	"autoload": false,
+	"dependencies": [],
 	"singleton": true,
-	"userView": true,
+	"category": "peripherals",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
 	"defaults": {
 		"title": "Trap events from Remotes and Sensors",
 		"description": "Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
+		"trapNew": true,
 		"generated": [],
 		"banned": []
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
-			"generated": {
+			"trapNew": {
+				"type": "boolean"
+			},
+			"banned": {
 				"type": "array",
 				"items": {
-					"type": "select",
 					"field": "enum",
 					"datasource": "namespaces",
 					"enum": "namespaces:devices_switchControl:deviceId",
 					"required": true
 				}
 			},
-			"banned": {
+			"generated": {
 				"type": "array",
 				"items": {
 					"field": "enum",
@@ -35,8 +47,12 @@
 	},
 	"options": {
 		"fields": {
-			"generated": {
-				"label": "List of switches to instanciate (filled automatically)",
+			"trapNew": {
+				"label": "",
+				"rightLabel": "Create control device for new remote controls and switches"
+			},
+			"banned": {
+				"label": "List of remotes and switches not to instanciate",
 				"fields": {
 					"item": {
 						"type": "select",
@@ -46,11 +62,12 @@
 					}
 				}
 			},
-			"banned": {
-				"label": "List of switches not to instanciate",
+			"generated": {
+				"label": "List of remotes and switches to instanciate (filled automatically)",
 				"fields": {
 					"item": {
 						"type": "select",
+						"readonly": true,
 						"datasource": "namespaces",
 						"field": "optionLabels",
 						"optionLabels": "namespaces:devices_switchControl:deviceName"

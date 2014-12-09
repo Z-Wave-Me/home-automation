@@ -47,9 +47,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations/remove", this.removeLocation());
         this.router.get("/locations/update", this.updateLocation());
         this.router.get("/modules", this.listModules);
+        this.router.get("/modules/categories", this.listModulesCategories);
         this.router.get("/instances", this.listInstances);
         this.router.post("/instances", this.createInstance());
-        this.router.get("/schemas", this.listSchemas);
 
         // TODO: Should we remove these as they are no longer available?
         // this.router.post("/namespaces", this.createNamespace());
@@ -79,14 +79,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/instances/:instance_id", this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.deleteInstanceFunc, [parseInt]);
 
+        this.router.get("/modules/:module_id", this.getModuleFunc);
+
+        this.router.get("/modules/categories/:category_id", this.getModuleCategoryFunc);
+
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
     },
     statusReport: function () {
-        var reply = {
-            error: null,
-            data: "OK",
-            code: 200
-        };
+
+        if (Boolean(this.error)) {
+            var reply = {
+                error: "Internal server error. Please fill in bug report with request_id='" + this.error + "'",
+                data: null,
+                code: 503,
+                message: "Service Unavailable"
+            };
+        } else {
+            var reply = {
+                error: null,
+                data: "OK",
+                code: 200
+            };
+        }
+
 
         this.controller.addNotification("debug", "Status report requested", "debug");
         this.initResponse(reply);
@@ -111,6 +126,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
         }
+
+        if (Boolean(that.req.query.pagination)) {
+            reply.data.total_count = that.controller.devices.models.length;
+        }
+
         that.initResponse(reply);
     },
     getVDevFunc: function (vDevId) {
@@ -166,12 +186,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: 200
-            };
+            },
+            result_execution_command;
 
         return function () {
 
             if (that.controller.devices.has(vDevId)) {
-                reply.data = !!that.controller.devices.get(vDevId).performCommand.call(that.controller.devices.get(vDevId), commandId, that.req.query);
+                result_execution_command = that.controller.devices.get(vDevId).performCommand.call(that.controller.devices.get(vDevId), commandId, that.req.query);
+                reply.data = !!result_execution_command ? result_execution_command : null;
             } else {
                 reply.data = null;
                 reply.code = 404;
@@ -182,8 +204,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // Notifications
     exposeNotifications: function () {
-        var nowTS = Math.floor(new Date().getTime() / 1000),
-            notifications,
+        var notifications,
             reply = {
                 error: null,
                 data: null
@@ -200,9 +221,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             notifications = that.controller.listNotifications(since, redeemed);
 
             reply.data = {
-                updateTime: nowTS,
+                updateTime: Math.floor(new Date().getTime() / 1000),
                 notifications: notifications
             };
+
+            if (Boolean(that.req.query.pagination)) {
+                reply.data.total_count = that.controller.getCountNotifications();
+            }
 
             reply.code = 200;
 
@@ -439,27 +464,77 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             module = null;
 
-        Object.keys(that.controller.modules).forEach(function (className) {
+        Object.keys(that.controller.modules).sort().forEach(function (className) {
             module = that.controller.modules[className].meta;
-            if (module.hasOwnProperty('userView') && module.userView) {
-                module.className = className;
-                if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
-                    module.created = true;
-                } else {
-                    module.created = false;
-                }
-                reply.data.push(module);
+            module.className = className;
+            if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+                module.created = true;
+            } else {
+                module.created = false;
             }
+            reply.data.push(module);
         });
 
         this.initResponse(reply);
+    },
+    getModuleFunc: function (moduleId) {
+        var that = this;
+        return function () {
+            var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+
+            if (!that.controller.modules.hasOwnProperty(moduleId)) {
+                reply.code = 404;
+                reply.error = "Instance " + moduleId + " not found";
+            } else {
+                reply.code = 200;
+                reply.data = that.controller.modules[moduleId];
+            }
+
+            this.initResponse(reply);
+        };
+    },
+    // modules categories
+    listModulesCategories: function () {
+        var that = this,
+            reply = {
+                error: null,
+                data: that.controller.getListModulesCategories(),
+                code: 200
+            };
+
+        this.initResponse(reply);
+    },
+    getModuleCategoryFunc: function (categoryId) {
+        var that = this;
+        return function () {
+            var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                category = that.controller.getListModulesCategories(categoryId);
+
+            if (!Boolean(category)) {
+                reply.code = 404;
+                reply.error = "Categories " + categoryId + " not found";
+            } else {
+                reply.code = 200;
+                reply.data = category;
+            }
+
+            this.initResponse(reply);
+        };
     },
     // instances
     listInstances: function () {
         var that = this,
             reply = {
                 error: null,
-                data: _.filter(that.controller.instances, function (instance) { return instance.userView; }),
+                data: that.controller.instances,
                 code: 200
             };
 
@@ -477,13 +552,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 instance;
 
             if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
-                instance = that.controller.createInstance(reqObj.moduleId, reqObj.params);
+                instance = that.controller.createInstance(reqObj);
                 if (instance) {
                     reply.code = 201;
                     reply.data = instance;
                 } else {
                     reply.code = 500;
-                    reply.error = "Cannot instantiate module " + reqObj.id;
+                    reply.error = "Cannot instantiate module " + reqObj.moduleId;
                 }
             } else {
                 reply.code = 500;
@@ -526,7 +601,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
                 reply.code = 404;
-                reply.error = "Instance " + reqObj.id + " doesn't exist";
+                reply.error = "Instance " + instanceId + " doesn't exist";
             } else {
                 instance = that.controller.reconfigureInstance(instanceId, reqObj);
                 if (instance) {
@@ -571,25 +646,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                profiles,
+                profiles = that.controller.getListProfiles(),
                 profile;
 
-            if (profileId === undefined) {
-                profiles = that.controller.getListProfiles();
+            if (!_.isNumber(profileId)) {
                 if (!Array.isArray(profiles)) {
-                    reply.error = "Unknown error.";
+                    reply.error = "Unknown error. profiles isn't array";
                 } else {
                     reply.code = 200;
                     reply.data = profiles;
                 }
             } else {
                 profile = that.controller.getProfile(profileId);
-                if (profile && profile !== null && profile.id) {
+                if (profile !== null) {
                     reply.code = 200;
                     reply.data = profile;
                 } else {
                     reply.code = 404;
-                    reply.error = "Dashboard " + profile.id + " doesn't exist";
+                    reply.error = "Dashboard " + profileId + " doesn't exist";
                 }
             }
 
@@ -647,7 +721,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = ex.message;
             }
 
-            if (reqObj.hasOwnProperty('name') || reqObj.hasOwnProperty('description') || reqObj.hasOwnProperty('active') || reqObj.hasOwnProperty('widgets')) {
+            if (reqObj.hasOwnProperty('name')) {
                 profile = that.controller.updateProfile(reqObj, profileId);
                 if (profile !== undefined && profile.id !== undefined) {
                     reply.data = profile;
@@ -658,7 +732,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 500;
-                reply.error = "Argument description, active, id, widgets is required";
+                reply.error = "Argument id, positions is required";
             }
 
             this.initResponse(reply);
@@ -674,19 +748,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 profile;
 
-            if (profileId) {
+            if (_.isNumber(profileId)) {
                 profile = that.controller.getProfile(profileId);
-                if (profile) {
+                if (profile !== null) {
                     that.controller.removeProfile(profileId);
                     reply.data = null;
                     reply.code = 204;
                 } else {
                     reply.code = 404;
-                    reply.error = "Object (profile) " + profileId + " didn't created";
+                    reply.error = "Profile " + profileId + " didn't created";
                 }
             } else {
-                reply.code = 500;
-                reply.error = "Argument id widgets is required";
+                reply.error = "Argument `id` is required";
             }
 
             this.initResponse(reply);

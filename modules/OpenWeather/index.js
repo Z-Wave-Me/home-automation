@@ -31,7 +31,23 @@ OpenWeather.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = null;
+    this.vDev = self.controller.devices.create({
+        deviceId: "OpenWeather_" + this.id,
+        defaults: {
+            deviceType: "sensorMultilevel",
+            metrics: {
+                probeTitle: 'Temperature'
+            }
+        },
+        overlay: {
+            metrics: {
+                scaleTitle: this.config.units === "celsius" ? '°C' : '°F',
+                title: this.config.city
+            }
+        },
+        moduleId: this.id
+    });
+
     this.timer = setInterval(function() {
         self.fetchWeather(self);
     }, 3600*1000);
@@ -65,21 +81,8 @@ OpenWeather.prototype.fetchWeather = function(instance) {
                 var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 : res.data.main.temp) * 10) / 10,
                     icon = "http://openweathermap.org/img/w/" + res.data.weather[0].icon + ".png";
 
-                if (!self.vDev) {
-                    self.vDev = self.controller.devices.create("OpenWeather_" + self.id, {
-                        deviceType: "sensorMultilevel",
-                        metrics: {
-                            probeTitle: 'Temperature',
-                            scaleTitle: self.config.units === "celsius" ? '°C' : '°F',
-                            level: temp,
-                            icon: icon,
-                            title: self.config.city
-                        }
-                    });
-                } else {
-                    self.vDev.set("metrics:level", temp);
-                    self.vDev.set("metrics:icon", icon);
-                }
+                self.vDev.set("metrics:level", temp);
+                self.vDev.set("metrics:icon", icon);
             } catch (e) {
                 self.controller.addNotification("error", "Can not parse weather information", "module");
             }

@@ -39,7 +39,7 @@ Router.prototype = {
 
     if (_.contains(path, ":")) {
       var route = this._parseRoute(path, preprocessors);
-      ns[method].patterns = ns[method].patterns || []; 
+      ns[method].patterns = ns[method].patterns || [];
       ns[method].patterns.push(_.extend(route, {handler: handler, preprocessors: preprocessors}));
     } else {
       ns[method][path] = {handler: handler, preprocessors: preprocessors};
@@ -57,7 +57,7 @@ Router.prototype = {
         parameters = [];
 
     var pattern = _.map(parts, function(segment) {
-      if (segment.length && segment[0] === ":") {
+      if (segment.length > 0 && segment.indexOf(':') !== -1) {
         // Keep track of the parameters we've replaced
         parameters.push(segment.slice(1));
         return "(.+)";

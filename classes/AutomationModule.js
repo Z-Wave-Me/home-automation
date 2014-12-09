@@ -25,8 +25,8 @@ AutomationModule.prototype.defaultConfig = function (config) {
     var result = {};
 
     var self = this;
-    if (this.meta.hasOwnProperty("defaults") && "object" === typeof this.meta.defaults) {
-        Object.keys(this.meta.defaults).forEach(function (key) {
+    if (this.meta.hasOwnProperty("defaults") && _.isObject(this.meta.defaults)) {
+        Object.keys(_.omit(this.meta.defaults, 'title', 'description')).forEach(function (key) {
             result[key] = self.meta.defaults[key];
         });
     }
@@ -43,10 +43,16 @@ AutomationModule.prototype.defaultConfig = function (config) {
 AutomationModule.prototype.init = function (config) {
     console.log("--- Starting module " + this.meta.defaults.title);
     if (!!config) {
-        this.config = this.defaultConfig(config);
-        this.saveConfig();
+        this.saveNewConfig(config);
     } else {
         this.loadConfig();
+    }
+};
+
+AutomationModule.prototype.saveNewConfig = function (config) {
+    if (!!config) {
+        this.config = this.defaultConfig(config);
+        this.saveConfig();
     }
 };
 
@@ -96,7 +102,8 @@ AutomationModule.prototype.runAction = function (actionId, args, callback) {
 AutomationModule.prototype.getMeta = function () {
     if (!this.meta) {
         var filePath = this.moduleBasePath() + "/module.json";
-        this.meta = loadJSON(filePath);
+        this.meta = fs.loadJSON(filePath);
+        this.meta.id = this.constructor.name;
     }
     return this.meta;
 };

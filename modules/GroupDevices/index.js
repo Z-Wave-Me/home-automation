@@ -30,50 +30,67 @@ GroupDevices.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = this.controller.devices.create(
-        "GroupDevices_" + (this.config.isDimmable ? "bn" : "ml") + "_" + this.id, { // different names to rebuild UI on change
-        deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary",
-        metrics: {
-            probeTitle: '',
-            scaleTitle: '',
-            level: '',
-            icon: '',
-            title: 'Group ' + this.id
-        }
-    }, function(command, args) {
-        self.config.devices.forEach(function(dev) {
-            var vDev = self.controller.devices.get(dev.device);
-            if (vDev) {
-                if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
-                    vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
-                } else if (command === "exact") {
-                    vDev.performCommand("exact", { level: dev.invert ? args.level : (99-args.level) });
-                }
+    this.vDev = this.controller.devices.create({
+        deviceId: "GroupDevices_" + this.id,
+        defaults: {
+            metrics: {
+                level: self.config.isDimmable ? 0 : "off",
+                icon: '',
+                title: 'Group ' + this.id
             }
-        });
-
-        if (command === "on" || command === "off") {
-            var scenes = command === "on" ? self.config.scenesOn : self.config.scenesOff;
-        
-            scenes.forEach(function(scene) {
-                var vDev = self.controller.devices.get(scene);
+        },
+        overlay: {
+            deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary"
+        },
+        handler: function(command, args) {
+            self.config.devices.forEach(function(dev) {
+                var vDev = self.controller.devices.get(dev.device);
                 if (vDev) {
-                    vDev.performCommand("on");
+                    if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
+                        vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
+                    } else if (command === "exact") {
+                        vDev.performCommand("exact", { level: dev.invert ? args.level : (99-args.level) });
+                    }
                 }
             });
-        }
-        
-        var level = command;
-        if (self.config.isDimmable) {
-            if (command === "on") {
-                level = 99;
-            } else if (command === "off") {
-                level = 0;
-            } else {
-                level = args.level;
+
+            if (command === "on" || command === "off") {
+                var scenes = command === "on" ? self.config.scenesOn : self.config.scenesOff;
+
+                scenes.forEach(function(scene) {
+                    var vDev = self.controller.devices.get(scene);
+                    if (vDev) {
+                        vDev.performCommand("on");
+                    }
+                });
             }
-        }
-        this.set("metrics:level", level);
+
+            var level = command;
+            if (self.config.isDimmable) {
+                if (command === "on") {
+                    level = 99;
+                } else if (command === "off") {
+                    level = 0;
+                } else {
+                    level = args.level;
+                }
+            }
+            this.set("metrics:level", level);
+        },
+        moduleId: this.id
+    });
+
+    this.handler = function() {
+        var res = false;
+        self.config.devices.forEach(function(xdev) {
+            res |= xdev.invert ^ self.controller.devices.get(xdev.device);
+        });
+        
+        self.vDev.set("metrics:level", res);
+    };
+    
+    this.config.devices.forEach(function(dev) {
+        this.controller.devices.on(dev.device, "change:metrics:level", this.handler);
     });
 };
 
@@ -82,6 +99,10 @@ GroupDevices.prototype.stop = function () {
         this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
+
+    this.config.devices.forEach(function(dev) {
+        this.controller.devices.off(dev.device, "change:metrics:level", this.handler);
+    });
 
     GroupDevices.super_.prototype.stop.call(this);
 };

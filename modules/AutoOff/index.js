@@ -36,8 +36,6 @@ AutoOff.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     AutoOff.super_.prototype.init.call(this, config);
 
-    this.vDev = this.controller.devices.get(this.config.device);
-
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
@@ -62,9 +60,7 @@ AutoOff.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    if (this.vDev) {
-        this.vDev.on('change:metrics:level', this.handler);
-    }
+    this.controller.devices.on(this.config.device, 'change:metrics:level', this.handler);
 };
 
 AutoOff.prototype.stop = function () {
@@ -73,10 +69,7 @@ AutoOff.prototype.stop = function () {
     if (this.timer)
         clearInterval(this.timer);
     
-    if (this.handler && this.vDev) {
-        this.vDev.off('change:metrics:level', this.handler);
-        this.vDev = null;
-    }
+    this.controller.devices.off(this.config.device, 'change:metrics:level', this.handler);
 };
 // ----------------------------------------------------------------------------
 // --- Module methods

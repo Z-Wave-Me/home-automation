@@ -1,0 +1,56 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "security",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "Auto Lock",
+		"description": "Door/Window Sensor automatically closes lock when door is closed",
+		"BinarySensor": null,
+		"DoorLock": null
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"BinarySensor": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_sensorBinary:deviceId",
+				"required": true
+			},
+			"DoorLock": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_doorlock:deviceId",
+				"required": true
+			}
+		},
+		"required": true
+	},
+	"options": {
+		"fields": {
+			"BinarySensor": {
+				"label": "Door/Window Sensor",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_sensorBinary:deviceName"
+			},
+			"DoorLock": {
+				"label": "Door Lock",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_doorlock:deviceName"
+			}
+		}
+	}
+}

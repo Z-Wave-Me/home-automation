@@ -1,4 +1,6 @@
-# Z-Way Home Automation Engine v1.0.1
+# Z-Way Home Automation Engine v2.0.0rc1
+
+# Introduction #
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Z-Wave-Me/home-automation?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Links
@@ -9,24 +11,12 @@ API Documentation: http://docs.zwayhomeautomation.apiary.io/
 
 Issues, bugs and feature requests are welcome: https://github.com/Z-Wave-Me/home-automation/issues
 
+WebUI: https://github.com/Z-Wave-Me/home-automation-ui
 
-## Precompiling client-side application
-
-    -   Install node.js
-
-    -   Install npm-packages
-
-        $ cd /path/to/automationFolder
-        $ npm install
-
-    -   Compile front-end to /path/to/automationFolder/htdocs/dist.
-
-        $ grunt
-
-## Running api-tests
+## Tests
 
     - Install node.js and npm-packages
 
     - Running tests
 
-        $ grunt mocha
+        $ gulp mocha

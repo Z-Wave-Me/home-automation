@@ -1,0 +1,61 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "notifications",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "Notification",
+		"description": "Send email or sms",
+		"message" : "",
+		"api_key": "",
+        "phone": "",
+		"email" : ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"message": {
+				"type": "string",
+                "required": false
+			},
+			"phone": {
+                "required": false,
+                "pattern": "[1-9][0-9]*"
+            },
+            "api_key": {
+                "required": false,
+                "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
+            },
+			"email": {
+				"type": "string",
+                "required": false
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"message": {
+				"label": "text message"
+			},
+			"phone": {
+                "label": "Phone number to send SMS. In form of 79261234567"
+            },
+            "api_key": {
+                "label": "API key from SMS.ru",
+				"helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+            },
+			"email": {
+				"label": "email that will be notified"
+			}
+		}
+	}
+}
