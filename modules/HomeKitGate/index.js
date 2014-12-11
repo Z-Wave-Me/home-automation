@@ -87,7 +87,7 @@ HomeKitGate.prototype.init = function (config) {
 		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, deviceType, vDev.id);
 		
 		if (deviceType === "sensorMultilevel" && vDev.id.substring(0, 12) === "OpenWeather_") {
-			var serviceUUID = "00000001-0000-1000-8000-0026BB7652FF";
+			var serviceUUID = "00001001";
 		
 			var service = accessory.addService(serviceUUID, "Temperature");
 			
@@ -96,7 +96,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "sensorMultilevel") {
-			var serviceUUID = "00000002-0000-1000-8000-0026BB7652FF";
+			var serviceUUID = "00001002";
 		
 			var service = accessory.addService(serviceUUID, "Multilevel Sensor");
 			
@@ -105,7 +105,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchBinary") {
-			var serviceUUID = "00000003-0000-1000-8000-0026BB7652FF";
+			var serviceUUID = HomeKit.Services.Lightbulb; //"00001003";
 		
 			var service = accessory.addService(serviceUUID, "Binary Switch");
 			
@@ -115,7 +115,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
-			var serviceUUID = "00000004-0000-1000-8000-0026BB7652FF";
+			var serviceUUID = "00001004";
 		
 			var service = accessory.addService(serviceUUID, "Multilevel Switch");
 			
