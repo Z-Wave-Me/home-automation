@@ -38,42 +38,24 @@ ZAutomationStorageWebRequest.prototype.statusReport = function () {
 }
 
 ZAutomationStorageWebRequest.prototype.uploadFileFunc = function () {
+    var self = this;
+
+    self.rreq = self.req.body.file;
+
     return function () {
-        var reply = {
-                error: null,
-                data: null,
-                code: 200,
-                message: null
-            },
-            //reqObj = new FormData(this.req.body),
-            that = this;
-
-
-        //console.log(JSON.stringify(Object.keys(reqObj)));
-        //controller.pushFile(reqObj.file, function (fileObj) {
-        //    reply.data = fileObj;
-        //    that.initResponse(reply);
-        //})
+        this.res.body = null;
     }
 };
 
 ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
+    var self = this;
     return function () {
-        var reply = {
-                error: null,
-                data: "OK: get File" + fileId,
-                code: 200
-            },
-            file = controller.pullFile(fileId);
 
-        if (file) {
-            reply.data = file;
-        } else {
-            reply.code = 404;
-            reply.error = "File " + fileId + " doesn't exist";
+        self.res.body = self.rreq.content;
+        self.res.headers = {
+            'Content-Type': 'image/png',
+            'Content-Length': self.rreq.length
         }
-
-        this.initResponse(reply);
     }
 };
 
@@ -85,7 +67,7 @@ ZAutomationStorageWebRequest.prototype.dispatchRequest = function (method, url) 
     // ---------- Test exact URIs ---------------------------------------------
     if ("GET" === method && "/status" === url) {
         handlerFunc = this.statusReport();
-    } else if ("POST" === method && "" === url) {
+    } else if ("POST" === method) {
         handlerFunc = this.uploadFileFunc();
     } else if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest();
