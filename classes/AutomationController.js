@@ -41,22 +41,49 @@ function wrap (self, func) {
 AutomationController.prototype.init = function () {
     var self = this;
 
-    this.devices.on('change', function (device) {
-        ws.push({
-            type: "devices",
-            data: device.toJSON()
-        });
-    });
 
-    this.on("notifications.push", function (notice) {
-        ws.push({
-            type: "notifications",
-            data: notice
+    function pushNamespaces () {
+        self.generateNamespaces(function (namespaces) {
+            ws.push({
+                type: 'me.z-wave.namespaces.update',
+                data: JSON.stringify(namespaces)
+            });
         });
-    });
+    }
 
-    this.loadModules(function () {
+    self.loadModules(function () {
         self.emit("core.init");
+
+        self.devices.on('change', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces();
+        });
+
+        self.devices.on('created', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.add",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces();
+        });
+
+        self.devices.on('destroy', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.destroy",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces();
+        });
+
+        self.on("notifications.push", function (notice) {
+            ws.push({
+                type: "me.z-wave.notifications.add",
+                data: JSON.stringify(notice)
+            });
+        });
     });
 };
 
@@ -98,7 +125,7 @@ AutomationController.prototype.start = function () {
     
     // Run storage
     console.log("Starting storage...");
-    ZAutomation.storage = new ZAutomationStorageWebRequest().handlerFunc();	
+    ZAutomation.storage = new ZAutomationStorageWebRequest(this).handlerFunc();
 	ws.allowExternalAccess("ZAutomation.storage");
     
     // Notify core

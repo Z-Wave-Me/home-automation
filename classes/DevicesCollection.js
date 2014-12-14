@@ -170,7 +170,7 @@ _.extend(DevicesCollection.prototype, {
         return _.each(this.models, callback);
     },
     forEach: function (callback) {
-        return _.forEach(this.models, callback);
+        return this.each(callback);
     },
     on: function () {
         var vDevId = "",

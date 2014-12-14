@@ -86,6 +86,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
     },
     statusReport: function () {
+        var currentDateTime = new Date();
 
         if (Boolean(this.error)) {
             var reply = {
@@ -97,7 +98,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             var reply = {
                 error: null,
-                data: "OK",
+                data: {
+                    status: 'OK',
+                    localTime: c.toISOString()
+                },
                 code: 200
             };
         }

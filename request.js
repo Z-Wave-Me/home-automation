@@ -218,12 +218,13 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     this.req.url = url;
     this.req.method = request.method;
     this.req.query = request.query || {};
-    this.req.body = request.body || "";
+    this.req.body = request.body || request.data;
+    this.req.headers = request.headers;
     this.emulateHTTP = false;
     this.emulateHTTPMethod = null;
     //
 
-    if (['PUT', 'POST'].indexOf(this.req.method) !== -1) {
+    if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && request.headers['Content-Type'].indexOf('application/json') !== -1) {
         try {
             this.req.reqObj = JSON.parse(this.req.body);
         } catch (ex) {
@@ -231,19 +232,6 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
             response.error = "JSON Parse Error [Syntax Error]";
         }
     }
-
-    if (this.req.method === 'GET') {
-        if (this.req.query.hasOwnProperty('method')) {
-            this.emulateHTTP = true;
-            this.emulateHTTPMethod = this.req.query.method;
-        }
-    }
-
-    //if (this.emulateHTTPMethod) {
-
-    //} else {
-
-    //}
 
     if (response.error === null) {
         // Get and run request processor func
