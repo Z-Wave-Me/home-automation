@@ -42,6 +42,7 @@ function ZWave (id, controller) {
 		"SwitchBinary": 0x25,
 		"SwitchMultilevel": 0x26,
 		"SceneActivation": 0x2b,
+		"AlarmSensor": 0x9c,
 		"SensorBinary": 0x30,
 		"SensorMultilevel": 0x31,
 		"Meter": 0x32,
@@ -1039,7 +1040,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						cc.Set(false);
 					}
 				},
-				moduleId: this.id
+				moduleId: self.id
 			});
 
 			if (vDev) {
@@ -1120,7 +1121,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						cc.Set(newVal);
 					}
 				},
-				moduleId: this.id
+				moduleId: self.id
 			});
 
 			if (vDev) {
@@ -1170,7 +1171,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								cc.Get(sensorTypeId);
 							}
 						},
-						moduleId: this.id
+						moduleId: self.id
 					});
 
 					if (vDev) {
@@ -1227,7 +1228,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								cc.Get(sensorTypeId);
 							}
 						},
-						moduleId: this.id
+						moduleId: self.id
 					});
 
 					if (vDev) {
@@ -1275,7 +1276,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								cc.Get(scaleId);
 							}
 						},
-						moduleId: this.id
+						moduleId: self.id
 					});
 
 					if (vDev) {
@@ -1317,7 +1318,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						cc.Get();
 					}
 				},
-				moduleId: this.id
+				moduleId: self.id
 			});
 
 			if (vDev) {
@@ -1346,7 +1347,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						cc.Set(255);
 					}
 				},
-				moduleId: this.id
+				moduleId: self.id
 			});
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function() {
@@ -1395,7 +1396,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								instance.ThermostatMode.Set(MODE_OFF);
 							}
 						},
-						moduleId: this.id
+						moduleId: self.id
 					});
 
 					if (vDev) {
@@ -1441,7 +1442,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								_v.performCommand("on");
 							}
 						},
-						moduleId: this.id
+						moduleId: self.id
 					});
 
 					if (vDev) {
@@ -1450,6 +1451,79 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 					}
 				}
+			}
+		} else if (this.CC["AlarmSensor"] === commandClassId) {
+			a_defaults = {
+				deviceType: 'sensorBinary',
+				metrics: {
+					icon: 'alarm',
+					level: 'off',
+					title: ''
+				}
+			};
+			d_defaults = {
+				deviceType: 'toggleButton',
+				metrics: {
+					icon: 'alarm',
+					level: 'on',
+					title: ''
+				}
+			};
+			Object.keys(cc.data).forEach(function (sensorTypeId) {
+				sensorTypeId = parseInt(sensorTypeId, 10);
+
+				var a_id = vDevId + separ + sensorTypeId + separ + "A",
+				    d_id = vDevId + separ + sensorTypeId + separ + "D";
+
+				if (!isNaN(sensorTypeId) && !self.controller.devices.get(a_id) && !self.controller.devices.get(d_id)) {
+					a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+					d_defaults.metrics.title = compileTitle('Disarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+
+					var a_vDev = self.controller.devices.create({
+						deviceId: a_id,
+						defaults: a_defaults,
+						overlay: {},
+						handler: function(command) {
+							if (command === "update") {
+								cc.Get(sensorTypeId);
+							}
+						},
+						moduleId: self.id
+					});
+
+					var d_vDev = self.controller.devices.create({
+						deviceId: d_id,
+						defaults: d_defaults,
+						overlay: {},
+						handler: function(command) {
+							if (command === "on") {
+								var vDev = this.controller.devices.get(a_id);
+								if (vDev) {
+									vDev.set("metrics:level", "off");
+								}
+								this.set("metrics:level", "on"); // update on ourself to allow catch this event
+							}
+						},
+						moduleId: self.id
+					});
+
+					if (a_vDev) {
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
+							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+								self.controller.devices.remove(vDevId + separ + sensorTypeId);
+							} else {
+								a_vDev.set("metrics:level", "on");
+							}
+						}, "value");
+					}
+				}
+			});
+			if (!scaleAdded) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
+					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+					}
+				}, "child");
 			}
 		}
 	} catch (e) {

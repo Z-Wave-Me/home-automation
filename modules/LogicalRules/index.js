@@ -55,11 +55,23 @@ LogicalRules.prototype.init = function (config) {
             });
         }
     });    
+
+    if (this.config.eventSource) {
+        this.config.eventSource.forEach(function(scene) {
+            self.controller.devices.on(scene, "change:metrics:level", self._testRule);
+        });
+    }
 };
 
 LogicalRules.prototype.stop = function () {
     var self = this;
     
+    if (this.config.eventSource) {
+        this.config.eventSource.forEach(function(scene) {
+            self.controller.devices.off(scene, "change:metrics:level", self._testRule);
+        });
+    }
+     
     this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
             self.attachDetach(test.testBinary, false);
@@ -88,6 +100,10 @@ LogicalRules.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
+    if (this.config.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
+        return;
+    }
+    
     if (attachOrDetach) {
         this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
         this.controller.devices.on(test.device, "change:metrics:change", this._testRule);

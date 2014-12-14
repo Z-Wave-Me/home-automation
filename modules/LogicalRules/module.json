@@ -14,6 +14,8 @@
 	"defaults": {
 		"title": "Logical rules",
 		"description": "Logical rules allows to trigger scenes based on devices status.",
+		"triggerOnDevicesChange": true,
+		"eventSource": [],
 		"logicalOperator": "and",
 		"tests": [],
 		"action": {}
@@ -22,6 +24,19 @@
 		"title": "Select action condition",
 		"type": "object",
 		"properties": {
+			"triggerOnDevicesChange": {
+				"type": "boolean",
+				"default": true
+			},
+			"eventSource": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_toggleButton:deviceId",
+					"required": true
+				}
+			},
 			"logicalOperator": {
 				"type": "string",
 				"enum": ["and", "or"],
@@ -285,6 +300,16 @@
 	"options": {
 		"renderform": "true",
 		"fields": {
+			"triggerOnDevicesChange": {
+				"type": "checkbox",
+				"rightLabel": "Act on change of any device mentioned in Condition"
+			},
+			"eventSource": {
+				"label": "Act on scenes",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+			},
 			"logicalOperator": {
 				"label": "Boolean operator",
 				"type": "select"
