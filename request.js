@@ -19,7 +19,7 @@ function ZAutomationWebRequest() {
         'Content-Range',
         'Content-Type',
         'ETag',
-        'API-Version'
+        'API-Version',
     ];
     this.req = {};
     this.res = {
@@ -203,7 +203,10 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         headers: {
             "Content-Type": response.contentType,
             "API-version": version,
-            "Date": date.toUTCString()
+            "Date": date.toUTCString(),
+            "Access-Control-Allow-Headers": that.allow_headers.join(', '),
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE"
         }
     };
 }
