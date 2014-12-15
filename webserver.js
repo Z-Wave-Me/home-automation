@@ -100,7 +100,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: {
                     status: 'OK',
-                    localTime: c.toISOString()
+                    localTime: currentDateTime.toISOString()
                 },
                 code: 200
             };
