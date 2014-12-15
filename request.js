@@ -270,8 +270,17 @@ ZAutomationWebRequest.prototype.NotFound = function () {
 };
 
 ZAutomationWebRequest.prototype.CORSRequest = function () {
+    var allow_headers = [
+        'Accept-Ranges',
+        'Content-Encoding',
+        'Content-Length',
+        'Content-Range',
+        'Content-Type',
+        'ETag'
+    ];
+
     this.responseHeader('Access-Control-Allow-Origin', '*');
     this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
+    this.responseHeader('Access-Control-Allow-Headers', allow_headers.join(', '));
     this.res.status = 200;
 };
