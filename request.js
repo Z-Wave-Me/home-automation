@@ -20,6 +20,7 @@ function ZAutomationWebRequest() {
         'Content-Type',
         'ETag',
         'API-Version',
+        'Date'
     ];
     this.req = {};
     this.res = {
