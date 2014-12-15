@@ -205,9 +205,9 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
             "Content-Type": response.contentType,
             "API-version": version,
             "Date": date.toUTCString(),
-            "Access-Control-Allow-Headers": that.allow_headers.join(', '),
+            "Access-Control-Expose-Headers": that.allow_headers.join(', '),
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE"
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
         }
     };
 }
