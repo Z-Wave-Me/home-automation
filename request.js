@@ -52,7 +52,7 @@ ZAutomationWebRequest.prototype.responseHeader = function (name, value) {
 ZAutomationWebRequest.prototype.initResponse = function (response) {
     var that = this,
         reply,
-        version = "1.0.1",
+        version = "2.0.1",
         fields,
         object = {},
         data,
