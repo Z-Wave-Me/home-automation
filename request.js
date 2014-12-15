@@ -12,11 +12,20 @@ Copyright: (c) ZWave.Me, 2014
 // ----------------------------------------------------------------------------
 
 function ZAutomationWebRequest() {
+    this.allow_headers = [
+        'Accept-Ranges',
+        'Content-Encoding',
+        'Content-Length',
+        'Content-Range',
+        'Content-Type',
+        'ETag',
+        'API-Version'
+    ];
     this.req = {};
     this.res = {
         status: 501,
         headers: {
-            "api-version": "1.0.1",
+            "API-Version": "2.0.1",
             "Content-Type": "text/plain; charset=utf-8"
         },
         body: null
@@ -270,17 +279,9 @@ ZAutomationWebRequest.prototype.NotFound = function () {
 };
 
 ZAutomationWebRequest.prototype.CORSRequest = function () {
-    var allow_headers = [
-        'Accept-Ranges',
-        'Content-Encoding',
-        'Content-Length',
-        'Content-Range',
-        'Content-Type',
-        'ETag'
-    ];
 
     this.responseHeader('Access-Control-Allow-Origin', '*');
     this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    this.responseHeader('Access-Control-Allow-Headers', allow_headers.join(', '));
+    this.responseHeader('Access-Control-Allow-Headers', this.allow_headers.join(', '));
     this.res.status = 200;
 };
