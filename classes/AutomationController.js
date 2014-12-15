@@ -116,7 +116,7 @@ AutomationController.prototype.start = function () {
     ZAutomation = function() {
         return { status: 400, body: "Invalid ZAutomation request" };
     };
-	ws.allowExternalAccess("ZAutomation");
+    ws.allowExternalAccess("ZAutomation");
     
     // Run webserver
     console.log("Starting automation...");

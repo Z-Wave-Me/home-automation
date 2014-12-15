@@ -1385,7 +1385,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						}
 					};
 
-					var vDev = self.controller.devices.create({
+					var m_vDev = self.controller.devices.create({
 						deviceId: deviceNamePrefix + this.CC["ThermostatMode"], // this name is referenced again in SetPoint device!
 						defaults: defaults,
 						overlay: {},
@@ -1399,9 +1399,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						moduleId: self.id
 					});
 
-					if (vDev) {
+					if (m_vDev) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function () {
-							vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
+							m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
 						}, "value");
 					}
 				}
@@ -1419,7 +1419,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					var mode = withTempHeat ? MODE_HEAT : MODE_COOL,
 						DH = instance.ThermostatSetPoint.data[mode];
 
-					vDev = this.controller.devices.create({
+					var t_vDev = this.controller.devices.create({
 						deviceId: deviceNamePrefix + this.CC["ThermostatSetPoint"],
 						defaults: {
 							deviceType: "thermostat",
@@ -1445,9 +1445,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						moduleId: self.id
 					});
 
-					if (vDev) {
+					if (t_vDev) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
-							vDev.set("metrics:level", this.value);
+							t_vDev.set("metrics:level", this.value);
 						});
 					}
 				}
@@ -1465,7 +1465,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceType: 'toggleButton',
 				metrics: {
 					icon: 'alarm',
-					level: 'on',
+					level: 'off',
 					title: ''
 				}
 			};
