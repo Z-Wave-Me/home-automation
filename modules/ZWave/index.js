@@ -995,7 +995,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		// Ignore SwitchBinary if SwitchMultilevel exists
-		if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instanceCommandClasses[this.CC["SwitchMultilevel"]].data.supported.value) {
+		if (this.CC["SwitchBinary"] === commandClassId && in_array(instanceCommandClasses, this.CC["SwitchMultilevel"]) && instance.commandClasses[this.CC["SwitchMultilevel"]].data.supported.value) {
 			// console.log("Ignoring SwitchBinary due to SwitchMultilevel existence");
 			return;
 		}
@@ -1366,7 +1366,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			var MODE_OFF = 0, MODE_HEAT = 1, MODE_COOL = 2;
 
-			if (withMode) {
+			if (withMode && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatMode"])) {
 				var withModeOff = !!instance.ThermostatMode.data[MODE_OFF],
 					withModeHeat = !!instance.ThermostatMode.data[MODE_HEAT],
 					withModeCool = !!instance.ThermostatMode.data[MODE_COOL];
@@ -1407,7 +1407,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 			}
 
-			if (withTemp) {
+			if (withTemp && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatSetPoint"])) {
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL];
 
