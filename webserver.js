@@ -98,10 +98,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             var reply = {
                 error: null,
-                data: {
-                    status: 'OK',
-                    localTime: currentDateTime.toISOString()
-                },
+                data: 'OK',
                 code: 200
             };
         }
