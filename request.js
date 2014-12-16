@@ -12,11 +12,21 @@ Copyright: (c) ZWave.Me, 2014
 // ----------------------------------------------------------------------------
 
 function ZAutomationWebRequest() {
+    this.allow_headers = [
+        'Accept-Ranges',
+        'Content-Encoding',
+        'Content-Length',
+        'Content-Range',
+        'Content-Type',
+        'ETag',
+        'API-Version',
+        'Date'
+    ];
     this.req = {};
     this.res = {
         status: 501,
         headers: {
-            "api-version": "1.0.1",
+            "API-Version": "2.0.1",
             "Content-Type": "text/plain; charset=utf-8"
         },
         body: null
@@ -43,7 +53,7 @@ ZAutomationWebRequest.prototype.responseHeader = function (name, value) {
 ZAutomationWebRequest.prototype.initResponse = function (response) {
     var that = this,
         reply,
-        version = "1.0.1",
+        version = "2.0.1",
         fields,
         object = {},
         data,
@@ -194,7 +204,10 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         headers: {
             "Content-Type": response.contentType,
             "API-version": version,
-            "Date": date.toUTCString()
+            "Date": date.toUTCString(),
+            "Access-Control-Expose-Headers": that.allow_headers.join(', '),
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
         }
     };
 }
@@ -270,8 +283,9 @@ ZAutomationWebRequest.prototype.NotFound = function () {
 };
 
 ZAutomationWebRequest.prototype.CORSRequest = function () {
+
     this.responseHeader('Access-Control-Allow-Origin', '*');
     this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    this.responseHeader('Access-Control-Allow-Headers', 'Content-Type');
+    this.responseHeader('Access-Control-Allow-Headers', this.allow_headers.join(', '));
     this.res.status = 200;
 };
