@@ -47,9 +47,9 @@ HomeKitGate.prototype.init = function (config) {
                     this.update(c.aid, c.iid);
                 }                          
                                            
-                if (typeof c.events === "boolean") { 
+                if (typeof c.ev === "boolean") { 
                     // set event subscription state  
-                    r.events(c.aid, c.iid, c.events);
+                    r.events(c.aid, c.iid, c.ev);
                 }
             }, this);
             return null; // 204
@@ -85,18 +85,18 @@ HomeKitGate.prototype.init = function (config) {
 		
 		var m = self.mapping[vDev.id] = {};
 		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, deviceType, vDev.id);
-		
+
 		if (deviceType === "sensorMultilevel" && vDev.id.substring(0, 12) === "OpenWeather_") {
-			var serviceUUID = "00001001";
-		
+			var serviceUUID = "1001";
+
 			var service = accessory.addService(serviceUUID, "Temperature");
-			
+
 			m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 				get: function() { return vDev.get("metrics:level"); }
 			});
 		}
 		else if (deviceType == "sensorMultilevel") {
-			var serviceUUID = "00001002";
+			var serviceUUID = "1002";
 		
 			var service = accessory.addService(serviceUUID, "Multilevel Sensor");
 			
@@ -105,7 +105,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchBinary") {
-			var serviceUUID = HomeKit.Services.Lightbulb; //"00001003";
+			var serviceUUID = HomeKit.Services.Lightbulb;
 		
 			var service = accessory.addService(serviceUUID, "Binary Switch");
 			
@@ -115,7 +115,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
-			var serviceUUID = "00001004";
+			var serviceUUID = "1004";
 		
 			var service = accessory.addService(serviceUUID, "Multilevel Switch");
 			
@@ -128,7 +128,7 @@ HomeKitGate.prototype.init = function (config) {
 	}
 	
 	this.onDeviceAdded = function (vDev) {
-		console.log("added", vDev.id);
+		console.log("HK: added", vDev.id);
 		onDeviceAddedCore(vDev);
 		
 		// update device tree
@@ -136,7 +136,7 @@ HomeKitGate.prototype.init = function (config) {
 	};
 	
 	this.onDeviceRemoved = function (vDev) {
-		console.log("removed", vDev.id);
+		console.log("HK: removed", vDev.id);
 		var m = self.mapping[vDev.id];
 		if (m) {
 			var accessory = m.$accessory;
@@ -151,7 +151,7 @@ HomeKitGate.prototype.init = function (config) {
 	}
 	
 	this.onLevelChanged = function (vDev) {
-		console.log("updated", vDev.id);
+		console.log("HK: updated", vDev.id);
 		var m = self.mapping[vDev.id];
 		if (!m) return;
 		
