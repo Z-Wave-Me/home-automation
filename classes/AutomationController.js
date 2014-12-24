@@ -126,8 +126,8 @@ AutomationController.prototype.start = function () {
     // Run storage
     console.log("Starting storage...");
     ZAutomation.storage = new ZAutomationStorageWebRequest(this).handlerFunc();
-	ws.allowExternalAccess("ZAutomation.storage");
-    
+    ws.allowExternalAccess("ZAutomation.storage");
+
     // Notify core
     this.emit("core.start");
 };
