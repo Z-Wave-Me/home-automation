@@ -49,14 +49,19 @@ ZAutomationStorageWebRequest.prototype.uploadFileFunc = function () {
                 data: null,
                 code: 400
             },
-            extension = file.name.split('.').pop(),
-            fileName = 'storage-' + (+date / 1000).toFixed(0) + '.' + extension,
+            extension = file.name.split('.').pop().toLowerCase(),
+            fileName,
             type;
 
+        if (extension === 'jpg') {
+            extension = 'jpeg';
+        }
+        fileName = 'storage-' + (+date / 1000).toFixed(0) + '.' + extension;
+        
         if (self.allow_extensions.indexOf(extension) !== -1) {
-            type = extension !== 'jpg' ? 'image/' + extension : 'image/jpeg';
+            type = 'image/' + extension;
             file.type = type;
-            file.createAt = date.toJSON();
+            file.createdAt = date.toJSON();
 
             saveObject(fileName, file);
 
@@ -86,14 +91,14 @@ ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
         if (file && !ifNoneMatch) {
             self.res.headers = {
                 'Content-Type': file.type,
-                ETag: 'W/' + fileId + file.createAt,
+                ETag: 'W/' + fileId + file.createdAt,
                 'Cache-Control': 'public, max-age=31536000',
-                'Last-Modified': (new Date(file.createAt)).toUTCString(),
+                'Last-Modified': (new Date(file.createdAt)).toUTCString(),
                 'Access-Control-Expose-Headers': self.allow_headers.join(', ')
             };
             self.res.body = file.content;
             self.res.code = 200;
-        } else if (file && ifNoneMatch && self.req.headers['If-None-Match'] === 'W/' + fileId + file.createAt) {
+        } else if (file && ifNoneMatch && self.req.headers['If-None-Match'] === 'W/' + fileId + file.createdAt) {
             self.res = {
                 status: 304,
                 headers: {
