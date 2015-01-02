@@ -35,19 +35,21 @@
       if (config.instances.length > 0) {
         config.instances.forEach(function (instance) {
           // move title and description params
-          if (instance.params.hasOwnProperty('title') || instance.params.hasOwnProperty('description')) {
-            instance.title = instance.params.title;
-            instance.description = instance.params.description;
-            delete instance.params.title;
-            delete instance.params.description;
-          }
+          if (instance.params) {
+            if (instance.params.hasOwnProperty('title') || instance.params.hasOwnProperty('description')) {
+              instance.title = instance.params.title;
+              instance.description = instance.params.description;
+              delete instance.params.title;
+              delete instance.params.description;
+            }
 
-          // move status
-          if (instance.params.hasOwnProperty('status')) {
-            instance.active = instance.params.status === 'enable';
-            delete instance.params.status;
-          } else if (!instance.hasOwnProperty('active')) {
-            instance.active = true;
+            // move status
+            if (instance.params.hasOwnProperty('status')) {
+              instance.active = instance.params.status === 'enable';
+              delete instance.params.status;
+            } else if (!instance.hasOwnProperty('active')) {
+              instance.active = true;
+            }
           }
 
           // delete userView
