@@ -103,8 +103,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         }
 
-
-        this.controller.addNotification("debug", "Status report requested", "debug");
         this.initResponse(reply);
     },
     // Devices

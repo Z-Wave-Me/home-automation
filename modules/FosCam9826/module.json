@@ -1,0 +1,74 @@
+{
+    "singleton": false,
+    "dependencies": [],
+    "category": "surveillance",
+    "author": "Z-Wave.Me",
+    "homepage": "http://www.foscam.com/",
+    "icon": "9828_1.jpg",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "FosCam FI9828",
+        "description": "Support the FosCam Indoor Zoom Cameras (FI9826W)",
+	"url": "",
+	"doorDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "required": true
+            },
+            "user": {
+                "required": false
+            },
+            "password": {
+                "required": false
+            },
+            "doorDevices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+                    "required": false
+                }
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "url": {
+                "label": "Camera IP URL",
+				"helper": "in the format 'http://IPADDRESS:PORT'",                
+                "required": true
+            },
+            "user": {
+                "label": "Username",
+				"helper": "This is the username that was set up during camera configuration",
+                "required": false
+            },
+            "password": {
+                "label": "Password",
+				"helper": "This is the upassword that was set up during camera configuration",
+                "required": false
+            },
+            "doorDevices": {
+                "label": "Door device",
+                "fields": {
+                    "item": {
+			"type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+                    }
+                }
+            }
+        }
+    }
+}

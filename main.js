@@ -202,7 +202,7 @@ if (!config) {
         },
         {
             "id": "surveillance",
-            "name": "Video surevillance",
+            "name": "Video surveillance",
             "description": "Support for cameras",
             "icon": ""
         },

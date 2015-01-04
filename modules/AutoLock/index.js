@@ -1,11 +1,11 @@
 /*** AutoLock Z-Way Home Automation module *************************************
 
- Version: 1.0.0
+ Version: 1.1.0
  (c) Z-Wave.Me, 2014
 
  -----------------------------------------------------------------------------
  Author: Yurkin Vitaliy <aivs@z-wave.me>
- Description: Door/Window Sensor automatically closes lock when door is closed
+ Description: Door/Window Sensor automatically closes lock after delay when door is closed
 
 ******************************************************************************/
 
@@ -15,6 +15,9 @@
 function AutoLock (id, controller) {
     // Call superconstructor first (AutomationModule)
     AutoLock.super_.call(this, id, controller);
+
+    // Create instance variables
+    this.timer = null;
 };
 
 inherits(AutoLock, AutomationModule);
@@ -35,24 +38,45 @@ AutoLock.prototype.init = function (config) {
     // handler - it is a name of your function
     this.handler = function (vDev) {
         var nowSensorStatus = vDev.get("metrics:level");
+
+        if (self.timer) {
+            // Timer is set, so we destroy it
+            clearTimeout(self.timer);
+        }
+
         // Check if sensor is triggered
         if (lastSensorStatus !== nowSensorStatus) {
             console.log("----------------------------- AutoLock", self.config.BinarySensor, "=", nowSensorStatus);
+
+            // Clear delay if door opened
+            if (nowSensorStatus === "on") {
+                console.log("Clear delay");
+                clearTimeout(self.timer);
+            };
             // Close lock if sensor false
             if (nowSensorStatus === "off") {
-                self.controller.devices.get(self.config.DoorLock).performCommand("close");
+                // Start Timer
+                console.log("Start delay");
+                self.timer = setTimeout(function () {
+                    // Close lock 
+                    self.controller.devices.get(self.config.DoorLock).performCommand("close");
+                    // And clearing out this.timer variable
+                    self.timer = null;
+                }, self.config.delay*1000);
             }
             lastSensorStatus = nowSensorStatus;
         };
     };
 
     // Setup metric update event listener
-    // device.metricUpdated is a reserved zway word
     this.controller.devices.on(this.config.BinarySensor, 'change:metrics:level', this.handler);
 };
 
 AutoLock.prototype.stop = function () {
     AutoLock.super_.prototype.stop.call(this);
+
+    if (this.timer)
+        clearInterval(this.timer);
 
     this.controller.devices.off(this.config.BinarySensor, 'change:metrics:level', this.handler);
 };

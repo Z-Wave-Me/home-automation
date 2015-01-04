@@ -37,10 +37,12 @@ RoundRobinScenes.prototype.init = function (config) {
         defaults: {
             deviceType: "toggleButton",
             metrics: {
+                level: 'on', // it is always on, but usefull to allow bind
                 icon: '',
                 title: 'Round Robin Scene ' + this.id
             }
         },
+        overlay: {},
         handler: function () {
             self.currentSceneIndex++;
             self.currentSceneIndex %= self.config.scenes.length;
