@@ -111,7 +111,7 @@ HomeKitGate.prototype.init = function (config) {
 			
 			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
 				get: function() { return vDev.get("metrics:level") === "on"; },
-				set: function(value) { vDev.set("metrics:level", value ? "on" : "off"); }
+				set: function(value) { vDev.performCommand("on" : "off"); }
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
@@ -121,7 +121,7 @@ HomeKitGate.prototype.init = function (config) {
 			
 			m.level = service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
 				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; },
-				set: function(value) { vDev.set("metrics:level", value); }
+				set: function(value) { vDev.performCommand("exact", { level: value }); }
 			});
 		}
 		// todo
