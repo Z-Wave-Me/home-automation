@@ -106,7 +106,12 @@ ZWave.prototype.startBinding = function () {
 			}
 		});
 		
-		this.zway.discover();
+		try {
+			this.zway.discover();
+		} catch (e1) {
+			this.zway.stop();
+			throw e1;
+		}
 	} catch(e) {
 		this.controller.addNotification("critical", "Can not start Z-Wave binding: " + e.toString(), "z-wave");
 		this.zway = null;
@@ -539,6 +544,7 @@ ZWave.prototype.defineHandlers = function () {
 	this.CommunicationStatistics = function (zw) {
 		this.MAX_ARRAY_LENGTH = 30;
 
+		this.zw = zw;
 		this.zway = null;
 		this.zwayBinding = null;
 		this.devicesBindings = {};
@@ -572,6 +578,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.CommunicationStatistics.prototype.handler = function(type, args, self) {
+		if (type & args.self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		args.self.communicationStatistics[args.nodeId].push({
 			"date": (new Date()).getTime(),
 			"delivered": this.delivered.value,
@@ -886,18 +893,20 @@ ZWave.prototype.deadDetectionStop = function () {
 		}
 	} catch(e) {
 		// Z-Way already gone, skip deallocation
-		this.zway = null;
+		//this.zway = null;
 	}
 };
 
 ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	var self = this;
 	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) {
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
 			self.deadDetectionCheckDevice(self, arg);
 		}
 	});
 	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "failureCount", function(type, arg) {
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
 			self.deadDetectionCheckDevice(self, arg);
 		}
@@ -968,7 +977,7 @@ ZWave.prototype.gateDevicesStop = function () {
 		}
 	} catch(e) {
 		// Z-Way already gone, skip deallocation
-		this.zway = null;
+		//this.zway = null;
 	}
 };
 

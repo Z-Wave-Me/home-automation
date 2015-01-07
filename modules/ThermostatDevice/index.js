@@ -35,6 +35,7 @@ ThermostatDevice.prototype.init = function (config) {
         defaults: {
             deviceType: "thermostat",
             metrics: {
+		scaleTitle:  '°C',
                 level: 18,
                 min: 5,
                 max: 40,
