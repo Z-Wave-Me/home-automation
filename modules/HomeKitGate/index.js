@@ -111,7 +111,7 @@ HomeKitGate.prototype.init = function (config) {
 			
 			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
 				get: function() { return vDev.get("metrics:level") === "on"; },
-				set: function(value) { vDev.performCommand("on" : "off"); }
+				set: function(value) { vDev.performCommand(value ? "on" : "off"); }
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
