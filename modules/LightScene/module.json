@@ -5,7 +5,7 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -33,7 +33,7 @@
 							"required": true
 						},
 						"status": {
-							"type": "number",
+							"type": "integer",
 							"required": true,
 							"enum": ["off", "on"]
 						}
@@ -52,9 +52,17 @@
 							"required": true
 						},
 						"status": {
-							"required": true,
+							"type": "integer",
 							"minimum": 0,
-							"maximum": 99
+							"maximum": 99,
+							"required": true
+						},
+						"duration": {
+							"type": "integer",
+							"default": 0,
+							"minimum": 0,
+							"maximum": 127,
+							"required": true
 						}
 					}
 				}
@@ -106,8 +114,11 @@
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 							},
 							"status": {
-								"label": "State",
-								"type": "integer"
+								"label": "State"
+							},
+							"duration": {
+								"type": "integer",
+								"label": "Dimming duration in seconds"
 							}
 						}
 					}

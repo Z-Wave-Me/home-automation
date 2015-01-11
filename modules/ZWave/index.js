@@ -1020,11 +1020,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 		function compileTitle() {
 			var args = new Array();
-			if (vendorName) {
-				args.push(vendorName);
-			}
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
+			}
+			if (vendorName) {
+				args.push(vendorName);
 			}
 			return args.join(' ');
 		}
@@ -1114,6 +1114,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							}
 
 						}
+					} else if ("exactWithDuration" === command) {
+						cc.Set(args.level,args.duration);
 					}
 					// Commands for Blinds
 					else if ("stop" === command) {

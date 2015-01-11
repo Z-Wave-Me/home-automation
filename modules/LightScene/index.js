@@ -51,7 +51,12 @@ LightScene.prototype.init = function (config) {
             self.config.dimmers.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
-                    vDev.performCommand("exact", { level: devState.status });
+                    if (typeof devState.duration == 'undefined' || devState.duration <= 0) {
+                        vDev.performCommand("exact", { level: devState.status });
+                    }
+                    else {
+                        vDev.performCommand("exactWithDuration", { level: devState.status, duration: devState.duration });
+                    }
                 }
             });
             self.config.scenes.forEach(function(scene) {
