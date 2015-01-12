@@ -76,10 +76,10 @@ ThermostatDevice.prototype.checkTemp = function () {
     
     if (vDevSwitch && vDevSensor && vDev) {
         if ((vDevSensor.get('metrics:level') + this.config.hysteresis < vDev.get('metrics:level')) && (vDevSwitch.get('metrics:level') == "off" && this.config.heaton || vDevSwitch.get('metrics:level') == "on" && !this.config.heaton)) {
-            vDev.performCommand(this.config.heaton ? "on" : "off");
+            vDevSwitch.performCommand(this.config.heaton ? "on" : "off");
         }
         if ((vDevSensor.get('metrics:level') - this.config.hysteresis > vDev.get('metrics:level')) && (vDevSwitch.get('metrics:level') == "on" && this.config.heaton || vDevSwitch.get('metrics:level') == "off" && !this.config.heaton)) {
-            vDev.performCommand(this.config.heaton ? "off" : "on");
+            vDevSwitch.performCommand(this.config.heaton ? "off" : "on");
         }
     }
 }

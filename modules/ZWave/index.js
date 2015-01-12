@@ -1100,7 +1100,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						if (0 !== newVal % 10) {
 							newVal = Math.round(newVal / 10) * 10;
 						}
-					} else if ("exact" === command) {
+					} else if ("exact" === command || "exactSmooth" === command) {
 						newVal = parseInt(args.level, 10);
 						if (newVal < 0) {
 							newVal = 0;
@@ -1112,24 +1112,20 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							} else {
 								newVal = null;
 							}
-
 						}
-					} else if ("exactWithDuration" === command) {
-						cc.Set(args.level,args.duration);
-					}
-					// Commands for Blinds
-					else if ("stop" === command) {
+					} else if ("stop" === command) { // Commands for Blinds
 						cc.StopLevelChange();
-					}
-					else if ("startUp" === command) {
+					} else if ("startUp" === command) {
 						cc.StartLevelChange(0);
-					}
-					else if ("startDown" === command) {
+					} else if ("startDown" === command) {
 						cc.StartLevelChange(1);
 					}
 
 					if (0 === newVal || !!newVal) {
-						cc.Set(newVal);
+						if ("exactSmooth" === command)
+							cc.Set(newVal, args.duration);
+						else
+							cc.Set(newVal);
 					}
 				},
 				moduleId: self.id
