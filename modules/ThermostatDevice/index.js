@@ -51,11 +51,15 @@ ThermostatDevice.prototype.init = function (config) {
         moduleId: this.id
     });
     
-    this.controller.devices.on(this.config.sensor, 'change:metrics:level', this.checkTemp);
+    this.controller.devices.on(this.config.sensor, 'change:metrics:level', function() {
+    	this.checkTemp
+    });
 };
 
 ThermostatDevice.prototype.stop = function () {
-    this.controller.devices.off(this.config.sensor, 'change:metrics:level', this.checkTemp);
+    this.controller.devices.off(this.config.sensor, 'change:metrics:level', function() {
+    	this.checkTemp
+    });
 
     if (this.vDev) {
         this.controller.devices.remove(this.vDev.id);
