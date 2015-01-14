@@ -52,13 +52,15 @@ ThermostatDevice.prototype.init = function (config) {
     });
     
     this.controller.devices.on(this.config.sensor, 'change:metrics:level', function() {
-    	this.checkTemp
+    	self.checkTemp
     });
 };
 
 ThermostatDevice.prototype.stop = function () {
+    var self = this;
+
     this.controller.devices.off(this.config.sensor, 'change:metrics:level', function() {
-    	this.checkTemp
+    	self.checkTemp
     });
 
     if (this.vDev) {
