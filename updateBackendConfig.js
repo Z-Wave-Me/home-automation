@@ -167,7 +167,7 @@
               console.log("Changing ID in params (object) from " + obj[key] + " to " + getNewID(obj[key]));
               obj[key] = getNewID(obj[key]);
             }
-          } else if (obj[key].constructor === Array) {
+          } else if (obj[key].constructor && obj[key].constructor === Array) {
             fixArray(obj[key]);
           } else if (typeof obj[key] === "object") {
             fixObject(obj[key]);
