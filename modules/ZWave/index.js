@@ -41,6 +41,7 @@ function ZWave (id, controller) {
 		"Basic": 0x20,
 		"SwitchBinary": 0x25,
 		"SwitchMultilevel": 0x26,
+		"SwitchColor": 0x33,
 		"SceneActivation": 0x2b,
 		"AlarmSensor": 0x9c,
 		"SensorBinary": 0x30,
@@ -1136,6 +1137,146 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					vDev.set("metrics:level", this.value);
 				}, "value");
 			}
+		} else if (this.CC["SwitchColor"] === commandClassId && !self.controller.devices.get(vDevId)) {
+			var
+				COLOR_SOFT_WHITE = 0,
+				COLOR_COLD_WHITE = 1,
+				COLOR_RED = 2,
+				COLOR_GREEN = 3,
+				COLOR_BLUE = 4;
+
+			var haveRGB = cc.data && cc.data[COLOR_RED] && cc.data[COLOR_GREEN] && cc.data[COLOR_BLUE] && true;
+			
+			if (haveRGB && !self.controller.devices.get(vDevId + separ + "rgb")) {
+				var vDev_rgb = this.controller.devices.create({
+					deviceId: vDevId + separ + "rgb",
+					defaults: {
+						deviceType: "switchRGBW",
+						metrics: {
+							icon: 'multilevel',
+							title: compileTitle('Color', vDevIdNI + separ + vDevIdC),
+							color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
+							level: 'off'
+						}
+					},
+					overlay: {},
+					handler:  function (command, args) {
+						var color = {r: 0, g: 0, b: 0};
+						if (command === "on") {
+							color.r = color.g = color.b = 255;
+						} else if (command === "off") {
+							color.r = color.g = color.b = 0;
+						} else if (command === "exact") {
+							color.r = parseInt(args.red, 10);
+							color.g = parseInt(args.green, 10);
+							color.b = parseInt(args.blue, 10);
+						}
+						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
+					},
+					moduleId: this.id
+				});
+
+				function handleColor(type, arg) {
+					if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+						self.controller.devices.remove(vDevId + separ + 'rgb');
+					} else {
+						vDev_rgb.set("metrics:color", {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value});
+					}
+					
+					vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
+				}
+					
+				if (vDev_rgb) {
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_BLUE + ".level", handleColor, "value");
+				}
+			}
+
+			Object.keys(cc.data).forEach(function (colorId) {
+				colorId = parseInt(colorId, 10);
+				if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
+					var vDev = self.controller.devices.create({
+						deviceId: vDevId + separ + colorId,
+						defaults: {
+							deviceType: "switchMultilevel",
+							metrics: {
+								icon: 'multilevel',
+								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
+								level: 'off'
+							}
+						},
+						overlay: {},
+						handler: function(command, args) {
+							var newVal;
+							// up, down for Blinds
+							if ("on" === command || "up" === command) {
+								newVal = 255;
+							} else if ("off" === command || "down" === command) {
+								newVal = 0;
+							} else if ("min" === command) {
+								newVal = 10;
+							} else if ("max" === command || "upMax" === command) {
+								newVal = 99;
+							} else if ("increase" === command) {
+								newVal = this.metrics.level + 10;
+								if (0 !== newVal % 10) {
+									newVal = Math.round(newVal / 10) * 10;
+								}
+								if (newVal > 99) {
+									newVal = 99;
+								}
+
+							} else if ("decrease" === command) {
+								newVal = this.metrics.level - 10;
+								if (newVal < 0) {
+									newVal = 0;
+								}
+								if (0 !== newVal % 10) {
+									newVal = Math.round(newVal / 10) * 10;
+								}
+							} else if ("exact" === command || "exactSmooth" === command) {
+								newVal = parseInt(args.level, 10);
+								if (newVal < 0) {
+									newVal = 0;
+								} else if (newVal === 255) {
+									newVal = 255;
+								} else if (newVal > 99) {
+									if (newVal === 100) {
+										newVal = 99;
+									} else {
+										newVal = null;
+									}
+								}
+							} else if ("stop" === command) { // Commands for Blinds
+								cc.StopLevelChange(colorId);
+							} else if ("startUp" === command) {
+								cc.StartLevelChange(colorId, 0);
+							} else if ("startDown" === command) {
+								cc.StartLevelChange(colorId, 1);
+							}
+
+							if (0 === newVal || !!newVal) {
+								if ("exactSmooth" === command)
+									cc.Set(colorId, newVal, args.duration);
+								else
+									cc.Set(colorId, newVal);
+							}
+						},
+						moduleId: self.id
+					});
+
+					if (vDev) {
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, colorId + ".level", function(type) {
+							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+								self.controller.devices.remove(vDevId + separ + colorId);
+							} else {
+								vDev.set("metrics:level", this.value);
+							}
+						}, "value");
+					}
+				}
+			});
 		} else if (this.CC["SensorBinary"] === commandClassId) {
 			defaults = {
 				deviceType: 'sensorBinary',
