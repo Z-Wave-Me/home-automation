@@ -1,0 +1,23 @@
+{
+	"singleton" : false,
+	"dependencies" : [],
+	"category" : "notifications",
+	"author" : "Z-Wave.Me",
+	"homepage" : "http://razberry.z-wave.me",
+	"icon" : "",
+	"version" : "1.0.0",
+	"maturity" : "stable",
+	"repository" : {
+		"type" : "git",
+		"source" : "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults" : {
+		"title" : "Background Notification Listener",
+		"description" : "Creates a module that listens to the status of every device in the background. It sends notifications automatically if it has changed."
+	},
+	"schema" : {
+		"type" : "object",
+		"required" : false
+	},
+	"options" : {}
+}
