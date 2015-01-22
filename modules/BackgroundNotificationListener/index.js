@@ -3,7 +3,7 @@
 Version: 1.0.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
-Author: Niels Roche <nroche.z-wave@outlook.de>
+Author: Niels Roche <nir@zwave.eu>
 Description:
     Creates a module that listens to the status of every device in the background. 
     It sends notifications automatically if it has changed.
