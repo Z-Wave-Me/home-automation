@@ -307,8 +307,14 @@
 			"eventSource": {
 				"label": "Act on scenes",
 				"datasource": "namespaces",
-				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_toggleButton:deviceName"
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
+					}
+				}
 			},
 			"logicalOperator": {
 				"label": "Boolean operator",

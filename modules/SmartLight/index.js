@@ -97,7 +97,6 @@ SmartLight.prototype.init = function (config) {
             self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 0 });
             self.sensorEnable = 0;
 
-
             if (self.timerSmartLight) {
             // Timer is set, so we destroy it
             clearTimeout(self.timerSmartLight);

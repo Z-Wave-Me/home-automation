@@ -35,6 +35,7 @@ ThermostatDevice.prototype.init = function (config) {
         defaults: {
             deviceType: "thermostat",
             metrics: {
+		scaleTitle:  '°C',
                 level: 18,
                 min: 5,
                 max: 40,
@@ -50,11 +51,17 @@ ThermostatDevice.prototype.init = function (config) {
         moduleId: this.id
     });
     
-    this.controller.devices.on(this.config.sensor, 'change:metrics:level', this.checkTemp);
+    this.controller.devices.on(this.config.sensor, 'change:metrics:level', function() {
+    	self.checkTemp();
+    });
 };
 
 ThermostatDevice.prototype.stop = function () {
-    this.controller.devices.off(this.config.sensor, 'change:metrics:level', this.checkTemp);
+    var self = this;
+
+    this.controller.devices.off(this.config.sensor, 'change:metrics:level', function() {
+    	self.checkTemp();
+    });
 
     if (this.vDev) {
         this.controller.devices.remove(this.vDev.id);
@@ -75,10 +82,10 @@ ThermostatDevice.prototype.checkTemp = function () {
     
     if (vDevSwitch && vDevSensor && vDev) {
         if ((vDevSensor.get('metrics:level') + this.config.hysteresis < vDev.get('metrics:level')) && (vDevSwitch.get('metrics:level') == "off" && this.config.heaton || vDevSwitch.get('metrics:level') == "on" && !this.config.heaton)) {
-            vDev.performCommand(this.config.heaton ? "on" : "off");
+            vDevSwitch.performCommand(this.config.heaton ? "on" : "off");
         }
         if ((vDevSensor.get('metrics:level') - this.config.hysteresis > vDev.get('metrics:level')) && (vDevSwitch.get('metrics:level') == "on" && this.config.heaton || vDevSwitch.get('metrics:level') == "off" && !this.config.heaton)) {
-            vDev.performCommand(this.config.heaton ? "off" : "on");
+            vDevSwitch.performCommand(this.config.heaton ? "off" : "on");
         }
     }
 }
