@@ -1,16 +1,31 @@
 /*** Z-Way HA Controller class module *****************************************
 
-Version: 1.0.0
--------------------------------------------------------------------------------
-Author: Gregory Sitnin <sitnin@z-wave.me>
-Copyright: (c) ZWave.Me, 2013
+ Version: 1.0.0
+ -------------------------------------------------------------------------------
+ Author: Gregory Sitnin <sitnin@z-wave.me>
+ Copyright: (c) ZWave.Me, 2013
 
-******************************************************************************/
+ ******************************************************************************/
 
-function AutomationController () {
+function AutomationController() {
     AutomationController.super_.call(this);
-
+    this.allow_headers = [
+        'Accept-Ranges',
+        'Content-Encoding',
+        'Content-Length',
+        'Content-Range',
+        'Content-Type',
+        'ETag',
+        'API-Version',
+        'Date',
+        'Cache-Control',
+        'If-None-Match',
+        'Content-Language',
+        'Accept-Language'
+    ];
     this.config = config.controller || {};
+    this.availableLang = ['en', 'ru', 'de'];
+    this.defaultLang = 'en';
     this.locations = config.locations || [];
     this.profiles = config.profiles || [];
     this.vdevInfo = config.vdevInfo || {};
@@ -32,7 +47,7 @@ function AutomationController () {
 
 inherits(AutomationController, EventEmitter2);
 
-function wrap (self, func) {
+function wrap(self, func) {
     return function () {
         func.apply(self, arguments);
     };
@@ -42,7 +57,7 @@ AutomationController.prototype.init = function () {
     var self = this;
 
 
-    function pushNamespaces () {
+    function pushNamespaces() {
         self.generateNamespaces(function (namespaces) {
             ws.push({
                 type: 'me.z-wave.namespaces.update',
@@ -87,6 +102,12 @@ AutomationController.prototype.init = function () {
     });
 };
 
+AutomationController.prototype.setDefaultLang = function (lang) {
+    var self = this;
+
+    self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
+};
+
 AutomationController.prototype.saveConfig = function () {
     var cfgObject = {
         "controller": this.config,
@@ -112,17 +133,17 @@ AutomationController.prototype.start = function () {
     // Run all modules
     console.log("Loading modules...");
     this.instantiateModules();
-	
-    ZAutomation = function() {
-        return { status: 400, body: "Invalid ZAutomation request" };
+
+    ZAutomation = function () {
+        return {status: 400, body: "Invalid ZAutomation request"};
     };
     ws.allowExternalAccess("ZAutomation");
-    
+
     // Run webserver
     console.log("Starting automation...");
     ZAutomation.api = new ZAutomationAPIWebRequest(this).handlerFunc();
     ws.allowExternalAccess("ZAutomation.api");
-    
+
     // Run storage
     console.log("Starting storage...");
     ZAutomation.storage = new ZAutomationStorageWebRequest(this).handlerFunc();
@@ -136,7 +157,7 @@ AutomationController.prototype.stop = function () {
     // Remove API webserver
     console.log("Stopping automation...");
     ZAutomation = null;
-    
+
     ws.revokeExternalAccess("ZAutomation");
     ws.revokeExternalAccess("ZAutomation.api");
     ws.revokeExternalAccess("ZAutomation.storage");
@@ -182,12 +203,12 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
         _st;
-    
+
     _st = fs.stat(folder + moduleClassName);
     if (_st && "file" === _st.type) {
         return; // skip files in modules folders
     }
-    
+
     _st = fs.stat(moduleMetaFilename);
 
     if (!_st || "file" !== _st.type || 2 > _st.size) {
@@ -223,13 +244,15 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
 
 AutomationController.prototype.instantiateModule = function (instanceModel) {
     var self = this,
-        module = _.find(self.modules, function (module) { return instanceModel.moduleId === module.meta.id; }),
+        module = _.find(self.modules, function (module) {
+            return instanceModel.moduleId === module.meta.id;
+        }),
         instance = null;
 
     if (!module) {
         self.addNotification("error", "Can not instantiate module: module not found in the list of all modules", "core");
     }
-    
+
     if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
@@ -257,85 +280,89 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
             console.log(e.stack);
             return null; // not loaded
         }
-        
+
         self.registerInstance(instance);
         return instance;
     }
 };
 
-AutomationController.prototype.loadModule = function(module, rootModule) {
-        if (rootModule && rootModule === module) {
-                console.log("Circular dependencies detected!");
+AutomationController.prototype.loadModule = function (module, rootModule) {
+    if (rootModule && rootModule === module) {
+        console.log('Circular dependencies detected!');
+        return false;
+    }
+
+    if (module.failed) return false; // already tried to load, and failed
+    if (this.loadedModules.indexOf(module) >= 0) return true; // already loaded
+
+    rootModule = rootModule || module;
+
+    if (module.meta.dependencies instanceof Array) {
+        for (var i in module.meta.dependencies) {
+            var dep = module.meta.dependencies[i];
+
+            var depModule = this.modules[dep];
+            if (!depModule) {
+                this.addNotification("error", "Dependency " + dep + " not found for module " + module.meta.id, "core");
+                module.failed = true;
                 return false;
-        }
-        
-        if (module.failed) return false; // already tried to load, and failed
-        if (this.loadedModules.indexOf(module) >= 0) return true; // already loaded
-        
-        rootModule = rootModule || module;
-
-        if (module.meta.dependencies instanceof Array) {
-                for (var i in module.meta.dependencies) {
-                        var dep = module.meta.dependencies[i];
-                        
-                        var depModule = this.modules[dep];
-                        if (!depModule) {
-                                this.addNotification("error", "Dependency " + dep + " not found for module " + module.meta.id, "core");
-                                module.failed = true;
-                                return false;
-                        }
-                        
-                        if (!this.loadModule(depModule, rootModule)) {
-                                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not loaded", "core");
-                                module.failed = true;
-                                return false;
-                        }
-                        
-                        if (!this.loadedModules.some(function(x) { return x.meta.id === dep })) {
-                                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not instanciated", "core");
-                                module.failed = true;
-                                return false;                          
-                        }
-                }
-        }
-
-        console.log("Loading module " + module.meta.id + " from " + module.location);
-        try {
-            executeFile(module.location + "/index.js");
-        } catch (e) {
-            this.addNotification("error", "Can not load " + module.meta.id + ": " + e.toString(), "core");
-            console.log(e.stack);
-            module.failed = true;
-            return false; // skip this modules
-        }
-        
-        if (!_module) {
-            this.addNotification("error", "Invalid module " + module.meta.id, "core");
-            module.failed = true;
-            return false; // skip this modules
-        }
-        
-        // Monkey-patch module with basePath method
-        _module.prototype.moduleBasePath = function () {
-            return module.location;
-        };
-
-        module.classRef = _module;
-        
-        _module = undefined;
-
-        // Loading instances
-        
-        var count = 0;
-        this.instances.filter(function(x) { return x.moduleId === module.meta.id; }).forEach(function(x) {
-            if (this.instantiateModule(x) !== null) {
-                count++;
             }
-        }, this);
 
-        if (count)
-            this.loadedModules.push(module);
-        return true;
+            if (!this.loadModule(depModule, rootModule)) {
+                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not loaded", "core");
+                module.failed = true;
+                return false;
+            }
+
+            if (!this.loadedModules.some(function (x) {
+                    return x.meta.id === dep
+                })) {
+                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not instanciated", "core");
+                module.failed = true;
+                return false;
+            }
+        }
+    }
+
+    console.log("Loading module " + module.meta.id + " from " + module.location);
+    try {
+        executeFile(module.location + "/index.js");
+    } catch (e) {
+        this.addNotification("error", "Can not load " + module.meta.id + ": " + e.toString(), "core");
+        console.log(e.stack);
+        module.failed = true;
+        return false; // skip this modules
+    }
+
+    if (!_module) {
+        this.addNotification("error", "Invalid module " + module.meta.id, "core");
+        module.failed = true;
+        return false; // skip this modules
+    }
+
+    // Monkey-patch module with basePath method
+    _module.prototype.moduleBasePath = function () {
+        return module.location;
+    };
+
+    module.classRef = _module;
+
+    _module = undefined;
+
+    // Loading instances
+
+    var count = 0;
+    this.instances.filter(function (x) {
+        return x.moduleId === module.meta.id;
+    }).forEach(function (x) {
+        if (this.instantiateModule(x) !== null) {
+            count++;
+        }
+    }, this);
+
+    if (count)
+        this.loadedModules.push(module);
+    return true;
 }
 
 AutomationController.prototype.instantiateModules = function () {
@@ -344,7 +371,9 @@ AutomationController.prototype.instantiateModules = function () {
 
     this.loadedModules = [];
 
-    Object.getOwnPropertyNames(this.modules).forEach(function(m) { this.loadModule(this.modules[m]); }, this);
+    Object.getOwnPropertyNames(this.modules).forEach(function (m) {
+        this.loadModule(this.modules[m]);
+    }, this);
 };
 
 AutomationController.prototype.moduleInstance = function (instanceId) {
@@ -374,7 +403,9 @@ AutomationController.prototype.createInstance = function (reqObj) {
     var self = this,
         id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
         instance = null,
-        module = _.find(self.modules, function (module) { return module.meta.id === reqObj.moduleId; }),
+        module = _.find(self.modules, function (module) {
+            return module.meta.id === reqObj.moduleId;
+        }),
         result;
 
     if (!!module) {
@@ -414,7 +445,9 @@ AutomationController.prototype.stopInstance = function (instance) {
 
 AutomationController.prototype.reconfigureInstance = function (id, instanceObject) {
     var register_instance = this.registerInstances[id],
-        instance = _.find(this.instances, function (model) { return model.id === id; }),
+        instance = _.find(this.instances, function (model) {
+            return model.id === id;
+        }),
         index = this.instances.indexOf(instance),
         config = instanceObject.params,
         result;
@@ -449,7 +482,7 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         this.emit('core.instanceReconfigured', id)
     } else {
         result = null;
-        this.emit('core.error', new Error("Cannot reconfigure instance with id " + id ));
+        this.emit('core.error', new Error("Cannot reconfigure instance with id " + id));
     }
 
     this.saveConfig();
@@ -480,7 +513,9 @@ AutomationController.prototype.removeInstance = function (id) {
 AutomationController.prototype.deleteInstance = function (id) {
     this.removeInstance(id);
 
-    this.instances = this.instances.filter(function(model) { return id !== model.id; })
+    this.instances = this.instances.filter(function (model) {
+        return id !== model.id;
+    })
     this.saveConfig();
     this.emit('core.instanceDeleted', id);
 };
@@ -545,7 +580,7 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
     if (typeof callback === 'function') {
         callback(true);
     }
-    
+
     this.saveNotifications();
 };
 
@@ -600,7 +635,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
         if (typeof callback === 'function') {
             callback(false);
         }
-        this.emit('core.error', new Error("Cannot remove location "+id+" - doesn't exist"));
+        this.emit('core.error', new Error("Cannot remove location " + id + " - doesn't exist"));
     }
 };
 
@@ -619,7 +654,7 @@ AutomationController.prototype.updateLocation = function (id, title, callback) {
         if (typeof callback === 'function') {
             callback(false);
         }
-        this.emit('core.error', new Error("Cannot update location "+id+" - doesn't exist"));
+        this.emit('core.error', new Error("Cannot update location " + id + " - doesn't exist"));
     }
 };
 
@@ -678,8 +713,8 @@ AutomationController.prototype.getListProfiles = function () {
 
 AutomationController.prototype.getProfile = function (id) {
     return _.find(this.profiles, function (profile) {
-        return profile.id === parseInt(id);
-    }) || null;
+            return profile.id === parseInt(id);
+        }) || null;
 };
 
 AutomationController.prototype.createProfile = function (object) {
@@ -747,7 +782,9 @@ AutomationController.prototype.removeProfile = function (profileId) {
 AutomationController.prototype.generateNamespaces = function (callback) {
     var that = this,
         devices = that.devices.models,
-        deviceTypes = _.uniq(_.map(devices, function (device) { return device.toJSON().deviceType; }));
+        deviceTypes = _.uniq(_.map(devices, function (device) {
+            return device.toJSON().deviceType;
+        }));
 
     that.namespaces = [];
     deviceTypes.forEach(function (type) {
@@ -825,54 +862,30 @@ AutomationController.prototype.getListModulesCategories = function (id) {
     return result;
 };
 
-AutomationController.prototype.createNamespace = function (reqObj) {
+AutomationController.prototype.getModuleData = function (moduleId) {
+    var self = this,
+        defaultLang = self.defaultLang,
+        metaStringify = JSON.stringify(self.modules[moduleId].meta),
+        languageFile,
+        data;
 
-    if (reqObj.hasOwnProperty('id') && reqObj.hasOwnProperty('params')) {
-        var namespace = reqObj;
-
-        this.namespaces.push(namespace);
-        return namespace;
+    try  {
+        languageFile = fs.loadJSON('modules/' + moduleId + '/lang/' + defaultLang + '.json')
+    } catch (e) {
+        languageFile = null;
     }
 
-};
-
-
-AutomationController.prototype.deleteNamespace = function (id) {
-    var result = null,
-        namespace,
-        index;
-
-    id = id || null;
-
-    if (id && this.getListNamespaces(id)) {
-        this.namespaces = this.namespaces.filter(function (namespace) {
-            return namespace.id !== parseInt(id);
+    if (languageFile !== null) {
+        Object.keys(languageFile).forEach(function (key) {
+            var regExp = new RegExp('__' + key + '__', 'g');
+            if (languageFile[key]) {
+                metaStringify = metaStringify.replace(regExp, languageFile[key]);
+            }
         });
-    }
-};
-
-
-AutomationController.prototype.pullFile = function (id) {
-    var file;
-    if (this.files.hasOwnProperty('id')) {
-        file = this.files[id];
-        file["blob"] = loadObject(id);
+        data = JSON.parse(metaStringify);
     } else {
-        file = null;
+        data = self.modules[moduleId].meta;
     }
-    return file;
-};
 
-AutomationController.prototype.pushFile = function (file, callback) {
-    var id = String((new Date()).getTime());
-    this.files[id] = {
-        name: file.name,
-        type: file.type,
-        id: id
-    }
-    this.saveFiles();
-    saveObject(id, file);
-    if (typeof callback === 'function') {
-        callback(this.files[id]);
-    }
+    return data;
 };

@@ -464,7 +464,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             module = null;
 
         Object.keys(that.controller.modules).sort().forEach(function (className) {
-            module = that.controller.modules[className].meta;
+            module = that.controller.getModuleData(className);
             module.className = className;
             if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
                 module.created = true;
@@ -487,10 +487,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (!that.controller.modules.hasOwnProperty(moduleId)) {
                 reply.code = 404;
-                reply.error = "Instance " + moduleId + " not found";
+                reply.error = 'Instance ' + moduleId + ' not found';
             } else {
                 reply.code = 200;
-                reply.data = that.controller.modules[moduleId];
+                reply.data = that.controller.getModuleData(moduleId);
             }
 
             this.initResponse(reply);

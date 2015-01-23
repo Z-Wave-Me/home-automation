@@ -94,7 +94,7 @@ ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
                 ETag: 'W/' + fileId + file.createdAt,
                 'Cache-Control': 'public, max-age=31536000',
                 'Last-Modified': (new Date(file.createdAt)).toUTCString(),
-                'Access-Control-Expose-Headers': self.allow_headers.join(', ')
+                'Access-Control-Expose-Headers': self.controller.allow_headers.join(', ')
             };
             self.res.body = file.content;
             self.res.code = 200;
@@ -104,7 +104,7 @@ ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
                 headers: {
                     "API-Version": "2.0.1",
                     'Content-Type': file.type,
-                    'Access-Control-Expose-Headers': self.allow_headers.join(', '),
+                    'Access-Control-Expose-Headers': self.controller.allow_headers.join(', '),
                     'Access-Control-Allow-Origin': '*'
                 },
                 body: ''

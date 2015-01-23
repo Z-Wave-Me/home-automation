@@ -1,29 +1,18 @@
 /*** Main Automation storage module *****************************************
 
-Version:
--------------------------------------------------------------------------------
-Author: Stanislav Morozov <r3b@seoarmy.ru>
-Copyright: (c) ZWave.Me, 2014
+ Version:
+ -------------------------------------------------------------------------------
+ Author: Stanislav Morozov <r3b@seoarmy.ru>
+ Copyright: (c) ZWave.Me, 2014
 
-******************************************************************************/
+ ******************************************************************************/
 
 // ----------------------------------------------------------------------------
 // --- ZAutomationWebRequest
 // ----------------------------------------------------------------------------
 
 function ZAutomationWebRequest() {
-    this.allow_headers = [
-        'Accept-Ranges',
-        'Content-Encoding',
-        'Content-Length',
-        'Content-Range',
-        'Content-Type',
-        'ETag',
-        'API-Version',
-        'Date',
-        'Cache-Control',
-        'If-None-Match'
-    ];
+
     this.req = {};
     this.res = {
         status: 501,
@@ -111,7 +100,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
                 tempData.forEach(function (model) {
                     object = {};
                     Object.keys(model).forEach(function (key) {
-                        if (fields.indexOf(key)!== -1) {
+                        if (fields.indexOf(key) !== -1) {
                             object[key] = model[key];
                         }
                     });
@@ -197,29 +186,30 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
     };
 
     if (pager) {
-        reply.pager = pager
+        reply.pager = pager;
     }
 
     that.res = {
         status: response.code,
-        body : JSON.stringify(reply),
+        body: JSON.stringify(reply),
         headers: {
-            "Content-Type": response.contentType,
-            "API-version": version,
-            "Date": date.toUTCString(),
-            "Access-Control-Expose-Headers": that.allow_headers.join(', '),
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS"
+            'Content-Type': response.contentType,
+            'API-version': version,
+            'Date': date.toUTCString(),
+            'Access-Control-Expose-Headers': that.controller.allow_headers.join(', '),
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+            'Content-Language': that.controller.defaultLang
         }
     };
-}
+};
 
 ZAutomationWebRequest.prototype.dispatchRequest = function (method, url) {
     return this.NotImplementedReply;
 }
 
 ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
-    var now = new Date(),
+    var self = this,
         requestProcessorFunc,
         bodyLength,
         response = {
@@ -234,17 +224,19 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     this.req.method = request.method;
     this.req.query = request.query || {};
     this.req.body = request.body || request.data;
-    this.req.headers = request.headers;
-    this.emulateHTTP = false;
-    this.emulateHTTPMethod = null;
-    //
+    this.req.headers = request.headers || {};
+
+    // set defaultLang
+    if (self.req.query.hasOwnProperty('lang') || self.req.headers['Accept-Language']) {
+        self.controller.setDefaultLang(self.req.query.lang || self.req.headers['Accept-Language']);
+    }
 
     if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && request.headers['Content-Type'].indexOf('application/json') !== -1) {
         try {
             this.req.reqObj = JSON.parse(this.req.body);
         } catch (ex) {
             response.code = 500;
-            response.error = "JSON Parse Error [Syntax Error]";
+            response.error = 'JSON Parse Error [Syntax Error]';
         }
     }
 
@@ -256,18 +248,17 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
         this.initResponse(response);
     }
 
-
     // Log request reply
-    bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
+    //bodyLength = "string" === typeof this.res.body ? this.res.body.length : "?";
 
     // Return to the z-way-http
     return this.res;
-}
+};
 
 ZAutomationWebRequest.prototype.NotImplementedReply = function () {
     this.res = {
         status: 501,
-        body : "Not implemented, yet",
+        body: "Not implemented, yet",
         headers: {
             "Content-Type": "text/plain; charset=utf-8"
         }
@@ -281,13 +272,13 @@ ZAutomationWebRequest.prototype.NotFound = function () {
             "Content-Type": "text/plain; charset=utf-8"
         },
         body: "Not Found"
-    }
+    };
 };
 
 ZAutomationWebRequest.prototype.CORSRequest = function () {
 
     this.responseHeader('Access-Control-Allow-Origin', '*');
-    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-    this.responseHeader('Access-Control-Allow-Headers', this.allow_headers.join(', '));
+    this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+    this.responseHeader('Access-Control-Allow-Headers', this.controller.allow_headers.join(', '));
     this.res.status = 200;
 };
