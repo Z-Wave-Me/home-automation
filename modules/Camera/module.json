@@ -138,14 +138,14 @@
             },
             "password": {
                 "label": "Password for HTTP authentication",
-		"helper": "Leave empty if camera is not protected by a password",
+		        "helper": "Leave empty if camera is not protected by a password",
                 "required": false
             },
             "doorDevices": {
-                "label": "Door device",
+                "label": "__door_device__",
                 "fields": {
                     "item": {
-			"type": "select",
+			        "type": "select",
                         "datasource": "namespaces",
                         "field": "optionLabels",
                         "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
