@@ -464,7 +464,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             module = null;
 
         Object.keys(that.controller.modules).sort().forEach(function (className) {
-            module = that.controller.modules[className].getData();
+            module = that.controller.getModuleData(className);
             module.className = className;
             if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
                 module.created = true;

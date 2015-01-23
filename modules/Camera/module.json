@@ -132,8 +132,8 @@
                 "required": false
             },
             "user": {
-                "label": "Username for HTTP authentication",
-		"helper": "Leave empty if camera is not protected by a password",
+                "label": "__username_basic_http__",
+		        "helper": "Leave empty if camera is not protected by a password",
                 "required": false
             },
             "password": {
