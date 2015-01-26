@@ -13,11 +13,58 @@
 	},
 	"defaults" : {
 		"title" : "Background Notification Listener",
-		"description" : "Creates a module that listens to the status of every device in the background. It sends notifications automatically if it has changed."
+		"description" : "Creates a module that listens to the status of every device in the background. It sends notifications automatically if it has changed.",
+		"monitorDevices": [],
+		"monitorDeviceTypes": []
 	},
-	"schema" : {
-		"type" : "object",
-		"required" : false
+	"schema": {
+		"type": "object",
+		"properties": {
+			"monitorDevices": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
+					"required": false
+				}
+			},
+			"monitorDeviceTypes": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": ["all devices","switchBinary","switchMultilevel","switchControl","sensorBinary","sensorMultilevel","sensorMultiline","battery","thermostat","fan","doorlock"],
+					"required": false
+				}
+			}
+		},
+		"required": false
 	},
-	"options" : {}
+	"options": {
+		"fields": {
+			"monitorDevices": {
+				"label": "Devices to be monitored",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
+					}
+				}
+			},
+			"monitorDeviceTypes": {
+				"label": "Device types to be monitored",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": ["all device types","Switch Binary", "Switch Multilevel","Switch Control","Sensor Binary","Sensor Multilevel","Sensor Multiline","Battery","Thermostat","Fan","Doorlock"]
+					}
+				}
+			}
+		}
+	}
 }
