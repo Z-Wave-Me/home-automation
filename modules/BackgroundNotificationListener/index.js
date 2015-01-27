@@ -32,7 +32,6 @@ BackgroundNotificationListener.prototype.init = function (config) {
     var self = this;
 
     this.writeNotification = function (vDev) {
-        
         var devType = vDev.get('deviceType'),
             devName = vDev.get('metrics:title'),
             probeTitle = vDev.get('metrics:probeTitle'),
@@ -56,12 +55,35 @@ BackgroundNotificationListener.prototype.init = function (config) {
         }
         
     };
+   
+    // Setup metric update event listener
+    // monitor different devices
+    self.config.monitorDevices.forEach(function(x) {
+        self.controller.devices.on(x,'change:metrics:level', self.writeNotification);
+    });
     
-    this.controller.devices.on('change:metrics:level', this.writeNotification);
+    // monitor different device types
+    self.config.monitorDeviceTypes.forEach( function(devType) {
+        self.deviceCollector(devType).forEach( function(x) {
+            self.controller.devices.on(x.id,'change:metrics:level', self.writeNotification);
+        });
+    });
 
 };
 
 BackgroundNotificationListener.prototype.stop = function () {
+    var self = this;
+
+    // Setup metric update event listener
+    self.config.monitorDevices.forEach(function(x) {
+        self.controller.devices.off(x,'change:metrics:level', self.writeNotification);
+    });
+
+    self.config.monitorDeviceTypes.forEach( function(devType) {
+       self.deviceCollector(devType).forEach( function(x) {
+            self.controller.devices.off(x.id,'change:metrics:level', self.writeNotification);
+        });
+    });
 
     BackgroundNotificationListener.super_.prototype.stop.call(this);
 };
@@ -69,3 +91,17 @@ BackgroundNotificationListener.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+BackgroundNotificationListener.prototype.deviceCollector = function(deviceType){
+    var allDevices = this.controller.devices.models;
+    var filteredDevices = [];
+
+    for( var i = 0; i < allDevices.length; i++) {
+       
+        if(allDevices[i].get('deviceType') == deviceType) {
+            filteredDevices.push(allDevices[i]);
+        }
+    }
+
+    return filteredDevices;
+};
