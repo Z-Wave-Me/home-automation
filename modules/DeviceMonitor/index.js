@@ -1,4 +1,4 @@
-/*** BackgroundNotificationListener Z-Way HA module *******************************************
+/*** DeviceMonitor Z-Way HA module *******************************************
 
 Version: 1.0.0
 (c) Z-Wave.Me, 2015
@@ -13,21 +13,21 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function BackgroundNotificationListener (id, controller) {
+function DeviceMonitor (id, controller) {
     // Call superconstructor first (AutomationModule)
-    BackgroundNotificationListener.super_.call(this, id, controller);
+    DeviceMonitor.super_.call(this, id, controller);
 }
 
-inherits(BackgroundNotificationListener, AutomationModule);
+inherits(DeviceMonitor, AutomationModule);
 
-_module = BackgroundNotificationListener;
+_module = DeviceMonitor;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-BackgroundNotificationListener.prototype.init = function (config) {
-    BackgroundNotificationListener.super_.prototype.init.call(this, config);
+DeviceMonitor.prototype.init = function (config) {
+    DeviceMonitor.super_.prototype.init.call(this, config);
 
     var self = this;
 
@@ -71,7 +71,7 @@ BackgroundNotificationListener.prototype.init = function (config) {
 
 };
 
-BackgroundNotificationListener.prototype.stop = function () {
+DeviceMonitor.prototype.stop = function () {
     var self = this;
 
     // Setup metric update event listener
@@ -85,23 +85,26 @@ BackgroundNotificationListener.prototype.stop = function () {
         });
     });
 
-    BackgroundNotificationListener.super_.prototype.stop.call(this);
+    DeviceMonitor.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-BackgroundNotificationListener.prototype.deviceCollector = function(deviceType){
+DeviceMonitor.prototype.deviceCollector = function(deviceType){
     var allDevices = this.controller.devices.models;
     var filteredDevices = [];
-
-    for( var i = 0; i < allDevices.length; i++) {
-       
-        if(allDevices[i].get('deviceType') == deviceType) {
-            filteredDevices.push(allDevices[i]);
+    
+    if(deviceType == 'all'){
+        return allDevices;
+    } else {   
+        for( var i = 0; i < allDevices.length; i++) {
+           
+            if(allDevices[i].get('deviceType') == deviceType) {
+                filteredDevices.push(allDevices[i]);
+            }
         }
+        return filteredDevices;
     }
-
-    return filteredDevices;
 };

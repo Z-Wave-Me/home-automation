@@ -1,5 +1,5 @@
 {
-	"singleton" : false,
+	"singleton" : true,
 	"dependencies" : [],
 	"category" : "notifications",
 	"author" : "Z-Wave.Me",
@@ -12,8 +12,8 @@
 		"source" : "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults" : {
-		"title" : "Background Notification Listener",
-		"description" : "Creates a module that listens to the status of every device in the background. It sends notifications automatically if it has changed.",
+		"title" : "Device Monitor",
+		"description" : "Creates an instance that monitors the status of every choosen device or device type. It sends notifications automatically if something has changed.",
 		"monitorDevices": [],
 		"monitorDeviceTypes": []
 	},
@@ -34,7 +34,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": ["all devices","switchBinary","switchMultilevel","switchControl","sensorBinary","sensorMultilevel","sensorMultiline","battery","thermostat","fan","doorlock"],
+					"enum": ["all","switchBinary","switchMultilevel","switchControl","sensorBinary","sensorMultilevel","sensorMultiline","battery","thermostat","fan","doorlock"],
 					"required": false
 				}
 			}
