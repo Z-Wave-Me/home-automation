@@ -38,22 +38,43 @@ DeviceMonitor.prototype.init = function (config) {
             scaleUnit = vDev.get('metrics:scaleTitle'),
             lvl = vDev.get('metrics:level');
 
-        if(devType === 'switchBinary') {
-            self.controller.addNotification('info', 'Device "' + devName + '" has switched "' + lvl + '".', 'device');
-        } 
-        else if(devType === 'switchMultilevel') {
-            self.controller.addNotification('info', 'The level of device "' + devName + '" has updated to "' + lvl + '".', 'device');
-        } 
-        else if(devType === 'sensorBinary') {
-            self.controller.addNotification('info', 'Sensor "' + devName + '" has switched "' + lvl + '".', 'device');
-        } 
-        else if(devType === 'sensorMultilevel') {
-            self.controller.addNotification('info', 'Sensor "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
-        } 
-        else {
-            self.controller.addNotification('info', 'Device "' + devName + '" has changed metrics.', 'device');
+        // depending on device type choose the correct notification
+        switch(devType) {
+            case 'switchBinary':
+                self.controller.addNotification('info', 'Device "' + devName + '" has switched "' + lvl + '".', 'device');
+                break;
+            case 'switchMultilevel':
+                self.controller.addNotification('info', 'The level of device "' + devName + '" has updated to "' + lvl + '".', 'device');
+                break;
+            case 'switchControl':
+                self.controller.addNotification('info', 'Device "' + devName + '" has switched "' + lvl + '".', 'device');
+                break;
+            case 'sensorBinary':
+                self.controller.addNotification('info', 'Sensor "' + devName + '" has switched "' + lvl + '".', 'device');
+                break;
+            case 'sensorMultilevel':
+                self.controller.addNotification('info', 'Sensor "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
+                break;
+            case 'sensorMultiline':
+                //should be expanded
+                self.controller.addNotification('info', 'Multiline Sensor "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
+                break;
+            case 'battery':
+                self.controller.addNotification('info', 'Battery "' + devName + '" - Level has changed.', 'device');
+                break;
+            case 'thermostat':
+                self.controller.addNotification('info', 'Thermostat "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
+                break;
+            case 'fan':
+                self.controller.addNotification('info', 'Fan "' + devName + '" metrics has changed - "' + lvl + '".', 'device');
+                break;
+            case 'doorlock':
+                self.controller.addNotification('info', 'Door "' + devName + '" - lock status has changed.', 'device');
+                break;
+            default:
+                self.controller.addNotification('info', 'Device "' + devName + '" has changed metrics or status.', 'device');
+                break;
         }
-        
     };
    
     // Setup metric update event listener
@@ -74,7 +95,6 @@ DeviceMonitor.prototype.init = function (config) {
 DeviceMonitor.prototype.stop = function () {
     var self = this;
 
-    // Setup metric update event listener
     self.config.monitorDevices.forEach(function(x) {
         self.controller.devices.off(x,'change:metrics:level', self.writeNotification);
     });
@@ -93,18 +113,17 @@ DeviceMonitor.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 DeviceMonitor.prototype.deviceCollector = function(deviceType){
-    var allDevices = this.controller.devices.models;
+    var allDevices = this.controller.devices;
     var filteredDevices = [];
     
     if(deviceType == 'all'){
         return allDevices;
     } else {   
-        for( var i = 0; i < allDevices.length; i++) {
-           
-            if(allDevices[i].get('deviceType') == deviceType) {
-                filteredDevices.push(allDevices[i]);
-            }
-        }
-        return filteredDevices;
-    }
+        
+        filteredDevices = allDevices.filter(function (vDev){
+            return vDev.get('deviceType') === deviceType;
+        });        
+
+        return filteredDevices;  
+    }      
 };
