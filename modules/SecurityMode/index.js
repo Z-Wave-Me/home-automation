@@ -51,6 +51,9 @@ SecurityMode.prototype.init = function (config) {
                     title: 'SecurityMode ' + this.id
                 }
             },
+            overlay: {
+            	deviceType: "switchBinary"
+        	},
             handler: function(command, args) {
                 this.set("metrics:level", command);
             },
