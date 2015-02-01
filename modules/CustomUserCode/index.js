@@ -40,9 +40,13 @@ CustomUserCode.prototype.init = function (config) {
     if(self.timer) {
 	clearTimeout(self.timer);
     }
-    self.timer = setTimeout(function() {
+    if(self.config.delay > 0) {
+	self.timer = setTimeout(function() {
+	    self.timeoutHandler();
+	}, self.config.delay*1000);
+    } else {
 	self.timeoutHandler();
-    }, self.config.delay*1000);
+    }
     
 };
 
