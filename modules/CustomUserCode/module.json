@@ -22,6 +22,10 @@
         "properties": {
             "customCode": {
                 "type": "string"
+	    },
+	    "delay": {
+                "type": "integer",
+                "minimum": 0
             }
         },
         "required": false
@@ -33,7 +37,11 @@
                 "type": "textarea",
                 "label": "Your JavaScript code:",
 		        "cols": 40
-            }
+            },
+            "delay": {
+                "label": "Delay in seconds",
+                "type": "integer"
+            }	    
         }
     }
 }
