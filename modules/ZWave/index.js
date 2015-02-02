@@ -43,6 +43,7 @@ function ZWave (id, controller) {
 		"SwitchMultilevel": 0x26,
 		"SwitchColor": 0x33,
 		"SceneActivation": 0x2b,
+		"Alarm": 0x71,
 		"AlarmSensor": 0x9c,
 		"SensorBinary": 0x30,
 		"SensorMultilevel": 0x31,
@@ -579,7 +580,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.CommunicationStatistics.prototype.handler = function(type, args, self) {
-		if (type & args.self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		if (type === args.self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		args.self.communicationStatistics[args.nodeId].push({
 			"date": (new Date()).getTime(),
 			"delivered": this.delivered.value,

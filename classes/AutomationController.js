@@ -32,7 +32,7 @@ function AutomationController() {
     this.instances = config.instances || [];
     this.modules_categories = config.modules_categories || [];
     this.namespaces = namespaces || [];
-    this.registerInstances = [];
+    this.registerInstances = {};
     this.files = files || {};
 
     this.modules = {};

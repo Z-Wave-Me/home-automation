@@ -1,6 +1,6 @@
 /*** SecurityMode Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.1.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -51,13 +51,14 @@ SecurityMode.prototype.init = function (config) {
                     title: 'SecurityMode ' + this.id
                 }
             },
+            overlay: {},
             handler: function(command, args) {
                 this.set("metrics:level", command);
             },
             moduleId: this.id
         });
 
-    self.attachDetach(this.vDev.id, true);
+    self.attachDetach({device: this.vDev.id}, true);
 
     this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
@@ -74,7 +75,7 @@ SecurityMode.prototype.stop = function () {
     var self = this;
 
     if (this.vDev) {
-        self.attachDetach(this.vDev.id, true);
+        self.attachDetach(this.vDev.id, false);
     }
     
     this.config.tests.forEach(function(test) {
@@ -157,25 +158,25 @@ SecurityMode.prototype.testRule = function (tree) {
             });
         };
 
-        tree.action.switches.forEach(function(devState) {
+        tree.action.switches && tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand(devState.status);
             }
         });
-        tree.action.dimmers.forEach(function(devState) {
+        tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand("exact", { level: devState.status });
             }
         });
-        tree.action.locks.forEach(function(devState) {
+        tree.action.locks && tree.action.locks.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand(devState.status);
             }
         });
-        tree.action.scenes.forEach(function(scene) {
+        tree.action.scenes && tree.action.scenes.forEach(function(scene) {
             var vDev = self.controller.devices.get(scene);
             if (vDev) {
                 vDev.performCommand("on");
