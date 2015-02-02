@@ -1,5 +1,5 @@
 {
   "door_device": "Дверной замок",
-  "username_basic_http": "Пользователь для http-авторизации"
-  "__username_basic_http_helper__": "Оставьте поле пустым, если камера не защищена паролем"
+  "username_basic_http": "Пользователь для http-авторизации",
+  "username_basic_http_helper": "Оставьте поле пустым, если камера не защищена паролем"
 }
