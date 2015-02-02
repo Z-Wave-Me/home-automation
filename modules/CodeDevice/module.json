@@ -171,7 +171,8 @@
 
 			"setterOn_switchBinary": {
 				"label": "Code for action On",
-				"placeholder": "somefunction()",
+				"placeholder": "somefunction(%%)",
+				"helper": "%% will represent value",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
@@ -187,7 +188,7 @@
 			"getter_switchBinary": {
 				"label": "Code to get value",
 				"placeholder": "somefunction()",
-				"helper": "Should return \"on\"/\"off\" values",
+				"helper": "Should return \"on\" or \"off\" value",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
