@@ -133,7 +133,7 @@
             },
             "user": {
                 "label": "__username_basic_http__",
-		        "helper": "Leave empty if camera is not protected by a password",
+		"helper": "__username_basic_http_helper__",
                 "required": false
             },
             "password": {
