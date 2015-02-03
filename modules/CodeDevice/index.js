@@ -49,9 +49,7 @@ CodeDevice.prototype.init = function (config) {
     }
     
     var defaults = {
-        deviceType: deviceType,
         metrics: {
-            icon: icon,
             title: 'Code device ' + this.id
         }
     };
@@ -66,7 +64,12 @@ CodeDevice.prototype.init = function (config) {
     var vDev = self.controller.devices.create({
         deviceId: "Code_Device_" + deviceType + "_" + this.id,
         defaults: defaults,
-        overlay: {},
+        overlay: {
+            deviceType: deviceType,
+            metrics: {
+                icon: icon
+            }
+        },
         handler: function (command, args) {
             var vDevType = deviceType;
 
