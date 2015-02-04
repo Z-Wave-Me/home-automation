@@ -1,0 +1,56 @@
+{
+    "dependencies": [],
+    "singleton": false,
+    "category": "environment",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "Extended Weather Informer",
+        "description": "__m_descr__",
+        "units": "celsius",
+	"city": "",
+	"country": ""
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "city": {
+                "type": "string",
+                "required": true
+            },
+            "country": {
+                "type": "string",
+                "required": true
+            },
+            "units": {
+                "type": "select",
+		"enum": ["celsius", "fahrenheit"],
+                "required": true
+            }
+        },
+        "required": true
+    },
+    "options": {
+        "fields": {
+            "city": {
+                "label": "__city__",
+		        "placeholder": "__city_ph__"
+            },
+            "country": {
+                "label": "__country__",
+		        "placeholder": "__country_ph__"
+            },
+            "units": {
+                "label": "__unit__",
+                "optionLabels": ["°C", "°F"]
+            }
+        }
+    }
+}
