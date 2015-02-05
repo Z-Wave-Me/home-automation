@@ -12,7 +12,7 @@
     },
     "defaults": {
         "title": "Yandex Probki",
-        "description": "Traffic Jam provided by Yandex.ru",
+        "description": "__description__",
 	    "city": ""
     },
     "schema": {

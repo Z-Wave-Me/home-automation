@@ -13,7 +13,7 @@
 	},
 	"defaults" : {
 		"title" : "Device Monitor",
-		"description" : "Creates an instance that monitors the status of every choosen device or device type. It sends notifications automatically if something has changed.",
+		"description" : "__m_descr__",
 		"monitorDevices": [],
 		"monitorDeviceTypes": []
 	},
@@ -44,7 +44,7 @@
 	"options": {
 		"fields": {
 			"monitorDevices": {
-				"label": "Devices to be monitored",
+				"label": "__dev_label__",
 				"fields": {
 					"item": {
 						"type": "select",
@@ -55,13 +55,13 @@
 				}
 			},
 			"monitorDeviceTypes": {
-				"label": "Device types to be monitored",
+				"label": "__devT_label__",
 				"fields": {
 					"item": {
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": ["all device types","Switch Binary", "Switch Multilevel","Switch Control","Sensor Binary","Sensor Multilevel","Sensor Multiline","Battery","Thermostat","Fan","Doorlock"]
+						"optionLabels": ["__all__","Switch Binary", "Switch Multilevel","Switch Control","Sensor Binary","Sensor Multilevel","Sensor Multiline","__battery__","Thermostat","__fan__","__doorlock__"]
 					}
 				}
 			}

@@ -1,0 +1,8 @@
+{
+  "description": "Wetter Informant bereitgestellt durch OpenWeatherMap.org",
+  "units": "Einheiten",
+  "country": "Land",
+  "country_placeholder": "Deutschland",
+  "city": "Stadt",
+  "city_placeholder": "Berlin"
+}
