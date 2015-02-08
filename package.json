@@ -1,20 +1,21 @@
 {
   "name": "Z-Wave",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "ZWay Home Automation Engine Server",
-  "dependencies": {
-    "bower": "~1.3.x",
-    "chai": "^1.10.0"
-  },
   "devDependencies": {
-    "mocha": "~1.14.0",
-    "request": "~2.42.x",
-    "should": ">=2.1.0",
-    "underscore": "latest"
+    "mocha": "~2.1.x",
+    "request": "~2.51.x",
+    "underscore": "latest",
+    "chai": "^1.10.0",
+    "jsdoc": "^3.3.0-beta1",
+    "jscs": "^1.11.0"
   },
   "scripts": {
     "build": "./node_modules/.bin/gulp",
-    "test": "./node_modules/.bin/gulp mocha"
+    "jshint": "jshint __tests__/* core/*",
+    "jscs": "jscs __tests__/* core/*",
+    "test": "npm run jshint && npm run jscs && mocha -b -R spec test/*",
+    "doc": "rm -rf ./doc && jsdoc core/* -d doc"
   },
   "repository": {
     "type": "git",

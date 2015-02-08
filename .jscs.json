@@ -38,8 +38,14 @@
   "requireCapitalizedConstructors": true,
   "safeContextKeyword": "self",
   "disallowYodaConditions": true,
+  "validateJSDoc": {
+    "checkParamNames": true,
+    "requireParamTypes": true,
+    "checkRedundantParams": true
+  },
   "excludeFiles": [
     "node_modules/**",
-    "htdocs/bower_components/**"
+    "lib/**",
+    "storage/**"
   ]
 }

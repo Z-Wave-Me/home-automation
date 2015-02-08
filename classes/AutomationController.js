@@ -639,12 +639,15 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, callback) {
+AutomationController.prototype.updateLocation = function (id, title, icon, callback) {
     var locations = this.locations.filter(function (location) {
         return location.id === id;
     });
     if (locations.length > 0) {
         this.locations[this.locations.indexOf(locations[0])].title = title;
+        if (typeof icon === 'string' && icon.length > 0) {
+            this.locations[this.locations.indexOf(locations[0])].icon = icon;
+        }
         if (typeof callback === 'function') {
             callback(this.locations[this.locations.indexOf(locations[0])]);
         }
@@ -869,10 +872,14 @@ AutomationController.prototype.getModuleData = function (moduleId) {
         languageFile,
         data;
 
-    try  {
-        languageFile = fs.loadJSON('modules/' + moduleId + '/lang/' + defaultLang + '.json')
+    try {
+        languageFile = fs.loadJSON('modules/' + moduleId + '/lang/' + defaultLang + '.json');
     } catch (e) {
-        languageFile = null;
+        try {
+            languageFile = fs.loadJSON('modules/' + moduleId + '/lang/en.json');
+        } catch (e) {
+            languageFile = null;
+        }
     }
 
     if (languageFile !== null) {

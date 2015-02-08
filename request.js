@@ -206,7 +206,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
 
 ZAutomationWebRequest.prototype.dispatchRequest = function (method, url) {
     return this.NotImplementedReply;
-}
+};
 
 ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     var self = this,
@@ -225,13 +225,14 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     this.req.query = request.query || {};
     this.req.body = request.body || request.data;
     this.req.headers = request.headers || {};
+    var contentType = request.headers['content-type'] || request.headers['Content-Type'] || request.headers['Content-type'];
 
     // set defaultLang
     if (self.req.query.hasOwnProperty('lang') || self.req.headers['Accept-Language']) {
         self.controller.setDefaultLang(self.req.query.lang || self.req.headers['Accept-Language']);
     }
 
-    if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && request.headers['Content-Type'].indexOf('application/json') !== -1) {
+    if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && contentType.toLowerCase().indexOf('application/json') !== -1) {
         try {
             this.req.reqObj = JSON.parse(this.req.body);
         } catch (ex) {
