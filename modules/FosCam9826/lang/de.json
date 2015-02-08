@@ -1,0 +1,10 @@
+{
+	"m_descr":"Ünterstützung der Indoor Zoom Kameras (FI9826W)",
+	"ip":"Kamera IP-Adresse",
+	"h_ip":"Beispielformat: 'http://IPADDRESS:PORT'",
+	"user":"Benutzername",
+	"h_user":"Sie benötigen den Benutzernamen, den Sie in der Kamerakonfiguration angegeben haben.",
+	"pw":"Password",
+	"h_pw":"Sie benötigen das Password, das Sie in der Kamerakonfiguration angegeben haben.",
+	"door_dev":"Türsensor"
+}

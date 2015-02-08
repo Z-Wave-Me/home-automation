@@ -1,0 +1,9 @@
+{
+	"m_descr":"Dieses Modul erstellt eine Instanz, welche ausgewählte Geräte oder Gerätetypen überwacht. Die Zustandsänderung der überwachten Geräte wird im Eventmonitor angezeigt.",
+	"dev_label":"Geräte die überwacht werden sollen",
+	"devT_label":"Gerätetypen die überwacht werden sollen",
+	"all":"alle Gerätetypen",
+	"battery":"Batterie",
+	"fan":"Ventilator",
+	"doorlock":"Türschloss"
+}

@@ -13,7 +13,7 @@
     },
     "defaults": {
         "title": "Weather Informer",
-        "description": "Weather informer provided by OpenWeatherMap.org",
+        "description": "__description__",
         "units": "celsius",
 	"city": "",
 	"country": ""
@@ -40,15 +40,15 @@
     "options": {
         "fields": {
             "city": {
-                "label": "City",
-		"placeholder": "Moscow"
+                "label": "__city__",
+		"placeholder": "__city_placeholder__"
             },
             "country": {
-                "label": "Country",
-		"placeholder": "Russia"
+                "label": "__country__",
+		"placeholder": "__country_placeholder__"
             },
             "units": {
-                "label": "Units",
+                "label": "__units__",
                 "optionLabels": ["°C", "°F"]
             }
         }
