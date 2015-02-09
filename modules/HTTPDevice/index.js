@@ -173,7 +173,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
             method: this.config.method,
             async: true,
             error: function(response) {
-                self.controller.addNotification("error", "Can not make request: ", response.statusText, "module", "HTTPDevice", "__nt_errHTTP_req__");
+                self.controller.addNotification("error", "Can not make request: ", response.statusText, "module", "HTTPDevice", "nt_errHTTP_req");
             }
         });
     } else if (selfValue !== null) {

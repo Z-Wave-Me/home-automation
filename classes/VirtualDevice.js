@@ -240,7 +240,7 @@ _.extend(VirtualDevice.prototype, {
             try {
                 return this.handler.apply(this, arguments);
             } catch(e) {
-                this.controller.addNotification("error", "Error during perform command execution: ", e.toString(), "module", "VirtualDevice", "__nt_errCmd_perform__");
+                this.controller.addNotification("error", "Error during perform command execution: ", e.toString(), "module", "VirtualDevice", "nt_errCmd_perform");
                 console.log(e.stack);
             }
         }

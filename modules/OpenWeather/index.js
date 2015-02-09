@@ -84,11 +84,11 @@ OpenWeather.prototype.fetchWeather = function(instance) {
                 self.vDev.set("metrics:level", temp);
                 self.vDev.set("metrics:icon", icon);
             } catch (e) {
-                self.controller.addNotification("error", "Can not parse weather information ", "", "module", "OpenWeather", "__nt_ow_errParse__");
+                self.controller.addNotification("error", "Can not parse weather information ", "", "module", "OpenWeather", "nt_ow_errParse");
             }
         },
         error: function() {
-            self.controller.addNotification("error", "Can not fetch weather information ", "", "module", "OpenWeather", "__nt_ow_errFetch__");
+            self.controller.addNotification("error", "Can not fetch weather information ", "", "module", "OpenWeather", "nt_ow_errFetch");
         }
     });
 };

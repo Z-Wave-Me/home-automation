@@ -94,11 +94,11 @@ OpenWeatherExtended.prototype.fetchExtendedWeather = function(instance) {
                 self.vDev.set("metrics:country", country);
                 self.vDev.set("metrics:flag", flag);
             } catch (e) {
-                self.controller.addNotification("error", "Can not parse weather information ", "", "module", "OpenWeatherExtended", "__nt_ow_errParse__");
+                self.controller.addNotification("error", "Can not parse weather information ", "", "module", "OpenWeatherExtended", "nt_ow_errParse");
             }
         },
         error: function() {
-            self.controller.addNotification("error", "Can not fetch weather information ", "", "module", "OpenWeatherExtended", "__nt_ow_errFetch__");
+            self.controller.addNotification("error", "Can not fetch weather information ", "", "module", "OpenWeatherExtended", "nt_ow_errFetch");
         }
     });
 };
