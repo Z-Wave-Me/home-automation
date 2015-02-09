@@ -115,7 +115,7 @@ ZWave.prototype.startBinding = function () {
 			throw e1;
 		}
 	} catch(e) {
-		this.controller.addNotification("critical", "Can not start Z-Wave binding: " + e.toString(), "z-wave");
+		this.controller.addNotification("critical", "Can not start Z-Wave binding: ", e.toString(), "z-wave", "Z-Wave Binding", "__nt_zb_errStart_binding__");
 		this.zway = null;
 		return;
 	}
@@ -918,10 +918,10 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			self.controller.addNotification("error", "Connection lost to Z-Wave device ID " + nodeId.toString(10), "connection");
+			self.controller.addNotification("error", "Connection lost to Z-Wave device ID: ", nodeId.toString(10), "connection", "Z-Wave Binding", "__nt_zb_errConct_dev_lost__");
 		}
 	} else {
-		self.controller.addNotification("notification", "Z-Wave device ID " + nodeId.toString(10) + " is back to life", "connection");
+		self.controller.addNotification("notification", "Z-Wave device ID is back to life: [DEVICEID] = ", nodeId.toString(10), "connection", "Z-Wave Binding", "__nt_zb_errConct_dev_btl__");
 	}
 };
 
@@ -1676,7 +1676,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		}
 	} catch (e) {
-		controller.addNotification("error", "Can not create vDev based on " + nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(), "core");
+		controller.addNotification("error", "Can not create vDev based on ", nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(), "core", "Z-Wave Binding", "__nt_zb_errCreate_vDev__");
 		console.log(e.stack);
 	}
 };

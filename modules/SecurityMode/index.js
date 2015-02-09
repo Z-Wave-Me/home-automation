@@ -104,7 +104,7 @@ SecurityMode.prototype.attachDetach = function (test, attachOrDetach) {
     var vDev = this.controller.devices.get(test.device);
     
     if (!vDev) {
-        this.controller.addNotification("error", "Can not get vDev " + test.device, "module");
+        this.controller.addNotification("error", "Can not get vDev ", test.device, "module", "SecurityMode", "__nt_sm_err_get_dev__");
         return;
     }
     

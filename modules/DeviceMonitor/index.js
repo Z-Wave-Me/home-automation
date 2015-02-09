@@ -32,7 +32,8 @@ DeviceMonitor.prototype.init = function (config) {
     var self = this;
 
     this.writeNotification = function (vDev) {
-        var devType = vDev.get('deviceType'),
+        var devId = vDev.get('id'),
+            devType = vDev.get('deviceType'),
             devName = vDev.get('metrics:title'),
             probeTitle = vDev.get('metrics:probeTitle'),
             scaleUnit = vDev.get('metrics:scaleTitle'),
@@ -41,38 +42,21 @@ DeviceMonitor.prototype.init = function (config) {
         // depending on device type choose the correct notification
         switch(devType) {
             case 'switchBinary':
-                self.controller.addNotification('info', 'Device "' + devName + '" has switched "' + lvl + '".', 'device');
-                break;
-            case 'switchMultilevel':
-                self.controller.addNotification('info', 'The level of device "' + devName + '" has updated to "' + lvl + '".', 'device');
-                break;
             case 'switchControl':
-                self.controller.addNotification('info', 'Device "' + devName + '" has switched "' + lvl + '".', 'device');
-                break;
             case 'sensorBinary':
-                self.controller.addNotification('info', 'Sensor "' + devName + '" has switched "' + lvl + '".', 'device');
+            case 'fan':
+            case 'doorlock':
+            case 'switchMultilevel':
+            case 'battery':
+                self.controller.addNotification('info', "Sensor or Device status has changed - [DEVICETYPE] :: [DEVICE] :: [LEVEL] = ", devType + ' :: ' + devName + ' :: ' + lvl, 'device', devId, '__nt_dm_change_metric__');
                 break;
             case 'sensorMultilevel':
-                self.controller.addNotification('info', 'Sensor "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
-                break;
             case 'sensorMultiline':
-                //should be expanded
-                self.controller.addNotification('info', 'Multiline Sensor "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
-                break;
-            case 'battery':
-                self.controller.addNotification('info', 'Battery "' + devName + '" - Level has changed.', 'device');
-                break;
             case 'thermostat':
-                self.controller.addNotification('info', 'Thermostat "' + devName + '" has updated "' + probeTitle + '" to "' + lvl + ' ' + scaleUnit + '".', 'device');
-                break;
-            case 'fan':
-                self.controller.addNotification('info', 'Fan "' + devName + '" metrics has changed - "' + lvl + '".', 'device');
-                break;
-            case 'doorlock':
-                self.controller.addNotification('info', 'Door "' + devName + '" - lock status has changed.', 'device');
+                self.controller.addNotification('info', "Sensor status has changed - [DEVICETYPE] :: [DEVICE] :: [MEASUREMENT] :: [LEVEL] = ", devType + ' :: ' + devName + ' :: ' + probeTitle + ' :: ' + lvl + ' ' + scaleUnit, 'device', devId, '__nt_dm_change_multi_metrics__');
                 break;
             default:
-                self.controller.addNotification('info', 'Device "' + devName + '" has changed metrics or status.', 'device');
+                self.controller.addNotification('info', 'Device has changed metrics or status - [DEVICETYPE] :: [DEVICE] = ', devType + ' :: ' + devName, 'device', devId, '__nt_dm_change_metrics_unknown__');
                 break;
         }
     };
