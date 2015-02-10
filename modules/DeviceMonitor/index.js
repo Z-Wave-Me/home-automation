@@ -48,15 +48,30 @@ DeviceMonitor.prototype.init = function (config) {
             case 'doorlock':
             case 'switchMultilevel':
             case 'battery':
-                self.controller.addNotification('info', "Sensor or Device status has changed - ", devType + ' :: ' + devName + ' :: ' + lvl, 'device', devId, 'nt_dm_change_metric');
+                var values = devType + ' :: ' + devName + ' :: ' + lvl,
+                    message = {
+                    "en":"Sensor or Device status has changed - " + values,
+                    "de":"Der Status des folgenden Sensors oder Gerätes hat sich verändert - " + values
+                };
+                self.controller.addNotification('info', message, 'device', devId);
                 break;
             case 'sensorMultilevel':
             case 'sensorMultiline':
             case 'thermostat':
-                self.controller.addNotification('info', "Sensor status has changed - ", devType + ' :: ' + devName + ' :: ' + probeTitle + ' :: ' + lvl + ' ' + scaleUnit, 'device', devId, 'nt_dm_change_multi_metrics');
+                var values = devType + ' :: ' + devName + ' :: ' + probeTitle + ' :: ' + lvl + ' ' + scaleUnit,
+                    message = {
+                    "en":"Sensor status has changed - " + values,
+                    "de":"Der Status des folgenden Sensors hat sich verändert - " + values
+                };
+                self.controller.addNotification('info', message, 'device', devId);
                 break;
             default:
-                self.controller.addNotification('info', 'Device has changed metrics or status - ', devType + ' :: ' + devName, 'device', devId, 'nt_dm_change_metrics_unknown');
+                var values = devType + ' :: ' + devName,
+                    message = {
+                    "en":"Device has changed metrics or status - " + values,
+                    "de":"Der Status des folgenden Gerätes hat sich verändert - " + values
+                };
+                self.controller.addNotification('info', message, 'device', devId);
                 break;
         }
     };

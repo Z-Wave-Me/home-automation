@@ -178,7 +178,13 @@ AutomationController.prototype.stop = function () {
 AutomationController.prototype.restart = function () {
     this.stop();
     this.start();
-    this.addNotification("warning", "Automation Controller is restarted ", "", "core", "AutomationController", "nt_ac_restart");
+
+    var message = {
+        "en":"Automation Controller is restarted.",
+        "de":"Der Automation Controller wurde neu gestartet."
+    }; 
+
+    this.addNotification("warning", message, "core", "AutomationController");
 };
 
 AutomationController.prototype.loadModules = function (callback) {
@@ -219,7 +225,13 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
     try {
         var moduleMeta = fs.loadJSON(moduleMetaFilename);
     } catch (e) {
-        self.addNotification("error", "Can not load modules.json from ", moduleMetaFilename + ": " + e.toString(), "core", "AutomationController", "nt_ac_errLoad_modjson");
+        var values = moduleMetaFilename + ": " + e.toString(),
+            message = {
+            "en":"Can not load modules.json from " + values,
+            "de":"modules.json kann nicht geladen werden. Modul: " + values
+        };
+
+        self.addNotification("error", message, "core", "AutomationController");
         console.log(e.stack);
         return; // skip this modules
     }
@@ -250,14 +262,23 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         instance = null;
 
     if (!module) {
-        self.addNotification("error", "Can not instantiate module: module not found in the list of all modules ", "", "core", "AutomationController", "nt_ac_errInit_modules_not_found");
+        var message = {
+            "en":"Can not instantiate module: module not found in the list of all modules.",
+            "de":"Das Modul kann nicht instanziiert werden: Das Modul wurde in der Modulliste nicht gefunden."
+        };
+        self.addNotification("error", message, "core", "AutomationController");
     }
 
     if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
         } catch (e) {
-            self.addNotification("error", "Can not instantiate module ", ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core", "AutomationController", "nt_ac_errInit_module");
+            var values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(),
+                message = {
+                "en":"Can not instantiate module: " + values,
+                "de":"Das Modul kann nicht instanziiert werden: " + values
+            };
+            self.addNotification("error", message, "core", "AutomationController");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -276,7 +297,12 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         try {
             instance.init(instanceModel.params);
         } catch (e) {
-            self.addNotification("error", "Can not instantiate module ", ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core", "AutomationController", "nt_ac_errInit_module");
+            var values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(),
+                message = {
+                "en":"Can not instantiate module: " + values,
+                "de":"Das Modul kann nicht instanziiert werden: " + values
+            };
+            self.addNotification("error", message, "core", "AutomationController");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -300,16 +326,25 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     if (module.meta.dependencies instanceof Array) {
         for (var i in module.meta.dependencies) {
             var dep = module.meta.dependencies[i];
+            var values = dep + " :: " + module.meta.id;
 
             var depModule = this.modules[dep];
             if (!depModule) {
-                this.addNotification("error", "Dependency not found for module: [DEPENDENCY] :: [MODULE] = ", dep + " :: " + module.meta.id, "core", "AutomationController", "nt_ac_errDep_not_found");
+                var message = {
+                    "en":"Dependency not found for module: [MODUL]::[DEP] = " + values,
+                    "de":"Die Dependency wurde für das Modul nicht gefunden: [MODUL]::[DEP] = " + values
+                };
+                this.addNotification("error", message, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
 
             if (!this.loadModule(depModule, rootModule)) {
-                this.addNotification("error", "Failed to load module because dependency was not loaded: [MODULE] :: [DEPENDENCY] = ", module.meta.id + " :: " + dep, "core", "AutomationController", "nt_ac_errDep_not_loaded");
+                var message = {
+                    "en":"Failed to load module because dependency was not loaded: [MODULE]::[DEP] = " + values,
+                    "de":"Das Modul kann nicht geladen werden, da folgende Dependency nicht geladen wurde: [MODUL]::[DEP] = " + values
+                };
+                this.addNotification("error", message, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
@@ -317,7 +352,11 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
             if (!this.loadedModules.some(function (x) {
                     return x.meta.id === dep
                 })) {
-                this.addNotification("error", "Failed to load module because dependency was not instanciated: [MODULE] :: [DEPENDENCY] = ", module.meta.id + " :: " + dep, "core", "AutomationController", "nt_ac_errDep_not_initiated");
+                var message = {
+                    "en":"Failed to load module because dependency was not instanciated: [MODULE]::[DEP] = " + values,
+                    "de":"Das Modul kann nicht geladen werden, da die Dependency nicht instanziiert wurde: [MODUL]::[DEP] = " + values
+                };
+                this.addNotification("error", message, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
@@ -328,14 +367,24 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     try {
         executeFile(module.location + "/index.js");
     } catch (e) {
-        this.addNotification("error", "Can not load ", module.meta.id + ": " + e.toString(), "core", "AutomationController", "nt_errLoad");
+        var values = module.meta.id + ": " + e.toString(),
+            message = {
+            "en":"Can not load " + values,
+            "de":"Fehler beim Laden von " + values
+        };
+        this.addNotification("error", message, "core", "AutomationController");
         console.log(e.stack);
         module.failed = true;
         return false; // skip this modules
     }
 
     if (!_module) {
-        this.addNotification("error", "Invalid module ", module.meta.id, "core", "AutomationController", "nt_ac_errInvalid_module");
+        var values = module.meta.id,
+            message = {
+            "en":"Invalid module " + values,
+            "de":"Nicht valides Modul: " + values
+        };
+        this.addNotification("error", message, "core", "AutomationController");
         module.failed = true;
         return false; // skip this modules
     }
@@ -431,7 +480,12 @@ AutomationController.prototype.stopInstance = function (instance) {
         instance.stop();
         delete this.registerInstances[instance.id];
     } catch (e) {
-        this.addNotification("error", "Can not stop module ", ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(), "core", "AutomationController", "nt_ac_err_stop_module");
+        var values = ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(),
+            message = {
+            "en":"Can not stop module " + values,
+            "de":"Das folgende Modul kann nicht gestoppt werden: " + values
+        };
+        this.addNotification("error", message, "core", "AutomationController");
         console.log(e.stack);
         return;
     }
@@ -542,28 +596,31 @@ AutomationController.prototype.loadNotifications = function () {
     this.notifications = loadObject("notifications") || [];
 }
 
-AutomationController.prototype.addNotification = function (severity, consoleOutput, bgData, type, source, intlUIKey) {
-    var now = new Date(), notice;
+AutomationController.prototype.addNotification = function (severity, message, type, source) {
+    var now = new Date(), 
+        notice, msg,
+        lang = this.defaultLang;
+
+    if (typeof message === 'object' && lang != 'undefined') {
+        msg = message[lang];
+    } else {
+        msg = message;
+    }
 
     notice = {
         id: Math.floor(now.getTime() / 1000),
         timestamp: now.toISOString(),
         level: severity,
-        message: consoleOutput + bgData, 
-        bgData: bgData,
+        message: msg, 
         type: type || 'device',
         source: source,
-        intlKey: intlUIKey,
         redeemed: false,
     };
 
     this.notifications.push(notice);
     this.saveNotifications();
     this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
-    
-    // consoleOutput -  not internationalized string that describes the notification in the console 
-    //                  otherwise there is no output -> bad for debugging
-    console.log("Notification:", severity, "(" + type + "):", consoleOutput + bgData);
+    console.log("Notification:", severity, "(" + type + "):", msg);
 }
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {

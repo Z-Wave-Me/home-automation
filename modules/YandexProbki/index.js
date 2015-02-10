@@ -114,11 +114,19 @@ YandexProbki.prototype.fetchJams = function(instance) {
                 self.vDev.set("metrics:level", jam);
                 self.vDev.set("metrics:icon", icon);
             } catch (e) {
-                self.controller.addNotification("error", "Can not parse jams information.", "", "module", "YandexProbki", "nt_yp_errParse_jam_info");
+                var message = {
+                    "en":"Can not parse yandex jam information.",
+                    "de":"Fehler beim Einlesen der Yandex Jam Informationen."
+                };
+                self.controller.addNotification("error", message, "module", "YandexProbki");
             }
         },
         error: function() {
-            self.controller.addNotification("error", "Can not fetch yandex jam information.", "", "module", "YandexProbki", "nt_yp_errFetch_jam_info");
+            var message = {
+                "en":"Can not fetch yandex jam information.",
+                "de":"Fehler beim Aktualisieren der Yandex Jam Informationen."
+            };
+            self.controller.addNotification("error", message, "module", "YandexProbki");
         }
     });
 };

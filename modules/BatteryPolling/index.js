@@ -66,7 +66,12 @@ BatteryPolling.prototype.init = function (config) {
         
         self.vDev.set("metrics:level", self.minimalBatteryValue());
         if (vDev.get("metrics:level") <= self.config.warningLevel) {
-            self.controller.addNotification("warning", "Attention! Device is low battery >:> ", vDev.get("metrics:title"), "battery", self.vDev.get(id), "nt_battery");
+            var values = vDev.get("metrics:title"),
+                message = {
+                "en":"Attention! Device is low battery >:> " + values,
+                "de":"Achtung! Das Batterielevel des Gerätes beträgt nur noch >:> " + values
+            };
+            self.controller.addNotification("warning", message, "battery", self.vDev.get(id));
         }
     };
     

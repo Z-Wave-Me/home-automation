@@ -235,12 +235,17 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics.icon = this.deviceType;
     },
     performCommand: function () {
+        var values = e.toString(),
+            message = {
+            "en":"Error during perform command execution: " + values,
+            "de":"Fehler beim Ausführen des Befehls: " + values
+        };
         console.log("--- ", this.id, "performCommand processing:", JSON.stringify(arguments));
         if (typeof this.handler === "function") {
             try {
                 return this.handler.apply(this, arguments);
             } catch(e) {
-                this.controller.addNotification("error", "Error during perform command execution: ", e.toString(), "module", "VirtualDevice", "nt_errCmd_perform");
+                this.controller.addNotification("error", message, "module", "VirtualDevice");
                 console.log(e.stack);
             }
         }

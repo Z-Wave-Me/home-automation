@@ -35,7 +35,12 @@ CustomUserCode.prototype.init = function (config) {
     //try {
         executeJS(this.config.customCode);
     //} catch (e) {
-    //    controller.addNotification("warning", "Failed to load custom user code: ", this.get("metrics:title"), "module", "CustomUserCode", "nt_custom_uc");
+    //      var values = this.get("metrics:title"),
+    //          message = {
+    //           "en":"Failed to load custom user code: " + values,
+    //           "de":"Das Skript konnte nicht geladen werden: " + values
+    //       };
+    //    controller.addNotification("warning", message, "module", "CustomUserCode");
     //}
 };
 
