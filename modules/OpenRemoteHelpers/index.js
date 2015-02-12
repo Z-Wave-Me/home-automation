@@ -29,6 +29,12 @@ Description:
 Author: Pieter E. Zanstra
 Converted into Z-Way HA module: Poltorak Serguei
 
+Version 1.01.02       2015-02-12 (Pieter E. Zanstra)
+Added a second argument to metrics command, so the user can select other attributes than the
+default level-attribute (http://192.168.0.85:8083/OpenRemote/metrics/ZWayVDev_zway_26-0-37/icon)
+Without the second argument the call returns all device attributes as json.
+Closed the Switch statement with keyword default: to cater for erroneous function calls 
+
 Version 1.01.01       2014-09-09 (Yurkin Vitaliy aivs@z-wave.me)
 Added metrics command to get metrics (http://192.168.0.85:8083/OpenRemote/metrics/ZWayVDev_zway_26-0-37)
 
@@ -292,7 +298,18 @@ OpenRemoteHelpers.prototype.init = function (config) {
 
             case "metrics":
                 // used HA API for all device to get metrics
-                return this.controller.devices.get(N).get("metrics:level")
+                if (I !== "") {
+                  attrib = "metrics:" + I;
+                  }
+                else {
+                   attrib = "metrics";
+                  }
+               return this.controller.devices.get(N).get(attrib);
+
+// Your "case" statements may go after this line, but before keyword default:  !
+				
+			default:
+			     return "Error: Function " + cmd  + " is not defined in OpenRemoteHelpers";
         }
     };
     ws.allowExternalAccess("OpenRemote");
