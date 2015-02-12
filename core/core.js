@@ -1,4 +1,4 @@
-/* Initialized Core */
+/* Start Core */
 'use strict';
 ; (function () {
     /**
@@ -8,7 +8,7 @@
     var Core = function (options) {
         var self = this;
 
-        self._components = ['Namespace', 'Storage', 'Helpers', 'Base', 'Model', 'Collection', 'Module'];
+        self._components = ['Helpers', 'Namespace', 'Storage', 'Base', 'Model', 'Collection', 'Router'];
 
         if (global._ === undefined) {
             throw new Error('Underscore is not available');
@@ -40,11 +40,8 @@
 
     // Loading sub-core components
     if (global.executeFile !== undefined) {
-        executeFile('core/core.helpers.js');
-        executeFile('core/core.namespace.js');
-        executeFile('core/core.storage.js');
-        executeFile('core/core.base.js');
-        executeFile('core/core.model.js');
-        executeFile('core/core.collection.js');
+        global.Core._components.forEach(function (componentName) {
+            executeFile('core/core.' + componentName.toLowerCase() + '.js');
+        });
     }
 }());

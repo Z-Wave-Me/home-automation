@@ -1,4 +1,4 @@
-/* Initialized Core/Storage */
+/* Start Core/Storage */
 
 'use strict';
 ; (function () {

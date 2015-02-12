@@ -5,6 +5,7 @@ var chai = require('chai'),
 
 describe('Core.Namespace', function () {
     var path = 'Parts.testObject',
+        path2 = 'Parts.testObject2',
         testObject = {
             attr: 'attr',
             test: 'test',
@@ -18,7 +19,9 @@ describe('Core.Namespace', function () {
 
     it('#easy way', function (done) {
         Core.Namespace(path, testObject);
+        Core.Namespace(path2, '123');
         expect(Core.Namespace(path)).to.be.equal(testObject);
+        expect(Core.Namespace(path2)).to.be.equal('123');
         done();
     });
 

@@ -1,4 +1,4 @@
-/* Initialized Core/Helpers */
+/* Start Core/Helpers */
 'use strict';
 ; (function () {
     /**

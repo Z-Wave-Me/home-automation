@@ -8,5 +8,7 @@ require('../../core/core.namespace');
 require('../../core/core.storage');
 require('../../core/core.model');
 require('../../core/core.collection');
+require('../../core/core.router');
+
 
 module.exports = global.Core;

@@ -2,15 +2,13 @@
 
 var request = require('request'),
     chai = require('chai'),
-    assert = chai.assert,
-    should = chai.should,
     expect = chai.expect;
 
 module.exports = {
     defaultCheck: function (err, res, body) {
         var obj = null;
         // Response has correct mime-type
-        assert.propertyVal(res.headers, 'content-type', 'application/json; charset=utf-8');
+        expect(res.headers).to.have.property('content-type', 'application/json; charset=utf-8');
 
         // check code
         expect([201, 304, 200, 403, 204, 404].indexOf(res.statusCode) !== -1).to.be.true();

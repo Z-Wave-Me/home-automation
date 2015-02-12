@@ -1,4 +1,4 @@
-/* Initialized Core/Base */
+/* Start Core/Base */
 'use strict';
 ; (function () {
     /**
@@ -58,6 +58,7 @@
                 args = Array.prototype.slice.call(arguments),
                 topics = args[0].split(' ');
 
+            topics.push('all');
             args.shift();
             args.unshift({
                 eventTime: self._getISOStringDateTime()

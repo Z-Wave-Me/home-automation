@@ -1,4 +1,4 @@
-/* Initialized Core/Model */
+/* Start Core/Model */
 
 'use strict';
 ; (function () {
@@ -169,6 +169,9 @@
                 }
 
                 return self;
+            },
+            remove: function () {
+
             },
             changedAttributes: function () {
                 return _.clone(this.changed);

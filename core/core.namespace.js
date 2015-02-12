@@ -1,4 +1,4 @@
-/* Initialized Core/Namespace */
+/* Start Core/Namespace */
 'use strict';
 ; (function () {
     if (typeof global.Automation !== 'object') {
@@ -25,7 +25,7 @@
                 if (space[parts[i]] === undefined && value === undefined) {
                     return undefined;
                 } else if (value !== undefined) {
-                    space[parts[i]] = (len - 1) === i ? value : {};
+                    space[parts[i]] = (len - 1) === i ? value : space[parts[i]] || {};
                 }
 
                 space = space[parts[i]];

@@ -16,7 +16,7 @@ function AutomationController() {
         'Content-Range',
         'Content-Type',
         'ETag',
-        'API-Version',
+        'X-API-VERSION',
         'Date',
         'Cache-Control',
         'If-None-Match',

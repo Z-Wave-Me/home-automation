@@ -7,15 +7,14 @@
     "request": "~2.51.x",
     "underscore": "latest",
     "chai": "^1.10.0",
-    "jsdoc": "^3.3.0-beta1",
     "jscs": "^1.11.0"
   },
   "scripts": {
     "build": "./node_modules/.bin/gulp",
-    "jshint": "jshint __tests__/* core/*",
-    "jscs": "jscs __tests__/* core/*",
+    "jshint": "jshint __tests__/* core/* system/*",
+    "jscs": "jscs __tests__/* core/* system/*",
     "test": "npm run jshint && npm run jscs && mocha -b -R spec test/*",
-    "doc": "rm -rf ./doc && jsdoc core/* -d doc"
+    "doc": "rm -rf ./doc && jsdoc core/* system/* -d doc"
   },
   "repository": {
     "type": "git",

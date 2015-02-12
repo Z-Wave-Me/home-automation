@@ -1,4 +1,4 @@
-/* Initialized Core/Collection */
+/* Start Core/Collection */
 
 'use strict';
 ; (function () {
@@ -10,28 +10,24 @@
         Collection = Core.Base.Extend({
             models: [],
             length: 0,
-            init: function (initData) {
+            model: null,
+            init: function () {
                 var self = this;
+
+                // defaults
+                self.policy = self.policy || {};
+                self.settings = self.settings || {};
 
                 //aliases
                 self.each = self.forEach;
                 self.detect = self.find;
                 self.select = self.where;
 
-                // set default model
-                if (!self.model) {
-                    self.model = Core.Model.Extend({});
-                }
+                //restore data
+                self._loadDataFromFileSystem();
 
-                // add models
-                if (_.isArray(initData)) {
-                    _.each(initData, function (data) {
-                        self.add(data);
-                    });
-                }
-
-                // set SaveObjectName
-                self.saveObjectName = initData.saveObjectName;
+                // add listener
+                self.on('all', self.save);
             },
             at: function (index) {
                 return this.models[index] || undefined;
@@ -62,6 +58,7 @@
                 });
 
                 delete model.cid;
+                model.remove();
                 self._updateLength();
                 self.trigger('remove', model);
 
@@ -127,6 +124,22 @@
             },
             last: function () {
                 return _.last(this.models);
+            },
+            save: function () {
+                var self = this;
+
+                if (self.policy && self.policy.dataSource === 'filesystem') {
+                    saveObject(self.policy.file + '.json', self.toJSON());
+                }
+            },
+            _loadDataFromFileSystem: function () {
+                var self = this, data = [];
+
+                if (self.policy.dataSource === 'filesystem') {
+                    data = loadObject(self.policy.file + ".json") || [];
+                }
+
+                data.forEach(self.add);
             }
         });
 

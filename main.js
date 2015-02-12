@@ -265,10 +265,10 @@ if (!config) {
     //--- Load 3d-party dependencies
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore.js");
-    executeFile('core/core.js');
-    executeFile(config.classesPath + "/VirtualDevice.js");
+    executeFile('system/server.js');
 
     //--- Load Automation subsystem classes
+    executeFile(config.classesPath + "/VirtualDevice.js");
     executeFile(config.classesPath + "/DevicesCollection.js");
     executeFile(config.classesPath + "/AutomationController.js");
     executeFile(config.classesPath + "/AuthorizationController.js");

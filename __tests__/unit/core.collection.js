@@ -31,7 +31,10 @@ describe('Core.Collection', function () {
             model: DeviceModelConstructor
         });
 
-        DevicesCollection = new DevicesCollectionConstructor(testData);
+        DevicesCollection = new DevicesCollectionConstructor();
+        testData.forEach(function (model) {
+            DevicesCollection.add(model);
+        });
 
         done();
     });
