@@ -129,13 +129,24 @@ JS.Run = function(url) {
     url = url.substring(1);
     try {
     	var r = eval(url);
+        if (typeof r === "function") {
+            // special case for functions, otherwise they show up as JSON 'null'
+            return {
+                status: 204,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Connection": "keep-alive"
+                }
+            }
+        }
+
     	return { 
     		status: 200, 
     		headers: { 
     			"Content-Type": "application/json",
     			"Connection": "keep-alive"
     		},
-    		body: r 
+    		body: JSON.stringify(r)
     	};
     } catch (e) {
     	return { status: 500, body: e.toString() };
@@ -191,7 +202,7 @@ if (!config) {
         },
         {
             "id": "surveillance",
-            "name": "Video surevillance",
+            "name": "Video surveillance",
             "description": "Support for cameras",
             "icon": ""
         },

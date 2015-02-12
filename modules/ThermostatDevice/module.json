@@ -59,7 +59,7 @@
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_switchBinary:deviceName"
+				"optionLabels": "namespaces:devices_sensorMultilevel:deviceName"
 			},
 			"heaton": {
 				"label": "Mode",
