@@ -38,7 +38,7 @@ SensorsPollingLogging.prototype.init = function (config) {
     // Here we assume that period is factor of minute and less than hour, or factor of hours and less than day, or factor of days
     var p = Math.round(this.config.period);
     var m = (p < 60) ? [0, 59, p] : 0;
-    var h = p >= 24*60 ? 0 : (p/60 >=1 ? [0, 59, Math.round(p/60)] : null);
+    var h = p >= 24*60 ? 0 : (p/60 >=1 ? [0, 23, Math.round(p/60)] : null);
     var wd = p/24/60 >=1 ? [0, 6, Math.round(p/24/60)] : null;
      
     this.controller.emit("cron.addTask", "sensorsPollingLogging.poll", {
@@ -69,6 +69,11 @@ SensorsPollingLogging.prototype.init = function (config) {
                 url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.get('metrics:level'))
             });
         };
+
+        // Clear the watchdog timer
+        if (self.watchdogtimer)
+            clearTimeout (self.watchdogtimer);
+        self.watchdogtimer = null;
         vDev.off("change:metrics:level", self.handler);
     };
 
@@ -76,8 +81,18 @@ SensorsPollingLogging.prototype.init = function (config) {
         self.config.devices.forEach(function(vDevId) {
             var vDev = this.controller.devices.get(vDevId);
             if (vDev) {
-                vDev.on("change:metrics:level",self.handler);
-                vDev.performCommand("update");
+                // If the watchdog timer still active, that means that Polling interval is less
+                // than watchdog timer. That is bad, but not fatal.
+                if (self.watchdogtimer)
+                {
+                    // that will also clean the timer and unsubscribe
+                    self.handler(vDev);
+                } else
+                {
+                    self.watchdogtimer = setTimeout ( function() {self.handler(vDev);}, self.config.polling*1000);
+                    vDev.on("change:metrics:level",self.handler);
+                    vDev.performCommand("update");
+                };
             };
         });
     };
