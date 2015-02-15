@@ -14,7 +14,11 @@
   "node": true,
   "globals": {
     "describe": true,
-    "it": true
+    "it": true,
+    "executeFile": true,
+    "_": true,
+    "Core": true,
+    "global": true
   }
 }
 

@@ -1,0 +1,14 @@
+{
+  "_meta": {
+    "sources": [
+      "system/models/"
+    ]
+  },
+  "User": {
+    "dataSource": "filesystem",
+    "file": "users"
+  },
+  "Token": {
+    "dataSource": "memory"
+  }
+}

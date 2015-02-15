@@ -1,0 +1,9 @@
+{
+	"m_descr":"Creates an instance that monitors the status of every choosen device or device type. It sends notifications automatically if something has changed.",
+	"dev_label":"Devices to be monitored",
+	"devT_label":"Device types to be monitored",
+	"all":"all device types",
+	"battery":"Battery",
+	"fan":"Fan",
+	"doorlock":"Doorlock"
+}

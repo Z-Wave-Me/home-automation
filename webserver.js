@@ -416,6 +416,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return function () {
             var id,
                 title,
+                icon,
                 reply = {
                     error: null,
                     data: null,
@@ -434,10 +435,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
                 id = locationId || reqObj.id;
                 title = reqObj.title;
+                icon = reqObj.icon || ''
             }
 
-            if (!!id && !!title && title.length > 0) {
-                that.controller.updateLocation(id, title, function (data) {
+            if (!!title && title.length > 0) {
+                that.controller.updateLocation(id, title, icon, function (data) {
                     if (data) {
                         reply.data = data;
                     } else {
@@ -564,7 +566,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = "Module " + reqObj.moduleId + " isn't exists";
             }
 
-            that.initResponse(reply);
+            this.initResponse(reply);
         };
     },
     getInstanceFunc: function (instanceId) {
@@ -579,7 +581,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (!Boolean(instance)) {
                 reply.code = 404;
-                reply.error = "Instance " + instanceId + " not found";
+                reply.error = "Instance " + instanceId + " is not found";
             } else {
                 reply.code = 200;
                 reply.data = instance;

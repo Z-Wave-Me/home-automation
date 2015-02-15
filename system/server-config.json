@@ -1,0 +1,28 @@
+{
+  "supportLanguages": ["en", "de", "ru"],
+  "defaultLanguage": "en",
+  "authorization": {
+    "ttl": 1209600
+  },
+  "remoting": {
+    "cors": {
+      "origin": true,
+      "credentials": true
+    },
+    "allowHeaders": [
+      "Accept-Ranges",
+      "Content-Encoding",
+      "Content-Length",
+      "Content-Range",
+      "Content-Type",
+      "ETag",
+      "X-API-VERSION",
+      "Date",
+      "Cache-Control",
+      "If-None-Match",
+      "Content-Language",
+      "Accept-Language"
+    ],
+    "allowMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
+  }
+}

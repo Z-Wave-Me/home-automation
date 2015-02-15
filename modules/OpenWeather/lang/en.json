@@ -1,0 +1,8 @@
+{
+  "description": "Weather informer provided by OpenWeatherMap.org",
+  "units": "Units",
+  "country": "Country",
+  "country_placeholder": "England",
+  "city": "City",
+  "city_placeholder": "London"
+}
