@@ -1056,7 +1056,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function () {
-					vDev.set("metrics:level", this.value ? "on" : "off");
+					try {
+						vDev.set("metrics:level", this.value ? "on" : "off");
+					} catch (e) {}
 				}, "value");
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
@@ -1135,7 +1137,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function() {
-					vDev.set("metrics:level", this.value);
+					try {
+						vDev.set("metrics:level", this.value);
+					} catch (e) {}
 				}, "value");
 			}
 		} else if (this.CC["SwitchColor"] === commandClassId && !self.controller.devices.get(vDevId)) {
@@ -1272,7 +1276,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId + separ + colorId);
 							} else {
-								vDev.set("metrics:level", this.value);
+								try {
+									vDev.set("metrics:level", this.value);
+								} catch (e) {}
 							}
 						}, "value");
 					}
@@ -1328,7 +1334,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId + separ + sensorTypeId);
 							} else {
-								vDev.set("metrics:level", this.value ? "on" : "off");
+								try {
+									vDev.set("metrics:level", this.value ? "on" : "off");
+								} catch (e) {};
 							}
 						}, "value");
 					}
@@ -1385,7 +1393,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId + separ + sensorTypeId);
 							} else {
-								vDev.set("metrics:level", this.value);
+								try {
+									vDev.set("metrics:level", this.value);
+								} catch (e) {}
 							}
 						}, "value");
 					}
@@ -1433,7 +1443,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId + separ + scaleId);
 							} else {
-								vDev.set("metrics:level", this.value);
+								try {
+									vDev.set("metrics:level", this.value);
+								} catch (e) {}
 							}
 						}, "value");
 					}
@@ -1472,7 +1484,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function() {
-					vDev.set("metrics:level", this.value);
+					try {
+						vDev.set("metrics:level", this.value);
+					} catch (e) {}
 				}, "value");
 			}
 		} else if (this.CC["DoorLock"] === commandClassId && !self.controller.devices.get(vDevId)) {
@@ -1500,7 +1514,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function() {
-					vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+					try {
+						vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+					} catch (e) {}
 				}, "value");
 			}
 		} else if (this.CC["ThermostatMode"] === commandClassId || this.CC["ThermostatSetPoint"] === commandClassId) {
@@ -1550,7 +1566,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 					if (m_vDev) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function () {
-							m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
+							try {
+								m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
+							} catch (e) {}
 						}, "value");
 					}
 				}
@@ -1596,7 +1614,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 					if (t_vDev) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
-							t_vDev.set("metrics:level", this.value);
+							try {
+								t_vDev.set("metrics:level", this.value);
+							} catch (e) {}
 						});
 					}
 				}
@@ -1648,7 +1668,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (command === "on") {
 								var vDev = this.controller.devices.get(a_id);
 								if (vDev) {
-									vDev.set("metrics:level", "off");
+									try {
+										vDev.set("metrics:level", "off");
+									} catch (e) {}
 								}
 								this.set("metrics:level", "on"); // update on ourself to allow catch this event
 							}
@@ -1661,7 +1683,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId + separ + sensorTypeId);
 							} else {
-								a_vDev.set("metrics:level", "on");
+								try {
+									a_vDev.set("metrics:level", "on");
+								} catch (e) {}
 							}
 						}, "value");
 					}
