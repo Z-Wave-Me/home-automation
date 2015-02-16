@@ -24,21 +24,21 @@ describe('Core.Router', function () {
         });
 
         router.dispatch({
-            url: 'http://example.com/ZAutomation/api/v1/author',
+            url: '/ZAutomation/api/v1/author',
             method: 'GET',
             query: {},
             body: {},
             header: {}
         });
         router.dispatch({
-            url: 'http://example.com/ZAutomation/api/v1/books',
+            url: '/ZAutomation/api/v1/books',
             method: 'GET',
             query: {},
             body: {},
             header: {}
         });
         router.dispatch({
-            url: 'http://example.com/ZAutomation/api/v1/books/view/123/users/234',
+            url: '/ZAutomation/api/v1/books/view/123/users/234',
             method: 'GET',
             query: {},
             body: {},
@@ -54,7 +54,7 @@ describe('Core.Router', function () {
             method: 'GET',
             params: ['123', '234'],
             req: {
-                url: 'http://example.com/ZAutomation/api/v1/books/view/123/users/234',
+                url: '/ZAutomation/api/v1/books/view/123/users/234',
                 method: 'GET',
                 query: {},
                 body: {},
