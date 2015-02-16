@@ -297,7 +297,7 @@ if (!config) {
 
     controller.on('core.error', function (err) {
         console.log("--- ERROR:", err.message);
-        controller.addNotification("error", err.message, "core");
+        controller.addNotification("error", err.message, "core", "core controller");
     });
 
     //--- main

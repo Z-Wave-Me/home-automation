@@ -115,7 +115,12 @@ ZWave.prototype.startBinding = function () {
 			throw e1;
 		}
 	} catch(e) {
-		this.controller.addNotification("critical", "Can not start Z-Wave binding: " + e.toString(), "z-wave");
+		var values = e.toString(),
+			message = {
+            "en":"Can not start Z-Wave binding: " + values,
+            "de":"Fehler beim Starten des Z-Wave binding: " + values
+        };
+		this.controller.addNotification("critical", message, "z-wave", "Z-Wave Binding");
 		this.zway = null;
 		return;
 	}
@@ -916,12 +921,22 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 };
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
+	var values = nodeId.toString(10);
+
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			self.controller.addNotification("error", "Connection lost to Z-Wave device ID " + nodeId.toString(10), "connection");
+			var message = {
+	            "en":"Connection lost to Z-Wave device ID: " + values,
+	            "de":"Verbindung verloren zur Z-Wave Geräte-ID: " + values
+	        };
+			self.controller.addNotification("error", message, "connection", "Z-Wave Binding");
 		}
 	} else {
-		self.controller.addNotification("notification", "Z-Wave device ID " + nodeId.toString(10) + " is back to life", "connection");
+		var message = {
+            "en":"Z-Wave device ID is back to life: " + values,
+            "de":"Z-Wave Geräte-ID ist wieder verbunden: " + values
+        };
+		self.controller.addNotification("notification", message, "connection", "Z-Wave Binding");
 	}
 };
 
@@ -1700,7 +1715,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		}
 	} catch (e) {
-		controller.addNotification("error", "Can not create vDev based on " + nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(), "core");
+		var values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(),
+			message = {
+            "en":"Can not create vDev based on: " + values,
+            "de":"vDev konnte mit den folgenden Daten nicht erstellt werden: " + values
+        };
+		controller.addNotification("error", message, "core", "Z-Wave Binding");
 		console.log(e.stack);
 	}
 };

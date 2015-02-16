@@ -215,7 +215,11 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     
     var vDev = this.controller.devices.get(name);
     if (vDev === null) {
-        this.controller.addNotification("critical", "SwitchControlGenerator: Virtual device should exist, but was not found", "controller");
+        var message = {
+            "en":"SwitchControlGenerator: Virtual device should exist, but was not found.",
+            "de":"SwitchControlGenerator: Das virtuelle Geräte sollte existieren, wurde aber nicht gefunden."
+        };
+        this.controller.addNotification("critical", message, "controller", "SwitchControlGenerator");
         return;
     }
     
