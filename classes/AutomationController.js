@@ -40,6 +40,7 @@ function AutomationController() {
     this.schemas = config.schemas || [];
 
     this.notifications = [];
+    this.history = [];
     this.lastStructureChangeTime = 0;
 
     this._loadedSingletons = [];
@@ -697,6 +698,26 @@ AutomationController.prototype.updateNotification = function (id, object, callba
             callback(null);
         }
     }
+};
+
+AutomationController.prototype.listHistories = function () {
+    var self = this;
+    self.history = [];
+    devices = self.devices.models;
+
+    devices.forEach(function(x){
+        obj = loadObject(x.id + "history.json");
+        if(obj != undefined){
+            self.history.push(obj[0]);
+        }
+        
+    });
+
+    return self.history;
+};
+
+AutomationController.prototype.getCountHistories = function () {
+    return this.history.length || 0;
 };
 
 AutomationController.prototype.getListProfiles = function () {
