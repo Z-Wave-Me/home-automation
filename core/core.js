@@ -8,7 +8,7 @@
     var Core = function (options) {
         var self = this;
 
-        self._components = ['Helpers', 'Namespace', 'Storage', 'Base', 'Model', 'Collection', 'Router'];
+        self._components = ['Helpers', 'Namespace', 'Storage', 'Base', 'Model', 'Router', 'Collection'];
 
         if (global._ === undefined) {
             throw new Error('Underscore is not available');
@@ -26,12 +26,11 @@
         return self;
     };
 
-    Core.prototype = {};
-
-    Core.prototype.initialize = function (options) {
-        var self = this;
-        self.options = options || {};
-
+    Core.prototype = {
+        initialize: function (options) {
+            var self = this;
+            self.options = options || {};
+        }
     };
 
     global.Core = new Core({

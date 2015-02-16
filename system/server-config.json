@@ -21,7 +21,8 @@
       "Cache-Control",
       "If-None-Match",
       "Content-Language",
-      "Accept-Language"
+      "Accept-Language",
+      "Authorization"
     ],
     "allowMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
   }

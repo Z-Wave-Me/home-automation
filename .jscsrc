@@ -46,6 +46,8 @@
   "excludeFiles": [
     "node_modules/**",
     "lib/**",
-    "storage/**"
-  ]
+    "storage/**",
+    "system/*.json"
+  ],
+  "fileExtensions": [".js"]
 }

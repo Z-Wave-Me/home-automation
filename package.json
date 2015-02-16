@@ -13,7 +13,7 @@
     "build": "./node_modules/.bin/gulp",
     "jshint": "jshint __tests__/* core/* system/*",
     "jscs": "jscs __tests__/* core/* system/*",
-    "test": "npm run jshint && npm run jscs && mocha -b -R spec test/*",
+    "test": "npm run jshint && npm run jscs && mocha -b -R spec __tests__/unit/*",
     "doc": "rm -rf ./doc && jsdoc core/* system/* -d doc"
   },
   "repository": {

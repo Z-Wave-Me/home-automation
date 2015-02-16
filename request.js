@@ -216,7 +216,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
         newResponse = null,
         response;
 
-    newResponse = Core.Namespace('Handlers.Rest').apply(null, Array.prototype.slice.call(arguments));
+    newResponse = Core.Namespace('Handlers.Endpoint').apply(null, Array.prototype.slice.call(arguments));
 
     if (!response) {
         response = {

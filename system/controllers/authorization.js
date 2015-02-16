@@ -9,7 +9,7 @@
     var Core = global.Core,
         AuthorizationController = Core.Base.Extend({
             initialize: function () {
-
+                console.log('initialize auth');
             }
         }),
         AuthorizationControllerInstance = new AuthorizationController();
