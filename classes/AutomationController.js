@@ -16,7 +16,7 @@ function AutomationController() {
         'Content-Range',
         'Content-Type',
         'ETag',
-        'API-Version',
+        'X-API-VERSION',
         'Date',
         'Cache-Control',
         'If-None-Match',
@@ -179,7 +179,13 @@ AutomationController.prototype.stop = function () {
 AutomationController.prototype.restart = function () {
     this.stop();
     this.start();
-    this.addNotification("warning", "Automation Controller is restarted", "core");
+
+    var message = {
+        "en":"Automation Controller is restarted.",
+        "de":"Der Automation Controller wurde neu gestartet."
+    }; 
+
+    this.addNotification("warning", message, "core", "AutomationController");
 };
 
 AutomationController.prototype.loadModules = function (callback) {
@@ -220,7 +226,13 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
     try {
         var moduleMeta = fs.loadJSON(moduleMetaFilename);
     } catch (e) {
-        self.addNotification("error", "Can not load modules.json from " + moduleMetaFilename + ": " + e.toString(), "core");
+        var values = moduleMetaFilename + ": " + e.toString(),
+            message = {
+            "en":"Can not load modules.json from " + values,
+            "de":"modules.json kann nicht geladen werden. Modul: " + values
+        };
+
+        self.addNotification("error", message, "core", "AutomationController");
         console.log(e.stack);
         return; // skip this modules
     }
@@ -251,14 +263,23 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         instance = null;
 
     if (!module) {
-        self.addNotification("error", "Can not instantiate module: module not found in the list of all modules", "core");
+        var message = {
+            "en":"Can not instantiate module: module not found in the list of all modules.",
+            "de":"Das Modul kann nicht instanziiert werden: Das Modul wurde in der Modulliste nicht gefunden."
+        };
+        self.addNotification("error", message, "core", "AutomationController");
     }
 
     if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
         } catch (e) {
-            self.addNotification("error", "Can not instantiate module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+            var values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(),
+                message = {
+                "en":"Can not instantiate module: " + values,
+                "de":"Das Modul kann nicht instanziiert werden: " + values
+            };
+            self.addNotification("error", message, "core", "AutomationController");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -277,7 +298,12 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         try {
             instance.init(instanceModel.params);
         } catch (e) {
-            self.addNotification("error", "Can not init module " + ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(), "core");
+            var values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(),
+                message = {
+                "en":"Can not instantiate module: " + values,
+                "de":"Das Modul kann nicht instanziiert werden: " + values
+            };
+            self.addNotification("error", message, "core", "AutomationController");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -301,16 +327,25 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     if (module.meta.dependencies instanceof Array) {
         for (var i in module.meta.dependencies) {
             var dep = module.meta.dependencies[i];
+            var values = dep + " :: " + module.meta.id;
 
             var depModule = this.modules[dep];
             if (!depModule) {
-                this.addNotification("error", "Dependency " + dep + " not found for module " + module.meta.id, "core");
+                var message = {
+                    "en":"Dependency not found for module: [MODUL]::[DEP] = " + values,
+                    "de":"Die Dependency wurde für das Modul nicht gefunden: [MODUL]::[DEP] = " + values
+                };
+                this.addNotification("error", message, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
 
             if (!this.loadModule(depModule, rootModule)) {
-                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not loaded", "core");
+                var message = {
+                    "en":"Failed to load module because dependency was not loaded: [MODULE]::[DEP] = " + values,
+                    "de":"Das Modul kann nicht geladen werden, da folgende Dependency nicht geladen wurde: [MODUL]::[DEP] = " + values
+                };
+                this.addNotification("error", message, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
@@ -318,7 +353,11 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
             if (!this.loadedModules.some(function (x) {
                     return x.meta.id === dep
                 })) {
-                this.addNotification("error", "Failed to load module " + module.meta.id + " because " + dep + " was not instanciated", "core");
+                var message = {
+                    "en":"Failed to load module because dependency was not instanciated: [MODULE]::[DEP] = " + values,
+                    "de":"Das Modul kann nicht geladen werden, da die Dependency nicht instanziiert wurde: [MODUL]::[DEP] = " + values
+                };
+                this.addNotification("error", message, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
@@ -329,14 +368,24 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     try {
         executeFile(module.location + "/index.js");
     } catch (e) {
-        this.addNotification("error", "Can not load " + module.meta.id + ": " + e.toString(), "core");
+        var values = module.meta.id + ": " + e.toString(),
+            message = {
+            "en":"Can not load " + values,
+            "de":"Fehler beim Laden von " + values
+        };
+        this.addNotification("error", message, "core", "AutomationController");
         console.log(e.stack);
         module.failed = true;
         return false; // skip this modules
     }
 
     if (!_module) {
-        this.addNotification("error", "Invalid module " + module.meta.id, "core");
+        var values = module.meta.id,
+            message = {
+            "en":"Invalid module " + values,
+            "de":"Nicht valides Modul: " + values
+        };
+        this.addNotification("error", message, "core", "AutomationController");
         module.failed = true;
         return false; // skip this modules
     }
@@ -432,7 +481,12 @@ AutomationController.prototype.stopInstance = function (instance) {
         instance.stop();
         delete this.registerInstances[instance.id];
     } catch (e) {
-        this.addNotification("error", "Can not stop module " + ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(), "core");
+        var values = ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(),
+            message = {
+            "en":"Can not stop module " + values,
+            "de":"Das folgende Modul kann nicht gestoppt werden: " + values
+        };
+        this.addNotification("error", message, "core", "AutomationController");
         console.log(e.stack);
         return;
     }
@@ -543,22 +597,31 @@ AutomationController.prototype.loadNotifications = function () {
     this.notifications = loadObject("notifications") || [];
 }
 
-AutomationController.prototype.addNotification = function (severity, message, type) {
-    var now = new Date(), notice;
+AutomationController.prototype.addNotification = function (severity, message, type, source) {
+    var now = new Date(), 
+        notice, msg,
+        lang = this.defaultLang;
+
+    if (typeof message === 'object' && lang != 'undefined') {
+        msg = message[lang];
+    } else {
+        msg = message;
+    }
 
     notice = {
         id: Math.floor(now.getTime() / 1000),
         timestamp: now.toISOString(),
         level: severity,
-        message: message,
+        message: msg, 
         type: type || 'device',
-        redeemed: false
+        source: source,
+        redeemed: false,
     };
 
     this.notifications.push(notice);
     this.saveNotifications();
     this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
-    console.log("Notification:", severity, "(" + type + "):", message);
+    console.log("Notification:", severity, "(" + type + "):", msg);
 }
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
@@ -640,12 +703,15 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, callback) {
+AutomationController.prototype.updateLocation = function (id, title, icon, callback) {
     var locations = this.locations.filter(function (location) {
         return location.id === id;
     });
     if (locations.length > 0) {
         this.locations[this.locations.indexOf(locations[0])].title = title;
+        if (typeof icon === 'string' && icon.length > 0) {
+            this.locations[this.locations.indexOf(locations[0])].icon = icon;
+        }
         if (typeof callback === 'function') {
             callback(this.locations[this.locations.indexOf(locations[0])]);
         }
@@ -890,10 +956,14 @@ AutomationController.prototype.getModuleData = function (moduleId) {
         languageFile,
         data;
 
-    try  {
-        languageFile = fs.loadJSON('modules/' + moduleId + '/lang/' + defaultLang + '.json')
+    try {
+        languageFile = fs.loadJSON('modules/' + moduleId + '/lang/' + defaultLang + '.json');
     } catch (e) {
-        languageFile = null;
+        try {
+            languageFile = fs.loadJSON('modules/' + moduleId + '/lang/en.json');
+        } catch (e) {
+            languageFile = null;
+        }
     }
 
     if (languageFile !== null) {

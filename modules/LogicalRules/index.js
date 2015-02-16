@@ -94,6 +94,8 @@ LogicalRules.prototype.stop = function () {
         }
     });
 
+    this.attachedList = [];
+    
     LogicalRules.super_.prototype.stop.call(this);
 };
 

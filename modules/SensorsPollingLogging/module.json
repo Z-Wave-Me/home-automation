@@ -20,11 +20,16 @@
                             "required": true
                     }
 	     },
-            "period": {
+        "period": {
                 "type": "select",
                 "required": true,
-		"enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
-            },
+    		"enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
+        },
+        "polling": {
+                "type": "select",
+                "required": true,
+            "enum": [1, 2, 5, 10, 30, 60, 120, 300, 600, 1200, 2400, 3600]
+        },
 	    "logTo": {
             	"enum": ["JSONFile", "HTTPGET"],
             	"required": true
@@ -54,6 +59,11 @@
             "period": {
                 "label": "Poll period",
                 "optionLabels": ["1 minute", "2 minute", "5 minute", "10 minute", "20 minute", "30 minute", "1 hour", "2 hours", "4 hours", "6 hours", "twice per day", "daily", "weekly"]
+            },
+            "polling": {
+                "label": "Poll timeout",
+                "helper": "Polling will issue 'update' command to the items and then wait for a while untill it's value changed. This timeout limits the time of waiting",
+                "optionLabels": ["1 second", "2 seconds", "5 seconds", "10 seconds", "30 seconds", "1 minute", "2 minutes", "5 minutes", "10 minutes", "20 minutes", "40 minutes", "1 hour"]
             },
             "logTo": {
             	"label": "How to store:",
