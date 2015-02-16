@@ -94,11 +94,19 @@ OpenWeatherExtended.prototype.fetchExtendedWeather = function(instance) {
                 self.vDev.set("metrics:country", country);
                 self.vDev.set("metrics:flag", flag);
             } catch (e) {
-                self.controller.addNotification("error", "Can not parse weather information", "module");
+                var message = {
+                    "en":"Can not parse weather information.",
+                    "de":"Fehler beim Einlesen der Wetterinformationen."
+                };
+                self.controller.addNotification("error", message, "module", "OpenWeatherExtended");
             }
         },
         error: function() {
-            self.controller.addNotification("error", "Can not fetch weather information", "module");
+            var message = {
+                "en":"Can not fetch weather information.",
+                "de":"Fehler beim Aktualisieren der Wetterinformationen."
+            };
+            self.controller.addNotification("error", message, "module", "OpenWeatherExtended");
         }
     });
 };

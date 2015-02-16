@@ -173,7 +173,12 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
             method: this.config.method,
             async: true,
             error: function(response) {
-                self.controller.addNotification("error", "Can not make request: " + response.statusText, "module");
+                var values = response.statusText,
+                    message = {
+                    "en":"Can not make request: " + values,
+                    "de":"Es konnte kein Request gesendet werden: " + values
+                };
+                self.controller.addNotification("error", message, "module", "HTTPDevice");
             }
         });
     } else if (selfValue !== null) {
