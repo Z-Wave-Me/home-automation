@@ -37,20 +37,21 @@ DeviceHistory.prototype.init = function (config) {
         switch(devType){
             case 'sensorMultilevel':
             case 'sensorMultiline':
-                self.setHistoryMultilevel(dev, devType, 30, 244);
+                self.setUpdateInterval(dev, 300, 244); // check every 5 min
                 break;
             case 'battery':
-                self.setHistoryMultilevel(dev, devType, 60, 12);
+                self.setUpdateInterval(dev, 1200, 12); // check every 2 hrs
                 break;
             case 'switchBinary':
             case 'sensorBinary':
-                self.controller.devices.on(dev.id,'change:metrics:level', self.setHistoryBinary);
+                self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs 
                 break;
             case 'doorlock':
                 break;
             case 'switchMultilevel':
-                break;
             case 'thermostat':
+                self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs
+                break;
             case 'fan':
                 break;
             case 'switchControl':
@@ -75,7 +76,7 @@ DeviceHistory.prototype.stop = function () {
         var devType = dev.get('deviceType');
         
         if(devType === 'switchBinary' || devType === 'sensorBinary'){
-                self.controller.devices.off(dev.id,'change:metrics:level', self.setHistoryBinary);
+                self.controller.devices.off(dev.id,'change:metrics:level', self.storeHistoryBinary);
         }
     });
 
@@ -85,64 +86,47 @@ DeviceHistory.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
-DeviceHistory.prototype.setHistoryBinary = function(dev){
-        var self = this,
-            id = dev.get('id'),
+DeviceHistory.prototype.setUpdateInterval = function(dev, seconds, count){
+    var self = this;
+
+    this.timer = setInterval(function() {
+            self.storeHistory(dev, count);
+    }, seconds*1000);
+};
+
+DeviceHistory.prototype.storeHistoryBinary = function(dev){
+        var id = dev.get('id'),
             devType = dev.get('deviceType'),
-            date = new Date(),
-            item, change, histMetr, firstEntry, lastEntry;
+            lvl = dev.get("metrics:level"),
+            lastEntry = new Date().getTime() /1000,
+            history, change, histMetr, firstEntry, ln, cId, getPara;
 
-        try {
-
-            history = DeviceHistory.prototype.loadHistory(id) || [];
-
-        } catch (e) {
-            console.log("Error loading history.json of device id '" + id + "' :", e.message);
-        }
-
-        if(history.length < 1){
-            item = {
-                    "id": id,
-                    "dT": dev.get("deviceType"),
-                    "mH": []
-                };
-            history.push(item);
-        }   
-            
+        // set change object
+        change = DeviceHistory.prototype.setChangeObject(lvl);
+        
+        // get history and metrics history
+        history = DeviceHistory.prototype.setupMetricsHistory(dev);
         histMetr = history[0]['mH'];
 
-        lastEntry = date.getTime() /1000;
-
+        // check date of the first item in metrics history
         if(histMetr.length > 0){
             firstEntry = new Date(histMetr[0]['t']).getTime() /1000;
         }else{
             firstEntry = lastEntry;
         }
         
-        if(dev.get("metrics:level") === "off" && devType === 'switchBinary'){
-            change = {
-                "t": date.toISOString(),
-                "l": "off"
-            };
-        } 
+        ln = histMetr.length;
+        cId = change.id;
+        getPara = function(param){
+            if(ln > 0){
+                return histMetr[ln-1][param];
+            } else {
+                return null;
+            }
+        };
 
-        if (dev.get("metrics:level") === "on"){
-            change = {
-                "t": date.toISOString(),
-                "l": "on"
-            };
-        }
-        
-        /*
-        if(histMetr.length < 12){
-            histMetr.push(change);    
-        }else {
-            histMetr.shift();
-            histMetr.push(change);
-        }
-        */
-    
-        if(change != null){    
+        if(getPara('id') != cId && getPara('l') != lvl) {
+            // push only changes during the last 24 hrs    
             if(lastEntry - (24*3600) < firstEntry){
                 histMetr.push(change);    
             } else {
@@ -154,56 +138,21 @@ DeviceHistory.prototype.setHistoryBinary = function(dev){
         }
 };
 
-DeviceHistory.prototype.setHistoryMultilevel = function(dev, devType, seconds, count){
-    var self = this,
-        filteredDev = [];
-
-    this.timer = setInterval(function() {
-        
-        if(filteredDev.indexOf(devType) === -1){
-            filteredDev.push(dev);
-        }
-
-        filteredDev.forEach(function(d){
-            self.storeData(d, count);
-        });
-
-    }, seconds*1000);
-};
-
-DeviceHistory.prototype.storeData = function(dev, count) {
+DeviceHistory.prototype.storeHistory = function(dev, count) {
             
     var self = this,
         id = dev.get('id'),
-        item, change, device, histMetr;
+        lvl= dev.get("metrics:level"),
+        date = new Date(),
+        history, item, change, histMetr;
 
-    try {
-
-        history = self.loadHistory(id) || [];
-
-    } catch (e) {
-        console.log("Error loading history.json of device id '" + id + "' :", e.message);
-    }
-
-    device = this.controller.devices.get(id);
-
-    if(history.length < 1){
-        item = {
-                "id": id,
-                "dT": device.get("deviceType"),
-                "mH": []
-            };
-
-        history.push(item);
-    }
-
+    change = self.setChangeObject();
+    
+    // get history and metrics history
+    history = self.setupMetricsHistory(dev);
     histMetr = history[0]['mH'];
 
-    change = {
-        "t": new Date().toISOString(),
-        "l": device.get("metrics:level")
-    };
-
+    // push only changes during the last 24 hrs
     if(histMetr.length < count){
         histMetr.push(change);    
     } else {
@@ -214,10 +163,48 @@ DeviceHistory.prototype.storeData = function(dev, count) {
     self.saveHistory(id,history);      
 };
 
-DeviceHistory.prototype.saveHistory = function (id,object) {
+DeviceHistory.prototype.saveHistory = function (id, object) {
     saveObject(id + "history.json", object);
 };
 
 DeviceHistory.prototype.loadHistory = function (id) {
     return loadObject(id + "history.json");
+};
+
+DeviceHistory.prototype.setChangeObject = function (lvl) {
+    var date = new Date(),
+        change = {
+                id: Math.floor(date.getTime() / 1000),
+                t: date.toISOString(),
+                l: lvl
+            };
+
+    return change;
+};
+
+DeviceHistory.prototype.setupMetricsHistory = function (dev){
+    var self = this,
+        id = dev.get('id'),
+        history, item;
+    
+    // try to load device history
+    try {
+        history = self.loadHistory(id) || [];
+    } catch (e) {
+        console.log("Error loading history.json of device id '" + id + "' :", e.message);
+    }
+    
+    // create new device entry if necessary
+    if(history.length < 1){
+        item = {
+                id: id,
+                dT: dev.get("deviceType"),
+                mH: []
+            };
+
+        history.push(item);
+    }
+
+    // return metrics history array 
+    return history; 
 };

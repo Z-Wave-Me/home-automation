@@ -841,17 +841,31 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     getHistDevFunc: function (vDevId) {
         var that = this,
-            history = that.controller.listHistories(),
-            dev = history.filter(function(x){
-                    return x.id === vDevId;
-                }),
+            history,
+            dev,
             reply = {
                 error: null,
                 data: null
-            };
+            },
+            since,
+            sinceDevHist;
 
         return function () {
+            since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
+            history = that.controller.listHistories();
+            dev = history.filter(function(x){
+                    return x.id === vDevId;
+                });
+            sinceDevHist = that.controller.getDevHistorySince(dev, since);            
             
+            if (sinceDevHist){                
+                reply.code = 200;
+                reply.data = {
+                        id: vDevId,
+                        since: since,
+                        deviceHistory: sinceDevHist
+                    };
+            } else
             if (dev) {
                 reply.code = 200;
                 reply.data = dev;
