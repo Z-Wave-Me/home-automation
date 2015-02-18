@@ -1296,3 +1296,97 @@ A single Notice object with all its details
     + Body
 
             {"error":null,"data":{"id":1387202340396,"timestamp":"2013-12-16T13:59:00.396Z","level":"error","message":"Cannot remove location 54545 - doesn't exist","redeemed":true}}
+
+# Group Device Histories
+Device related resources of the **History API**
+
+## Histories Collection [/v1/history]
+
+### List all Device Histories  [GET]
+
++ Response 200 (application/json)
+
+    + Body
+    
+            {"error":null,
+              "data":{
+                "updateTime":1387884437,
+                "history":[
+                            {
+                            "id": "ZWayVDev_zway_3-0-48-1",
+                            "dT": "sensorBinary",
+                            "mH": [
+                                    {
+                                        "id": 1424185598,
+                                        "t": "2015-02-17T15:06:38.404Z",
+                                        "l": "on"
+                                    },
+                                    {
+                                        "id": 1424185662,
+                                        "t": "2015-02-17T15:07:42.382Z",
+                                        "l": "off"
+                                    }
+                                ]
+                            },{
+                            "id": "ZWayVDev_zway_3-0-49-3",
+                            "dT": "sensorMultilevel",
+                            "mH": [
+                                    {
+                                        "id": 1424172352,
+                                        "t": "2015-02-17T11:25:52.723Z",
+                                        "l": "21"
+                                    },
+                                    {
+                                        "id": 1424172382,
+                                        "t": "2015-02-17T11:26:22.743Z",
+                                        "l": "22"
+                                    }
+                                ]
+                            }
+                ]
+              }
+            }        
+        
+## Device History [/v1/history/{id}{?since}]
+A single device history object with all its details
+
++ Parameters
+    + id (optional, string, `/ZWayVDev_zway_3-0-48-1`) ... Device `id` of the device to perform action with.
+    + since (optional, integer, `?since=1424186368`) ... `updateTime` of the metrics change.
+
+### Retrieve a single Device History [GET]
++ Response 200 (application/json)
+
+    + Body
+
+            {
+            "data": {
+                "id": "ZWayVDev_zway_3-0-48-1",
+                "since": 1424186368,
+                "deviceHistory": [
+                            {
+                                "id": 1424186368,
+                                "t": "2015-02-17T15:19:28.698Z",
+                                "l": "off"
+                            },
+                            {
+                                "id": 1424186396,
+                                "t": "2015-02-17T15:19:56.806Z",
+                                "l": "on"
+                            },
+                            {
+                                "id": 1424186427,
+                                "t": "2015-02-17T15:20:27.238Z",
+                                "l": "off"
+                            },
+                            {
+                                "id": 1424187453,
+                                "t": "2015-02-17T15:37:33.410Z",
+                                "l": "on"
+                            }
+                    ]
+                },
+            "code": 200,
+            "message": "200 OK",
+            "error": null
+            }
