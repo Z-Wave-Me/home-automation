@@ -782,6 +782,17 @@ AutomationController.prototype.listHistories = function () {
     return self.history;
 };
 
+AutomationController.prototype.getDevHistorySince = function (dev, since) {
+    var self = this;
+    since = parseInt(since) || 0;
+    
+    var filteredEntries = dev[0]['mH'].filter(function (x) {
+        return x.id >= since;
+    });
+
+    return filteredEntries;
+};
+
 AutomationController.prototype.getCountHistories = function () {
     return this.history.length || 0;
 };
@@ -962,7 +973,17 @@ AutomationController.prototype.getModuleData = function (moduleId) {
         try {
             languageFile = fs.loadJSON('modules/' + moduleId + '/lang/en.json');
         } catch (e) {
-            languageFile = null;
+
+            try {
+                languageFile = fs.loadJSON('userModules/' + moduleId + '/lang/' + defaultLang + '.json');
+            } catch (e) {
+                
+                try {
+                    languageFile = fs.loadJSON('userModules/' + moduleId + '/lang/en.json');
+                } catch (e) {
+                    languageFile = null;
+                }
+            }
         }
     }
 
