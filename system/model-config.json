@@ -6,9 +6,11 @@
   },
   "User": {
     "dataSource": "filesystem",
-    "file": "users"
+    "file": "users",
+    "public": true
   },
   "Token": {
-    "dataSource": "memory"
+    "dataSource": "memory",
+    "public": false
   }
 }

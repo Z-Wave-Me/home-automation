@@ -6,11 +6,19 @@
             fs = global.fs,
             bootFolderPath = 'system/boot';
 
+        self.ready = false;
+        self.messages = [];
+
         // Loading Core
         if (global.executeFile) {
             executeFile('core/core.js');
         }
         self.Core = global.Core;
+        self.Router = new global.Core.Router({
+            '/api/v1/ping': function () {
+                return 'pong';
+            }
+        });
 
         // Loading Config
         console.log('System: Loading Config');
@@ -45,7 +53,8 @@
 
     App.prototype = {
         init: function () {
-            var self = this;
+            var self = this,
+                fs = global.fs;
 
             self.models = {};
 
@@ -80,9 +89,11 @@
             });
 
             console.log('System: Registering Handlers');
-            ['cors', 'rest'].forEach(function (handlerName) {
+            ['unavailable', 'cors', 'endpoint', 'rest', 'notFound'].forEach(function (handlerName) {
                 executeFile('system/handlers/' + handlerName + '.js');
             });
+
+            self.ready = true;
         }
     };
 

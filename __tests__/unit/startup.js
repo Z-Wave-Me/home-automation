@@ -10,5 +10,4 @@ require('../../core/core.model');
 require('../../core/core.collection');
 require('../../core/core.router');
 
-
 module.exports = global.Core;

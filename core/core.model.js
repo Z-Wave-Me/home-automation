@@ -171,7 +171,7 @@
                 return self;
             },
             remove: function () {
-
+                console.log('remove');
             },
             changedAttributes: function () {
                 return _.clone(this.changed);
@@ -210,5 +210,4 @@
 
     Model.Extend = Core.Helpers.Extend;
     Core.Model = Model;
-
 }());

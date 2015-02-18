@@ -1,19 +1,25 @@
 /* System: Loaded Cors Handler */
 'use strict';
 ; (function () {
-    var Cors = function (request) {
+    var NotFound = function (request) {
         var result = null,
             defaultResponse;
 
         if (request.method === 'OPTIONS') {
             defaultResponse = Core.Namespace('Handlers.Endpoint').getDefaultResponse();
             result = _.extend(defaultResponse, {
-                body: null
+                status: 404,
+                body: {
+                    data: null,
+                    message: '404 Not Found',
+                    error: null,
+                    code: 404
+                }
             });
         }
 
         return result;
     };
 
-    Core.Namespace('Handlers.Cors', Cors);
+    Core.Namespace('Handlers.NotFound', NotFound);
 }());
