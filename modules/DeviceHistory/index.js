@@ -37,26 +37,23 @@ DeviceHistory.prototype.init = function (config) {
         switch(devType){
             case 'sensorMultilevel':
             case 'sensorMultiline':
-                self.setUpdateInterval(dev, 300, 244); // check every 5 min
+                self.setUpdateInterval(dev, 30, 244); // check every 5 min
                 break;
             case 'battery':
-                self.setUpdateInterval(dev, 1200, 12); // check every 2 hrs
+                self.setUpdateInterval(dev, 60, 12); // check every 2 hrs
                 break;
             case 'switchBinary':
             case 'sensorBinary':
+            case 'toggleButton':
+            case 'switchMultilevel':
+            case 'thermostat':
                 self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs 
                 break;
             case 'doorlock':
                 break;
-            case 'switchMultilevel':
-            case 'thermostat':
-                self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs
-                break;
             case 'fan':
                 break;
             case 'switchControl':
-                break;
-            case 'toggleButton':
                 break;
             default:
                 break;
@@ -72,11 +69,20 @@ DeviceHistory.prototype.stop = function () {
         clearInterval(this.timer);
     }
 
+    // remove eventhandler 
     allDevices.forEach(function(dev) {
         var devType = dev.get('deviceType');
         
-        if(devType === 'switchBinary' || devType === 'sensorBinary'){
-                self.controller.devices.off(dev.id,'change:metrics:level', self.storeHistoryBinary);
+        switch(devType){
+            case 'switchBinary':
+            case 'sensorBinary':
+            case 'toggleButton':
+            case 'switchMultilevel':
+            case 'thermostat':
+                self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary);
+                break;
+            default:
+                break;
         }
     });
 
@@ -125,7 +131,9 @@ DeviceHistory.prototype.storeHistoryBinary = function(dev){
             }
         };
 
+        // avoid double entries (occurs only on events)
         if(getPara('id') != cId && getPara('l') != lvl) {
+            
             // push only changes during the last 24 hrs    
             if(lastEntry - (24*3600) < firstEntry){
                 histMetr.push(change);    
@@ -146,7 +154,7 @@ DeviceHistory.prototype.storeHistory = function(dev, count) {
         date = new Date(),
         history, item, change, histMetr;
 
-    change = self.setChangeObject();
+    change = self.setChangeObject(lvl);
     
     // get history and metrics history
     history = self.setupMetricsHistory(dev);
