@@ -1700,7 +1700,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (a_vDev) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-								self.controller.devices.remove(vDevId + separ + sensorTypeId);
+								self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
+								self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "D");
 							} else {
 								try {
 									a_vDev.set("metrics:level", "on");
