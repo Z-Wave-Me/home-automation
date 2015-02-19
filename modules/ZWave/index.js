@@ -1064,6 +1064,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						cc.Set(true);
 					} else if ("off" === command) {
 						cc.Set(false);
+					} else if ("update" === command) {
+						cc.Get(vDevId);
 					}
 				},
 				moduleId: self.id
@@ -1138,6 +1140,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						cc.StartLevelChange(0);
 					} else if ("startDown" === command) {
 						cc.StartLevelChange(1);
+					} else if ("update" === command) {
+						cc.Get(vDevId);
 					}
 
 					if (0 === newVal || !!newVal) {

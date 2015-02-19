@@ -973,7 +973,16 @@ AutomationController.prototype.getModuleData = function (moduleId) {
         try {
             languageFile = fs.loadJSON('modules/' + moduleId + '/lang/en.json');
         } catch (e) {
-            languageFile = null;
+            try {
+                languageFile = fs.loadJSON('userModules/' + moduleId + '/lang/' + defaultLang + '.json');
+            } catch (e) {
+                
+                try {
+                    languageFile = fs.loadJSON('userModules/' + moduleId + '/lang/en.json');
+                } catch (e) {
+                    languageFile = null;
+                }
+            }
         }
     }
 
