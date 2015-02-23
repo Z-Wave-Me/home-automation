@@ -97,7 +97,7 @@ ZWave.prototype.init = function (config) {
 
 ZWave.prototype.startBinding = function () {
 	var self = this,
-		moduleName = "Z-Wave Binding",
+		moduleName = "ZWave",
 		langFile = self.controller.loadModuleLang(moduleName);
 
 	try {
@@ -919,7 +919,7 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-        moduleName = "Z-Wave Binding",
+        moduleName = "ZWave",
         langFile = this.controller.loadModuleLang(moduleName);
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
@@ -1711,7 +1711,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		}
 	} catch (e) {
-		var moduleName = "Z-Wave Binding",
+		var moduleName = "ZWave",
         	langFile = this.controller.loadModuleLang(moduleName),
            	values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
