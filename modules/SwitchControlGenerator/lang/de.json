@@ -1,0 +1,7 @@
+{
+	"m_descr":"Generiert zeitgleich neue Widgets für Fernbedienungen, Schalter und andere Geräte, die Kontrollkommandos zum Controller senden.",
+	"l_trapNew": "Erzeuge ein Kontrollgerät für neue Fernbedienungen und Schalter",
+	"l_banned": "Nicht instanziierte Fernbedienungen und Schalter",
+	"l_generated": "Instanziierte Fernbedienungen und Schalter (wird automatisch geladen)",
+	"err":"SwitchControlGenerator: Das virtuelle Geräte sollte existieren, wurde aber nicht gefunden."
+}

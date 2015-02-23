@@ -1,0 +1,23 @@
+{
+	"m_descr":"Security mode allows to trigger scenes based on devices status.",
+	"action_msg":"Alert!",
+	"l_tests":"Sensors",
+	"l_test_binary":"Binary condition",
+	"l_test_multi":"Multilevel condition",
+	"l_tests_remote":"Remote condition",
+	"l_action":"Actions",
+	"l_phone":"Phone number to send SMS. In form of 79261234567",
+	"l_msg":"Message",
+	"l_api_key":"API key from SMS.ru", 
+	"h_api_key": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"l_switches":"List of switches",
+	"on":"On",
+	"off":"Off",
+	"l_dimmers":"List of dimmers",
+	"l_status":"State",
+	"l_locks":"List of locks",
+	"open":"Open",
+	"close":"Close",
+	"l_scenes":"List of scenes to activate",
+	"err_get_vDev":"Can not get vDev: "
+}

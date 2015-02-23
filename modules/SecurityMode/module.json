@@ -12,12 +12,12 @@
 	},
 	"defaults": {
 		"title": "Security mode",
-		"description": "Security mode allows to trigger scenes based on devices status.",
+		"description": "__m_descr__",
 		"tests": [],
 		"action": {
 			      	"api_key": "",
         			"phone": "",
-	    			"message": "Alert!"
+	    			"message": "__action_msg__"
 		}
 	},
 	"schema": {
@@ -182,7 +182,7 @@
 	"options": {
 		"fields": {
 			"tests": {
-				"label": "Sensors",
+				"label": "__l_tests__",
 				"fields": {
 					"item": {
 						"fields": {
@@ -191,7 +191,7 @@
 								"default": ""
 							},
 							"testBinary": {
-								"label": "Binary condition",
+								"label": "__l_test_binary__",
 								"dependencies": {
 									"testType": "binary"
 								},
@@ -206,7 +206,7 @@
 								}
 							},
 							"testMultilevel": {
-								"label": "Multilevel condition",
+								"label": "__l_test_multi__",
 								"dependencies": {
 									"testType": "multilevel"
 								},
@@ -225,7 +225,7 @@
 								}
 							},
 							"testRemote": {
-								"label": "Remote condition",
+								"label": "__l_tests_remote__",
 								"dependencies": {
 									"testType": "remote"
 								},
@@ -244,19 +244,20 @@
 				}
 			},
 			"action": {
-				"label": "Actions",
+				"label": "__l_action__",
 				"fields": {
 					"phone": {
-                		"label": "Phone number to send SMS. In form of 79261234567"
+                		"label": "__l_phone__"
             		},
             		"message": {
-                		"label": "Message"
+                		"label": "__l_msg__"
             		},
             		"api_key": {
-                		"label": "API key from SMS.ru", "helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+                		"label": "__l_api_key__",
+                		"helper":"__h_api_key__"
             		},
 					"switches": {
-						"label": "List of switches",
+						"label": "__l_switches__",
 						"fields": {
 							"item": {
 								"fields": {
@@ -269,14 +270,14 @@
 									},
 									"status": {
 										"label": "",
-										"optionLabels": ["On", "Off"]
+										"optionLabels": ["__on__", "__off__"]
 									}
 								}
 							}
 						}
 					},
 					"dimmers": {
-						"label": "List of dimmers",
+						"label": "__l_dimmers__",
 						"fields": {
 							"item": {
 								"fields": {
@@ -288,7 +289,7 @@
 										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 									},
 									"status": {
-										"label": "State",
+										"label": "__l_status__",
 										"type": "integer"
 									}
 								}
@@ -296,7 +297,7 @@
 						}
 					},
 					"locks": {
-						"label": "List of locks",
+						"label": "__l_locks__",
 						"fields": {
 							"item": {
 								"fields": {
@@ -309,14 +310,14 @@
 									},
 									"status": {
 										"label": "",
-										"optionLabels": ["Open", "Close"]
+										"optionLabels": ["__open__", "__close__"]
 									}
 								}
 							}
 						}
 					},
 					"scenes": {
-						"label": "List of scenes to activate",
+						"label": "__l_scenes__",
 						"fields": {
 							"item": {
 								"type": "select",

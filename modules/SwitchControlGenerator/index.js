@@ -211,15 +211,14 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         
         this.config.generated.push(name);
         this.saveConfig();
-    };
+    }
     
-    var vDev = this.controller.devices.get(name);
+    var vDev = this.controller.devices.get(name),
+        moduleName = "SwitchControlGenerator",
+        langFile = this.controller.loadModuleLang(moduleName);
+    
     if (vDev === null) {
-        var message = {
-            "en":"SwitchControlGenerator: Virtual device should exist, but was not found.",
-            "de":"SwitchControlGenerator: Das virtuelle Geräte sollte existieren, wurde aber nicht gefunden."
-        };
-        this.controller.addNotification("critical", message, "controller", "SwitchControlGenerator");
+        this.controller.addNotification("critical", langFile.err, "controller", moduleName);
         return;
     }
     

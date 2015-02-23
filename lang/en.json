@@ -1,0 +1,13 @@
+{	
+	"ac_warn_restart":"Automation Controller is restarted.",
+	"ac_err_init_module_not_found":"Can not instantiate module: module not found in the list of all modules.",
+	"ac_err_init_module":"Can not instantiate module: ",
+	"ac_err_dep_not_found":"Dependency not found for module: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_loaded":"Failed to load module because dependency was not loaded: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_init":"Failed to load module because dependency was not instanciated: [DEP]::[MODUL] = ",
+	"ac_err_file_load":"Can not load ",
+	"ac_err_invalid_module":"Invalid module ",
+	"ac_err_load_mod_json":"Can not load modules.json from ",
+	"ac_err_stop_mod":"Can not stop module ",
+	"vd_err_virtual_dev":"Error during perform command execution: "
+}

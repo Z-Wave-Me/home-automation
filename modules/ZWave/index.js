@@ -96,7 +96,9 @@ ZWave.prototype.init = function (config) {
 };
 
 ZWave.prototype.startBinding = function () {
-	var self = this;
+	var self = this,
+		moduleName = "Z-Wave Binding",
+		langFile = self.controller.loadModuleLang(moduleName);
 
 	try {
 		this.zway = new ZWaveBinding(this.config.name, this.config.port, {
@@ -115,12 +117,7 @@ ZWave.prototype.startBinding = function () {
 			throw e1;
 		}
 	} catch(e) {
-		var values = e.toString(),
-			message = {
-            "en":"Can not start Z-Wave binding: " + values,
-            "de":"Fehler beim Starten des Z-Wave binding: " + values
-        };
-		this.controller.addNotification("critical", message, "z-wave", "Z-Wave Binding");
+		this.controller.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave", moduleName);
 		this.zway = null;
 		return;
 	}
@@ -921,22 +918,16 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 };
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
-	var values = nodeId.toString(10);
+	var values = nodeId.toString(10),
+        moduleName = "Z-Wave Binding",
+        langFile = this.controller.loadModuleLang(moduleName);
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			var message = {
-	            "en":"Connection lost to Z-Wave device ID: " + values,
-	            "de":"Verbindung verloren zur Z-Wave Geräte-ID: " + values
-	        };
-			self.controller.addNotification("error", message, "connection", "Z-Wave Binding");
+			self.controller.addNotification("error", langFile.err_connct + values, "connection", moduleName);
 		}
 	} else {
-		var message = {
-            "en":"Z-Wave device ID is back to life: " + values,
-            "de":"Z-Wave Geräte-ID ist wieder verbunden: " + values
-        };
-		self.controller.addNotification("notification", message, "connection", "Z-Wave Binding");
+		self.controller.addNotification("notification", langFile.dev_btl + values, "connection", moduleName);
 	}
 };
 
@@ -1720,12 +1711,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		}
 	} catch (e) {
-		var values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString(),
-			message = {
-            "en":"Can not create vDev based on: " + values,
-            "de":"vDev konnte mit den folgenden Daten nicht erstellt werden: " + values
-        };
-		controller.addNotification("error", message, "core", "Z-Wave Binding");
+		var moduleName = "Z-Wave Binding",
+        	langFile = this.controller.loadModuleLang(moduleName),
+           	values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
+			
+		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
 		console.log(e.stack);
 	}
 };

@@ -5,5 +5,7 @@
 	"country":"Country",
 	"country_ph":"United Kingdom",
 	"unit":"Unit",
+	"err_parse":"Can not parse weather information.",
+  	"err_fetch":"Can not fetch weather information.",
 	"":""
 }

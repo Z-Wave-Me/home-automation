@@ -1,0 +1,22 @@
+{
+	"m_descr":"Create virtual device based on HTTP data.",
+	"l_schema":"Select action condition",
+	"l_setterOn":"URL for action On",
+	"p_setterOn":"http://192.168.0.100/action/on",
+	"l_setterOff":"URL for action Off",
+	"p_setterOff":"http://192.168.0.100/action/off",
+	"l_getter":"URL to get value",
+	"p_getter":"http://192.168.0.100/get/value",
+	"l_getterParser_Binary":"Inline Javascript to parse incoming data to 'on'/'off' strings",
+	"h_getterParser_Binary":"Can be empty to use string as is. Example: $$.split(':')[1] or $$.data.metrics.level or $$ === 'ON' ? 'on' : 'off'",
+	"l_getterPollInterval":"Interval in seconds between polling requests",
+	"h_getterPollInterval":"Empty or 0 to disable periodical requests (explicit update command will still initiate request process)",
+	"l_getterParser_Multilevel":"Inline Javascript to parse incoming data to number",
+	"h_getterParser_Multilevel":"Can be empty to use parseFloat() function. Example: $$.split(':')[1] or parseInt($$, 16) or $$.data.metrics.level or parseFloat($$.findOne('/A/B[C='123']/D/text()'))",
+	"l_setterLevel":"URL for action",
+	"p_setterLevel":"http://192.168.0.100/action/set/$$",
+	"h_setterLevel":"$$ is used to represent level in the URL. For example: http://host/dimmer/level/$$/set",
+	"l_scale":"Sensor scale",
+	"l_method":"HTTP method to use",
+	"err_req":"Can not make request: "
+}

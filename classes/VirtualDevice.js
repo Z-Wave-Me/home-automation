@@ -235,17 +235,14 @@ _.extend(VirtualDevice.prototype, {
         return this.metrics.icon = this.deviceType;
     },
     performCommand: function () {
+        var langFile = this.controller.loadMainLang();
+
         console.log("--- ", this.id, "performCommand processing:", JSON.stringify(arguments));
         if (typeof this.handler === "function") {
             try {
                 return this.handler.apply(this, arguments);
             } catch(e) {
-                var values = e.toString(),
-                    message = {
-                    "en":"Error during perform command execution: " + values,
-                    "de":"Fehler beim Ausführen des Befehls: " + values
-                };
-                this.controller.addNotification("error", message, "module", "VirtualDevice");
+                this.controller.addNotification("error", langFile.vd_err_virtual_dev + e.toString(), "module", "VirtualDevice");
                 console.log(e.stack);
             }
         }

@@ -1,0 +1,14 @@
+{
+	"m_descr":"Lädt Z-Wave Engine",
+	"l_port":"Serieller Port zum Z-Wave Dongle",
+	"l_name":"Interner Name",
+	"h_name":"Dies sollte ein valider JS key String sein. Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
+	"l_config":"Pfad zum Ordner /config",
+	"l_translations":"Pfad zum Ordner /dictionaries",
+	"l_zddx":"Pfad zur ZDDX Datenbank",
+	"h_change_sth":"Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
+	"err_binding_start":"Fehler beim Starten des Z-Wave binding: ",
+	"err_connct":"Verbindung verloren zur Z-Wave Geräte-ID: ",
+	"dev_btl":"Z-Wave Geräte-ID ist wieder verbunden: ",
+	"err_dev_create":"vDev konnte mit den folgenden Daten nicht erstellt werden: "
+}
