@@ -104,12 +104,10 @@ SecurityMode.prototype.attachDetach = function (test, attachOrDetach) {
     var vDev = this.controller.devices.get(test.device);
     
     if (!vDev) {
-        var values = test.device,
-            message = {
-            "en":"Can not get vDev: " + values,
-            "de":"Kein Zugriff auf das virtuelle Gerät: " + values
-        };
-        this.controller.addNotification("error", message, "module", "SecurityMode");
+        var moduleName = "SecurityMode",
+            langFile = this.controller.loadModuleLang(moduleName);
+
+        this.controller.addNotification("error", langFile.err_get_vDev + test.device, "module", moduleName);
         return;
     }
     

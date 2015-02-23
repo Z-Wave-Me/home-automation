@@ -72,7 +72,9 @@ YandexProbki.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 YandexProbki.prototype.fetchJams = function(instance) {
-    var self = instance;
+    var self = instance,
+        moduleName = "YandexProbki",
+        langFile = self.controller.loadModuleLang(moduleName);
     
     http.request({
         url: "http://api-maps.yandex.ru/services/traffic-info/1.0/?format=json&lang=en-EN",
@@ -114,19 +116,11 @@ YandexProbki.prototype.fetchJams = function(instance) {
                 self.vDev.set("metrics:level", jam);
                 self.vDev.set("metrics:icon", icon);
             } catch (e) {
-                var message = {
-                    "en":"Can not parse yandex jam information.",
-                    "de":"Fehler beim Einlesen der Yandex Jam Informationen."
-                };
-                self.controller.addNotification("error", message, "module", "YandexProbki");
+                self.controller.addNotification("error", langFile.err_parse, "module", moduleName);
             }
         },
         error: function() {
-            var message = {
-                "en":"Can not fetch yandex jam information.",
-                "de":"Fehler beim Aktualisieren der Yandex Jam Informationen."
-            };
-            self.controller.addNotification("error", message, "module", "YandexProbki");
+            self.controller.addNotification("error", langFile.err_fetch, "module", moduleName);
         }
     });
 };

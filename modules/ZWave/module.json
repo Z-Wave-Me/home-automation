@@ -13,7 +13,7 @@
     },
     "defaults": {
         "title": "Z-Wave binding",
-        "description": "Loads Z-Wave engine",
+        "description": "__m_descr__",
         "name": "zway",
         "port": "/dev/ttyUSB0",
 	"config": "config",
@@ -49,26 +49,26 @@
     "options": {
         "fields": {
             "port": {
-                "label": "Serial port to Z-Wave dongle"
+                "label": "__l_port__"
             },
             "name": {
-                "label": "Internal name",
-		"helper": "Chould be a valid JS key string. Don't change unless you know what you are doing"
+                "label": "__l_name__",
+		        "helper": "__h_name__"
             },
             "config": {
-		"hidden": true,
-                "label": "Path to config folder",
-		"helper": "Don't change unless you know what you are doing"
+		        "hidden": true,
+                "label": "__l_config__",
+		        "helper": "__h_change_sth__"
             },
             "translations": {
-		"hidden": true,
-                "label": "Path to dictionaries folder",
-		"helper": "Don't change unless you know what you are doing"
+		        "hidden": true,
+                "label": "__l_translations__",
+		        "helper": "__h_change_sth__"
             },
             "ZDDX": {
-		"hidden": true,
-                "label": "Path to ZDDX database",
-		"helper": "Don't change unless you know what you are doing"
+		        "hidden": true,
+                "label": "__l_zddx__",
+		        "helper": "__h_change_sth__"
             }
         }
     }

@@ -5,5 +5,7 @@
 	"all":"alle Gerätetypen",
 	"battery":"Batterie",
 	"fan":"Ventilator",
-	"doorlock":"Türschloss"
+	"doorlock":"Türschloss",
+	"status_lvl":"Der Status des folgenden Sensors oder Gerätes hat sich verändert - ",
+	"status_lvl_unknown":"Der Status (unbekannt) des folgenden Gerätes hat sich verändert - "
 }

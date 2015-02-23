@@ -1,0 +1,22 @@
+{
+	"m_descr":"Erstelle ein virtuelles Gerät mittels HTTP-Daten.",
+	"l_schema":"Wählen Sie einen Gerätetyp",
+	"l_setterOn":"Schalte das Gerät über die URL an (ON)",
+	"p_setterOn":"http://192.168.0.100/action/on",
+	"l_setterOff":"Schalte das Gerät über die URL aus (OFF)",
+	"p_setterOff":"http://192.168.0.100/action/off",
+	"l_getter":"Rufe einen Wert über die URL ab",
+	"p_getter":"http://192.168.0.100/get/value",
+	"l_getterParser_Binary":"Inline Javascript für das Einlesen der hereinkommenden Daten als 'on'/'off' Strings",
+	"h_getterParser_Binary":"Bei keiner Eingabe wird der ankommende String verwendet. Bsp.: $$.split(':')[1] oder $$.data.metrics.level oder $$ === 'ON' ? 'on' : 'off'",
+	"l_getterPollInterval":"Abfrageintervall in Sekunden",
+	"h_getterPollInterval":"Bei keiner Eingabe oder 0 wird kein Abfrageintervall instanziiert (Explizite update Kommandos funktionieren auch weiterhin)",
+	"l_getterParser_Multilevel":"Inline Javascript für das Einlesen eingehender Daten als Zahlen",
+	"h_getterParser_Multilevel":"Bei keiner Eingabe wird parseFloat() verwendet. Bsp.: $$.split(':'')[1] oder parseInt($$, 16) oder $$.data.metrics.level oder parseFloat($$.findOne('/A/B[C='123']/D/text()'))",
+	"l_setterLevel":"Führe eine Aktion über die URL aus",
+	"p_setterLevel":"http://192.168.0.100/action/set/$$",
+	"h_setterLevel":"$$ wird benutzt um das Level in der URL zu symbolisieren. Bsp.: http://host/dimmer/level/$$/set",
+	"l_scale":"Sensor Skala",
+	"l_method":"HTTP Methoden",
+	"err_req":"Es konnte kein Request gesendet werden: "
+}

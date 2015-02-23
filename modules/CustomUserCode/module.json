@@ -12,12 +12,12 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-	"title": "Load custom JavaScript code",
-	"description": "Allows to load custom JavaScript code on system load",
-	"customCode": ""
+    	"title": "Load custom JavaScript code",
+    	"description": "__m_descr__",
+    	"customCode": ""
     },
     "schema": {
-        "description": "User defined JavaScript code to be executed on load",
+        "description": "__s_descr__",
         "type": "object",
         "properties": {
             "customCode": {

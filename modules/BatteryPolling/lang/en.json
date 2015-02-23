@@ -1,0 +1,15 @@
+{
+	"m_descr":"Battery Polling notifications",
+	"l_launch_wd":"Do battery polling on",
+	"every_d":"Every Day", 
+	"mon":"Monday", 
+	"tue":"Tuesday", 
+	"wed":"Wednesday", 
+	"thu":"Thursday", 
+	"fri":"Friday", 
+	"sat":"Saturday", 
+	"sun":"Sunday",
+	"l_warning_lvl":"Warning Level",
+	"h_warning_lvl":"Warn if device's battery is below this level",
+	"warning":"Attention! Device is low battery >:> "
+}

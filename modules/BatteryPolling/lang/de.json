@@ -1,0 +1,15 @@
+{
+	"m_descr":"Überprüft regelmäßig den Batteriestatus der Geräte.",
+	"l_launch_wd":"Überprüfe den Batteriestatus jeden:",
+	"every_d":"Tag", 
+	"mon":"Montag", 
+	"tue":"Dienstag", 
+	"wed":"Mittwoch", 
+	"thu":"Donnerstag", 
+	"fri":"Freitag", 
+	"sat":"Samstag", 
+	"sun":"Sonntag",
+	"l_warning_lvl":"Benachrichtigungslevel",
+	"h_warning_lvl":"Das Modul sendet eine Benachrichtigung, wenn der Batteriestatus eines Gerätes unterhalb dieses Levels fällt.",
+	"warning":"Achtung! Das Batterielevel des Gerätes beträgt nur noch >:> "
+}

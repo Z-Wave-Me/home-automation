@@ -4,5 +4,7 @@
   "country": "Country",
   "country_placeholder": "England",
   "city": "City",
-  "city_placeholder": "London"
+  "city_placeholder": "London",
+  "err_parse":"Can not parse weather information.",
+  "err_fetch":"Can not fetch weather information."
 }

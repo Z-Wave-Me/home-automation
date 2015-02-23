@@ -56,7 +56,7 @@ BatteryPolling.prototype.init = function (config) {
         moduleId: this.id
     });
 
-    this.onMetricUpdated = function (vDev) {
+    this.onMetricUpdated = function (vDev) {      
         if (!vDev || vDev.id === self.vDev.id) {
             return; // prevent infinite loop with updates from itself and allows first fake update
         }
@@ -68,12 +68,9 @@ BatteryPolling.prototype.init = function (config) {
         self.vDev.set("metrics:level", self.minimalBatteryValue());
         if (vDev.get("metrics:level") <= self.config.warningLevel) {
             var values = vDev.get("metrics:title"),
-                message = {
-                "en":"Attention! Device is low battery >:> " + values,
-                "de":"Achtung! Das Batterielevel des Gerätes beträgt nur noch >:> " + values,
-                "ru":"Внимание! Батарея разряжена >:> " + values
-            };
-            self.controller.addNotification("warning", message, "battery", self.vDev.get(id));
+                langFile = self.controller.loadModuleLang("BatteryPolling");
+                
+            self.controller.addNotification("warning", langFile.warning + values, "battery", self.vDev.get(id));
         }
     };
     
