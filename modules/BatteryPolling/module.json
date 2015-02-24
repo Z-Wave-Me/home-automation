@@ -1,11 +1,11 @@
 {
     "singleton": true,
     "dependencies": ["Cron"],
-    "category": "devices",
+    "category": "scheduling",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
     "icon": "",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "maturity": "stable",
     "repository": {
             "type": "git",
@@ -13,7 +13,7 @@
     },
     "defaults": {
         "title": "Battery Polling",
-        "description": "Battery Polling notifications",
+        "description": "__m_descr__",
         "launchWeekDay": 0,
         "warningLevel": 20
     },
@@ -23,7 +23,7 @@
             "launchWeekDay": {
                 "type": "number",
                 "required": true,
-	        "enum": [1, 2, 3, 4, 5, 6, 0]
+	        "enum": [-1, 1, 2, 3, 4, 5, 6, 0]
             },
             "warningLevel": {
                 "type": "select",
@@ -36,12 +36,12 @@
     "options": {
         "fields": {
             "launchWeekDay": {
-                "label": "Do battery polling on",
-	        "optionLabels": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                "label": "__l_launch_wd__",
+	            "optionLabels": ["__every_d__", "__mon__", "__tue__", "__wed__", "__thu__", "__fri__", "__sat__", "__sun__"]
             },
             "warningLevel": {
-                "label": "Warning Level",
-                "helper": "Warn if device's battery is below this level",
+                "label": "__l_warning_lvl__",
+                "helper": "__h_warning_lvl__",
                 "optionLabels": ["5%", "10%", "15%", "20%"]
             }
         }

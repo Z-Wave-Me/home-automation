@@ -5,5 +5,7 @@
 	"all":"all device types",
 	"battery":"Battery",
 	"fan":"Fan",
-	"doorlock":"Doorlock"
+	"doorlock":"Doorlock",
+	"status_lvl":"Sensor or Device status has changed - ",
+	"status_lvl_unknown":"Device has changed metrics or status (unknown) - "
 }

@@ -1,0 +1,23 @@
+{
+	"m_descr":"Der Security Modus ermöglicht es bestimmte Szenarien abhängig vom Gerätestatus auszulösen.",
+	"action_msg":"Alarm!",
+	"l_tests":"Sensoren",
+	"l_test_binary":"Binär Zustand",
+	"l_test_multi":"Multilevel Zustand",
+	"l_tests_remote":"Remote Zustand",
+	"l_action":"Aktionen",
+	"l_phone":"Telefonnummer für SMS-Benachrichtigung. Bsp.: 79261234567",
+	"l_msg":"Nachricht",
+	"l_api_key":"API key von SMS.ru", 
+	"h_api_key": "Nach der Registration finden Sie auf der rechten Seite die api_id (Bsp.: a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"l_switches":"Liste der Schalter",
+	"on":"An",
+	"off":"Aus",
+	"l_dimmers":"Liste aller Dimmer",
+	"l_status":"Status",
+	"l_locks":"Liste aller Schlösser",
+	"open":"Öffnen",
+	"close":"Schließen",
+	"l_scenes":"Liste aller aktivierten Szenarios",
+	"err_get_vDev":"Kein Zugriff auf das virtuelle Gerät: "
+}

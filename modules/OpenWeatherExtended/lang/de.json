@@ -5,5 +5,7 @@
 	"country":"Land",
 	"country_ph":"Deutschland",
 	"unit":"Einheit",
+	"err_parse":"Fehler beim Einlesen der Wetterinformationen.",
+  	"err_fetch":"Fehler beim Aktualisieren der Wetterinformationen.",
 	"":""
 }

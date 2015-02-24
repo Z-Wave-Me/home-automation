@@ -180,12 +180,9 @@ AutomationController.prototype.restart = function () {
     this.stop();
     this.start();
 
-    var message = {
-        "en":"Automation Controller is restarted.",
-        "de":"Der Automation Controller wurde neu gestartet."
-    }; 
+    var langFile = this.loadMainLang();
 
-    this.addNotification("warning", message, "core", "AutomationController");
+    this.addNotification("warning", langFile.ac_warn_restart, "core", "AutomationController");
 };
 
 AutomationController.prototype.loadModules = function (callback) {
@@ -206,7 +203,9 @@ AutomationController.prototype.loadModules = function (callback) {
 };
 
 AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder) {
-    var self = this;
+    var self = this,
+        langFile = self.loadMainLang(),
+        values;
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
         _st;
@@ -226,13 +225,9 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
     try {
         var moduleMeta = fs.loadJSON(moduleMetaFilename);
     } catch (e) {
-        var values = moduleMetaFilename + ": " + e.toString(),
-            message = {
-            "en":"Can not load modules.json from " + values,
-            "de":"modules.json kann nicht geladen werden. Modul: " + values
-        };
+            values = moduleMetaFilename + ": " + e.toString();
 
-        self.addNotification("error", message, "core", "AutomationController");
+        self.addNotification("error", langFile.ac_err_load_mod_json + values, "core", "AutomationController");
         console.log(e.stack);
         return; // skip this modules
     }
@@ -260,26 +255,21 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         module = _.find(self.modules, function (module) {
             return instanceModel.moduleId === module.meta.id;
         }),
-        instance = null;
+        instance = null,
+        langFile = self.loadMainLang(),
+        values;
 
     if (!module) {
-        var message = {
-            "en":"Can not instantiate module: module not found in the list of all modules.",
-            "de":"Das Modul kann nicht instanziiert werden: Das Modul wurde in der Modulliste nicht gefunden."
-        };
-        self.addNotification("error", message, "core", "AutomationController");
+        self.addNotification("error", langFile.ac_err_init_module_not_found, "core", "AutomationController");
     }
 
     if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
         } catch (e) {
-            var values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(),
-                message = {
-                "en":"Can not instantiate module: " + values,
-                "de":"Das Modul kann nicht instanziiert werden: " + values
-            };
-            self.addNotification("error", message, "core", "AutomationController");
+            values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
+
+            self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -298,12 +288,9 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         try {
             instance.init(instanceModel.params);
         } catch (e) {
-            var values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString(),
-                message = {
-                "en":"Can not instantiate module: " + values,
-                "de":"Das Modul kann nicht instanziiert werden: " + values
-            };
-            self.addNotification("error", message, "core", "AutomationController");
+            values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
+
+            self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
             console.log(e.stack);
             return null; // not loaded
         }
@@ -314,6 +301,9 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
 };
 
 AutomationController.prototype.loadModule = function (module, rootModule) {
+    var langFile = this.loadMainLang(),
+        values;
+
     if (rootModule && rootModule === module) {
         console.log('Circular dependencies detected!');
         return false;
@@ -327,37 +317,26 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     if (module.meta.dependencies instanceof Array) {
         for (var i in module.meta.dependencies) {
             var dep = module.meta.dependencies[i];
-            var values = dep + " :: " + module.meta.id;
+            values = dep + " :: " + module.meta.id;
 
             var depModule = this.modules[dep];
             if (!depModule) {
-                var message = {
-                    "en":"Dependency not found for module: [MODUL]::[DEP] = " + values,
-                    "de":"Die Dependency wurde für das Modul nicht gefunden: [MODUL]::[DEP] = " + values
-                };
-                this.addNotification("error", message, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_found + values, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
 
             if (!this.loadModule(depModule, rootModule)) {
-                var message = {
-                    "en":"Failed to load module because dependency was not loaded: [MODULE]::[DEP] = " + values,
-                    "de":"Das Modul kann nicht geladen werden, da folgende Dependency nicht geladen wurde: [MODUL]::[DEP] = " + values
-                };
-                this.addNotification("error", message, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_loaded + values, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
 
             if (!this.loadedModules.some(function (x) {
-                    return x.meta.id === dep
+                    return x.meta.id === dep;
                 })) {
-                var message = {
-                    "en":"Failed to load module because dependency was not instanciated: [MODULE]::[DEP] = " + values,
-                    "de":"Das Modul kann nicht geladen werden, da die Dependency nicht instanziiert wurde: [MODUL]::[DEP] = " + values
-                };
-                this.addNotification("error", message, "core", "AutomationController");
+                
+                this.addNotification("error", langFile.ac_err_dep_not_init + values, "core", "AutomationController");
                 module.failed = true;
                 return false;
             }
@@ -368,24 +347,18 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     try {
         executeFile(module.location + "/index.js");
     } catch (e) {
-        var values = module.meta.id + ": " + e.toString(),
-            message = {
-            "en":"Can not load " + values,
-            "de":"Fehler beim Laden von " + values
-        };
-        this.addNotification("error", message, "core", "AutomationController");
+        values = module.meta.id + ": " + e.toString();
+
+        this.addNotification("error", langFile.ac_err_file_load + values, "core", "AutomationController");
         console.log(e.stack);
         module.failed = true;
         return false; // skip this modules
     }
 
     if (!_module) {
-        var values = module.meta.id,
-            message = {
-            "en":"Invalid module " + values,
-            "de":"Nicht valides Modul: " + values
-        };
-        this.addNotification("error", message, "core", "AutomationController");
+        values = module.meta.id;
+
+        this.addNotification("error", langFile.ac_err_invalid_module + values, "core", "AutomationController");
         module.failed = true;
         return false; // skip this modules
     }
@@ -413,7 +386,7 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     if (count)
         this.loadedModules.push(module);
     return true;
-}
+};
 
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
@@ -477,16 +450,16 @@ AutomationController.prototype.createInstance = function (reqObj) {
 };
 
 AutomationController.prototype.stopInstance = function (instance) {
+    var langFile = this.loadMainLang(),
+        values;
+
     try {
         instance.stop();
         delete this.registerInstances[instance.id];
     } catch (e) {
-        var values = ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString(),
-            message = {
-            "en":"Can not stop module " + values,
-            "de":"Das folgende Modul kann nicht gestoppt werden: " + values
-        };
-        this.addNotification("error", message, "core", "AutomationController");
+        values = ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString();
+
+        this.addNotification("error", langFile.ac_err_stop_mod + values, "core", "AutomationController");
         console.log(e.stack);
         return;
     }
@@ -967,24 +940,7 @@ AutomationController.prototype.getModuleData = function (moduleId) {
         languageFile,
         data;
 
-    try {
-        languageFile = fs.loadJSON('modules/' + moduleId + '/lang/' + defaultLang + '.json');
-    } catch (e) {
-        try {
-            languageFile = fs.loadJSON('modules/' + moduleId + '/lang/en.json');
-        } catch (e) {
-            try {
-                languageFile = fs.loadJSON('userModules/' + moduleId + '/lang/' + defaultLang + '.json');
-            } catch (e) {
-                
-                try {
-                    languageFile = fs.loadJSON('userModules/' + moduleId + '/lang/en.json');
-                } catch (e) {
-                    languageFile = null;
-                }
-            }
-        }
-    }
+    languageFile = self.loadModuleLang(moduleId);
 
     if (languageFile !== null) {
         Object.keys(languageFile).forEach(function (key) {
@@ -999,4 +955,43 @@ AutomationController.prototype.getModuleData = function (moduleId) {
     }
 
     return data;
+};
+
+// load module lang folder
+AutomationController.prototype.loadModuleLang = function (moduleId) {
+    var self = this,
+        languageFile;
+
+        languageFile = self.loadMainLang('modules/' + moduleId + '/');
+
+        if(languageFile === null){
+            languageFile = self.loadMainLang('userModules/' + moduleId + '/');
+        }
+
+    return languageFile;
+};
+
+// load lang folder with given prefix
+AutomationController.prototype.loadMainLang = function (pathPrefix) {
+    var self = this,
+        languageFile,
+        prefix;
+
+    if(pathPrefix === undefined || pathPrefix === null) {
+        prefix = '';
+    } else {
+        prefix = pathPrefix;
+    }
+
+    try {
+        languageFile = fs.loadJSON(prefix + "lang/" + self.defaultLang + ".json");
+    } catch (e) {            
+        try {
+            languageFile = fs.loadJSON(prefix + "lang/en.json");
+        } catch (e) {
+            languageFile = null;
+        }
+    }
+
+    return languageFile;
 };

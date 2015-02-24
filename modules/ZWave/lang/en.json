@@ -1,0 +1,14 @@
+{
+	"m_descr":"Loads Z-Wave engine",
+	"l_port":"Serial port to Z-Wave dongle",
+	"l_name":"Internal name",
+	"h_name":"Should be a valid JS key string. Don't change unless you know what you are doing",
+	"l_config":"Path to config folder",
+	"l_translations":"Path to dictionaries folder",
+	"l_zddx":"Path to ZDDX database",
+	"h_change_sth":"Don't change unless you know what you are doing",
+	"err_binding_start":"Can not start Z-Wave binding: ",
+	"err_connct":"Connection lost to Z-Wave device ID: ",
+	"dev_btl":"Z-Wave device ID is back to life: ",
+	"err_dev_create":"Can not create vDev based on: "
+}

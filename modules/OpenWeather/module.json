@@ -15,8 +15,8 @@
         "title": "Weather Informer",
         "description": "__description__",
         "units": "celsius",
-	"city": "",
-	"country": ""
+    	"city": "",
+    	"country": ""
     },
     "schema": {
         "type": "object",

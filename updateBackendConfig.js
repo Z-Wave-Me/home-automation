@@ -152,9 +152,9 @@
               console.log("Changing ID in params (array) from " + element + " to " + getNewID(element));
               arr[index] = getNewID(element);
             }
-          } else if (typeof element === "object" && element.constructor && element.constructor === Array) {
+          } else if (typeof element === "object" && element && element.constructor && element.constructor === Array) {
             fixArray(element);
-          } else if (typeof element === "object") {
+          } else if (typeof element === "object" && element) {
             fixObject(element);
           }
         });
@@ -167,9 +167,9 @@
               console.log("Changing ID in params (object) from " + obj[key] + " to " + getNewID(obj[key]));
               obj[key] = getNewID(obj[key]);
             }
-          } else if (typeof obj[key] === "object" && obj[key].constructor && obj[key].constructor === Array) {
+          } else if (typeof obj[key] === "object" && obj[key] && obj[key].constructor && obj[key].constructor === Array) {
             fixArray(obj[key]);
-          } else if (typeof obj[key] === "object") {
+          } else if (typeof obj[key] === "object" && obj[key]) {
             fixObject(obj[key]);
           }
         }

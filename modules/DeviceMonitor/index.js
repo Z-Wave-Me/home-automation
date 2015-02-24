@@ -37,7 +37,9 @@ DeviceMonitor.prototype.init = function (config) {
             devName = vDev.get('metrics:title'),
             probeTitle = vDev.get('metrics:probeTitle'),
             scaleUnit = vDev.get('metrics:scaleTitle'),
-            lvl = vDev.get('metrics:level');
+            lvl = vDev.get('metrics:level'),
+            langFile = self.controller.loadModuleLang("DeviceMonitor"),
+            values;
 
         // depending on device type choose the correct notification
         switch(devType) {
@@ -48,30 +50,18 @@ DeviceMonitor.prototype.init = function (config) {
             case 'doorlock':
             case 'switchMultilevel':
             case 'battery':
-                var values = devType + ' :: ' + devName + ' :: ' + lvl,
-                    message = {
-                    "en":"Sensor or Device status has changed - " + values,
-                    "de":"Der Status des folgenden Sensors oder Gerätes hat sich verändert - " + values
-                };
-                self.controller.addNotification('info', message, 'device', devId);
+                values = devType + ' :: ' + devName + ' :: ' + lvl;
+                self.controller.addNotification('info', langFile.status_lvl + values, 'device', devId);
                 break;
             case 'sensorMultilevel':
             case 'sensorMultiline':
             case 'thermostat':
-                var values = devType + ' :: ' + devName + ' :: ' + probeTitle + ' :: ' + lvl + ' ' + scaleUnit,
-                    message = {
-                    "en":"Sensor status has changed - " + values,
-                    "de":"Der Status des folgenden Sensors hat sich verändert - " + values
-                };
-                self.controller.addNotification('info', message, 'device', devId);
+                values = devType + ' :: ' + devName + ' :: ' + probeTitle + ' :: ' + lvl + ' ' + scaleUnit;
+                self.controller.addNotification('info', langFile.status_lvl + values, 'device', devId);
                 break;
             default:
-                var values = devType + ' :: ' + devName,
-                    message = {
-                    "en":"Device has changed metrics or status - " + values,
-                    "de":"Der Status des folgenden Gerätes hat sich verändert - " + values
-                };
-                self.controller.addNotification('info', message, 'device', devId);
+                values = devType + ' :: ' + devName;
+                self.controller.addNotification('info', langFile.status_lvl_unknown + values, 'device', devId);
                 break;
         }
     };
