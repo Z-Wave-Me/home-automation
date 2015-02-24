@@ -1,3 +1,4 @@
 {
-	"m_descr":"Dieses Modul zeichnet die Daten aller Geräte für die letzten 24 Stunden auf."
+	"m_descr":"Dieses Modul zeichnet die Daten aller Geräte für die letzten 24 Stunden auf.",
+	"l_devices":"Zeige History für alle ausgewählten Geräte an:"
 }

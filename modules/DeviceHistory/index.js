@@ -28,49 +28,65 @@ _module = DeviceHistory;
 DeviceHistory.prototype.init = function (config) {
     DeviceHistory.super_.prototype.init.call(this, config);
 
-    var self = this,
-        allDevices = self.controller.devices;
+    // polling function
+    this.setupHistories = function(){
+        var self = this;
 
-    allDevices.forEach(function(dev) {
-        var devType = dev.get('deviceType');
-        
-        switch(devType){
-            case 'sensorMultilevel':
-            case 'sensorMultiline':
-                self.setUpdateInterval(dev, 30, 244); // check every 5 min
-                break;
-            case 'battery':
-                self.setUpdateInterval(dev, 60, 12); // check every 2 hrs
-                break;
-            case 'switchBinary':
-            case 'sensorBinary':
-            case 'toggleButton':
-            case 'switchMultilevel':
-            case 'thermostat':
-                self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs 
-                break;
-            case 'doorlock':
-                break;
-            case 'fan':
-                break;
-            case 'switchControl':
-                break;
-            default:
-                break;
-        }
+        // Setup histories
+        self.config.devices.forEach(function(devId) {
+            var dev = this.controller.devices.filter(function (vDev){
+                                            return vDev.get('id') === devId;
+                                        }),        
+                devType = dev.get('deviceType');
+            
+            switch(devType){
+                case 'sensorMultilevel':
+                case 'sensorMultiline':
+                    self.storeHistory(dev, 244);
+                    break;
+                case 'switchBinary':
+                case 'sensorBinary':
+                case 'toggleButton':
+                case 'switchMultilevel':
+                case 'thermostat':
+                    //self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs 
+                    break;
+                case 'doorlock':
+                    break;
+                case 'fan':
+                    break;
+                case 'switchControl':
+                    break;
+                default:
+                    break;
+            }
+        });
+    };
+
+    this.controller.on("historyPolling.poll", this.setupHistories);
+
+    // add cron schedule every 5 minutes
+    this.controller.emit("cron.addTask", "historyPolling.poll", {
+        minute: 1,
+        hour: null,
+        weekDay: null,
+        day: null,
+        month: null
     });
+
+    // run first time to setting up histories
+    //this.setupHistories();
 };
 
 DeviceHistory.prototype.stop = function () {
-    var self = this,
-        allDevices = self.controller.devices;
+    var self = this;
 
     if (this.timer){
         clearInterval(this.timer);
     }
 
     // remove eventhandler 
-    allDevices.forEach(function(dev) {
+    self.config.devices.forEach(function(dev) {
         var devType = dev.get('deviceType');
         
         switch(devType){
@@ -79,12 +95,15 @@ DeviceHistory.prototype.stop = function () {
             case 'toggleButton':
             case 'switchMultilevel':
             case 'thermostat':
-                self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary);
+              //  self.controller.devices.off(dev.id,'change:metrics:level', self.storeHistoryBinary);
                 break;
             default:
                 break;
         }
     });
+    
+    this.controller.emit("cron.removeTask", "historyPolling.poll");
+    this.controller.off("historyPolling.poll", this.setupHistories);
 
     DeviceHistory.super_.prototype.stop.call(this);
 };

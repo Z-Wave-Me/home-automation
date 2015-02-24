@@ -1,3 +1,4 @@
 {
-	"m_descr":"Creates a module that stores 24h data of all devices."
+	"m_descr":"Creates a module that stores 24h data of all devices.",
+	"l_devices":"Show histories for all marked devices:"
 }
