@@ -27,29 +27,157 @@ _module = DeviceHistory;
 
 DeviceHistory.prototype.init = function (config) {
     DeviceHistory.super_.prototype.init.call(this, config);
+    
+    // add cron schedule every 5 minutes
+    this.controller.emit("cron.addTask", "historyPolling.poll", {
+        minute: [0, 59, 5],
+        hour: null,
+        weekDay: null,
+        day: null,
+        month: null
+    });
+
+    var self = this,
+        exclDev = self.config.devices, 
+        allDevices = self.controller.devices;
+    
+    this.switchHistory = [];
 
     // polling function
     this.setupHistories = function(){
-        var self = this;
+
+        if(!exclDev){
+            exclDev = self.config.devices;
+        }
+
+        if(!allDevices){
+            allDevices = this.controller.devices;
+        }
 
         // Setup histories
-        self.config.devices.forEach(function(devId) {
-            var dev = this.controller.devices.filter(function (vDev){
-                                            return vDev.get('id') === devId;
-                                        }),        
-                devType = dev.get('deviceType');
+        allDevices.forEach(function(dev) {
+            var id = dev.id;
+            
+            if(exclDev.indexOf(id) < 0){
+                var devType = dev.get('deviceType');
+                
+                switch(devType){
+                    case 'sensorMultilevel':
+                    case 'sensorMultiline':
+                        DeviceHistory.prototype.storeHistory(dev, 244);
+                        console.log("--- ", "history polled for device:", id);
+                        break;
+                    case 'switchBinary':
+                    case 'sensorBinary':
+                        DeviceHistory.prototype.storeSwitchHistory(this.switchHistory, dev, 244);
+                        console.log('switchHistory: '+ this.switchHistory);
+                        break;
+                    case 'toggleButton':
+                    case 'switchMultilevel':
+                    case 'thermostat':
+                        console.log('switchHistory: '+ this.switchHistory);
+                        break;
+                    case 'doorlock':
+                        break;
+                    case 'fan':
+                        break;
+                    case 'switchControl':
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+    };
+
+    this.storeSwitchData = function(dev){
+
+        var id = dev.get('id'),
+            lvl = dev.get("metrics:level"),
+            lastEntry = new Date().getTime() /1000,
+            index, change, item;      
+
+        if(this.switchHistory.length < 1){
+            item = {
+                    id: id,
+                    meta: []
+                };
+
+            this.switchHistory.push(item);
+        }
+
+        // set change object
+        change = {
+                t: Math.floor(lastEntry),
+                l: lvl
+            };
+        
+        for(var i = 0; i < this.switchHistory.length; i++){
+            if(this.switchHistory[i]['id'] === id){
+                this.switchHistory[i]['meta'].push(change);
+            }
+        }     
+    };
+
+    // Setup handlers
+    this.setupHandlers = function(){
+        allDevices.forEach(function(dev) {
+            var id = dev.id;
+            
+            if(exclDev.indexOf(id) < 0){
+                var devType = dev.get('deviceType');
+                
+                switch(devType){
+                    case 'switchBinary':
+                    case 'sensorBinary':
+                    case 'toggleButton':
+                    case 'switchMultilevel':
+                    case 'thermostat':
+                        self.controller.devices.on(id,'change:metrics:level', self.storeSwitchData); // use eventhandler to store every change during last 24 hrs 
+                        break;
+                    case 'doorlock':
+                        break;
+                    case 'fan':
+                        break;
+                    case 'switchControl':
+                        break;
+                    default:
+                        break;
+                }
+            }
+        });
+    };
+
+    this.controller.on("historyPolling.poll", this.setupHistories);
+
+    // run first time to setting up histories
+    this.setupHistories();
+    this.setupHandlers();
+};
+
+DeviceHistory.prototype.stop = function () {
+    var self = this,
+        exclDev = self.config.devices, 
+        allDevices = self.controller.devices;
+
+    if (this.timer){
+        clearInterval(this.timer);
+    }
+
+    // remove eventhandler 
+    allDevices.forEach(function(dev) {
+        var id = dev.id;
+        
+        if(exclDev.indexOf(id) < 0){
+            var devType = dev.get('deviceType');
             
             switch(devType){
-                case 'sensorMultilevel':
-                case 'sensorMultiline':
-                    self.storeHistory(dev, 244);
-                    break;
                 case 'switchBinary':
                 case 'sensorBinary':
                 case 'toggleButton':
                 case 'switchMultilevel':
                 case 'thermostat':
-                    //self.controller.devices.on(dev.id,'change:metrics:level', self.storeHistoryBinary); // use eventhandler to store every change during last 24 hrs 
+                    self.controller.devices.off(id,'change:metrics:level', self.storeSwitchData); // use eventhandler to store every change during last 24 hrs 
                     break;
                 case 'doorlock':
                     break;
@@ -60,45 +188,6 @@ DeviceHistory.prototype.init = function (config) {
                 default:
                     break;
             }
-        });
-    };
-
-    this.controller.on("historyPolling.poll", this.setupHistories);
-
-    // add cron schedule every 5 minutes
-    this.controller.emit("cron.addTask", "historyPolling.poll", {
-        minute: 1,
-        hour: null,
-        weekDay: null,
-        day: null,
-        month: null
-    });
-
-    // run first time to setting up histories
-    //this.setupHistories();
-};
-
-DeviceHistory.prototype.stop = function () {
-    var self = this;
-
-    if (this.timer){
-        clearInterval(this.timer);
-    }
-
-    // remove eventhandler 
-    self.config.devices.forEach(function(dev) {
-        var devType = dev.get('deviceType');
-        
-        switch(devType){
-            case 'switchBinary':
-            case 'sensorBinary':
-            case 'toggleButton':
-            case 'switchMultilevel':
-            case 'thermostat':
-              //  self.controller.devices.off(dev.id,'change:metrics:level', self.storeHistoryBinary);
-                break;
-            default:
-                break;
         }
     });
     
@@ -111,12 +200,32 @@ DeviceHistory.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
-DeviceHistory.prototype.setUpdateInterval = function(dev, seconds, count){
-    var self = this;
+DeviceHistory.prototype.storeHistoryBinary = function(historyArr, dev, count){
+        var id = dev.get('id'),
+            lastEntry = new Date().getTime() /1000,
+            lvl, history, change, histMetr;
 
-    this.timer = setInterval(function() {
-            self.storeHistory(dev, count);
-    }, seconds*1000);
+        if(historyArr.indexOf("on") > -1 && historyArr.indexOf("off") > -1){
+            lvl = "0.5";
+        } else if ()
+        
+
+        // set change object
+        change = DeviceHistory.prototype.setChangeObject(lvl);
+        
+        // get history and metrics history
+        history = DeviceHistory.prototype.setupMetricsHistory(dev);
+        histMetr = history[0]['mH'];
+
+        // push only changes during the last 24 hrs
+        if(histMetr.length < count){
+            histMetr.push(change);    
+        } else {
+            histMetr.shift();
+            histMetr.push(change);
+        }
+
+        DeviceHistory.prototype.saveHistory(id,history);
 };
 
 DeviceHistory.prototype.storeHistoryBinary = function(dev){
