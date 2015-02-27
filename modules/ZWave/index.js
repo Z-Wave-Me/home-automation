@@ -1695,7 +1695,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "D");
 							} else {
 								try {
-									a_vDev.set("metrics:level", "on");
+									a_vDev.set("metrics:level", this.value ? "on" : "off");
 								} catch (e) {}
 							}
 						}, "value");
