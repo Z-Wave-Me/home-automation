@@ -745,7 +745,7 @@ AutomationController.prototype.listHistories = function () {
     devices = self.devices.models;
 
     devices.forEach(function(x){
-        obj = loadObject(x.id + "history.json");
+        obj = loadObject(x.id + "history");
         if(obj != undefined){
             self.history.push(obj[0]);
         }
