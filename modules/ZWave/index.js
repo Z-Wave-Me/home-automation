@@ -225,6 +225,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CreateZDDX");
 	ws.allowExternalAccess(_name + ".CommunicationStatistics");
 	ws.allowExternalAccess(_name + ".FirmwareUpdate");
+	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade");
+	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade");
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -240,6 +242,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
+	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
+	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -671,6 +675,90 @@ ZWave.prototype.defineHandlers = function () {
 					}
 				});
 			}
+			return { status: 200, body: "Initiating update" };
+		} catch (e) {
+			return { status: 500, body: e.toString() };
+		}
+	};
+
+	this.ZWaveAPI.ZMEFirmwareUpgrade = function(url, request) {
+		try {
+			var data = request && request.data;
+			if (!data || !data.url) {
+				throw "Invalid request";
+			}
+
+                        http.request({
+                                url: data.url,
+                                async: true,
+                                contentType: "application/octet-stream",
+                                success: function(response) {
+                                        var L = 32,
+                                            addr = 0x7800, // M25PE10
+                                            data = response.data.slice(0x1800);
+                                        
+                                        for (var i = 0; i < data.byteLength; i += L) {
+                                                var arr = (new Uint8Array(data.slice(i, i+L)));
+                                                if (arr.length == 1) {
+                                                        arr = [arr[0]]
+                                                        arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+                                                }
+                                                zway.NVMExtWriteLongBuffer(addr + i, arr);
+                                        }
+                                        
+                                        zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+                                                function() {
+                                                        zway.SerialAPISoftReset();
+                                        });
+                                },
+				error: function (res) {
+					console.error("Failed to download firmware: " + res.statusText);
+				}
+                        });
+    
+			return { status: 200, body: "Initiating update" };
+		} catch (e) {
+			return { status: 500, body: e.toString() };
+		}
+	};
+
+	this.ZWaveAPI.ZMEBootloaderUpgrade = function(url, request) {
+		try {
+			var data = request && request.data;
+			if (!data || !data.url) {
+				throw "Invalid request";
+			}
+
+                        http.request({
+                                url: data.url,
+                                async: true,
+                                contentType: "application/octet-stream",
+                                success: function(response) {
+					var L = 32,
+					    seg = 6,         // Функция бутлодера принимает номер сегмента
+					    addr = seg*0x800, // ==12k
+					    data = response.data;
+                                        
+                                        for (var i = 0; i < data.byteLength; i += L) {
+                                                var arr = (new Uint8Array(data.slice(i, i+L)));
+                                                if (arr.length == 1) {
+                                                        arr = [arr[0]]
+                                                        arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+                                                }
+                                                zway.NVMExtWriteLongBuffer(addr + i, arr);
+                                        }
+                                        
+                                        zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+                                                function() {
+							//Вызываем перезапись bootloder
+							zway.ZMEBootloaderFlash(seg);
+                                        });
+                                },
+				error: function (res) {
+					console.error("Failed to download bootloader: " + res.statusText);
+                                }
+                        });
+    
 			return { status: 200, body: "Initiating update" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
