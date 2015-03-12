@@ -56,7 +56,9 @@ _.extend(PoppCam.prototype, {
             });
         };
         
-		this.setup 	= config.url+ "/login.xml?user=admin&password=admin&usr=admin&pwd=admin";  
+        /* setting up the autentications seems not to work anymore
+        
+		this.setup 	= config.url+ "/login.xml?user=" + config.user + "&password=" + config.password + "&usr=" + config.user + "&pwd=" + config.password;  
 		if (this.setup) {
             http.request({
                 url: this.setup,
@@ -67,8 +69,9 @@ _.extend(PoppCam.prototype, {
                 }
             });
         }
+        */
 		    
-        this.url	= config.url + "/videostream.cgi?stream=1";        
+        this.url	= config.url + "/videostream.cgi?user=" + config.user + "&password=" + config.password;        
         ws.proxify(this.proxy_url, this.url, config.user, config.password);
 
         this.vDev = this.controller.devices.create({
