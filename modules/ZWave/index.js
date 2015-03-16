@@ -93,6 +93,8 @@ ZWave.prototype.init = function (config) {
 		
 	this.controller.on("ZWave.dataBind", this._dataBind);
 	this.controller.on("ZWave.dataUnbind", this._dataUnbind);
+
+	this.controller.emit("ZWave.register", this.config.name);
 };
 
 ZWave.prototype.startBinding = function () {
@@ -147,8 +149,6 @@ ZWave.prototype.startBinding = function () {
 
 	this.deadDetectionStart();
 	this.gateDevicesStart();
-
-	this.controller.emit("ZWave.register", this.config.name);
 };
 
 ZWave.prototype.stop = function () {
