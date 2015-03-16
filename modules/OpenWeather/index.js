@@ -108,9 +108,9 @@ OpenWeather.prototype.fetchWeather = function(instance) {
 				var now = new Date().getTime();
 				
 				if (now > sunrise && now < sunset)
-					self.vDev2.set("metrics:level", 255);
+					self.vDev2.set("metrics:level", 'on');
 				else
-					self.vDev2.set("metrics:level", 0);
+					self.vDev2.set("metrics:level", 'off');
 
                 self.vDev.set("metrics:level", temp);
                 self.vDev.set("metrics:icon", icon);
