@@ -1,5 +1,0 @@
-{
-  "door_device": "Door device",
-  "username_basic_http": "Username for HTTP authentication",
-  "username_basic_http_helper": "Leave empty if camera is not protected by a password"
-}
