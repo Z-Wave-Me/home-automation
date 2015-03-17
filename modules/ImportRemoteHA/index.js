@@ -132,6 +132,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     handler: function(command, args) {
                         self.handleCommand(this, command, args);
                     },
+                    overlay: {},
                     moduleId: this.id
                 });
 

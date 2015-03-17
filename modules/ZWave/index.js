@@ -225,6 +225,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CreateZDDX");
 	ws.allowExternalAccess(_name + ".CommunicationStatistics");
 	ws.allowExternalAccess(_name + ".FirmwareUpdate");
+	ws.allowExternalAccess(_name + ".ZMELicense");
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade");
 	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade");
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML");
@@ -242,6 +243,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
+	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
 	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
@@ -681,12 +683,43 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
+	this.ZWaveAPI.ZMELicense = function(url, request) {
+		try {
+			var data = request && request.data;
+			if (!data || !data.license) {
+				throw "Invalid request";
+			}
+
+                        var result = "in progress";
+                        zway.ZMECapabilities(data.license.split(",").map(function(i) { return parseInt(i, 10); }), function() {
+                                result = "done";
+                        },  function() {
+                                result = "failed";
+                        });
+                        
+                        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+                        
+                        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                                processPendingCallbacks();
+                        }
+                        
+                        if (result === "in progress") {
+                                result = "failed";
+                        }
+			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
+		} catch (e) {
+			return { status: 500, body: e.toString() };
+		}
+	};
+
 	this.ZWaveAPI.ZMEFirmwareUpgrade = function(url, request) {
 		try {
 			var data = request && request.data;
 			if (!data || !data.url) {
 				throw "Invalid request";
 			}
+
+                        var result = "in progress";
 
                         http.request({
                                 url: data.url,
@@ -708,15 +741,28 @@ ZWave.prototype.defineHandlers = function () {
                                         
                                         zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
                                                 function() {
-                                                        zway.SerialAPISoftReset();
+                                                        zway.SerialAPISoftReset(function() {
+                                                                result = "done"
+                                                        });
                                         });
                                 },
 				error: function (res) {
 					console.error("Failed to download firmware: " + res.statusText);
+					result = "failed";
 				}
                         });
-    
-			return { status: 200, body: "Initiating update" };
+                        
+                        var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
+                        
+                        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                                processPendingCallbacks();
+                        }
+                        
+                        if (result === "in progress") {
+                                result = "failed";
+                        }
+                        
+			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
 		}
@@ -728,6 +774,8 @@ ZWave.prototype.defineHandlers = function () {
 			if (!data || !data.url) {
 				throw "Invalid request";
 			}
+
+                        var result = "in progress";
 
                         http.request({
                                 url: data.url,
@@ -751,15 +799,29 @@ ZWave.prototype.defineHandlers = function () {
                                         zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
                                                 function() {
 							//Вызываем перезапись bootloder
-							zway.ZMEBootloaderFlash(seg);
+							zway.ZMEBootloaderFlash(seg, function() {
+                                                                result = "done";
+                                                        },  function() {
+                                                                result = "failed";
+                                                        });
                                         });
                                 },
 				error: function (res) {
 					console.error("Failed to download bootloader: " + res.statusText);
+					result = "failed";
                                 }
                         });
     
-			return { status: 200, body: "Initiating update" };
+                        var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
+                        
+                        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                                processPendingCallbacks();
+                        }
+                        
+                        if (result === "in progress") {
+                                result = "failed";
+                        }
+			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
 		}
