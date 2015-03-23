@@ -36,6 +36,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
         this.router.get("/status", this.statusReport);
         this.router.get("/notifications", this.exposeNotifications());
+        this.router.get("/history", this.exposeHistory());
         this.router.get("/devices", this.listDevices);
         this.router.get("/restart", this.restartController);
         this.router.get("/locations", this.listLocations());
@@ -84,6 +85,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/modules/categories/:category_id", this.getModuleCategoryFunc);
 
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
+
+        this.router.get("/history/:dev_id", this.getHistDevFunc);
     },
     statusReport: function () {
         var currentDateTime = new Date();
@@ -806,6 +809,71 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             this.initResponse(reply);
+        };
+    },
+    // History
+    exposeHistory: function () {
+        var history,
+            reply = {
+                error: null,
+                data: null
+            },
+            that = this;
+
+
+        return function () {
+            that.res.status = 200;
+            history = that.controller.listHistories();
+
+            reply.data = {
+                updateTime: Math.floor(new Date().getTime() / 1000),
+                history: history
+            };
+
+            if (Boolean(that.req.query.pagination)) {
+                reply.data.total_count = that.controller.getCountHistories();
+            }
+
+            reply.code = 200;
+
+            that.initResponse(reply);
+        };
+    },
+    getHistDevFunc: function (vDevId) {
+        var that = this,
+            history,
+            dev,
+            reply = {
+                error: null,
+                data: null
+            },
+            since,
+            sinceDevHist;
+
+        return function () {
+            since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
+            history = that.controller.listHistories();
+            dev = history.filter(function(x){
+                    return x.id === vDevId;
+                });
+            sinceDevHist = that.controller.getDevHistorySince(dev, since);            
+            
+            if (sinceDevHist){                
+                reply.code = 200;
+                reply.data = {
+                        id: vDevId,
+                        since: since,
+                        deviceHistory: sinceDevHist
+                    };
+            } else
+            if (dev) {
+                reply.code = 200;
+                reply.data = dev;
+            } else {
+                reply.code = 404;
+                reply.error = "Device " + vDevId + " doesn't exist";
+            }
+            that.initResponse(reply);
         };
     },
     // restart
