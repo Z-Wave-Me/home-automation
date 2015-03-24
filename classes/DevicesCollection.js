@@ -86,7 +86,7 @@ _.extend(DevicesCollection.prototype, {
         } else if (this.db.cid.hasOwnProperty(identificator)) {
             result = this.db.cid[identificator];
         }
-        return result;
+        return result || null;
     },
     first: function () {
         return _.first(this.models);

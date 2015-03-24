@@ -572,29 +572,20 @@ AutomationController.prototype.loadNotifications = function () {
 
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
     var now = new Date(), 
-        notice, msg,
-        lang = this.defaultLang;
-
-    if (typeof message === 'object' && lang != 'undefined') {
-        msg = message[lang];
-    } else {
-        msg = message;
-    }
-
-    notice = {
-        id: Math.floor(now.getTime() / 1000),
-        timestamp: now.toISOString(),
-        level: severity,
-        message: msg, 
-        type: type || 'device',
-        source: source,
-        redeemed: false,
-    };
+        notice = {
+            id: Math.floor(now.getTime() / 1000),
+            timestamp: now.toISOString(),
+            level: severity,
+            message: message, 
+            type: type || 'device',
+            source: source,
+            redeemed: false,
+        };
 
     this.notifications.push(notice);
     this.saveNotifications();
     this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
-    console.log("Notification:", severity, "(" + type + "):", msg);
+    console.log("Notification:", severity, "(" + type + "):", message);
 }
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
@@ -973,8 +964,7 @@ AutomationController.prototype.loadModuleLang = function (moduleId) {
 
 // load lang folder with given prefix
 AutomationController.prototype.loadMainLang = function (pathPrefix) {
-    var self = this,
-        languageFile,
+    var languageFile,
         prefix;
 
     if(pathPrefix === undefined || pathPrefix === null) {
@@ -984,7 +974,7 @@ AutomationController.prototype.loadMainLang = function (pathPrefix) {
     }
 
     try {
-        languageFile = fs.loadJSON(prefix + "lang/" + self.defaultLang + ".json");
+        languageFile = fs.loadJSON(prefix + "lang/" + this.defaultLang + ".json");
     } catch (e) {            
         try {
             languageFile = fs.loadJSON(prefix + "lang/en.json");

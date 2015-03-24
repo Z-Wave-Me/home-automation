@@ -37,26 +37,6 @@ SwitchControlGenerator.prototype.init = function (config) {
         "SceneActivation": 0x2b
     };
     
-    this.config.generated.forEach(function(name) {
-        if (self.config.banned.indexOf(name) === -1) {
-            self.controller.devices.create({
-                deviceId: name,
-                defaults: {
-                    deviceType: "switchControl",
-                    metrics: {
-                        icon: '',
-                        title: name,
-                        level: "",
-                        change: ""
-                    }
-                },
-                overlay: {},
-                handler: self.widgetHandler,
-                moduleId: this.id
-            });
-        }
-    });
-    
     this.generated = this.config.generated; // used to stop after config changed
     this.bindings = [];
     
@@ -67,6 +47,30 @@ SwitchControlGenerator.prototype.init = function (config) {
             return;
         }
         
+        // create devices
+        self.generated.filter(function(el) { return el.indexOf("ZWayVDev_" + zwayName + "_Remote_") === 0; }).forEach(function(name) {
+            if (self.config.banned.indexOf(name) === -1) {
+                self.controller.devices.create({
+                    deviceId: name,
+                    defaults: {
+                        deviceType: "switchControl",
+                        metrics: {
+                            icon: '',
+                            title: name,
+                            level: "",
+                            change: ""
+                        }
+                    },
+                    overlay: {},
+                    handler: self.widgetHandler,
+                    moduleId: this.id
+                });
+            }
+        });
+
+
+
+                
         self.bindings[zwayName] = [];
 
         var ctrlNodeId = zway.controller.data.nodeId.value,

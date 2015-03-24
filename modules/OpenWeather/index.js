@@ -29,14 +29,15 @@ _module = OpenWeather;
 OpenWeather.prototype.init = function (config) {
     OpenWeather.super_.prototype.init.call(this, config);
 
-    var self = this;
+    var self = this,
+        langFile = self.controller.loadModuleLang("OpenWeather");
 
     this.vDev = self.controller.devices.create({
         deviceId: "OpenWeather_" + this.id,
         defaults: {
             deviceType: "sensorMultilevel",
             metrics: {
-                probeTitle: 'Temperature'
+                probeTitle: langFile.temp
             }
         },
         overlay: {
