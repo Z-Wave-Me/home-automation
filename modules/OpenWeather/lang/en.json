@@ -5,6 +5,8 @@
   "country_placeholder": "England",
   "city": "City",
   "city_placeholder": "London",
+  "temp":"Temperature",
   "err_parse":"Can not parse weather information.",
   "err_fetch":"Can not fetch weather information."
+
 }

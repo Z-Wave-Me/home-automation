@@ -5,6 +5,7 @@
   "country_placeholder": "Deutschland",
   "city": "Stadt",
   "city_placeholder": "Berlin",
+  "temp":"Temperatur",
   "err_parse":"Fehler beim Einlesen der Wetterinformationen.",
   "err_fetch":"Fehler beim Aktualisieren der Wetterinformationen."
 }
