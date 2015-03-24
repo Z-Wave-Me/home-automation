@@ -154,6 +154,51 @@ JS.Run = function(url) {
 };
 ws.allowExternalAccess("JS.Run");
 
+JS.Load = function(url) {
+     var u = url.substring(1),
+     img = ["png","jpg","jpeg","JPG","JPEG","gif"],
+     text = ["css","htm","html","shtml","js","txt","rtf","xml"],
+     video = ["mpeg","mpg","mpe","qt","mov","viv","vivo","avi","movie","mp4"],
+     a = url.split("."),
+     fe, ct;
+
+    if( a.length === 1 || ( a[0] === "" && a.length === 2 ) ) {
+        fe = "";
+    } else {
+        fe = a.pop();
+    }
+
+    if(img.indexOf(fe > -1)){
+        ct = "image/(png|jpeg|gif|bmp)";
+    }
+    
+    if(text.indexOf(fe > -1)){
+        ct = "text/(css|html|javascript|plain|rtf|xml)";
+    }
+
+    if(video.indexOf(fe > -1)){
+        ct = "video/(mpeg|quicktime|vnd.vivo|x-msvideo|x-sgi-movie|mp4)";
+    }
+
+    try {
+        var data = fs.load(u);
+        return { 
+            status: 200, 
+            headers: { 
+                "Content-Type": ct,
+                "Connection": "keep-alive"
+            },
+            body: data
+        };
+    } catch (e) {
+        return { 
+            status: 404, 
+            body: e.toString() 
+        };
+    }
+};
+ws.allowExternalAccess("JS.Load");
+
 
 // do transition script to adopt old versions to new
 executeFile("updateBackendConfig.js");
