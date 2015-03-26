@@ -550,25 +550,25 @@ AutomationController.prototype.deleteInstance = function (id) {
 
 AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
-}
+};
 
 AutomationController.prototype.getVdevInfo = function (id) {
     return this.vdevInfo[id] || {};
-}
+};
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
     this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden");
     this.saveConfig();
     return this.vdevInfo[id];
-}
+};
 
 AutomationController.prototype.saveNotifications = function () {
     saveObject("notifications", this.notifications);
-}
+};
 
 AutomationController.prototype.loadNotifications = function () {
     this.notifications = loadObject("notifications") || [];
-}
+};
 
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
     var now = new Date(),
@@ -587,7 +587,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     this.saveNotifications();
     this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
     console.log("Notification:", severity, "(" + type + "):", message);
-}
+};
 
 AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
     var that = this;
@@ -690,14 +690,32 @@ AutomationController.prototype.updateLocation = function (id, title, icon, callb
     }
 };
 
-AutomationController.prototype.listNotifications = function (since, to, isRedeemed) {
+AutomationController.prototype.listNotifications = function (since, to, profileID, isRedeemed) {
     var self = this,
-        now = new Date();
+        now = new Date(),
+        profile, hiddenDev, 
+        hashArr = [];
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() / 1000);
-    var filteredNotifications = this.notifications.filter(function (notification) {
-        return notification.id >= since && notification.id <= to && notification.redeemed === isRedeemed;
-    });
+    pid = parseInt(profileID) || 0;
+
+    if(pid > 0 && pid <= this.profiles.length){
+        profile = this.getProfile(pid);
+        hiddenDev = profile.hide_single_device_events;
+
+        hiddenDev.forEach(function(devId){
+            hashArr.push(AutomationController.prototype.hashCode(devId));
+        })
+
+        var filteredNotifications = this.notifications.filter(function (notification) {
+            return notification.id >= since && notification.id <= to && hashArr.indexOf(notification.h) === -1 && notification.redeemed === isRedeemed;
+        });
+
+    } else {    
+        var filteredNotifications = this.notifications.filter(function (notification) {
+            return notification.id >= since && notification.id <= to && notification.redeemed === isRedeemed;
+        });
+    }
 
     return filteredNotifications;
 };
@@ -770,8 +788,13 @@ AutomationController.prototype.getListProfiles = function () {
             id: 1,
             name: 'Default',
             description: 'This is default profile. Default profile created automatically.',
+            lang:'',
+            color:'',
+            hide_all_device_events: false,
+            hide_system_events: false,
+            hide_single_device_events: [],
             positions: []
-        })
+        });
     }
     return this.profiles;
 };
@@ -788,12 +811,22 @@ AutomationController.prototype.createProfile = function (object) {
             id: id,
             name: object.name,
             description: object.description,
+            lang: object.lang,
+            color: object.color,
+            hide_all_device_events: object.hide_all_device_events,
+            hide_system_events: object.hide_system_events,
+            hide_single_device_events: object.hide_single_device_events,
             positions: object.positions
         };
 
     _.defaults(profile, {
         name: '',
         description: '',
+        lang:'',
+        color:'',
+        hide_all_device_events: false,
+        hide_system_events: false,
+        hide_single_device_events: [],
         positions: []
     });
 
@@ -819,6 +852,21 @@ AutomationController.prototype.updateProfile = function (object, id) {
         if (object.hasOwnProperty('description')) {
             this.profiles[index].description = object.description;
         }
+        if (object.hasOwnProperty('lang')) {
+            this.profiles[index].lang = object.lang;
+        }
+        if (object.hasOwnProperty('color')) {
+            this.profiles[index].color = object.color;
+        }
+        if (object.hasOwnProperty('hide_all_device_events')) {
+            this.profiles[index].hide_all_device_events = object.hide_all_device_events;
+        }
+        if (object.hasOwnProperty('hide_system_events')) {
+            this.profiles[index].hide_system_events = object.hide_system_events;
+        }
+        if (object.hasOwnProperty('hide_single_device_events')) {
+            this.profiles[index].hide_single_device_events = object.hide_single_device_events;
+        }
         if (object.hasOwnProperty('positions')) {
             this.profiles[index].positions = object.positions;
         }
@@ -826,6 +874,11 @@ AutomationController.prototype.updateProfile = function (object, id) {
         _.defaults(this.profiles[index], {
             name: '',
             description: '',
+            lang:'',
+            color:'',
+            hide_all_device_events: false,
+            hide_system_events: false,
+            hide_single_device_events: [],
             positions: []
         });
     }

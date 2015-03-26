@@ -214,26 +214,40 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since,
             redeemed,
             to,
-            that = this;
+            profile,
+            that = this,
+            listProf = that.controller.getListProfiles().length;
 
 
         return function () {
             that.res.status = 200;
             since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
             to = that.req.query.hasOwnProperty("to") ? parseInt(that.req.query.to, 10) : 0;
+            profile = that.req.query.hasOwnProperty("profile") ? parseInt(that.req.query.profile, 10) : 0;
             redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
-            notifications = that.controller.listNotifications(since, to, redeemed);
+            
+            if(that.controller.getProfile(profile) !== null) {
+                notifications = that.controller.listNotifications(since, to, profile, redeemed);
 
-            reply.data = {
-                updateTime: Math.floor(new Date().getTime() / 1000),
-                notifications: notifications
-            };
+                reply.data = {
+                    updateTime: Math.floor(new Date().getTime() / 1000),
+                    notifications: notifications
+                };
 
-            if (Boolean(that.req.query.pagination)) {
-                reply.data.total_count = that.controller.getCountNotifications();
+                if (Boolean(that.req.query.pagination)) {
+                    reply.data.total_count = that.controller.getCountNotifications();
+                }
+
+                reply.code = 200;
+                reply.error = null;
+            } else {
+                reply.data = {
+                    updateTime: Math.floor(new Date().getTime() / 1000),
+                    notifications: []
+                };
+                reply.code = 400;
+                reply.error = "Your profile with id '" + profile + "' doesn't exist.";
             }
-
-            reply.code = 200;
 
             that.initResponse(reply);
         };
