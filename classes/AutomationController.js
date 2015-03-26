@@ -571,7 +571,7 @@ AutomationController.prototype.loadNotifications = function () {
 }
 
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
-    var now = new Date(), 
+    var now = new Date(),
         notice = {
             id: Math.floor(now.getTime() / 1000),
             timestamp: now.toISOString(),
@@ -580,6 +580,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
             type: type || 'device',
             source: source,
             redeemed: false,
+            h: this.hashCode(source)
         };
 
     this.notifications.push(notice);
@@ -689,11 +690,13 @@ AutomationController.prototype.updateLocation = function (id, title, icon, callb
     }
 };
 
-AutomationController.prototype.listNotifications = function (since, isRedeemed) {
-    var self = this;
+AutomationController.prototype.listNotifications = function (since, to, isRedeemed) {
+    var self = this,
+        now = new Date();
     since = parseInt(since) || 0;
+    to = parseInt(to) || Math.floor(now.getTime() / 1000);
     var filteredNotifications = this.notifications.filter(function (notification) {
-        return notification.id >= since && notification.redeemed === isRedeemed;
+        return notification.id >= since && notification.id <= to && notification.redeemed === isRedeemed;
     });
 
     return filteredNotifications;
@@ -984,4 +987,17 @@ AutomationController.prototype.loadMainLang = function (pathPrefix) {
     }
 
     return languageFile;
+};
+
+AutomationController.prototype.hashCode = function(str) {
+    var hash = 0, i, chr, len;
+    if (this.length === 0) {
+        return hash;
+    }
+    for (i = 0, len = str.length; i < len; i++) {
+        chr   = str.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash  = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
 };

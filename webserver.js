@@ -213,14 +213,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             since,
             redeemed,
+            to,
             that = this;
 
 
         return function () {
             that.res.status = 200;
             since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
+            to = that.req.query.hasOwnProperty("to") ? parseInt(that.req.query.to, 10) : 0;
             redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
-            notifications = that.controller.listNotifications(since, redeemed);
+            notifications = that.controller.listNotifications(since, to, redeemed);
 
             reply.data = {
                 updateTime: Math.floor(new Date().getTime() / 1000),
