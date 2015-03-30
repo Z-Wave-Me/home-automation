@@ -613,7 +613,7 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
     this.saveNotifications();
 };
 
-AutomationController.prototype.addLocation = function (title, icon, callback) {
+AutomationController.prototype.addLocation = function (title, user_img, default_img, img_type, callback) {
     var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
         return location.id === id;
@@ -621,13 +621,15 @@ AutomationController.prototype.addLocation = function (title, icon, callback) {
 
     if (locations.length > 0) {
         if (typeof callback === 'function') {
-            callback(false)
+            callback(false);
         }
     } else {
         var location = {
             id: id,
             title: title,
-            icon: icon || ''
+            user_img: '',
+            default_img: default_img || '',
+            img_type: img_type || ''
         };
         this.locations.push(location);
         if (typeof callback === 'function') {
@@ -668,14 +670,20 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, icon, callback) {
+AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type, callback) {
     var locations = this.locations.filter(function (location) {
         return location.id === id;
     });
     if (locations.length > 0) {
         this.locations[this.locations.indexOf(locations[0])].title = title;
-        if (typeof icon === 'string' && icon.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].icon = icon;
+        if (typeof user_img === 'string' && user_img.length > 0) {
+            this.locations[this.locations.indexOf(locations[0])].user_img = user_img;
+        }
+        if (typeof default_img === 'string' && default_img.length > 0) {
+            this.locations[this.locations.indexOf(locations[0])].default_img = default_img;
+        }
+        if (typeof img_type === 'string' && img_type.length > 0) {
+            this.locations[this.locations.indexOf(locations[0])].img_type = img_type;
         }
         if (typeof callback === 'function') {
             callback(this.locations[this.locations.indexOf(locations[0])]);
@@ -783,13 +791,18 @@ AutomationController.prototype.getCountHistories = function () {
 };
 
 AutomationController.prototype.getListProfiles = function () {
+    var langFile = this.loadMainLang();
+
     if (this.profiles.length === 0) {
         this.profiles.push({
             id: 1,
-            name: 'Default',
-            description: 'This is default profile. Default profile created automatically.',
+            role: 1,
+            name: langFile.profile_name,
+            description: langFile.profile_descr,
             lang:'',
             color:'',
+            dashboard: [],
+            hide_rooms:[],
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],
@@ -809,10 +822,13 @@ AutomationController.prototype.createProfile = function (object) {
     var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
         profile = {
             id: id,
+            role: 2,
             name: object.name,
             description: object.description,
             lang: object.lang,
             color: object.color,
+            dashboard: object.dashboard,
+            hide_rooms: object.hide_rooms,
             hide_all_device_events: object.hide_all_device_events,
             hide_system_events: object.hide_system_events,
             hide_single_device_events: object.hide_single_device_events,
@@ -824,6 +840,8 @@ AutomationController.prototype.createProfile = function (object) {
         description: '',
         lang:'',
         color:'',
+        dashboard: [],
+        hide_rooms:[],
         hide_all_device_events: false,
         hide_system_events: false,
         hide_single_device_events: [],
@@ -858,6 +876,12 @@ AutomationController.prototype.updateProfile = function (object, id) {
         if (object.hasOwnProperty('color')) {
             this.profiles[index].color = object.color;
         }
+        if (object.hasOwnProperty('dashboard')) {
+            this.profiles[index].dashboard = object.dashboard;
+        }
+        if (object.hasOwnProperty('hide_rooms')) {
+            this.profiles[index].hide_rooms = object.hide_rooms;
+        }
         if (object.hasOwnProperty('hide_all_device_events')) {
             this.profiles[index].hide_all_device_events = object.hide_all_device_events;
         }
@@ -876,6 +900,8 @@ AutomationController.prototype.updateProfile = function (object, id) {
             description: '',
             lang:'',
             color:'',
+            dashboard: [],
+            hide_rooms:[],
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],

@@ -29,6 +29,15 @@ var console = {
     }
 };
 
+var Base64 = {
+    _keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
+    encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},
+    decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},
+    _utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},
+    _utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}
+}
+
+
 function inherits (ctor, superCtor) {
     Object.defineProperty(ctor, "super_", {
         value: superCtor,
@@ -154,34 +163,47 @@ JS.Run = function(url) {
 };
 ws.allowExternalAccess("JS.Run");
 
-JS.Load = function(url) {
+JS.Load_Module_Media = function(url) {
      var u = url.substring(1),
+     path = u.split("/"),
      img = ["png","jpg","jpeg","JPG","JPEG","gif"],
      text = ["css","htm","html","shtml","js","txt","rtf","xml"],
      video = ["mpeg","mpg","mpe","qt","mov","viv","vivo","avi","movie","mp4"],
-     a = url.split("."),
-     fe, ct;
+     e = url.split("."),
+     fe, ct, mn, dat;
 
-    if( a.length === 1 || ( a[0] === "" && a.length === 2 ) ) {
+     if( path.length === 1 || ( path[0] === "" && path.length === 2 ) ) {
+        mn = "";
+        dat = "";
+    } else {
+        mn = path.shift();
+        dat = path.pop();
+    }
+
+    if( e.length === 1 || ( e[0] === "" && e.length === 2 ) ) {
         fe = "";
     } else {
-        fe = a.pop();
+        fe = e.pop();
     }
 
-    if(img.indexOf(fe > -1)){
-        ct = "image/(png|jpeg|gif|bmp)";
+    if(img.indexOf(fe) > -1){
+        ct = "image/(png|jpeg|gif)";
     }
     
-    if(text.indexOf(fe > -1)){
+    if(text.indexOf(fe) > -1){
         ct = "text/(css|html|javascript|plain|rtf|xml)";
     }
 
-    if(video.indexOf(fe > -1)){
+    if(video.indexOf(fe) > -1){
         ct = "video/(mpeg|quicktime|vnd.vivo|x-msvideo|x-sgi-movie|mp4)";
     }
 
     try {
-        var data = fs.load(u);
+        try{
+            var data = fs.load('userModules/' + mn + '/htdocs/' + dat);
+        } catch(e){
+            var data = fs.load('modules/' +mn+ '/htdocs/' + dat);
+        }
         return { 
             status: 200, 
             headers: { 
@@ -197,7 +219,71 @@ JS.Load = function(url) {
         };
     }
 };
-ws.allowExternalAccess("JS.Load");
+ws.allowExternalAccess("JS.Load_Module_Media");
+
+JS.Load_Image = function(url) {
+    var u = url.substring(1),
+        split = url.split('/'),
+        data;
+
+    try {
+        var img = loadObject(u);
+        data = Base64.decode(img);
+        
+        return { 
+            status: 200, 
+            headers: { 
+                "Content-Type": "image/(png|jpeg|gif)",
+                "Connection": "keep-alive"
+            },
+            body: data
+        };
+    } catch (e) {
+        return { 
+            status: 404, 
+            body: e.toString() 
+        };
+    }
+};
+ws.allowExternalAccess("JS.Load_Image");
+
+JS.Upload_Image = function(url, request) {
+    if (request.method === "POST" && request.data.file_upload) {
+        var file = request.data.file_upload;
+        if (file instanceof Array) {
+            file = file[0];
+        }
+        if (file.name && file.content && file.length > 0) {
+
+            // Create Base64 Object
+
+            saveObject(file.name, Base64.encode(file.content));
+
+            try {                
+                return {
+                    status: 200,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Connection": "keep-alive"
+                    },
+                    body: {
+                        img: file.name
+                    }
+                };
+            } catch (e) {
+                return {
+                    status: 500, 
+                    body: e.toString()
+                };
+            }
+        }
+    }
+    return { 
+        status: 400, 
+        body: "Invalid request" 
+    };
+};
+ws.allowExternalAccess("JS.Upload_Image");
 
 
 // do transition script to adopt old versions to new

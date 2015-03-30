@@ -9,5 +9,7 @@
 	"ac_err_invalid_module":"Invalid module ",
 	"ac_err_load_mod_json":"Can not load modules.json from ",
 	"ac_err_stop_mod":"Can not stop module ",
+	"profile_name": "Administrator",
+	"profile_descr": "This is the admin profile. Admin profile created automatically.", 
 	"vd_err_virtual_dev":"Error during perform command execution: "
 }

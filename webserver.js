@@ -354,12 +354,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null
             },
             reqObj,
-            icon,
+            user_img,
+            default_img,
+            img_type,
             that = this;
 
         return function () {
             if (that.req.method === 'GET') {
-                icon = that.req.query.hasOwnProperty('icon') ? that.req.query.icon : null;
+                user_img = that.req.query.hasOwnProperty('user_img') ? that.req.query.user_img : null;
+                default_img = that.req.query.hasOwnProperty('default_img') ? that.req.query.default_img : null;
+                img_type = that.req.query.hasOwnProperty('img_type') ? that.req.query.img_type : null;
             } else if (that.req.method === 'POST') { // POST
                 try {
                     reqObj = JSON.parse(that.req.body);
@@ -368,11 +372,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
 
                 title = reqObj.title;
-                icon = reqObj.hasOwnProperty('icon') ? reqObj.icon : null;
+                user_img = reqObj.hasOwnProperty('user_img') ? reqObj.user_img : null;
+                default_img = reqObj.hasOwnProperty('default_img') ? reqObj.default_img : null;
+                img_type = reqObj.hasOwnProperty('img_type') ? reqObj.img_type : null;
             }
 
             if (!!title) {
-                that.controller.addLocation(title, icon, function (data) {
+                that.controller.addLocation(title, user_img, default_img, img_type, function (data) {
                     if (data) {
                         reply.code = 201;
                         reply.data = data;
@@ -435,7 +441,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return function () {
             var id,
                 title,
-                icon,
+                user_img,
+                default_img,
+                img_type,
                 reply = {
                     error: null,
                     data: null,
@@ -454,11 +462,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
                 id = locationId || reqObj.id;
                 title = reqObj.title;
-                icon = reqObj.icon || ''
+                user_img =reqObj.user_img || '';
+                default_img = reqObj.default_img || '';
+                img_type = reqObj.img_type || '';
             }
 
             if (!!title && title.length > 0) {
-                that.controller.updateLocation(id, title, icon, function (data) {
+                that.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
                     if (data) {
                         reply.data = data;
                     } else {
