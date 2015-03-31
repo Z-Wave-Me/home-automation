@@ -1,0 +1,8 @@
+{
+	"title":"Delayed Scene",
+	"m_descr":"Activate scene after a defined timeout after",
+	"r_l_options":"Restart timer on trigger instead of starting new timer",
+	"l_triggerScene":"Scene that trigger timer start",
+	"l_delayedScene":"Delayed scene",
+	"l_delay":"Delay in seconds"
+}
