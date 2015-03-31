@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Code device",
-		"description": "Create virtual device based on JavaScript code.",
+		"title": "__title__",
+		"description": "__m_descr__",
 
 		"deviceType": "",
 
@@ -36,7 +36,6 @@
 		"getterPollInterval_switchtMultilevel": 0
 	},
 	"schema": {
-		"label": "Select action condition",
 		"type": "object",
 		"properties": {
 			"deviceType": {
@@ -124,7 +123,7 @@
 			},
 
 			"setterOn_toggleButton": {
-				"label": "Code for action On",
+				"label": "__l_setterOn_toggleButton__",
 				"placeholder": "somefunction()",
 				"dependencies": {
 					"deviceType": "toggleButton"
@@ -132,94 +131,94 @@
 			},
 
 			"getter_sensorBinary": {
-				"label": "Code to get value",
+				"label": "__l_getter_sensorBinary__",
 				"placeholder": "somefunction()",
-				"helper": "Should return \"on\"/\"off\" values",
+				"helper": "__h_getter_sensorBinary__",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
 			},
 			"getterPollInterval_sensorBinary": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval_sensorBinary__",
+				"helper": "__h_getterPollInterval_sensorBinary__",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
 			},
 
 			"getter_sensorMultilevel": {
-				"label": "Code to get value",
+				"label": "__l_getter_sensorMultilevel__",
 				"placeholder": "somefunction()",
-				"helper": "Should return number",
+				"helper": "__h_getter_sensorMultilevel__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 			"getterPollInterval_sensorMultilevel": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval_sensorMultilevel__",
+				"helper": "__h_getterPollInterval_sensorMultilevel__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 			"scale_sensorMultilevel": {
-				"label": "Sensor scale",
+				"label": "__l_scale_sensorMultilevel__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 
 			"setterOn_switchBinary": {
-				"label": "Code for action On",
+				"label": "__l_setterOn_switchBinary__",
 				"placeholder": "somefunction(%%)",
-				"helper": "%% will represent value",
+				"helper": "__h_setterOn_switchBinary__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"setterOff_switchBinary": {
-				"label": "Code for action Off",
+				"label": "__l_setterOff_switchBinary__",
 				"placeholder": "somefunction(%%)",
-				"helper": "%% will represent value",
+				"helper": "__h_setterOff_switchBinary__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"getter_switchBinary": {
-				"label": "Code to get value",
+				"label": "__l_getter_switchBinary__",
 				"placeholder": "somefunction()",
-				"helper": "Should return \"on\" or \"off\" value",
+				"helper": "__h_getter_switchBinary__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"getterPollInterval_switchBinary": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval_switchBinary__",
+				"helper": "__h_getterPollInterval_switchBinary__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 
 			"setterLevel_switchMultilevel": {
-				"label": "Code for action",
+				"label": "__l_setterLevel_switchMultilevel__",
 				"placeholder": "somefunction(%%)",
-				"helper": "%% will represent value",
+				"helper": "__h_setterLevel_switchMultilevel__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
 			},
 			"getter_switchMultilevel": {
-				"label": "Code to get value",
+				"label": "__l_getter_switchMultilevel__",
 				"placeholder": "somefunction()",
-				"helper": "Should return value from 0 to 99",
+				"helper": "__h_getter_switchMultilevel__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
 			},
 			"getterPollInterval_switchMultilevel": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval_switchMultilevel__",
+				"helper": "__h_getterPollInterval_switchMultilevel__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}

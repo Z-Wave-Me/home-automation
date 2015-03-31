@@ -12,7 +12,7 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Battery Polling",
+        "title": "__title__",
         "description": "__m_descr__",
         "launchWeekDay": 0,
         "warningLevel": 20

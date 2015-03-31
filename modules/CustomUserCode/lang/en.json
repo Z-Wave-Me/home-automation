@@ -1,5 +1,6 @@
 {
+	"title":"Load custom JavaScript code",
 	"m_descr":"Allows to load custom JavaScript code on system load.",
-	"s_descr":"User defined JavaScript code to be executed on load",
-	"err_load":"Failed to load custom user code: "
+	"err_load":"Failed to load custom user code: ",
+	"l_options":"Your JavaScript code:"
 }

@@ -12,18 +12,17 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-	"title": "Load custom JavaScript file",
-	"description": "Allows to load custom files from automation/ folder",
+	"title": "__title__",
+	"description": "__m_descr__",
 	"customCodeFiles": [ ]
     },
     "schema": {
-        "description": "User defined JavaScript files to be executed on load",
         "type": "object",
         "properties": {
             "customCodeFiles": {
                 "type": "array",
                 "items": {
-                    "title": "File name",
+                    "title": "__customCodeFiles_title__",
                     "type": "string"      
                 }
             }
@@ -34,7 +33,7 @@
         "fields": {
             "customCodeFiles": {
                 "type": "array",
-                "helper": "Add paths to files relative to automation/ folder."
+                "helper": "__h_options__"
             }
         }
     }

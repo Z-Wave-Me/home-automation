@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Delayed Scene",
-		"description": "Activate scene after a defined timeout after",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"singleTimer": true,
 		"triggerScene": "",
 		"delayedScene": ""
@@ -47,24 +47,24 @@
 		"fields": {
 			"singleTimer": {
 				"label": "",
-				"rightLabel": "Restart timer on trigger instead of starting new timer"
+				"rightLabel": "__r_l_options__"
 			},
 			"triggerScene": {
-				"label": "Scene that trigger timer start",
+				"label": "__l_triggerScene__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:devices_toggleButton:deviceName"
 			},
 			"delayedScene": {
-				"label": "Delayed action",
+				"label": "__l_delayedScene__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:devices_toggleButton:deviceName"
 			},
 			"delay": {
-				"label": "Delay in seconds",
+				"label": "__l_delay__",
 				"type": "integer"
 			}
 		}

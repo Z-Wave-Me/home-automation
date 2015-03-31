@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Bind devices",
-		"description": "Bind actions on one device to others",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"sourceDevices": [],
 		"targetDevices": []
 	},
@@ -44,7 +44,7 @@
 	"options": {
 		"fields": {
 			"sourceDevices": {
-				"label": "List of event sources",
+				"label": "__event_sources__",
 				"fields": {
 					"item": {
 						"type": "select",
@@ -55,7 +55,7 @@
 				}
 			},
 			"targetDevices": {
-				"label": "List of actors",
+				"label": "__actors__",
 				"fields": {
 					"item": {
 						"type": "select",

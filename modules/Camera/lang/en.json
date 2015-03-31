@@ -1,5 +1,18 @@
 {
-  "door_device": "Door device",
-  "username_basic_http": "Username for HTTP authentication",
-  "username_basic_http_helper": "Leave empty if camera is not protected by a password"
+	"title":"Web Camera",
+	"m_descr":"This module include configuration for a camera and create camera device",
+	"camera_url":"Camera URL",
+	"zoom_in_url":"ZoomIn URL",
+	"zoom_out_url":"ZoomOut URL",
+	"left_url":"Left URL",
+	"right_url":"Right URL",
+	"up_url":"Up URL",
+	"down_url":"Down URL",
+	"open_url":"Open URL",
+	"close_url":"Close URL",
+  	"username_basic_http": "Username for HTTP authentication",
+  	"username_basic_http_helper": "Leave empty if camera is not protected by a password",
+  	"password_basic_http": "Password for HTTP authentication",
+  	"password_basic_http_helper": "Leave empty if camera is not protected by a password",
+  	"door_device": "Door device"
 }

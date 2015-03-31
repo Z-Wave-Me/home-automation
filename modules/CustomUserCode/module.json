@@ -12,12 +12,11 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-    	"title": "Load custom JavaScript code",
+    	"title": "__title__",
     	"description": "__m_descr__",
     	"customCode": ""
     },
     "schema": {
-        "description": "__s_descr__",
         "type": "object",
         "properties": {
             "customCode": {
@@ -31,7 +30,7 @@
         "fields": {
             "customCode": {
                 "type": "textarea",
-                "label": "Your JavaScript code:",
+                "label": "__l_options__",
 		        "cols": 40
             }
         }
