@@ -12,8 +12,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "HomeKit Gate",
-        "description": "Announces all widgets to HomeKit",
+        "title": "__title__",
+        "description": "__m_descr__",
         "name": "RaZberry"
     },
     "schema": {
@@ -29,7 +29,7 @@
     "options": {
         "fields": {
             "name": {
-                "label": "Name as it appears in iOS devices"
+                "label": "__l_options__"
             }
         }
     }

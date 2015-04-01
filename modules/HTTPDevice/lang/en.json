@@ -1,6 +1,6 @@
 {
+	"title":"HTTP device",
 	"m_descr":"Create virtual device based on HTTP data.",
-	"l_schema":"Select action condition",
 	"l_setterOn":"URL for action On",
 	"p_setterOn":"http://192.168.0.100/action/on",
 	"l_setterOff":"URL for action Off",

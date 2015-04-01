@@ -1,0 +1,10 @@
+{
+	"title":"Light scene",
+	"m_descr":"Light scene defines state of switches, dimmers, blinds.",
+	"l_switches":"List of switches",
+	"on":"On",
+	"off":"Off",
+	"l_dimmers":"List of dimmers",
+	"l_level":"Level",
+	"l_scenes":"List of scenes to activate"
+}

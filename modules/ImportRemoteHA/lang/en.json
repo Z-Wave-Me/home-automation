@@ -1,0 +1,8 @@
+{
+	"title":"Import devices from remote Z-Way HA",
+	"m_descr":"Create virtual device based remote Z-Way HA server.",
+	"l_url":"URL to remote side",
+	"l_dT":"Update period (in milliseconds)",
+	"l_skipDevices":"List of devices not to import from remote side",
+	"l_renderDevices":"List of devices imported from remote side (filled automatically)"
+}

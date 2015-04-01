@@ -12,7 +12,7 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Weather Informer",
+        "title": "__title__",
         "description": "__description__",
         "units": "celsius",
     	"city": "",
