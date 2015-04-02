@@ -1,0 +1,13 @@
+{
+	"title":"Schedule to run scenes",
+	"m_descr":"Execute scheduled scene.",
+	"monday":"Monday",
+	"tuesday":"Tuesday",
+	"wednesday":"Wednesday",
+	"thursday":"Thursday",
+	"friday":"Friday",
+	"saturday":"Saturday",
+	"sunday":"Sunday",
+	"timeFormat":"hh:mm",
+	"l_scene":"Activate scene"
+}

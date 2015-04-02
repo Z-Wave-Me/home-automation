@@ -5,17 +5,21 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Smart Light",
-		"description": "In the daytime light is switched on for 100%, at night the light turns on for 20%. If you select the button dimmer, when you press the dimmer button up - light will turn on for 100%, if press button down - light will turn off and one minute will not respond to the motion sensor",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"MotionSensor": null,
 		"Dimmer": null,
+		"Level": {
+			"DayLevel":"99",
+			"NightLevel":"20"
+		},
 		"Day": {
 			"DayTimeStart": "07:00",
 			"DayTimeEnd": "23:59"
@@ -36,6 +40,23 @@
 				"datasource": "namespaces",
 				"enum": "namespaces:devices_switchMultilevel:deviceId",
 				"required": true
+			},
+			"Level": {
+				"type": "object",
+				"properties": {
+					"DayLevel": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 99,
+						"required": true
+					},
+					"NightLevel": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 99,
+						"required": true
+					}
+				}
 			},
 			"Day": {
 				"type": "object",
@@ -62,44 +83,56 @@
 	"options": {
 		"fields": {
 			"MotionSensor": {
-				"label": "Motion Sensor",
+				"label": "__l_MotionSensor__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
                 "optionLabels": "namespaces:devices_sensorBinary:deviceName"
 			},
 			"Dimmer": {
-				"label": "Dimmer",
+				"label": "__l_Dimmer__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
                 "optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 			},
+			"Level": {
+				"label": "__l_Level__",
+				"fields": {
+					"DayLevel": {
+						"label": "__l_DayLevel__"
+					},
+					"NightLevel": {
+						"label": "__l_NightLevel__"
+					}
+				}
+			},
 			"Day": {
-				"label": "The time when the light is switched on for 100%",
+				"label": "__l_Day__",
 				"fields": {
 					"DayTimeStart": {
-						"label": "Start",
+						"label": "__l_DayTimeStart__",
 						"type": "time",
 						"maskString": "99:99",
-						"timeFormat": "hh:mm",
+						"timeFormat": "__timeFormat__",
 						"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
 					},
 					"DayTimeEnd": {
-						"label": "End",
+						"label": "__l_DayTimeEnd__",
 						"type": "time",
 						"maskString": "99:99",
-						"timeFormat": "hh:mm",
+						"timeFormat": "__timeFormat__",
 						"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
 					}
 				}
 			},
 			"DimmerButton": {
-				"label": "Dimmer Button",
+				"label": "__l_DimmerButton__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
-                "optionLabels": "namespaces:devices_switchControl:deviceName"
+                "optionLabels": "namespaces:devices_switchControl:deviceName",
+                "helper":"__h_DimmerButton__"
 			}
 		}
 	}

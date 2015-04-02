@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Tag devices with On/Off",
-		"description": "Mark devices with On/Off tags depending on their state.",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"tagOn": "On",
 		"tagOff": "Off"
 	},
@@ -33,10 +33,10 @@
 	"options": {
 		"fields": {
 			"tagOn": {
-				"label": "Tag for On state"
+				"label": "__l_tagOn__"
 			},
 			"tagOff": {
-				"label": "Tag for Off state"
+				"label": "__l_tagOff__"
 			}
 		}
 	}

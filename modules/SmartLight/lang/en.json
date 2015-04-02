@@ -1,0 +1,15 @@
+{
+	"title":"Smart Light",
+	"m_descr":"In the daytime light is switched on for 100%, at night the light turns on for 20%. If you select the button dimmer, when you press the dimmer button up - light will turn on for 100%, if press button down - light will turn off and one minute will not respond to the motion sensor.",
+	"l_MotionSensor":"Motion Sensor",
+	"l_Dimmer":"Dimmer",
+	"l_Level":"Dimmer levels for day and night",
+	"l_DayLevel":"Day Level",
+	"l_NightLevel":"Night Level",
+	"l_Day":"The time interval when the light is switched on for Day Level",
+	"timeFormat":"hh:mm",
+	"l_DayTimeStart":"Start",
+	"l_DayTimeEnd":"End",
+	"l_DimmerButton":"Dimmer Button",
+	"h_DimmerButton":"To generate dimmer button activate module SwitchControlGenerator and then press dimmer button"
+}

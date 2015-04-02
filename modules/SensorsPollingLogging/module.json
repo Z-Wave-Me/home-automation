@@ -1,7 +1,16 @@
 {
-    "autoload": false,
-    "singleton": true,
-    "userView": true,
+    "dependencies": ["Cron"],
+    "singleton": false,
+    "category": "scheduling",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Poll sensors and log values periodically",
         "description": "Regular sensors polling and logging",

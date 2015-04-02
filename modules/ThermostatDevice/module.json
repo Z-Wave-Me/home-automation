@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Thermostat based on switch and sensor",
-		"description": "Create thermostat devices based on a switch and temperature sensor",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"switch": "",
 		"sensor": "",
 		"heaton": true
@@ -48,28 +48,28 @@
 	"options": {
 		"fields": {
 			"switch": {
-				"label": "Switch",
+				"label": "__l_switch__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:devices_switchBinary:deviceName"
 			},
 			"sensor": {
-				"label": "Temperature sensor",
+				"label": "__l_sensor__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:devices_sensorMultilevel:deviceName"
 			},
 			"heaton": {
-				"label": "Mode",
+				"label": "__l_heaton__",
 				"type": "select",
-				"optionLabels": ["Heat", "Cool"]
+				"optionLabels": ["__heat__", "__cool__"]
 			},
 			"hysteresis": {
-				"label": "Hysteresis",
+				"label": "__l_hysteresis__",
 				"type": "number",
-				"helper": "Maximal delta between current and target temperature after which thermostat should turn on/off"
+				"helper": "__h_hysteresis__"
 			}
 		}
 	}

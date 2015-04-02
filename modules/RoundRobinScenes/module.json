@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Round robin scene switcher",
-		"description": "Activate scenes in roundr robin policy",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"scenes": []
 	},
 	"schema": {
@@ -34,7 +34,7 @@
 	"options": {
 		"fields": {
 			"scenes": {
-				"label": "List of scenes to activate",
+				"label": "__l_options__",
 				"fields": {
 					"item": {
 						"type": "select",
