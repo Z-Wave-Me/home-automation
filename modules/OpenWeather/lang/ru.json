@@ -1,6 +1,6 @@
 {
 	"title":"Погодный информер",
-	"description": "Погодный информер предоставляет данные с OpenWeatherMap.org",
+	"description": "Погодный информер предоставляет данные с OpenWeatherMap.org.",
 	"units": "Единица измерения",
 	"country": "Страна",
 	"country_placeholder": "Россия",

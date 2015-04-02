@@ -13,7 +13,7 @@
     },
     "defaults": {
         "title": "VisaCam",
-        "description": "Support the MIOS VistaCam",
+        "description": "__m_descr__",
 	"url": "",
 	"doorDevices": []
     },
@@ -38,12 +38,12 @@
     "options": {
         "fields": {
             "url": {
-                "label": "Camera IP URL",
-				"helper": "in the format 'http://IPADDRESS:PORT'",                
+                "label": "__ip__",
+				"helper": "__h_ip__",                
                 "required": true
             },
             "doorDevices": {
-                "label": "Door device",
+                "label": "__door_dev__",
                 "fields": {
                     "item": {
 			"type": "select",
