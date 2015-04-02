@@ -528,7 +528,7 @@
 										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 									},
 									"status": {
-										"label": "State",
+										"label": "Level",
 										"type": "integer"
 									}
 								}

@@ -15,7 +15,7 @@
         "title": "Z-Wave binding",
         "description": "__m_descr__",
         "name": "zway",
-        "port": "/dev/ttyUSB0",
+        "port": "/dev/ttyACM0",
 	"config": "config",
 	"translations": "translations",
 	"ZDDX": "ZDDX"
