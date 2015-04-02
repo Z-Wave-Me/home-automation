@@ -1,5 +1,0 @@
-{
-  "m_descr": "Traffic Jam provided by Yandex.ru",
-  "err_parse":"Can not parse yandex jam information.",
-  "err_fetch":"Can not fetch yandex jam information."
-}
