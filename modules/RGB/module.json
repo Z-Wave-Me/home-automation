@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "RGB",
-		"description": "Creates RGB device based on three different dimmers",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"red": null,
 		"green": null,
 		"blue": null
@@ -45,21 +45,21 @@
 	"options": {
 		"fields": {
 			"red": {
-				"label": "Red",
+				"label": "__l_red__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 			},
 			"green": {
-				"label": "Green",
+				"label": "__l_green__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 			},
 			"blue": {
-				"label": "Blue",
+				"label": "__l_blue__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",

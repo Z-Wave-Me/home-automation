@@ -1,0 +1,9 @@
+{
+	"title":"Group devices",
+	"m_descr":"Group several devices together.",
+	"rl_options":"Dimmable",
+	"l_devices":"Group devices",
+	"rl_invert":"Invert action",
+	"l_scenesOn":"List of scenes to activate on On action",
+	"l_scenesOff":"List of scenes to activate on Off action"
+}

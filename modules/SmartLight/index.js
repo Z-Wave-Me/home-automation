@@ -1,6 +1,6 @@
 /*** SmartLight Z-Way Home Automation module *************************************
 
- Version: 1.0.0
+ Version: 1.1.0
  (c) Z-Wave.Me, 2014
 
  -----------------------------------------------------------------------------
@@ -36,10 +36,14 @@ SmartLight.prototype.init = function (config) {
 
     var self = this;
 
+    // Dimmer levels for day and night
+    var dayLevel = this.config.Level.DayLevel;
+    var nightLevel = this.config.Level.NightLevel;
+
+
     // Day start
     var time_07_00_arr = this.config.Day.DayTimeStart.split(":").map(function(x) { return parseInt(x, 10); });
     this.Time_07_00 = time_07_00_arr[0] * 60 + time_07_00_arr[1];
-
     // Day end
     var time_23_59_arr = this.config.Day.DayTimeEnd.split(":").map(function(x) { return parseInt(x, 10); });
     this.Time_23_59 = time_23_59_arr[0] * 60 + time_23_59_arr[1];
@@ -55,12 +59,12 @@ SmartLight.prototype.init = function (config) {
 
             // In the daytime or the dimmer Button pressed the light turns on for 100%  
             if ((nowTime >= self.Time_07_00 && nowTime <= self.Time_23_59) || self.dimmerButtonStatus === 1) {
-                self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 99 });
+                self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
                 self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 255 });
             }
             // At night the light turns on for 20%
             else {
-                self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 20 });
+                self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: nightLevel });
                 self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 255 });
             }
         }
@@ -82,7 +86,7 @@ SmartLight.prototype.init = function (config) {
         // if pressed up, turn on the light
         console.log("button pressed");
         if (DimmerButton.get("metrics:level")=== "on") {
-            self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 99 });
+            self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
             self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 255 });
             self.dimmerButtonStatus = 1; 
             if (self.timerSmartLight) {

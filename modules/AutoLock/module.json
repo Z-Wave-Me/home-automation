@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Auto Lock",
-		"description": "Door/Window Sensor automatically closes lock when door is closed",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"BinarySensor": null,
 		"DoorLock": null
 	},
@@ -42,21 +42,21 @@
 	"options": {
 		"fields": {
 			"BinarySensor": {
-				"label": "Door/Window Sensor",
+				"label": "__dw_sensor__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
                 "optionLabels": "namespaces:devices_sensorBinary:deviceName"
 			},
 			"DoorLock": {
-				"label": "Door Lock",
+				"label": "__doorlock__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
                 "optionLabels": "namespaces:devices_doorlock:deviceName"
 			},
 			"delay": {
-				"label": "Delay in seconds",
+				"label": "__delay_in_seconds__",
 				"type": "integer"
 			}
 		}

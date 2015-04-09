@@ -13,7 +13,7 @@
     },
     "defaults": {
         "title": "PoppCam",
-        "description": "Support the PoppCam",
+        "description": "__m_descr__",
 	"url": "",
 	"doorDevices": []
     },
@@ -44,22 +44,22 @@
     "options": {
         "fields": {
             "url": {
-                "label": "Camera IP URL",
-				"helper": "in the format 'http://IPADDRESS:PORT. Default Port is 81'",                
+                "label": "__ip__",
+				"helper": "__h_ip__",                
                 "required": true
             },
             "user": {
-                "label": "Username",
-				"helper": "This is the username that was set up during camera configuration. Default is 'admin'",
+                "label": "__user__",
+				"helper": "__h_user__",
                 "required": false
             },
             "password": {
-                "label": "Password",
-				"helper": "This is the upassword that was set up during camera configuration. Default is 'admin'",
+                "label": "__pw__",
+				"helper": "__h_pw__",
                 "required": false
             },
             "doorDevices": {
-                "label": "Door device",
+                "label": "__door_dev__",
                 "fields": {
                     "item": {
 			"type": "select",

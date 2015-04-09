@@ -1,4 +1,5 @@
 {
+	"title":"Z-Wave binding",
 	"m_descr":"Loads Z-Wave engine",
 	"l_port":"Serial port to Z-Wave dongle",
 	"l_name":"Internal name",

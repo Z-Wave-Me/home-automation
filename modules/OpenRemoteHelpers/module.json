@@ -12,8 +12,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "OpenRemote helper",
-	"description": "Set of helpers for OpenRemote server"
+        "title": "__title__",
+	    "description": "__m_descr__"
     },
     "schema": {
     },

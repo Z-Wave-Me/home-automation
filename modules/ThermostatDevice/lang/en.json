@@ -1,0 +1,11 @@
+{
+	"title":"Thermostat based on switch and sensor",
+	"m_descr":"Create thermostat devices based on a switch and temperature sensor.",
+	"l_switch":"Switch",
+	"l_sensor":"Temperature sensor",
+	"l_heaton":"Mode",
+	"heat":"Heat",
+	"cool":"Cool",
+	"l_hysteresis":"Hysteresis",
+	"h_hysteresis":"Maximal delta between current and target temperature after which thermostat should turn on/off"
+}

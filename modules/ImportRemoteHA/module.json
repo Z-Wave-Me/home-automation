@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Import from remote Z-Way HA",
-		"description": "Create virtual device based remote Z-Way HA server.",
+		"title": "__title__",
+		"description": "__m_descr__",
 
 		"url": "",
 		"dT": 500,
@@ -21,7 +21,6 @@
 		"renderDevices": []
 	},
 	"schema": {
-		"label": "Select action condition",
 		"type": "object",
 		"properties": {
 			"url": {
@@ -64,14 +63,14 @@
 	"options": {
 		"fields": {
 			"url": {
-				"label": "URL to remote side",
+				"label": "__l_url__",
 				"placeholder": "http://192.168.0.100:8083"
 			},
 			"dT": {
-				"label": "Update period (in milliseconds)"
+				"label": "__l_dT__"
 			},
 			"skipDevices": {
-				"label": "List of devices not to import from remote side",
+				"label": "__l_skipDevices__",
 				"fields": {
 					"item": {
 						"type": "select",
@@ -82,7 +81,7 @@
 				}
 			},
 			"renderDevices": {
-				"label": "List of devices imported from remote side (filled automatically)",
+				"label": "__l_renderDevices__",
 				"fields": {
 					"item": {
 						"fields": {

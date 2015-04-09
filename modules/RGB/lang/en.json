@@ -1,0 +1,7 @@
+{
+	"title":"RGB Device",
+	"m_descr":"Creates RGB device based on three different dimmers.",
+	"l_red":"Red",
+	"l_green":"Green",
+	"l_blue":"Blue"
+}

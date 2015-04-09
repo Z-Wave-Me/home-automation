@@ -12,8 +12,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Web Camera",
-        "description": "This module include configuration for a camera and create camera device",
+        "title": "__title__",
+        "description": "__m_descr__",
 	"url": "",
 	"zoomInUrl": "",
 	"zoomOutUrl": "",
@@ -87,58 +87,58 @@
     "options": {
         "fields": {
             "url": {
-                "label": "Camera URL",
+                "label": "__camera_url__",
                 "type": "url",
                 "required": true
             },
             "zoomInUrl": {
-                "label": "ZoomIn URL",
+                "label": "__zoom_in_url__",
                 "type": "url",
                 "required": false
             },
             "zoomOutUrl": {
-                "label": "ZoomOut URL",
+                "label": "__zoom_out_url__",
                 "type": "url",
                 "required": false
             },
             "leftUrl": {
-                "label": "Left URL",
+                "label": "__left_url__",
                 "type": "url",
                 "required": false
             },
             "rightUrl": {
-                "label": "Right URL",
+                "label": "__right_url__",
                 "type": "url",
                 "required": false
             },
             "upUrl": {
-                "label": "Up URL",
+                "label": "__up_url__",
                 "type": "url",
                 "required": false
             },
             "downUrl": {
-                "label": "Down URL",
+                "label": "__down_url__",
                 "type": "url",
                 "required": false
             },
             "openUrl": {
-                "label": "Open URL",
+                "label": "__open_url__",
                 "type": "url",
                 "required": false
             },
             "closeUrl": {
-                "label": "Close URL",
+                "label": "__close_url__",
                 "type": "url",
                 "required": false
             },
             "user": {
                 "label": "__username_basic_http__",
-		"helper": "__username_basic_http_helper__",
+		        "helper": "__username_basic_http_helper__",
                 "required": false
             },
             "password": {
-                "label": "Password for HTTP authentication",
-		        "helper": "Leave empty if camera is not protected by a password",
+                "label": "__password_basic_http__",
+		        "helper": "__password_basic_http_helper__",
                 "required": false
             },
             "doorDevices": {

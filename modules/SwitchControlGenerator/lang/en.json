@@ -1,7 +1,8 @@
 {
-	"m_descr":"Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
+	"title":"Trap events from Remotes and Sensors",
+	"m_descr":"Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller.",
 	"l_trapNew": "Create control device for new remote controls and switches",
-	"l_banned": "List of remotes and switches not to instanciate",
-	"l_generated": "List of remotes and switches to instanciate (filled automatically)",
+	"l_banned": "List of remotes and switches not to instantiate",
+	"l_generated": "List of remotes and switches to instantiate (filled automatically)",
 	"err":"SwitchControlGenerator: Virtual device should exist, but was not found."
 }

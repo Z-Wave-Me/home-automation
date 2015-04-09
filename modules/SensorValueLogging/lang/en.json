@@ -1,0 +1,10 @@
+{
+	"title":"Sensor values logging",
+	"m_descr":"Store sensor values in JSON file or via HTTP requests to your server.",
+	"l_device":"Sensor to log",
+	"l_logTo":"How to store:",
+	"l_logTo_json":"to JSON file in storage",
+	"l_logTo_http":"send via HTTP request",
+	"l_url":"HTTP request to do. Strings ${id} and ${value} are replaced by sensor ID and value correspondingly",
+	"h_url":"Example: http://mydomainname.org/path/to/something/${id}?myval=${value}"
+}

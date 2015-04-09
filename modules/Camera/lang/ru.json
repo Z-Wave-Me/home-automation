@@ -1,5 +1,18 @@
 {
-  "door_device": "Дверной замок",
-  "username_basic_http": "Пользователь для http-авторизации",
-  "username_basic_http_helper": "Оставьте поле пустым, если камера не защищена паролем"
+	"title":"Web Камера",
+	"m_descr":"Этот модуль позволяет настроить управление камерой.",
+	"camera_url":"URL Камеры",
+	"zoom_in_url":"URL Приблизить",
+	"zoom_out_url":"URL Отдалить",
+	"left_url":"URL Влево",
+	"right_url":"URL Вправо",
+	"up_url":"URL Вверх",
+	"down_url":"URL Вниз",
+	"open_url":"URL Открыть",
+	"close_url":"URL Закрыть",
+  	"username_basic_http": "Имя пользователя",
+  	"username_basic_http_helper": "Оставьте это поле пустым, если камера не использует HTTP авторизацию",
+  	"password_basic_http": "Пароль",
+  	"password_basic_http_helper": "Оставьте это поле пустым, если камера не использует HTTP авторизацию",
+  	"door_device": "Устройство управления доступом двери"
 }

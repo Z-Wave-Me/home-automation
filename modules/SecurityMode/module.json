@@ -11,7 +11,7 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Security mode",
+		"title": "__title__",
 		"description": "__m_descr__",
 		"tests": [],
 		"action": {

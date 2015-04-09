@@ -1,0 +1,6 @@
+{
+	"m_descr":"Support the MIOS VistaCam",
+	"ip":"Camera IP URL",
+	"h_ip":"in the format 'http://IPADDRESS:PORT'",
+	"door_dev":"Door device"
+}
