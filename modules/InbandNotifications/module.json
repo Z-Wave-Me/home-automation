@@ -1,0 +1,21 @@
+{
+	"singleton" : true,
+	"dependencies" : [],
+	"category" : "notifications",
+	"author" : "Z-Wave.Me",
+	"homepage" : "http://razberry.z-wave.me",
+	"icon" : "",
+	"moduleName":"InbandNotifications",
+	"version" : "1.0.4",
+	"maturity" : "beta",
+	"repository" : {
+		"type" : "git",
+		"source" : "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults" : {
+		"title" : "Inband Notifier",
+		"description" : "__m_descr__"
+	},
+	"schema": {},
+	"options": {}
+}

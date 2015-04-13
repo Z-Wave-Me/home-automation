@@ -595,9 +595,16 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
 
 
     if (removeNotification) {
-        that.notifications = that.notifications.filter(function (notification) {
+        var newNot = that.notifications.filter(function (notification) {
             return ids.indexOf(parseInt(notification.id)) === -1;
         });
+        
+        console.log(that.notifications.length + ' || ' + newNot.length);
+
+        that.notifications = newNot;
+
+        console.log('after newNot: '+that.notifications.length);
+ 
     } else {
         that.notifications.forEach(function (notification) {
             if (ids.indexOf(parseInt(notification.id)) !== -1) {
@@ -797,6 +804,10 @@ AutomationController.prototype.getListProfiles = function () {
         this.profiles.push({
             id: 1,
             role: 1,
+            login : {
+                user: 'admin',
+                token: '21232f297a57a5a743894a0e4a801fc3'
+            },
             name: langFile.profile_name,
             description: langFile.profile_descr,
             lang:'',
@@ -823,6 +834,10 @@ AutomationController.prototype.createProfile = function (object) {
         profile = {
             id: id,
             role: 2,
+            login : {
+                user: object.login.user,
+                token: object.login.token
+            },
             name: object.name,
             description: object.description,
             lang: object.lang,
@@ -836,6 +851,10 @@ AutomationController.prototype.createProfile = function (object) {
         };
 
     _.defaults(profile, {
+        login : {
+            user: '',
+            token: ''
+        },
         name: '',
         description: '',
         lang:'',
@@ -864,6 +883,9 @@ AutomationController.prototype.updateProfile = function (object, id) {
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
 
+        if (object.login.hasOwnProperty('token')) {
+            this.profiles[index].login.token = login.token;
+        }
         if (object.hasOwnProperty('name')) {
             this.profiles[index].name = object.name;
         }
@@ -896,6 +918,9 @@ AutomationController.prototype.updateProfile = function (object, id) {
         }
 
         _.defaults(this.profiles[index], {
+            login : {
+                token: ''
+            },
             name: '',
             description: '',
             lang:'',

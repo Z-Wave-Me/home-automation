@@ -1,0 +1,18 @@
+{
+	"m_descr":"Dieses Modul erstellt eine Instanz, welche ausgewählte Geräte oder Gerätetypen überwacht. Die Zustandsänderung der überwachten Geräte wird im Eventmonitor angezeigt.",
+	"l_dev":"Geräte die überwacht werden sollen",
+	"l_devT":"Gerätetypen die überwacht werden sollen",
+	"all":"alle Gerätetypen",
+	"battery":"Batterie",
+	"fan":"Ventilator",
+	"doorlock":"Türschloss",
+	"switchBinary":"An/Aus Schalter ", 
+	"switchMultilevel":"Dimmer/Motor Steuerung ",
+	"switchControl":"Schalter Steuerung ",
+	"sensorBinary":"An/Aus Sensor ",
+	"sensorMultilevel":"Analogsensor ",
+	"sensorMultiline":"Informations Sensor",
+	"thermostat":"Thermostat Regler ",
+	"change":"ist ",
+	"status_lvl_unknown":"Unbekannter Gerätestatus ist - "
+}

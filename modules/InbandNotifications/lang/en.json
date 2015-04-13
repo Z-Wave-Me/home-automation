@@ -1,0 +1,18 @@
+{
+	"m_descr":"Creates an instance that monitors the status of every choosen device or device type. It sends notifications automatically if something has changed.",
+	"l_dev":"Devices to be monitored",
+	"l_devT":"Device types to be monitored",
+	"all":"all device types ",
+	"battery":"Battery Sensor ",
+	"fan":"Fan Switch ",
+	"doorlock":"Doorlock Switch ",
+	"switchBinary":"On/Off Switch ", 
+	"switchMultilevel":"Dimmer/Motor Control ",
+	"switchControl":"Switch Control ",
+	"sensorBinary":"On/Off Sensor ",
+	"sensorMultilevel":"Analog Sensor ",
+	"sensorMultiline":"Informer ",
+	"thermostat":"Thermostat Switch ",
+	"change":"is ",
+	"status_lvl_unknown":"Unknown device status is - "
+}
