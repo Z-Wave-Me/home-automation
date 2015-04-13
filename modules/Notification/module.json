@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Notification",
-		"description": "Send email or sms",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"message" : "",
 		"api_key": "",
         "phone": "",
@@ -44,17 +44,17 @@
 	"options": {
 		"fields": {
 			"message": {
-				"label": "text message"
+				"label": "__l_message__"
 			},
 			"phone": {
-                "label": "Phone number to send SMS. In form of 79261234567"
+                "label": "__l_phone__"
             },
             "api_key": {
-                "label": "API key from SMS.ru",
-				"helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+                "label": "__l_api_key__",
+				"helper": "__h_api_key__"
             },
 			"email": {
-				"label": "email that will be notified"
+				"label": "__l_email__"
 			}
 		}
 	}

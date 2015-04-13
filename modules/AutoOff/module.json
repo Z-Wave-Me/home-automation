@@ -12,13 +12,12 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Auto Off",
-        "description": "Turns off automatically devices after a defined time",
+        "title": "__title__",
+        "description": "__m_descr__",
         "timeout": 5,
         "device": ""
     },
     "schema": {
-        "description": "Automatically turn of devices after N seconds",
         "type": "object",
         "properties": {
             "device": {
@@ -37,13 +36,13 @@
     "options": {
         "fields": {
             "device": {
-                "label": "The device to be turned off after the timeout",
+                "label": "__device__",
                 "datasource": "namespaces",
                 "field": "optionLabels",
                 "optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
             },
             "timeout": {
-                "label": "Timout in seconds"
+                "label": "__timeout__"
             }
         }
     }

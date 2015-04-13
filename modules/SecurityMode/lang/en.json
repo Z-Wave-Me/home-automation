@@ -1,5 +1,6 @@
 {
-	"m_descr":"Security mode allows to trigger scenes based on devices status.",
+	"title":"Security mode",
+	"m_descr":"Security mode allows to switch sensors in security mode to trigger security scenes and devices, eg sirens.",
 	"action_msg":"Alert!",
 	"l_tests":"Sensors",
 	"l_test_binary":"Binary condition",
@@ -14,7 +15,7 @@
 	"on":"On",
 	"off":"Off",
 	"l_dimmers":"List of dimmers",
-	"l_status":"State",
+	"l_status":"Level",
 	"l_locks":"List of locks",
 	"open":"Open",
 	"close":"Close",

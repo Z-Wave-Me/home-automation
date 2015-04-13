@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Light scene",
-		"description": "Light scene defines state of switches, dimmers, blinds",
+		"title": "__title__",
+		"description": "__m_descr__",
 		"switches": [],
 		"dimmers": [],
 		"scenes": []
@@ -75,7 +75,7 @@
 	"options": {
 		"fields": {
 			"switches": {
-				"label": "List of switches",
+				"label": "__l_switches__",
 				"fields": {
 					"item": {
 						"fields": {
@@ -88,14 +88,14 @@
 							},
 							"status": {
 								"label": "",
-								"optionLabels": ["Off", "On"]
+								"optionLabels": ["__off__", "__on__"]
 							}
 						}
 					}
 				}
 			},
 			"dimmers": {
-				"label": "List of dimmers",
+				"label": "__l_dimmers__",
 				"fields": {
 					"item": {
 						"fields": {
@@ -107,14 +107,14 @@
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 							},
 							"status": {
-								"label": "State"
+								"label": "__l_level__"
 							}
 						}
 					}
 				}
 			},
 			"scenes": {
-				"label": "List of scenes to activate",
+				"label": "__l_scenes__",
 				"fields": {
 					"item": {
 						"type": "select",

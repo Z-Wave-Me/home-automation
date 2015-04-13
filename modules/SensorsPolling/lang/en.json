@@ -1,0 +1,19 @@
+{
+	"title":"Poll devices periodically",
+	"m_descr":"Regular devices polling.",
+	"l_devices":"Devices to poll:",
+	"l_period":"Poll period",
+	"one_m":"1 minute", 
+	"two_m":"2 minute", 
+	"five_m":"5 minute", 
+	"ten_m":"10 minute", 
+	"twenty_m":"20 minute", 
+	"thirty_m":"30 minute", 
+	"one_h":"1 hour", 
+	"two_h":"2 hours", 
+	"four_h":"4 hours", 
+	"six_h":"6 hours", 
+	"half_d":"12 hours", 
+	"daily":"daily", 
+	"weekly":"weekly"
+}

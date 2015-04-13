@@ -12,8 +12,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults" : {
-		"title" : "Dummy device",
-		"description" : "Create a Dummy device",
+		"title" : "__title__",
+		"description" : "__m_descr__",
 		"deviceType" : "switchBinary"
 	},
 	"schema" : {
@@ -30,7 +30,7 @@
 	"options" : {
 		"fields" : {
 			"deviceType" : {
-				"label" : "Select device type",
+				"label" : "__l_options__",
 				"type" : "select",
 				"optionLabels" : ["Binary switch", "Multilevel switch"]
 			}
