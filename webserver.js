@@ -68,6 +68,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.put("/notifications/:notification_id", this.updateNotification, [parseInt]);
         this.router.get("/notifications/:notification_id", this.getNotificationFunc, [parseInt]);
+        this.router.del("/notifications/:notification_id", this.deleteNotifications, [parseInt]);
 
         this.router.del("/profiles/:profile_id", this.removeProfile, [parseInt]);
         this.router.put("/profiles/:profile_id", this.updateProfile, [parseInt]);
@@ -315,6 +316,42 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = "Notification " + notificationId + " doesn't exist";
             }
             that.initResponse(reply);
+        };
+    },
+    deleteNotifications: function (notificationId) {
+
+        return function () {
+            var that = this,
+                id = notificationId ? parseInt(notificationId) : 0,
+                reply = {
+                    data: null,
+                    error: null,
+                    code: 200
+                },
+                before;
+
+            before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
+            
+            if (id > 0 && !_.any(that.controller.notifications, function (notification) { return notification.id === id; })) {
+                reply.code = 404;
+                reply.error = "Notification " + id + " not found";
+            } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
+                reply.code = 404;
+                reply.error = "No notifications found older than unix timestamp: " + id;
+            } else {
+                that.controller.deleteNotifications(id, before, function (notice) {
+                    if (notice) {
+                        reply.code = 204;
+                        reply.data = null;
+                    } else {
+                        reply.code = 404;
+                        reply.data = null;
+                        reply.error = "Notifications not found.";
+                    }
+                }, true);
+            }
+
+            this.initResponse(reply);
         };
     },
     //locations

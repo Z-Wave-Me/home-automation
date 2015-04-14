@@ -29,13 +29,22 @@ _module = InbandNotifications;
 InbandNotifications.prototype.init = function (config) {
     InbandNotifications.super_.prototype.init.call(this, config);
 
+    // add cron schedule every day
+    this.controller.emit("cron.addTask", "inbandNotifier.poll", {
+        minute: [0,59,2],
+        hour: null,
+        //weekDay: [0,6,1],
+        weekDay: null,
+        day: null,
+        month: null
+    });
+
     var self = this,
         lastChanges = [];
 
     this.writeNotification = function (vDev) {
         var devId = vDev.get('id'),
             devType = vDev.get('deviceType'),
-            devName = vDev.get('metrics:title'),
             eventType = function(){
                 if(vDev.get('metrics:probeTitle')){
                     return vDev.get('metrics:probeTitle').toLowerCase();
@@ -45,9 +54,8 @@ InbandNotifications.prototype.init = function (config) {
             },
             scaleUnit = vDev.get('metrics:scaleTitle'),
             lvl = vDev.get('metrics:level'),
-            lF = self.controller.loadModuleLang("InbandNotifications"),
             createItem = 0,
-            item, type, msg, msgType, preMsg;
+            item, msg, msgType;
 
         if(lastChanges.filter(function(o){
                         return o.id === devId;
@@ -65,13 +73,12 @@ InbandNotifications.prototype.init = function (config) {
             var cl = lastChanges[i]['l'],
                 cid = lastChanges[i]['id'];
 
-            if(typeof lvl === 'number') {
-                lvl.toFixed(1);
+            if(lvl === +lvl && lvl !== (lvl|0)) {
+                lvl = lvl.toFixed(1);
             }
 
             if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && createItem === 1)){
 
-                preMsg = lF[devType] + '"' + devName + '" ' + lF.change;
                 // depending on device type choose the correct notification
                 switch(devType) {
                     case 'switchBinary':
@@ -79,18 +86,18 @@ InbandNotifications.prototype.init = function (config) {
                     case 'sensorBinary':
                     case 'fan':
                     case 'doorlock':
-                        msg =  preMsg + '"' + lvl + '"';
+                        msg =  lvl;
                         msgType = "device-OnOff";
                         break;
                     case 'switchMultilevel':
                     case 'battery':
-                        msg = preMsg + '"' + lvl + '%"';
+                        msg = lvl + '%';
                         msgType = "device-status";
                         break;
                     case 'sensorMultilevel':
                     case 'sensorMultiline':
                     case 'thermostat':
-                        msg = preMsg + ': "' + lvl + ' ' + scaleUnit + '"';
+                        msg = lvl + ' ' + scaleUnit;
                         msgType = 'device-' + eventType();
                         break;
                     default:
@@ -101,36 +108,37 @@ InbandNotifications.prototype.init = function (config) {
                 lastChanges[i]['l'] = lvl;
                 createItem = 0;
             }
-        }
-        var since = Math.floor(new Date().getTime() / 1000);
-
-        var filteredNotifications = self.controller.notifications.filter(function (notification) {
-            return notification.id <= (since - 7200);
-            //return notification.id <= 1424866671;
-        });
-
-        //console.log(filteredNotifications);
-        if(filteredNotifications.length > 0){
-            self.controller.deleteNotifications(filteredNotifications, 'function', true);
-        }
-        
+        }        
     };
-   
+
+    this.onPoll = function () {
+        
+        var now = new Date();
+        var startOfDay = now.setHours(0,0,0,0);
+        var ts = Math.floor(startOfDay/ 1000);
+        var tsSevenDaysBefore = ts - 86400*6;
+
+        /*
+        var now = new Date(),
+            ts = (now / 1000) - 1200;
+        */
+        
+        self.controller.deleteNotifications(tsSevenDaysBefore, true, this.onPoll, true);
+        //self.controller.deleteNotifications(ts, true, this.onPoll, true);
+    };
+
     // Setup metric update event listener
     self.controller.devices.on('change:metrics:level', self.writeNotification);
-/*
-    var fN = this.notifications.filter(function (notification) {
-            return notification.id <= (since- 1209600);
-        });
-    
-    self.controller.removeNotification(fN);
-    */
+    this.controller.on("inbandNotifier.poll", this.onPoll);
+
 };
 
 InbandNotifications.prototype.stop = function () {
     var self = this;
 
     self.controller.devices.off('change:metrics:level', self.writeNotification);
+    this.controller.emit("cron.removeTask", "inbandNotifier.poll");
+    this.controller.off("inbandNotifier.poll", this.onPoll);
 
     InbandNotifications.super_.prototype.stop.call(this);
 };

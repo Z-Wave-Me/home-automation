@@ -589,22 +589,29 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     console.log("Notification:", severity, "(" + type + "):", message);
 };
 
-AutomationController.prototype.deleteNotifications = function (ids, callback, removeNotification) {
-    var that = this;
-    ids = Array.isArray(ids) ? ids : [ids];
-
-
+AutomationController.prototype.deleteNotifications = function (id, before, callback, removeNotification) {
+    var that = this,
+        ids = [],
+        newNotificationList = [];
+    
     if (removeNotification) {
-        var newNot = that.notifications.filter(function (notification) {
-            return ids.indexOf(parseInt(notification.id)) === -1;
-        });
-        
-        console.log(that.notifications.length + ' || ' + newNot.length);
+        id = parseInt(id) || 0;
+        before = Boolean(before);
 
-        that.notifications = newNot;
+        if(id !== 0 && before === false){
+            newNotificationList = that.notifications.filter(function (notification) {
+                return notification.id !== id;
+            });
+        }
 
-        console.log('after newNot: '+that.notifications.length);
- 
+        if(id !== 0 && before === true){
+            newNotificationList = that.notifications.filter(function (notification) {
+                return notification.id >= id;
+            });
+        }
+
+        that.notifications = newNotificationList;    
+    
     } else {
         that.notifications.forEach(function (notification) {
             if (ids.indexOf(parseInt(notification.id)) !== -1) {
@@ -617,7 +624,7 @@ AutomationController.prototype.deleteNotifications = function (ids, callback, re
         callback(true);
     }
 
-    this.saveNotifications();
+    that.saveNotifications();
 };
 
 AutomationController.prototype.addLocation = function (title, user_img, default_img, img_type, callback) {
@@ -710,6 +717,7 @@ AutomationController.prototype.listNotifications = function (since, to, profileI
         now = new Date(),
         profile, hiddenDev, 
         hashArr = [];
+    
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() / 1000);
     pid = parseInt(profileID) || 0;

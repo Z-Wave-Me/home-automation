@@ -12,7 +12,5 @@
 	"sensorBinary":"An/Aus Sensor ",
 	"sensorMultilevel":"Analogsensor ",
 	"sensorMultiline":"Informations Sensor",
-	"thermostat":"Thermostat Regler ",
-	"change":"ist ",
-	"status_lvl_unknown":"Unbekannter Gerätestatus ist - "
+	"thermostat":"Thermostat Regler "
 }

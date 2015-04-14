@@ -12,7 +12,5 @@
 	"sensorBinary":"On/Off Sensor ",
 	"sensorMultilevel":"Analog Sensor ",
 	"sensorMultiline":"Informer ",
-	"thermostat":"Thermostat Switch ",
-	"change":"is ",
-	"status_lvl_unknown":"Unknown device status is - "
+	"thermostat":"Thermostat Switch "
 }
