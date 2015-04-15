@@ -31,9 +31,9 @@ InbandNotifications.prototype.init = function (config) {
 
     // add cron schedule every day
     this.controller.emit("cron.addTask", "inbandNotifier.poll", {
-        minute: [0,59,2],
+        minute: null,
         hour: null,
-        //weekDay: [0,6,1],
+        weekDay: [0,6,1],
         weekDay: null,
         day: null,
         month: null
@@ -43,88 +43,83 @@ InbandNotifications.prototype.init = function (config) {
         lastChanges = [];
 
     this.writeNotification = function (vDev) {
-        var devId = vDev.get('id'),
-            devType = vDev.get('deviceType'),
-            eventType = function(){
-                if(vDev.get('metrics:probeTitle')){
-                    return vDev.get('metrics:probeTitle').toLowerCase();
-                }else {
-                    return 'status';
-                }
-            },
-            scaleUnit = vDev.get('metrics:scaleTitle'),
-            lvl = vDev.get('metrics:level'),
-            createItem = 0,
-            item, msg, msgType;
+        if(!Boolean(vDev.get('permanently_hidden'))){
+            var devId = vDev.get('id'),
+                devType = vDev.get('deviceType'),
+                scaleUnit = vDev.get('metrics:scaleTitle'),
+                lvl = vDev.get('metrics:level'),
+                eventType = function(){
+                    if(vDev.get('metrics:probeTitle')){
+                        return vDev.get('metrics:probeTitle').toLowerCase();
+                    }else {
+                        return 'status';
+                    }
+                },
+                createItem = 0,
+                item, msg, msgType;
 
-        if(lastChanges.filter(function(o){
-                        return o.id === devId;
-                                    }).length < 1){
-            item = {
-                    id: devId,
-                    l: lvl
-                };
+            if(lastChanges.filter(function(o){
+                            return o.id === devId;
+                                        }).length < 1){
+                item = {
+                        id: devId,
+                        l: lvl
+                    };
 
-            lastChanges.push(item);
-            createItem = 1;
-        }
-
-        for(var i = 0; i < lastChanges.length; i++){
-            var cl = lastChanges[i]['l'],
-                cid = lastChanges[i]['id'];
-
-            if(lvl === +lvl && lvl !== (lvl|0)) {
-                lvl = lvl.toFixed(1);
+                lastChanges.push(item);
+                createItem = 1;
             }
 
-            if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && createItem === 1)){
+            for(var i = 0; i < lastChanges.length; i++){
+                var cl = lastChanges[i]['l'],
+                    cid = lastChanges[i]['id'];
 
-                // depending on device type choose the correct notification
-                switch(devType) {
-                    case 'switchBinary':
-                    case 'switchControl':
-                    case 'sensorBinary':
-                    case 'fan':
-                    case 'doorlock':
-                        msg =  lvl;
-                        msgType = "device-OnOff";
-                        break;
-                    case 'switchMultilevel':
-                    case 'battery':
-                        msg = lvl + '%';
-                        msgType = "device-status";
-                        break;
-                    case 'sensorMultilevel':
-                    case 'sensorMultiline':
-                    case 'thermostat':
-                        msg = lvl + ' ' + scaleUnit;
-                        msgType = 'device-' + eventType();
-                        break;
-                    default:
-                        break;
+                if(lvl === +lvl && lvl !== (lvl|0)) {
+                    lvl = lvl.toFixed(1);
                 }
 
-                self.controller.addNotification('device-info', msg , msgType, devId);
-                lastChanges[i]['l'] = lvl;
-                createItem = 0;
+                if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && createItem === 1)){
+
+                    // depending on device type choose the correct notification
+                    switch(devType) {
+                        case 'switchBinary':
+                        case 'switchControl':
+                        case 'sensorBinary':
+                        case 'fan':
+                        case 'doorlock':
+                            msg =  lvl;
+                            msgType = 'device-OnOff';
+                            break;
+                        case 'switchMultilevel':
+                        case 'battery':
+                            msg = lvl + '%';
+                            msgType = 'device-status';
+                            break;
+                        case 'sensorMultilevel':
+                        case 'sensorMultiline':
+                        case 'thermostat':
+                            msg = lvl + ' ' + scaleUnit;
+                            msgType = 'device-' + eventType();
+                            break;
+                        default:
+                            break;
+                    }
+
+                    self.controller.addNotification('device-info', msg , msgType, devId);
+                    lastChanges[i]['l'] = lvl;
+                    createItem = 0;
+                }
             }
-        }        
+        }     
     };
 
     this.onPoll = function () {
         
-        var now = new Date();
-        var startOfDay = now.setHours(0,0,0,0);
-        var ts = Math.floor(startOfDay/ 1000);
-        var tsSevenDaysBefore = ts - 86400*6;
-
-        /*
         var now = new Date(),
-            ts = (now / 1000) - 1200;
-        */
+            startOfDay = now.setHours(0,0,0,0),
+            tsSevenDaysBefore = startOfDay - 86400*6;
         
         self.controller.deleteNotifications(tsSevenDaysBefore, true, this.onPoll, true);
-        //self.controller.deleteNotifications(ts, true, this.onPoll, true);
     };
 
     // Setup metric update event listener

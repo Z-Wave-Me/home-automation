@@ -573,7 +573,7 @@ AutomationController.prototype.loadNotifications = function () {
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
     var now = new Date(),
         notice = {
-            id: Math.floor(now.getTime() / 1000),
+            id: Math.floor(now.getTime() /1000),
             timestamp: now.toISOString(),
             level: severity,
             message: message, 
@@ -589,7 +589,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     console.log("Notification:", severity, "(" + type + "):", message);
 };
 
-AutomationController.prototype.deleteNotifications = function (id, before, callback, removeNotification) {
+AutomationController.prototype.deleteNotifications = function (id, before, uid, callback, removeNotification) {
     var that = this,
         ids = [],
         newNotificationList = [];
@@ -597,10 +597,11 @@ AutomationController.prototype.deleteNotifications = function (id, before, callb
     if (removeNotification) {
         id = parseInt(id) || 0;
         before = Boolean(before);
+        uid = parseInt(uid) || 0;
 
-        if(id !== 0 && before === false){
+        if(id !== 0 && uid !== 0 && before === false){
             newNotificationList = that.notifications.filter(function (notification) {
-                return notification.id !== id;
+                return notification.id !== id && notification.h !== uid;
             });
         }
 
@@ -719,7 +720,7 @@ AutomationController.prototype.listNotifications = function (since, to, profileI
         hashArr = [];
     
     since = parseInt(since) || 0;
-    to = parseInt(to) || Math.floor(now.getTime() / 1000);
+    to = parseInt(to) || Math.floor(now.getTime() /1000);
     pid = parseInt(profileID) || 0;
 
     if(pid > 0 && pid <= this.profiles.length){
@@ -812,16 +813,18 @@ AutomationController.prototype.getListProfiles = function () {
         this.profiles.push({
             id: 1,
             role: 1,
-            login : {
+            /*login : {
                 user: 'admin',
                 token: '21232f297a57a5a743894a0e4a801fc3'
-            },
+            },*/
             name: langFile.profile_name,
             description: langFile.profile_descr,
             lang:'',
             color:'',
+            default_ui:'',
             dashboard: [],
-            hide_rooms:[],
+            interval: 2000,
+            rooms:[],
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],
@@ -842,16 +845,18 @@ AutomationController.prototype.createProfile = function (object) {
         profile = {
             id: id,
             role: 2,
-            login : {
+            /*login : {
                 user: object.login.user,
                 token: object.login.token
-            },
+            },*/
             name: object.name,
             description: object.description,
             lang: object.lang,
             color: object.color,
+            default_ui: object.default_ui,
             dashboard: object.dashboard,
-            hide_rooms: object.hide_rooms,
+            interval: parseInt(object.interval),
+            rooms: object.rooms,
             hide_all_device_events: object.hide_all_device_events,
             hide_system_events: object.hide_system_events,
             hide_single_device_events: object.hide_single_device_events,
@@ -859,16 +864,18 @@ AutomationController.prototype.createProfile = function (object) {
         };
 
     _.defaults(profile, {
-        login : {
+        /*login : {
             user: '',
             token: ''
-        },
+        },*/
         name: '',
         description: '',
         lang:'',
         color:'',
+        default_ui:'',
         dashboard: [],
-        hide_rooms:[],
+        interval: 2000,
+        rooms:[],
         hide_all_device_events: false,
         hide_system_events: false,
         hide_single_device_events: [],
@@ -886,55 +893,33 @@ AutomationController.prototype.updateProfile = function (object, id) {
             return profile.id === parseInt(id);
         }),
         index,
-        that = this;
+        that = this,
+        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
 
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
 
-        if (object.login.hasOwnProperty('token')) {
-            this.profiles[index].login.token = login.token;
-        }
-        if (object.hasOwnProperty('name')) {
-            this.profiles[index].name = object.name;
-        }
-        if (object.hasOwnProperty('description')) {
-            this.profiles[index].description = object.description;
-        }
-        if (object.hasOwnProperty('lang')) {
-            this.profiles[index].lang = object.lang;
-        }
-        if (object.hasOwnProperty('color')) {
-            this.profiles[index].color = object.color;
-        }
-        if (object.hasOwnProperty('dashboard')) {
-            this.profiles[index].dashboard = object.dashboard;
-        }
-        if (object.hasOwnProperty('hide_rooms')) {
-            this.profiles[index].hide_rooms = object.hide_rooms;
-        }
-        if (object.hasOwnProperty('hide_all_device_events')) {
-            this.profiles[index].hide_all_device_events = object.hide_all_device_events;
-        }
-        if (object.hasOwnProperty('hide_system_events')) {
-            this.profiles[index].hide_system_events = object.hide_system_events;
-        }
-        if (object.hasOwnProperty('hide_single_device_events')) {
-            this.profiles[index].hide_single_device_events = object.hide_single_device_events;
-        }
-        if (object.hasOwnProperty('positions')) {
-            this.profiles[index].positions = object.positions;
+        for (var property in object) {
+          if (object.hasOwnProperty(property) && profileProps.indexOf(property) > -1) {
+            this.profiles[index][property] = object[property];
+          }
+          else {
+            //do nothing
+          }
         }
 
         _.defaults(this.profiles[index], {
-            login : {
+            /*login : {
                 token: ''
-            },
+            },*/
             name: '',
-            description: '',
             lang:'',
             color:'',
+            default_ui:'',
+            role: 2,
             dashboard: [],
-            hide_rooms:[],
+            interval: 2000,
+            rooms:[],
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],
