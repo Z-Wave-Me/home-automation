@@ -4,7 +4,8 @@
     "category": "logging",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"SensorValueLogging",
     "version": "1.0.1",
     "maturity": "stable",
     "repository": {
