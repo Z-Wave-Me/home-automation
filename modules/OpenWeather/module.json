@@ -4,7 +4,8 @@
     "category": "environment",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"OpenWeather",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {

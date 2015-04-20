@@ -4,12 +4,13 @@
     "category": "scheduling",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName": "AutoOff",
     "version": "1.0.1",
     "maturity": "stable",
     "repository": {
-            "type": "git",
-            "source": "https://github.com/Z-Wave-Me/home-automation"
+        "type": "git",
+        "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
         "title": "__title__",
