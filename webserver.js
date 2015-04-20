@@ -52,6 +52,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/instances", this.listInstances);
         this.router.post("/instances", this.createInstance());
 
+        this.router.post("/upload/image", this.uploadImage);
+
         // TODO: Should we remove these as they are no longer available?
         // this.router.post("/namespaces", this.createNamespace());
         // this.router.get("/notifications/markRead", this.markNotificationsRead());
@@ -88,6 +90,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
 
         this.router.get("/history/:dev_id", this.getHistDevFunc);
+
+        this.router.get("/load/modulemedia/:module_name/:file_name", this.loadModuleMedia);
+        
+        this.router.get("/load/image/:img_name", this.loadImage);
     },
     statusReport: function () {
         var currentDateTime = new Date();
@@ -950,6 +956,106 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.controller.restart();
         this.initResponse(reply);
+    },
+    loadModuleMedia: function(moduleName,fileName) {
+        var that = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 200
+            },
+            obj;
+
+        return function (){
+            obj = that.controller.loadModuleMedia(moduleName,fileName);
+            
+            if(!that.controller.modules[moduleName]){
+                reply.code = 400;
+                reply.error = "Can't load file from module because module '" + moduleName + "' was not found." ;
+                
+                that.initResponse(reply);
+
+            }else if (obj !== null) {
+                that.res.status = 200;
+                that.res.headers = { 
+                    "Content-Type": obj.ct,
+                    "Connection": "keep-alive"
+                };
+                that.res.body = obj.data;
+
+                return that.res;
+
+            } else {
+                reply.code = 400;
+                reply.error = "Failed to load file from module." ;
+                
+                that.initResponse(reply);
+            }
+        };
+    },
+    loadImage: function(imageName) {
+        var that = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 200
+            },
+            data;
+
+        return function (){
+            data = that.controller.loadImage(imageName);
+        
+            if (data !== null) {
+                that.res.status = 200;
+                that.res.headers = { 
+                        "Content-Type": "image/(png|jpeg|gif)",
+                        "Connection": "keep-alive"
+                    };
+                that.res.body = data;
+
+                return that.res;
+            }else {
+                reply.code = 400;
+                reply.error = "Failed to load file." ;
+                
+                that.initResponse(reply);
+            }
+        };
+    },
+    uploadImage: function() {
+        var that = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 200
+            },
+            file;
+
+        if (that.req.method === "POST" && that.req.body.file_upload) {
+            
+            file = that.req.body.file_upload;
+            
+            if (file instanceof Array) {
+                file = file[0];
+            }
+            
+            if (file.name && file.content && file.length > 0) {
+
+                // Create Base64 Object
+                saveObject(file.name, Base64.encode(file.content));
+
+                reply.code = 200;
+                reply.data = file.name;
+
+            }else {
+                reply.code = 400;
+                reply.error = "Failed to upload file" ;
+            }
+        }else {
+            reply.code = 400;
+            reply.error = "Invalid request" ;
+        }
+        that.initResponse(reply);
     }
 });
 
