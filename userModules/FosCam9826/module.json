@@ -1,0 +1,75 @@
+{
+    "singleton": false,
+    "dependencies": [],
+    "category": "surveillance",
+    "author": "Z-Wave.Me",
+    "homepage": "http://www.foscam.com/",
+    "icon": "icon.png",
+    "moduleName":"FosCam9826",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "FosCam FI9826",
+        "description": "__m_descr__",
+	"url": "",
+	"doorDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "required": true
+            },
+            "user": {
+                "required": false
+            },
+            "password": {
+                "required": false
+            },
+            "doorDevices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+                    "required": false
+                }
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "url": {
+                "label": "__ip__",
+				"helper": "__h_ip__",                
+                "required": true
+            },
+            "user": {
+                "label": "__user__",
+				"helper": "__h_user__",
+                "required": false
+            },
+            "password": {
+                "label": "__pw__",
+				"helper": "__h_pw__",
+                "required": false
+            },
+            "doorDevices": {
+                "label": "__door_dev__",
+                "fields": {
+                    "item": {
+			"type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+                    }
+                }
+            }
+        }
+    }
+}
