@@ -30,10 +30,18 @@ InbandNotifications.prototype.init = function (config) {
     InbandNotifications.super_.prototype.init.call(this, config);
 
     // add cron schedule every day
-    this.controller.emit("cron.addTask", "inbandNotifier.poll", {
-        minute: null,
-        hour: null,
+    this.controller.emit("cron.addTask", "inbandNotifierDeleteNotifications.poll", {
+        minute: 0,
+        hour: 0,
         weekDay: [0,6,1],
+        day: null,
+        month: null
+    });
+
+    // add cron schedule every day
+    this.controller.emit("cron.addTask", "inbandNotifierSaveNotifications.poll", {
+        minute: 0,
+        hour: [0,23,1],
         weekDay: null,
         day: null,
         month: null
@@ -46,6 +54,7 @@ InbandNotifications.prototype.init = function (config) {
         if(!Boolean(vDev.get('permanently_hidden'))){
             var devId = vDev.get('id'),
                 devType = vDev.get('deviceType'),
+                devName = vDev.get('metrics:title'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
                 eventType = function(){
@@ -87,18 +96,27 @@ InbandNotifications.prototype.init = function (config) {
                         case 'sensorBinary':
                         case 'fan':
                         case 'doorlock':
-                            msg =  lvl;
+                            msg = {
+                                dev: devName,
+                                l:lvl
+                                };
                             msgType = 'device-OnOff';
                             break;
                         case 'switchMultilevel':
                         case 'battery':
-                            msg = lvl + '%';
+                            msg = {
+                                dev: devName,
+                                l: lvl + '%'
+                                };
                             msgType = 'device-status';
                             break;
                         case 'sensorMultilevel':
                         case 'sensorMultiline':
                         case 'thermostat':
-                            msg = lvl + ' ' + scaleUnit;
+                            msg = {
+                                dev: devName,
+                                l: lvl + ' ' + scaleUnit
+                                };
                             msgType = 'device-' + eventType();
                             break;
                         default:
@@ -113,27 +131,37 @@ InbandNotifications.prototype.init = function (config) {
         }     
     };
 
-    this.onPoll = function () {
+    this.onPollDeleteNotifications = function () {
         
         var now = new Date(),
             startOfDay = now.setHours(0,0,0,0),
             tsSevenDaysBefore = startOfDay - 86400*6;
         
-        self.controller.deleteNotifications(tsSevenDaysBefore, true, this.onPoll, true);
+        self.controller.deleteNotifications(tsSevenDaysBefore, true, this.onPollDeleteNotifications, true);
+    };
+
+    this.onPollSaveNotifications = function () {
+        self.controller.saveNotifications();
     };
 
     // Setup metric update event listener
     self.controller.devices.on('change:metrics:level', self.writeNotification);
-    this.controller.on("inbandNotifier.poll", this.onPoll);
-
+    this.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
+    this.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 };
 
 InbandNotifications.prototype.stop = function () {
     var self = this;
 
+    if (this.timer){
+        clearInterval(this.timer);
+    }        
+
     self.controller.devices.off('change:metrics:level', self.writeNotification);
-    this.controller.emit("cron.removeTask", "inbandNotifier.poll");
-    this.controller.off("inbandNotifier.poll", this.onPoll);
+    this.controller.emit("cron.removeTask", "inbandNotifierDeleteNotifications.poll");
+    this.controller.off("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
+    this.controller.emit("cron.removeTask", "inbandNotifierSaveNotifications.poll");
+    this.controller.off("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 
     InbandNotifications.super_.prototype.stop.call(this);
 };
