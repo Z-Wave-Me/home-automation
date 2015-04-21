@@ -656,7 +656,7 @@ AutomationController.prototype.addLocation = function (title, user_img, default_
         var location = {
             id: id,
             title: title,
-            user_img: '',
+            user_img: user_img || '',
             default_img: default_img || '',
             img_type: img_type || ''
         };
