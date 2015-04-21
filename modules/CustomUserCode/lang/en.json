@@ -1,5 +1,5 @@
 {
-	"title":"Load custom JavaScript code",
+	"m_title":"Load custom JavaScript code",
 	"m_descr":"Allows to load custom JavaScript code on system load.",
 	"err_load":"Failed to load custom user code: ",
 	"l_options":"Your JavaScript code:"

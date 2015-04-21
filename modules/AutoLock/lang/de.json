@@ -1,0 +1,7 @@
+{
+	"m_title":"Automatisches Schließen einer Tür",
+	"m_descr":"Ein elektronisches Türschloss wird immer dann schließen, wenn ein zugeordneter Türsensor eine schließende Tür erkennt.",
+	"l_dw_sensor":"Tür-/Fenstersensor",
+	"l_doorlock":"Türverriegelung",
+	"l_delay_sec":"Verzögerung in Sekunden"
+}

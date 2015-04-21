@@ -13,7 +13,7 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "__title__",
+		"title": "__m_title__",
 		"description": "__m_descr__",
 		"sourceDevices": [],
 		"targetDevices": []
@@ -45,7 +45,7 @@
 	"options": {
 		"fields": {
 			"sourceDevices": {
-				"label": "__event_sources__",
+				"label": "__l_event_sources__",
 				"fields": {
 					"item": {
 						"type": "select",
@@ -56,7 +56,7 @@
 				}
 			},
 			"targetDevices": {
-				"label": "__actors__",
+				"label": "__l_actors__",
 				"fields": {
 					"item": {
 						"type": "select",

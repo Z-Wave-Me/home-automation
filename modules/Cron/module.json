@@ -13,7 +13,7 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "__title__",
+        "title": "__m_title__",
 	    "description": "__m_descr__"
     },
     "schema": {

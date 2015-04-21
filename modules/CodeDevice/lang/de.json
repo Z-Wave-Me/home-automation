@@ -1,0 +1,19 @@
+{
+	"m_title":"Code Device",
+	"m_descr":"Erzeugt ein virtuelles Grät mit Hilfe von JavaScript Code.",
+	"l_setterOn_toggleButton":"Code für den Befehl 'on'",
+	"h_getter_sensorBinary":"Rückgabe der Werte 'on' oder 'off'",
+	"h_getter_sensorMultilevel":"Rückgabe einer Zahlenwertes",
+	"l_scale_sensorMultilevel":"Sensoreinheit",
+	"l_setterOn_switchBinary":"Code für den Befehl 'on'",
+	"h_setterOn_switchBinary":"%% steht für 'on'",
+	"l_setterOff_switchBinary":"Code für den Befehl 'off'",
+	"h_setterOff_switchBinary":"%% steht für 'off'",
+	"h_getter_switchBinary":"Rückgabe der Werte 'on' oder 'off'",
+	"l_setterLevel_switchMultilevel":"Code für Aktion",
+	"h_setterLevel_switchMultilevel":"%% steht für einen Wert von 0 bis 99",
+	"l_getter_value":"Code um einen Wert abzufragen",
+	"h_getter_switchMultilevel":"Rückgabe eines Wertes von 0 bis 99",
+	"l_getterPollInterval":"Abfrageintervall in Sekunden:",
+	"h_getterPollInterval":"0 oder eine leere Eingabe deaktivieren die periodische Abfrage (explizite Update-Kommandos werden weiterhin ausgeführt)"
+}

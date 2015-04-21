@@ -1,5 +1,5 @@
 {
-	"title":"Load custom JavaScript file",
+	"m_title":"Load custom JavaScript file",
 	"m_descr":"Allows to load JavaScript files from automation/ folder on system load.",
 	"customCodeFiles_title":"File name",
 	"err_load":"Failed to load JavaScript file: ",

@@ -13,7 +13,7 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "__title__",
+		"title": "__m_title__",
 		"description": "__m_descr__",
 
 		"deviceType": "",
@@ -132,7 +132,7 @@
 			},
 
 			"getter_sensorBinary": {
-				"label": "__l_getter_sensorBinary__",
+				"label": "__l_getter_value__",
 				"placeholder": "somefunction()",
 				"helper": "__h_getter_sensorBinary__",
 				"dependencies": {
@@ -140,15 +140,15 @@
 				}
 			},
 			"getterPollInterval_sensorBinary": {
-				"label": "__l_getterPollInterval_sensorBinary__",
-				"helper": "__h_getterPollInterval_sensorBinary__",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
 			},
 
 			"getter_sensorMultilevel": {
-				"label": "__l_getter_sensorMultilevel__",
+				"label": "__l_getter_value__",
 				"placeholder": "somefunction()",
 				"helper": "__h_getter_sensorMultilevel__",
 				"dependencies": {
@@ -156,8 +156,8 @@
 				}
 			},
 			"getterPollInterval_sensorMultilevel": {
-				"label": "__l_getterPollInterval_sensorMultilevel__",
-				"helper": "__h_getterPollInterval_sensorMultilevel__",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
@@ -186,7 +186,7 @@
 				}
 			},
 			"getter_switchBinary": {
-				"label": "__l_getter_switchBinary__",
+				"label": "__l_getter_value__",
 				"placeholder": "somefunction()",
 				"helper": "__h_getter_switchBinary__",
 				"dependencies": {
@@ -194,8 +194,8 @@
 				}
 			},
 			"getterPollInterval_switchBinary": {
-				"label": "__l_getterPollInterval_switchBinary__",
-				"helper": "__h_getterPollInterval_switchBinary__",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
@@ -210,7 +210,7 @@
 				}
 			},
 			"getter_switchMultilevel": {
-				"label": "__l_getter_switchMultilevel__",
+				"label": "__l_getter_value__",
 				"placeholder": "somefunction()",
 				"helper": "__h_getter_switchMultilevel__",
 				"dependencies": {
@@ -218,8 +218,8 @@
 				}
 			},
 			"getterPollInterval_switchMultilevel": {
-				"label": "__l_getterPollInterval_switchMultilevel__",
-				"helper": "__h_getterPollInterval_switchMultilevel__",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}

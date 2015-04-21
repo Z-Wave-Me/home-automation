@@ -1,0 +1,7 @@
+{
+	"m_title":"Lade JavaScript-Dateien von Benutzer",
+	"m_descr":"Ermöglicht es JavaScript-Dateien aus dem 'automation' Verzeichnis beim Systemstart zu laden.",
+	"customCodeFiles_title":"Dateiname",
+	"err_load":"JavaScript-Datei konnte nicht geladen werden: ",
+	"h_options":"Fügt Pfad relativ zum 'automation' Verzeichnis hinzu."
+}

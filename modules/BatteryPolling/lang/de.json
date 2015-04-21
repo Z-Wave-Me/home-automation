@@ -1,7 +1,8 @@
 {
+	"m_title":"Batteriestatus",
 	"m_descr":"Überprüft regelmäßig den Batteriestatus der Geräte.",
-	"l_launch_wd":"Überprüfe den Batteriestatus jeden:",
-	"every_d":"Tag", 
+	"l_launch_wd":"Wochentag, an dem der Batteriestatus abgefragt werden soll:",
+	"every_d":"täglich", 
 	"mon":"Montag", 
 	"tue":"Dienstag", 
 	"wed":"Mittwoch", 

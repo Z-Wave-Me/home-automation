@@ -1,6 +1,6 @@
 {
-	"title":"Import devices from remote Z-Way HA",
-	"m_descr":"Create virtual device based remote Z-Way HA server.",
+	"m_title":"Include devices from an other Z-Way HA",
+	"m_descr":"The devices of an other Z-Way HA will be shown on this gateway and could be controlled directly. Also that makes it possible to create scenes with devices from different Z-Way HA.",
 	"l_url":"URL to remote side",
 	"l_dT":"Update period (in milliseconds)",
 	"l_skipDevices":"List of devices not to import from remote side",

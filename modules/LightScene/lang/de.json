@@ -1,0 +1,10 @@
+{
+	"m_title":"Lichtszene",
+	"m_descr":"Ausgewählte Schalter, Dimmer und Motorsteuerungen werden gemeinsam über ein Element gesteuert. Pro Gerät kann der Schalt- bzw. Dimmerzustand oder die gewünschte Motorposition angegeben werden.",
+	"l_switches":"Schalter:",
+	"on":"An",
+	"off":"Aus",
+	"l_dimmers":"Dimmer/Motorsteuerungen:",
+	"l_level":"Level",
+	"l_scenes":"Liste der Aktionen/Szenen die aktiviert werden sollen:"
+}

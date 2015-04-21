@@ -1,0 +1,6 @@
+{
+	"m_title":"Automatisiertes Ausschalten",
+	"m_descr":"Eingebundene Geräte werden automatisch nach einer festgelegten Zeit ausgeschalten.",
+	"l_dev":"Gerät:",
+	"l_timeout":"Timeout in Sekunden:"
+}

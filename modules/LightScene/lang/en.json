@@ -1,6 +1,6 @@
 {
-	"title":"Light scene",
-	"m_descr":"Light scene defines state of switches, dimmers, blinds.",
+	"m_title":"Light scene",
+	"m_descr":"Light scene defines state of switches, dimmers, blinds.Ausgewählte Schalter, Dimmer und Motorsteuerungen werden gemeinsam über ein Element gesteuert. Pro Gerät kann der Schalt- bzw. Dimmerzustand oder die gewünschte Motorposition angegeben werden.",
 	"l_switches":"List of switches",
 	"on":"On",
 	"off":"Off",

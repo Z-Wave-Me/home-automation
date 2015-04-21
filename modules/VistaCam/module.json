@@ -4,7 +4,8 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://www.foscam.com/",
-    "icon": "13702big.jpg",
+    "icon": "icon.png",
+    "moduleName":"VistaCam",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {
@@ -38,12 +39,12 @@
     "options": {
         "fields": {
             "url": {
-                "label": "__ip__",
+                "label": "__l_ip__",
 				"helper": "__h_ip__",                
                 "required": true
             },
             "doorDevices": {
-                "label": "__door_dev__",
+                "label": "__l_door_dev__",
                 "fields": {
                     "item": {
 			"type": "select",

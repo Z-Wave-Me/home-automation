@@ -1,0 +1,8 @@
+{
+	"m_title":"Verzögerte Aktion",
+	"m_descr":"Aktiviert eine eingestellte Szene/Aktion nach einem bestimmten Timeout.",
+	"r_l_options":"Starte den Timer neu, wenn eine Szene/Aktion ausgelöst wird.",
+	"l_triggerScene":"Szene/Aktion die den Timer startet.",
+	"l_delayedScene":"Verzögerte Szene/Aktion:",
+	"l_delay":"Verzögerung in Sekunden:"
+}

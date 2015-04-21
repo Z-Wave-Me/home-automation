@@ -4,7 +4,8 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://www.foscam.com/",
-    "icon": "14461_0.jpg",
+    "icon": "icon.png",
+    "moduleName":"PoppCam",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {
@@ -12,7 +13,7 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "PoppCam",
+        "title": "__m_title__",
         "description": "__m_descr__",
 	"url": "",
 	"doorDevices": []
@@ -44,22 +45,22 @@
     "options": {
         "fields": {
             "url": {
-                "label": "__ip__",
+                "label": "__l_ip__",
 				"helper": "__h_ip__",                
                 "required": true
             },
             "user": {
-                "label": "__user__",
+                "label": "__l_user__",
 				"helper": "__h_user__",
                 "required": false
             },
             "password": {
-                "label": "__pw__",
+                "label": "__l_pw__",
 				"helper": "__h_pw__",
                 "required": false
             },
             "doorDevices": {
-                "label": "__door_dev__",
+                "label": "__l_door_dev__",
                 "fields": {
                     "item": {
 			"type": "select",

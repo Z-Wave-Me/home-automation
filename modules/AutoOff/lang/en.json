@@ -1,6 +1,6 @@
 {
-	"title":"Auto Off",
-	"m_descr":"Turns off automatically devices after a defined time",
-	"device":"The device to be turned off after the timeout",
-	"timeout":"Timout in seconds"
+	"m_title":"Automated Switch Off",
+	"m_descr":"Turns off a linked device automatically after a defined time.",
+	"l_dev":"Device:",
+	"l_timeout":"Timeout in seconds:"
 }

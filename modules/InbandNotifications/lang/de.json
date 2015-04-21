@@ -1,4 +1,5 @@
 {
+	"m_title":"Ereignisprotokoll ",
 	"m_descr":"Dieses Modul erstellt eine Instanz, welche ausgewählte Geräte oder Gerätetypen überwacht. Die Zustandsänderung der überwachten Geräte wird im Eventmonitor angezeigt.",
 	"l_dev":"Geräte die überwacht werden sollen",
 	"l_devT":"Gerätetypen die überwacht werden sollen",

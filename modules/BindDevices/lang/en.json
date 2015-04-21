@@ -1,7 +1,6 @@
 {
-	"title":"Bind devices",
-	"m_descr":"Bind actions on one device to others.",
-	"event_sources":"List of event sources",
-	"actors":"List of actors",
-	"delay_in_seconds":"Delay in seconds"
+	"m_title":"If -> Then Relation",
+	"m_descr":"One or more devices are switched if one event has happened. This event could for example caused by a motion / door sensor that was turned on or by the status change of a switch.",
+	"l_event_sources":"List of event sources:",
+	"l_actors":"List of actors:"
 }

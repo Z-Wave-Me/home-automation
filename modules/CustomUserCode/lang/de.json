@@ -1,4 +1,5 @@
 {
+	"m_title":"Benutzer JavaScript Code",
 	"m_descr":"Dieses Modul ermöglicht es eigenen JavaScript Code auf das System zu laden.",
 	"s_descr":"Eigener JavaScript Code der beim Laden ausgeführt werden soll",
 	"err_load":"Das Skript konnte nicht geladen werden: "

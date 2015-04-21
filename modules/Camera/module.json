@@ -4,7 +4,8 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"Camera",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {
@@ -12,7 +13,7 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "__title__",
+        "title": "__m_title__",
         "description": "__m_descr__",
 	"url": "",
 	"zoomInUrl": "",
@@ -87,62 +88,62 @@
     "options": {
         "fields": {
             "url": {
-                "label": "__camera_url__",
+                "label": "__l_cam_url__",
                 "type": "url",
                 "required": true
             },
             "zoomInUrl": {
-                "label": "__zoom_in_url__",
+                "label": "__l_zoomin__",
                 "type": "url",
                 "required": false
             },
             "zoomOutUrl": {
-                "label": "__zoom_out_url__",
+                "label": "__l_zoomout__",
                 "type": "url",
                 "required": false
             },
             "leftUrl": {
-                "label": "__left_url__",
+                "label": "__l_left__",
                 "type": "url",
                 "required": false
             },
             "rightUrl": {
-                "label": "__right_url__",
+                "label": "__l_right__",
                 "type": "url",
                 "required": false
             },
             "upUrl": {
-                "label": "__up_url__",
+                "label": "__l_up__",
                 "type": "url",
                 "required": false
             },
             "downUrl": {
-                "label": "__down_url__",
+                "label": "__l_down__",
                 "type": "url",
                 "required": false
             },
             "openUrl": {
-                "label": "__open_url__",
+                "label": "__l_open__",
                 "type": "url",
                 "required": false
             },
             "closeUrl": {
-                "label": "__close_url__",
+                "label": "__l_close__",
                 "type": "url",
                 "required": false
             },
             "user": {
-                "label": "__username_basic_http__",
-		        "helper": "__username_basic_http_helper__",
+                "label": "__l_user__",
+		        "helper": "__h_http_auth__",
                 "required": false
             },
             "password": {
-                "label": "__password_basic_http__",
-		        "helper": "__password_basic_http_helper__",
+                "label": "__l_pw__",
+		        "helper": "__h_http_auth__",
                 "required": false
             },
             "doorDevices": {
-                "label": "__door_device__",
+                "label": "__l_door_dev__",
                 "fields": {
                     "item": {
 			        "type": "select",

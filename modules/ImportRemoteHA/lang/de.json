@@ -1,0 +1,8 @@
+{
+	"m_title":"Importiere Geräte aus einem anderen Z-Wave Homegateway",
+	"m_descr":"Die Geräte eines anderen Homegateways werden in diesem Gateway mit angezeigt und können gesteuert werden, als wären Sie direkt diesem Gateway zu geordnet. Es ist sogar möglich, WENN DANN Beziehungen über mehrere Gateways hinweg anzulegen und Schaltgruppen, bestehend aus Geräten von unterschiedliedlichen Gateways, zu definieren.",
+	"l_url":"URL Z-Wave Homegateway",
+	"l_dT":"Updateperiode (in Millisekunden)",
+	"l_skipDevices":"Geräte die nicht aus dem Z-Wave Homegateway importiert werden sollen:",
+	"l_renderDevices":"Aus dem Z-Wave Homegateway importierte Geräte (wird automatisch geladen):"
+}

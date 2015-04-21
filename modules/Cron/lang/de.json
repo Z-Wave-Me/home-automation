@@ -1,0 +1,4 @@
+{
+	"m_title":"Systemuhr (CRON)",
+	"m_descr":"Die Systemuhr wird von anderen Modulen benötigt, die mit Intervallabfragen arbeiten."
+}

@@ -1,0 +1,9 @@
+{
+	"m_title":"Gerätegruppe",
+	"m_descr":"Gruppiert mehrere Geräte in ein Element. Es können auch Lichtszenen hinzugefügt werden.",
+	"rl_options":"Dimmbar",
+	"l_devices":"Gerätegruppe",
+	"rl_invert":"Umgekehrte Aktionen",
+	"l_scenesOn":"Liste von Szenen/Aktionen, die beim Auslösen aktiviert werden (On).",
+	"l_scenesOff":"Liste von Szenen/Aktionen, die beim Auslösen deaktiviert werden (Off)."
+}
