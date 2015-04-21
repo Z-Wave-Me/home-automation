@@ -1,5 +1,6 @@
 {
-	"m_descr":"Der Security Modus ermöglicht es bestimmte Szenarien abhängig vom Gerätestatus auszulösen.",
+	"title":"Sicherheitsmodus",
+        "m_descr":"Der Security Modus ermöglicht es bestimmte Szenarien abhängig vom Gerätestatus auszulösen.",
 	"action_msg":"Alarm!",
 	"l_tests":"Sensoren",
 	"l_test_binary":"Binär Zustand",

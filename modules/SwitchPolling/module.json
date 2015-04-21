@@ -1,0 +1,61 @@
+{
+    "dependencies": ["Cron"],
+    "singleton": false,
+    "category": "scheduling",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "icon.png",
+    "moduleName":"SwitchPolling",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "SwitchPolling",
+        "description": "__m_descr__",
+        "devices": [],
+        "period": 60
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "devices": {
+                    "type": "array",
+                    "items": {
+                            "field": "enum",
+                            "datasource": "namespaces",
+                            "enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
+                            "required": true,
+                            "minItems": 1
+                    }
+            },
+            "period": {
+                "type": "select",
+                "required": true,
+		"enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "devices": {
+                    "label": "__l_devices__",
+                    "fields": {
+                        "item": {
+			                "type": "select",
+                    		"datasource": "namespaces",
+                            "field": "optionLabels",
+                            "optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
+            		    }
+                    }
+            },
+            "period": {
+                "label": "__l_period__",
+                "optionLabels": ["__one_m__", "__two_m__", "__five_m__", "__ten_m__", "__twenty_m__", "__thirty_m__", "__one_h__", "__two_h__", "__four_h__", "__six_h__", "__half_d__", "__daily__", "__weekly__"]
+            }
+        }
+    }
+}

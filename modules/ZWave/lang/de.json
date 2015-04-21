@@ -1,5 +1,6 @@
 {
-	"m_descr":"Lädt Z-Wave Engine",
+	"title":"Z-Wave Verbindung",
+        "m_descr":"Lädt Z-Wave Engine",
 	"l_port":"Serieller Port zum Z-Wave Dongle",
 	"l_name":"Interner Name",
 	"h_name":"Dies sollte ein valider JS key String sein. Achtung! Nur ändern, wenn Sie wissen was Sie tun.",

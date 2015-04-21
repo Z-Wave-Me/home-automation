@@ -1,5 +1,6 @@
 {
-	"m_descr":"Erstelle ein virtuelles Gerät mittels HTTP-Daten.",
+	"title":"HTTP Ger�t",
+        "m_descr":"Erstelle ein virtuelles Gerät mittels HTTP-Daten.",
 	"l_schema":"Wählen Sie einen Gerätetyp",
 	"l_setterOn":"Schalte das Gerät über die URL an (ON)",
 	"p_setterOn":"http://192.168.0.100/action/on",
