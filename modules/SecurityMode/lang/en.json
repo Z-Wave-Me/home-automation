@@ -1,5 +1,5 @@
 {
-	"title":"Security Mode",
+	"m_title":"Security Mode",
 	"m_descr":"Security mode allows to switch sensors in security mode to trigger security scenes and devices, e.g. sirens.",
 	"action_msg":"Alert!",
 	"l_tests":"Sensors:",

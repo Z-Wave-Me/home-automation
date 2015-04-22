@@ -4,7 +4,7 @@
 	"l_units": "Einheiten",
 	"l_country": "Land",
 	"p_country": "Deutschland",
-	"l-city": "Stadt",
+	"l_city": "Stadt",
 	"p_city": "Berlin",
 	"temp":"Temperatur",
 	"err_parse":"Fehler beim Einlesen der Wetterinformationen.",
