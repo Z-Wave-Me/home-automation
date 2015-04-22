@@ -4,6 +4,7 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
+    "status": "camera",
     "icon": "icon.png",
     "moduleName":"Camera",
     "version": "1.0.0",
