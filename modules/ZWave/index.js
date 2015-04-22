@@ -137,18 +137,27 @@ ZWave.prototype.startBinding = function () {
 	};
 
 	this.stopped = false;
-	this.defineHandlers();
+	
+	if (this.config.enableAPI !== false) {
+		this.defineHandlers();
+	}
 
 	if (this.fastAccess) {
-		this.externalAPIAllow();
+		if (this.config.enableAPI !== false) {
+			this.externalAPIAllow();
+		}
 		global["zway"] = this.zway; // global variable
 		global["ZWaveAPI"] = this.ZWaveAPI;
 	}
-	this.externalAPIAllow(this.config.name);
+	if (this.config.enableAPI !== false) {
+		this.externalAPIAllow(this.config.name);
+	}
 	_.extend(global["ZWave"][this.config.name], this.ZWaveAPI);
 
-	this.deadDetectionStart();
-	this.gateDevicesStart();
+	if (this.config.createVDev !== false) {
+		this.deadDetectionStart();
+		this.gateDevicesStart();
+	}
 };
 
 ZWave.prototype.stop = function () {
@@ -168,18 +177,24 @@ ZWave.prototype.stop = function () {
 ZWave.prototype.stopBinding = function () {
 	this.controller.emit("ZWave.unregister", this.config.name);
 	
-	this.gateDevicesStop();
-	this.deadDetectionStop();
+	if (this.config.createVDev !== false) {
+		this.gateDevicesStop();
+		this.deadDetectionStop();
+	}
 
 	if (this.fastAccess) {
-		this.externalAPIRevoke();
+		if (this.config.enableAPI !== false) {
+			this.externalAPIRevoke();
+		}
 		if (global.zway) {
 			delete global["zway"];
 			delete global["ZWaveAPI"];
 		}
 	}
 	
-	this.externalAPIRevoke(this.config.name);
+	if (this.config.enableAPI !== false) {
+		this.externalAPIRevoke(this.config.name);
+	}
 	if (global.ZWave) {
 		delete global.ZWave[this.config.name];
 	}
@@ -690,22 +705,22 @@ ZWave.prototype.defineHandlers = function () {
 				throw "Invalid request";
 			}
 
-                        var result = "in progress";
-                        zway.ZMECapabilities(data.license.split(",").map(function(i) { return parseInt(i, 10); }), function() {
-                                result = "done";
-                        },  function() {
-                                result = "failed";
-                        });
-                        
-                        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-                        
-                        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                                processPendingCallbacks();
-                        }
-                        
-                        if (result === "in progress") {
-                                result = "failed";
-                        }
+			var result = "in progress";
+			zway.ZMECapabilities(data.license.split(",").map(function(i) { return parseInt(i, 10); }), function() {
+				result = "done";
+			},  function() {
+				result = "failed";
+			});
+			
+			var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+			
+			while ((new Date()).valueOf() < d &&  result === "in progress") {
+				processPendingCallbacks();
+			}
+			
+			if (result === "in progress") {
+				result = "failed";
+			}
 			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
@@ -719,49 +734,49 @@ ZWave.prototype.defineHandlers = function () {
 				throw "Invalid request";
 			}
 
-                        var result = "in progress";
+			var result = "in progress";
 
-                        http.request({
-                                url: data.url,
-                                async: true,
-                                contentType: "application/octet-stream",
-                                success: function(response) {
-                                        var L = 32,
-                                            addr = 0x7800, // M25PE10
-                                            data = response.data.slice(0x1800);
-                                        
-                                        for (var i = 0; i < data.byteLength; i += L) {
-                                                var arr = (new Uint8Array(data.slice(i, i+L)));
-                                                if (arr.length == 1) {
-                                                        arr = [arr[0]]
-                                                        arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-                                                }
-                                                zway.NVMExtWriteLongBuffer(addr + i, arr);
-                                        }
-                                        
-                                        zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
-                                                function() {
-                                                        zway.SerialAPISoftReset(function() {
-                                                                result = "done"
-                                                        });
-                                        });
-                                },
+			http.request({
+				url: data.url,
+				async: true,
+				contentType: "application/octet-stream",
+				success: function(response) {
+					var L = 32,
+					    addr = 0x7800, // M25PE10
+					    data = response.data.slice(0x1800);
+					
+					for (var i = 0; i < data.byteLength; i += L) {
+						var arr = (new Uint8Array(data.slice(i, i+L)));
+						if (arr.length == 1) {
+							arr = [arr[0]]
+							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+						}
+						zway.NVMExtWriteLongBuffer(addr + i, arr);
+					}
+					
+					zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+						function() {
+							zway.SerialAPISoftReset(function() {
+								result = "done"
+							});
+					});
+				},
 				error: function (res) {
 					console.error("Failed to download firmware: " + res.statusText);
 					result = "failed";
 				}
-                        });
-                        
-                        var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
-                        
-                        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                                processPendingCallbacks();
-                        }
-                        
-                        if (result === "in progress") {
-                                result = "failed";
-                        }
-                        
+			});
+			
+			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
+			
+			while ((new Date()).valueOf() < d &&  result === "in progress") {
+				processPendingCallbacks();
+			}
+			
+			if (result === "in progress") {
+				result = "failed";
+			}
+			
 			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
@@ -775,52 +790,52 @@ ZWave.prototype.defineHandlers = function () {
 				throw "Invalid request";
 			}
 
-                        var result = "in progress";
+			var result = "in progress";
 
-                        http.request({
-                                url: data.url,
-                                async: true,
-                                contentType: "application/octet-stream",
-                                success: function(response) {
+			http.request({
+				url: data.url,
+				async: true,
+				contentType: "application/octet-stream",
+				success: function(response) {
 					var L = 32,
-					    seg = 6,         // Функция бутлодера принимает номер сегмента
+					    seg = 6,	 // Функция бутлодера принимает номер сегмента
 					    addr = seg*0x800, // ==12k
 					    data = response.data;
-                                        
-                                        for (var i = 0; i < data.byteLength; i += L) {
-                                                var arr = (new Uint8Array(data.slice(i, i+L)));
-                                                if (arr.length == 1) {
-                                                        arr = [arr[0]]
-                                                        arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-                                                }
-                                                zway.NVMExtWriteLongBuffer(addr + i, arr);
-                                        }
-                                        
-                                        zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
-                                                function() {
+					
+					for (var i = 0; i < data.byteLength; i += L) {
+						var arr = (new Uint8Array(data.slice(i, i+L)));
+						if (arr.length == 1) {
+							arr = [arr[0]]
+							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+						}
+						zway.NVMExtWriteLongBuffer(addr + i, arr);
+					}
+					
+					zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+						function() {
 							//Вызываем перезапись bootloder
 							zway.ZMEBootloaderFlash(seg, function() {
-                                                                result = "done";
-                                                        },  function() {
-                                                                result = "failed";
-                                                        });
-                                        });
-                                },
+								result = "done";
+							},  function() {
+								result = "failed";
+							});
+					});
+				},
 				error: function (res) {
 					console.error("Failed to download bootloader: " + res.statusText);
 					result = "failed";
-                                }
-                        });
+				}
+			});
     
-                        var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
-                        
-                        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                                processPendingCallbacks();
-                        }
-                        
-                        if (result === "in progress") {
-                                result = "failed";
-                        }
+			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
+			
+			while ((new Date()).valueOf() < d &&  result === "in progress") {
+				processPendingCallbacks();
+			}
+			
+			if (result === "in progress") {
+				result = "failed";
+			}
 			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
@@ -936,7 +951,7 @@ ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId,
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
 	// two prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
-	//  (dataBindings, zway, nodeId,                             path, func)
+	//  (dataBindings, zway, nodeId,			     path, func)
 
 	var pathArr = [],
 		data = null,
@@ -1069,8 +1084,8 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-        moduleName = "ZWave",
-        langFile = this.controller.loadModuleLang(moduleName);
+	moduleName = "ZWave",
+	langFile = this.controller.loadModuleLang(moduleName);
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
@@ -1862,8 +1877,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 	} catch (e) {
 		var moduleName = "ZWave",
-        	langFile = this.controller.loadModuleLang(moduleName),
-           	values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
+		langFile = this.controller.loadModuleLang(moduleName),
+	   	values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
 		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
 		console.log(e.stack);
