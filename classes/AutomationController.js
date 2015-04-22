@@ -642,7 +642,7 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     that.saveNotifications();
 };
 
-AutomationController.prototype.addLocation = function (title, user_img, default_img, img_type, callback) {
+AutomationController.prototype.addLocation = function (locProps, callback) {
     var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
         return location.id === id;
@@ -653,17 +653,21 @@ AutomationController.prototype.addLocation = function (title, user_img, default_
             callback(false);
         }
     } else {
+
         var location = {
             id: id,
-            title: title,
-            user_img: '',
-            default_img: default_img || '',
-            img_type: img_type || ''
+            title: locProps.title,
+            user_img: locProps.user_img || '',
+            default_img: locProps.default_img || '',
+            img_type: locProps.img_type || ''
         };
+           
         this.locations.push(location);
+        
         if (typeof callback === 'function') {
             callback(location);
         }
+        
         this.saveConfig();
         this.emit('location.added', id);
     }
@@ -838,6 +842,7 @@ AutomationController.prototype.getListProfiles = function () {
             dashboard: [],
             interval: 2000,
             rooms:[],
+            expert_view: false,
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],
@@ -857,7 +862,7 @@ AutomationController.prototype.createProfile = function (object) {
     var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
         profile = {
             id: id,
-            role: 2,
+            role: object.role || 2,
             /*login : {
                 user: object.login.user,
                 token: object.login.token
@@ -869,6 +874,7 @@ AutomationController.prototype.createProfile = function (object) {
             dashboard: object.dashboard,
             interval: parseInt(object.interval),
             rooms: object.rooms,
+            expert_view: object.expert_view || false,
             hide_all_device_events: object.hide_all_device_events,
             hide_system_events: object.hide_system_events,
             hide_single_device_events: object.hide_single_device_events,
@@ -887,6 +893,7 @@ AutomationController.prototype.createProfile = function (object) {
         dashboard: [],
         interval: 2000,
         rooms:[],
+        expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
         hide_single_device_events: [],
@@ -905,7 +912,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
         }),
         index,
         that = this,
-        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
+        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','expert_view','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
 
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
@@ -931,6 +938,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
             dashboard: [],
             interval: 2000,
             rooms:[],
+            expert_view: false,
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],

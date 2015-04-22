@@ -13,8 +13,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "__title__",
-        "description": "__description__",
+        "title": "__m_title__",
+        "description": "__m_descr__",
         "units": "celsius",
     	"city": "",
     	"country": ""
@@ -41,15 +41,15 @@
     "options": {
         "fields": {
             "city": {
-                "label": "__city__",
-		"placeholder": "__city_placeholder__"
+                "label": "__l_city__",
+		"placeholder": "__p_city__"
             },
             "country": {
-                "label": "__country__",
-		"placeholder": "__country_placeholder__"
+                "label": "__l_country__",
+		"placeholder": "__p_country__"
             },
             "units": {
-                "label": "__units__",
+                "label": "__l_units__",
                 "optionLabels": ["°C", "°F"]
             }
         }

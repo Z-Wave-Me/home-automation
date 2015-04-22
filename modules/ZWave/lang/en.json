@@ -1,6 +1,6 @@
 {
-	"title":"Z-Wave binding",
-	"m_descr":"Loads Z-Wave engine",
+	"m_title":"Z-Wave Network Access",
+	"m_descr":"Allows accessing Z-Wave devices from attached Z-Wave transceiver.",
 	"l_port":"Serial port to Z-Wave dongle",
 	"l_name":"Internal name",
 	"h_name":"Should be a valid JS key string. Don't change unless you know what you are doing",

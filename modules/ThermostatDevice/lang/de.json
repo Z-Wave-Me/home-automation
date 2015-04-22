@@ -1,0 +1,11 @@
+{
+	"m_title":"Virtueller Thermostat",
+	"m_descr":"Erzeugt ein Thermostatgerät auf Grundlage eines Schalters und eines Temperatursensors.",
+	"l_switch":"Schalter",
+	"l_sensor":"Temperatursensor",
+	"l_heaton":"Modus",
+	"heat":"Heizen",
+	"cool":"Kühlen",
+	"l_hysteresis":"Hysteresis",
+	"h_hysteresis":"Maximaler Bereich zwischen Ist- und Solltemperatur, nachdem sich das Thermostat an/ausschalten soll."
+}

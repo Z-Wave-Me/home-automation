@@ -1,5 +1,5 @@
 {
-	"m_title":"Code Device",
+	"m_title":"Erzeuge Gerät mit JS-Code",
 	"m_descr":"Erzeugt ein virtuelles Grät mit Hilfe von JavaScript Code.",
 	"l_setterOn_toggleButton":"Code für den Befehl 'on'",
 	"h_getter_sensorBinary":"Rückgabe der Werte 'on' oder 'off'",

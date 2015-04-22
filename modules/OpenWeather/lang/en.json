@@ -1,11 +1,11 @@
 {
-	"title":"Weather Informer",
-	"description": "Weather informer provided by OpenWeatherMap.org",
-	"units": "Units",
-	"country": "Country",
-	"country_placeholder": "England",
-	"city": "City",
-	"city_placeholder": "London",
+	"m_title":"Local Weather",
+	"m_descr": "Weather informer provided by OpenWeatherMap.org",
+	"l_units": "Units",
+	"l_country": "Country",
+	"p_country": "England",
+	"l_city": "City",
+	"p_city": "London",
 	"temp":"Temperature",
 	"err_parse":"Can not parse weather information.",
 	"err_fetch":"Can not fetch weather information."

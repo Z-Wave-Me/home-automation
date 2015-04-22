@@ -1,0 +1,13 @@
+{
+	"m_title":"Zeitgesteuerte Szene/Aktion",
+	"m_descr":"Führt eine vorher definierte Szene/Aktion zu einem bestimmten Zeitpunkt des Tages aus.",
+	"monday":"Montag",
+	"tuesday":"Dienstag",
+	"wednesday":"Mittwoch",
+	"thursday":"Donnerstag",
+	"friday":"Freitag",
+	"saturday":"Samstag",
+	"sunday":"Sonntag",
+	"timeFormat":"hh:mm",
+	"l_scene":"Zu aktivierende Szene/Aktion:"
+}

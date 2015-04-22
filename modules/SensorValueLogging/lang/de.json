@@ -1,0 +1,10 @@
+{
+	"m_title":"Sensorwert Protokollierung",
+	"m_descr":"Protokolliert Sensorwerte in eine JSON-Datei oder mittels HTTP-Request auf einen Server.",
+	"l_device":"Sensor der protokolliert werden soll:",
+	"l_logTo":"Wie soll protokolliert werden?",
+	"l_logTo_json":"als JSON-Datei im Z-Way Speicher",
+	"l_logTo_http":"als HTTP-Request versenden",
+	"l_url":"Sende einen HTTP-Request an: ",
+	"h_url":"Example: http://meindomainname.org/pfad/zu/irgendwas/${id}?meinwert=${wert} - '${id}' und '${wert}' müssen mit der Sensor ID und dem entsprechenden Wert ersetzt werden."
+}

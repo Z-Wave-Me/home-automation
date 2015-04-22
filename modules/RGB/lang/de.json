@@ -1,0 +1,7 @@
+{
+	"m_title":"RGB Steuerung aus 3 Dimmern",
+	"m_descr":"Ein RGB Steuerelement steuert drei unabhängige Dimmer. Diese App wird benötigt, wenn eine RGB Leuchte nicht durch normale Farbsteuerung konfiguriert werden kann.",
+	"l_red":"Rot",
+	"l_green":"Grün",
+	"l_blue":"Blau"
+}

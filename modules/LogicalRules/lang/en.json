@@ -1,8 +1,8 @@
 {
-	"title":"Logical rules",
-	"m_descr":"Logical rules allows to trigger scenes based on devices status.",
-	"rl_options":"Start scene on change of any device mentioned in Condition",
-	"l_eventSource":"List of scenes to activate",
+	"m_title":"Logical Rule",
+	"m_descr":"Control one or more actuators due to an event, which can be further restricted by other conditions.",
+	"rl_options":"Start scene on change of any device mentioned in condition.",
+	"l_eventSource":"List of scenes to activate:",
 	"l_logicalOperator":"Boolean operator",
 	"l_tests":"Conditions",
 	"l_testBinary":"Binary condition",
@@ -12,13 +12,13 @@
 	"timeFormat":"hh:mm",
 	"l_testNested":"Nested conditions",
 	"l_action":"Actions",
-	"l_switches":"List of switches",
+	"l_switches":"List of switches:",
 	"off":"Off",
 	"on":"On",
-	"l_dimmers":"List of dimmers",
+	"l_dimmers":"List of dimmers:",
 	"l_status":"Level",
-	"l_locks":"List of locks",
+	"l_locks":"List of locks:",
 	"close":"Close",
 	"open":"Open",
-	"l_scenes":"List of scenes to activate"
+	"l_scenes":"List of scenes to activate:"
 }

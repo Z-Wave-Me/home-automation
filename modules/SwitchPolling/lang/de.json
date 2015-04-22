@@ -1,7 +1,8 @@
-{
-	"m_descr":"Fragt regelmäßig den Status von den ausgewählten Switches ab.",
-	"l_devices":"Switches, die abgefragt werden sollen:",
-	"l_period":"Updateintervall:",
+{	
+	"m_title":"Periodische Schalterabfrage",
+	"m_descr":"Fragt regelmäßig den Status von den ausgewählten Schalters ab.",
+	"l_devices":"Schalter, die abgefragt werden sollen:",
+	"l_period":"Abfrageintervall:",
 	"one_m":"1 Minute", 
 	"two_m":"2 Minuten", 
 	"five_m":"5 Minuten", 
