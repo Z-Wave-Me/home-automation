@@ -437,11 +437,15 @@ AutomationController.prototype.createInstance = function (reqObj) {
         module = _.find(self.modules, function (module) {
             return module.meta.id === reqObj.moduleId;
         }),
+        moduleJSON = _.find(self.modules, function (module) {
+            return module.meta.id === reqObj.moduleId;
+        }).meta,
         result;
 
     if (!!module) {
-        instance = _.extend(reqObj, {
-            id: id
+        instance = _.extend(reqObj, { 
+            id: id,
+            status: moduleJSON.status || null
         });
 
         self.instances.push(instance);
@@ -486,8 +490,10 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         }),
         index = this.instances.indexOf(instance),
         config = instanceObject.params,
-        result;
-
+        result,
+        moduleJSON = _.find(this.modules, function (module) {
+                return module.meta.id === instanceObject.moduleId;
+            }).meta;
 
     if (instance) {
         if (register_instance) {
@@ -497,6 +503,7 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         _.extend(this.instances[index], {
             title: instanceObject.title,
             description: instanceObject.description,
+            status: moduleJSON.status || null,
             active: instanceObject.active,
             params: config
         });
