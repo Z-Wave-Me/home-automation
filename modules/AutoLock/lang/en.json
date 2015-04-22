@@ -1,6 +1,6 @@
 {
 	"m_title":"Automated Locking of Door",
-	"m_descr":"Door/Window Sensor automatically closes lock when door is closed",
+	"m_descr":"Door/Window Sensor automatically closes lock when door is closed.",
 	"l_dw_sensor":"Door/Window Sensor",
 	"l_doorlock":"Door Lock",
 	"l_delay_sec":"Delay in seconds"

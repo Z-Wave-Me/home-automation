@@ -12,7 +12,7 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "__title__",
+        "title": "__m_title__",
         "description": "__m_descr__",
         "weekdays": [1, 2, 3, 4, 5, 6, 0],
         "time": "00:00",

@@ -1,6 +1,6 @@
 {
-	"title":"RGB Device",
-	"m_descr":"Creates RGB device based on three different dimmers.",
+	"m_title":"RGB Light from 3 Dimmers",
+	"m_descr":"Creates RGB device based on three different dimmers. This app is required if an RGB light can not be configured by normal color control.",
 	"l_red":"Red",
 	"l_green":"Green",
 	"l_blue":"Blue"

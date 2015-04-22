@@ -842,6 +842,7 @@ AutomationController.prototype.getListProfiles = function () {
             dashboard: [],
             interval: 2000,
             rooms:[],
+            expert_view: false,
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],
@@ -861,7 +862,7 @@ AutomationController.prototype.createProfile = function (object) {
     var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
         profile = {
             id: id,
-            role: 2,
+            role: object.role || 2,
             /*login : {
                 user: object.login.user,
                 token: object.login.token
@@ -873,6 +874,7 @@ AutomationController.prototype.createProfile = function (object) {
             dashboard: object.dashboard,
             interval: parseInt(object.interval),
             rooms: object.rooms,
+            expert_view: object.expert_view || false,
             hide_all_device_events: object.hide_all_device_events,
             hide_system_events: object.hide_system_events,
             hide_single_device_events: object.hide_single_device_events,
@@ -891,6 +893,7 @@ AutomationController.prototype.createProfile = function (object) {
         dashboard: [],
         interval: 2000,
         rooms:[],
+        expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
         hide_single_device_events: [],
@@ -909,7 +912,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
         }),
         index,
         that = this,
-        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
+        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','expert_view','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
 
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
@@ -935,6 +938,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
             dashboard: [],
             interval: 2000,
             rooms:[],
+            expert_view: false,
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: [],

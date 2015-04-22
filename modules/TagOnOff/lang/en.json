@@ -1,5 +1,5 @@
 {
-	"title":"Tag devices with On/Off",
+	"m_title":"Tag devices with On/Off",
 	"m_descr":"Mark devices with On/Off tags depending on their state.",
 	"l_tagOn":"Tag for On state",
 	"l_tagOff":"Tag for Off state"

@@ -1,4 +1,5 @@
 {
+	"m_title":"Periodical Switch Polling",
 	"m_descr":"Regular switch polling",
 	"l_devices":"Switch to poll:",
 	"l_period":"Poll period",

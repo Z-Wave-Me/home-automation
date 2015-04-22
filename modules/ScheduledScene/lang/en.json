@@ -1,6 +1,6 @@
 {
-	"title":"Schedule to run scenes",
-	"m_descr":"Execute scheduled scene.",
+	"m_title":"Scheduled Scene",
+	"m_descr":"Executes an already defined scene at a certain point in time.",
 	"monday":"Monday",
 	"tuesday":"Tuesday",
 	"wednesday":"Wednesday",

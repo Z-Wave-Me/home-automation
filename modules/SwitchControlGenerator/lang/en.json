@@ -1,5 +1,5 @@
 {
-	"title":"Trap events from Remotes and Sensors",
+	"m_title":"Trap events from Remotes and Sensors",
 	"m_descr":"Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller.",
 	"l_trapNew": "Create control device for new remote controls and switches",
 	"l_banned": "List of remotes and switches not to instantiate",

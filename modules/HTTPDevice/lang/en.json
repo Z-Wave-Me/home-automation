@@ -1,5 +1,5 @@
 {
-	"m_title":"HTTP device",
+	"m_title":"HTTP Device",
 	"m_descr":"Create virtual device based on HTTP data.",
 	"l_setterOn":"URL for action On",
 	"p_setterOn":"http://192.168.0.100/action/on",

@@ -1,5 +1,5 @@
 {
-	"title":"Thermostat based on switch and sensor",
+	"m_title":"Virtual Thermostat",
 	"m_descr":"Create thermostat devices based on a switch and temperature sensor.",
 	"l_switch":"Switch",
 	"l_sensor":"Temperature sensor",

@@ -1,6 +1,6 @@
 {
 	"m_title":"Group devices",
-	"m_descr":"Group several devices together.",
+	"m_descr":"Groups multiple devices in one element. Also light scenes could be added.",
 	"rl_options":"Dimmable",
 	"l_devices":"Group devices",
 	"rl_invert":"Invert action",

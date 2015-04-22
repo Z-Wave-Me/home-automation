@@ -1,5 +1,5 @@
 {
-	"m_title":"Popp Cam",
+	"m_title":"PoppCam",
 	"m_descr":"Поддержка Камер PoppCam.",
 	"l_ip":"URL Камеры",
 	"h_ip":"В формате 'http://IPADDRESS:PORT'. По умолчанию порт 81",

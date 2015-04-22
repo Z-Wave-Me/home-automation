@@ -1,0 +1,6 @@
+{
+	"m_title":"Erzeuge An/Aus-'tags'",
+	"m_descr":"Markiert Geräte mit An/Aus-'tags' abhängig von deren Status.",
+	"l_tagOn":"tag für An-Status:",
+	"l_tagOff":"tag für Aus-Status:"
+}

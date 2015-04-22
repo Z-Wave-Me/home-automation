@@ -1,6 +1,6 @@
 {
 	"m_title":"Inband Notifier",
-	"m_descr":"Creates an instance that monitors the status of every choosen device or device type. It sends notifications automatically if something has changed.",
+	"m_descr":"Creates and records the presentation of events in the event list (Eventlog).",
 	"l_dev":"Devices to be monitored",
 	"l_devT":"Device types to be monitored",
 	"all":"all device types ",

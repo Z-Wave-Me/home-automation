@@ -1,0 +1,15 @@
+{
+	"m_title":"Intelligente Lichtregelung",
+	"m_descr":"Am Tag lässt sich das Licht standardmäßig mit einer Lichtstärke von z.B. 100% anschalten, in der Nacht nur mit einer Lichtstärke von z.B. 20%. Über den Dimmer lässt sich die Lichtstärke auch weiterhin bis zu bis zu 100% erhöhen. Wird die Lichtstärke weiter heruntergeregelt, schaltet sich das Licht aus und der Bewegungssensor wird für eine Minute deaktiviert.",
+	"l_MotionSensor":"Bewegungssensor:",
+	"l_Dimmer":"Dimmer",
+	"l_Level":"Dimmerlevel für Tag und Nacht",
+	"l_DayLevel":"Tageslicht",
+	"l_NightLevel":"Nachtlicht",
+	"l_Day":"Tageszeiten zu denen das Tageslicht de/aktiviert wird:",
+	"timeFormat":"hh:mm",
+	"l_DayTimeStart":"Start",
+	"l_DayTimeEnd":"Ende",
+	"l_DimmerButton":"Dimmertaste",
+	"h_DimmerButton":"Um eine Dimmertaste zu erzeugen, aktivieren Sie die App 'Erzeuge Schaltersteuerung' und drücken Sie dort auf 'Dimmer Button'."
+}

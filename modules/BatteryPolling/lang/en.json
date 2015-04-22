@@ -1,6 +1,6 @@
 {
 	"m_title":"Battery Polling",
-	"m_descr":"Battery Polling notifications",
+	"m_descr":"Set up an interval that regularly polls the battery status of a battery devices.",
 	"l_launch_wd":"Do battery polling on",
 	"every_d":"Every Day", 
 	"mon":"Monday", 

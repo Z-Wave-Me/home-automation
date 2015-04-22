@@ -1,5 +1,5 @@
 {
-	"title":"Sensor values logging",
+	"m_title":"Sensor Values Logging",
 	"m_descr":"Store sensor values in JSON file or via HTTP requests to your server.",
 	"l_device":"Sensor to log",
 	"l_logTo":"How to store:",

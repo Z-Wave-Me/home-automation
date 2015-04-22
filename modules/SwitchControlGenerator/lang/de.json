@@ -1,4 +1,5 @@
 {
+	"m_title":"Erzeuge Schaltersteuerung",
 	"m_descr":"Generiert zeitgleich neue Widgets für Fernbedienungen, Schalter und andere Geräte, die Kontrollkommandos zum Controller senden.",
 	"l_trapNew": "Erzeuge ein Kontrollgerät für neue Fernbedienungen und Schalter",
 	"l_banned": "Nicht instanziierte Fernbedienungen und Schalter",

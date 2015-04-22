@@ -1,5 +1,5 @@
 {
-	"title":"SMS.ru Notifications",
+	"m_title":"SMS.ru Notifications",
 	"m_descr":"Sends all notifications via free SMS proxy SMS.ru.",
 	"prefix":"Z-Way notification:",
 	"description":"Send SMS via SMS.ru gateway. To register enter your phone number, name and password on http://sms.ru/?panel=register and confirm your phone number with a code.",
