@@ -398,42 +398,42 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null
             },
             reqObj,
-            user_img,
-            default_img,
-            img_type,
-            that = this;
+            that = this,
+            locProps = {};
 
         return function () {
             if (that.req.method === 'GET') {
-                user_img = that.req.query.hasOwnProperty('user_img') ? that.req.query.user_img : null;
-                default_img = that.req.query.hasOwnProperty('default_img') ? that.req.query.default_img : null;
-                img_type = that.req.query.hasOwnProperty('img_type') ? that.req.query.img_type : null;
+                
+                reqObj = that.req.query;
+            
             } else if (that.req.method === 'POST') { // POST
                 try {
                     reqObj = JSON.parse(that.req.body);
                 } catch (ex) {
-                    reply.error = ex.message;
+                    reply.code = 500;
+                    reply.error = "Cannot parse POST request. ERROR:" + ex.message;
                 }
-
-                title = reqObj.title;
-                user_img = reqObj.hasOwnProperty('user_img') ? reqObj.user_img : null;
-                default_img = reqObj.hasOwnProperty('default_img') ? reqObj.default_img : null;
-                img_type = reqObj.hasOwnProperty('img_type') ? reqObj.img_type : null;
             }
 
-            if (!!title) {
-                that.controller.addLocation(title, user_img, default_img, img_type, function (data) {
+            for (var property in reqObj) {
+                if ( property !== 'id') {
+                    locProps[property] = reqObj[property] ? reqObj[property] : null;
+                }
+            }
+
+            if (!!locProps.title) {
+                that.controller.addLocation(locProps, function (data) {
                     if (data) {
                         reply.code = 201;
                         reply.data = data;
                     } else {
                         reply.code = 500;
-                        reply.error = "Unknown error. Location doesn't created";
+                        reply.error = "Location doesn't created: Parsing the arguments has failed.";
                     }
                 });
             } else {
                 reply.code = 500;
-                reply.error = "Arguments title are required";
+                reply.error = "Argument 'title' is required.";
             }
             that.initResponse(reply);
         };

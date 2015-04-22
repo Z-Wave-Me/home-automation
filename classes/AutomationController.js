@@ -642,7 +642,7 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     that.saveNotifications();
 };
 
-AutomationController.prototype.addLocation = function (title, user_img, default_img, img_type, callback) {
+AutomationController.prototype.addLocation = function (locProps, callback) {
     var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
         return location.id === id;
@@ -653,17 +653,21 @@ AutomationController.prototype.addLocation = function (title, user_img, default_
             callback(false);
         }
     } else {
+
         var location = {
             id: id,
-            title: title,
-            user_img: user_img || '',
-            default_img: default_img || '',
-            img_type: img_type || ''
+            title: locProps.title,
+            user_img: locProps.user_img || '',
+            default_img: locProps.default_img || '',
+            img_type: locProps.img_type || ''
         };
+           
         this.locations.push(location);
+        
         if (typeof callback === 'function') {
             callback(location);
         }
+        
         this.saveConfig();
         this.emit('location.added', id);
     }
