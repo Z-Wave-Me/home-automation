@@ -4,6 +4,7 @@
 	"category": "notifications",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
+        "status": "hidden",
 	"icon": "icon.png",
         "moduleName":"Notification",
 	"version": "1.0.0",
