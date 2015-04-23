@@ -101,8 +101,7 @@ AutomationModule.prototype.runAction = function (actionId, args, callback) {
 
 AutomationModule.prototype.getMeta = function () {
     if (!this.meta) {
-        var filePath = this.moduleBasePath() + '/module.json';
-        this.meta = fs.loadJSON(filePath);
+        this.meta =  this.controller.getModuleData(this.constructor.name);
         this.meta.id = this.constructor.name;
     }
     return this.meta;

@@ -437,15 +437,14 @@ AutomationController.prototype.createInstance = function (reqObj) {
         module = _.find(self.modules, function (module) {
             return module.meta.id === reqObj.moduleId;
         }),
-        moduleJSON = _.find(self.modules, function (module) {
-            return module.meta.id === reqObj.moduleId;
-        }).meta,
+        moduleJSON = this.getModuleData(reqObj.moduleId),
         result;
 
     if (!!module) {
         instance = _.extend(reqObj, { 
             id: id,
-            status: moduleJSON.status || null
+            status: moduleJSON.status || null,
+            module: moduleJSON.defaults.title || null
         });
 
         self.instances.push(instance);
@@ -490,10 +489,8 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         }),
         index = this.instances.indexOf(instance),
         config = instanceObject.params,
-        result,
-        moduleJSON = _.find(this.modules, function (module) {
-                return module.meta.id === instanceObject.moduleId;
-            }).meta;
+        moduleJSON = this.getModuleData(instanceObject.moduleId),
+        result;
 
     if (instance) {
         if (register_instance) {
@@ -504,6 +501,7 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
             title: instanceObject.title,
             description: instanceObject.description,
             status: moduleJSON.status || null,
+            module: moduleJSON.defaults.title || null,
             active: instanceObject.active,
             params: config
         });
@@ -838,10 +836,8 @@ AutomationController.prototype.getListProfiles = function () {
         this.profiles.push({
             id: 1,
             role: 1,
-            /*login : {
-                user: 'admin',
-                token: '21232f297a57a5a743894a0e4a801fc3'
-            },*/
+            login: 'admin',
+            password: 1234,
             name: langFile.profile_name,
             lang:'',
             color:'',
@@ -870,10 +866,8 @@ AutomationController.prototype.createProfile = function (object) {
         profile = {
             id: id,
             role: object.role || 2,
-            /*login : {
-                user: object.login.user,
-                token: object.login.token
-            },*/
+            login: object.login,
+            password: object.password,
             name: object.name,
             lang: object.lang,
             color: object.color,
@@ -889,10 +883,8 @@ AutomationController.prototype.createProfile = function (object) {
         };
 
     _.defaults(profile, {
-        /*login : {
-            user: '',
-            token: ''
-        },*/
+        login: '',
+        password: null,
         name: '',
         lang:'',
         color:'',
@@ -919,7 +911,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
         }),
         index,
         that = this,
-        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','expert_view','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
+        profileProps = ['login','password','name','lang','color','default_ui','role','dashboard','interval','rooms','expert_view','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
 
     if (Boolean(profile)) {
         index = this.profiles.indexOf(profile);
@@ -934,9 +926,8 @@ AutomationController.prototype.updateProfile = function (object, id) {
         }
 
         _.defaults(this.profiles[index], {
-            /*login : {
-                token: ''
-            },*/
+            login: '',
+            password: null,
             name: '',
             lang:'',
             color:'',
@@ -1050,14 +1041,23 @@ AutomationController.prototype.getListModulesCategories = function (id) {
     return result;
 };
 
-AutomationController.prototype.getModuleData = function (moduleId) {
+AutomationController.prototype.getModuleData = function (moduleName) {
     var self = this,
         defaultLang = self.defaultLang,
-        metaStringify = JSON.stringify(self.modules[moduleId].meta),
         languageFile,
         data;
+    
+    try {
+        metaStringify = JSON.stringify(self.modules[moduleName].meta);
+    } catch(e){
+        try {
+            metaStringify = JSON.stringify(fs.loadJSON('modules/' + moduleName + '/module.json'));
+        } catch(e){
+            console.log('Cannot load lang file from module ' + moduleName + '. ERROR: ' + e);
+        }
+    }
 
-    languageFile = self.loadModuleLang(moduleId);
+    languageFile = self.loadModuleLang(moduleName);
 
     if (languageFile !== null) {
         Object.keys(languageFile).forEach(function (key) {
@@ -1068,7 +1068,7 @@ AutomationController.prototype.getModuleData = function (moduleId) {
         });
         data = JSON.parse(metaStringify);
     } else {
-        data = self.modules[moduleId].meta;
+        data = self.modules[moduleName].meta;
     }
 
     return data;
