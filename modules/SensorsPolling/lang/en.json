@@ -1,7 +1,7 @@
 {
 	"m_title":"Periodical Sensor Polling",
 	"m_descr":"Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.",
-	"l_devices":"Devices to poll:",
+	"l_devices":"Do not poll this devices:",
 	"l_period":"Poll period",
 	"one_m":"1 minute", 
 	"two_m":"2 minute", 
