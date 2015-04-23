@@ -339,7 +339,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
             uid = that.req.query.hasOwnProperty("uid") ? parseInt(that.req.query.uid) : 0;
             
-            if (id > 0 && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
+            if (id > 0 && before === false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
+                reply.code = 404;
+                reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
+            } else if (id > 0 && before !== false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id);})) {
                 reply.code = 404;
                 reply.error = "Notification " + id + " not found";
             } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
