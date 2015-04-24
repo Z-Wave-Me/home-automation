@@ -840,7 +840,7 @@ AutomationController.prototype.getListProfiles = function () {
             sid: sid,
             role: 1,
             login: 'admin',
-            password: 1234,
+            password: '21232f297a57a5a743894a0e4a801fc3',
             name: langFile.profile_name,
             last_login: null,
             lang:'',
