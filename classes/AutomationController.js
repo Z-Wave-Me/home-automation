@@ -21,11 +21,13 @@ function AutomationController() {
         'Cache-Control',
         'If-None-Match',
         'Content-Language',
-        'Accept-Language'
+        'Accept-Language',
+        'Profile-SID'
     ];
     this.config = config.controller || {};
     this.availableLang = ['en', 'ru', 'de'];
     this.defaultLang = 'en';
+    this.profileSID = '';
     this.locations = config.locations || [];
     this.profiles = config.profiles || this.getListProfiles();
     this.vdevInfo = config.vdevInfo || {};
@@ -115,6 +117,16 @@ AutomationController.prototype.setDefaultLang = function (lang) {
     var self = this;
 
     self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
+};
+
+AutomationController.prototype.setProfileSID = function (sid) {
+    var self = this;
+
+    profile = self.profiles.filter(function (profile){
+        return profile.sid === sid;
+    });
+
+    self.profileSID = profile? sid : '';
 };
 
 AutomationController.prototype.saveConfig = function () {

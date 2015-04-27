@@ -198,7 +198,8 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
             'Access-Control-Expose-Headers': that.controller.allow_headers.join(', '),
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Content-Language': that.controller.defaultLang
+            'Content-Language': that.controller.defaultLang,
+            'Profile-SID': that.controller.profileSID
         }
     };
 
@@ -237,6 +238,10 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
         // set defaultLang
         if (self.req.query.hasOwnProperty('lang') || self.req.headers['Accept-Language']) {
             self.controller.setDefaultLang(self.req.query.lang || self.req.headers['Accept-Language']);
+        }
+        
+        if (self.req.headers['Profile-SID']) {
+            self.controller.setProfileSID(self.req.headers['Profile-SID']);
         }
 
         if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && contentType.toLowerCase().indexOf('application/json') !== -1) {
