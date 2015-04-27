@@ -943,15 +943,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 role = that.getUserRole(userId);
                 profile = that.controller.getProfile(profileId);
                 
-                try {
+                if(typeof this.req.body !== 'object'){
                     reqObj = JSON.parse(this.req.body);
-                } catch (ex) {
-                    reply.error = ex.message;
+                } else{
+                    reqObj = this.req.body;
                 }
 
                 // make sure that every user can update authentications only on his own
                 // - role independent - admin cannot change users authentications
-                if (userId === profile.sid && parseInt(reqObj.id) === userId) {
+                if (userId === profile.sid) {
                         
                     profile = that.controller.updateProfileAuth(reqObj, profileId);
                     
