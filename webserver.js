@@ -772,7 +772,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 userId,
                 role;
 
-            userId = this.req.query.hasOwnProperty('userId')? this.req.query.userId : null;
+            userId = this.controller.profileSID? this.controller.profileSID : null;
 
             if(!!userId){
 
@@ -827,7 +827,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reqObj,
                 profile;
 
-            userId = this.req.query.hasOwnProperty('userId')? this.req.query.userId : null;
+            userId = this.controller.profileSID? this.controller.profileSID : null;
 
             if(!!userId){
 
@@ -881,7 +881,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reqObj,
                 profile;
 
-            userId = this.req.query.hasOwnProperty('userId')? this.req.query.userId : null;
+            userId = this.controller.profileSID? this.controller.profileSID : null;
 
             if(!!userId){
 
@@ -936,7 +936,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reqObj,
                 profile;
 
-            userId = this.req.query.hasOwnProperty('userId')? this.req.query.userId : null;
+            userId = this.controller.profileSID? this.controller.profileSID : null;
 
             if(!!userId){
 
@@ -984,7 +984,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 profile;
 
-            userId = this.req.query.hasOwnProperty('userId')? this.req.query.userId : null;
+            userId = this.controller.profileSID? this.controller.profileSID : null;
 
             if(!!userId){
 
