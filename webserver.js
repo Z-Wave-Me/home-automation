@@ -153,6 +153,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 };
 
                 that.controller.profileSID = profile.sid;
+                that.controller.defaultLang = profile.lang;
             } else {
                 reply.code = 404;
                 reply.error = "User login/password is wrong.";
@@ -181,23 +182,32 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
 
         if(role !== 1){
-            devices = that.controller.devices.filter(function(dev){
+            devices = that.controller.devices.toJSON().filter(function(dev){
                 return profile.rooms.indexOf(dev.location) !== -1;
             });
         }else{
-            devices = that.controller.devices;
+            devices = that.controller.devices.toJSON();
         }
 
-        if (reply.data.structureChanged) {
-            reply.data.devices = devices.toJSON();
+        if(!!devices){
+            if (reply.data.structureChanged) {
+                reply.data.devices = devices;
+            } else {
+                reply.data.devices = devices.since = reply.data.structureChanged ? 0 : since;
+            }
+
+            if (Boolean(that.req.query.pagination)) {
+                if(role !== 1){
+                    reply.data.total_count = devices.length;
+                }else{
+                    reply.data.total_count = that.controller.devices.models.length;
+                }                
+            }
         } else {
-            reply.data.devices = devices.toJSON({since: reply.data.structureChanged ? 0 : since});
+            reply.code = 404;
+            reply.error = 'No devices found.';
         }
-
-        if (Boolean(that.req.query.pagination)) {
-            reply.data.total_count = that.controller.devices.models.length;
-        }
-
+        
         that.initResponse(reply);
     },
     getVDevFunc: function (vDevId) {

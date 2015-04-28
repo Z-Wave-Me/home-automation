@@ -2,7 +2,7 @@
 	"m_title":"Periodische Sensorabfrage",
 	"m_descr":"Fragt in einem einstellbaren Interval alle Messwert-Sensoren ab. Es kann eine Liste von Sensoren angegeben werden, die nicht abgefragt werden soll.",
 	"l_devices":"Sensoren, die nicht abgefragt werden sollen:",
-	"l_period":"Updateintervall:",
+	"l_period":"Abfrageintervall für alle anderen Geräte:",
 	"one_m":"1 Minute", 
 	"two_m":"2 Minuten", 
 	"five_m":"5 Minuten", 

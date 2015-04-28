@@ -752,7 +752,9 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
     var self = this,
         now = new Date(),
         profile, hiddenDev, 
-        hashArr = [];
+        hashArr = [],
+        devArr = [],
+        filteredArr = [];
     
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() /1000);
@@ -762,10 +764,28 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
 
         hiddenDev.forEach(function(devId){
             hashArr.push(AutomationController.prototype.hashCode(devId));
-        })
+        });
+
+        if(profile.role !== 1){
+            this.devices.toJSON().filter(function(dev){
+                return profile.rooms.indexOf(dev.location) !== -1;
+            }).forEach(function(dev){
+                devArr.push(AutomationController.prototype.hashCode(dev.id));
+            });
+        } else{
+            this.devices.forEach(function(dev){
+                devArr.push(AutomationController.prototype.hashCode(dev.id));
+            });
+        }
+
+        devArr.forEach(function(dev){
+            if(hashArr.indexOf(dev.h) === -1){
+                filteredArr.push(dev.h);
+            }
+        });
 
         var filteredNotifications = this.notifications.filter(function (notification) {
-            return notification.id >= since && notification.id <= to && hashArr.indexOf(notification.h) === -1 && notification.redeemed === isRedeemed;
+            return notification.id >= since && notification.id <= to && filteredArr.indexOf(notification.h) === -1 && notification.redeemed === isRedeemed;
         });
 
     } else {    
