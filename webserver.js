@@ -151,6 +151,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     color: profile.color,
                     interval: profile.interval
                 };
+
+                that.controller.profileSID = profile.sid;
             } else {
                 reply.code = 404;
                 reply.error = "User login/password is wrong.";
@@ -171,13 +173,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             },
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
-            that = this;
+            that = this,
+            profile = that.getProfileBySID(),
+            role = that.getUserRole(),
+            devices;
 
         reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
+
+        if(role !== 1){
+            devices = that.controller.devices.filter(function(dev){
+                return profile.rooms.indexOf(dev.location) !== -1;
+            });
+        }else{
+            devices = that.controller.devices;
+        }
+
         if (reply.data.structureChanged) {
-            reply.data.devices = that.controller.devices.toJSON();
+            reply.data.devices = devices.toJSON();
         } else {
-            reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
+            reply.data.devices = devices.toJSON({since: reply.data.structureChanged ? 0 : since});
         }
 
         if (Boolean(that.req.query.pagination)) {
@@ -265,7 +279,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since,
             redeemed,
             to,
-            profile,
+            userId,
             that = this,
             listProf = that.controller.getListProfiles().length;
 
@@ -274,10 +288,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             that.res.status = 200;
             since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
             to = that.req.query.hasOwnProperty("to") ? parseInt(that.req.query.to, 10) : 0;
-            profile = that.req.query.hasOwnProperty("profile") ? parseInt(that.req.query.profile, 10) : 0;
             redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
+
+            profile = that.getProfileBySID();
             
-            if(that.controller.getProfile(profile) !== null) {
+            if(profile !== null) {
                 notifications = that.controller.listNotifications(since, to, profile, redeemed);
 
                 reply.data = {
@@ -296,8 +311,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     updateTime: Math.floor(new Date().getTime() / 1000),
                     notifications: []
                 };
-                reply.code = 400;
-                reply.error = "Your profile with id '" + profile + "' doesn't exist.";
+                reply.code = 404;
+                reply.error = "Profile doesn't exist.";
             }
 
             that.initResponse(reply);
@@ -378,31 +393,39 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     error: null,
                     code: 200
                 },
-                before;
+                before,
+                role = that.getUserRole();
 
-            before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
-            uid = that.req.query.hasOwnProperty("uid") ? parseInt(that.req.query.uid) : 0;
-            
-            if (id > 0 && before === false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
-                reply.code = 404;
-                reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
-            } else if (id > 0 && before !== false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id);})) {
-                reply.code = 404;
-                reply.error = "Notification " + id + " not found";
-            } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
-                reply.code = 404;
-                reply.error = "No notifications found older than unix timestamp: " + id;
+            if(role === 1){
+                
+                before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
+                uid = that.req.query.hasOwnProperty("uid") ? parseInt(that.req.query.uid) : 0;
+                
+                if (id > 0 && before === false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
+                    reply.code = 404;
+                    reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
+                } else if (id > 0 && before !== false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id);})) {
+                    reply.code = 404;
+                    reply.error = "Notification " + id + " not found";
+                } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
+                    reply.code = 404;
+                    reply.error = "No notifications found older than unix timestamp: " + id;
+                } else {
+                    that.controller.deleteNotifications(id, before, uid, function (notice) {
+                        if (notice) {
+                            reply.code = 204;
+                            reply.data = null;
+                        } else {
+                            reply.code = 404;
+                            reply.data = null;
+                            reply.error = "Notifications not found.";
+                        }
+                    }, true);
+                }
             } else {
-                that.controller.deleteNotifications(id, before, uid, function (notice) {
-                    if (notice) {
-                        reply.code = 204;
-                        reply.data = null;
-                    } else {
-                        reply.code = 404;
-                        reply.data = null;
-                        reply.error = "Notifications not found.";
-                    }
-                }, true);
+                reply.code = 404;
+                reply.data = null;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -414,17 +437,41 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply = {
                 data: null,
                 error: null
-            };
-
-        reply.code = 200;
+            },
+            profile,
+            role;
 
         return function () {
-            if (locationId === undefined) {
-                reply.data = that.controller.locations;
+            profile = that.getProfileBySID();
+            role = that.getUserRole();
+
+            if (locationId === undefined){
+                if(role === 1){
+                    reply.code = 200;
+                    reply.error = null;
+                    reply.data = that.controller.locations;
+                } else if (role === 2){
+                    reply.code = 200;
+                    reply.error = null;
+                    reply.data = that.controller.locations.filter(function (location) {
+                        return profile.rooms.indexOf(location.id) !== -1;
+                    });
+                } else {
+                    reply.code = 404;
+                    reply.error = "Could not load locations.";
+                }
             } else {
-                var locations = that.controller.locations.filter(function (location) {
-                    return location.id === locationId;
-                });
+                var locations;
+
+                if(role === 1){
+                    locations = that.controller.locations.filter(function (location) {
+                        return location.id === locationId;
+                    });
+                } else {
+                    locations = that.controller.locations.filter(function (location) {
+                        return location.id === locationId && profile.rooms.indexOf(locationId) !== -1;
+                    });
+                }
 
                 if (locations.length > 0) {
                     reply.data = locations[0];
@@ -446,42 +493,51 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             reqObj,
             that = this,
-            locProps = {};
+            locProps = {},
+            role;
 
         return function () {
-            if (that.req.method === 'GET') {
-                
-                reqObj = that.req.query;
+            role = that.getUserRole();
             
-            } else if (that.req.method === 'POST') { // POST
-                try {
-                    reqObj = JSON.parse(that.req.body);
-                } catch (ex) {
-                    reply.code = 500;
-                    reply.error = "Cannot parse POST request. ERROR:" + ex.message;
-                }
-            }
-
-            for (var property in reqObj) {
-                if ( property !== 'id') {
-                    locProps[property] = reqObj[property] ? reqObj[property] : null;
-                }
-            }
-
-            if (!!locProps.title) {
-                that.controller.addLocation(locProps, function (data) {
-                    if (data) {
-                        reply.code = 201;
-                        reply.data = data;
-                    } else {
+            if(role === 1){
+                if (that.req.method === 'GET') {
+                    
+                    reqObj = that.req.query;
+                
+                } else if (that.req.method === 'POST') { // POST
+                    try {
+                        reqObj = JSON.parse(that.req.body);
+                    } catch (ex) {
                         reply.code = 500;
-                        reply.error = "Location doesn't created: Parsing the arguments has failed.";
+                        reply.error = "Cannot parse POST request. ERROR:" + ex.message;
                     }
-                });
+                }
+
+                for (var property in reqObj) {
+                    if ( property !== 'id') {
+                        locProps[property] = reqObj[property] ? reqObj[property] : null;
+                    }
+                }
+
+                if (!!locProps.title) {
+                    that.controller.addLocation(locProps, function (data) {
+                        if (data) {
+                            reply.code = 201;
+                            reply.data = data;
+                        } else {
+                            reply.code = 500;
+                            reply.error = "Location doesn't created: Parsing the arguments has failed.";
+                        }
+                    });
+                } else {
+                    reply.code = 500;
+                    reply.error = "Argument 'title' is required.";
+                }
             } else {
-                reply.code = 500;
-                reply.error = "Argument 'title' is required.";
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
+            
             that.initResponse(reply);
         };
     },
@@ -494,34 +550,41 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     error: null,
                     data: null
                 },
-                reqObj;
+                reqObj,
+                role = that.getUserRole();            
 
-            if (that.req.method === 'GET') {
-                id = parseInt(that.req.query.id);
-            } else if (that.req.method === 'DELETE' && locationId === undefined) {
-                try {
-                    reqObj = JSON.parse(that.req.body);
-                } catch (ex) {
-                    reply.error = ex.message;
-                }
-                id = reqObj.id;
-            } else if (that.req.method === 'DELETE' && locationId !== undefined) {
-                id = locationId;
-            }
-
-            if (!!id) {
-                that.controller.removeLocation(id, function (result) {
-                    if (result) {
-                        reply.code = 204;
-                        reply.data = null;
-                    } else {
-                        reply.code = 404;
-                        reply.error = "Location " + id + " doesn't exist";
+            if(role === 1){
+                
+                if (that.req.method === 'GET') {
+                    id = parseInt(that.req.query.id);
+                } else if (that.req.method === 'DELETE' && locationId === undefined) {
+                    try {
+                        reqObj = JSON.parse(that.req.body);
+                    } catch (ex) {
+                        reply.error = ex.message;
                     }
-                });
+                    id = reqObj.id;
+                } else if (that.req.method === 'DELETE' && locationId !== undefined) {
+                    id = locationId;
+                }
+
+                if (!!id) {
+                    that.controller.removeLocation(id, function (result) {
+                        if (result) {
+                            reply.code = 204;
+                            reply.data = null;
+                        } else {
+                            reply.code = 404;
+                            reply.error = "Location " + id + " doesn't exist";
+                        }
+                    });
+                } else {
+                    reply.code = 400;
+                    reply.error = "Argument id is required";
+                }
             } else {
-                reply.code = 400;
-                reply.error = "Argument id is required";
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             that.initResponse(reply);
@@ -540,36 +603,43 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 200
                 },
-                reqObj;
+                reqObj,
+                role = that.getUserRole();
 
-            if (this.req.method === 'GET') {
-                id = parseInt(this.req.query.id);
-                title = this.req.query.title;
-            } else if (this.req.method === 'PUT') {
-                try {
-                    reqObj = JSON.parse(this.req.body);
-                } catch (ex) {
-                    reply.error = ex.message;
-                }
-                id = locationId || reqObj.id;
-                title = reqObj.title;
-                user_img =reqObj.user_img || '';
-                default_img = reqObj.default_img || '';
-                img_type = reqObj.img_type || '';
-            }
+            if(role === 1){
 
-            if (!!title && title.length > 0) {
-                that.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
-                    if (data) {
-                        reply.data = data;
-                    } else {
-                        reply.code = 404;
-                        reply.error = "Location " + id + " doesn't exist";
+                if (this.req.method === 'GET') {
+                    id = parseInt(this.req.query.id);
+                    title = this.req.query.title;
+                } else if (this.req.method === 'PUT') {
+                    try {
+                        reqObj = JSON.parse(this.req.body);
+                    } catch (ex) {
+                        reply.error = ex.message;
                     }
-                });
+                    id = locationId || reqObj.id;
+                    title = reqObj.title;
+                    user_img =reqObj.user_img || '';
+                    default_img = reqObj.default_img || '';
+                    img_type = reqObj.img_type || '';
+                }
+
+                if (!!title && title.length > 0) {
+                    that.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
+                        if (data) {
+                            reply.data = data;
+                        } else {
+                            reply.code = 404;
+                            reply.error = "Location " + id + " doesn't exist";
+                        }
+                    });
+                } else {
+                    reply.code = 400;
+                    reply.error = "Arguments id & title are required";
+                }
             } else {
-                reply.code = 400;
-                reply.error = "Arguments id & title are required";
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -583,18 +653,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: [],
                 code: 200
             },
-            module = null;
+            module = null,
+            role = that.getUserRole();
 
-        Object.keys(that.controller.modules).sort().forEach(function (className) {
-            module = that.controller.getModuleData(className);
-            module.className = className;
-            if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
-                module.created = true;
-            } else {
-                module.created = false;
-            }
-            reply.data.push(module);
-        });
+        if(role === 1){
+
+            Object.keys(that.controller.modules).sort().forEach(function (className) {
+                module = that.controller.getModuleData(className);
+                module.className = className;
+                if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+                    module.created = true;
+                } else {
+                    module.created = false;
+                }
+                reply.data.push(module);
+            });
+        } else {
+            reply.code = 404;
+            reply.error = "ERROR: Permission denied.";
+        }
 
         this.initResponse(reply);
     },
@@ -605,14 +682,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     error: null,
                     data: null,
                     code: 500
-                };
+                },
+                role = that.getUserRole();
 
-            if (!that.controller.modules.hasOwnProperty(moduleId)) {
-                reply.code = 404;
-                reply.error = 'Instance ' + moduleId + ' not found';
+            if(role === 1){
+
+                if (!that.controller.modules.hasOwnProperty(moduleId)) {
+                    reply.code = 404;
+                    reply.error = 'Instance ' + moduleId + ' not found';
+                } else {
+                    reply.code = 200;
+                    reply.data = that.controller.getModuleData(moduleId);
+                }
             } else {
-                reply.code = 200;
-                reply.data = that.controller.getModuleData(moduleId);
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -621,11 +705,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     // modules categories
     listModulesCategories: function () {
         var that = this,
-            reply = {
-                error: null,
-                data: that.controller.getListModulesCategories(),
-                code: 200
-            };
+                reply = {
+                    error: null,
+                    data: null,
+                    code: 200
+                },
+                role = this.getUserRole();
+
+        if(role === 1){
+            reply.data =that.controller.getListModulesCategories();
+        } else {
+            reply.code = 404;
+            reply.error = "ERROR: Permission denied.";
+        }
 
         this.initResponse(reply);
     },
@@ -637,14 +729,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
+                role = that.getUserRole();
+
+            if(role === 1){
                 category = that.controller.getListModulesCategories(categoryId);
 
-            if (!Boolean(category)) {
-                reply.code = 404;
-                reply.error = "Categories " + categoryId + " not found";
+                if (!Boolean(category)) {
+                    reply.code = 404;
+                    reply.error = "Categories " + categoryId + " not found";
+                } else {
+                    reply.code = 200;
+                    reply.data = category;
+                }
             } else {
-                reply.code = 200;
-                reply.data = category;
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -654,10 +753,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     listInstances: function () {
         var that = this,
             reply = {
-                error: null,
-                data: that.controller.instances,
-                code: 200
-            };
+                    error: null,
+                    data: null,
+                    code: 200
+                };
+
+        reply.data = that.controller.instances;
 
         this.initResponse(reply);
     },
@@ -670,20 +771,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 reqObj = this.req.reqObj,
                 that = this,
-                instance;
+                instance,
+                role = that.getUserRole();
 
-            if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
-                instance = that.controller.createInstance(reqObj);
-                if (instance) {
-                    reply.code = 201;
-                    reply.data = instance;
+            if(role === 1){
+                if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
+                    instance = that.controller.createInstance(reqObj);
+                    if (instance) {
+                        reply.code = 201;
+                        reply.data = instance;
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Cannot instantiate module " + reqObj.moduleId;
+                    }
                 } else {
                     reply.code = 500;
-                    reply.error = "Cannot instantiate module " + reqObj.moduleId;
+                    reply.error = "Module " + reqObj.moduleId + " isn't exists";
                 }
             } else {
-                reply.code = 500;
-                reply.error = "Module " + reqObj.moduleId + " isn't exists";
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -697,14 +804,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
+                role = that.getUserRole();
+
+            if(role === 1){
                 instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
 
-            if (!Boolean(instance)) {
-                reply.code = 404;
-                reply.error = "Instance " + instanceId + " is not found";
+                if (!Boolean(instance)) {
+                    reply.code = 404;
+                    reply.error = "Instance " + instanceId + " is not found";
+                } else {
+                    reply.code = 200;
+                    reply.data = instance;
+                }
             } else {
-                reply.code = 200;
-                reply.data = instance;
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -718,20 +832,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null
                 },
                 reqObj = this.req.reqObj,
-                instance;
+                instance,
+                role = that.getUserRole();
 
-            if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
-                reply.code = 404;
-                reply.error = "Instance " + instanceId + " doesn't exist";
-            } else {
-                instance = that.controller.reconfigureInstance(instanceId, reqObj);
-                if (instance) {
-                    reply.code = 200;
-                    reply.data = instance;
+            if(role === 1){
+                if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
+                    reply.code = 404;
+                    reply.error = "Instance " + instanceId + " doesn't exist";
                 } else {
-                    reply.code = 500;
-                    reply.error = "Cannot reconfigure module " + instanceId + " config";
+                    instance = that.controller.reconfigureInstance(instanceId, reqObj);
+                    if (instance) {
+                        reply.code = 200;
+                        reply.data = instance;
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Cannot reconfigure module " + instanceId + " config";
+                    }
                 }
+            } else {
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -744,15 +864,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: 200
-            };
+            },
+            role = that.getUserRole();
 
-            if (!_.any(that.controller.instances, function (instance) { return instance.id === instanceId; })) {
-                reply.code = 404;
-                reply.error = "Instance " + instanceId + " not found";
+            if(role === 1){
+                if (!_.any(that.controller.instances, function (instance) { return instance.id === instanceId; })) {
+                    reply.code = 404;
+                    reply.error = "Instance " + instanceId + " not found";
+                } else {
+                    reply.code = 204;
+                    reply.data = null;
+                    that.controller.deleteInstance(instanceId);
+                }
             } else {
-                reply.code = 204;
-                reply.data = null;
-                that.controller.deleteInstance(instanceId);
+                reply.code = 404;
+                reply.error = "ERROR: Permission denied.";
             }
 
             this.initResponse(reply);
@@ -769,14 +895,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 profiles,
                 profile,
-                userId,
-                role;
+                userId = this.controller.profileSID,
+                role= that.getUserRole();
 
-            userId = this.controller.profileSID? this.controller.profileSID : null;
-
-            if(!!userId){
-
-                role = that.getUserRole(userId);
+            if(userId !== ''){
                 
                 // list all profiles only if user has 'admin' permissions
                 if (!_.isNumber(profileId) && role === 1) {
@@ -822,16 +944,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                userId,
-                role,
+                userId = this.controller.profileSID,
+                role = that.getUserRole(),
                 reqObj,
-                profile;
+                profile;            
 
-            userId = this.controller.profileSID? this.controller.profileSID : null;
-
-            if(!!userId){
-
-                role = that.getUserRole(userId);
+            if(userId !== ''){
                 
                 // only users with 'admin' permissions can create new profiles
                 if (role === 1){
@@ -879,13 +997,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     code: 500
                 },
                 reqObj,
-                profile;
+                profile,
+                userId = this.controller.profileSID,
+                role = that.getUserRole();
 
-            userId = this.controller.profileSID? this.controller.profileSID : null;
+            if(userId !== ''){
 
-            if(!!userId){
-
-                role = that.getUserRole(userId);
                 profile = that.controller.getProfile(profileId);
                 
                 // update target profile if user has 'admin' permissions
@@ -923,7 +1040,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         };
     },
     // different pipe for updating authentication values
-    updateProfileAuth: function (profileId) {
+    updateProfileAuth: function () {
         var that = this;
         
         return function () {
@@ -932,16 +1049,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                userId,
                 reqObj,
-                profile;
-
-            userId = this.controller.profileSID? this.controller.profileSID : null;
-
-            if(!!userId){
-
-                role = that.getUserRole(userId);
-                profile = that.controller.getProfile(profileId);
+                profile,
+                userProfile = that.getProfileBySID;
                 
                 if(typeof this.req.body !== 'object'){
                     reqObj = JSON.parse(this.req.body);
@@ -951,9 +1061,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 // make sure that every user can update authentications only on his own
                 // - role independent - admin cannot change users authentications
-                if (userId === profile.sid) {
+                if (!!userProfile) {
                         
-                    profile = that.controller.updateProfileAuth(reqObj, profileId);
+                    profile = that.controller.updateProfileAuth(reqObj, userProfile.id);
                     
                     if (profile !== undefined && profile.id !== undefined) {
                         reply.data = profile;
@@ -964,12 +1074,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "ERROR: Permission denied. Your not allowed to change authentication of foreign profile.";
+                    reply.error = "ERROR: Could not change authentication values.";
                 }
-            } else {
-                reply.code = 404;
-                reply.error = "User id '" + userId + "' doesn't exist.";
-            }
 
             this.initResponse(reply);
         };
@@ -982,13 +1088,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                profile;
+                profile,
+                userId = this.controller.profileSID,
+                role = that.getUserRole();
 
-            userId = this.controller.profileSID? this.controller.profileSID : null;
+            if(userId !== ''){
 
-            if(!!userId){
-
-                role = that.getUserRole(userId);
                 profiles = that.controller.getListProfiles();
 
                 // only admins are allowed to delete profiles
@@ -1262,13 +1367,28 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     return handlerFunc;
 };
 
-ZAutomationAPIWebRequest.prototype.getUserRole = function (userId) {
+ZAutomationAPIWebRequest.prototype.getUserRole = function () {
     var profile = _.find(this.controller.profiles, function (profile) {
-                                                    return profile.sid === userId;
+                                                    return profile.sid === this.controller.profileSID;
                                                 }); 
     if(!!profile){
         return role = profile.role; 
     } else {
         return role = null;
     }        
+};
+
+ZAutomationAPIWebRequest.prototype.getProfileBySID = function () {
+    var getProfile = this.controller.profiles.filter(function (p) {
+                    return p.sid === this.controller.profileSID;
+        }),
+        profile;
+
+    if(Object.prototype.toString.call(getProfile) === '[object Array]'){
+        profile = getProfile[0];
+    } else {
+        profile = getProfile;
+    }
+
+    return profile? profile : null;
 };

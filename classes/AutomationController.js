@@ -126,7 +126,7 @@ AutomationController.prototype.setProfileSID = function (sid) {
         return profile.sid === sid;
     });
 
-    self.profileSID = profile? sid : '';
+    self.profileSID = profile && sid !== 'null'? sid : self.profileSID;
 };
 
 AutomationController.prototype.saveConfig = function () {
@@ -748,7 +748,7 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
     }
 };
 
-AutomationController.prototype.listNotifications = function (since, to, profileID, isRedeemed) {
+AutomationController.prototype.listNotifications = function (since, to, profile, isRedeemed) {
     var self = this,
         now = new Date(),
         profile, hiddenDev, 
@@ -756,10 +756,8 @@ AutomationController.prototype.listNotifications = function (since, to, profileI
     
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() /1000);
-    pid = parseInt(profileID) || 0;
 
-    if(pid > 0 && pid <= this.profiles.length){
-        profile = this.getProfile(pid);
+    if(profile){
         hiddenDev = profile.hide_single_device_events;
 
         hiddenDev.forEach(function(devId){
