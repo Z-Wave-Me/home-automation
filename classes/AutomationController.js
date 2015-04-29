@@ -29,7 +29,7 @@ function AutomationController() {
     this.defaultLang = 'en';
     this.profileSID = '';
     this.locations = config.locations || [];
-    this.profiles = config.profiles || this.getListProfiles();
+    this.profiles = config.profiles || this.setProfiles();
     this.vdevInfo = config.vdevInfo || {};
     this.instances = config.instances || [];
     this.modules_categories = config.modules_categories || [];
@@ -876,13 +876,13 @@ AutomationController.prototype.getCountHistories = function () {
     return this.history.length || 0;
 };
 
-AutomationController.prototype.getListProfiles = function () {
+AutomationController.prototype.setProfiles = function () {
     var langFile = this.loadMainLang();
 
     if (!this.profiles || this.profiles.length === 0) {
         sid = _.uniqueId('sua'+ Math.floor(new Date().getTime() /1000));       
-        
-        this.profiles.push({
+
+        this.profiles = [{
             id: 1,
             sid: sid,
             role: 1,
@@ -900,8 +900,12 @@ AutomationController.prototype.getListProfiles = function () {
             hide_all_device_events: false,
             hide_system_events: false,
             hide_single_device_events: []
-        });
+        }];
     }
+    return this.profiles;
+};
+
+AutomationController.prototype.getListProfiles = function () {
     return this.profiles;
 };
 

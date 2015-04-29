@@ -181,15 +181,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
 
-        if(role !== 1){
-            devices = that.controller.devices.toJSON().filter(function(dev){
-                return profile.rooms.indexOf(dev.location) !== -1;
-            });
+        if(role !== 1 && profile){
+            if(profile.rooms && !!profile.rooms){
+                devices = that.controller.devices.toJSON().filter(function(dev){
+                    return profile.rooms.indexOf(dev.location) !== -1;
+                });
+            }            
         }else{
             devices = that.controller.devices.toJSON();
         }
 
-        if(!!devices){
+        if(devices){
             if (reply.data.structureChanged) {
                 reply.data.devices = devices;
             } else {
@@ -1050,7 +1052,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         };
     },
     // different pipe for updating authentication values
-    updateProfileAuth: function () {
+    updateProfileAuth: function (profileId) {
         var that = this;
         
         return function () {
@@ -1061,7 +1063,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 reqObj,
                 profile,
-                userProfile = that.getProfileBySID;
+                userProfileId = that.getProfileBySID().id;
                 
                 if(typeof this.req.body !== 'object'){
                     reqObj = JSON.parse(this.req.body);
@@ -1071,9 +1073,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 // make sure that every user can update authentications only on his own
                 // - role independent - admin cannot change users authentications
-                if (!!userProfile) {
+                if (!!userProfileId && userProfileId === profileId) {
                         
-                    profile = that.controller.updateProfileAuth(reqObj, userProfile.id);
+                    profile = that.controller.updateProfileAuth(reqObj, userProfileId);
                     
                     if (profile !== undefined && profile.id !== undefined) {
                         reply.data = profile;
