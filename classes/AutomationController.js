@@ -752,7 +752,7 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
     var self = this,
         now = new Date(),
         profile, hiddenDev, 
-        hiddenDev = [],
+        hiddenDevArr = [],
         devArr = [],
         filteredDevArr = [],
         nonDevEvents = [],
@@ -762,10 +762,9 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
     to = parseInt(to) || Math.floor(now.getTime() /1000);
 
     if(profile){
-        hiddenDev = profile.hide_single_device_events;
-
-        hiddenDev.forEach(function(devId){
-            hiddenDev.push(AutomationController.prototype.hashCode(devId));
+        
+        profile.hide_single_device_events.forEach(function(devId){
+            hiddenDevArr.push(AutomationController.prototype.hashCode(devId));
         });
 
         this.notifications.forEach(function (notification) {
@@ -786,9 +785,9 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
             });
         }
 
-        if(hiddenDev.length > 0){
+        if(hiddenDevArr.length > 0){
             devArr.forEach(function(devId){
-                if(hiddenDev.indexOf(devId) === -1){
+                if(hiddenDevArr.indexOf(devId) === -1){
                     filteredDevArr.push(devId);
                 }
             });
