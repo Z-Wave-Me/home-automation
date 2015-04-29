@@ -752,9 +752,11 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
     var self = this,
         now = new Date(),
         profile, hiddenDev, 
-        hashArr = [],
+        hiddenDev = [],
         devArr = [],
-        filteredArr = [];
+        filteredDevArr = [],
+        nonDevEvents = [],
+        filteredEvents = [];
     
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() /1000);
@@ -763,8 +765,14 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
         hiddenDev = profile.hide_single_device_events;
 
         hiddenDev.forEach(function(devId){
-            hashArr.push(AutomationController.prototype.hashCode(devId));
+            hiddenDev.push(AutomationController.prototype.hashCode(devId));
         });
+
+        this.notifications.forEach(function (notification) {
+            if(notification.level !== 'device-info' && nonDevEvents.indexOf(notification.h) === -1){
+                nonDevEvents.push(notification.h);
+            }
+        }); 
 
         if(profile.role !== 1){
             this.devices.toJSON().filter(function(dev){
@@ -778,14 +786,24 @@ AutomationController.prototype.listNotifications = function (since, to, profile,
             });
         }
 
-        devArr.forEach(function(dev){
-            if(hashArr.indexOf(dev.h) === -1){
-                filteredArr.push(dev.h);
-            }
-        });
+        if(hiddenDev.length > 0){
+            devArr.forEach(function(devId){
+                if(hiddenDev.indexOf(devId) === -1){
+                    filteredDevArr.push(devId);
+                }
+            });
+        } else{
+            filteredDevArr = devArr;
+        }
+
+        if(nonDevEvents.length > 0){
+            filteredEvents = filteredDevArr.concat(nonDevEvents);
+        } else {
+            filteredEvents = filteredDevArr;
+        }
 
         var filteredNotifications = this.notifications.filter(function (notification) {
-            return notification.id >= since && notification.id <= to && filteredArr.indexOf(notification.h) === -1 && notification.redeemed === isRedeemed;
+            return notification.id >= since && notification.id <= to && filteredEvents.indexOf(notification.h) !== -1 && notification.redeemed === isRedeemed;
         });
 
     } else {    
