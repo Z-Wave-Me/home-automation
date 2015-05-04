@@ -184,7 +184,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if(role !== 1 && profile){
             if(profile.rooms && !!profile.rooms){
                 devices = that.controller.devices.toJSON().filter(function(dev){
-                    return profile.rooms.indexOf(dev.location) !== -1;
+                    return profile.rooms.indexOf(parseInt(dev.location)) !== -1;
                 });
             }            
         }else{
