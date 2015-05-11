@@ -180,7 +180,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             devices;
 
         reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
-
+        
         if(role !== 1 && profile){
             if(profile.rooms && !!profile.rooms){
                 devices = that.controller.devices.toJSON().filter(function(dev){
@@ -195,7 +195,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             if (reply.data.structureChanged) {
                 reply.data.devices = devices;
             } else {
-                reply.data.devices = devices.since = reply.data.structureChanged ? 0 : since;
+                devices.since = reply.data.structureChanged ? 0 : since;
+                reply.data.devices = devices;
             }
 
             if (Boolean(that.req.query.pagination)) {
@@ -1190,17 +1191,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             that.res.status = 200;
             history = that.controller.listHistories();
 
-            reply.data = {
-                updateTime: Math.floor(new Date().getTime() / 1000),
-                history: history
-            };
-
-            if (Boolean(that.req.query.pagination)) {
-                reply.data.total_count = that.controller.getCountHistories();
+            if(history){
+                reply.data = {
+                    updateTime: Math.floor(new Date().getTime() / 1000),
+                    history: history
+                };
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = "No device histories found.";
             }
-
-            reply.code = 200;
-
             that.initResponse(reply);
         };
     },
@@ -1218,12 +1218,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return function () {
             since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
             history = that.controller.listHistories();
+            hash = that.controller.hashCode(vDevId);
+            
             dev = history.filter(function(x){
-                    return x.id === vDevId;
+                    return x.h === hash;
                 });
+            
             sinceDevHist = that.controller.getDevHistorySince(dev, since);            
             
-            if (sinceDevHist){                
+            if (dev && sinceDevHist){                
                 reply.code = 200;
                 reply.data = {
                         id: vDevId,
@@ -1231,13 +1234,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         deviceHistory: sinceDevHist
                     };
             } else
-            if (dev) {
-                reply.code = 200;
-                reply.data = dev;
-            } else {
-                reply.code = 404;
-                reply.error = "Device " + vDevId + " doesn't exist";
-            }
+                if (dev) {
+                    reply.code = 200;
+                    reply.data = dev;
+                } else {
+                    reply.code = 404;
+                    reply.error = "History of device " + vDevId + " doesn't exist";
+                }
             that.initResponse(reply);
         };
     },

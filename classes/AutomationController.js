@@ -42,7 +42,6 @@ function AutomationController() {
     this.schemas = config.schemas || [];
 
     this.notifications = [];
-    this.history = [];
     this.lastStructureChangeTime = 0;
 
     this._loadedSingletons = [];
@@ -847,16 +846,6 @@ AutomationController.prototype.updateNotification = function (id, object, callba
 
 AutomationController.prototype.listHistories = function () {
     var self = this;
-    self.history = [];
-    devices = self.devices.models;
-
-    devices.forEach(function(x){
-        obj = loadObject(x.id + "history");
-        if(obj != undefined){
-            self.history.push(obj[0]);
-        }
-        
-    });
 
     return self.history;
 };
@@ -870,10 +859,6 @@ AutomationController.prototype.getDevHistorySince = function (dev, since) {
     });
 
     return filteredEntries;
-};
-
-AutomationController.prototype.getCountHistories = function () {
-    return this.history.length || 0;
 };
 
 AutomationController.prototype.setProfiles = function () {
@@ -1043,21 +1028,27 @@ AutomationController.prototype.removeProfile = function (profileId) {
 // namespaces
 AutomationController.prototype.generateNamespaces = function (callback) {
     var that = this,
-        devices = that.devices.models,
+        devices = that.devices.filter(function(device){
+            if(device.get('permanently_hidden') === false){
+                return device;
+            }
+        }),
         deviceTypes = _.uniq(_.map(devices, function (device) {
-            return device.toJSON().deviceType;
+                return device.get('deviceType');
         }));
 
     that.namespaces = [];
     deviceTypes.forEach(function (type) {
-        that.setNamespace('devices_' + type, that.devices.filter(function (device) {
-            return device.get('deviceType') === type;
-        }).map(function (device) {
-            return {deviceId: device.id, deviceName: device.get('metrics:title')};
+        that.setNamespace('devices_' + type, devices.filter(function (device) {
+                return device.get('deviceType') === type;
+        }).map(function (device) {            
+                return {deviceId: device.id, deviceName: device.get('metrics:title')};
         }));
     });
-    that.setNamespace('devices_all', that.devices.map(function (device) {
-        return {deviceId: device.id, deviceName: device.get('metrics:title')};
+    that.setNamespace('devices_all', devices.filter(function (device){
+            return device;
+    }).map(function (device) {
+            return {deviceId: device.id, deviceName: device.get('metrics:title')};
     }));
 
     if (typeof callback === 'function') {

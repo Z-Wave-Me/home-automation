@@ -18,7 +18,8 @@ VirtualDevice = function (options) {
             'tags',
             'updateTime',
             'permanently_hidden',
-            'creatorId'
+            'creatorId',
+            'h'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -26,12 +27,14 @@ VirtualDevice = function (options) {
         location: null,
         tags: [],
         updateTime: 0,
+        h: options.controller.hashCode(options.deviceId),
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
             tags: [],
             permanently_hidden: false,
-            location: null
+            location: null,
+            h: options.controller.hashCode(options.deviceId)
         },
         changed: {},
         overlay: options.overlay || {},

@@ -22,7 +22,8 @@
       "If-None-Match",
       "Content-Language",
       "Accept-Language",
-      "Authorization"
+      "Authorization",
+      "Profile-SID"
     ],
     "allowMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"]
   }

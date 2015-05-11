@@ -198,8 +198,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
             'Access-Control-Expose-Headers': that.controller.allow_headers.join(', '),
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-            'Content-Language': that.controller.defaultLang,
-            'Profile-SID': that.controller.profileSID
+            'Content-Language': that.controller.defaultLang
         }
     };
 
