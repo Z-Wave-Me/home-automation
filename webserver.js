@@ -195,8 +195,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             if (reply.data.structureChanged) {
                 reply.data.devices = devices;
             } else {
-                devices.since = reply.data.structureChanged ? 0 : since;
-                reply.data.devices = devices;
+                reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
             }
 
             if (Boolean(that.req.query.pagination)) {
@@ -1197,6 +1196,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     history: history
                 };
                 reply.code = 200;
+                
             } else {
                 reply.code = 404;
                 reply.error = "No device histories found.";
