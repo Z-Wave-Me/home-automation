@@ -437,7 +437,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             } else {
                 reply.code = 404;
                 reply.data = null;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -547,7 +547,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
             
             that.initResponse(reply);
@@ -596,7 +596,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             that.initResponse(reply);
@@ -651,7 +651,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -682,7 +682,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             });
         } else {
             reply.code = 404;
-            reply.error = "ERROR: Permission denied.";
+            reply.error = "Permission denied.";
         }
 
         this.initResponse(reply);
@@ -708,7 +708,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -728,7 +728,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.data =that.controller.getListModulesCategories();
         } else {
             reply.code = 404;
-            reply.error = "ERROR: Permission denied.";
+            reply.error = "Permission denied.";
         }
 
         this.initResponse(reply);
@@ -755,7 +755,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -802,7 +802,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -830,7 +830,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -863,7 +863,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -890,7 +890,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied.";
+                reply.error = "Permission denied.";
             }
 
             this.initResponse(reply);
@@ -937,7 +937,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         }
                     } else {
                         reply.code = 404;
-                        reply.error = "ERROR: Permission denied. Cannot show foreign profile.";
+                        reply.error = "Permission denied. Cannot show foreign profile.";
                     }
                 }
             } else {
@@ -990,7 +990,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "ERROR: Permission denied. You're not allowed to create profiles.";
+                    reply.error = "Permission denied. You're not allowed to create profiles.";
                 }
             } else {
                 reply.code = 404;
@@ -1041,7 +1041,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "ERROR: Permission denied. Cannot update foreign profile.";
+                    reply.error = "Permission denied. Cannot update foreign profile.";
                 }
             } else {
                 reply.code = 404;
@@ -1086,7 +1086,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "ERROR: Could not change authentication values.";
+                    reply.error = "Could not change authentication values.";
                 }
 
             this.initResponse(reply);
@@ -1128,7 +1128,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "ERROR: Permission denied. Not allowed to delete profile.";
+                reply.error = "Permission denied. Not allowed to delete profile.";
             }
 
             this.initResponse(reply);
