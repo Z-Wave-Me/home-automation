@@ -101,14 +101,17 @@ InbandNotifications.prototype.init = function (config) {
                                 l:lvl
                                 };
                             msgType = 'device-OnOff';
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
                             break;
                         case 'switchMultilevel':
-                        case 'battery':
                             msg = {
                                 dev: devName,
                                 l: lvl + '%'
                                 };
                             msgType = 'device-status';
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
                             break;
                         case 'sensorMultilevel':
                         case 'sensorMultiline':
@@ -118,12 +121,22 @@ InbandNotifications.prototype.init = function (config) {
                                 l: lvl + ' ' + scaleUnit
                                 };
                             msgType = 'device-' + eventType();
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
+                            break;
+                        case 'switchRGBW':
+                            msg = {
+                                dev: devName,
+                                l: lvl,
+                                color: vDev.get('metrics:color')
+                                };
+                            msgType = 'device-' + eventType();
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
                             break;
                         default:
                             break;
                     }
-
-                    self.controller.addNotification('device-info', msg , msgType, devId);
                     lastChanges[i]['l'] = lvl;
                     createItem = 0;
                 }
@@ -132,12 +145,25 @@ InbandNotifications.prototype.init = function (config) {
     };
 
     this.onPollDeleteNotifications = function () {
-        
-        var now = new Date(),
+        if(self.controller.profileSID !== ''){
+            var now = new Date(),
             startOfDay = now.setHours(0,0,0,0),
-            tsSevenDaysBefore = startOfDay - 86400*6;
+            tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6,
+            notifications,
+            firstNotification,
+            id,
+            profile;
+
+            profile = self.controller.profiles.filter(function (p) {
+                    return p.id === 1;
+            });
+
+            notifications = self.controller.listNotifications(tsSevenDaysBefore, 0 , profile[0], false);
+            firstNotification = notifications.shift();
+            id = firstNotification.id;
         
-        self.controller.deleteNotifications(tsSevenDaysBefore, true, this.onPollDeleteNotifications, true);
+        self.controller.deleteNotifications(id, tsSevenDaysBefore, true, this.onPollDeleteNotifications, true);
+        }        
     };
 
     this.onPollSaveNotifications = function () {
@@ -146,22 +172,24 @@ InbandNotifications.prototype.init = function (config) {
 
     // Setup metric update event listener
     self.controller.devices.on('change:metrics:level', self.writeNotification);
-    this.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
-    this.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
+    
+    self.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
+    self.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
+
+    //this.onPollDeleteNotifications();
+    //this.onPollSaveNotifications();
 };
 
 InbandNotifications.prototype.stop = function () {
-    var self = this;
-
-    if (this.timer){
-        clearInterval(this.timer);
-    }        
+    var self = this;       
 
     self.controller.devices.off('change:metrics:level', self.writeNotification);
-    this.controller.emit("cron.removeTask", "inbandNotifierDeleteNotifications.poll");
-    this.controller.off("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
-    this.controller.emit("cron.removeTask", "inbandNotifierSaveNotifications.poll");
-    this.controller.off("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
+    
+    self.controller.emit("cron.removeTask", "inbandNotifierDeleteNotifications.poll");
+    self.controller.off("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
+    
+    self.controller.emit("cron.removeTask", "inbandNotifierSaveNotifications.poll");
+    self.controller.off("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 
     InbandNotifications.super_.prototype.stop.call(this);
 };

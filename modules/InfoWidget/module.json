@@ -1,0 +1,56 @@
+{
+	"singleton" : false,
+	"dependencies": [],
+	"category": "devices",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName":"InfoWidget",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults" : {
+		"title" : "__m_title__",
+		"description" : "__m_descr__",
+		"headline":"",
+		"text" : "",
+		"imgURI":""
+	},
+	"schema" : {
+		"type" : "object",
+		"properties" : {
+			"headline" : {
+				"type" : "string",
+				"required" : true
+			},
+			"text" : {
+				"type" : "string",
+				"required" : true
+			},
+			"imgURI" : {
+				"format" : "uri",
+				"required" : false
+			}
+		}
+	},
+	"options" : {
+		"fields" : {
+			"headline" : {
+				"label" : "__l_headline__",
+				"type" : "text"
+			},
+			"text" : {
+				"label" : "__l_text__",
+				"type" : "textarea"
+			},
+			"imgURI" : {
+				"label" : "__l_imgURI__",
+				"helper": "__h_imgURI__",
+				"type" : "url"
+			}
+		}
+	}
+}

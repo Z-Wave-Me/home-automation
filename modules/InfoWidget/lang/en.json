@@ -1,0 +1,8 @@
+{
+	"m_title":"Information Widget",
+	"m_descr":"This Module creates an information widget.",
+	"l_headline":"Enter your headline:",
+	"l_text":"Enter your text:",
+	"l_imgURI":"URL of your image (optional):",
+	"h_imgURI":"e.g. 'http://www.images.com/nature/tree_xy.jpg'"
+}

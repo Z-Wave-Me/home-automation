@@ -31,7 +31,7 @@ function AutomationController() {
     this.locations = config.locations || [];
     this.profiles = config.profiles || this.setProfiles();
     this.vdevInfo = config.vdevInfo || {};
-    this.instances = config.instances || [];
+    this.instances = config.instances || this.setupDefaultInstances();
     this.modules_categories = config.modules_categories || [];
     this.namespaces = namespaces || [];
     this.registerInstances = {};
@@ -422,6 +422,59 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
     return this.instances.hasOwnProperty(instanceId) ? this.instances[instanceId] : null;
 };
 
+AutomationController.prototype.setupDefaultInstances = function () {
+
+    if (!this.instances || this.instances.length === 0) {
+        this.instances = [{
+            "id": 1,
+            "moduleId": "ZWave",
+            "params": {
+              "name": "zway",
+              "port": "/dev/ttyAMA0",
+              "config": "config",
+              "translations": "translations",
+              "ZDDX": "ZDDX"
+            },
+            "active": true,
+            "module": "Z-Wave Network Access",
+            "title": "Z-Wave Network Access",
+            "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)",
+          },
+          {
+            "id": 2,
+            "moduleId": "Cron",
+            "params": {},
+            "active": true,
+            "module": "System Clock (CRON)",
+            "title": "System Clock (CRON)",
+            "description": "Scheduler used by other modules\n(Added by default)"
+          },
+          {
+            "id": 3,
+            "moduleId": "InbandNotifications",
+            "params": {},
+            "active": true,
+            "module": "Inband Notifier",
+            "title": "Inband Notifier",
+            "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
+          },
+          {
+            "id": 4,
+            "moduleId": "InfoWidget",
+            "params": {
+                "headline":"Welcome to your Smart Home!",
+                "text":"These small widgets will guide you during your first steps on our new SmartHome UI. \nIf you click on it you will get useful informations about navigation and functionality of SmartHome UI.",
+                "imgURI":""
+            },
+            "active": true,
+            "module": "Information Widget",
+            "title": "Information Widget",
+            "description": "This Module creates an information widget.\n(Added by default)"
+          }];
+    }
+    return this.instances;
+}
+
 AutomationController.prototype.registerInstance = function (instance) {
     var self = this;
 
@@ -656,6 +709,7 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     }
 
     that.saveNotifications();
+    console.log('---------- all notifications before ' + id + ' deleted ----------')
 };
 
 AutomationController.prototype.addLocation = function (locProps, callback) {
@@ -875,9 +929,9 @@ AutomationController.prototype.setProfiles = function () {
             password: '21232f297a57a5a743894a0e4a801fc3',
             name: langFile.profile_name,
             last_login: null,
-            lang:'',
-            color:'',
-            default_ui:'',
+            lang:'en',
+            color:'#dddddd',
+            default_ui: 1,
             dashboard: [],
             interval: 2000,
             rooms:[],
@@ -930,9 +984,9 @@ AutomationController.prototype.createProfile = function (object) {
         password: null,
         name: '',
         last_login: null,
-        lang:'',
-        color:'',
-        default_ui:'',
+        lang:'en',
+        color:'#dddddd',
+        default_ui: 1,
         dashboard: [],
         interval: 2000,
         rooms:[],
@@ -976,9 +1030,9 @@ AutomationController.prototype.updateProfile = function (object, id) {
         _.defaults(this.profiles[index], {
             role: null,
             name: '',
-            lang:'',
-            color:'',
-            default_ui:'',
+            lang:'en',
+            color:'#dddddd',
+            default_ui: 1,
             dashboard: [],
             interval: 2000,
             rooms:[],
@@ -1164,7 +1218,8 @@ AutomationController.prototype.loadModuleLang = function (moduleId) {
 
 // load lang folder with given prefix
 AutomationController.prototype.loadMainLang = function (pathPrefix) {
-    var languageFile,
+    var self = this,
+        languageFile,
         prefix;
 
     if(pathPrefix === undefined || pathPrefix === null) {
@@ -1174,7 +1229,7 @@ AutomationController.prototype.loadMainLang = function (pathPrefix) {
     }
 
     try {
-        languageFile = fs.loadJSON(prefix + "lang/" + this.defaultLang + ".json");
+        languageFile = fs.loadJSON(prefix + "lang/" + self.defaultLang + ".json");
     } catch (e) {            
         try {
             languageFile = fs.loadJSON(prefix + "lang/en.json");

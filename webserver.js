@@ -1198,7 +1198,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 200;
                 
             } else {
-                reply.code = 404;
+                reply.code = 204;
                 reply.error = "No device histories found.";
             }
             that.initResponse(reply);
