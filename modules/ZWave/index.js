@@ -1805,23 +1805,23 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					title: ''
 				}
 			};
-			d_defaults = {
+			/*d_defaults = {
 				deviceType: 'toggleButton',
 				metrics: {
 					icon: 'alarm',
 					level: 'off',
 					title: ''
 				}
-			};
+			};*/
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
 				sensorTypeId = parseInt(sensorTypeId, 10);
 
-				var a_id = vDevId + separ + sensorTypeId + separ + "A",
-				    d_id = vDevId + separ + sensorTypeId + separ + "D";
+				var a_id = vDevId + separ + sensorTypeId + separ + "A";
+				    //d_id = vDevId + separ + sensorTypeId + separ + "D";
 
-				if (!isNaN(sensorTypeId) && !self.controller.devices.get(a_id) && !self.controller.devices.get(d_id)) {
+				if (!isNaN(sensorTypeId) && !self.controller.devices.get(a_id)) { // && !self.controller.devices.get(d_id)
 					a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
-					d_defaults.metrics.title = compileTitle('Disarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+					//d_defaults.metrics.title = compileTitle('Disarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
 
 					var a_vDev = self.controller.devices.create({
 						deviceId: a_id,
@@ -1835,6 +1835,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						moduleId: self.id
 					});
 
+					/*
 					var d_vDev = self.controller.devices.create({
 						deviceId: d_id,
 						defaults: d_defaults,
@@ -1852,12 +1853,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						},
 						moduleId: self.id
 					});
-
+					*/
 					if (a_vDev) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
-								self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "D");
+								//self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "D");
 							} else {
 								try {
 									a_vDev.set("metrics:level", this.value ? "on" : "off");
