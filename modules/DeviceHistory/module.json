@@ -1,0 +1,49 @@
+{
+	"singleton" : true,
+	"dependencies": ["Cron"],
+	"category" : "scheduling",
+	"author" : "Z-Wave.Me",
+	"homepage" : "http://razberry.z-wave.me",
+	"icon" : "icon.png",
+	"moduleName":"DeviceHistory",
+	"version" : "1.0.0",
+	"maturity" : "alpha",
+	"repository" : {
+		"type" : "git",
+		"source" : "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults" : {
+		"title" : "__m_title__",
+		"description" : "__m_descr__",
+		"devices": []
+	},
+	"schema": {
+		"properties": {
+			"devices": {
+				"type": "array",
+				"items": {
+					"field":"enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_sensorMultiline:deviceId,namespaces:devices_toggleButton:deviceId,namespaces:devices_fan:deviceId,namespaces:devices_doorLock:deviceId,namespaces:devices_thermostat:deviceId",
+					"required": false
+				}
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"devices": {
+				"label": "__l_devices__",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_sensorMultiline:deviceName,namespaces:devices_toggleButton:deviceName,namespaces:devices_fan:deviceName,namespaces:devices_doorLock:deviceName,namespaces:devices_thermostat:deviceName"
+					}
+				},
+				"helper": "__h_devices__"
+			}
+		}
+	}
+}

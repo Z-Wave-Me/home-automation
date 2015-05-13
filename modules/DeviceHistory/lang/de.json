@@ -1,0 +1,6 @@
+{
+	"m_title":"24 Stunden Gerätehistorie",
+	"m_descr":"Dieses Modul zeichnet die Daten aller Geräte für die letzten 24 Stunden auf.",
+	"l_devices":"Speichere keine History für folgende Geräte:",
+	"h_devices":"Bei gleichzeitiger Verwendung der App 'Periodische Sensorabfrage' ist folgendes zu beachten: Ein dort von der Abfrage ausgeschlossenes Gerät kann keine Historie erzeugen."
+}

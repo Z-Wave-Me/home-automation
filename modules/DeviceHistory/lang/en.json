@@ -1,0 +1,6 @@
+{
+	"m_title":"24 Hours Device History",
+	"m_descr":"Creates a module that stores 24h data of all devices.",
+	"l_devices":"Do not track devices marked below:",
+	"h_devices":"With simultaneous use of the app 'Periodical Sensor Polling', note the following: One there from the polling excluded device cannot create a history."
+}
