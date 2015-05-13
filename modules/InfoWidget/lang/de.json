@@ -1,8 +1,13 @@
 {	
 	"m_title":"Informations Widget",
 	"m_descr":"Dieses Modul erzeugt ein Informations Widget.",
+	"l_widgets":"Ein oder mehrere Informations Widgets erzeugen",
+	"h_widgets":"Klicken sie um ein Widget hinzuzufügen",
+	"l_widget": "Widget",
 	"l_headline":"Eingabe der Überschrift:",
+	"p_headline":"Überschrift",
 	"l_text":"Eingabe des Informationstextes",
+	"p_text":"Text...",
 	"l_imgURI":"URL des Bildes (optional):",
-	"h_imgURI":"z.B. 'http://www.images.com/nature/tree_xy.jpg'"
+	"p_imgURI":"z.B. 'http://www.images.com/nature/tree_xy.jpg'"
 }

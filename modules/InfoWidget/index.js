@@ -28,28 +28,44 @@ _module = InfoWidget;
 InfoWidget.prototype.init = function (config) {
     InfoWidget.super_.prototype.init.call(this, config);
 
-    var self = this;
+    var self = this,
+        vDev;
 
-    this.vDev = this.controller.devices.create({
-        deviceId: "InfoWidget_" + this.id,
-        defaults: {
-            metrics: {
-                title: this.config.headline,
-                text: this.config.text,
-                img: this.config.imgURI
-            }          
-        },
-        overlay: {
-            deviceType: "text"
-        },
-        moduleId: this.id
-    });
+    this.vDev = [];
+
+    if(self.config.widgets.length > 0){
+
+        self.config.widgets.forEach(function (widget, indx) {
+
+            vDev = this.controller.devices.create({
+                deviceId: "InfoWidget_" + self.id + '_' + indx,
+                defaults: {
+                    metrics: {
+                        title: widget.headline,
+                        text: widget.text,
+                        img: widget.imgURI
+                    }          
+                },
+                overlay: {
+                    deviceType: "text"
+                },
+                moduleId: self.id
+            });
+
+            self.vDev.push(vDev);
+        });
+    }
 };
 
 InfoWidget.prototype.stop = function () {
-    if (this.vDev) {
-        this.controller.devices.remove(this.vDev.id);
-        this.vDev = null;
+    var self = this;
+    
+    if(self.vDev) {
+        self.vDev.forEach(function (dev){
+            this.controller.devices.remove(dev.id);
+        });
+
+        self.vDev = null;
     }
 
     InfoWidget.super_.prototype.stop.call(this);

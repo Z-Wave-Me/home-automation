@@ -1,5 +1,5 @@
 {
-	"singleton" : false,
+	"singleton" : true,
 	"dependencies": [],
 	"category": "devices",
 	"author": "Z-Wave.Me",
@@ -15,41 +15,67 @@
 	"defaults" : {
 		"title" : "__m_title__",
 		"description" : "__m_descr__",
-		"headline":"",
-		"text" : "",
-		"imgURI":""
+		"widgets":[]
 	},
 	"schema" : {
-		"type" : "object",
+		"type":"object",
 		"properties" : {
-			"headline" : {
-				"type" : "string",
-				"required" : true
-			},
-			"text" : {
-				"type" : "string",
-				"required" : true
-			},
-			"imgURI" : {
-				"format" : "uri",
-				"required" : false
+			"widgets": {
+				"type": "array",
+				"items": {
+					"$ref": "#/definitions/widget"
+				}
+			}
+		},
+		"definitions":{
+			"widget": {
+				"type" : "object",
+				"properties":{
+					"headline" : {
+						"type" : "string",
+						"required" : true
+					},
+					"text" : {
+						"type" : "string",
+						"required" : true
+					},
+					"imgURI" : {
+						"type" : "string",
+						"format" : "uri",
+						"required" : false
+					}
+				}
 			}
 		}
 	},
 	"options" : {
-		"fields" : {
-			"headline" : {
-				"label" : "__l_headline__",
-				"type" : "text"
-			},
-			"text" : {
-				"label" : "__l_text__",
-				"type" : "textarea"
-			},
-			"imgURI" : {
-				"label" : "__l_imgURI__",
-				"helper": "__h_imgURI__",
-				"type" : "url"
+		"fields":{
+			"widgets":{
+				"label":"__l_widgets__",			
+				"helper":"__h_widgets__"
+			}
+		},
+		"definitions":{
+			"fields":{
+				"widget":{
+					"fields": {
+						"headline" : {
+							"label" : "__l_headline__",
+							"placeholder": "__p_headline__",
+							"type" : "text"
+						},
+						"text" : {
+							"label" : "__l_text__",
+							"placeholder": "__p_text__",
+							"type" : "textarea"
+						},
+						"imgURI" : {
+							"label" : "__l_imgURI__",
+							"placeholder": "__p_imgURI__",
+							"type" : "url"
+						}
+					}
+				}
 			}
 		}
 	}
