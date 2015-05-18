@@ -92,7 +92,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
 
-        this.router.get("/history/:dev_id", this.getHistDevFunc);
+        this.router.get("/history/:dev_id", this.getDevHist);
 
         this.router.get("/load/modulemedia/:module_name/:file_name", this.loadModuleMedia);
         
@@ -149,7 +149,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     expert_view: profile.expert_view,
                     lang: profile.lang,
                     color: profile.color,
-                    interval: profile.interval
+                    interval: profile.interval,
+                    dashboard: profile.dashboard
                 };
 
                 that.controller.profileSID = profile.sid;
@@ -1204,7 +1205,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             that.initResponse(reply);
         };
     },
-    getHistDevFunc: function (vDevId) {
+    getDevHist: function (vDevId) {
         var that = this,
             history,
             dev,
