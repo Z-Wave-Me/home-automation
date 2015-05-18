@@ -180,6 +180,10 @@
       }
     }
     
-    saveObject("config.json", config);
+    try {
+      saveObject("config.json", config);
+    } catch (e) {
+      console.log("Error: can not write back config.json to storage: ", e);
+    }
   }
 })();
