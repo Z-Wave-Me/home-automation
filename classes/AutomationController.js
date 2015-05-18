@@ -29,7 +29,6 @@ function AutomationController() {
     this.defaultLang = 'en';
     this.profileSID = '';
     this.locations = config.locations || [];
-    this.profiles = config.profiles || this.setProfiles();
     this.vdevInfo = config.vdevInfo || {};
     this.instances = config.instances || this.setupDefaultInstances();
     this.modules_categories = config.modules_categories || [];
@@ -45,6 +44,16 @@ function AutomationController() {
     this.lastStructureChangeTime = 0;
 
     this._loadedSingletons = [];
+
+    if(config.profiles && config.profiles.length > 0) {
+        if(config.profiles[0].login === 'admin' && config.profiles[0].sid.indexOf('sua') > -1){
+            this.profiles = config.profiles;
+        } else {
+            this.profiles = this.setProfiles();
+        }
+    } else {
+        this.profiles = this.setProfiles();
+    }
 }
 
 inherits(AutomationController, EventEmitter2);
