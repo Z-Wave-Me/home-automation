@@ -1,0 +1,7 @@
+{
+	"m_title":"Global Caché",
+	"m_descr":"Create toggle device that sends a command to Global Caché device.",
+	"l_host":"Global Caché IP or hostname",
+	"l_data":"Command to send",
+	"h_data":"Command as reported by Global Caché IR Learning Utility WITHOUT final new line symbols (\\r\\n\\r\\n)."
+}
