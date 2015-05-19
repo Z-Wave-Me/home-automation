@@ -61,7 +61,15 @@ _.extend(FosCam9828.prototype, {
             });
         };
         
-		this.setup 	= config.url+ "/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1" + authent;      
+		this.setup 	= config.url+ "/cgi-bin/CGIProxy.fcgi?cmd=setSubStreamFormat&format=1" + authent;
+
+        if (this.setup) {
+            http.request({
+                url: this.setup,
+                async: true
+            });
+        }
+            
         this.url	= config.url + "/cgi-bin/CGIStream.cgi?cmd=GetMJStream" + authent;        
         ws.proxify(this.proxy_url, this.url, config.user, config.password);
 
