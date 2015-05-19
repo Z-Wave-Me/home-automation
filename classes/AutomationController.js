@@ -30,7 +30,6 @@ function AutomationController() {
     this.profileSID = '';
     this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
-    this.instances = config.instances || this.setupDefaultInstances();
     this.modules_categories = config.modules_categories || [];
     this.namespaces = namespaces || [];
     this.registerInstances = {};
@@ -53,6 +52,12 @@ function AutomationController() {
         }
     } else {
         this.profiles = this.setProfiles();
+    }
+
+    if(config.instances && config.instances.length > 0){
+        this.instances = config.instances;
+    } else {
+        this.instances = this.setupDefaultInstances();
     }
 }
 

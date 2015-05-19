@@ -46,47 +46,73 @@ DeviceHistory.prototype.init = function (config) {
     });
 
     var self = this,
-        exclDev = [],
         getDevH = [],
         countHistories = [];
 
     this.history = loadObject('history') || [];
     this.switchHistory = [];
     this.allDevices = [];
-
-    // collect ids from excluded devices
-    if(self.config.devices.length > 0) {
-        _.unique(self.config.devices).forEach(function(devId){
-            exclDev.push(self.controller.hashCode(devId));
-        });
-    }
-
-    // collect ids from devices that are batteries or permanently hidden
-    self.controller.devices.filter(function (dev){
-        if((dev.get('deviceType') === 'battery' || dev.get('permanently_hidden') === true) && exclDev.indexOf(dev.h) === -1){
-           exclDev.push(dev.h);
-        }
-    });
-
-    // collect ids from devices that are polled regularly in app SensorsPolling
-    self.controller.instances.filter(function (instance){
-        if(instance.moduleId === 'SensorsPolling' && instance.active === 'true'){
-            instance.params.devices.forEach(function (devId){
-                var h = self.controller.hashCode(devId);                
-                if(exclDev.indexOf(h) === -1){
-                    exclDev.push(h);
-                }
-            });
-        }
-    });
+    this.exclDev = [];
+    this.initial = true;
 
     // setting up device histories
     this.setupHistories = function(){
 
+        // collect ids from excluded devices
+        if(self.config.devices.length > 0) {
+            _.unique(self.config.devices).forEach(function(devId){
+                self.exclDev.push(self.controller.hashCode(devId));
+            });
+        }
+
+        // collect ids from devices that are batteries or permanently hidden
+        self.controller.devices.filter(function (dev){
+            if((dev.get('deviceType') === 'battery' || dev.get('deviceType') === 'text' || dev.get('deviceType') === 'camera' || dev.get('deviceType') === 'switchRGBW' || dev.get('permanently_hidden') === true) && self.exclDev.indexOf(dev.h) === -1){
+               self.exclDev.push(dev.h);
+            }
+        });
+
+        // collect ids from devices that are polled regularly in app SensorsPolling
+        self.controller.instances.filter(function (instance){
+            if(instance.moduleId === 'SensorsPolling' && instance.active === 'true'){
+                instance.params.devices.forEach(function (devId){
+                    var h = self.controller.hashCode(devId);                
+                    if(self.exclDev.indexOf(h) === -1){
+                        self.exclDev.push(h);
+                    }
+                });
+            }
+        });
+
         // filter devices - not excluded
         self.allDevices = self.controller.devices.filter(function(dev){
-            return exclDev.indexOf(dev.h) === -1;
+            return self.exclDev.indexOf(dev.h) === -1;
         });
+
+        if(self.initial === true){
+
+            self.initial = false;
+
+        } else {
+
+            if(self.allDevices.length < self.history.length) {
+                var cleanupHistory = [],
+                    devices = [];
+
+                self.allDevices.forEach(function (dev){
+                   devices.push(dev.h);
+                });
+                
+                cleanupHistory = self.history.filter(function (devHist) {
+                    return devices.indexOf(devHist.h) > -1;
+                });
+
+                if(cleanupHistory.length === self.allDevices.length){
+                    console.log("--- ", "clean up histories");
+                    self.history = cleanupHistory;
+                }
+            }
+        }
        
         // Setup histories
         self.allDevices.forEach(function(dev) {
@@ -106,21 +132,21 @@ DeviceHistory.prototype.init = function (config) {
                 case 'thermostat':                       
                     lvl = dev.get("metrics:level");
                     self.storeData(dev, lvl);
-                    console.log("--- ", "history polled for device:", id);
                     break;
                 case 'switchBinary':
                 case 'sensorBinary':
                 case 'toggleButton':
+                case 'doorlock':
                     self.controller.devices.off(id,'change:metrics:level', self.collectBinaryData);
                     self.controller.devices.on(id,'change:metrics:level', self.collectBinaryData);
                     
                     self.transformBinaryValues(self.switchHistory, dev);
-                    console.log("--- ", "history polled for device:", id);
                     break;
                 default: // 'doorlock', 'fan', 'switchControl'
                     break;
             }
         });
+        console.log("--- ", "histories polled");
         self.switchHistory = [];
     };
 
@@ -174,7 +200,7 @@ DeviceHistory.prototype.init = function (config) {
             change = self.setChangeObject(lvl);
             
             // get history and metrics history
-            history = self.setupMetricsHistory(dev, exclDev);
+            history = self.setupMetricsHistory(dev, self.exclDev);
 
             _.find(history, function (data, idx) {
                 if(data.h ===h){
@@ -212,16 +238,24 @@ DeviceHistory.prototype.init = function (config) {
         var self = this,
             h = dev.get('h'),
             devLvl = dev.get("metrics:level"),
+            dT = dev.get('deviceType'),
             arr, cntCh, cntOn, setlvl;
 
             try {
                 arr = historyArr.filter(function(o){
                                         return o.h === h;
                                 })[0]['meta'];
-                cntCh = arr.length;            
-                cntOn = arr.filter(function(e) {
+                cntCh = arr.length;
+
+                if(dT === 'doorlock') {
+                    cntOn = arr.filter(function(e) {
+                                        return e.l === "open";
+                                }).length;
+                } else {
+                    cntOn = arr.filter(function(e) {
                                         return e.l === "on";
                                 }).length;
+                }
                 
                 switch(cntOn){
                     case 0:
@@ -235,7 +269,7 @@ DeviceHistory.prototype.init = function (config) {
                         break;
                 }
             } catch (e){
-                if (devLvl === "on") {
+                if (devLvl === "on" || devLvl === "open") {
                     setlvl = 1;
                 }else {
                     setlvl = 0;
