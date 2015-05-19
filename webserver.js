@@ -146,11 +146,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     id: profile.id,
                     sid: profile.sid,
                     role: profile.role,
-                    expert_view: profile.expert_view,
+                    name: profile.name,
+                    last_login: profile.last_login,
                     lang: profile.lang,
                     color: profile.color,
+                    default_ui: profile.default_ui,
+                    dashboard: profile.dashboard,
                     interval: profile.interval,
-                    dashboard: profile.dashboard
+                    rooms: profile.rooms,
+                    expert_view: profile.expert_view,
+                    hide_all_device_events: profile.hide_all_device_events,
+                    hide_system_events: profile.hide_system_events,
+                    hide_single_device_events: profile.hide_single_device_events
                 };
 
                 that.controller.profileSID = profile.sid;
@@ -1239,7 +1246,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.code = 200;
                     reply.data = dev;
                 } else {
-                    reply.code = 404;
+                    reply.code = 204;
                     reply.error = "History of device " + vDevId + " doesn't exist";
                 }
             that.initResponse(reply);

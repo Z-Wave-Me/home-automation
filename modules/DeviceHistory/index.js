@@ -67,7 +67,7 @@ DeviceHistory.prototype.init = function (config) {
 
         // collect ids from devices that are batteries or permanently hidden
         self.controller.devices.filter(function (dev){
-            if((dev.get('deviceType') === 'battery' || dev.get('deviceType') === 'text' || dev.get('deviceType') === 'camera' || dev.get('permanently_hidden') === true) && self.exclDev.indexOf(dev.h) === -1){
+            if((dev.get('deviceType') === 'battery' || dev.get('deviceType') === 'text' || dev.get('deviceType') === 'camera' || dev.get('deviceType') === 'switchRGBW' || dev.get('permanently_hidden') === true) && self.exclDev.indexOf(dev.h) === -1){
                self.exclDev.push(dev.h);
             }
         });
@@ -136,6 +136,7 @@ DeviceHistory.prototype.init = function (config) {
                 case 'switchBinary':
                 case 'sensorBinary':
                 case 'toggleButton':
+                case 'doorlock':
                     self.controller.devices.off(id,'change:metrics:level', self.collectBinaryData);
                     self.controller.devices.on(id,'change:metrics:level', self.collectBinaryData);
                     
@@ -237,16 +238,24 @@ DeviceHistory.prototype.init = function (config) {
         var self = this,
             h = dev.get('h'),
             devLvl = dev.get("metrics:level"),
+            dT = dev.get('deviceType'),
             arr, cntCh, cntOn, setlvl;
 
             try {
                 arr = historyArr.filter(function(o){
                                         return o.h === h;
                                 })[0]['meta'];
-                cntCh = arr.length;            
-                cntOn = arr.filter(function(e) {
+                cntCh = arr.length;
+
+                if(dT === 'doorlock') {
+                    cntOn = arr.filter(function(e) {
+                                        return e.l === "open";
+                                }).length;
+                } else {
+                    cntOn = arr.filter(function(e) {
                                         return e.l === "on";
                                 }).length;
+                }
                 
                 switch(cntOn){
                     case 0:
@@ -260,7 +269,7 @@ DeviceHistory.prototype.init = function (config) {
                         break;
                 }
             } catch (e){
-                if (devLvl === "on") {
+                if (devLvl === "on" || devLvl === "open") {
                     setlvl = 1;
                 }else {
                     setlvl = 0;
