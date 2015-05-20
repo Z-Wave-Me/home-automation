@@ -5,7 +5,7 @@ Version: 1.0.0
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
-    Implements virtual device based on JavaScript code
+    Implements Global Cache support
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
