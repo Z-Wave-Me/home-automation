@@ -47,13 +47,20 @@ SwitchPolling.prototype.init = function (config) {
     });
 
     this.onPoll = function () {
-        self.config.devices.forEach(function(vDevId) {
-            var vDev = this.controller.devices.get(vDevId);
-            
-            if (vDev)
-                vDev.performCommand("update");
+        var exclDev = [],
+            filteredDev = [];
+
+        _.unique(self.config.devices).forEach(function(devId) {
+            exclDev.push(self.controller.hashCode(devId));
+        });
+
+        self.controller.devices.filter(function(dev){
+            return (dev.get('deviceType') === 'switchBinary' || dev.get('deviceType') === 'switchMultilevel') && exclDev.indexOf(dev.get('h')) === -1;
+        }).forEach(function(dev) {
+            dev.performCommand("update");
         });
     };
+
     this.controller.on('SwitchPolling.poll', this.onPoll);
 };
 

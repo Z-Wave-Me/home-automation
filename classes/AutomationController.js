@@ -471,7 +471,7 @@ AutomationController.prototype.setupDefaultInstances = function () {
             "module": "Inband Notifier",
             "title": "Inband Notifier",
             "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
-          },
+          }/*,
           {
             "id": 4,
             "moduleId": "InfoWidget",
@@ -484,7 +484,7 @@ AutomationController.prototype.setupDefaultInstances = function () {
             "module": "Information Widget",
             "title": "Information Widget",
             "description": "This Module creates an information widget.\n(Added by default)"
-          }];
+          }*/];
     }
     return this.instances;
 }
