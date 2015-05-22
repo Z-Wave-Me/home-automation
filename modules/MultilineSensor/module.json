@@ -1,0 +1,75 @@
+{
+	"singleton" : false,
+	"dependencies": [],
+	"category" : "devices",
+	"author" : "Z-Wave.Me",
+	"homepage" : "http://razberry.z-wave.me",
+	"icon" : "icon.png",
+	"moduleName":"MultilineSensor",
+	"version" : "1.0.0",
+	"maturity" : "alpha",
+	"repository" : {
+		"type" : "git",
+		"source" : "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults" : {
+		"title" : "__m_title__",
+		"description" : "__m_descr__",
+		"devices": []
+	},
+	"schema": {
+		"properties": {
+			"devices": {
+				"type": "array",
+				"items": {
+					"maxItems":10,
+					"required": true,
+					"$ref": "#/definitions/device"					
+				}
+			}
+		},
+		"definitions":{
+			"device": {
+				"type":"object",
+				"properties":{
+					"selectedDevice":{
+						"field":"enum",
+						"datasource": "namespaces",
+						"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId"
+					},
+					"visible" : {
+						"type" : "boolean",
+						"dependencies": "selectedDevice",
+						"required" : false
+					}
+				}
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"devices": {
+				"label": "__l_devices__",
+				"helper": "__h_devices__"
+			}
+		},
+		"definitions":{
+			"fields":{
+				"device":{
+					"fields": {
+						"selectedDevice" : {
+							"type": "select",
+							"datasource": "namespaces",
+							"field": "optionLabels",
+							"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"						
+						},
+						"visible": {
+							"type": "checkbox",
+							"rightLabel":"__rl_visible__"
+						}
+					}				
+				}
+			}
+		}
+	}
+}

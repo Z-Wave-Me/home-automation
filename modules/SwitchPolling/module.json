@@ -1,6 +1,6 @@
 {
     "dependencies": ["Cron"],
-    "singleton": false,
+    "singleton": true,
     "category": "scheduling",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",

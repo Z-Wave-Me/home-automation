@@ -20,7 +20,8 @@ VirtualDevice = function (options) {
             'permanently_hidden',
             'creatorId',
             'h',
-            'hasHistory'
+            'hasHistory',
+            'visibility'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -30,6 +31,7 @@ VirtualDevice = function (options) {
         updateTime: 0,
         h: options.controller.hashCode(options.deviceId),
         hasHistory: false,
+        visibility: true,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -37,7 +39,8 @@ VirtualDevice = function (options) {
             permanently_hidden: false,
             location: null,
             h: options.controller.hashCode(options.deviceId),
-            hasHistory: false
+            hasHistory: false,
+            visibility: true
         },
         changed: {},
         overlay: options.overlay || {},
