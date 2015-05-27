@@ -919,13 +919,58 @@ AutomationController.prototype.listHistories = function () {
     return self.history;
 };
 
-AutomationController.prototype.getDevHistorySince = function (dev, since) {
-    var self = this;
-    since = parseInt(since) || 0;
-    
-    var filteredEntries = dev[0]['mH'].filter(function (x) {
-        return x.id >= since;
-    });
+AutomationController.prototype.getDevHistorySince = function (dev, since, show) {
+    var filteredEntries = [],
+        averageEntries = [],
+        now = Math.floor(new Date().getTime() / 1000),
+        l = 0,
+        cnt = 0,
+        metric = {},
+        since = since? since : 0,
+        items = show? show : 0,
+        sec = 0;
+
+    if(items > 0 && items < 288){
+        sec = 86400 / show;
+        
+        for (i = 1; i <= items; i++){
+            from = now - sec*i;
+            to = now - sec*(i-1);
+            
+            dev[0]['mH'].forEach(function (metric){
+                if(metric.id >= from && metric.id <= to){
+                    l = l + metric.l;
+                    cnt++;
+                }
+            });
+
+            l = l /cnt;
+
+            if(l === +l && l !== (l|0)) {
+                l = l.toFixed(1);
+            }
+
+            metric = {
+                id: to,
+                t: new Date(to*1000).toISOString(),
+                l: l
+            }
+
+            averageEntries.push(metric);
+            
+            l = 0,
+            metric = {},
+            cnt = 0;
+        }
+
+        filteredEntries = averageEntries.filter(function(metric){
+            return metric.id >= since;
+        });
+    } else {
+        filteredEntries = dev[0]['mH'].filter(function (metric) {
+            return metric.id >= since;
+        });
+    }
 
     return filteredEntries;
 };

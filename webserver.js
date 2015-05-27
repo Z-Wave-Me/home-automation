@@ -1340,36 +1340,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null
             },
             since,
-            sinceDevHist;
+            show,
+            sinceDevHist,
+            view = [288,96,48,24,12,6];
 
         return function () {
             if(that.controller.profileSID !== ''){
+                show = that.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(that.req.query.show, 10)) > -1 ? parseInt(that.req.query.show, 10) : 0) : 0;
                 since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
                 history = that.controller.listHistories();
                 hash = that.controller.hashCode(vDevId);
                 
-                dev = history.filter(function(x){
-                        return x.h === hash;
-                    });
-                
-                sinceDevHist = that.controller.getDevHistorySince(dev, since);            
-                
-                if (dev && sinceDevHist){                
-                    reply.code = 200;
-                    reply.data = {
-                            id: vDevId,
-                            since: since,
-                            deviceHistory: sinceDevHist
-                        };
-                } else {
-                    if (dev) {
-                        reply.code = 200;
-                        reply.data = dev;
+                if(history){
+                    dev = history.filter(function(x){
+                            return x.h === hash;
+                        });
+                    
+                    if(dev){
+                        sinceDevHist = that.controller.getDevHistorySince(dev, since, show);            
+                        
+                        if (dev && sinceDevHist){         
+                            reply.code = 200;
+                            reply.data = {
+                                    id: vDevId,
+                                    since: since,
+                                    deviceHistory: sinceDevHist
+                                };
+                        } else {
+                            reply.code = 200;
+                            reply.data = dev;
+                        }
                     } else {
                         reply.code = 404;
                         reply.error = "History of device " + vDevId + " doesn't exist";
                     }
-                } 
+                } else {
+                    reply.code = 404;
+                    reply.error = "No device histories found.";
+                }
             } else {
                 reply.code = 401;
                 reply.error = 'Not logged in';
