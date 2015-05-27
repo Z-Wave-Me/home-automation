@@ -700,12 +700,14 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
             newNotificationList = that.notifications.filter(function (notification) {
                 return notification.id !== id && notification.h !== uid;
             });
+            console.log('---------- notification with id ' + id + ' deleted ----------');
         }
 
         if(id !== 0 && before === true){
             newNotificationList = that.notifications.filter(function (notification) {
                 return notification.id >= id;
             });
+            console.log('---------- all notifications before ' + id + ' deleted ----------');
         }
 
         that.notifications = newNotificationList;    
@@ -723,7 +725,6 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     }
 
     that.saveNotifications();
-    console.log('---------- all notifications before ' + id + ' deleted ----------')
 };
 
 AutomationController.prototype.addLocation = function (locProps, callback) {
