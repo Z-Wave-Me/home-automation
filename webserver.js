@@ -1353,8 +1353,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 
                 if(history){
                     dev = history.filter(function(x){
-                            return x.h === hash;
-                        });
+                        return x.h === hash;
+                    });
                     
                     if(dev){
                         sinceDevHist = that.controller.getDevHistorySince(dev, since, show);            
