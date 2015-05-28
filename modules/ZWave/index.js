@@ -1875,6 +1875,146 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					}
 				}, "child");
 			}
+		} else if (this.CC["Alarm"] === commandClassId) {
+			if (cc.data.version < 3) return; // We skip old Alarm CC implementations handling only v3 (Notification)
+			
+			a_defaults = {
+				deviceType: 'sensorBinary',
+				metrics: {
+					icon: 'alarm',
+					level: 'off',
+					title: ''
+				}
+			};
+			/*d_defaults = {
+				deviceType: 'toggleButton',
+				metrics: {
+					icon: 'alarm',
+					level: 'off',
+					title: ''
+				}
+			};*/
+			Object.keys(cc.data).forEach(function (notificationTypeId) {
+				notificationTypeId = parseInt(notificationTypeId, 10);
+
+				if (!isNaN(notificationTypeId)) {
+					// we handle only few Notification Types
+					switch (notificationTypeId) {
+						case 0x01: // Smoke
+							a_defaults.metrics.icon = 'smoke';
+							break;
+						case 0x02: // CO
+							a_defaults.metrics.icon = 'co';
+							break;
+						case 0x03: // CO2
+							a_defaults.metrics.icon = 'co';
+							break;
+						case 0x04: // Heat
+							a_defaults.metrics.icon = 'alarm';
+							break;
+						case 0x05: // Water
+							a_defaults.metrics.icon = 'flood';
+							break;
+						case 0x07: // Home Security (Burglar)
+							a_defaults.metrics.icon = 'smoke';
+							break;
+						case 0x08: // Power
+							a_defaults.metrics.icon = 'alarm';
+							break;
+						case 0x09: // System
+							a_defaults.metrics.icon = 'alarm';
+							break;
+						case 0x0a: // Emergency
+							a_defaults.metrics.icon = 'alarm';
+							break;
+						case 0x0b: // Clock
+							a_defaults.metrics.icon = 'alarm';
+							break;
+						default:
+							return; // skip this type
+					}
+					//d_defaults.metrics.icon = a_defaults.metrics.icon;
+					
+					maskToTypes = function(bitmask) {
+						var types = [], n = 0;
+						
+						while (bitmask) {
+							if (bitmask & 0x01) {
+								types.push(n);
+							}
+							n++;
+							bitmask >>= 1;
+						}
+						
+						return types;
+					};
+					
+					maskToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
+						eventTypeId = parseInt(eventTypeId, 10);
+
+						var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
+						    //d_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "D";
+
+						if (!isNaN(eventTypeId)  && !self.controller.devices.get(a_id)) { // && !self.controller.devices.get(d_id)
+							a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+							//d_defaults.metrics.title = compileTitle('Disarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+
+							var a_vDev = self.controller.devices.create({
+								deviceId: a_id,
+								defaults: a_defaults,
+								overlay: {},
+								handler: function(command) {
+									if (command === "update") {
+										cc.Get(0, notificationTypeId, eventTypeId);
+									}
+								},
+								moduleId: self.id
+							});
+
+							/*
+							var d_vDev = self.controller.devices.create({
+								deviceId: d_id,
+								defaults: d_defaults,
+								overlay: {},
+								handler: function(command) {
+									if (command === "on") {
+										var vDev = this.controller.devices.get(a_id);
+										if (vDev) {
+											try {
+												vDev.set("metrics:level", "off");
+											} catch (e) {}
+										}
+										this.set("metrics:level", "on"); // update on ourself to allow catch this event
+									}
+								},
+								moduleId: self.id
+							});
+							*/
+							if (a_vDev) {
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+										self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
+										//self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "D");
+									} else {
+										if (this.event.value === eventTypeId || this.event.value === 0) {
+											try {
+												a_vDev.set("metrics:level", this.status.value ? "on" : "off");
+											} catch (e) {}
+										}
+									}
+								}, "value");
+							}
+						}
+					});
+				}
+			});
+			if (!scaleAdded) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
+					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+					}
+				}, "child");
+			}
 		}
 	} catch (e) {
 		var moduleName = "ZWave",

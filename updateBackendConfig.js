@@ -2,6 +2,7 @@
 
 (function () {
   var config = loadObject("config.json");
+      oldConfigJSON = JSON.stringify(config);
 
   if (config) {
     // Change profiles data
@@ -180,10 +181,12 @@
       }
     }
     
-    try {
-      saveObject("config.json", config);
-    } catch (e) {
-      console.log("Error: can not write back config.json to storage: ", e);
+    if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?
+      try {
+        saveObject("config.json", config);
+      } catch (e) {
+        console.log("Error: can not write back config.json to storage: ", e);
+      }
     }
   }
 })();
