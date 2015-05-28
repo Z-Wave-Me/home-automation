@@ -1,0 +1,7 @@
+{
+	"m_title":"Sensoren in einem virtuellen Gerät kombinieren",
+	"m_descr":"Diese App ermöglicht es bis zu 10 Sensoren in einem virtuellen Gerät zu kombinieren.",
+	"l_devices":"Erzeuge ein neues virtuelles Gerät aus den folgenden Sensoren:",
+	"h_devices":"Es lassen sich maximal bis zu 10 Sensoren kombinieren.",
+	"rl_visible":"Gerät in 'Elementeübersicht' ausblenden"
+}

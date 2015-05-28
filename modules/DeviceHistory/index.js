@@ -212,7 +212,7 @@ DeviceHistory.prototype.init = function (config) {
             histMetr = history[index]['mH'];
 
             // push only changes during the last 24 hrs
-            if(histMetr.length < 244){
+            if(histMetr.length < 288){
                 histMetr.push(change);
             } else {
                 histMetr.shift();

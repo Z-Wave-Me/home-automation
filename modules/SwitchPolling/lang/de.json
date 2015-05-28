@@ -1,7 +1,7 @@
 {	
 	"m_title":"Periodische Schalterabfrage",
 	"m_descr":"Fragt regelmäßig den Status von den ausgewählten Schalters ab.",
-	"l_devices":"Schalter, die abgefragt werden sollen:",
+	"l_devices":"Von der Abfrage ausgeschlossene Schalter:",
 	"l_period":"Abfrageintervall:",
 	"one_m":"1 Minute", 
 	"two_m":"2 Minuten", 

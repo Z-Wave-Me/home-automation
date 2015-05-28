@@ -471,7 +471,7 @@ AutomationController.prototype.setupDefaultInstances = function () {
             "module": "Inband Notifier",
             "title": "Inband Notifier",
             "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
-          },
+          }/*,
           {
             "id": 4,
             "moduleId": "InfoWidget",
@@ -484,7 +484,7 @@ AutomationController.prototype.setupDefaultInstances = function () {
             "module": "Information Widget",
             "title": "Information Widget",
             "description": "This Module creates an information widget.\n(Added by default)"
-          }];
+          }*/];
     }
     return this.instances;
 }
@@ -700,12 +700,14 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
             newNotificationList = that.notifications.filter(function (notification) {
                 return notification.id !== id && notification.h !== uid;
             });
+            console.log('---------- notification with id ' + id + ' deleted ----------');
         }
 
         if(id !== 0 && before === true){
             newNotificationList = that.notifications.filter(function (notification) {
                 return notification.id >= id;
             });
+            console.log('---------- all notifications before ' + id + ' deleted ----------');
         }
 
         that.notifications = newNotificationList;    
@@ -723,7 +725,6 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     }
 
     that.saveNotifications();
-    console.log('---------- all notifications before ' + id + ' deleted ----------')
 };
 
 AutomationController.prototype.addLocation = function (locProps, callback) {
@@ -918,13 +919,58 @@ AutomationController.prototype.listHistories = function () {
     return self.history;
 };
 
-AutomationController.prototype.getDevHistorySince = function (dev, since) {
-    var self = this;
-    since = parseInt(since) || 0;
-    
-    var filteredEntries = dev[0]['mH'].filter(function (x) {
-        return x.id >= since;
-    });
+AutomationController.prototype.getDevHistorySince = function (dev, since, show) {
+    var filteredEntries = [],
+        averageEntries = [],
+        now = Math.floor(new Date().getTime() / 1000),
+        l = 0,
+        cnt = 0,
+        metric = {},
+        since = since? since : 0,
+        items = show? show : 0,
+        sec = 0;
+
+    if(items > 0 && items < 288){
+        sec = 86400 / show;
+        
+        for (i = 1; i <= items; i++){
+            from = now - sec*i;
+            to = now - sec*(i-1);
+            
+            dev[0]['mH'].forEach(function (metric){
+                if(metric.id >= from && metric.id <= to){
+                    l = l + metric.l;
+                    cnt++;
+                }
+            });
+
+            l = l /cnt;
+
+            if(l === +l && l !== (l|0)) {
+                l = l.toFixed(1);
+            }
+
+            metric = {
+                id: to,
+                t: new Date(to*1000).toISOString(),
+                l: l
+            }
+
+            averageEntries.push(metric);
+            
+            l = 0,
+            metric = {},
+            cnt = 0;
+        }
+
+        filteredEntries = averageEntries.filter(function(metric){
+            return metric.id >= since;
+        });
+    } else {
+        filteredEntries = dev[0]['mH'].filter(function (metric) {
+            return metric.id >= since;
+        });
+    }
 
     return filteredEntries;
 };
