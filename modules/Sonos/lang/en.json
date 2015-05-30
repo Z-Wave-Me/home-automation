@@ -1,5 +1,5 @@
 {
 	"m_title":"Sonos",
 	"m_descr":"Create toggle device for Sonos Play, Pause, Forward, Backward and Volume controls.",
-	"l_host":"Sonos IP or hostname"
+	"l_household":"Sonos household (filled automatically on Mute + Volume Up key press)"
 }

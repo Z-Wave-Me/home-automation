@@ -15,22 +15,28 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-		"host": ""
+		"households": []
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
-			"host": {
-				"type": "string",
+			"households": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
 				"required": true
 			}
 		}
 	},
 	"options": {
 		"fields": {
-			"host": {
-				"label": "__l_host__",
-				"placeholder": "192.168.0.100 or hostname"
+			"households": {
+				"fields": {
+					"item": {
+                                                "label": "__l_household__"
+					}
+				}
 			}
 		}
 	}
