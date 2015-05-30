@@ -1,6 +1,6 @@
 {
     "dependencies": ["Cron"],
-    "singleton": false,
+    "singleton": true,
     "category": "scheduling",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
@@ -27,8 +27,7 @@
                             "field": "enum",
                             "datasource": "namespaces",
                             "enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
-                            "required": true,
-                            "minItems": 1
+                            "required": false
                     }
             },
             "period": {

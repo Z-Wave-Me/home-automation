@@ -1,0 +1,7 @@
+{
+	"m_title":"Combine a count of sensors into one virtual device",
+	"m_descr":"With this app you can combine up to 10 semsors into one virtual device.",
+	"l_devices":"Create a new virtual device with the sensors choosen below:",
+	"h_devices":"You can only combine up to 10 sensors with each other.",
+	"rl_visible":"Do not show device in elements view"
+}

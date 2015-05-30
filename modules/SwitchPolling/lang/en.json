@@ -1,7 +1,7 @@
 {
 	"m_title":"Periodical Switch Polling",
 	"m_descr":"Regular switch polling",
-	"l_devices":"Switch to poll:",
+	"l_devices":"Switches excluded from polling:",
 	"l_period":"Poll period",
 	"one_m":"1 minute", 
 	"two_m":"2 minute", 

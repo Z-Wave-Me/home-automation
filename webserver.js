@@ -189,33 +189,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
         
-        if(role !== 1 && profile){
-            if(profile.rooms && !!profile.rooms){
-                devices = that.controller.devices.toJSON().filter(function(dev){
-                    return profile.rooms.indexOf(parseInt(dev.location)) !== -1;
-                });
-            }            
-        }else{
-            devices = that.controller.devices.toJSON();
-        }
-
-        if(devices){
-            if (reply.data.structureChanged) {
-                reply.data.devices = devices;
-            } else {
-                reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
+        if(that.controller.profileSID !== ''){
+            if(role !== 1 && profile){
+                if(profile.rooms && !!profile.rooms){
+                    devices = that.controller.devices.toJSON().filter(function(dev){
+                        return profile.rooms.indexOf(parseInt(dev.location)) !== -1;
+                    });
+                }            
+            }else{
+                devices = that.controller.devices.toJSON();
             }
 
-            if (Boolean(that.req.query.pagination)) {
-                if(role !== 1){
-                    reply.data.total_count = devices.length;
-                }else{
-                    reply.data.total_count = that.controller.devices.models.length;
-                }                
+            if(devices){
+                if (reply.data.structureChanged) {
+                    reply.data.devices = devices;
+                } else {
+                    reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
+                }
+
+                if (Boolean(that.req.query.pagination)) {
+                    if(role !== 1){
+                        reply.data.total_count = devices.length;
+                    }else{
+                        reply.data.total_count = that.controller.devices.models.length;
+                    }                
+                }
+            } else {
+                reply.code = 404;
+                reply.error = 'No devices found.';
             }
         } else {
-            reply.code = 404;
-            reply.error = 'No devices found.';
+            reply.code = 401;
+            reply.error = 'Not logged in';
         }
         
         that.initResponse(reply);
@@ -305,34 +310,39 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 
         return function () {
-            that.res.status = 200;
-            since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
-            to = that.req.query.hasOwnProperty("to") ? parseInt(that.req.query.to, 10) : 0;
-            redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
+            if(that.controller.profileSID !== ''){
+                that.res.status = 200;
+                since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
+                to = that.req.query.hasOwnProperty("to") ? parseInt(that.req.query.to, 10) : 0;
+                redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
 
-            profile = that.getProfileBySID();
-            
-            if(profile !== null) {
-                notifications = that.controller.listNotifications(since, to, profile, redeemed);
+                profile = that.getProfileBySID();
+                
+                if(profile !== null) {
+                    notifications = that.controller.listNotifications(since, to, profile, redeemed);
 
-                reply.data = {
-                    updateTime: Math.floor(new Date().getTime() / 1000),
-                    notifications: notifications
-                };
+                    reply.data = {
+                        updateTime: Math.floor(new Date().getTime() / 1000),
+                        notifications: notifications
+                    };
 
-                if (Boolean(that.req.query.pagination)) {
-                    reply.data.total_count = that.controller.getCountNotifications();
+                    if (Boolean(that.req.query.pagination)) {
+                        reply.data.total_count = that.controller.getCountNotifications();
+                    }
+
+                    reply.code = 200;
+                    reply.error = null;
+                } else {
+                    reply.data = {
+                        updateTime: Math.floor(new Date().getTime() / 1000),
+                        notifications: []
+                    };
+                    reply.code = 404;
+                    reply.error = "Profile doesn't exist.";
                 }
-
-                reply.code = 200;
-                reply.error = null;
             } else {
-                reply.data = {
-                    updateTime: Math.floor(new Date().getTime() / 1000),
-                    notifications: []
-                };
-                reply.code = 404;
-                reply.error = "Profile doesn't exist.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             that.initResponse(reply);
@@ -406,6 +416,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     deleteNotifications: function (notificationId) {
 
         return function () {
+            
             var that = this,
                 id = notificationId ? parseInt(notificationId) : 0,
                 reply = {
@@ -416,36 +427,41 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 before,
                 role = that.getUserRole();
 
-            if(role === 1){
-                
-                before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
-                uid = that.req.query.hasOwnProperty("uid") ? parseInt(that.req.query.uid) : 0;
-                
-                if (id > 0 && before === false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
-                    reply.code = 404;
-                    reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
-                } else if (id > 0 && before !== false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id);})) {
-                    reply.code = 404;
-                    reply.error = "Notification " + id + " not found";
-                } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
-                    reply.code = 404;
-                    reply.error = "No notifications found older than unix timestamp: " + id;
+            if(that.controller.profileSID !== ''){
+                if(role === 1){
+                    
+                    before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
+                    uid = that.req.query.hasOwnProperty("uid") ? parseInt(that.req.query.uid) : 0;
+                    
+                    if (id > 0 && before === false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
+                        reply.code = 404;
+                        reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
+                    } else if (id > 0 && before !== false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id);})) {
+                        reply.code = 404;
+                        reply.error = "Notification " + id + " not found";
+                    } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
+                        reply.code = 404;
+                        reply.error = "No notifications found older than unix timestamp: " + id;
+                    } else {
+                        that.controller.deleteNotifications(id, before, uid, function (notice) {
+                            if (notice) {
+                                reply.code = 204;
+                                reply.data = null;
+                            } else {
+                                reply.code = 404;
+                                reply.data = null;
+                                reply.error = "Notifications not found.";
+                            }
+                        }, true);
+                    }
                 } else {
-                    that.controller.deleteNotifications(id, before, uid, function (notice) {
-                        if (notice) {
-                            reply.code = 204;
-                            reply.data = null;
-                        } else {
-                            reply.code = 404;
-                            reply.data = null;
-                            reply.error = "Notifications not found.";
-                        }
-                    }, true);
+                    reply.code = 403;
+                    reply.data = null;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.data = null;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -462,44 +478,49 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             role;
 
         return function () {
-            profile = that.getProfileBySID();
-            role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                profile = that.getProfileBySID();
+                role = that.getUserRole();
 
-            if (locationId === undefined){
-                if(role === 1){
-                    reply.code = 200;
-                    reply.error = null;
-                    reply.data = that.controller.locations;
-                } else if (role === 2){
-                    reply.code = 200;
-                    reply.error = null;
-                    reply.data = that.controller.locations.filter(function (location) {
-                        return profile.rooms.indexOf(location.id) !== -1;
-                    });
+                if (locationId === undefined){
+                    if(role === 1){
+                        reply.code = 200;
+                        reply.error = null;
+                        reply.data = that.controller.locations;
+                    } else if (role === 2){
+                        reply.code = 200;
+                        reply.error = null;
+                        reply.data = that.controller.locations.filter(function (location) {
+                            return profile.rooms.indexOf(location.id) !== -1;
+                        });
+                    } else {
+                        reply.code = 404;
+                        reply.error = "Could not load locations.";
+                    }
                 } else {
-                    reply.code = 404;
-                    reply.error = "Could not load locations.";
+                    var locations;
+
+                    if(role === 1){
+                        locations = that.controller.locations.filter(function (location) {
+                            return location.id === locationId;
+                        });
+                    } else {
+                        locations = that.controller.locations.filter(function (location) {
+                            return location.id === locationId && profile.rooms.indexOf(locationId) !== -1;
+                        });
+                    }
+
+                    if (locations.length > 0) {
+                        reply.data = locations[0];
+                        reply.code = 200;
+                    } else {
+                        reply.code = 404;
+                        reply.error = "Location " + locationId + " doesn't exist";
+                    }
                 }
             } else {
-                var locations;
-
-                if(role === 1){
-                    locations = that.controller.locations.filter(function (location) {
-                        return location.id === locationId;
-                    });
-                } else {
-                    locations = that.controller.locations.filter(function (location) {
-                        return location.id === locationId && profile.rooms.indexOf(locationId) !== -1;
-                    });
-                }
-
-                if (locations.length > 0) {
-                    reply.data = locations[0];
-                    reply.code = 200;
-                } else {
-                    reply.code = 404;
-                    reply.error = "Location " + locationId + " doesn't exist";
-                }
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             that.initResponse(reply);
@@ -517,45 +538,50 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             role;
 
         return function () {
-            role = that.getUserRole();
-            
-            if(role === 1){
-                if (that.req.method === 'GET') {
-                    
-                    reqObj = that.req.query;
+            if(that.controller.profileSID !== ''){
+                role = that.getUserRole();
                 
-                } else if (that.req.method === 'POST') { // POST
-                    try {
-                        reqObj = JSON.parse(that.req.body);
-                    } catch (ex) {
-                        reply.code = 500;
-                        reply.error = "Cannot parse POST request. ERROR:" + ex.message;
-                    }
-                }
-
-                for (var property in reqObj) {
-                    if ( property !== 'id') {
-                        locProps[property] = reqObj[property] ? reqObj[property] : null;
-                    }
-                }
-
-                if (!!locProps.title) {
-                    that.controller.addLocation(locProps, function (data) {
-                        if (data) {
-                            reply.code = 201;
-                            reply.data = data;
-                        } else {
+                if(role === 1){
+                    if (that.req.method === 'GET') {
+                        
+                        reqObj = that.req.query;
+                    
+                    } else if (that.req.method === 'POST') { // POST
+                        try {
+                            reqObj = JSON.parse(that.req.body);
+                        } catch (ex) {
                             reply.code = 500;
-                            reply.error = "Location doesn't created: Parsing the arguments has failed.";
+                            reply.error = "Cannot parse POST request. ERROR:" + ex.message;
                         }
-                    });
+                    }
+
+                    for (var property in reqObj) {
+                        if ( property !== 'id') {
+                            locProps[property] = reqObj[property] ? reqObj[property] : null;
+                        }
+                    }
+
+                    if (!!locProps.title) {
+                        that.controller.addLocation(locProps, function (data) {
+                            if (data) {
+                                reply.code = 201;
+                                reply.data = data;
+                            } else {
+                                reply.code = 500;
+                                reply.error = "Location doesn't created: Parsing the arguments has failed.";
+                            }
+                        });
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Argument 'title' is required.";
+                    }
                 } else {
-                    reply.code = 500;
-                    reply.error = "Argument 'title' is required.";
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
             
             that.initResponse(reply);
@@ -565,46 +591,51 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var that = this;
 
         return function () {
-            var id,
-                reply = {
-                    error: null,
-                    data: null
-                },
-                reqObj,
-                role = that.getUserRole();            
+            if(that.controller.profileSID !== ''){
+                var id,
+                    reply = {
+                        error: null,
+                        data: null
+                    },
+                    reqObj,
+                    role = that.getUserRole();            
 
-            if(role === 1){
-                
-                if (that.req.method === 'GET') {
-                    id = parseInt(that.req.query.id);
-                } else if (that.req.method === 'DELETE' && locationId === undefined) {
-                    try {
-                        reqObj = JSON.parse(that.req.body);
-                    } catch (ex) {
-                        reply.error = ex.message;
-                    }
-                    id = reqObj.id;
-                } else if (that.req.method === 'DELETE' && locationId !== undefined) {
-                    id = locationId;
-                }
-
-                if (!!id) {
-                    that.controller.removeLocation(id, function (result) {
-                        if (result) {
-                            reply.code = 204;
-                            reply.data = null;
-                        } else {
-                            reply.code = 404;
-                            reply.error = "Location " + id + " doesn't exist";
+                if(role === 1){
+                    
+                    if (that.req.method === 'GET') {
+                        id = parseInt(that.req.query.id);
+                    } else if (that.req.method === 'DELETE' && locationId === undefined) {
+                        try {
+                            reqObj = JSON.parse(that.req.body);
+                        } catch (ex) {
+                            reply.error = ex.message;
                         }
-                    });
+                        id = reqObj.id;
+                    } else if (that.req.method === 'DELETE' && locationId !== undefined) {
+                        id = locationId;
+                    }
+
+                    if (!!id) {
+                        that.controller.removeLocation(id, function (result) {
+                            if (result) {
+                                reply.code = 204;
+                                reply.data = null;
+                            } else {
+                                reply.code = 404;
+                                reply.error = "Location " + id + " doesn't exist";
+                            }
+                        });
+                    } else {
+                        reply.code = 400;
+                        reply.error = "Argument id is required";
+                    }
                 } else {
-                    reply.code = 400;
-                    reply.error = "Argument id is required";
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             that.initResponse(reply);
@@ -613,53 +644,58 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     updateLocation: function (locationId) {
         var that = this;
         return function () {
-            var id,
-                title,
-                user_img,
-                default_img,
-                img_type,
-                reply = {
-                    error: null,
-                    data: null,
-                    code: 200
-                },
-                reqObj,
-                role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var id,
+                    title,
+                    user_img,
+                    default_img,
+                    img_type,
+                    reply = {
+                        error: null,
+                        data: null,
+                        code: 200
+                    },
+                    reqObj,
+                    role = that.getUserRole();
 
-            if(role === 1){
+                if(role === 1){
 
-                if (this.req.method === 'GET') {
-                    id = parseInt(this.req.query.id);
-                    title = this.req.query.title;
-                } else if (this.req.method === 'PUT') {
-                    try {
-                        reqObj = JSON.parse(this.req.body);
-                    } catch (ex) {
-                        reply.error = ex.message;
-                    }
-                    id = locationId || reqObj.id;
-                    title = reqObj.title;
-                    user_img =reqObj.user_img || '';
-                    default_img = reqObj.default_img || '';
-                    img_type = reqObj.img_type || '';
-                }
-
-                if (!!title && title.length > 0) {
-                    that.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
-                        if (data) {
-                            reply.data = data;
-                        } else {
-                            reply.code = 404;
-                            reply.error = "Location " + id + " doesn't exist";
+                    if (this.req.method === 'GET') {
+                        id = parseInt(this.req.query.id);
+                        title = this.req.query.title;
+                    } else if (this.req.method === 'PUT') {
+                        try {
+                            reqObj = JSON.parse(this.req.body);
+                        } catch (ex) {
+                            reply.error = ex.message;
                         }
-                    });
+                        id = locationId || reqObj.id;
+                        title = reqObj.title;
+                        user_img =reqObj.user_img || '';
+                        default_img = reqObj.default_img || '';
+                        img_type = reqObj.img_type || '';
+                    }
+
+                    if (!!title && title.length > 0) {
+                        that.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
+                            if (data) {
+                                reply.data = data;
+                            } else {
+                                reply.code = 404;
+                                reply.error = "Location " + id + " doesn't exist";
+                            }
+                        });
+                    } else {
+                        reply.code = 400;
+                        reply.error = "Arguments id & title are required";
+                    }
                 } else {
-                    reply.code = 400;
-                    reply.error = "Arguments id & title are required";
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -676,21 +712,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             module = null,
             role = that.getUserRole();
 
-        if(role === 1){
+        if(that.controller.profileSID !== ''){
+            if(role === 1){
 
-            Object.keys(that.controller.modules).sort().forEach(function (className) {
-                module = that.controller.getModuleData(className);
-                module.className = className;
-                if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
-                    module.created = true;
-                } else {
-                    module.created = false;
-                }
-                reply.data.push(module);
-            });
+                Object.keys(that.controller.modules).sort().forEach(function (className) {
+                    module = that.controller.getModuleData(className);
+                    module.className = className;
+                    if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+                        module.created = true;
+                    } else {
+                        module.created = false;
+                    }
+                    reply.data.push(module);
+                });
+            } else {
+                reply.code = 403;
+                reply.error = "Permission denied.";
+            }
         } else {
-            reply.code = 404;
-            reply.error = "Permission denied.";
+            reply.code = 401;
+            reply.error = 'Not logged in';
         }
 
         this.initResponse(reply);
@@ -698,25 +739,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     getModuleFunc: function (moduleId) {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    role = that.getUserRole();
 
-            if(role === 1){
+                if(role === 1){
 
-                if (!that.controller.modules.hasOwnProperty(moduleId)) {
-                    reply.code = 404;
-                    reply.error = 'Instance ' + moduleId + ' not found';
+                    if (!that.controller.modules.hasOwnProperty(moduleId)) {
+                        reply.code = 404;
+                        reply.error = 'Instance ' + moduleId + ' not found';
+                    } else {
+                        reply.code = 200;
+                        reply.data = that.controller.getModuleData(moduleId);
+                    }
                 } else {
-                    reply.code = 200;
-                    reply.data = that.controller.getModuleData(moduleId);
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -735,7 +781,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if(role === 1){
             reply.data =that.controller.getListModulesCategories();
         } else {
-            reply.code = 404;
+            reply.code = 403;
             reply.error = "Permission denied.";
         }
 
@@ -744,26 +790,31 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     getModuleCategoryFunc: function (categoryId) {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    role = that.getUserRole();
 
-            if(role === 1){
-                category = that.controller.getListModulesCategories(categoryId);
+                if(role === 1){
+                    category = that.controller.getListModulesCategories(categoryId);
 
-                if (!Boolean(category)) {
-                    reply.code = 404;
-                    reply.error = "Categories " + categoryId + " not found";
+                    if (!Boolean(category)) {
+                        reply.code = 404;
+                        reply.error = "Categories " + categoryId + " not found";
+                    } else {
+                        reply.code = 200;
+                        reply.data = category;
+                    }
                 } else {
-                    reply.code = 200;
-                    reply.data = category;
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -777,40 +828,50 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 200
                 };
-
-        reply.data = that.controller.instances;
+        if(that.controller.profileSID !== ''){
+            reply.data = that.controller.instances;
+        } else {
+            reply.code = 401;
+            reply.error = 'Not logged in';
+        }
 
         this.initResponse(reply);
     },
     createInstance: function () {
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                reqObj = this.req.reqObj,
-                that = this,
-                instance,
-                role = that.getUserRole();
-
-            if(role === 1){
-                if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
-                    instance = that.controller.createInstance(reqObj);
-                    if (instance) {
-                        reply.code = 201;
-                        reply.data = instance;
+            
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    reqObj = this.req.reqObj,
+                    that = this,
+                    instance,
+                    role = that.getUserRole();
+            
+            if(that.controller.profileSID !== ''){
+                if(role === 1){
+                    if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
+                        instance = that.controller.createInstance(reqObj);
+                        if (instance) {
+                            reply.code = 201;
+                            reply.data = instance;
+                        } else {
+                            reply.code = 500;
+                            reply.error = "Cannot instantiate module " + reqObj.moduleId;
+                        }
                     } else {
-                        reply.code = 500;
-                        reply.error = "Cannot instantiate module " + reqObj.moduleId;
+                        reply.code = 404;
+                        reply.error = "Module " + reqObj.moduleId + " doesn't exist";
                     }
                 } else {
-                    reply.code = 500;
-                    reply.error = "Module " + reqObj.moduleId + " isn't exists";
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -819,26 +880,31 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     getInstanceFunc: function (instanceId) {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    role = that.getUserRole();
 
-            if(role === 1){
-                instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
+                if(role === 1){
+                    instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
 
-                if (!Boolean(instance)) {
-                    reply.code = 404;
-                    reply.error = "Instance " + instanceId + " is not found";
+                    if (!Boolean(instance)) {
+                        reply.code = 404;
+                        reply.error = "Instance " + instanceId + " is not found";
+                    } else {
+                        reply.code = 200;
+                        reply.data = instance;
+                    }
                 } else {
-                    reply.code = 200;
-                    reply.data = instance;
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -847,32 +913,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     reconfigureInstanceFunc: function (instanceId) {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null
-                },
-                reqObj = this.req.reqObj,
-                instance,
-                role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null
+                    },
+                    reqObj = this.req.reqObj,
+                    instance,
+                    role = that.getUserRole();
 
-            if(role === 1){
-                if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
-                    reply.code = 404;
-                    reply.error = "Instance " + instanceId + " doesn't exist";
-                } else {
-                    instance = that.controller.reconfigureInstance(instanceId, reqObj);
-                    if (instance) {
-                        reply.code = 200;
-                        reply.data = instance;
+                if(role === 1){
+                    if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
+                        reply.code = 404;
+                        reply.error = "Instance " + instanceId + " doesn't exist";
                     } else {
-                        reply.code = 500;
-                        reply.error = "Cannot reconfigure module " + instanceId + " config";
+                        instance = that.controller.reconfigureInstance(instanceId, reqObj);
+                        if (instance) {
+                            reply.code = 200;
+                            reply.data = instance;
+                        } else {
+                            reply.code = 500;
+                            reply.error = "Cannot reconfigure module " + instanceId + " config";
+                        }
                     }
+                } else {
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
+
 
             this.initResponse(reply);
         };
@@ -880,25 +952,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     deleteInstanceFunc: function (instanceId) {
         var that = this;
         return function () {
-            var reply = {
-                error: null,
-                data: null,
-                code: 200
-            },
-            role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                    error: null,
+                    data: null,
+                    code: 200
+                },
+                role = that.getUserRole();
 
-            if(role === 1){
-                if (!_.any(that.controller.instances, function (instance) { return instance.id === instanceId; })) {
-                    reply.code = 404;
-                    reply.error = "Instance " + instanceId + " not found";
+                if(role === 1){
+                    if (!_.any(that.controller.instances, function (instance) { return instance.id === instanceId; })) {
+                        reply.code = 404;
+                        reply.error = "Instance " + instanceId + " not found";
+                    } else {
+                        reply.code = 204;
+                        reply.data = null;
+                        that.controller.deleteInstance(instanceId);
+                    }
                 } else {
-                    reply.code = 204;
-                    reply.data = null;
-                    that.controller.deleteInstance(instanceId);
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -908,101 +985,112 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     listProfiles: function (profileId) {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                profiles,
-                profile,
-                userId = this.controller.profileSID,
-                role= that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    profiles,
+                    profile,
+                    userId = this.controller.profileSID,
+                    role= that.getUserRole();
 
-            if(userId !== ''){
-                
-                // list all profiles only if user has 'admin' permissions
-                if (!_.isNumber(profileId) && role === 1) {
-                    profiles = that.controller.getListProfiles();
-                    if (!Array.isArray(profiles)) {
-                        reply.error = "Unknown error. profiles isn't array";
-                    } else {
-                        reply.code = 200;
-                        reply.data = profiles;
-                    }
-                } else {
-                    // list target profile if user has 'admin' permissions
-                    // list only own profile if user has 'user' permissions otherwise response with error
-                    profile = that.controller.getProfile(profileId);
-
-                    if (role === 1 || (role === 2 && userId === profile.sid)){
-                        
-                        if (profile !== null) {
-                            reply.code = 200;
-                            reply.data = profile;
+                if(userId !== ''){
+                    
+                    // list all profiles only if user has 'admin' permissions
+                    if (!_.isNumber(profileId) && role === 1) {
+                        profiles = that.controller.getListProfiles();
+                        if (!Array.isArray(profiles)) {
+                            reply.code = 500;
+                            reply.error = "Unknown error. profiles isn't array";
                         } else {
-                            reply.code = 404;
-                            reply.error = "Profile '" + profileId + "' doesn't exist";
+                            reply.code = 200;
+                            reply.data = profiles;
                         }
                     } else {
-                        reply.code = 404;
-                        reply.error = "Permission denied. Cannot show foreign profile.";
+                        // list target profile if user has 'admin' permissions
+                        // list only own profile if user has 'user' permissions otherwise response with error
+                        profile = that.controller.getProfile(profileId);
+
+                        if (role === 1 || (role === 2 && userId === profile.sid)){
+                            
+                            if (profile !== null) {
+                                reply.code = 200;
+                                reply.data = profile;
+                            } else {
+                                reply.code = 404;
+                                reply.error = "Profile '" + profileId + "' doesn't exist";
+                            }
+                        } else {
+                            reply.code = 403;
+                            reply.error = "Permission denied. Cannot show foreign profile.";
+                        }
                     }
+                } else {
+                    reply.code = 404;
+                    reply.error = "User doesn't exist.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "User doesn't exist.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
-            
+
             this.initResponse(reply);
         };
     },
     createProfile: function () {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                userId = this.controller.profileSID,
-                role = that.getUserRole(),
-                reqObj,
-                profile;            
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    userId = this.controller.profileSID,
+                    role = that.getUserRole(),
+                    reqObj,
+                    profile;            
 
-            if(userId !== ''){
-                
-                // only users with 'admin' permissions can create new profiles
-                if (role === 1){
-                    try {
-                        reqObj = JSON.parse(this.req.body);
-                    } catch (ex) {
-                        reply.error = ex.message;
-                    }
+                if(userId !== ''){
+                    
+                    // only users with 'admin' permissions can create new profiles
+                    if (role === 1){
+                        try {
+                            reqObj = JSON.parse(this.req.body);
+                        } catch (ex) {
+                            reply.error = ex.message;
+                        }
 
-                    nameAllreadyExists = Boolean(_.find(that.controller.profiles, function (profile) {
-                                                    return profile.login === reqObj.login;
-                                                }));
+                        nameAllreadyExists = Boolean(_.find(that.controller.profiles, function (profile) {
+                                                        return profile.login === reqObj.login;
+                                                    }));
 
-                    if (reqObj.hasOwnProperty('name') && nameAllreadyExists === false) {
-                        profile = that.controller.createProfile(reqObj);
-                        if (profile !== undefined && profile.id !== undefined) {
-                            reply.data = profile;
-                            reply.code = 201;
+                        if (reqObj.hasOwnProperty('name') && nameAllreadyExists === false) {
+                            profile = that.controller.createProfile(reqObj);
+                            if (profile !== undefined && profile.id !== undefined) {
+                                reply.data = profile;
+                                reply.code = 201;
+                            } else {
+                                reply.code = 500;
+                                reply.error = "Profile didn't created";
+                            }
                         } else {
-                            reply.code = 500;
-                            reply.error = "Profile didn't created";
+                            reply.code = 400;
+                            reply.error = "Argument name is required or already exists.";
                         }
                     } else {
-                        reply.code = 404;
-                        reply.error = "Argument name is required or already exists.";
+                        reply.code = 403;
+                        reply.error = "Permission denied. You're not allowed to create profiles.";
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "Permission denied. You're not allowed to create profiles.";
+                    reply.error = "User with id " + userId + " doesn't exist.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "User with id " + userId + " doesn't exist.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -1011,49 +1099,54 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     updateProfile: function (profileId) {
         var that = this;
         return function () {
-            var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                reqObj,
-                profile,
-                userId = this.controller.profileSID,
-                role = that.getUserRole();
+            if(that.controller.profileSID !== ''){
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    reqObj,
+                    profile,
+                    userId = this.controller.profileSID,
+                    role = that.getUserRole();
 
-            if(userId !== ''){
+                if(userId !== ''){
 
-                profile = that.controller.getProfile(profileId);
-                
-                // update target profile if user has 'admin' permissions
-                // update only own profile if user has 'user' permissions otherwise response with error
-                if (role === 1 || (role === 2 && userId === profile.sid)){
-                    try {
-                        reqObj = JSON.parse(this.req.body);
-                    } catch (ex) {
-                        reply.error = ex.message;
-                    }
+                    profile = that.controller.getProfile(profileId);
+                    
+                    // update target profile if user has 'admin' permissions
+                    // update only own profile if user has 'user' permissions otherwise response with error
+                    if (role === 1 || (role === 2 && userId === profile.sid)){
+                        try {
+                            reqObj = JSON.parse(this.req.body);
+                        } catch (ex) {
+                            reply.error = ex.message;
+                        }
 
-                    if (reqObj.hasOwnProperty('name')) {
-                        profile = that.controller.updateProfile(reqObj, profileId);
-                        if (profile !== undefined && profile.id !== undefined) {
-                            reply.data = profile;
-                            reply.code = 200;
+                        if (reqObj.hasOwnProperty('name')) {
+                            profile = that.controller.updateProfile(reqObj, profileId);
+                            if (profile !== undefined && profile.id !== undefined) {
+                                reply.data = profile;
+                                reply.code = 200;
+                            } else {
+                                reply.code = 500;
+                                reply.error = "Object (profile) didn't created";
+                            }
                         } else {
-                            reply.code = 500;
-                            reply.error = "Object (profile) didn't created";
+                            reply.code = 400;
+                            reply.error = "Argument id, positions is required";
                         }
                     } else {
-                        reply.code = 500;
-                        reply.error = "Argument id, positions is required";
+                        reply.code = 403;
+                        reply.error = "Permission denied. Cannot update foreign profile.";
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "Permission denied. Cannot update foreign profile.";
+                    reply.error = "User with id " + userId + " doesn't exist.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "User with id " + userId + " doesn't exist.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
 
             this.initResponse(reply);
@@ -1064,7 +1157,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var that = this;
         
         return function () {
-            var reply = {
+            if(that.controller.profileSID !== ''){
+                var reply = {
                     error: null,
                     data: null,
                     code: 500
@@ -1093,9 +1187,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         reply.error = "Was not able to update password.";
                     }
                 } else {
-                    reply.code = 404;
+                    reply.code = 500;
                     reply.error = "Could not change authentication values.";
                 }
+            } else {
+                reply.code = 401;
+                reply.error = 'Not logged in';
+            }            
 
             this.initResponse(reply);
         };
@@ -1103,7 +1201,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     removeProfile: function (profileId) {
         var that = this;
         return function () {
-            var reply = {
+            if(that.controller.profileSID !== ''){
+                var reply = {
                     error: null,
                     data: null,
                     code: 500
@@ -1112,33 +1211,37 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 userId = this.controller.profileSID,
                 role = that.getUserRole();
 
-            if(userId !== ''){
+                if(userId !== ''){
 
-                profiles = that.controller.getListProfiles();
+                    profiles = that.controller.getListProfiles();
 
-                // only admins are allowed to delete profiles
-                // it is not possible to delete first profile (superadmin)
-                if (_.isNumber(profileId) && role === 1 && profileId !== profiles[0].id) {
-                    
-                    profile = that.controller.getProfile(profileId);
-                    
-                    if (profile !== null) {
-                        that.controller.removeProfile(profileId);
-                        reply.data = null;
-                        reply.code = 204;
+                    // only admins are allowed to delete profiles
+                    // it is not possible to delete first profile (superadmin)
+                    if (_.isNumber(profileId) && role === 1 && profileId !== profiles[0].id) {
+                        
+                        profile = that.controller.getProfile(profileId);
+                        
+                        if (profile !== null) {
+                            that.controller.removeProfile(profileId);
+                            reply.data = null;
+                            reply.code = 204;
+                        } else {
+                            reply.code = 500;
+                            reply.error = "Could not delete profile: " + profileId;
+                        }
                     } else {
-                        reply.code = 500;
-                        reply.error = "Could not delete profile: " + profileId;
+                        reply.code = 400;
+                        reply.error = "Argument 'id' is required. Please check if the id you want to remove is the correct one.";
                     }
                 } else {
-                    reply.code = 500;
-                    reply.error = "Argument 'id' is required. Please check if the id you want to remove is the correct one.";
+                    reply.code = 403;
+                    reply.error = "Permission denied. Not allowed to delete profile.";
                 }
             } else {
-                reply.code = 404;
-                reply.error = "Permission denied. Not allowed to delete profile.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
-
+            
             this.initResponse(reply);
         };
     },
@@ -1150,36 +1253,46 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             code: 500
         };
 
-        this.controller.generateNamespaces(function (namespaces) {
-            if (_.isArray(namespaces)) {
-                reply.data = namespaces;
-                reply.code = 200;
-            } else {
-                reply.error = "Namespaces array is null";
-            }
-        });
+        if(this.controller.profileSID !== ''){
+            this.controller.generateNamespaces(function (namespaces) {
+                if (_.isArray(namespaces)) {
+                    reply.data = namespaces;
+                    reply.code = 200;
+                } else {
+                    reply.error = "Namespaces array is null";
+                }
+            });      
+        } else {
+            reply.code = 401;
+            reply.error = 'Not logged in';
+        }        
 
         this.initResponse(reply);
     },
     getNamespaceFunc: function (namespaceId) {
         var that = this;
         return function () {
-            var reply = {
+            if(that.controller.profileSID !== ''){
+               var reply = {
                     error: null,
                     data: null,
                     code: 500
                 },
                 namespace;
 
-            that.controller.generateNamespaces();
-            namespace = that.controller.getListNamespaces(namespaceId);
-            if (namespace) {
-                reply.data = namespace;
-                reply.code = 200;
+                that.controller.generateNamespaces();
+                namespace = that.controller.getListNamespaces(namespaceId);
+                if (namespace) {
+                    reply.data = namespace;
+                    reply.code = 200;
+                } else {
+                    reply.code = 404;
+                    reply.error = "Namespaces " + namespaceId + " doesn't exist";
+                } 
             } else {
-                reply.code = 404;
-                reply.error = "Namespaces " + namespaceId + " doesn't exist";
-            }
+                reply.code = 401;
+                reply.error = 'Not logged in';
+            }            
 
             this.initResponse(reply);
         };
@@ -1195,20 +1308,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 
         return function () {
-            that.res.status = 200;
-            history = that.controller.listHistories();
+            if(that.controller.profileSID !== ''){
+                that.res.status = 200;
+                history = that.controller.listHistories();
 
-            if(history){
-                reply.data = {
-                    updateTime: Math.floor(new Date().getTime() / 1000),
-                    history: history
-                };
-                reply.code = 200;
-                
+                if(history){
+                    reply.data = {
+                        updateTime: Math.floor(new Date().getTime() / 1000),
+                        history: history
+                    };
+                    reply.code = 200;
+                    
+                } else {
+                    reply.code = 404;
+                    reply.error = "No device histories found.";
+                }
             } else {
-                reply.code = 204;
-                reply.error = "No device histories found.";
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
+            
             that.initResponse(reply);
         };
     },
@@ -1221,34 +1340,49 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null
             },
             since,
-            sinceDevHist;
+            show,
+            sinceDevHist,
+            view = [288,96,48,24,12,6];
 
         return function () {
-            since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
-            history = that.controller.listHistories();
-            hash = that.controller.hashCode(vDevId);
-            
-            dev = history.filter(function(x){
-                    return x.h === hash;
-                });
-            
-            sinceDevHist = that.controller.getDevHistorySince(dev, since);            
-            
-            if (dev && sinceDevHist){                
-                reply.code = 200;
-                reply.data = {
-                        id: vDevId,
-                        since: since,
-                        deviceHistory: sinceDevHist
-                    };
-            } else
-                if (dev) {
-                    reply.code = 200;
-                    reply.data = dev;
+            if(that.controller.profileSID !== ''){
+                show = that.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(that.req.query.show, 10)) > -1 ? parseInt(that.req.query.show, 10) : 0) : 0;
+                since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
+                history = that.controller.listHistories();
+                hash = that.controller.hashCode(vDevId);
+                
+                if(history){
+                    dev = history.filter(function(x){
+                        return x.h === hash;
+                    });
+                    
+                    if(dev){
+                        sinceDevHist = that.controller.getDevHistorySince(dev, since, show);            
+                        
+                        if (dev && sinceDevHist){         
+                            reply.code = 200;
+                            reply.data = {
+                                    id: vDevId,
+                                    since: since,
+                                    deviceHistory: sinceDevHist
+                                };
+                        } else {
+                            reply.code = 200;
+                            reply.data = dev;
+                        }
+                    } else {
+                        reply.code = 404;
+                        reply.error = "History of device " + vDevId + " doesn't exist";
+                    }
                 } else {
-                    reply.code = 204;
-                    reply.error = "History of device " + vDevId + " doesn't exist";
+                    reply.code = 404;
+                    reply.error = "No device histories found.";
                 }
+            } else {
+                reply.code = 401;
+                reply.error = 'Not logged in';
+            }
+                
             that.initResponse(reply);
         };
     },
@@ -1260,8 +1394,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             code: 200
         };
 
-        this.controller.restart();
-        this.initResponse(reply);
+        if(this.controller.profileSID !== ''){
+            this.controller.restart();
+            this.initResponse(reply);    
+        } else {
+            reply.code = 401;
+            reply.error = 'Not logged in';
+        }        
     },
     loadModuleMedia: function(moduleName,fileName) {
         var that = this,
@@ -1273,30 +1412,47 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             obj;
 
         return function (){
-            obj = that.controller.loadModuleMedia(moduleName,fileName);
+            if(that.controller.profileSID !== ''){
+
+                if((moduleName !== '' || !!moduleName || moduleName) && (fileName !== '' || !!fileName || fileName)){
+                    obj = that.controller.loadModuleMedia(moduleName,fileName);
             
-            if(!that.controller.modules[moduleName]){
-                reply.code = 400;
-                reply.error = "Can't load file from module because module '" + moduleName + "' was not found." ;
+                    if(!that.controller.modules[moduleName]){
+                        reply.code = 404;
+                        reply.error = "Can't load file from app because app '" + moduleName + "' was not found." ;
+                        
+                        that.initResponse(reply);
+
+                    }else if (obj !== null) {
+                        that.res.status = 200;
+                        that.res.headers = { 
+                            "Content-Type": obj.ct,
+                            "Connection": "keep-alive"
+                        };
+                        that.res.body = obj.data;
+
+                        return that.res;
+
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Failed to load file from module." ;
+                        
+                        that.initResponse(reply);
+                    } 
+                } else {
+                    reply.code = 400;
+                    reply.error = "Incorrect app or file name" ;
+                    
+                    that.initResponse(reply);
+                }
                 
-                that.initResponse(reply);
-
-            }else if (obj !== null) {
-                that.res.status = 200;
-                that.res.headers = { 
-                    "Content-Type": obj.ct,
-                    "Connection": "keep-alive"
-                };
-                that.res.body = obj.data;
-
-                return that.res;
-
             } else {
-                reply.code = 400;
-                reply.error = "Failed to load file from module." ;
-                
+                reply.code = 401;
+                reply.error = 'Not logged in';
+
                 that.initResponse(reply);
             }
+            
         };
     },
     loadImage: function(imageName) {
@@ -1309,23 +1465,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             data;
 
         return function (){
-            data = that.controller.loadImage(imageName);
-        
-            if (data !== null) {
-                that.res.status = 200;
-                that.res.headers = { 
-                        "Content-Type": "image/(png|jpeg|gif)",
-                        "Connection": "keep-alive"
-                    };
-                that.res.body = data;
+            if(that.controller.profileSID !== ''){
+                data = that.controller.loadImage(imageName);
+            
+                if (data !== null) {
+                    that.res.status = 200;
+                    that.res.headers = { 
+                            "Content-Type": "image/(png|jpeg|gif)",
+                            "Connection": "keep-alive"
+                        };
+                    that.res.body = data;
 
-                return that.res;
-            }else {
-                reply.code = 400;
-                reply.error = "Failed to load file." ;
-                
-                that.initResponse(reply);
+                    return that.res;
+                }else {
+                    reply.code = 500;
+                    reply.error = "Failed to load file." ;
+                    
+                    that.initResponse(reply);
+                }
+            } else {
+                reply.code = 401;
+                reply.error = 'Not logged in';
             }
+                
         };
     },
     uploadImage: function() {
@@ -1336,6 +1498,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 200
             },
             file;
+
+        if(that.controller.profileSID !== ''){
+
+        } else {
+            reply.code = 401;
+            reply.error = 'Not logged in';
+        }
 
         if (that.req.method === "POST" && that.req.body.file_upload) {
             
@@ -1354,7 +1523,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.data = file.name;
 
             }else {
-                reply.code = 400;
+                reply.code = 500;
                 reply.error = "Failed to upload file" ;
             }
         }else {
