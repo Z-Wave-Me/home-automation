@@ -1898,6 +1898,44 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				notificationTypeId = parseInt(notificationTypeId, 10);
 
 				if (!isNaN(notificationTypeId)) {
+				        var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
+					if (notificationTypeId === 0x06 && (cc.data[notificationTypeId].eventMask.value & ((1 << DOOR_OPEN) | (1 << DOOR_CLOSE)))) { // Very special case of Door
+                                                a_defaults.metrics.icon = 'door';
+                                                
+                                                var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
+
+                                                if (!self.controller.devices.get(a_id)) {
+                                                        a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+
+                                                        var a_vDev = self.controller.devices.create({
+                                                                deviceId: a_id,
+                                                                defaults: a_defaults,
+                                                                overlay: {},
+                                                                handler: function(command) {
+                                                                        if (command === "update") {
+                                                                                cc.Get(0, notificationTypeId, DOOR_OPEN);
+                                                                                cc.Get(0, notificationTypeId, DOOR_CLOSE);
+                                                                        }
+                                                                },
+                                                                moduleId: self.id
+                                                        });
+
+                                                        if (a_vDev) {
+                                                                self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+                                                                        if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+                                                                                self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
+                                                                        } else {
+                                                                                if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) {
+                                                                                        try {
+                                                                                                a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
+                                                                                        } catch (e) {}
+                                                                                }
+                                                                        }
+                                                                }, "value");
+                                                        }
+                                                }
+                                        }
+                                        
 					// we handle only few Notification Types
 					switch (notificationTypeId) {
 						case 0x01: // Smoke
@@ -1998,7 +2036,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									} else {
 										if (this.event.value === eventTypeId || this.event.value === 0) {
 											try {
-												a_vDev.set("metrics:level", this.status.value ? "on" : "off");
+												a_vDev.set("metrics:level", (this.event.value && this.status.value) ? "on" : "off");
 											} catch (e) {}
 										}
 									}
