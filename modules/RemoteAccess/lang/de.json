@@ -1,0 +1,6 @@
+{
+	"m_title":"Remote-Zugriff",
+	"m_descr":"Wird benötig, um über die SmartHome UI den Remote-Zugriff zu konfigurieren.",
+	"config_changed_successful":"Konfiguration des Remote-Zugriffs erfolgreich geändert.",
+	"config_changed_error":"Konfigurationsproblem: "
+}

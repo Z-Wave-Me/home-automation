@@ -1,0 +1,6 @@
+{
+	"m_title":"Remote Access",
+	"m_descr":"Is necessary to configure remote access in SmartHome UI.",
+	"config_changed_successful":"Configuration of remote access has changed successfully.",
+	"config_changed_error":"Configuration error: "
+}
