@@ -53,6 +53,42 @@
             }
           }
 
+          if(instance.moduleId && (!instance.state || !instance.title)){
+            var moduleMeta,
+                moduleLang;
+            try{
+              try{
+                moduleMeta = fs.loadJSON('modules/' + instance.moduleId + '/module.json');
+                moduleLang = fs.loadJSON('modules/' + instance.moduleId + '/lang/en.json');
+              } catch (e){
+                  try{
+                    moduleMeta = fs.loadJSON('userModules/' + instance.moduleId + '/module.json');
+                    moduleLang = fs.loadJSON('userModules/' + instance.moduleId + '/lang/en.json');
+                  } catch (e){
+                    moduleLang = null;
+                  }
+              }
+
+              if (moduleLang !== null) {
+                  metaStringify = JSON.stringify(moduleMeta);
+                  Object.keys(moduleLang).forEach(function (key) {
+                      var regExp = new RegExp('__' + key + '__', 'g');
+                      if (moduleLang[key]) {
+                          metaStringify = metaStringify.replace(regExp, moduleLang[key]);
+                      }
+                  });
+                  moduleMeta = JSON.parse(metaStringify);
+              }
+
+              instance.state = moduleMeta.state? moduleMeta.state : null;
+              instance.title = !instance.title? moduleMeta.defaults.title : instance.title;
+              instance.module = !instance.module? moduleMeta.defaults.title : instance.module;
+
+            }catch (e){
+              console.log('Could not set state of instance ' + instance.id + '. ERROR: ' + e);
+            }            
+          }
+
           // delete userView
           if (instance.hasOwnProperty('userView')) {
             delete instance.userView;
@@ -86,25 +122,51 @@
             "params": {
               "name": "zway",
               "port": "/dev/ttyAMA0",
+              "enableAPI": true,
+              "publicAPI": true,
+              "createVDev": true,
               "config": "config",
               "translations": "translations",
               "ZDDX": "ZDDX",
             },
             "active": true,
             "moduleId": "ZWave",
-            "title": "Z-Wave binding",
-            "description": "Loads Z-Wave engine\n(Added by backend updater script)",
+            "module":"Z-Wave Network Access",
+            "state":"hidden",
+            "title": "Z-Wave Network Access",
+            "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by backend updater script)",
             "id": maxInstanceId + 1
           });
         }
       }
     }
       
-    // Add permanently_hidden property
+    // Add permanently_hidden, h, visibility, hasHistory properties
     Object.keys(config.vdevInfo).forEach(function(id) {
       if (!config.vdevInfo[id].hasOwnProperty('permanently_hidden')) {
         console.log("Adding to VDev " + id + " new property permanently_hidden");
         config.vdevInfo[id].permanently_hidden = false;
+      }
+      if (!config.vdevInfo[id].hasOwnProperty('h')) {
+        var hashCode = function(str) {
+            var hash = 0, i, chr, len;
+            if (this.length === 0) {
+                return hash;
+            }
+            for (i = 0, len = str.length; i < len; i++) {
+                chr   = str.charCodeAt(i);
+                hash  = ((hash << 5) - hash) + chr;
+                hash  = hash & hash; // Convert to 32bit integer
+            }
+            return hash;
+        };
+        config.vdevInfo[id].h = hashCode(id);
+      }
+      if (!config.vdevInfo[id].hasOwnProperty('hasHistory')) {
+        config.vdevInfo[id].hasHistory = false;
+      }
+      if (!config.vdevInfo[id].hasOwnProperty('visibility')) {
+        config.vdevInfo[id].visibility = true;
       }
     });
 

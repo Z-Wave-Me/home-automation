@@ -521,7 +521,7 @@ AutomationController.prototype.createInstance = function (reqObj) {
     if (!!module) {
         instance = _.extend(reqObj, { 
             id: id,
-            status: moduleJSON.status || null,
+            state: moduleJSON.state || null,
             module: moduleJSON.defaults.title || null
         });
 
@@ -578,7 +578,7 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         _.extend(this.instances[index], {
             title: instanceObject.title,
             description: instanceObject.description,
-            status: moduleJSON.status || null,
+            state: moduleJSON.state || null,
             module: moduleJSON.defaults.title || null,
             active: instanceObject.active,
             params: config
@@ -1241,7 +1241,11 @@ AutomationController.prototype.getModuleData = function (moduleName) {
         try {
             metaStringify = JSON.stringify(fs.loadJSON('modules/' + moduleName + '/module.json'));
         } catch(e){
-            console.log('Cannot load lang file from module ' + moduleName + '. ERROR: ' + e);
+            try {
+                metaStringify = JSON.stringify(fs.loadJSON('userModules/' + moduleName + '/module.json'));
+            } catch(e){
+                console.log('Cannot load lang file from module ' + moduleName + '. ERROR: ' + e);
+            }
         }
     }
 

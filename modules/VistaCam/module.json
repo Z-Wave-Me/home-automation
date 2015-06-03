@@ -4,7 +4,7 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://www.foscam.com/",
-    "status": "camera",
+    "state": "camera",
     "icon": "icon.png",
     "moduleName":"VistaCam",
     "version": "1.0.0",

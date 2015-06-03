@@ -31,8 +31,6 @@ RemoteAccess.prototype.init = function (config) {
     var self = this,
         langFile = self.controller.loadModuleLang("RemoteAccess");
 
-    this.pw = self.config.zbwPass;
-
     this.getRemoteConfigurations = function () {
         var intToBool = function (i){
             if(parseInt(i) === 1){
@@ -48,26 +46,34 @@ RemoteAccess.prototype.init = function (config) {
                 return 0;
             }
         },
-        zbwActStatus = GetZbwActStatus(),
-        zbwSshStatus = GetZbwSshStatus(),
-        zbwStatus = GetZbwStatus();
+        raInstance = self.controller.instances.filter(function (instance){
+            return instance.moduleId === 'RemoteAccess' && (instance.active === 'true' || instance.active === true);
+        }),
+        getZbwActStatus = GetZbwActStatus() || '',
+        getZbwSshStatus = GetZbwSshStatus() || '',
+        getZbwStatus = GetZbwStatus() || '',
+        raZbwActStatus = raInstance? raInstance[0].params.zbwActStatus : '',
+        raZbwSshStatus = raInstance? raInstance[0].params.zbwSshStatus : '',
+        raZbwStatus = raInstance? raInstance[0].params.zbwStatus : '',
+        raZbwPass = raInstance? raInstance[0].params.zbwPass : '',
+        pw;
 
-        self.config.zbwActStatus = self.config.zbwActStatus === ''? intToBool(zbwActStatus) : self.config.zbwActStatus;
-        self.config.zbwSshStatus = self.config.zbwSshStatus === ''? intToBool(zbwSshStatus) : self.config.zbwSshStatus;
-        self.config.zbwStatus = self.config.zbwStatus === ''? intToBool(zbwStatus) : self.config.zbwStatus;
+        self.config.zbwActStatus = raZbwActStatus === '' && intToBool(getZbwActStatus) !== raZbwActStatus? intToBool(getZbwActStatus) : raZbwActStatus;
+        self.config.zbwSshStatus = raZbwSshStatus === '' && intToBool(getZbwSshStatus) !== raZbwSshStatus? intToBool(getZbwSshStatus) : raZbwSshStatus;
+        self.config.zbwStatus = raZbwStatus === '' && intToBool(getZbwStatus) !== raZbwStatus? intToBool(getZbwStatus) : raZbwStatus;
 
         try{
-            if(self.config.zbwSshStatus !== intToBool(zbwSshStatus)){
-                SetZbwSshStatus(boolToInt(self.config.zbwSshStatus));
+            if(raZbwSshStatus !== '' && raZbwSshStatus !== intToBool(getZbwSshStatus)){
+                SetZbwSshStatus(boolToInt(raZbwSshStatus));
             }
-            if(self.config.zbwStatus !== intToBool(zbwStatus)){
-                SetZbwStatus(boolToInt(self.config.zbwStatus));
+            if(raZbwStatus !== '' && raZbwStatus !== intToBool(getZbwStatus)){
+                SetZbwStatus(boolToInt(raZbwStatus));
             }
-            if(self.config.zbwPass !== this.pw){
-                SetZbwPass(self.config.zbwPass);
+            if(raZbwPass !== '' && raZbwPass !== pw){
+                SetZbwPass(raZbwPass);
             }
 
-            this.pw = self.config.zbwPass;
+            pw = raZbwPass;
 
             self.controller.addNotification("notification", langFile.config_changed_successful, "module", "RemoteAccess");
         } catch(e) {
