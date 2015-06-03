@@ -213,10 +213,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     var self = this,
         requestProcessorFunc,
         bodyLength,
-        newResponse = null,
         response;
-
-    newResponse = Core.Namespace('Handlers.Endpoint').apply(null, Array.prototype.slice.call(arguments));
 
     if (!response) {
         response = {
@@ -262,7 +259,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     }
 
     // Return to the z-way-http
-    return newResponse || this.res;
+    return this.res;
 };
 
 ZAutomationWebRequest.prototype.NotImplementedReply = function () {
