@@ -50,6 +50,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations/update", this.updateLocation());
         this.router.get("/modules", this.listModules);
         this.router.get("/modules/categories", this.listModulesCategories);
+        this.router.post("/modules/install", this.installModule());
         this.router.get("/instances", this.listInstances);
         this.router.post("/instances", this.createInstance());
 
@@ -820,6 +821,62 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.initResponse(reply);
         };
     },
+    // install module
+    installModule: function () {
+        return function () {
+            
+                var reply = {
+                        error: null,
+                        data: null,
+                        code: 500
+                    },
+                    moduleUrl = this.req.body.moduleUrl,
+                    that = this,
+                    role = that.getUserRole();
+            
+            if(that.controller.profileSID !== ''){
+                if(role === 1){
+                    var result = "in progress";
+
+                    installer.install(
+                        moduleUrl,
+                        function() {
+                                result = "done";
+                        },  function() {
+                                result = "failed";
+                        }
+                    );
+                    
+                    var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+                    
+                    while ((new Date()).valueOf() < d &&  result === "in progress") {
+                            processPendingCallbacks();
+                    }
+                    
+                    if (result === "in progress") {
+                            result = "failed";
+                    }
+
+                    if (result === "done") {
+                        reply.code = 201;
+                        reply.data = "Done";
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Failed to install module " + moduleUrl;
+                    }
+                } else {
+                    reply.code = 403;
+                    reply.error = "Permission denied.";
+                }
+            } else {
+                reply.code = 401;
+                reply.error = 'Not logged in';
+            }
+
+            this.initResponse(reply);
+        };
+    },
+
     // instances
     listInstances: function () {
         var that = this,
