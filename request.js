@@ -213,10 +213,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     var self = this,
         requestProcessorFunc,
         bodyLength,
-        newResponse = null,
         response;
-
-    newResponse = Core.Namespace('Handlers.Endpoint').apply(null, Array.prototype.slice.call(arguments));
 
     if (!response) {
         response = {
@@ -232,6 +229,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
         this.req.query = request.query || {};
         this.req.body = request.body || request.data;
         this.req.headers = request.headers || {};
+        this.req.peer = request.peer;
         var contentType = request.headers['content-type'] || request.headers['Content-Type'] || request.headers['Content-type'];
 
         // set defaultLang
@@ -262,7 +260,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     }
 
     // Return to the z-way-http
-    return newResponse || this.res;
+    return this.res;
 };
 
 ZAutomationWebRequest.prototype.NotImplementedReply = function () {

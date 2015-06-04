@@ -243,6 +243,35 @@
       }
     }
     
+    // Transform profile to user profile
+    
+    {
+      var counter = 0;
+      config.profiles && config.profiles.forEach(function(profile) {
+        if (!profile.login) {
+          profile.login = "admin" + (counter++ ? counter.toString(10) : "");
+          profile.password = "21232f297a57a5a743894a0e4a801fc3"; //"admin";
+          profile.role = 1;
+          profile.sid = "sua0";
+          profile.lang = "en";
+          profile.color = "#dddddd";
+          profile.default_ui = 1;
+          profile.dashboard = profile.positions;
+          profile.interval = 2000;
+          profile.rooms = [];
+          profile.hide_all_device_events = false;
+          profile.hide_system_events = false;
+          profile.hide_single_device_events = [];
+
+          delete profile.description;
+          delete profile.widgets;
+          delete profile.position;
+        }
+      });
+    }
+    
+    // Save changes
+    
     if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?
       try {
         saveObject("config.json", config);
