@@ -237,10 +237,6 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
             self.controller.setDefaultLang(self.req.query.lang || self.req.headers['Accept-Language']);
         }
         
-        if (self.req.headers['Profile-SID']) {
-            self.controller.setProfileSID(self.req.headers['Profile-SID']);
-        }
-
         if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && contentType.toLowerCase().indexOf('application/json') !== -1) {
             try {
                 this.req.reqObj = JSON.parse(this.req.body);
@@ -253,10 +249,9 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
         if (response.error === null) {
             // Get and run request processor func
             requestProcessorFunc = this.dispatchRequest(request.method, url);
-            requestProcessorFunc.call(this);
-        } else {
-            return this.initResponse(response);
+            response = requestProcessorFunc.call(this);
         }
+        return this.initResponse(response);
     }
 
     // Return to the z-way-http
