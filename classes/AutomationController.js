@@ -566,7 +566,7 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
             return model.id === id;
         }),
         index = this.instances.indexOf(instance),
-        config = instanceObject.params,
+        config = {},
         moduleJSON = this.getModuleData(instanceObject.moduleId),
         result;
 
@@ -575,15 +575,21 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
             this.stopInstance(register_instance);
         }
 
-        _.extend(this.instances[index], {
-            title: instanceObject.title,
-            description: instanceObject.description,
-            state: moduleJSON.state || null,
-            module: moduleJSON.defaults.title || null,
-            active: instanceObject.active,
-            params: config
-        });
+        if(instanceObject.hasOwnProperty('params')){
+            for (var property in instance.params) {
+                config[property] = instanceObject.params.hasOwnProperty(property) && instanceObject.params[property] !== instance.params[property]? instanceObject.params[property] :instance.params[property];
+            }
+        }
 
+        _.extend(this.instances[index], {
+            title: instanceObject.hasOwnProperty('title')? instanceObject.title : instance.title,
+            description: instanceObject.hasOwnProperty('description')? instanceObject.description : instance.description,
+            state: moduleJSON.hasOwnProperty('state')? moduleJSON.state : null,
+            module: moduleJSON.defaults.hasOwnProperty('title')? moduleJSON.defaults.title : null,
+            active: instanceObject.hasOwnProperty('active')? instanceObject.active : instance.active,
+            params: config !== {}? config : instance.params
+        });
+       
         if (!!register_instance) {
             if (this.instances[index].active) { // here we read new config instead of existing
                 register_instance.init(config);
@@ -1005,7 +1011,21 @@ AutomationController.prototype.setProfiles = function () {
 };
 
 AutomationController.prototype.getListProfiles = function () {
-    return this.profiles;
+    var getProfiles = [];
+
+    this.profiles.forEach(function (profile){
+        var prof = {},
+            excl = ["login", "password", "role", "sid"];
+        
+        for (var property in profile) {
+            if(excl.indexOf(property) === -1){
+                prof[property] = profile[property];
+            }
+        }
+
+        getProfiles.push(prof);
+    });
+    return getProfiles;
 };
 
 AutomationController.prototype.getProfile = function (id) {

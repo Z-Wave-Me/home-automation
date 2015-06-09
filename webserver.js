@@ -53,8 +53,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/modules/install", this.installModule());
         this.router.get("/instances", this.listInstances);
         this.router.post("/instances", this.createInstance());
-        this.router.get("/remote", this.getRemoteData());
-        this.router.post("/remote", this.setRemoteAccess());
 
         this.router.post("/upload/image", this.uploadImage);
 
@@ -85,7 +83,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/devices/:dev_id", this.setVDevFunc);
         this.router.get("/devices/:dev_id", this.getVDevFunc);
 
-        this.router.get("/instances/:instance_id", this.getInstanceFunc, [parseInt]);
+        this.router.get("/instances/:instance_id", this.getInstanceFunc);
         this.router.put("/instances/:instance_id", this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.deleteInstanceFunc, [parseInt]);
 
@@ -171,71 +169,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
             
             this.initResponse(reply);
-        }; 
-    },
-    getRemoteData: function(){
-        var that = this,
-            reply = {
-                error: null,
-                data: null,
-                code: 500
-            };
-        
-        return function () {
-            var role = that.getUserRole();
-
-            if(that.controller.profileSID !== ''){
-                if(role === 1){
-                    try{
-                        reply.code = 200;
-                        reply.data = {
-                            access: GetZbwActStatus(),
-                            support: GetZbwSshStatus(),
-                            zbw_status: GetZbwStatus()
-                        };
-                    } catch(e){
-                        reply.code = 404;
-                        reply.error = e.message;
-                    }
-                }else{
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }               
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            that.initResponse(reply);
-        };
-    },
-    setRemoteAccess: function(){
-        var that = this,
-            reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                };
-        
-        return function () {
-            if(that.controller.profileSID !== ''){
-                var reqObj;
-
-                try {
-                    reqObj = JSON.parse(that.req.body);
-                } catch (ex) {
-                    reply.error = ex.message;
-                }
-            
-                SetZbwPass('zwave');
-                SetZbwSshStatus(1);
-                SetZbwStatus(1);
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            that.initResponse(reply);
         };
     },
     // Devices
@@ -442,7 +375,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             that.initResponse(reply);
-        }
+        };
     },
     updateNotification: function (notificationId) {
 
@@ -1022,8 +955,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 role = that.getUserRole();
                 
                 if(role === 1){
-                    instance = _.find(that.controller.instances, function (i) { return instanceId === i.id; });
-
+                    if(isNaN(instanceId)){
+                        instance = _.filter(that.controller.instances, function (i) { return instanceId === i.moduleId; });
+                    } else {
+                        instance = _.find(that.controller.instances, function (i) { return parseInt(instanceId) === i.id; });
+                    }
                     if (!Boolean(instance)) {
                         reply.code = 404;
                         reply.error = "Instance " + instanceId + " is not found";
@@ -1053,7 +989,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             role;
 
         return function () {
-            var reqObj = this.req.reqObj;
+            try {
+                var reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
+            }
 
             if(that.controller.profileSID !== ''){
                 role = that.getUserRole();
@@ -1152,19 +1092,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     // list target profile if user has 'admin' permissions
                     // list only own profile if user has 'user' permissions otherwise response with error
                     profile = that.controller.getProfile(profileId);
-
-                    if (role === 1 || (role === 2 && userId === profile.sid)){
-                        
-                        if (profile !== null) {
+                    if (profile && profile !== null) {
+                        if (role === 1 || (role === 2 && userId === profile.sid)){ 
                             reply.code = 200;
                             reply.data = profile;
                         } else {
-                            reply.code = 404;
-                            reply.error = "Profile '" + profileId + "' doesn't exist";
+                            reply.code = 403;
+                            reply.error = "Permission denied. Cannot show foreign profile.";
                         }
                     } else {
-                        reply.code = 403;
-                        reply.error = "Permission denied. Cannot show foreign profile.";
+                        reply.code = 404;
+                        reply.error = "Profile '" + profileId + "' doesn't exist";
                     }
                 }
             } else {

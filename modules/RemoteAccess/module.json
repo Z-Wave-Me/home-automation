@@ -15,10 +15,12 @@
 	"defaults" : {
 		"title" : "__m_title__",
 		"description" : "__m_descr__",
-		"zbwActStatus":"",
-		"zbwSshStatus":"",
-		"zbwStatus":"",
-		"zbwPass":""
+		"userId":"",
+		"actStatus":"",
+		"sshStatus":"",
+		"status":"",
+		"pass":"",
+		"lastChange":{}
 	},
 	"schema": {},
 	"options": {}

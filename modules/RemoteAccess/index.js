@@ -49,31 +49,35 @@ RemoteAccess.prototype.init = function (config) {
         raInstance = self.controller.instances.filter(function (instance){
             return instance.moduleId === 'RemoteAccess' && (instance.active === 'true' || instance.active === true);
         }),
-        getZbwActStatus = GetZbwActStatus() || '',
-        getZbwSshStatus = GetZbwSshStatus() || '',
-        getZbwStatus = GetZbwStatus() || '',
-        raZbwActStatus = raInstance? raInstance[0].params.zbwActStatus : '',
-        raZbwSshStatus = raInstance? raInstance[0].params.zbwSshStatus : '',
-        raZbwStatus = raInstance? raInstance[0].params.zbwStatus : '',
-        raZbwPass = raInstance? raInstance[0].params.zbwPass : '',
-        pw;
+        raActStatus = raInstance[0].params.actStatus,
+        raSshStatus = raInstance[0].params.sshStatus,
+        raStatus = raInstance[0].params.status,
+        raPass = raInstance[0].params.pass,
+        currDate = new Date();
 
-        self.config.zbwActStatus = raZbwActStatus === '' && intToBool(getZbwActStatus) !== raZbwActStatus? intToBool(getZbwActStatus) : raZbwActStatus;
-        self.config.zbwSshStatus = raZbwSshStatus === '' && intToBool(getZbwSshStatus) !== raZbwSshStatus? intToBool(getZbwSshStatus) : raZbwSshStatus;
-        self.config.zbwStatus = raZbwStatus === '' && intToBool(getZbwStatus) !== raZbwStatus? intToBool(getZbwStatus) : raZbwStatus;
+        self.config.userId = getUserId();
+        self.config.actStatus = intToBool(getActStatus());
+        self.config.sshStatus = intToBool(getSshStatus());
+        self.config.status = intToBool(getStatus());        
 
+        // compare changed values with values from server
         try{
-            if(raZbwSshStatus !== '' && raZbwSshStatus !== intToBool(getZbwSshStatus)){
-                SetZbwSshStatus(boolToInt(raZbwSshStatus));
+            if(raSshStatus !== '' && raSshStatus !== self.config.sshStatus){
+                setSshStatus(boolToInt(raSshStatus));
+                self.config.sshStatus = raSshStatus;
+                self.config.lastChange.sshStatus = currDate;
             }
-            if(raZbwStatus !== '' && raZbwStatus !== intToBool(getZbwStatus)){
-                SetZbwStatus(boolToInt(raZbwStatus));
+            if(raStatus !== '' && raStatus !== self.config.status){
+                setStatus(boolToInt(raStatus));
+                self.config.status = raStatus;
+                self.config.lastChange.status = currDate;
+                self.config.actStatus = intToBool(getActStatus());
             }
-            if(raZbwPass !== '' && raZbwPass !== pw){
-                SetZbwPass(raZbwPass);
+            if(raPass && raPass !== ''){
+                setPass(raPass);
+                self.config.pass = '';
+                self.config.lastChange.pass = currDate;
             }
-
-            pw = raZbwPass;
 
             self.controller.addNotification("notification", langFile.config_changed_successful, "module", "RemoteAccess");
         } catch(e) {
