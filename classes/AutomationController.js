@@ -576,8 +576,12 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         }
 
         if(instanceObject.hasOwnProperty('params')){
-            for (var property in instance.params) {
-                config[property] = instanceObject.params.hasOwnProperty(property) && instanceObject.params[property] !== instance.params[property]? instanceObject.params[property] :instance.params[property];
+            if(Object.keys(instanceObject.params).length === 0){
+                config = instanceObject.params;
+            }else {
+                for (var property in instance.params) {
+                    config[property] = instanceObject.params.hasOwnProperty(property) && instanceObject.params[property] !== instance.params[property]? instanceObject.params[property] :instance.params[property];
+                }
             }
         }
 
@@ -936,12 +940,12 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
         items = show? show : 0,
         sec = 0;
 
-    if(items > 0 && items < 288){
+    if(items > 0 && items <= 288){
         sec = 86400 / show;
         
         for (i = 1; i <= items; i++){
             from = now - sec*i;
-            to = now - sec*(i-1);
+            to = now - sec*(items - i);
             
             dev[0]['mH'].forEach(function (metric){
                 if(metric.id >= from && metric.id <= to){
@@ -958,7 +962,6 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
 
             metric = {
                 id: to,
-                t: new Date(to*1000).toISOString(),
                 l: l
             }
 

@@ -47,73 +47,48 @@ DeviceHistory.prototype.init = function (config) {
 
     var self = this,
         getDevH = [],
-        countHistories = [];
+        countHistories = [],
+        exclSensors = [],
+        // define excluded device types
+        exclDevTypes = ['battery','text','camera','switchRGBW'];
 
     this.history = loadObject('history') || [];
     this.switchHistory = [];
     this.allDevices = [];
-    this.exclDev = [];
-    this.initial = true;
 
     // setting up device histories
     this.setupHistories = function(){
 
-        // collect ids from excluded devices
-        if(self.config.devices.length > 0) {
-            _.unique(self.config.devices).forEach(function(devId){
-                self.exclDev.push(self.controller.hashCode(devId));
-            });
-        }
-
-        // collect ids from devices that are batteries or permanently hidden
-        self.controller.devices.filter(function (dev){
-            if((dev.get('deviceType') === 'battery' || dev.get('deviceType') === 'text' || dev.get('deviceType') === 'camera' || dev.get('deviceType') === 'switchRGBW' || dev.get('permanently_hidden') === true) && self.exclDev.indexOf(dev.h) === -1){
-               self.exclDev.push(dev.h);
-            }
+        // get excluded sensors
+        exclSensors = self.controller.instances.filter(function (instance){
+            return instance.moduleId === 'SensorsPolling' && instance.active === 'true'
         });
 
-        // collect ids from devices that are polled regularly in app SensorsPolling
-        self.controller.instances.filter(function (instance){
-            if(instance.moduleId === 'SensorsPolling' && instance.active === 'true'){
-                instance.params.devices.forEach(function (devId){
-                    var h = self.controller.hashCode(devId);                
-                    if(self.exclDev.indexOf(h) === -1){
-                        self.exclDev.push(h);
-                    }
-                });
-            }
-        });
-
-        // filter devices - not excluded
         self.allDevices = self.controller.devices.filter(function(dev){
-            return self.exclDev.indexOf(dev.h) === -1;
+            return  dev.get('permanently_hidden') === false &&                  // only none permanently_hidden devices
+                    _.unique(self.config.devices).indexOf(dev.id) === -1 &&     //in module excluded devices
+                    exclDevTypes.indexOf(dev.get('deviceType')) === -1 &&       //excluded device types
+                    exclSensors.indexOf(dev.id) === -1;                          //excluded sensors
         });
 
-        if(self.initial === true){
+        if(self.allDevices.length > 0 && self.allDevices.length < self.history.length) {
+            var cleanedUpHistory = [],
+                devices = [];
 
-            self.initial = false;
+            devices = self.allDevices.map(function (dev){
+               return dev.get('h');
+            });
+            
+            cleanedUpHistory = self.history.filter(function (devHist) {
+                return devices.indexOf(devHist.h) > -1;
+            });
 
-        } else {
-
-            if(self.allDevices.length < self.history.length) {
-                var cleanupHistory = [],
-                    devices = [];
-
-                self.allDevices.forEach(function (dev){
-                   devices.push(dev.h);
-                });
-                
-                cleanupHistory = self.history.filter(function (devHist) {
-                    return devices.indexOf(devHist.h) > -1;
-                });
-
-                if(cleanupHistory.length === self.allDevices.length){
-                    console.log("--- ", "clean up histories");
-                    self.history = cleanupHistory;
-                }
+            if(cleanedUpHistory.length === self.allDevices.length){
+                console.log("--- ", "clean up histories");
+                self.history = cleanedUpHistory;
             }
         }
-       
+
         // Setup histories
         self.allDevices.forEach(function(dev) {
             var id = dev.id,
@@ -155,20 +130,8 @@ DeviceHistory.prototype.init = function (config) {
         if(dev){
             var sH = self.switchHistory,
                 h = dev.get('h'),
-                switches = sH.filter(function(o){
-                        return o.h === h;
-                                    }),
                 index = null,
                 change;
-            
-            if(switches.length < 1){
-                var item = {
-                        h: h,
-                        meta: []
-                    };
-
-                sH.push(item);
-            }
 
             _.find(sH, function (data, idx) {
                 if(data.h === h){
@@ -177,11 +140,17 @@ DeviceHistory.prototype.init = function (config) {
                 }
             });
 
+            if(sH.length < 1 || index === null){
+                var item = {
+                        h: h,
+                        meta: []
+                    };
+
+                sH.push(item);
+            }
+
             // set change object            
-            change = {
-                    t: Math.floor(new Date().getTime() /1000),
-                    l: dev.get("metrics:level")
-                };
+            change = self.setChangeObject(dev.get("metrics:level"));
 
             if(index !== null){
                 sH[index]['meta'].push(change);
@@ -195,29 +164,45 @@ DeviceHistory.prototype.init = function (config) {
         try {
             var self = this,
                 h = dev.get('h'),
-                history, change, histMetr, index;
+                index = null,
+                history, change, histMetr, item;
 
             change = self.setChangeObject(lvl);
             
-            // get history and metrics history
-            history = self.setupMetricsHistory(dev, self.exclDev);
-
-            _.find(history, function (data, idx) {
-                if(data.h ===h){
+            // find dev history and set index
+            _.find(self.history, function (data, idx) {
+                if(data.h === h){
                     index = idx;
                     return;
                 }
             });
+            
+            // create new device entry if necessary
+            if(self.history.length < 1 || index === null){
+                item = {
+                        id: dev.get('id'),
+                        h: h, // hashed device id
+                        dT: dev.get("deviceType"),
+                        mH: []
+                    };
 
-            histMetr = history[index]['mH'];
-
+                self.history.push(item);
+                index = self.history.length - 1;
+            }
+            
             // push only changes during the last 24 hrs
-            if(histMetr.length < 288){
+            histMetr = self.history[index]['mH'].filter(function (ch){
+                return ch.id >= (change.id - 86400);
+            });
+            
+            if(histMetr.length < 288){ // 86400 s (24 h) = 288 * 300 s (5 min)
                 histMetr.push(change);
             } else {
                 histMetr.shift();
                 histMetr.push(change);
             }
+
+            self.history[index]['mH'] = histMetr;
 
             self.controller.history = self.history;
         
@@ -243,20 +228,16 @@ DeviceHistory.prototype.init = function (config) {
 
             try {
                 arr = historyArr.filter(function(o){
-                                        return o.h === h;
-                                })[0]['meta'];
+                        return o.h === h;
+                })[0]['meta'];
+
                 cntCh = arr.length;
 
-                if(dT === 'doorlock') {
-                    cntOn = arr.filter(function(e) {
-                                        return e.l === "open";
-                                }).length;
-                } else {
-                    cntOn = arr.filter(function(e) {
-                                        return e.l === "on";
-                                }).length;
-                }
-                
+                cntOn = arr.filter(function(meta) {
+                    return  meta.l === "open" || //doorlock
+                            meta.l === "on";                            //binaries
+                }).length;
+
                 switch(cntOn){
                     case 0:
                         setlvl = 0;
@@ -335,43 +316,8 @@ DeviceHistory.prototype.setChangeObject = function (lvl) {
     var date = new Date(),
         change = {
                 id: Math.floor(date.getTime() / 1000),
-                t: date.toISOString(),
                 l: lvl
             };
 
     return change;
-};
-
-DeviceHistory.prototype.setupMetricsHistory = function (dev, exclDev){
-    var self = this,
-        h = dev.get('h'),
-        index = null,
-        item;
-
-    if(exclDev.length > 0 && self.history.length > 0){
-        self.history = self.history.filter(function(devHist){
-            return exclDev.indexOf(devHist.h) === -1;
-        });
-    }    
-
-    _.find(self.history, function (data, idx) {
-        if(data.h === h){
-            index = idx;
-            return;
-        }
-    });
-    
-    // create new device entry if necessary
-    if(self.history.length < 1 || index === null && exclDev.indexOf(h) === -1){
-        item = {
-                id: dev.get('id'),
-                h: h,
-                dT: dev.get("deviceType"),
-                mH: []
-            };
-
-        self.history.push(item);
-    }
-
-    return self.history;
 };

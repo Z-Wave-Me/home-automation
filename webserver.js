@@ -1431,7 +1431,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         return x.h === hash;
                     });
                     
-                    if(dev){
+                    if(dev.length > 0){
                         sinceDevHist = that.controller.getDevHistorySince(dev, since, show);            
                         
                         if (dev && sinceDevHist){         
