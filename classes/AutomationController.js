@@ -932,6 +932,7 @@ AutomationController.prototype.listHistories = function () {
 AutomationController.prototype.getDevHistorySince = function (dev, since, show) {
     var filteredEntries = [],
         averageEntries = [],
+        entries = [],
         now = Math.floor(new Date().getTime() / 1000),
         l = 0,
         cnt = 0,
@@ -940,9 +941,11 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
         items = show? show : 0,
         sec = 0;
 
+    // create output with n (= show) values - 288, 96, 48, 24, 12, 6
     if(items > 0 && items <= 288){
-        sec = 86400 / show;
+        sec = 86400 / show; // calculate seconds of range
         
+        // calculate averaged value of all meta values between 'sec' range
         for (i = 1; i <= items; i++){
             from = now - sec*i;
             to = now - sec*(items - i);
@@ -954,10 +957,19 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
                 }
             });
 
-            l = l /cnt;
-
-            if(l === +l && l !== (l|0)) {
-                l = l.toFixed(1);
+            switch(dev[0]['dT']){
+                case 'sensorBinary':
+                case 'switchBinary':
+                case 'doorlock':
+                    l = 0 < (l/cnt) && (l/cnt) < 1? 0.5 : (l/cnt); // set 0, 0.5 or 1 if status is binary
+                    break;
+                default:
+                    l = l /cnt;
+                    
+                    if(l === +l && l !== (l|0)) { // round to one position after '.'
+                        l = l.toFixed(1);
+                    }
+                    break;
             }
 
             metric = {
@@ -972,14 +984,15 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
             cnt = 0;
         }
 
-        filteredEntries = averageEntries.filter(function(metric){
-            return metric.id >= since;
-        });
+        entries = averageEntries;
     } else {
-        filteredEntries = dev[0]['mH'].filter(function (metric) {
-            return metric.id >= since;
-        });
+        entries = dev[0]['mH'];
     }
+
+    // filter meta entries by since
+    filteredEntries = since > 0? entries.filter(function (metric) {
+            return metric.id >= since;
+        }) : entries;
 
     return filteredEntries;
 };
@@ -995,7 +1008,7 @@ AutomationController.prototype.setProfiles = function () {
             sid: sid,
             role: 1,
             login: 'admin',
-            password: '21232f297a57a5a743894a0e4a801fc3',
+            password: 'admin',
             name: langFile.profile_name,
             last_login: null,
             lang:'en',
@@ -1062,7 +1075,7 @@ AutomationController.prototype.createProfile = function (object) {
 
     _.defaults(profile, {
         sid: null,
-        role: null,
+        role: null, // admin = 1, user = 2
         login: '',
         password: null,
         name: '',
@@ -1111,7 +1124,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
         }
 
         _.defaults(this.profiles[index], {
-            role: null,
+            role: null, // admin = 1, user = 2
             name: '',
             lang:'en',
             color:'#dddddd',

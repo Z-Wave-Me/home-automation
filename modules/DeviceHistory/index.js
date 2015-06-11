@@ -55,13 +55,14 @@ DeviceHistory.prototype.init = function (config) {
     this.history = loadObject('history') || [];
     this.switchHistory = [];
     this.allDevices = [];
+    this.initial = true;
 
     // setting up device histories
     this.setupHistories = function(){
 
         // get excluded sensors
         exclSensors = self.controller.instances.filter(function (instance){
-            return instance.moduleId === 'SensorsPolling' && instance.active === 'true'
+            return instance.moduleId === 'SensorsPolling' && instance.active === 'true';
         });
 
         self.allDevices = self.controller.devices.filter(function(dev){
@@ -71,21 +72,26 @@ DeviceHistory.prototype.init = function (config) {
                     exclSensors.indexOf(dev.id) === -1;                          //excluded sensors
         });
 
-        if(self.allDevices.length > 0 && self.allDevices.length < self.history.length) {
-            var cleanedUpHistory = [],
-                devices = [];
+        // cleanup first after  all virtual devices are created  
+        if(self.initial === true){            
+            self.initial = false;        
+        } else {
+            if(self.allDevices.length > 0 && self.allDevices.length < self.history.length) {
+                var cleanedUpHistory = [],
+                    devices = [];
 
-            devices = self.allDevices.map(function (dev){
-               return dev.get('h');
-            });
-            
-            cleanedUpHistory = self.history.filter(function (devHist) {
-                return devices.indexOf(devHist.h) > -1;
-            });
+                devices = self.allDevices.map(function (dev){
+                   return dev.get('h');
+                });
+                
+                cleanedUpHistory = self.history.filter(function (devHist) {
+                    return devices.indexOf(devHist.h) > -1;
+                });
 
-            if(cleanedUpHistory.length === self.allDevices.length){
-                console.log("--- ", "clean up histories");
-                self.history = cleanedUpHistory;
+                if(cleanedUpHistory.length === self.allDevices.length){
+                    console.log("--- ", "clean up histories");
+                    self.history = cleanedUpHistory;
+                }
             }
         }
 
