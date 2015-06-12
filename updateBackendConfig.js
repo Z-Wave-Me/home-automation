@@ -267,6 +267,10 @@
           delete profile.widgets;
           delete profile.position;
         }
+
+        if(profile.password && /^[a-f0-9]{32}$/.test(profile.password)){
+            profile.password = 'admin';
+        }
       });
     }
     

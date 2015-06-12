@@ -1432,7 +1432,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     });
                     
                     if(dev.length > 0){
-                        sinceDevHist = that.controller.getDevHistorySince(dev, since, show);            
+                        sinceDevHist = that.controller.getDevHistory(dev, since, show);            
                         
                         if (dev && sinceDevHist){         
                             reply.code = 200;

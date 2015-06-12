@@ -929,7 +929,7 @@ AutomationController.prototype.listHistories = function () {
     return self.history;
 };
 
-AutomationController.prototype.getDevHistorySince = function (dev, since, show) {
+AutomationController.prototype.getDevHistory = function (dev, since, show) {
     var filteredEntries = [],
         averageEntries = [],
         entries = [],
@@ -946,42 +946,51 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
         sec = 86400 / show; // calculate seconds of range
         
         // calculate averaged value of all meta values between 'sec' range
-        for (i = 1; i <= items; i++){
-            from = now - sec*i;
-            to = now - sec*(items - i);
-            
-            dev[0]['mH'].forEach(function (metric){
-                if(metric.id >= from && metric.id <= to){
-                    l = l + metric.l;
-                    cnt++;
-                }
+        for (i = 0; i < items; i++){
+            from = now - sec*(items - i);
+            to = now - sec*(items - (i+1));
+
+            // filter values between from and to
+            range = dev[0]['mH'].filter(function (metric){
+                return metric.id >= from && metric.id <= to;
             });
 
-            switch(dev[0]['dT']){
-                case 'sensorBinary':
-                case 'switchBinary':
-                case 'doorlock':
-                    l = 0 < (l/cnt) && (l/cnt) < 1? 0.5 : (l/cnt); // set 0, 0.5 or 1 if status is binary
-                    break;
-                default:
-                    l = l /cnt;
-                    
-                    if(l === +l && l !== (l|0)) { // round to one position after '.'
-                        l = l.toFixed(1);
-                    }
-                    break;
-            }
+            cnt = range.length;
+            
+            // calculate level
+            if(cnt > 0){
+
+                for(j=0; j < cnt; j++){
+                    l += range[j]['l'];
+                }
+
+                switch(dev[0]['dT']){
+                    case 'sensorBinary':
+                    case 'switchBinary':
+                    case 'doorlock':
+                        l = 0 < (l/cnt) && (l/cnt) < 1? 0.5 : (l/cnt); // set 0, 0.5 or 1 if status is binary
+                        break;
+                    default:
+                        l = l /cnt;
+                        
+                        if(l === +l && l !== (l|0)) { // round to one position after '.'
+                            l = l.toFixed(1);
+                        }
+                        break;
+                }
+            }else {
+                l = null;
+            }            
 
             metric = {
                 id: to,
-                l: l
+                l: parseFloat(l)
             }
 
             averageEntries.push(metric);
             
             l = 0,
-            metric = {},
-            cnt = 0;
+            metric = {};
         }
 
         entries = averageEntries;
