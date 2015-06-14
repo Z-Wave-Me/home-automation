@@ -215,47 +215,44 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
         bodyLength,
         response;
 
-    if (!response) {
-        response = {
-            data: null,
-            error: null,
-            code: 200,
-            message: null
-        };
+    response = {
+        data: null,
+        error: null,
+        code: 200,
+        message: null
+    };
 
-        // Fill internal structures
-        this.req.url = url;
-        this.req.method = request.method;
-        this.req.query = request.query || {};
-        this.req.body = request.body || request.data;
-        this.req.headers = request.headers || {};
-        this.req.peer = request.peer;
-        var contentType = request.headers['content-type'] || request.headers['Content-Type'] || request.headers['Content-type'];
+    // Fill internal structures
+    this.req.url = url;
+    this.req.method = request.method;
+    this.req.query = request.query || {};
+    this.req.body = request.body || request.data;
+    this.req.headers = request.headers || {};
+    this.req.peer = request.peer;
+    var contentType = request.headers['content-type'] || request.headers['Content-Type'] || request.headers['Content-type'];
 
-        // set defaultLang
-        if (self.req.query.hasOwnProperty('lang') || self.req.headers['Accept-Language']) {
-            self.controller.setDefaultLang(self.req.query.lang || self.req.headers['Accept-Language']);
+    // set defaultLang
+    if (self.req.query.hasOwnProperty('lang') || self.req.headers['Accept-Language']) {
+        self.controller.setDefaultLang(self.req.query.lang || self.req.headers['Accept-Language']);
+    }
+    
+    if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && contentType.toLowerCase().indexOf('application/json') !== -1) {
+        try {
+            this.req.reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            response.code = 500;
+            response.error = 'JSON Parse Error [Syntax Error]';
         }
-        
-        if (['PUT', 'POST'].indexOf(this.req.method) !== -1 && contentType.toLowerCase().indexOf('application/json') !== -1) {
-            try {
-                this.req.reqObj = JSON.parse(this.req.body);
-            } catch (ex) {
-                response.code = 500;
-                response.error = 'JSON Parse Error [Syntax Error]';
-            }
-        }
+    }
 
-        if (response.error === null) {
-            // Get and run request processor func
-            requestProcessorFunc = this.dispatchRequest(request.method, url);
-            response = requestProcessorFunc.call(this);
-        }
-        return this.initResponse(response);
+    if (response.error === null) {
+        // Get and run request processor func
+        requestProcessorFunc = this.dispatchRequest(request.method, url);
+        response = requestProcessorFunc.call(this);
     }
 
     // Return to the z-way-http
-    return this.res;
+    return response ? this.initResponse(response) : this.res;
 };
 
 ZAutomationWebRequest.prototype.NotImplementedReply = function () {

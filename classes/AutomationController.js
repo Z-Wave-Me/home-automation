@@ -9,6 +9,7 @@
 
 function AutomationController() {
     AutomationController.super_.call(this);
+
     this.allow_headers = [
         'Accept-Ranges',
         'Content-Encoding',
@@ -816,70 +817,15 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
     }
 };
 
-AutomationController.prototype.listNotifications = function (since, to, profile, isRedeemed) {
-    var self = this,
-        now = new Date(),
-        profile, hiddenDev, 
-        hiddenDevArr = [],
-        devArr = [],
-        filteredDevArr = [],
-        nonDevEvents = [],
-        filteredEvents = [];
+AutomationController.prototype.listNotifications = function (since, to) {
+    var now = new Date();
     
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() /1000);
 
-    if(profile){
-        
-        profile.hide_single_device_events.forEach(function(devId){
-            hiddenDevArr.push(AutomationController.prototype.hashCode(devId));
-        });
-
-        this.notifications.forEach(function (notification) {
-            if(notification.level !== 'device-info' && nonDevEvents.indexOf(notification.h) === -1){
-                nonDevEvents.push(notification.h);
-            }
-        }); 
-
-        if(profile.role !== 1){
-            this.devices.toJSON().filter(function(dev){
-                return profile.rooms.indexOf(dev.location) !== -1;
-            }).forEach(function(dev){
-                devArr.push(AutomationController.prototype.hashCode(dev.id));
-            });
-        } else{
-            this.devices.forEach(function(dev){
-                devArr.push(AutomationController.prototype.hashCode(dev.id));
-            });
-        }
-
-        if(hiddenDevArr.length > 0){
-            devArr.forEach(function(devId){
-                if(hiddenDevArr.indexOf(devId) === -1){
-                    filteredDevArr.push(devId);
-                }
-            });
-        } else{
-            filteredDevArr = devArr;
-        }
-
-        if(nonDevEvents.length > 0){
-            filteredEvents = filteredDevArr.concat(nonDevEvents);
-        } else {
-            filteredEvents = filteredDevArr;
-        }
-
-        var filteredNotifications = this.notifications.filter(function (notification) {
-            return notification.id >= since && notification.id <= to && filteredEvents.indexOf(notification.h) !== -1 && notification.redeemed === isRedeemed;
-        });
-
-    } else {    
-        var filteredNotifications = this.notifications.filter(function (notification) {
-            return notification.id >= since && notification.id <= to && notification.redeemed === isRedeemed;
-        });
-    }
-
-    return filteredNotifications;
+    return this.notifications.filter(function (notification) {
+        return notification.id >= since && notification.id <= to;
+    });
 };
 
 AutomationController.prototype.getNotification = function (id) {
@@ -888,10 +834,6 @@ AutomationController.prototype.getNotification = function (id) {
     });
 
     return filteredNotifications[0] || null;
-};
-
-AutomationController.prototype.getCountNotifications = function () {
-    return this.notifications.length || 0;
 };
 
 AutomationController.prototype.updateNotification = function (id, object, callback) {

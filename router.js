@@ -72,7 +72,7 @@ Router.prototype = {
     var parts = url.split("/"),
         namespace = _.first(parts, 2).join("/"),
         path = "/" + _.rest(parts, 2).join("/"),
-        lookup, handler, params, preprocessors;
+        lookup, role, handler, params, preprocessors;
 
     var ns = this.routes[namespace];
     if (ns && ns[method]) {
@@ -84,6 +84,7 @@ Router.prototype = {
           var matches = r.pattern.exec(path);
           if (!!matches) {
             params = matches.slice(1);
+            role = r.role;
             handler = r.handler;
             preprocessors = r.preprocessors;
             return true;
@@ -95,7 +96,7 @@ Router.prototype = {
               var proc = preprocessors[i] || _.identity;
               return proc(param);
           });
-          return {role: handler.role, handler: handler, params: params};
+          return {role: role, handler: handler, params: params};
         }
       }
     }
