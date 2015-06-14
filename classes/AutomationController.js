@@ -28,7 +28,7 @@ function AutomationController() {
     this.config = config.controller || {};
     this.availableLang = ['en', 'ru', 'de'];
     this.defaultLang = 'en';
-    this.profileSID = '';
+    this.profiles = config.profiles;
     this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
     this.modules_categories = config.modules_categories || [];
@@ -38,22 +38,11 @@ function AutomationController() {
 
     this.modules = {};
     this.devices = new DevicesCollection(this);
-    this.schemas = config.schemas || [];
 
     this.notifications = [];
     this.lastStructureChangeTime = 0;
 
     this._loadedSingletons = [];
-
-    if(config.profiles && config.profiles.length > 0) {
-        if(config.profiles[0].login === 'admin' && config.profiles[0].sid.indexOf('sua') > -1){
-            this.profiles = config.profiles;
-        } else {
-            this.profiles = this.setProfiles();
-        }
-    } else {
-        this.profiles = this.setProfiles();
-    }
 
     if(config.instances && config.instances.length > 0){
         this.instances = config.instances;
@@ -133,16 +122,6 @@ AutomationController.prototype.setDefaultLang = function (lang) {
     self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
 };
 
-AutomationController.prototype.setProfileSID = function (sid) {
-    var self = this;
-
-    profile = self.profiles.filter(function (profile){
-        return profile.sid === sid;
-    });
-
-    self.profileSID = profile && sid !== 'null'? sid : self.profileSID;
-};
-
 AutomationController.prototype.saveConfig = function () {
     var cfgObject = {
         "controller": this.config,
@@ -154,7 +133,6 @@ AutomationController.prototype.saveConfig = function () {
     };
 
     saveObject("config.json", cfgObject);
-    saveObject("schemas.json", this.schemas);
 };
 
 AutomationController.prototype.saveFiles = function () {
@@ -917,35 +895,6 @@ AutomationController.prototype.getDevHistorySince = function (dev, since, show) 
     return filteredEntries;
 };
 
-AutomationController.prototype.setProfiles = function () {
-    var langFile = this.loadMainLang();
-
-    if (!this.profiles || this.profiles.length === 0) {
-        sid = _.uniqueId('sua'+ Math.floor(new Date().getTime() /1000));       
-
-        this.profiles = [{
-            id: 1,
-            sid: sid,
-            role: 1,
-            login: 'admin',
-            password: '21232f297a57a5a743894a0e4a801fc3',
-            name: langFile.profile_name,
-            last_login: null,
-            lang:'en',
-            color:'#dddddd',
-            default_ui: 1,
-            dashboard: [],
-            interval: 2000,
-            rooms:[],
-            expert_view: false,
-            hide_all_device_events: false,
-            hide_system_events: false,
-            hide_single_device_events: []
-        }];
-    }
-    return this.profiles;
-};
-
 AutomationController.prototype.getListProfiles = function () {
     return this.profiles;
 };
@@ -956,47 +905,10 @@ AutomationController.prototype.getProfile = function (id) {
         }) || null;
 };
 
-AutomationController.prototype.createProfile = function (object) {
-    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
-        sid = _.uniqueId('u'+ Math.floor(new Date().getTime() /1000));
-        
-        profile = {
-            id: id,
-            sid: sid,
-            role: object.role || 2,
-            login: object.login,
-            password: object.password,
-            name: object.name,
-            lang: object.lang,
-            color: object.color,
-            default_ui: object.default_ui,
-            dashboard: object.dashboard,
-            interval: parseInt(object.interval),
-            rooms: object.rooms,
-            expert_view: object.expert_view || false,
-            hide_all_device_events: object.hide_all_device_events,
-            hide_system_events: object.hide_system_events,
-            hide_single_device_events: object.hide_single_device_events
-        };
-
-    _.defaults(profile, {
-        sid: null,
-        role: null,
-        login: '',
-        password: null,
-        name: '',
-        last_login: null,
-        lang:'en',
-        color:'#dddddd',
-        default_ui: 1,
-        dashboard: [],
-        interval: 2000,
-        rooms:[],
-        expert_view: false,
-        hide_all_device_events: false,
-        hide_system_events: false,
-        hide_single_device_events: []
-    });
+AutomationController.prototype.createProfile = function (profile) {
+    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1;
+    
+    profile.id = id;
 
     this.profiles.push(profile);
 
@@ -1008,43 +920,18 @@ AutomationController.prototype.updateProfile = function (object, id) {
     var profile = _.find(this.profiles, function (profile) {
             return profile.id === parseInt(id);
         }),
-        index,
-        that = this,
-        profileProps = ['name','lang','color','default_ui','role','dashboard','interval','rooms','expert_view','hide_all_device_events','hide_system_events','hide_single_device_events','positions'];
-
-    if (Boolean(profile)) {
+        index;
+    
+    if (profile) {
         index = this.profiles.indexOf(profile);
-
+        
         for (var property in object) {
-          if (object.hasOwnProperty(property) && profileProps.indexOf(property) > -1) {
-            switch(property){
-                case 'role':
-                    if(profile.role === 1){
-                        this.profiles[index][property] = object[property];
-                    }
-                    break;
-                default:
-                    this.profiles[index][property] = object[property];
-            }         
-          }
+            if (object.hasOwnProperty(property) && profile.hasOwnProperty(property)) {
+                this.profiles[index][property] = object[property];
+            }
         }
-
-        _.defaults(this.profiles[index], {
-            role: null,
-            name: '',
-            lang:'en',
-            color:'#dddddd',
-            default_ui: 1,
-            dashboard: [],
-            interval: 2000,
-            rooms:[],
-            expert_view: false,
-            hide_all_device_events: false,
-            hide_system_events: false,
-            hide_single_device_events: []
-        });
     }
-
+    
     this.saveConfig();
     return this.profiles[index];
 };
@@ -1053,10 +940,9 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
     var profile = _.find(this.profiles, function (profile) {
             return profile.id === parseInt(id);
         }),
-        index,
-        that = this;
+        index;
 
-    if (Boolean(profile)) {
+    if (profile) {
         index = this.profiles.indexOf(profile);
         
         if (object.hasOwnProperty('password')) {

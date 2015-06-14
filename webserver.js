@@ -799,7 +799,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            userId = this.controller.profileSID,
             reqObj,
             profile;
 
@@ -813,7 +812,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                         return profile.login === reqObj.login;
                                     }));
 
-        if (reqObj.hasOwnProperty('name') && nameAllreadyExists === false) {
+        if (nameAllreadyExists === false) {
+            _.defaults(reqObj, {
+                role: null,
+                name: 'User',
+                lang: 'en',
+                color: '#dddddd',
+                dashboard: [],
+                interval: 2000,
+                rooms: [],
+                positions: [],
+                hide_all_device_events: false,
+                hide_system_events: false,
+                hide_single_device_events: []
+            });
             profile = this.controller.createProfile(reqObj);
             if (profile !== undefined && profile.id !== undefined) {
                 reply.data = profile;
