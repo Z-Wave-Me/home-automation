@@ -16,6 +16,13 @@ executeFile("router.js");
 function ZAutomationAPIWebRequest (controller) {
     ZAutomationAPIWebRequest.super_.call(this);
 
+    this.ROLE = {
+        ADMIN: 1,
+        USER: 2,
+        LOCAL: 3,
+        ANONYMOUS: 4
+    };
+    
     this.router = new Router("/v1");
     this.controller = controller;
     this.res = {
@@ -26,6 +33,9 @@ function ZAutomationAPIWebRequest (controller) {
         body: null
     };
 
+    // !!! replace with tokens
+    this.sessions = [];
+
     this.registerRoutes();
 };
 
@@ -34,71 +44,68 @@ inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
 _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
-        this.router.get("/status", this.statusReport);
-        this.router.post("/login", this.verifyLogin());
-        this.router.get("/notifications", this.exposeNotifications());
-        this.router.get("/history", this.exposeHistory());
-        this.router.get("/devices", this.listDevices);
-        this.router.get("/restart", this.restartController);
-        this.router.get("/locations", this.listLocations());
-        this.router.get("/profiles", this.listProfiles());
-        this.router.get("/namespaces", this.listNamespaces);
-        this.router.post("/profiles", this.createProfile());
-        this.router.get("/locations/add", this.addLocation());
-        this.router.post("/locations", this.addLocation());
-        this.router.get("/locations/remove", this.removeLocation());
-        this.router.get("/locations/update", this.updateLocation());
-        this.router.get("/modules", this.listModules);
-        this.router.get("/modules/categories", this.listModulesCategories);
-        this.router.post("/modules/install", this.installModule());
-        this.router.get("/instances", this.listInstances);
-        this.router.post("/instances", this.createInstance());
+        this.router.get("/status", this.ROLE.USER, this.statusReport);
+        this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
+        this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
+        this.router.get("/history", this.ROLE.USER, this.exposeHistory);
+        this.router.get("/devices", this.ROLE.USER, this.listDevices);
+        this.router.get("/restart", this.ROLE.ADMIN, this.restartController);
+        this.router.get("/locations", this.ROLE.USER, this.listLocations);
+        this.router.get("/profiles", this.ROLE.USER, this.listProfiles);
+        this.router.get("/namespaces", this.ROLE.ADMIN, this.listNamespaces);
+        this.router.post("/profiles", this.ROLE.ADMIN, this.createProfile);
+        this.router.get("/locations/add", this.ROLE.ADMIN, this.addLocation);
+        this.router.post("/locations", this.ROLE.ADMIN, this.addLocation);
+        this.router.get("/locations/remove", this.ROLE.ADMIN, this.removeLocation);
+        this.router.get("/locations/update", this.ROLE.ADMIN, this.updateLocation);
+        this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
+        this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
+        this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
+        this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
+        this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
-        this.router.post("/upload/image", this.uploadImage);
-
-        // TODO: Should we remove these as they are no longer available?
-        // this.router.post("/namespaces", this.createNamespace());
-        // this.router.get("/notifications/markRead", this.markNotificationsRead());
-        // this.router.post("/schemas", this.createSchema());
+        this.router.post("/upload/image", this.ROLE.ADMIN, this.uploadImage);
 
         // patterned routes, right now we are going to just send in the wrapper
         // function. We will let the handler consumer handle the application of
         // the parameters.
-        this.router.get("/devices/:v_dev_id/command/:command_id", this.performVDevCommandFunc);
+        this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
 
-        this.router.del("/locations/:location_id", this.removeLocation, [parseInt]);
-        this.router.put("/locations/:location_id", this.updateLocation, [parseInt]);
-        this.router.get("/locations/:location_id", this.listLocations, [parseInt]);
+        this.router.del("/locations/:location_id", this.ROLE.ADMIN, this.removeLocation, [parseInt]);
+        this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
+        this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.listLocations, [parseInt]);
 
-        this.router.put("/notifications/:notification_id", this.updateNotification, [parseInt]);
-        this.router.get("/notifications/:notification_id", this.getNotificationFunc, [parseInt]);
-        this.router.del("/notifications/:notification_id", this.deleteNotifications, [parseInt]);
+        //this.router.put("/notifications/:notification_id", this.ROLE.USER, this.updateNotification, [parseInt]);
+        //this.router.get("/notifications/:notification_id", this.ROLE.USER, this.getNotificationFunc, [parseInt]);
+        this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 
-        this.router.del("/profiles/:profile_id", this.removeProfile, [parseInt]);
-        this.router.put("/profiles/:profile_id", this.updateProfile, [parseInt]);
-        this.router.get("/profiles/:profile_id", this.listProfiles, [parseInt]);
+        this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
+        this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
+        this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
 
-        this.router.put("/auth/update/:profile_id", this.updateProfileAuth, [parseInt]);
+        this.router.put("/auth/update/:profile_id", this.ROLE.USER, this.updateProfileAuth, [parseInt]);
 
-        this.router.put("/devices/:dev_id", this.setVDevFunc);
-        this.router.get("/devices/:dev_id", this.getVDevFunc);
+        this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
+        this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
 
-        this.router.get("/instances/:instance_id", this.getInstanceFunc);
-        this.router.put("/instances/:instance_id", this.reconfigureInstanceFunc, [parseInt]);
-        this.router.del("/instances/:instance_id", this.deleteInstanceFunc, [parseInt]);
+        this.router.get("/instances/:instance_id", this.ROLE.ADMIN, this.getInstanceFunc, [parseInt]);
+        this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
+        this.router.del("/instances/:instance_id", this.ROLE.ADMIN, this.deleteInstanceFunc, [parseInt]);
 
-        this.router.get("/modules/:module_id", this.getModuleFunc);
+        this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
-        this.router.get("/modules/categories/:category_id", this.getModuleCategoryFunc);
+        this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
 
-        this.router.get("/namespaces/:namespace_id", this.getNamespaceFunc, [parseInt]);
+        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc, [parseInt]);
 
-        this.router.get("/history/:dev_id", this.getDevHist);
+        this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 
-        this.router.get("/load/modulemedia/:module_name/:file_name", this.loadModuleMedia);
+        this.router.get("/load/modulemedia/:module_name/:file_name", this.ROLE.ANONYMOUS, this.loadModuleMedia);
         
-        this.router.get("/load/image/:img_name", this.loadImage);
+        this.router.get("/load/image/:img_name", this.ROLE.ANONYMOUS, this.loadImage);
     },
+
+    // !!! Do we need it?
     statusReport: function () {
         var currentDateTime = new Date();
 
@@ -117,59 +124,54 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         }
 
-        this.initResponse(reply);
+        return reply;
     },
     verifyLogin: function() {
-        var that = this,
-            reply = {
+        var reply = {
                     error: null,
                     data: null,
                     code: 500
-                };
+                },
+            reqObj;
+
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+            return reply;
+        }
+
+        profile = _.find(this.controller.profiles, function (profile) {
+            return profile.login === reqObj.login;
+        });
+
+        if (profile && reqObj.password === profile.password) {
+            var sid = crypto.guid();
+            this.sessions[sid] = profile;
+
+            reply.code = 200;
+            reply.data = {
+                sid: sid, // session ID
+                id: profile.id,
+                role: profile.role,
+                name: profile.name,
+                lang: profile.lang,
+                color: profile.color,
+                dashboard: profile.dashboard,
+                interval: profile.interval,
+                rooms: profile.rooms,
+                hide_all_device_events: profile.hide_all_device_events,
+                hide_system_events: profile.hide_system_events,
+                hide_single_device_events: profile.hide_single_device_events
+            };
+
+            // !!! what to do with??? this.controller.defaultLang = profile.lang;
+        } else {
+            reply.code = 401;
+            reply.error = "User login/password is wrong.";
+        }
         
-        return function () {
-            var reqObj;
-
-            try {
-                reqObj = JSON.parse(that.req.body);
-            } catch (ex) {
-                reply.error = ex.message;
-            }
-
-            profile = _.find(that.controller.profiles, function (profile) {
-                return profile.login === reqObj.login;
-            });
-
-            if(!!profile && reqObj.password === profile.password){
-
-                reply.code = 200;
-                reply.data = {
-                    id: profile.id,
-                    sid: profile.sid,
-                    role: profile.role,
-                    name: profile.name,
-                    last_login: profile.last_login,
-                    lang: profile.lang,
-                    color: profile.color,
-                    default_ui: profile.default_ui,
-                    dashboard: profile.dashboard,
-                    interval: profile.interval,
-                    rooms: profile.rooms,
-                    expert_view: profile.expert_view,
-                    hide_all_device_events: profile.hide_all_device_events,
-                    hide_system_events: profile.hide_system_events,
-                    hide_single_device_events: profile.hide_single_device_events
-                };
-
-                that.controller.profileSID = profile.sid;
-                that.controller.defaultLang = profile.lang;
-            } else {
-                reply.code = 404;
-                reply.error = "User login/password is wrong.";
-            }
-            
-            this.initResponse(reply);
-        };
+        return reply;
     },
     // Devices
     listDevices: function () {
@@ -182,177 +184,114 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     devices: []
                 }
             },
-            since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
-            that = this,
-            profile = that.getProfileBySID(),
-            role = that.getUserRole(),
-            devices;
+            since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
 
-        reply.data.structureChanged = that.controller.lastStructureChangeTime >= since ? true : false;
-        
-        if(that.controller.profileSID !== ''){
-            if(role !== 1 && profile){
-                if(profile.rooms && !!profile.rooms){
-                    devices = that.controller.devices.toJSON().filter(function(dev){
-                        return profile.rooms.indexOf(parseInt(dev.location)) !== -1;
-                    });
-                }            
-            }else{
-                devices = that.controller.devices.toJSON();
-            }
-
-            if(devices){
-                if (reply.data.structureChanged) {
-                    reply.data.devices = devices;
-                } else {
-                    reply.data.devices = that.controller.devices.toJSON({since: reply.data.structureChanged ? 0 : since});
-                }
-
-                if (Boolean(that.req.query.pagination)) {
-                    if(role !== 1){
-                        reply.data.total_count = devices.length;
-                    }else{
-                        reply.data.total_count = that.controller.devices.models.length;
-                    }                
-                }
-            } else {
-                reply.code = 404;
-                reply.error = 'No devices found.';
-            }
-        } else {
-            reply.code = 401;
-            reply.error = 'Not logged in';
+        reply.data.structureChanged = this.controller.lastStructureChangeTime >= since ? true : false;
+        reply.data.devices = this.devicesByUser(this.req.user, {updateTime: reply.data.structureChanged ? 0 : since});
+        if (Boolean(this.req.query.pagination)) {
+            reply.data.total_count = devices.length;
         }
-        
-        that.initResponse(reply);
+
+        return reply;
     },
     getVDevFunc: function (vDevId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null
-            };
+            },
+            device = _.find(this.devicesByUser(this.req.user), function(device) { return device.id === vDevId; });
 
-        return function () {
-            if (that.controller.devices.get(vDevId)) {
-                reply.code = 200;
-                //reply.data = {
-                //   meta: that._vdevMetaOnly(controller.devices[vDevId]),
-                //   data: controller.getVdevInfo(vDevId)
-                //}
-                reply.data = that.controller.devices.get(vDevId).toJSON();
-            } else {
-                reply.code = 404;
-                reply.error = "Device " + vDevId + " doesn't exist";
-            }
-            that.initResponse(reply);
-        };
+        if (device) {
+            reply.code = 200;
+            reply.data = device.toJSON();
+        } else {
+            reply.code = 404;
+            reply.error = "Device " + vDevId + " doesn't exist";
+        }
+        return reply;
     },
     setVDevFunc: function (vDevId) {
-        var that = this,
-            reqObj,
+        var reqObj,
             reply = {
                 error: null,
                 data: null
-            };
+            },
+            device = _.find(this.devicesByUser(this.req.user), function(device) { return device.id === vDevId; });
 
-        return function () {
-            try {
-                reqObj = JSON.parse(that.req.body);
-            } catch (ex) {
-                reply.error = ex.message;
-            }
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
 
-            if (that.controller.devices.has(vDevId)) {
-                reply.code = 200;
-                reply.data = that.controller.devices.get(vDevId).set(reqObj);
-            } else {
-                reply.code = 404;
-                reply.error = "Device " + vDevId + " doesn't exist";
-            }
-            that.initResponse(reply);
-        };
+        if (device) {
+            var vDev = this.controller.devices.get(vDevId);
+            reply.code = 200;
+            reply.data = vDev.set(reqObj);
+        } else {
+            reply.code = 404;
+            reply.error = "Device " + vDevId + " doesn't exist";
+        }
+        return reply;
     },
     performVDevCommandFunc: function (vDevId, commandId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 200
             },
-            result_execution_command;
-
-        return function () {
-
-            if (that.controller.devices.has(vDevId)) {
-                result_execution_command = that.controller.devices.get(vDevId).performCommand.call(that.controller.devices.get(vDevId), commandId, that.req.query);
-                reply.data = !!result_execution_command ? result_execution_command : null;
-            } else {
-                reply.data = null;
-                reply.code = 404;
-                reply.error = "Device " + vDevId + " doesn't exist";
-            }
-            that.initResponse(reply);
-        };
+            result_execution_command,
+            vDev = this.deviceByUser(vDevId, this.req.user);
+        
+        if (vDev) {
+            result_execution_command = vDev.performCommand.call(vDev.get(vDevId), commandId, this.req.query);
+            reply.data = !!result_execution_command ? result_execution_command : null;
+        } else {
+            reply.data = null;
+            reply.code = 404;
+            reply.error = "Device " + vDevId + " doesn't exist";
+        }
+        return reply;
     },
     // Notifications
     exposeNotifications: function () {
         var notifications,
             reply = {
                 error: null,
-                data: null
+                data: null,
+                code: 200
             },
-            since,
-            redeemed,
-            to,
-            userId,
-            that = this,
-            listProf = that.controller.getListProfiles().length;
+            timestamp = Math.floor(new Date().getTime() / 1000),
+            since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
+            to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
+            profile = this.profileByUser(this.req.user),
+            devices = this.devicesByUser().map(function(device) { return device.id });
 
+        notifications = this.controller.notifications.filter(function (notification) {
+            return  notification.id >= since && notification.id <= to && // filter by time
+                    notification.level !== 'device-info' && // remove from list device event log
+                    (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(notification.source) === -1) && // remove events from devices to hide
+                    (!notification.source || devices.indexOf(notification.source) === -1) // filter by user device
+        });
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                that.res.status = 200;
-                since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
-                to = that.req.query.hasOwnProperty("to") ? parseInt(that.req.query.to, 10) : 0;
-                redeemed = that.req.query.hasOwnProperty("redeemed") && (String(that.req.query.redeemed)) === 'true' ? true : false;
+        if (Boolean(this.req.query.pagination)) {
+            reply.data.total_count = notifications.length;
+            // !!! fix pagination
+            notifications = notifications.slice();
+        }
 
-                profile = that.getProfileBySID();
-                
-                if(profile !== null) {
-                    notifications = that.controller.listNotifications(since, to, profile, redeemed);
-
-                    reply.data = {
-                        updateTime: Math.floor(new Date().getTime() / 1000),
-                        notifications: notifications
-                    };
-
-                    if (Boolean(that.req.query.pagination)) {
-                        reply.data.total_count = that.controller.getCountNotifications();
-                    }
-
-                    reply.code = 200;
-                    reply.error = null;
-                } else {
-                    reply.data = {
-                        updateTime: Math.floor(new Date().getTime() / 1000),
-                        notifications: []
-                    };
-                    reply.code = 404;
-                    reply.error = "Profile doesn't exist.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            that.initResponse(reply);
+        reply.data = {
+            updateTime: timestamp,
+            notifications: notifications
         };
+
+        return reply;
     },
+
+    /*
     getNotificationFunc: function (notificationId) {
         return function () {
-            var that = this,
-                id = notificationId ? parseInt(notificationId) : 0,
+            var id = notificationId ? parseInt(notificationId) : 0,
                 reply = {
                     data: null,
                     error: null,
@@ -361,7 +300,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 notification;
 
             if (id) {
-                notification = that.controller.getNotification(id);
+                notification = this.controller.getNotification(id);
                 if (notification) {
                     reply.code = 200;
                     reply.data = notification;
@@ -374,8 +313,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = "Argument id is required";
             }
 
-            that.initResponse(reply);
-        };
+            return reply;
+        }
     },
     updateNotification: function (notificationId) {
 
@@ -384,9 +323,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     error: null,
                     data: "OK"
                 },
-                that = this,
                 reqObj,
-                notification = that.controller.getNotification(notificationId);
+                notification = this.controller.getNotification(notificationId);
 
             if (Boolean(notification)) {
 
@@ -396,7 +334,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.error = ex.message;
                 }
 
-                that.controller.updateNotification(notificationId, reqObj, function (notice) {
+                this.controller.updateNotification(notificationId, reqObj, function (notice) {
                     if (notice) {
                         reply.code = 200;
                         reply.data = notice;
@@ -411,121 +349,79 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 404;
                 reply.error = "Notification " + notificationId + " doesn't exist";
             }
-            that.initResponse(reply);
+            return reply;
         };
     },
+    */
     deleteNotifications: function (notificationId) {
+        // !!! Needed?
+        throw "deleteNotifications";
+        
+        var id = notificationId ? parseInt(notificationId) : 0,
+            reply = {
+                data: null,
+                error: null,
+                code: 200
+            },
+            before;
 
-        return function () {
-            
-            var that = this,
-                id = notificationId ? parseInt(notificationId) : 0,
-                reply = {
-                    data: null,
-                    error: null,
-                    code: 200
-                },
-                before,
-                role = that.getUserRole();
-
-            if(that.controller.profileSID !== ''){
-                if(role === 1){
-                    
-                    before = that.req.query.hasOwnProperty("allPrevious") ? Boolean(that.req.query.allPrevious) : false;
-                    uid = that.req.query.hasOwnProperty("uid") ? parseInt(that.req.query.uid) : 0;
-                    
-                    if (id > 0 && before === false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
-                        reply.code = 404;
-                        reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
-                    } else if (id > 0 && before !== false && !_.any(that.controller.notifications, function (notification) { return (notification.id === id);})) {
-                        reply.code = 404;
-                        reply.error = "Notification " + id + " not found";
-                    } else if (before === true && !_.any(that.controller.notifications, function (notification) { return notification.id < id; })) {
-                        reply.code = 404;
-                        reply.error = "No notifications found older than unix timestamp: " + id;
-                    } else {
-                        that.controller.deleteNotifications(id, before, uid, function (notice) {
-                            if (notice) {
-                                reply.code = 204;
-                                reply.data = null;
-                            } else {
-                                reply.code = 404;
-                                reply.data = null;
-                                reply.error = "Notifications not found.";
-                            }
-                        }, true);
-                    }
-                } else {
-                    reply.code = 403;
+        before = this.req.query.hasOwnProperty("allPrevious") ? Boolean(this.req.query.allPrevious) : false;
+        uid = this.req.query.hasOwnProperty("uid") ? parseInt(this.req.query.uid) : 0;
+        
+        if (id > 0 && before === false && !_.any(this.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
+            reply.code = 404;
+            reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
+        } else if (id > 0 && before !== false && !_.any(this.controller.notifications, function (notification) { return (notification.id === id);})) {
+            reply.code = 404;
+            reply.error = "Notification " + id + " not found";
+        } else if (before === true && !_.any(this.controller.notifications, function (notification) { return notification.id < id; })) {
+            reply.code = 404;
+            reply.error = "No notifications found older than unix timestamp: " + id;
+        } else {
+            this.controller.deleteNotifications(id, before, uid, function (notice) {
+                if (notice) {
+                    reply.code = 204;
                     reply.data = null;
-                    reply.error = "Permission denied.";
+                } else {
+                    reply.code = 404;
+                    reply.data = null;
+                    reply.error = "Notifications not found.";
                 }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            this.initResponse(reply);
-        };
+            }, true);
+        }
+        return reply;
     },
     //locations
     listLocations: function (locationId) {
-        var that = this,
-            reply = {
+        var reply = {
                 data: null,
                 error: null
             },
-            profile,
-            role;
+            locations = this.locationsByUser(this.req.user);
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                profile = that.getProfileBySID();
-                role = that.getUserRole();
-
-                if (locationId === undefined){
-                    if(role === 1){
-                        reply.code = 200;
-                        reply.error = null;
-                        reply.data = that.controller.locations;
-                    } else if (role === 2){
-                        reply.code = 200;
-                        reply.error = null;
-                        reply.data = that.controller.locations.filter(function (location) {
-                            return profile.rooms.indexOf(location.id) !== -1;
-                        });
-                    } else {
-                        reply.code = 404;
-                        reply.error = "Could not load locations.";
-                    }
-                } else {
-                    var locations;
-
-                    if(role === 1){
-                        locations = that.controller.locations.filter(function (location) {
-                            return location.id === locationId;
-                        });
-                    } else {
-                        locations = that.controller.locations.filter(function (location) {
-                            return location.id === locationId && profile.rooms.indexOf(locationId) !== -1;
-                        });
-                    }
-
-                    if (locations.length > 0) {
-                        reply.data = locations[0];
-                        reply.code = 200;
-                    } else {
-                        reply.code = 404;
-                        reply.error = "Location " + locationId + " doesn't exist";
-                    }
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+        if (locationId === undefined){
+            if (Boolean(this.req.query.pagination)) {
+                reply.data.total_count = reply.locations.length;
+                // !!! fix pagination
+                locations = locations.slice();
             }
 
-            that.initResponse(reply);
-        };
+            reply.code = 200;
+            reply.data = locations;
+        } else {
+            var _location = locations.filter(function (location) {
+                return location.id === locationId;
+            });
+
+            if (_location.length > 0) {
+                reply.data = _location[0];
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = "Location " + locationId + " not found";
+            }
+        }
+        return reply;
     },
     addLocation: function () {
         var title,
@@ -534,118 +430,85 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null
             },
             reqObj,
-            that = this,
-            locProps = {},
-            role;
+            locProps = {};
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-                
-                if(role === 1){
-                    if (that.req.method === 'GET') {
-                        
-                        reqObj = that.req.query;
-                    
-                    } else if (that.req.method === 'POST') { // POST
-                        try {
-                            reqObj = JSON.parse(that.req.body);
-                        } catch (ex) {
-                            reply.code = 500;
-                            reply.error = "Cannot parse POST request. ERROR:" + ex.message;
-                        }
-                    }
-
-                    for (var property in reqObj) {
-                        if ( property !== 'id') {
-                            locProps[property] = reqObj[property] ? reqObj[property] : null;
-                        }
-                    }
-
-                    if (!!locProps.title) {
-                        that.controller.addLocation(locProps, function (data) {
-                            if (data) {
-                                reply.code = 201;
-                                reply.data = data;
-                            } else {
-                                reply.code = 500;
-                                reply.error = "Location doesn't created: Parsing the arguments has failed.";
-                            }
-                        });
-                    } else {
-                        reply.code = 500;
-                        reply.error = "Argument 'title' is required.";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
+        if (this.req.method === 'GET') {
             
-            that.initResponse(reply);
-        };
+            reqObj = this.req.query;
+        
+        } else if (this.req.method === 'POST') { // POST
+            try {
+                reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.code = 500;
+                reply.error = "Cannot parse POST request. ERROR:" + ex.message;
+            }
+        }
+
+        for (var property in reqObj) {
+            if ( property !== 'id') {
+                locProps[property] = reqObj[property] ? reqObj[property] : null;
+            }
+        }
+
+        if (!!locProps.title) {
+            this.controller.addLocation(locProps, function (data) {
+                if (data) {
+                    reply.code = 201;
+                    reply.data = data;
+                } else {
+                    reply.code = 500;
+                    reply.error = "Location doesn't created: Parsing the arguments has failed.";
+                }
+            });
+        } else {
+            reply.code = 500;
+            reply.error = "Argument 'title' is required.";
+        }
+
+        return reply;
     },
     removeLocation: function (locationId) {
-        var that = this,
-            id,
+        var id,
+            reqObj,
             reply = {
                 error: null,
-                data: null
-            },
-            reqObj,
-            role;
+                data: null,
+                code: 200
+            };
 
-        return function () {
-            if(that.controller.profileSID !== ''){            
-                role = that.getUserRole();
-
-                if(role === 1){
-
-                    if (that.req.method === 'GET') {
-                        id = parseInt(that.req.query.id);
-                    } else if (that.req.method === 'DELETE' && locationId === undefined) {
-                        try {
-                            reqObj = JSON.parse(that.req.body);
-                        } catch (ex) {
-                            reply.error = ex.message;
-                        }
-                        id = reqObj.id;
-                    } else if (that.req.method === 'DELETE' && locationId !== undefined) {
-                        id = locationId;
-                    }
-
-                    if (!!id) {
-                        that.controller.removeLocation(id, function (result) {
-                            if (result) {
-                                reply.code = 204;
-                                reply.data = null;
-                            } else {
-                                reply.code = 404;
-                                reply.error = "Location " + id + " doesn't exist";
-                            }
-                        });
-                    } else {
-                        reply.code = 400;
-                        reply.error = "Argument id is required";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+        if (this.req.method === 'GET') {
+            id = parseInt(this.req.query.id);
+        } else if (this.req.method === 'DELETE' && locationId === undefined) {
+            try {
+                reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
             }
+            id = reqObj.id;
+        } else if (this.req.method === 'DELETE' && locationId !== undefined) {
+            id = locationId;
+        }
 
-            that.initResponse(reply);
-        };
+        if (!!id) {
+            this.controller.removeLocation(id, function (result) {
+                if (result) {
+                    reply.code = 204;
+                    reply.data = null;
+                } else {
+                    reply.code = 404;
+                    reply.error = "Location " + id + " doesn't exist";
+                }
+            });
+        } else {
+            reply.code = 400;
+            reply.error = "Argument id is required";
+        }
+
+        return reply;
     },
     updateLocation: function (locationId) {
-        var that = this,
-            id,
+        var id,
             title,
             user_img,
             default_img,
@@ -655,669 +518,438 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 200
             },
-            reqObj,
-            role;
+            reqObj;
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-
-                if(role === 1){
-
-                    if (this.req.method === 'GET') {
-                        id = parseInt(this.req.query.id);
-                        title = this.req.query.title;
-                    } else if (this.req.method === 'PUT') {
-                        try {
-                            reqObj = JSON.parse(this.req.body);
-                        } catch (ex) {
-                            reply.error = ex.message;
-                        }
-                        id = locationId || reqObj.id;
-                        title = reqObj.title;
-                        user_img =reqObj.user_img || '';
-                        default_img = reqObj.default_img || '';
-                        img_type = reqObj.img_type || '';
-                    }
-
-                    if (!!title && title.length > 0) {
-                        that.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
-                            if (data) {
-                                reply.data = data;
-                            } else {
-                                reply.code = 404;
-                                reply.error = "Location " + id + " doesn't exist";
-                            }
-                        });
-                    } else {
-                        reply.code = 400;
-                        reply.error = "Arguments id & title are required";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+        if (this.req.method === 'GET') {
+            id = parseInt(this.req.query.id);
+            title = this.req.query.title;
+        } else if (this.req.method === 'PUT') {
+            try {
+                reqObj = JSON.parse(this.req.body);
+            } catch (ex) {
+                reply.error = ex.message;
             }
+            id = locationId || reqObj.id;
+            title = reqObj.title;
+            user_img =reqObj.user_img || '';
+            default_img = reqObj.default_img || '';
+            img_type = reqObj.img_type || '';
+        }
 
-            this.initResponse(reply);
-        };
+        if (!!title && title.length > 0) {
+            this.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
+                if (data) {
+                    reply.data = data;
+                } else {
+                    reply.code = 404;
+                    reply.error = "Location " + id + " doesn't exist";
+                }
+            });
+        } else {
+            reply.code = 400;
+            reply.error = "Arguments id & title are required";
+        }
+
+        return reply;
     },
     // modules
     listModules: function () {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: [],
                 code: 200
             },
-            module = null,
-            role = that.getUserRole();
+            module = null;
 
-        if(that.controller.profileSID !== ''){
-            if(role === 1){
-
-                Object.keys(that.controller.modules).sort().forEach(function (className) {
-                    module = that.controller.getModuleData(className);
-                    module.className = className;
-                    if (module.singleton && _.any(that.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
-                        module.created = true;
-                    } else {
-                        module.created = false;
-                    }
-                    reply.data.push(module);
-                });
+        Object.keys(this.controller.modules).sort().forEach(function (className) {
+            module = this.controller.getModuleData(className);
+            module.className = className;
+            if (module.singleton && _.any(this.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+                module.created = true;
             } else {
-                reply.code = 403;
-                reply.error = "Permission denied.";
+                module.created = false;
             }
-        } else {
-            reply.code = 401;
-            reply.error = 'Not logged in';
-        }
+            reply.data.push(module);
+        });
 
-        this.initResponse(reply);
+        return reply;
     },
     getModuleFunc: function (moduleId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
-                code: 500
-            },
-            role;
+                code: null
+            };
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-
-                if(role === 1){
-
-                    if (!that.controller.modules.hasOwnProperty(moduleId)) {
-                        reply.code = 404;
-                        reply.error = 'Instance ' + moduleId + ' not found';
-                    } else {
-                        reply.code = 200;
-                        reply.data = that.controller.getModuleData(moduleId);
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            this.initResponse(reply);
-        };
+        if (!this.controller.modules.hasOwnProperty(moduleId)) {
+            reply.code = 404;
+            reply.error = 'Instance ' + moduleId + ' not found';
+        } else {
+            reply.code = 200;
+            reply.data = this.controller.getModuleData(moduleId);
+        }
+        
+        return reply;
     },
     // modules categories
     listModulesCategories: function () {
-        var that = this,
-                reply = {
-                    error: null,
-                    data: null,
-                    code: 200
-                },
-                role = this.getUserRole();
+        var reply = {
+                error: null,
+                data: null,
+                code: 200
+            };
 
-        if(role === 1){
-            reply.data =that.controller.getListModulesCategories();
-        } else {
-            reply.code = 403;
-            reply.error = "Permission denied.";
-        }
+        reply.data = this.controller.getListModulesCategories();
 
-        this.initResponse(reply);
+        return reply;
     },
     getModuleCategoryFunc: function (categoryId) {
-        var that = this,
-            reply = {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+
+        category = this.controller.getListModulesCategories(categoryId);
+
+        if (!Boolean(category)) {
+            reply.code = 404;
+            reply.error = "Categories " + categoryId + " not found";
+        } else {
+            reply.code = 200;
+            reply.data = category;
+        }
+
+        return reply;
+    },
+    // install module
+    installModule: function () {
+        var reply = {
                 error: null,
                 data: null,
                 code: 500
             },
-            role;
-
-        return function () {
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-
-                if(role === 1){
-                    category = that.controller.getListModulesCategories(categoryId);
-
-                    if (!Boolean(category)) {
-                        reply.code = 404;
-                        reply.error = "Categories " + categoryId + " not found";
-                    } else {
-                        reply.code = 200;
-                        reply.data = category;
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            this.initResponse(reply);
-        };
-    },
-    // install module
-    installModule: function () {
-        return function () {
+            moduleUrl = this.req.body.moduleUrl;
             
-                var reply = {
-                        error: null,
-                        data: null,
-                        code: 500
-                    },
-                    moduleUrl = this.req.body.moduleUrl,
-                    that = this,
-                    role = that.getUserRole();
-            
-            if(that.controller.profileSID !== ''){
-                if(role === 1){
-                    var result = "in progress";
+        var result = "in progress";
 
-                    installer.install(
-                        moduleUrl,
-                        function() {
-                                result = "done";
-                        },  function() {
-                                result = "failed";
-                        }
-                    );
-                    
-                    var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-                    
-                    while ((new Date()).valueOf() < d &&  result === "in progress") {
-                            processPendingCallbacks();
-                    }
-                    
-                    if (result === "in progress") {
-                            result = "failed";
-                    }
-
-                    if (result === "done") {
-                        reply.code = 201;
-                        reply.data = "Done";
-                    } else {
-                        reply.code = 500;
-                        reply.error = "Failed to install module " + moduleUrl;
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+        installer.install(
+            moduleUrl,
+            function() {
+                    result = "done";
+            },  function() {
+                    result = "failed";
             }
+        );
+        
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                processPendingCallbacks();
+        }
+        
+        if (result === "in progress") {
+                result = "failed";
+        }
 
-            this.initResponse(reply);
-        };
+        if (result === "done") {
+            reply.code = 201;
+            reply.data = "Done";
+        } else {
+            reply.code = 500;
+            reply.error = "Failed to install module " + moduleUrl;
+        }
+
+        return reply;
     },
 
     // instances
     listInstances: function () {
-        var that = this,
-            reply = {
+        var reply = {
                     error: null,
                     data: null,
                     code: 200
                 };
-        if(that.controller.profileSID !== ''){
-            reply.data = that.controller.instances;
-        } else {
-            reply.code = 401;
-            reply.error = 'Not logged in';
-        }
+        reply.data = this.controller.instances;
 
-        this.initResponse(reply);
+        return reply;
     },
     createInstance: function () {
-        return function () {
-            
-                var reply = {
-                        error: null,
-                        data: null,
-                        code: 500
-                    },
-                    reqObj = this.req.reqObj,
-                    that = this,
-                    instance,
-                    role = that.getUserRole();
-            
-            if(that.controller.profileSID !== ''){
-                if(role === 1){
-                    if (that.controller.modules.hasOwnProperty(reqObj.moduleId)) {
-                        instance = that.controller.createInstance(reqObj);
-                        if (instance) {
-                            reply.code = 201;
-                            reply.data = instance;
-                        } else {
-                            reply.code = 500;
-                            reply.error = "Cannot instantiate module " + reqObj.moduleId;
-                        }
-                    } else {
-                        reply.code = 404;
-                        reply.error = "Module " + reqObj.moduleId + " doesn't exist";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            this.initResponse(reply);
-        };
-    },
-    getInstanceFunc: function (instanceId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 500
             },
-            role;
+            reqObj = this.req.reqObj,
+            instance;
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-                
-                if(role === 1){
-                    if(isNaN(instanceId)){
-                        instance = _.filter(that.controller.instances, function (i) { return instanceId === i.moduleId; });
-                    } else {
-                        instance = _.find(that.controller.instances, function (i) { return parseInt(instanceId) === i.id; });
-                    }
-                    if (!Boolean(instance)) {
-                        reply.code = 404;
-                        reply.error = "Instance " + instanceId + " is not found";
-                    } else {
-                        reply.code = 200;
-                        reply.data = instance;
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
+        if (this.controller.modules.hasOwnProperty(reqObj.moduleId)) {
+            instance = this.controller.createInstance(reqObj);
+            if (instance) {
+                reply.code = 201;
+                reply.data = instance;
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                reply.code = 500;
+                reply.error = "Cannot instantiate module " + reqObj.moduleId;
             }
+        } else {
+            reply.code = 404;
+            reply.error = "Module " + reqObj.moduleId + " doesn't exist";
+        }
 
-            this.initResponse(reply);
-        };
+        return reply;
+    },
+    getInstanceFunc: function (instanceId) {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+
+        instance = _.find(this.controller.instances, function (i) { return instanceId === i.id; });
+
+        if (!Boolean(instance)) {
+            reply.code = 404;
+            reply.error = "Instance " + instanceId + " is not found";
+        } else {
+            reply.code = 200;
+            reply.data = instance;
+        }
+
+        return reply;
     },
     reconfigureInstanceFunc: function (instanceId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null
             },
-            instance,
-            role;
+            reqObj = this.req.reqObj,
+            instance;
 
-        return function () {
-            try {
-                var reqObj = JSON.parse(this.req.body);
-            } catch (ex) {
-                reply.error = ex.message;
-            }
-
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-
-                if(role === 1){
-                    if (!_.any(that.controller.instances, function (instance) { return instanceId === instance.id; })) {
-                        reply.code = 404;
-                        reply.error = "Instance " + instanceId + " doesn't exist";
-                    } else {
-                        instance = that.controller.reconfigureInstance(instanceId, reqObj);
-                        if (instance) {
-                            reply.code = 200;
-                            reply.data = instance;
-                        } else {
-                            reply.code = 500;
-                            reply.error = "Cannot reconfigure module " + instanceId + " config";
-                        }
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
+        if (!_.any(this.controller.instances, function (instance) { return instanceId === instance.id; })) {
+            reply.code = 404;
+            reply.error = "Instance " + instanceId + " doesn't exist";
+        } else {
+            instance = this.controller.reconfigureInstance(instanceId, reqObj);
+            if (instance) {
+                reply.code = 200;
+                reply.data = instance;
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                reply.code = 500;
+                reply.error = "Cannot reconfigure module " + instanceId + " config";
             }
+        }
 
-
-            this.initResponse(reply);
-        };
+        return reply;
     },
     deleteInstanceFunc: function (instanceId) {
-        var that = this,
-            reply = {
-                error: null,
-                data: null,
-                code: 200
-            },
-            role;
-
-        return function () {
-            if(that.controller.profileSID !== ''){
-                role = that.getUserRole();
-                
-                if(role === 1){
-                    if (!_.any(that.controller.instances, function (instance) { return instance.id === instanceId; })) {
-                        reply.code = 404;
-                        reply.error = "Instance " + instanceId + " not found";
-                    } else {
-                        reply.code = 204;
-                        reply.data = null;
-                        that.controller.deleteInstance(instanceId);
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-
-            this.initResponse(reply);
+        var reply = {
+            error: null,
+            data: null,
+            code: 200
         };
+
+        if (!_.any(this.controller.instances, function (instance) { return instance.id === instanceId; })) {
+            reply.code = 404;
+            reply.error = "Instance " + instanceId + " not found";
+        } else {
+            reply.code = 204;
+            reply.data = null;
+            this.controller.deleteInstance(instanceId);
+        }
+        
+        return reply;
     },
     // profiles
     listProfiles: function (profileId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 500
             },
             profiles,
-            profile,
-            userId,
-            role;
+            profile;
 
-        return function () {
-            userId = that.controller.profileSID;
-            
-            if(userId !== ''){
-                role= that.getUserRole();
-                    
-                // list all profiles only if user has 'admin' permissions
-                if (!_.isNumber(profileId) && role === 1) {
-                    profiles = that.controller.getListProfiles();
-                    if (!Array.isArray(profiles)) {
-                        reply.code = 500;
-                        reply.error = "Unknown error. profiles isn't array";
-                    } else {
-                        reply.code = 200;
-                        reply.data = profiles;
-                    }
-                } else {
-                    // list target profile if user has 'admin' permissions
-                    // list only own profile if user has 'user' permissions otherwise response with error
-                    profile = that.controller.getProfile(profileId);
-                    if (profile && profile !== null) {
-                        if (role === 1 || (role === 2 && userId === profile.sid)){ 
-                            reply.code = 200;
-                            reply.data = profile;
-                        } else {
-                            reply.code = 403;
-                            reply.error = "Permission denied. Cannot show foreign profile.";
-                        }
-                    } else {
-                        reply.code = 404;
-                        reply.error = "Profile '" + profileId + "' doesn't exist";
-                    }
-                }
+        // list all profiles only if user has 'admin' permissions
+        if (!_.isNumber(profileId) && this.req.role === this.ROLE.ADMIN) {
+            profiles = this.controller.getListProfiles();
+            if (!Array.isArray(profiles)) {
+                reply.code = 500;
+                reply.error = "Unknown error. profiles isn't array";
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                reply.code = 200;
+                reply.data = profiles;
             }
+        } else {
+            profile = this.controller.getProfile(profileId);
+            if (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && profile && this.req.user === profile.id)) {
+                reply.code = 200;
+                reply.data = profile;
+            } else {
+                reply.code = 404;
+                reply.error = "Profile not found.";
+            }
+        }
 
-            this.initResponse(reply);
-        };
+        return reply;
     },
     createProfile: function () {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 500
             },
-            userId,
-            role,
             reqObj,
             profile;
 
-        return function () {
-            userId = that.controller.profileSID;
-            
-            if(userId !== ''){
-                role = that.getUserRole();
-                    
-                // only users with 'admin' permissions can create new profiles
-                if (role === 1){
-                    try {
-                        reqObj = JSON.parse(this.req.body);
-                    } catch (ex) {
-                        reply.error = ex.message;
-                    }
+        try {
+            reqObj = JSON.parse(this.req.body);
+        } catch (ex) {
+            reply.error = ex.message;
+        }
 
-                    nameAllreadyExists = Boolean(_.find(that.controller.profiles, function (profile) {
-                                                    return profile.login === reqObj.login;
-                                                }));
+        nameAllreadyExists = Boolean(_.find(this.controller.profiles, function (profile) {
+                                        return profile.login === reqObj.login;
+                                    }));
 
-                    if (reqObj.hasOwnProperty('name') && nameAllreadyExists === false) {
-                        profile = that.controller.createProfile(reqObj);
-                        if (profile !== undefined && profile.id !== undefined) {
-                            reply.data = profile;
-                            reply.code = 201;
-                        } else {
-                            reply.code = 500;
-                            reply.error = "Profile didn't created";
-                        }
-                    } else {
-                        reply.code = 400;
-                        reply.error = "Argument name is required or already exists.";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied. You're not allowed to create profiles.";
-                }
+        if (nameAllreadyExists === false) {
+            _.defaults(reqObj, {
+                role: null,
+                name: 'User',
+                lang: 'en',
+                color: '#dddddd',
+                dashboard: [],
+                interval: 2000,
+                rooms: [],
+                positions: [],
+                hide_all_device_events: false,
+                hide_system_events: false,
+                hide_single_device_events: []
+            });
+            profile = this.controller.createProfile(reqObj);
+            if (profile !== undefined && profile.id !== undefined) {
+                reply.data = profile;
+                reply.code = 201;
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                reply.code = 500;
+                reply.error = "Profile creation error";
             }
-
-            this.initResponse(reply);
-        };
+        } else {
+            reply.code = 400;
+            reply.error = "Argument name is required or already exists.";
+        }
+        
+        return reply;
     },
     updateProfile: function (profileId) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 500
             },
             reqObj,
-            profile,
-            userId,
-            role;
+            profile = this.controller.getProfile(profileId);
+        
+        if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
+            reqObj = JSON.parse(this.req.body);
 
-        return function () {
-            userId = that.controller.profileSID;
-            
-            if(userId !== ''){
-                role = that.getUserRole();
-                profile = that.controller.getProfile(profileId);
-                
-                // update target profile if user has 'admin' permissions
-                // update only own profile if user has 'user' permissions otherwise response with error
-                if (role === 1 || (role === 2 && userId === profile.sid)){
-                    try {
-                        reqObj = JSON.parse(this.req.body);
-                    } catch (ex) {
-                        reply.error = ex.message;
-                    }
-
-                    if (reqObj.hasOwnProperty('name')) {
-                        profile = that.controller.updateProfile(reqObj, profileId);
-                        if (profile !== undefined && profile.id !== undefined) {
-                            reply.data = profile;
-                            reply.code = 200;
-                        } else {
-                            reply.code = 500;
-                            reply.error = "Object (profile) didn't created";
-                        }
-                    } else {
-                        reply.code = 400;
-                        reply.error = "Argument id, positions is required";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied. Cannot update foreign profile.";
-                }
+            if (profile.id === this.req.user && profile.role === this.ROLE.ADMIN && reqObj.role !== this.ROLE.ADMIN) {
+                reply.code = 403;
+                reply.error = "Revoking self Admin priviledge is not allowed.";
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                // only Admin can change critical parameters
+                if (this.req.role === this.ROLE.ADMIN) {
+                    // id is never changeable
+                    profile.login= reqObj.login;
+                    profile.role = reqObj.role;
+                    profile.name = reqObj.name;
+                    profile.interval = reqObj.interval;
+                    profile.rooms = reqObj.rooms;
+                    profile.hide_system_events = reqObj.hide_system_events;
+                    profile.hide_all_device_events = reqObj.hide_all_device_events;
+                }
+                profile.lang = reqObj.lang;
+                profile.color = reqObj.color;
+                profile.dashboard = reqObj.dashboard;
+                profile.hide_single_device_events = reqObj.hide_single_device_events;
+                
+                profile = this.controller.updateProfile(profile, profile.id);
+                
+                if (profile !== undefined && profile.id !== undefined) {
+                    reply.data = profile;
+                    reply.code = 200;
+                } else {
+                    reply.code = 500;
+                    reply.error = "Profile was not created";
+                }
             }
+        } else {
+            reply.code = 404;
+            reply.error = "Profile not found.";
+        }
 
-            this.initResponse(reply);
-        };
+        return reply;
     },
     // different pipe for updating authentication values
     updateProfileAuth: function (profileId) {
-        var that = this,
-            reply = {
-                error: null,
-                data: null,
-                code: 500
-            },
-            reqObj,
-            profile,
-            userProfileId;
+        var reply = {
+            error: null,
+            data: null,
+            code: 500
+        },
+        reqObj,
+        profile = this.controller.getProfile(profileId);
         
-        return function () {
-            if(that.controller.profileSID !== ''){
-                userProfileId = that.getProfileBySID().id;
-                
-                if(typeof this.req.body !== 'object'){
-                    reqObj = JSON.parse(this.req.body);
-                } else{
-                    reqObj = this.req.body;
-                }
+        if (typeof this.req.body !== 'object') {
+            reqObj = JSON.parse(this.req.body);
+        } else {
+            // !!! do we need this branch of else?
+            console.log("throw");
+            throw "updateProfileAuth";
+            reqObj = this.req.body;
+        }
 
-                // make sure that every user can update authentications only on his own
-                // - role independent - admin cannot change users authentications
-                if (!!userProfileId && userProfileId === profileId) {
-                        
-                    profile = that.controller.updateProfileAuth(reqObj, userProfileId);
-                    
-                    if (profile !== undefined && profile.id !== undefined) {
-                        reply.data = profile;
-                        reply.code = 200;
-                    } else {
-                        reply.code = 500;
-                        reply.error = "Was not able to update password.";
-                    }
-                } else {
-                    reply.code = 500;
-                    reply.error = "Could not change authentication values.";
-                }
+        if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
+            profile = this.controller.updateProfileAuth(reqObj, profileId);
+            
+            if (profile !== undefined && profile.id !== undefined) {
+                reply.data = profile;
+                reply.code = 200;
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }            
+                reply.code = 500;
+                reply.error = "Was not able to update password.";
+            }
+        } else {
+            reply.code = 403;
+            reply.error = "Forbidden.";
+        }
 
-            this.initResponse(reply);
-        };
+        return reply;
     },
     removeProfile: function (profileId) {
-        var that = this,
-            reply = {
-                error: null,
-                data: null,
-                code: 500
+        var reply = {
+            error: null,
+            data: null,
+            code: 500
             },
-            profile,
-            userId,
-            role;
-
-        return function () {
-            userId = this.controller.profileSID;
-            
-            if(userId !== ''){
-                role = that.getUserRole();
-                
-                if(role === 1){
-
-                    profiles = that.controller.getListProfiles();
-
-                    // only admins are allowed to delete profiles
-                    // it is not possible to delete first profile (superadmin)
-                    if (_.isNumber(profileId) && profileId !== profiles[0].id) {
-                        
-                        profile = that.controller.getProfile(profileId);
-                        
-                        if (profile !== null) {
-                            that.controller.removeProfile(profileId);
-                            reply.data = null;
-                            reply.code = 204;
-                        } else {
-                            reply.code = 500;
-                            reply.error = "Could not delete profile: " + profileId;
-                        }
-                    } else {
-                        reply.code = 400;
-                        reply.error = "Argument 'id' is required. Please check if the id you want to remove is the correct one.";
-                    }
-                } else {
-                    reply.code = 403;
-                    reply.error = "Permission denied. Not allowed to delete profile.";
-                }
+        profile = this.controller.getProfile(profileId);
+        
+        if (profile) {
+            // It is not possible to delete own profile
+            if (profile.id !== this.req.user) {
+                this.controller.removeProfile(profileId);
+                reply.data = null;
+                reply.code = 204;
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                reply.code = 403;
+                reply.error = "Deleting own profile is not allowed.";
             }
-            
-            this.initResponse(reply);
-        };
+        } else {
+            reply.code = 404;
+            reply.error = "Profile not found";
+        }
+
+        return reply;
     },
     // namespaces
     listNamespaces: function () {
@@ -1327,50 +959,36 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             code: 500
         };
 
-        if(this.controller.profileSID !== ''){
-            this.controller.generateNamespaces(function (namespaces) {
-                if (_.isArray(namespaces)) {
-                    reply.data = namespaces;
-                    reply.code = 200;
-                } else {
-                    reply.error = "Namespaces array is null";
-                }
-            });      
-        } else {
-            reply.code = 401;
-            reply.error = 'Not logged in';
-        }        
+        this.controller.generateNamespaces(function (namespaces) {
+            if (_.isArray(namespaces)) {
+                reply.data = namespaces;
+                reply.code = 200;
+            } else {
+                reply.error = "Namespaces array is null";
+            }
+        });      
 
-        this.initResponse(reply);
+        return reply;
     },
     getNamespaceFunc: function (namespaceId) {
-        var that = this,
-            reply = {
-                error: null,
-                data: null,
-                code: 500
-            },
-            namespace;
+       var reply = {
+            error: null,
+            data: null,
+            code: 500
+        },
+        namespace;
 
-        return function () {
-            if(that.controller.profileSID !== ''){
+        this.controller.generateNamespaces();
+        namespace = this.controller.getListNamespaces(namespaceId);
+        if (namespace) {
+            reply.data = namespace;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces " + namespaceId + " doesn't exist";
+        } 
 
-                that.controller.generateNamespaces();
-                namespace = that.controller.getListNamespaces(namespaceId);
-                if (namespace) {
-                    reply.data = namespace;
-                    reply.code = 200;
-                } else {
-                    reply.code = 404;
-                    reply.error = "Namespaces " + namespaceId + " doesn't exist";
-                } 
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }            
-
-            this.initResponse(reply);
-        };
+        return reply;
     },
     // History
     exposeHistory: function () {
@@ -1378,37 +996,28 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply = {
                 error: null,
                 data: null
-            },
-            that = this;
+            };
 
+        // !!! permissions?
+        this.res.status = 200;
+        history = this.controller.listHistories();
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                that.res.status = 200;
-                history = that.controller.listHistories();
-
-                if(history){
-                    reply.data = {
-                        updateTime: Math.floor(new Date().getTime() / 1000),
-                        history: history
-                    };
-                    reply.code = 200;
-                    
-                } else {
-                    reply.code = 404;
-                    reply.error = "No device histories found.";
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
+        if(history){
+            reply.data = {
+                updateTime: Math.floor(new Date().getTime() / 1000),
+                history: history
+            };
+            reply.code = 200;
             
-            that.initResponse(reply);
-        };
+        } else {
+            reply.code = 404;
+            reply.error = "No device histories found.";
+        }
+            
+        return reply;
     },
     getDevHist: function (vDevId) {
-        var that = this,
-            history,
+        var history,
             dev,
             reply = {
                 error: null,
@@ -1419,47 +1028,45 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             sinceDevHist,
             view = [288,96,48,24,12,6];
 
-        return function () {
-            if(that.controller.profileSID !== ''){
-                show = that.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(that.req.query.show, 10)) > -1 ? parseInt(that.req.query.show, 10) : 0) : 0;
-                since = that.req.query.hasOwnProperty("since") ? parseInt(that.req.query.since, 10) : 0;
-                history = that.controller.listHistories();
-                hash = that.controller.hashCode(vDevId);
+        if (!this.devicesByUser(this.req.user).get(vDevId)) {
+            show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
+            since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
+            history = this.controller.listHistories();
+            hash = this.controller.hashCode(vDevId);
+
+            if (history) {
+                dev = history.filter(function(x) {
+                    return x.h === hash;
+                });
                 
-                if(history){
-                    dev = history.filter(function(x){
-                        return x.h === hash;
-                    });
+                if (dev) {
+                    sinceDevHist = this.controller.getDevHistorySince(dev, since, show);            
                     
-                    if(dev.length > 0){
-                        sinceDevHist = that.controller.getDevHistory(dev, since, show);            
-                        
-                        if (dev && sinceDevHist){         
-                            reply.code = 200;
-                            reply.data = {
-                                    id: vDevId,
-                                    since: since,
-                                    deviceHistory: sinceDevHist
-                                };
-                        } else {
-                            reply.code = 200;
-                            reply.data = dev;
-                        }
+                    if (dev && sinceDevHist) {
+                        reply.code = 200;
+                        reply.data = {
+                                id: vDevId,
+                                since: since,
+                                deviceHistory: sinceDevHist
+                        };
                     } else {
-                        reply.code = 404;
-                        reply.error = "History of device " + vDevId + " doesn't exist";
+                        reply.code = 200;
+                        reply.data = dev;
                     }
                 } else {
                     reply.code = 404;
-                    reply.error = "No device histories found.";
+                    reply.error = "History of device " + vDevId + " doesn't exist";
                 }
             } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                reply.code = 404;
+                reply.error = "No device histories found.";
             }
-                
-            that.initResponse(reply);
-        };
+        } else {
+            reply.code = 404;
+            reply.error = "Device not found.";
+        }
+        
+        return reply;
     },
     // restart
     restartController: function (profileId) {
@@ -1469,121 +1076,85 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             code: 200
         };
 
-        if(this.controller.profileSID !== ''){
-            this.controller.restart();
-            this.initResponse(reply);    
-        } else {
-            reply.code = 401;
-            reply.error = 'Not logged in';
-        }        
+        this.controller.restart();
+        return reply;    
     },
-    loadModuleMedia: function(moduleName,fileName) {
-        var that = this,
-            reply = {
+    loadModuleMedia: function(moduleName, fileName) {
+        var reply = {
                 error: null,
                 data: null,
                 code: 200
             },
             obj;
 
-        return function (){
-            if(that.controller.profileSID !== ''){
-
-                if((moduleName !== '' || !!moduleName || moduleName) && (fileName !== '' || !!fileName || fileName)){
-                    obj = that.controller.loadModuleMedia(moduleName,fileName);
-            
-                    if(!that.controller.modules[moduleName]){
-                        reply.code = 404;
-                        reply.error = "Can't load file from app because app '" + moduleName + "' was not found." ;
-                        
-                        that.initResponse(reply);
-
-                    }else if (obj !== null) {
-                        that.res.status = 200;
-                        that.res.headers = { 
-                            "Content-Type": obj.ct,
-                            "Connection": "keep-alive"
-                        };
-                        that.res.body = obj.data;
-
-                        return that.res;
-
-                    } else {
-                        reply.code = 500;
-                        reply.error = "Failed to load file from module." ;
-                        
-                        that.initResponse(reply);
-                    } 
-                } else {
-                    reply.code = 400;
-                    reply.error = "Incorrect app or file name" ;
-                    
-                    that.initResponse(reply);
-                }
+        if ((moduleName !== '' || !!moduleName || moduleName) && (fileName !== '' || !!fileName || fileName)) {
+            obj = this.controller.loadModuleMedia(moduleName,fileName);
+    
+            if (!this.controller.modules[moduleName]) {
+                reply.code = 404;
+                reply.error = "Can't load file from app because app '" + moduleName + "' was not found." ;
                 
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
+                return reply;
 
-                that.initResponse(reply);
-            }
+            } else if (obj !== null) {
+                this.res.status = 200;
+                this.res.headers = { 
+                    "Content-Type": obj.ct,
+                    "Connection": "keep-alive"
+                };
+                this.res.body = obj.data;
+
+                return this.res;
+            } else {
+                reply.code = 500;
+                reply.error = "Failed to load file from module." ;
+                
+                return reply;
+            } 
+        } else {
+            reply.code = 400;
+            reply.error = "Incorrect app or file name" ;
             
-        };
+            return reply;
+        }
     },
     loadImage: function(imageName) {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 200
             },
             data;
 
-        return function (){
-            if(that.controller.profileSID !== ''){
-                data = that.controller.loadImage(imageName);
-            
-                if (data !== null) {
-                    that.res.status = 200;
-                    that.res.headers = { 
-                            "Content-Type": "image/(png|jpeg|gif)",
-                            "Connection": "keep-alive"
-                        };
-                    that.res.body = data;
+        data = this.controller.loadImage(imageName);
+    
+        if (data !== null) {
+            this.res.status = 200;
+            this.res.headers = { 
+                    "Content-Type": "image/(png|jpeg|gif)",
+                    "Connection": "keep-alive"
+            };
+            this.res.body = data;
 
-                    return that.res;
-                }else {
-                    reply.code = 500;
-                    reply.error = "Failed to load file." ;
-                    
-                    that.initResponse(reply);
-                }
-            } else {
-                reply.code = 401;
-                reply.error = 'Not logged in';
-            }
-                
-        };
+            return this.res;
+        } else {
+            reply.code = 500;
+            reply.error = "Failed to load file." ;
+            
+            return reply;
+        }
     },
     uploadImage: function() {
-        var that = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 200
             },
             file;
 
-        if(that.controller.profileSID !== ''){
-
-        } else {
-            reply.code = 401;
-            reply.error = 'Not logged in';
-        }
-
-        if (that.req.method === "POST" && that.req.body.file_upload) {
+        if (this.req.method === "POST" && this.req.body.file_upload) {
             
-            file = that.req.body.file_upload;
+            file = this.req.body.file_upload;
             
             if (file instanceof Array) {
                 file = file[0];
@@ -1597,65 +1168,172 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 200;
                 reply.data = file.name;
 
-            }else {
+            } else {
                 reply.code = 500;
                 reply.error = "Failed to upload file" ;
             }
-        }else {
+        } else {
             reply.code = 400;
             reply.error = "Invalid request" ;
         }
-        that.initResponse(reply);
+        return reply;
     }
 });
 
+ZAutomationAPIWebRequest.prototype.profileByUser = function(userId) {
+    return _.find(this.controller.profiles, function(profile) { return profile.id === userId });
+};
+
+ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
+    var devices = this.controller.devices.filter(filter),
+        profile = this.profileByUser(userId);
+
+    if (!profile) {
+        return [];
+    }
+    
+    if (profile.role === this.ROLE.ADMIN) {
+        return devices;
+    } else {
+        if (!!profile.rooms) {
+            return devices.filter(function(dev) {
+                return profile.rooms.indexOf(parseInt(dev.location)) !== -1;
+            });
+        } else {
+            return [];
+        }
+    }
+};
+
+ZAutomationAPIWebRequest.prototype.deviceByUser = function(vDevId, userId) {
+    if (this.devicesByUser(userId).filter(function (device) { return device.id === vDevId }).length) {
+        return this.controller.devices.get(vDevId);
+    }
+    return  null;
+};
+
+ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
+    var profile = this.profileByUser(userId);
+    
+    if (!profile) {
+        return [];
+    }
+    
+    if (profile.role === this.ROLE.ADMIN) {
+        return this.controller.locations;
+    } else {
+        if (!!profile.rooms) {
+            return this.controller.locations.filter(function(location) {
+                return profile.rooms.indexOf(parseInt(location)) !== -1;
+            });
+        } else {
+            return [];
+        }
+    }
+};
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
-    // Default handler is NotFound
-    var handlerFunc = this.NotFound,
-        validParams;
+    var self = this,
+        handlerFunc = this.NotFound, // Default handler is NotFound
+        validParams,
+        role = null;
 
     if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
     } else {
         var matched = this.router.dispatch(method, url);
         if (matched) {
-            if (matched.params.length) {
-                validParams = _.every(matched.params), function(p) { return !!p; };
-                if (validParams) {
-                    handlerFunc = matched.handler.apply(this, matched.params);
+            // !!! change this to tokens
+            var session = this.sessions[this.req.headers['Profile-SID']];
+
+            if (!session) {
+                // no session found or session expired
+
+                if (matched.role === this.ROLE.USER) {
+                    // try to find Local user account
+                    if (this.req.peer.address === "127.0.0.1") {
+                        // !!! cache this in future
+                        session = _.find(this.controller.profiles, function (profile) {
+                            return profile.role === self.ROLE.LOCAL;
+                        });
+                    }
+                    
+                    // try to find Anonymous user account
+                    if (!session) {
+                        // !!! cache this in future
+                        session = _.find(this.controller.profiles, function (profile) {
+                            return profile.role === self.ROLE.ANONYMOUS;
+                        });
+                    }
                 }
-            } else {
-                handlerFunc = matched.handler;
+            
+                if (session) {
+                    role = this.ROLE.USER; // change role type, since we found matching local/anonymous user
+                } else {
+                    if (matched.role === this.ROLE.ANONYMOUS) {
+                        session = {
+                            id: -1, // non-existant ID
+                            role: this.ROLE.ANONYMOUS
+                        };
+                    } else {
+                        return function() {
+                            return {
+                                error: 'Not logged in',
+                                data: null,
+                                code: 401
+                            };
+                        };
+                    }
+                }
             }
+            
+            if (!role) {
+                role = session.role;
+            }
+            
+            // Role is less than allows
+            if (
+                    (role === this.ROLE.ANONYMOUS && matched.role === this.ROLE.ANONYMOUS) ||
+                    (role === this.ROLE.USER && (matched.role === this.ROLE.USER || matched.role === this.ROLE.ANONYMOUS)) ||
+                    (role === this.ROLE.ADMIN)
+                ) {
+                // fill user field
+                this.req.user = session.id;
+                this.req.role = role;
+                
+                if (matched.params.length) {
+                    validParams = _.every(matched.params), function(p) { return !!p; };
+                    if (validParams) {
+                        handlerFunc = function () {
+                            matched.handler.apply(this, matched.params);
+                        }
+                    }
+                } else {
+                    handlerFunc = matched.handler;
+                }
+
+                // --- Proceed to checkout =)
+                return handlerFunc;
+            }
+            
+            return function() {
+                return {
+                    error: 'Permission denied',
+                    data: null,
+                    code: 403
+                };
+            };
         }
     }
-
-    // --- Proceed to checkout =)
-    return handlerFunc;
 };
 
-ZAutomationAPIWebRequest.prototype.getUserRole = function () {
-    var profile = _.find(this.controller.profiles, function (profile) {
-                                                    return profile.sid === this.controller.profileSID;
-                                                }); 
-    if(!!profile){
-        return role = profile.role; 
-    } else {
-        return role = null;
-    }        
-};
+ZAutomationAPIWebRequest.prototype.unauthorized = function() {
+    var reply = {
+            error: null,
+            data: null,
+            code: 200
+        },
+        file;
 
-ZAutomationAPIWebRequest.prototype.getProfileBySID = function () {
-    var getProfile = this.controller.profiles.filter(function (p) {
-                    return p.sid === this.controller.profileSID;
-        }),
-        profile;
-
-    if(Object.prototype.toString.call(getProfile) === '[object Array]'){
-        profile = getProfile[0];
-    } else {
-        profile = getProfile;
-    }
-
-    return profile? profile : null;
+    return reply;
 };

@@ -6,28 +6,42 @@
 
   if (config) {
     // Change profiles data
-    if (config.hasOwnProperty('profiles')) {
-      if (config.profiles.length > 0) {
-        config.profiles.forEach(function (profile) {
-          if (profile.hasOwnProperty('groups')) {
-            delete profile.groups;
-          }
+    if (config.hasOwnProperty('profiles') && Array.isArray(config.profiles) && config.profiles.length > 0) {
+      config.profiles.forEach(function (profile) {
+        if (profile.hasOwnProperty('groups')) {
+          delete profile.groups;
+        }
 
-          if (profile.hasOwnProperty('active')) {
-            delete profile.active;
-          }
+        if (profile.hasOwnProperty('active')) {
+          delete profile.active;
+        }
 
-          if (Array.isArray(profile.positions)) {
-            profile.positions = profile.positions.filter(function (position) {
-              return typeof position === 'string';
-            });
-          } else {
-            profile.positions = [];
-          }
-        });
-      } else {
-        config.profiles = [];
-      }
+        if (Array.isArray(profile.positions)) {
+          profile.positions = profile.positions.filter(function (position) {
+            return typeof position === 'string';
+          });
+        } else {
+          profile.positions = [];
+        }
+      });
+    } else {
+      // default profile
+      config.profiles = [{
+        id: 1,
+        role: 1,
+        login: 'admin',
+        password: 'admin',
+        name: 'Administrator',
+        lang:'en',
+        color:'#dddddd',
+        dashboard: [],
+        interval: 2000,
+        rooms:[],
+        positions: [],
+        hide_all_device_events: false,
+        hide_system_events: false,
+        hide_single_device_events: []
+      }];
     }
     
     // Change instances data
