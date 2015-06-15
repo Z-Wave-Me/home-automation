@@ -132,7 +132,7 @@ CodeDevice.prototype.act = function (vDev, action, subst, selfValue) {
         setterCode = this.config["setter" + action + "_" + deviceType];
     
     if (setterCode) {
-    	if (subst) {
+    	if (subst != null) {
             setterCode = setterCode.replace(/%%/g, subst);
     	}
         eval(setterCode);
