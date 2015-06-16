@@ -1111,7 +1111,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 };
                 this.res.body = obj.data;
 
-                return this.res;
+                return null; // let handleRequest take this.res as is
             } else {
                 reply.code = 500;
                 reply.error = "Failed to load file from module." ;
@@ -1143,7 +1143,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
             this.res.body = data;
 
-            return this.res;
+            return null; // let handleRequest take this.res as is
         } else {
             reply.code = 500;
             reply.error = "Failed to load file." ;
@@ -1312,7 +1312,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                     validParams = _.every(matched.params), function(p) { return !!p; };
                     if (validParams) {
                         handlerFunc = function () {
-                            matched.handler.apply(this, matched.params);
+                            return matched.handler.apply(this, matched.params);
                         }
                     }
                 } else {
