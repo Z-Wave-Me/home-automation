@@ -162,7 +162,7 @@ Sonos.prototype.detectHostname = function(household, host) {
     
     var sockHost = new sockets.tcp();
     sockHost.onclose = function (remoteHost, remotePort, localHost, localPort) {
-        if (localHost) {
+        if (localHost && self.hostnames[household] !== localHost) {
             console.log("Detected own hostname:", localHost);
             self.hostnames[household] = localHost;
         }
