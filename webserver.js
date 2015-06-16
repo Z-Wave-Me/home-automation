@@ -187,7 +187,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
 
         reply.data.structureChanged = this.controller.lastStructureChangeTime >= since ? true : false;
-        reply.data.devices = this.devicesByUser(this.req.user, {updateTime: reply.data.structureChanged ? 0 : since});
+        reply.data.devices = this.devicesByUser(this.req.user, function (dev) { return dev.get("updateTime") > (reply.data.structureChanged ? 0 : since) });
         if (Boolean(this.req.query.pagination)) {
             reply.data.total_count = devices.length;
         }
@@ -776,7 +776,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 profiles = this.controller.getListProfiles();
             } else {
                 profile = this.controller.getProfile(this.req.user);
-                if (profile && this.req.user === profile.id && profileId === profile.id) {
+                if (profile && this.req.user === profile.id) {
                     profiles = [profile];
                 }
             }
@@ -1204,7 +1204,7 @@ ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
     } else {
         if (!!profile.rooms) {
             return devices.filter(function(dev) {
-                return profile.rooms.indexOf(parseInt(dev.location)) !== -1;
+                return profile.rooms.indexOf(dev.get("location")) !== -1;
             });
         } else {
             return [];
