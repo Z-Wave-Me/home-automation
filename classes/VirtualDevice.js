@@ -26,7 +26,7 @@ VirtualDevice = function (options) {
         collection: options.controller.devices,
         metrics: {},
         ready: false,
-        location: null,
+        location: 0,
         tags: [],
         updateTime: 0,
         h: options.controller.hashCode(options.deviceId),
@@ -37,7 +37,7 @@ VirtualDevice = function (options) {
             metrics: this.metrics,
             tags: [],
             permanently_hidden: false,
-            location: null,
+            location: 0,
             h: options.controller.hashCode(options.deviceId),
             hasHistory: false,
             visibility: true

@@ -75,8 +75,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
         this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.listLocations, [parseInt]);
 
-        //this.router.put("/notifications/:notification_id", this.ROLE.USER, this.updateNotification, [parseInt]);
-        //this.router.get("/notifications/:notification_id", this.ROLE.USER, this.getNotificationFunc, [parseInt]);
         this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 
         this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
@@ -88,7 +86,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
         this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
 
-        this.router.get("/instances/:instance_id", this.ROLE.ADMIN, this.getInstanceFunc, [parseInt]);
+        this.router.get("/instances/:instance_id", this.ROLE.ADMIN, this.getInstanceFunc);
         this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.ROLE.ADMIN, this.deleteInstanceFunc, [parseInt]);
 
@@ -167,7 +165,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             // !!! what to do with??? this.controller.defaultLang = profile.lang;
         } else {
-            reply.code = 401;
+            reply.code = 404;
             reply.error = "User login/password is wrong.";
         }
         
@@ -265,13 +263,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
             to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
             profile = this.profileByUser(this.req.user),
-            devices = this.devicesByUser().map(function(device) { return device.id });
+            devices = this.devicesByUser().map(function(device) { return device.id; });
 
         notifications = this.controller.notifications.filter(function (notification) {
             return  notification.id >= since && notification.id <= to && // filter by time
-                    notification.level !== 'device-info' && // remove from list device event log
+                    //notification.level !== 'device-info' && // remove from list device event log
+                    ((profile.hide_system_events === false && notification.level !== 'device-info') || // hide_system_events = false
+                    (profile.hide_all_device_events === false && notification.level === 'device-info')) && // hide_device_events = false
                     (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(notification.source) === -1) && // remove events from devices to hide
-                    (!notification.source || devices.indexOf(notification.source) === -1) // filter by user device
+                    (!notification.source || devices.indexOf(notification.source) === -1);// filter by user device
         });
 
         if (Boolean(this.req.query.pagination)) {
@@ -287,72 +287,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
-
-    /*
-    getNotificationFunc: function (notificationId) {
-        return function () {
-            var id = notificationId ? parseInt(notificationId) : 0,
-                reply = {
-                    data: null,
-                    error: null,
-                    code: 200
-                },
-                notification;
-
-            if (id) {
-                notification = this.controller.getNotification(id);
-                if (notification) {
-                    reply.code = 200;
-                    reply.data = notification;
-                } else {
-                    reply.code = 404;
-                    reply.error = "Notification " + notificationId + " doesn't exist";
-                }
-            } else {
-                reply.code = 400;
-                reply.error = "Argument id is required";
-            }
-
-            return reply;
-        }
-    },
-    updateNotification: function (notificationId) {
-
-        return function () {
-            var reply = {
-                    error: null,
-                    data: "OK"
-                },
-                reqObj,
-                notification = this.controller.getNotification(notificationId);
-
-            if (Boolean(notification)) {
-
-                try {
-                    reqObj = JSON.parse(this.req.body);
-                } catch (ex) {
-                    reply.error = ex.message;
-                }
-
-                this.controller.updateNotification(notificationId, reqObj, function (notice) {
-                    if (notice) {
-                        reply.code = 200;
-                        reply.data = notice;
-                    } else {
-                        reply.code = 500;
-                        reply.data = null;
-                        reply.error = "Object doesn't exist redeemed argument";
-                    }
-                });
-
-            } else {
-                reply.code = 404;
-                reply.error = "Notification " + notificationId + " doesn't exist";
-            }
-            return reply;
-        };
-    },
-    */
+    // delete single notifications or all privious by a choosen timestamp
     deleteNotifications: function (notificationId) {
         // !!! Needed?
         throw "deleteNotifications";
@@ -706,7 +641,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             };
 
-        instance = _.find(this.controller.instances, function (i) { return instanceId === i.id; });
+        instance = _.find(this.controller.instances, function (i) { 
+            return parseInt(instanceId) === i.id; 
+        });
 
         if (!Boolean(instance)) {
             reply.code = 404;
@@ -867,7 +804,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 // only Admin can change critical parameters
                 if (this.req.role === this.ROLE.ADMIN) {
                     // id is never changeable
-                    profile.login= reqObj.login;
+                    profile.login= reqObj.login && reqObj.login !== ''? reqObj.login : profile.login;
                     profile.role = reqObj.role;
                     profile.name = reqObj.name;
                     profile.interval = reqObj.interval;
@@ -1035,7 +972,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             sinceDevHist,
             view = [288,96,48,24,12,6];
 
-        if (!this.devicesByUser(this.req.user).get(vDevId)) {
+        if (this.deviceByUser(vDevId, this.req.user) !== null) {
             show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
             history = this.controller.listHistories();
@@ -1046,8 +983,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     return x.h === hash;
                 });
                 
-                if (dev) {
-                    sinceDevHist = this.controller.getDevHistorySince(dev, since, show);            
+                if (dev.length > 0) {
+                    sinceDevHist = this.controller.getDevHistory(dev, since, show);            
                     
                     if (dev && sinceDevHist) {
                         reply.code = 200;
@@ -1332,15 +1269,4 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
             };
         }
     }
-};
-
-ZAutomationAPIWebRequest.prototype.unauthorized = function() {
-    var reply = {
-            error: null,
-            data: null,
-            code: 200
-        },
-        file;
-
-    return reply;
 };

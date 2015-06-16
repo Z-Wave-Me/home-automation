@@ -927,10 +927,6 @@ AutomationController.prototype.getDevHistory = function (dev, since, show) {
 };
 
 AutomationController.prototype.getListProfiles = function () {
-    return this.profiles;
-};
-
-AutomationController.prototype.getListProfiles = function () {
     var getProfiles = [];
 
     this.profiles.forEach(function (profile){

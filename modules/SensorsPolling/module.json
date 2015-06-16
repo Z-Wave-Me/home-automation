@@ -28,8 +28,7 @@
                             "field": "enum",
                             "datasource": "namespaces",
                             "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
-                            "required": true,
-                            "minItems": 1
+                            "required": false
                     }
             },
             "period": {

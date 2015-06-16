@@ -36,6 +36,38 @@
         color:'#dddddd',
         dashboard: [],
         interval: 2000,
+        rooms:[0],
+        positions: [],
+        hide_all_device_events: false,
+        hide_system_events: false,
+        hide_single_device_events: []
+      },
+      {
+        id: 2,
+        role: 3,
+        login: 'local',
+        password: 'local',
+        name: 'Local User',
+        lang:'en',
+        color:'#dddddd',
+        dashboard: [0],
+        interval: 2000,
+        rooms:[],
+        positions: [],
+        hide_all_device_events: false,
+        hide_system_events: false,
+        hide_single_device_events: []
+      },
+      {
+        id: 3,
+        role: 4,
+        login: 'anonymous',
+        password: 'anonymous',
+        name: 'Anonymous User',
+        lang:'en',
+        color:'#dddddd',
+        dashboard: [0],
+        interval: 2000,
         rooms:[],
         positions: [],
         hide_all_device_events: false,
@@ -266,13 +298,12 @@
           profile.login = "admin" + (counter++ ? counter.toString(10) : "");
           profile.password = "admin";
           profile.role = 1;
-          profile.sid = "sua0";
           profile.lang = "en";
           profile.color = "#dddddd";
           profile.default_ui = 1;
           profile.dashboard = profile.positions;
           profile.interval = 2000;
-          profile.rooms = [];
+          profile.rooms = [0];
           profile.hide_all_device_events = false;
           profile.hide_system_events = false;
           profile.hide_single_device_events = [];
@@ -286,15 +317,52 @@
             profile.password = 'admin';
         }
       });
-    }
+
+      if (config.profiles && config.profiles.filter(function(profile){ return profile.login === 'local';}).length === 0) {
+            config.profiles.push({
+                id: config.profiles.length + 1,
+                role: 3,
+                login: 'local',
+                password: 'local',
+                name: 'Local User',
+                lang:'en',
+                color:'#dddddd',
+                dashboard: [],
+                interval: 2000,
+                rooms:[0],
+                positions: [],
+                hide_all_device_events: false,
+                hide_system_events: false,
+                hide_single_device_events: []
+            });
+      }
+      if (config.profiles && config.profiles.filter(function(profile){ return profile.login === 'anonymous';}).length === 0) {
+            config.profiles.push({
+                id: config.profiles.length + 1,
+                role: 4,
+                login: 'anonymous',
+                password: 'anonymous',
+                name: 'Anonymous User',
+                lang:'en',
+                color:'#dddddd',
+                dashboard: [],
+                interval: 2000,
+                rooms:[0],
+                positions: [],
+                hide_all_device_events: false,
+                hide_system_events: false,
+                hide_single_device_events: []
+            });
+      }
     
-    // Save changes
-    
-    if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?
-      try {
-        saveObject("config.json", config);
-      } catch (e) {
-        console.log("Error: can not write back config.json to storage: ", e);
+      // Save changes
+      
+      if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?
+        try {
+          saveObject("config.json", config);
+        } catch (e) {
+          console.log("Error: can not write back config.json to storage: ", e);
+        }
       }
     }
   }
