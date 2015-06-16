@@ -53,7 +53,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations", this.ROLE.USER, this.listLocations);
         this.router.get("/profiles", this.ROLE.USER, this.listProfiles);
         this.router.get("/namespaces", this.ROLE.ADMIN, this.listNamespaces);
-        this.router.post("/profiles", this.ROLE.ADMIN, this.createProfile);
+        this.router.post("/profiles", this.ROLE.USER, this.createProfile);
         this.router.get("/locations/add", this.ROLE.ADMIN, this.addLocation);
         this.router.post("/locations", this.ROLE.ADMIN, this.addLocation);
         this.router.get("/locations/remove", this.ROLE.ADMIN, this.removeLocation);
@@ -771,8 +771,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             profile;
 
         // list all profiles only if user has 'admin' permissions
-        if (!_.isNumber(profileId) && this.req.role === this.ROLE.ADMIN) {
-            profiles = this.controller.getListProfiles();
+        if (!_.isNumber(profileId)) {
+            if (this.req.role === this.ROLE.ADMIN) {
+                profiles = this.controller.getListProfiles();
+            } else {
+                profile = this.controller.getProfile(this.req.user);
+                if (profile && this.req.user === profile.id && profileId === profile.id) {
+                    profiles = [profile];
+                }
+            }
             if (!Array.isArray(profiles)) {
                 reply.code = 500;
                 reply.error = "Unknown error. profiles isn't array";
@@ -1104,7 +1111,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 };
                 this.res.body = obj.data;
 
-                return this.res;
+                return null; // let handleRequest take this.res as is
             } else {
                 reply.code = 500;
                 reply.error = "Failed to load file from module." ;
@@ -1136,7 +1143,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
             this.res.body = data;
 
-            return this.res;
+            return null; // let handleRequest take this.res as is
         } else {
             reply.code = 500;
             reply.error = "Failed to load file." ;
@@ -1305,7 +1312,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                     validParams = _.every(matched.params), function(p) { return !!p; };
                     if (validParams) {
                         handlerFunc = function () {
-                            matched.handler.apply(this, matched.params);
+                            return matched.handler.apply(this, matched.params);
                         }
                     }
                 } else {
