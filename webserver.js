@@ -1168,7 +1168,7 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
     } else {
         if (!!profile.rooms) {
             return this.controller.locations.filter(function(location) {
-                return profile.rooms.indexOf(parseInt(location)) !== -1;
+                return profile.rooms.indexOf(location.id) !== -1;
             });
         } else {
             return [];
