@@ -202,7 +202,7 @@
       config.profiles && config.profiles.forEach(function(profile) {
         if (!profile.login) {
           profile.login = "admin" + (counter++ ? counter.toString(10) : "");
-          profile.password = "21232f297a57a5a743894a0e4a801fc3"; //"admin";
+          profile.password = "admin";
           profile.role = 1;
           profile.sid = "sua0";
           profile.lang = "en";
