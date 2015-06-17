@@ -17,29 +17,34 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 		"message" : "",
-		"api_key": "",
-        "phone": "",
-		"email" : ""
+		"phone": "",
+		"api_key_sms": "",
+		"email" : "",        
+        "api_key_email": ""		
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
 			"message": {
 				"type": "string",
-                "required": false
+                "required": true
 			},
 			"phone": {
                 "required": false,
                 "pattern": "[1-9][0-9]*"
             },
-            "api_key": {
+            "api_key_sms": {
                 "required": false,
                 "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
             },
-			"email": {
+            "email": {
 				"type": "string",
                 "required": false
-			}
+			},
+            "api_key_email": {
+                "required": false,
+                "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
+            }
 		},
 		"required": false
 	},
@@ -51,13 +56,17 @@
 			"phone": {
                 "label": "__l_phone__"
             },
-            "api_key": {
-                "label": "__l_api_key__",
-				"helper": "__h_api_key__"
+            "api_key_sms": {
+                "label": "__l_api_key_sms__",
+				"helper": "__h_api_key_sms__"
             },
 			"email": {
 				"label": "__l_email__"
-			}
+			},
+			"api_key_email": {
+                "label": "__l_api_key_email__",
+				"helper": "__h_api_key_email__"
+            },
 		}
 	}
 }
