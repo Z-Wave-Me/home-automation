@@ -66,7 +66,7 @@
 			"api_key_email": {
                 "label": "__l_api_key_email__",
 				"helper": "__h_api_key_email__"
-            },
+            }
 		}
 	}
 }
