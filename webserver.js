@@ -640,12 +640,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             };
+        
+        if(isNaN(instanceId)){
+            instance = _.filter(this.controller.instances, function (i) { return instanceId === i.moduleId; });
+        } else {
+            instance = _.find(this.controller.instances, function (i) { return parseInt(instanceId) === i.id; });
+        }
 
-        instance = _.find(this.controller.instances, function (i) { 
-            return parseInt(instanceId) === i.id; 
-        });
-
-        if (!Boolean(instance)) {
+        if (!Boolean(instance) || instance.length === 0) {
             reply.code = 404;
             reply.error = "Instance " + instanceId + " is not found";
         } else {
