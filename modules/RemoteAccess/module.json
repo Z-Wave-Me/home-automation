@@ -7,7 +7,8 @@
 	"icon": "icon.png",
     "moduleName":"RemoteAccess",
 	"version" : "1.0.0",
-	"maturity" : "alpha",
+	"state": "hidden",
+	"maturity" : "stable",
 	"repository" : {
 		"type" : "git",
 		"source" : "https://github.com/Z-Wave-Me/home-automation"
@@ -18,7 +19,7 @@
 		"userId":"",
 		"actStatus":"",
 		"sshStatus":"",
-		"status":"",
+		"zbwStatus":"",
 		"pass":"",
 		"lastChange":{}
 	},
