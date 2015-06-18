@@ -61,7 +61,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
         this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
         this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
-        this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
+        this.router.get("/instances", this.ROLE.USER, this.listInstances);
         this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
         this.router.post("/upload/image", this.ROLE.ADMIN, this.uploadImage);
@@ -86,7 +86,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
         this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
 
-        this.router.get("/instances/:instance_id", this.ROLE.ADMIN, this.getInstanceFunc);
+        this.router.get("/instances/:instance_id", this.ROLE.USER, this.getInstanceFunc);
         this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.ROLE.ADMIN, this.deleteInstanceFunc, [parseInt]);
 
@@ -165,7 +165,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             // !!! what to do with??? this.controller.defaultLang = profile.lang;
         } else {
-            reply.code = 404;
+            reply.code = 401;
             reply.error = "User login/password is wrong.";
         }
         
@@ -185,7 +185,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
 
         reply.data.structureChanged = this.controller.lastStructureChangeTime >= since ? true : false;
-        reply.data.devices = this.devicesByUser(this.req.user, function (dev) { return dev.get("updateTime") > (reply.data.structureChanged ? 0 : since) });
+        reply.data.devices = this.devicesByUser(this.req.user, function (dev) { return dev.get("updateTime") > (reply.data.structureChanged ? 0 : since); });
         if (Boolean(this.req.query.pagination)) {
             reply.data.total_count = devices.length;
         }
@@ -214,7 +214,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null
             },
-            device = _.find(this.devicesByUser(this.req.user), function(device) { return device.id === vDevId; });
+            device = this.deviceByUser(vDevId, this.req.user);
 
         try {
             reqObj = JSON.parse(this.req.body);
@@ -223,9 +223,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if (device) {
-            var vDev = this.controller.devices.get(vDevId);
             reply.code = 200;
-            reply.data = vDev.set(reqObj);
+            reply.data = device.set(reqObj);
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
@@ -242,7 +241,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             vDev = this.deviceByUser(vDevId, this.req.user);
         
         if (vDev) {
-            result_execution_command = vDev.performCommand.call(vDev.get(vDevId), commandId, this.req.query);
+            result_execution_command = vDev.performCommand.call(vDev, commandId, this.req.query);
             reply.data = !!result_execution_command ? result_execution_command : null;
         } else {
             reply.data = null;
@@ -263,15 +262,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
             to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
             profile = this.profileByUser(this.req.user),
-            devices = this.devicesByUser().map(function(device) { return device.id; });
+            devices = this.devicesByUser(this.req.user).map(function(device) { return device.id; });
 
         notifications = this.controller.notifications.filter(function (notification) {
             return  notification.id >= since && notification.id <= to && // filter by time
-                    //notification.level !== 'device-info' && // remove from list device event log
                     ((profile.hide_system_events === false && notification.level !== 'device-info') || // hide_system_events = false
                     (profile.hide_all_device_events === false && notification.level === 'device-info')) && // hide_device_events = false
                     (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(notification.source) === -1) && // remove events from devices to hide
-                    (!notification.source || devices.indexOf(notification.source) === -1);// filter by user device
+                    ((notification.level !== 'device-info' && devices.indexOf(notification.source) === -1) || (notification.level === 'device-info' && devices.indexOf(notification.source) > -1));// filter by user device
         });
 
         if (Boolean(this.req.query.pagination)) {
@@ -333,6 +331,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null
             },
             locations = this.locationsByUser(this.req.user);
+
+            locations = locations.filter(function(location){ return location.id !== 0 && location.title !== 'globalRoom'; });
 
         if (locationId === undefined){
             if (Boolean(this.req.query.pagination)) {
@@ -426,15 +426,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if (!!id) {
-            this.controller.removeLocation(id, function (result) {
-                if (result) {
-                    reply.code = 204;
-                    reply.data = null;
-                } else {
-                    reply.code = 404;
-                    reply.error = "Location " + id + " doesn't exist";
-                }
-            });
+            if (id !== 0) {
+                this.controller.removeLocation(id, function (result) {
+                    if (result) {
+                        reply.code = 204;
+                        reply.data = null;
+                    } else {
+                        reply.code = 404;
+                        reply.error = "Location " + id + " doesn't exist";
+                    }
+                });
+            } else {
+                reply.code = 403;
+                reply.error = "Permission denied.";
+            }
         } else {
             reply.code = 400;
             reply.error = "Argument id is required";
@@ -454,36 +459,42 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 200
             },
             reqObj;
-
-        if (this.req.method === 'GET') {
-            id = parseInt(this.req.query.id);
-            title = this.req.query.title;
-        } else if (this.req.method === 'PUT') {
-            try {
-                reqObj = JSON.parse(this.req.body);
-            } catch (ex) {
-                reply.error = ex.message;
-            }
-            id = locationId || reqObj.id;
-            title = reqObj.title;
-            user_img =reqObj.user_img || '';
-            default_img = reqObj.default_img || '';
-            img_type = reqObj.img_type || '';
-        }
-
-        if (!!title && title.length > 0) {
-            this.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
-                if (data) {
-                    reply.data = data;
-                } else {
-                    reply.code = 404;
-                    reply.error = "Location " + id + " doesn't exist";
+        
+        if(locationId !== 0){
+            if (this.req.method === 'GET') {
+                id = parseInt(this.req.query.id);
+                title = this.req.query.title;
+            } else if (this.req.method === 'PUT') {
+                try {
+                    reqObj = JSON.parse(this.req.body);
+                } catch (ex) {
+                    reply.error = ex.message;
                 }
-            });
-        } else {
-            reply.code = 400;
-            reply.error = "Arguments id & title are required";
+                id = locationId || reqObj.id;
+                title = reqObj.title;
+                user_img =reqObj.user_img || '';
+                default_img = reqObj.default_img || '';
+                img_type = reqObj.img_type || '';
+            }
+
+            if (!!title && title.length > 0) {
+                this.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
+                    if (data) {
+                        reply.data = data;
+                    } else {
+                        reply.code = 404;
+                        reply.error = "Location " + id + " doesn't exist";
+                    }
+                });
+            } else {
+                reply.code = 400;
+                reply.error = "Arguments id & title are required";
+            }
+        }else {
+            reply.code = 403;
+            reply.error = "Permission denied.";
         }
+        
 
         return reply;
     },
@@ -766,8 +777,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 color: '#dddddd',
                 dashboard: [],
                 interval: 2000,
-                rooms: [],
-                positions: [],
+                rooms: [0],
                 hide_all_device_events: false,
                 hide_system_events: false,
                 hide_single_device_events: []
@@ -810,7 +820,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     profile.role = reqObj.role;
                     profile.name = reqObj.name;
                     profile.interval = reqObj.interval;
-                    profile.rooms = reqObj.rooms;
+                    profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
                     profile.hide_system_events = reqObj.hide_system_events;
                     profile.hide_all_device_events = reqObj.hide_all_device_events;
                 }

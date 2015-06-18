@@ -29,6 +29,7 @@ function AutomationController() {
     this.availableLang = ['en', 'ru', 'de'];
     this.defaultLang = 'en';
     this.profiles = config.profiles;
+    this.instances = config.instances;
     this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
     this.modules_categories = config.modules_categories || [];
@@ -43,12 +44,6 @@ function AutomationController() {
     this.lastStructureChangeTime = 0;
 
     this._loadedSingletons = [];
-
-    if(config.instances && config.instances.length > 0){
-        this.instances = config.instances;
-    } else {
-        this.instances = this.setupDefaultInstances();
-    }
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -419,59 +414,6 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
     return this.instances.hasOwnProperty(instanceId) ? this.instances[instanceId] : null;
 };
 
-AutomationController.prototype.setupDefaultInstances = function () {
-
-    if (!this.instances || this.instances.length === 0) {
-        this.instances = [{
-            "id": 1,
-            "moduleId": "ZWave",
-            "params": {
-              "name": "zway",
-              "port": "/dev/ttyAMA0",
-              "config": "config",
-              "translations": "translations",
-              "ZDDX": "ZDDX"
-            },
-            "active": true,
-            "module": "Z-Wave Network Access",
-            "title": "Z-Wave Network Access",
-            "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)",
-          },
-          {
-            "id": 2,
-            "moduleId": "Cron",
-            "params": {},
-            "active": true,
-            "module": "System Clock (CRON)",
-            "title": "System Clock (CRON)",
-            "description": "Scheduler used by other modules\n(Added by default)"
-          },
-          {
-            "id": 3,
-            "moduleId": "InbandNotifications",
-            "params": {},
-            "active": true,
-            "module": "Inband Notifier",
-            "title": "Inband Notifier",
-            "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
-          }/*,
-          {
-            "id": 4,
-            "moduleId": "InfoWidget",
-            "params": {
-                "headline":"Welcome to your Smart Home!",
-                "text":"These small widgets will guide you during your first steps on our new SmartHome UI. \nIf you click on it you will get useful informations about navigation and functionality of SmartHome UI.",
-                "imgURI":""
-            },
-            "active": true,
-            "module": "Information Widget",
-            "title": "Information Widget",
-            "description": "This Module creates an information widget.\n(Added by default)"
-          }*/];
-    }
-    return this.instances;
-}
-
 AutomationController.prototype.registerInstance = function (instance) {
     var self = this;
 
@@ -760,7 +702,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
             if (vdev.location === id) {
-                vdev.location = null;
+                vdev.location = 0;
             }
         });
 
@@ -955,9 +897,11 @@ AutomationController.prototype.getProfile = function (id) {
 };
 
 AutomationController.prototype.createProfile = function (profile) {
-    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1;
+    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
+        globalRoom = [0];
     
     profile.id = id;
+    profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
 
     this.profiles.push(profile);
 
@@ -997,9 +941,13 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
         if (object.hasOwnProperty('password')) {
             this.profiles[index].password = object.password;
         }
+        if (object.hasOwnProperty('login')) {
+            this.profiles[index].login = object.login;
+        }
     }
 
     _.defaults(this.profiles[index], {
+        login: null,
         password: null
     });
 

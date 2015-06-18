@@ -42,21 +42,37 @@ Notification.prototype.init = function (config) {
         },
         overlay: {},
         handler: function () {
-            var email = self.config.email,
-                phone   = self.config.phone;
+            // If API Key from sms.ru and Phone number exist, then send sms
+            // if (typeof self.config.api_key_sms !== 'undefined' && typeof self.config.phone !== 'undefined') {
+            if (self.config.api_key_sms && self.config.phone) {
+                http.request({
+                    method: 'POST',
+                    url: "http://sms.ru/sms/send",
+                    data: {
+                        api_id: self.config.api_key_sms,
+                        to: self.config.phone,
+                        text: self.config.message
+                    }
+                });
+            }
 
-            console.log("email:",email);
-            console.log("phone:",phone);
-
-            http.request({
-                method: 'POST',
-                url: "http://sms.ru/sms/send",
-                data: {
-                    api_id: self.config.api_key,
-                    to: self.config.phone,
-                    text: self.config.message
-                }
-            });
+            // If API Key from mandrillapp.com and Email exist, then send email
+            //if (typeof self.config.api_key_email !== 'undefined' && typeof self.config.email !== 'undefined') {
+            if (self.config.api_key_email && self.config.email) {
+                http.request({
+                    method: 'POST',
+                    url: "https://mandrillapp.com/api/1.0/messages/send.json",
+                    data: {
+                        key: self.config.api_key_email,
+                        message: {
+                            from_email: self.config.email,
+                            to: [{email: self.config.email, type: "to"}],
+                            subject: "Notification from Smart Home",
+                            text: self.config.message
+                        }
+                    }
+                });
+            }
 
             self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
         },
