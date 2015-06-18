@@ -242,7 +242,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             vDev = this.deviceByUser(vDevId, this.req.user);
         
         if (vDev) {
-            result_execution_command = vDev.performCommand.call(vDev.get(vDevId), commandId, this.req.query);
+            result_execution_command = vDev.performCommand.call(vDev, commandId, this.req.query);
             reply.data = !!result_execution_command ? result_execution_command : null;
         } else {
             reply.data = null;
