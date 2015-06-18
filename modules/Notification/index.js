@@ -46,12 +46,12 @@ Notification.prototype.init = function (config) {
             // if (typeof self.config.api_key_sms !== 'undefined' && typeof self.config.phone !== 'undefined') {
             if (self.config.api_key_sms && self.config.phone) {
                 http.request({
-                method: 'POST',
-                url: "http://sms.ru/sms/send",
-                data: {
-                    api_id: self.config.api_key_sms,
-                    to: self.config.phone,
-                    text: self.config.message
+                    method: 'POST',
+                    url: "http://sms.ru/sms/send",
+                    data: {
+                        api_id: self.config.api_key_sms,
+                        to: self.config.phone,
+                        text: self.config.message
                     }
                 });
             }
@@ -60,14 +60,16 @@ Notification.prototype.init = function (config) {
             //if (typeof self.config.api_key_email !== 'undefined' && typeof self.config.email !== 'undefined') {
             if (self.config.api_key_email && self.config.email) {
                 http.request({
-                method: 'POST',
-                url: "https://mandrillapp.com/api/1.0/messages/send.json",
-                data: {
-                    key: self.config.api_key_email,
-                    from_email: self.config.email,
-                    to: [{email: self.config.email, type: to}],
-                    subject: "Notification from Smart Home",
-                    text: self.config.message
+                    method: 'POST',
+                    url: "https://mandrillapp.com/api/1.0/messages/send.json",
+                    data: {
+                        key: self.config.api_key_email,
+                        message: {
+                            from_email: self.config.email,
+                            to: [{email: self.config.email, type: "to"}],
+                            subject: "Notification from Smart Home",
+                            text: self.config.message
+                        }
                     }
                 });
             }
