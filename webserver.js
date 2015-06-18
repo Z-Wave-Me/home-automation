@@ -214,7 +214,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null
             },
-            device = _.find(this.devicesByUser(this.req.user), function(device) { return device.id === vDevId; });
+            device = this.deviceByUser(vDevId, this.req.user);
 
         try {
             reqObj = JSON.parse(this.req.body);
@@ -223,9 +223,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if (device) {
-            var vDev = this.controller.devices.get(vDevId);
             reply.code = 200;
-            reply.data = vDev.set(reqObj);
+            reply.data = device.set(reqObj);
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
