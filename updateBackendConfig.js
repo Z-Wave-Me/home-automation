@@ -57,7 +57,17 @@
         hide_single_device_events: []
       }];
     }
-    
+    // add global location
+    if (config.hasOwnProperty('locations') && Array.isArray(config.locations) && config.locations.filter(function (location){ return location.id === 0 && location.title === 'globalRoom';}).length === 0) {
+      config.locations.push({
+          id : 0,
+          title: "globalRoom",
+          user_img: "",
+          default_img: "",
+          img_type: ""
+        });      
+    }
+
     // Change instances data
     if (config.hasOwnProperty('instances')) {
 
@@ -298,6 +308,15 @@
         if(profile.password && /^[a-f0-9]{32}$/.test(profile.password)){
             profile.password = 'admin';
         }
+        if(!profile.rooms){
+            profile.rooms = [0];
+        }
+        if(profile.rooms && Array.isArray(config.rooms)){
+          if(profile.rooms.indexOf(0) === -1 || profile.rooms.length === 0){
+            var globalRoom = [0];
+            profile.rooms.concat(globalRoom);
+          }
+        }
       });
 
       if (config.profiles && config.profiles.filter(function(profile){ return profile.login === 'local';}).length === 0) {
@@ -312,7 +331,6 @@
                 dashboard: [],
                 interval: 2000,
                 rooms:[0],
-                positions: [],
                 hide_all_device_events: false,
                 hide_system_events: false,
                 hide_single_device_events: []

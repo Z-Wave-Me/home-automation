@@ -756,7 +756,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
         Object.keys(this.devices).forEach(function (vdevId) {
             var vdev = self.devices[vdevId];
             if (vdev.location === id) {
-                vdev.location = null;
+                vdev.location = 0;
             }
         });
 
@@ -951,9 +951,11 @@ AutomationController.prototype.getProfile = function (id) {
 };
 
 AutomationController.prototype.createProfile = function (profile) {
-    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1;
+    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
+        globalRoom = [0];
     
     profile.id = id;
+    profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
 
     this.profiles.push(profile);
 
@@ -993,9 +995,13 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
         if (object.hasOwnProperty('password')) {
             this.profiles[index].password = object.password;
         }
+        if (object.hasOwnProperty('login')) {
+            this.profiles[index].login = object.login;
+        }
     }
 
         _.defaults(this.profiles[index], {
+            login: null,
             password: null
         });
 
