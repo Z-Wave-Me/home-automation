@@ -61,7 +61,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
         this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
         this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
-        this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
+        this.router.get("/instances", this.ROLE.USER, this.listInstances);
         this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
         this.router.post("/upload/image", this.ROLE.ADMIN, this.uploadImage);
@@ -86,7 +86,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
         this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
 
-        this.router.get("/instances/:instance_id", this.ROLE.ADMIN, this.getInstanceFunc);
+        this.router.get("/instances/:instance_id", this.ROLE.USER, this.getInstanceFunc);
         this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.ROLE.ADMIN, this.deleteInstanceFunc, [parseInt]);
 
