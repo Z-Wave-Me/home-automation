@@ -66,6 +66,14 @@
           default_img: "",
           img_type: ""
         });      
+    } else {
+      config.locations = [{
+        id : 0,
+        title: "globalRoom",
+        user_img: "",
+        default_img: "",
+        img_type: ""
+      }];
     }
 
     // Change instances data
@@ -227,7 +235,6 @@
         }
 
         if(config.instances.filter(function(instance){ return instance.moduleId === 'RemoteAccess'; }).length === 0) {
-          var zbw = new ZBWConnect();
           
           config.instances.push({
             "id" : maxInstanceId + 1,
@@ -236,10 +243,10 @@
             "title" : "Remote Access",
             "description" : "Is necessary to configure remote access in SmartHome UI.",
             "params" : {
-              "userId" : zbw.getUserId(),
-              "actStatus" : zbw.getActStatus(),
-              "sshStatus" : zbw.getSshStatus(),
-              "zbwStatus" : zbw.getStatus(),
+              "userId" : "",
+              "actStatus" : "",
+              "sshStatus" : "",
+              "zbwStatus" : "",
               "pass" : "",
               "lastChange" : {}
             },
@@ -267,7 +274,6 @@
         */
       }
     } else {
-      var zbw = new ZBWConnect();
 
       // default instances
       config.instances = [{
@@ -313,10 +319,10 @@
             "title" : "Remote Access",
             "description" : "Is necessary to configure remote access in SmartHome UI.",
             "params" : {
-              "userId" : zbw.getUserId(),
-              "actStatus" : zbw.getActStatus(),
-              "sshStatus" : zbw.getSshStatus(),
-              "zbwStatus" : zbw.getStatus(),
+              "userId" : "",
+              "actStatus" : "",
+              "sshStatus" : "",
+              "zbwStatus" : "",
               "pass" : "",
               "lastChange" : {}
             },
@@ -336,7 +342,7 @@
             "title": "Information Widget",
             "description": "This Module creates an information widget.\n(Added by default)"
           }*/
-      ]
+      ];
     }
       
     // Add permanently_hidden, h, visibility, hasHistory properties

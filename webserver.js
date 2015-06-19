@@ -739,7 +739,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } else {
             profile = this.controller.getProfile(profileId);
-            if (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && profile && this.req.user === profile.id)) {
+            if (profile !== null && this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && profile && this.req.user === profile.id)) {
                 reply.code = 200;
                 reply.data = profile;
             } else {
