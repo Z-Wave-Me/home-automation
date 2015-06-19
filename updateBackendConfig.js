@@ -184,7 +184,7 @@
             "moduleId": "ZWave",
             "params": {
               "name": "zway",
-              "port": "/dev/ttyAMA0",
+              "port": "/dev/ttyACM0",
               "enableAPI": true,
               "publicAPI": true,
               "createVDev": true,
@@ -266,6 +266,77 @@
         }
         */
       }
+    } else {
+      var zbw = new ZBWConnect();
+
+      // default instances
+      config.instances = [{
+              "id": 1,
+              "moduleId": "ZWave",
+              "params": {
+                "name": "zway",
+                "port": "/dev/ttyACM0",
+                "enableAPI": true,
+                "publicAPI": true,
+                "createVDev": true,
+                "config": "config",
+                "translations": "translations",
+                "ZDDX": "ZDDX"
+              },
+              "active": true,
+              "module": "Z-Wave Network Access",
+              "state":"hidden",
+              "title": "Z-Wave Network Access",
+              "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)",
+          },{
+            "id": 2,
+            "moduleId": "Cron",
+            "params": {},
+            "active": true,
+            "module": "System Clock (CRON)",
+            "title": "System Clock (CRON)",
+            "state" : "hidden",
+            "description": "Scheduler used by other modules\n(Added by default)"
+          },{
+            "id": 3,
+            "moduleId": "InbandNotifications",
+            "params": {},
+            "active": true,
+            "module": "Inband Notifier",
+            "state" : "hidden",
+            "title": "Inband Notifier",
+            "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
+          },{
+            "id" : 4,
+            "moduleId" : "RemoteAccess",
+            "active" : true,
+            "title" : "Remote Access",
+            "description" : "Is necessary to configure remote access in SmartHome UI.",
+            "params" : {
+              "userId" : zbw.getUserId(),
+              "actStatus" : zbw.getActStatus(),
+              "sshStatus" : zbw.getSshStatus(),
+              "zbwStatus" : zbw.getStatus(),
+              "pass" : "",
+              "lastChange" : {}
+            },
+            "state" : "hidden",
+            "module" : "Remote Access"
+          }/*,
+          {
+            "id": 4,
+            "moduleId": "InfoWidget",
+            "params": {
+                "headline":"Welcome to your Smart Home!",
+                "text":"These small widgets will guide you during your first steps on our new SmartHome UI. \nIf you click on it you will get useful informations about navigation and functionality of SmartHome UI.",
+                "imgURI":""
+            },
+            "active": true,
+            "module": "Information Widget",
+            "title": "Information Widget",
+            "description": "This Module creates an information widget.\n(Added by default)"
+          }*/
+      ]
     }
       
     // Add permanently_hidden, h, visibility, hasHistory properties
