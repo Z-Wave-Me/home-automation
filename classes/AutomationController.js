@@ -127,7 +127,11 @@ AutomationController.prototype.saveConfig = function () {
         "modules_categories": this.modules_categories
     };
 
-    saveObject("config.json", cfgObject);
+    try {
+        saveObject("config.json", cfgObject);
+    } catch(e) {
+        console.log("Error: can not write back config to storage: ", e);
+    }
 };
 
 AutomationController.prototype.saveFiles = function () {
@@ -942,10 +946,10 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
         }
     }
 
-        _.defaults(this.profiles[index], {
-            login: null,
-            password: null
-        });
+    _.defaults(this.profiles[index], {
+        login: null,
+        password: null
+    });
 
     this.saveConfig();
     return this.profiles[index];
