@@ -188,17 +188,25 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
         reply.pager = pager;
     }
 
+    var headers = {
+        'Content-Type': response.contentType,
+        'X-API-VERSION': version,
+        'Date': date.toUTCString(),
+        'Access-Control-Expose-Headers': that.controller.allow_headers.join(', '),
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
+    };
+    
+    if (response.headers) {
+        for (var hname in response.headers) {
+            headers[hname] = response.headers[hname];
+        }
+    }
+
     that.res = {
         status: response.code,
         body: JSON.stringify(reply),
-        headers: {
-            'Content-Type': response.contentType,
-            'X-API-VERSION': version,
-            'Date': date.toUTCString(),
-            'Access-Control-Expose-Headers': that.controller.allow_headers.join(', '),
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS'
-        }
+        headers: headers
     };
 
     return that.res;

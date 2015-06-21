@@ -128,7 +128,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reply = {
                     error: null,
                     data: null,
-                    code: 500
+                    code: 500,
+                    headers: null
                 },
             reqObj;
 
@@ -162,11 +163,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 hide_system_events: profile.hide_system_events,
                 hide_single_device_events: profile.hide_single_device_events
             };
-
-            // !!! what to do with??? this.controller.defaultLang = profile.lang;
+            reply.headers = {
+                "Set-Cookie": "Profile-SID=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
+            }
         } else {
             reply.code = 401;
             reply.error = "User login/password is wrong.";
+            reply.headers = {
+                "Set-Cookie": "Profile-SID=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+            }
         }
         
         return reply;
@@ -954,8 +959,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null
             };
 
-        // !!! permissions?
-        this.res.status = 200;
         history = this.controller.listHistories();
 
         if(history){
@@ -1200,7 +1203,18 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         var matched = this.router.dispatch(method, url);
         if (matched) {
             // !!! change this to tokens
-            var session = this.sessions[this.req.headers['Profile-SID']];
+            var profileSID = this.req.headers['Profile-SID'];
+            if (!profileSID) {
+                var cookies,
+                    cookiesHeader = this.req.headers['Cookie'];
+                if (cookiesHeader) {
+                    cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "Profile-SID" });
+                    if (!!cookie && !!cookie[0]) {
+                        profileSID = cookie[0][1];
+                    }
+                }
+            }
+            var session = this.sessions[profileSID];
 
             if (!session) {
                 // no session found or session expired
