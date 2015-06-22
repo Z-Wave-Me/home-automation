@@ -32,9 +32,13 @@ RemoteAccess.prototype.init = function (config) {
         langFile = self.controller.loadModuleLang("RemoteAccess");
 
     try {
-        var zbw = new ZBWConnect();
+        var zbw = new ZBWConnect(); // use default (raspberry) location /etc/zbw
     } catch (e) {
-        self.controller.addNotification("error", langFile.load_zbw_error + e.message, "module", "RemoteAccess");
+        try {
+            var zbw = new ZBWConnect("/mnt/HD/HD_a2/Nas_Prog/Z-Way-Server/bin/zbw"); // use WD zbw location
+        } catch (e) {
+            self.controller.addNotification("error", langFile.load_zbw_error + e.message, "module", "RemoteAccess");
+        }
     }
 
     this.updateRemoteData = function () {

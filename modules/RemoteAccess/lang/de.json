@@ -1,8 +1,8 @@
 {
 	"m_title":"Remote-Zugriff",
 	"m_descr":"Wird benötig, um über die SmartHome UI den Remote-Zugriff zu konfigurieren.",
-	"load_zbw_error":"Fehler: ZBWConnect Modul konnte nicht initialisiert werden.",
-	"setup_config_zbw_error":"Fehler: Die Konfiguration von ZBWConnect konnte nicht gelesen werden.",
+	"load_zbw_error":"ZBWConnect Modul konnte nicht initialisiert werden. Fehler: ",
+	"setup_config_zbw_error":"Die Konfiguration von ZBWConnect konnte nicht gelesen werden. Fehler: ",
 	"config_changed_successful":"Konfiguration des Remote-Zugriffs erfolgreich geändert.",
 	"config_changed_error":"Konfigurationsproblem: "
 }
