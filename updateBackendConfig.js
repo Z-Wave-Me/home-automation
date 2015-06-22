@@ -49,7 +49,7 @@
         name: 'Local User',
         lang:'en',
         color:'#dddddd',
-        dashboard: [0],
+        dashboard: [],
         interval: 2000,
         rooms:[0],
         hide_all_device_events: false,
@@ -330,6 +330,24 @@
             var globalRoom = [0];
             profile.rooms.concat(globalRoom);
           }
+        }
+        // transform positions into
+        if(Array.isArray(profile.positions)){
+          var unique = function (array) {
+              var a = array.concat();
+              for(var i=0; i<a.length; ++i) {
+                  for(var j=i+1; j<a.length; ++j) {
+                      if(a[i] === a[j])
+                          a.splice(j--, 1);
+                  }
+              }
+
+              return a;
+          };
+          
+          profile.dashboard = profile.dashboard? unique(profile.dashboard.concat(profile.positions)) : (!profile.dashboard ? profile.positions : []);
+
+          delete profile.positions;
         }
       });
   
