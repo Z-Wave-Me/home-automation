@@ -29,16 +29,13 @@ RemoteAccess.prototype.init = function (config) {
     RemoteAccess.super_.prototype.init.call(this, config);
 
     var self = this,
-        langFile = self.controller.loadModuleLang("RemoteAccess");
+        langFile = self.controller.loadModuleLang("RemoteAccess"),
+        path = self.config.path;
 
     try {
-        var zbw = new ZBWConnect(); // use default (raspberry) location /etc/zbw
+        var zbw = path? new ZBWConnect(path) : new ZBWConnect(); // find zbw by path or use (raspberry) location /etc/zbw as default
     } catch (e) {
-        try {
-            var zbw = new ZBWConnect("/mnt/HD/HD_a2/Nas_Prog/Z-Way-Server/bin/zbw"); // use WD zbw location
-        } catch (e) {
-            self.controller.addNotification("error", langFile.load_zbw_error + e.message, "module", "RemoteAccess");
-        }
+        self.controller.addNotification("error", langFile.load_zbw_error + e.message, "module", "RemoteAccess");
     }
 
     this.updateRemoteData = function () {

@@ -1,6 +1,8 @@
 {
 	"m_title":"Remote-Zugriff",
 	"m_descr":"Wird benötig, um über die SmartHome UI den Remote-Zugriff zu konfigurieren.",
+	"l_ra_path":"Absoluter Pfad auf dem Server zu ZBWConnect:",
+	"h_ra_path":"z.B. /etc/zbw",
 	"load_zbw_error":"ZBWConnect Modul konnte nicht initialisiert werden. Fehler: ",
 	"setup_config_zbw_error":"Die Konfiguration von ZBWConnect konnte nicht gelesen werden. Fehler: ",
 	"config_changed_successful":"Konfiguration des Remote-Zugriffs erfolgreich geändert.",

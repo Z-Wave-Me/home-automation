@@ -16,6 +16,7 @@
 	"defaults" : {
 		"title" : "__m_title__",
 		"description" : "__m_descr__",
+		"path":"",
 		"userId":"",
 		"actStatus":"",
 		"sshStatus":"",
@@ -23,6 +24,22 @@
 		"pass":"",
 		"lastChange":{}
 	},
-	"schema": {},
-	"options": {}
+	"schema": {
+		"type": "object",
+        "properties": {
+            "path": {
+                "required": false
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "path": {
+                "label": "__l_ra_path__",
+				"helper": "__h_ra_path__",                
+                "required": false
+            }
+        }
+    }
 }
