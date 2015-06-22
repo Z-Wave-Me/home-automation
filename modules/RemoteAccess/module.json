@@ -1,11 +1,11 @@
 {
 	"singleton" : true,
 	"dependencies" : [],
-	"category" : "peripherals",
+	"category" : "security",
 	"author" : "Z-Wave.Me",
 	"homepage" : "http://razberry.z-wave.me",
 	"icon": "icon.png",
-    "moduleName":"RemoteAccess",
+	"moduleName":"RemoteAccess",
 	"version" : "1.0.0",
 	"state": "hidden",
 	"maturity" : "stable",

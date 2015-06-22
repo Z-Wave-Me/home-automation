@@ -238,7 +238,7 @@ if (!config) {
         {
             "id": "environment",
             "name": "Environment",
-            "description": "Environment related date",
+            "description": "Environment related data",
             "icon": ""
         },
         {

@@ -57,8 +57,9 @@
         hide_single_device_events: []
       }];
     }
-    // add global location
-    if (config.hasOwnProperty('locations') && Array.isArray(config.locations) && config.locations.filter(function (location){ return location.id === 0 && location.title === 'globalRoom';}).length === 0) {
+    
+    // add global location if not present
+    if (config.hasOwnProperty('locations') && Array.isArray(config.locations) && config.locations.filter(function (location) { return location.id === 0;}).length === 0) {
       config.locations.push({
           id : 0,
           title: "globalRoom",
@@ -66,14 +67,6 @@
           default_img: "",
           img_type: ""
         });      
-    } else {
-      config.locations = [{
-        id : 0,
-        title: "globalRoom",
-        user_img: "",
-        default_img: "",
-        img_type: ""
-      }];
     }
 
     // Change instances data
@@ -99,6 +92,10 @@
             }
           }
 
+          /*
+          Commented by Poltos.
+          Niels, do we need this?
+          // +++++
           if(instance.moduleId && (!instance.state || !instance.title)){
             var moduleMeta,
                 moduleLang;
@@ -134,6 +131,8 @@
               console.log('Could not set state of instance ' + instance.id + '. ERROR: ' + e);
             }            
           }
+          // ------
+          */
 
           // delete userView
           if (instance.hasOwnProperty('userView')) {
@@ -169,7 +168,7 @@
               "name": "zway",
               "port": "/dev/ttyAMA0",
               "enableAPI": true,
-              "publicAPI": true,
+              "publicAPI": false,
               "createVDev": true,
               "config": "config",
               "translations": "translations",
@@ -184,165 +183,7 @@
             "id": maxInstanceId + 1
           });
         }
-
-        // Add modules by default: ZWave, RemoteAccess, InbandNotifier, Cron
-        if(config.instances.filter(function(instance){ return instance.moduleId === 'ZWave'; }).length === 0) {
-          config.instances.push({
-            "id": maxInstanceId + 1,
-            "moduleId": "ZWave",
-            "params": {
-              "name": "zway",
-              "port": "/dev/ttyACM0",
-              "enableAPI": true,
-              "publicAPI": true,
-              "createVDev": true,
-              "config": "config",
-              "translations": "translations",
-              "ZDDX": "ZDDX"
-            },
-            "active": true,
-            "module": "Z-Wave Network Access",
-            "state":"hidden",
-            "title": "Z-Wave Network Access",
-            "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)",
-          });
-        }
-
-        if(config.instances.filter(function(instance){ return instance.moduleId === 'Cron'; }).length === 0) {
-          config.instances.push({
-            "id": maxInstanceId + 1,
-            "moduleId": "Cron",
-            "params": {},
-            "active": true,
-            "module": "System Clock (CRON)",
-            "title": "System Clock (CRON)",
-            "state" : "hidden",
-            "description": "Scheduler used by other modules\n(Added by default)"
-          });
-        }
-
-        if(config.instances.filter(function(instance){ return instance.moduleId === 'InbandNotifications'; }).length === 0) {
-          config.instances.push({
-            "id": maxInstanceId + 1,
-            "moduleId": "InbandNotifications",
-            "params": {},
-            "active": true,
-            "module": "Inband Notifier",
-            "state" : "hidden",
-            "title": "Inband Notifier",
-            "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
-          });
-        }
-
-        if(config.instances.filter(function(instance){ return instance.moduleId === 'RemoteAccess'; }).length === 0) {
-          
-          config.instances.push({
-            "id" : maxInstanceId + 1,
-            "moduleId" : "RemoteAccess",
-            "active" : true,
-            "title" : "Remote Access",
-            "description" : "Is necessary to configure remote access in SmartHome UI.",
-            "params" : {
-              "userId" : "",
-              "actStatus" : "",
-              "sshStatus" : "",
-              "zbwStatus" : "",
-              "pass" : "",
-              "lastChange" : {}
-            },
-            "state" : "hidden",
-            "module" : "Remote Access"
-          });
-        }
-
-        /*
-        if(config.instances.filter(function(instance){ return instance.moduleId === 'InbandNotifications'; }).length === 0) {
-          config.instances.push({
-            "id": 4,
-            "moduleId": "InfoWidget",
-            "params": {
-                "headline":"Welcome to your Smart Home!",
-                "text":"These small widgets will guide you during your first steps on our new SmartHome UI. \nIf you click on it you will get useful informations about navigation and functionality of SmartHome UI.",
-                "imgURI":""
-            },
-            "active": true,
-            "module": "Information Widget",
-            "title": "Information Widget",
-            "description": "This Module creates an information widget.\n(Added by default)"
-          });
-        }
-        */
       }
-    } else {
-
-      // default instances
-      config.instances = [{
-              "id": 1,
-              "moduleId": "ZWave",
-              "params": {
-                "name": "zway",
-                "port": "/dev/ttyACM0",
-                "enableAPI": true,
-                "publicAPI": true,
-                "createVDev": true,
-                "config": "config",
-                "translations": "translations",
-                "ZDDX": "ZDDX"
-              },
-              "active": true,
-              "module": "Z-Wave Network Access",
-              "state":"hidden",
-              "title": "Z-Wave Network Access",
-              "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)",
-          },{
-            "id": 2,
-            "moduleId": "Cron",
-            "params": {},
-            "active": true,
-            "module": "System Clock (CRON)",
-            "title": "System Clock (CRON)",
-            "state" : "hidden",
-            "description": "Scheduler used by other modules\n(Added by default)"
-          },{
-            "id": 3,
-            "moduleId": "InbandNotifications",
-            "params": {},
-            "active": true,
-            "module": "Inband Notifier",
-            "state" : "hidden",
-            "title": "Inband Notifier",
-            "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
-          },{
-            "id" : 4,
-            "moduleId" : "RemoteAccess",
-            "active" : true,
-            "title" : "Remote Access",
-            "description" : "Is necessary to configure remote access in SmartHome UI.",
-            "params" : {
-              "userId" : "",
-              "actStatus" : "",
-              "sshStatus" : "",
-              "zbwStatus" : "",
-              "pass" : "",
-              "lastChange" : {}
-            },
-            "state" : "hidden",
-            "module" : "Remote Access"
-          }/*,
-          {
-            "id": 4,
-            "moduleId": "InfoWidget",
-            "params": {
-                "headline":"Welcome to your Smart Home!",
-                "text":"These small widgets will guide you during your first steps on our new SmartHome UI. \nIf you click on it you will get useful informations about navigation and functionality of SmartHome UI.",
-                "imgURI":""
-            },
-            "active": true,
-            "module": "Information Widget",
-            "title": "Information Widget",
-            "description": "This Module creates an information widget.\n(Added by default)"
-          }*/
-      ];
     }
       
     // Add permanently_hidden, h, visibility, hasHistory properties

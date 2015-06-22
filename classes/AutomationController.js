@@ -30,7 +30,7 @@ function AutomationController() {
     this.defaultLang = 'en';
     this.profiles = config.profiles;
     this.instances = config.instances;
-    this.locations = config.locations;
+    this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
     this.modules_categories = config.modules_categories || [];
     this.namespaces = namespaces || [];
