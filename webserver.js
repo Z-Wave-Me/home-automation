@@ -164,13 +164,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 hide_single_device_events: profile.hide_single_device_events
             };
             reply.headers = {
-                "Set-Cookie": "Profile-SID=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
+                "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
             }
         } else {
             reply.code = 401;
             reply.error = "User login/password is wrong.";
             reply.headers = {
-                "Set-Cookie": "Profile-SID=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+                "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
             }
         }
         
@@ -1203,12 +1203,12 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         var matched = this.router.dispatch(method, url);
         if (matched) {
             // !!! change this to tokens
-            var profileSID = this.req.headers['Profile-SID'];
+            var profileSID = this.req.headers['ZWAYSession'];
             if (!profileSID) {
                 var cookies,
                     cookiesHeader = this.req.headers['Cookie'];
                 if (cookiesHeader) {
-                    cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "Profile-SID" });
+                    cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZWAYSession" });
                     if (!!cookie && !!cookie[0]) {
                         profileSID = cookie[0][1];
                     }

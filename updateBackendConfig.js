@@ -311,13 +311,20 @@
             delete profile.widgets;
             delete profile.positions;
         }
-
-        if(profile.password && /^[a-f0-9]{32}$/.test(profile.password)){
-            profile.password = 'admin';
+        
+        // change MD5 hashed passwords back to string
+        // replace it with profile.login or 'admin' as fallback
+        // affects versions below rc39
+        if(profile.password && /^[a-f0-9]{32}$/.test(profile.password)){            
+            profile.password = profile.login? profile.login : 'admin';
         }
+
+        // add room 0 if no rooms exists
         if(!profile.rooms){
             profile.rooms = [0];
         }
+
+        // add room 0 if rooms exists but room 0 is missing
         if(profile.rooms && Array.isArray(config.rooms)){
           if(profile.rooms.indexOf(0) === -1 || profile.rooms.length === 0){
             var globalRoom = [0];
@@ -325,7 +332,8 @@
           }
         }
       });
-
+  
+      // add local user if he not exists
       if (config.profiles && config.profiles.filter(function(profile){ return profile.login === 'local';}).length === 0) {
             config.profiles.push({
                 id: config.profiles.length + 1,

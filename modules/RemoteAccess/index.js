@@ -29,83 +29,78 @@ RemoteAccess.prototype.init = function (config) {
     RemoteAccess.super_.prototype.init.call(this, config);
 
     var self = this,
-        langFile = self.controller.loadModuleLang("RemoteAccess"),
-        zbw = new ZBWConnect(),
-        intToBool = function (i){
-            if(parseInt(i) === 1){
-                return true;
-            } else {
-                return false;
-            }
-        },
-        boolToInt = function (b){
-            if(b === true){
-                return 1;
-            } else {
-                return 0;
-            }
-        };
+        langFile = self.controller.loadModuleLang("RemoteAccess");
+
+    try {
+        var zbw = new ZBWConnect();
+    } catch (e) {
+        self.controller.addNotification("error", langFile.load_zbw_error + e.message, "module", "RemoteAccess");
+    }
 
     this.updateRemoteData = function () {
-        self.config.userId = zbw.getUserId();
-        self.config.actStatus = intToBool(zbw.getActStatus());
-        self.config.sshStatus = intToBool(zbw.getSshStatus());
-        self.config.zbwStatus = intToBool(zbw.getStatus());
+        try {
+            self.config.userId = zbw.getUserId();
+            self.config.actStatus = zbw.getActStatus();
+            self.config.sshStatus = zbw.getSshStatus();
+            self.config.zbwStatus = zbw.getStatus();
+        } catch(e) {
+            self.controller.addNotification("error", langFile.setup_config_zbw_error + e.message, "module", "RemoteAccess");
+        }
     };
 
     this.setRemoteConfigurations = function () {
-        var raInstance = self.controller.instances.filter(function (instance){
-                return instance.moduleId === 'RemoteAccess';
-            }),
-            raSshStatus = raInstance[0]? raInstance[0].params.sshStatus : '',
-            raStatus = raInstance[0]? raInstance[0].params.zbwStatus : '',
-            raPass = raInstance[0]? raInstance[0].params.pass: '',
-            currDate = new Date();
-
-        this.updateRemoteData();
-
-        // compare changed values with values from server
         try{
-            if(raStatus !== false && raStatus === self.config.zbwStatus && (raSshStatus !== '' && raSshStatus !== self.config.sshStatus || raPass && raPass !== '')){
-                zbw.setStatus(0); // stop zbw
+            var raSshStatus = zbw.getSshStatus(),
+                raStatus = zbw.getSshStatus(),
+                password = self.config.pass? self.config.pass : '',
+                currDate = new Date();
+
+            // stop and start zbw connect if necessary       
+            if(raStatus !== false && raStatus === self.config.zbwStatus && (raSshStatus !== self.config.sshStatus || password !== '')){
+                zbw.setStatus(false); // stop zbw
                 console.log('--- Stopping ZBW Connect Service');
                 setTimeout(function() {
-                    zbw.setStatus(1);
+                    zbw.setStatus(true);
                     console.log('--- Starting ZBW Connect Service');
                 }, 7000); // wait 7 sec to start zbw
             }
-            if(raSshStatus !== '' && raSshStatus !== self.config.sshStatus){
-                zbw.setSshStatus(boolToInt(raSshStatus));
-                self.config.sshStatus = raSshStatus;
+
+            // set remote ssh status
+            if(raSshStatus !== self.config.sshStatus){
+                zbw.setSshStatus(self.config.sshStatus);
                 self.config.lastChange.sshStatus = currDate;
             }
-            if(raStatus !== '' && raStatus !== self.config.zbwStatus){
-                zbw.setStatus(boolToInt(raStatus));
-                raStatus === false? console.log('--- Stopping ZBW Connect Service') : console.log('--- Starting ZBW Connect Service');
-                self.config.zbwStatus = raStatus;
+
+            // start/stop zbw connect - start/stop RemoteAccess
+            if(raStatus !== self.config.zbwStatus){
+                zbw.setStatus(self.config.zbwStatus);
+                self.config.zbwStatus === false ? console.log('--- Stopping ZBW Connect Service') : console.log('--- Starting ZBW Connect Service');
                 self.config.lastChange.zbwStatus = currDate;
-                self.config.actStatus = intToBool(zbw.getActStatus());
+                self.config.actStatus = zbw.getActStatus();
             }
-            if(raPass && raPass !== ''){
-                zbw.setPass(raPass);
+
+            // set remote password
+            if(password !== ''){
+                zbw.setPass(password);
                 self.config.pass = '';
                 self.config.lastChange.pass = currDate;
             }
-            if((raSshStatus !== '' && raSshStatus !== self.config.sshStatus) || (raStatus !== '' && raStatus !== self.config.zbwStatus) || (raPass && raPass !== '')) {
+
+            if(raSshStatus !== self.config.sshStatus || raStatus !== self.config.zbwStatus || password !== '') {
                 self.controller.addNotification("notification", langFile.config_changed_successful, "module", "RemoteAccess");
             }
+
         } catch(e) {
             self.controller.addNotification("error", langFile.config_changed_error + e.message, "module", "RemoteAccess");
         } 
     };
     
-    // run first time to set up the value
+    // run first time to get the values from zbw module
     if(self.config.userId === '' && self.config.actStatus === '' && self.config.sshStatus === '' && self.config.zbwStatus === '') {
         this.updateRemoteData();
     } else {
         this.setRemoteConfigurations();
-    }
-    
+    }    
 };
 
 RemoteAccess.prototype.stop = function () {

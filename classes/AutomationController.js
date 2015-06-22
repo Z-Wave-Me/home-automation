@@ -23,7 +23,7 @@ function AutomationController() {
         'If-None-Match',
         'Content-Language',
         'Accept-Language',
-        'Profile-SID'
+        'ZWAYSession'
     ];
     this.config = config.controller || {};
     this.availableLang = ['en', 'ru', 'de'];
