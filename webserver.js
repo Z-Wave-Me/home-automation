@@ -292,9 +292,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // delete single notifications or all privious by a choosen timestamp
     deleteNotifications: function (notificationId) {
-        // !!! Needed?
-        throw "deleteNotifications";
-        
+       
         var id = notificationId ? parseInt(notificationId) : 0,
             reply = {
                 data: null,
@@ -1204,7 +1202,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (matched) {
             // !!! change this to tokens
             var profileSID = this.req.headers['ZWAYSession'];
-            if (!profileSID) {
+            if (!profileSID) { // && this.req.url !== '/v1/login'
                 var cookies,
                     cookiesHeader = this.req.headers['Cookie'];
                 if (cookiesHeader) {

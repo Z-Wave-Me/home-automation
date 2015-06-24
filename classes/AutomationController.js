@@ -606,6 +606,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
             type: type || 'device',
             source: source,
             redeemed: false,
+            // add unified hash - produces with source, cause timestamp in sec is not unique ...
             h: this.hashCode(source)
         };
 
@@ -663,7 +664,7 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
 };
 
 AutomationController.prototype.addLocation = function (locProps, callback) {
-    var id = this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
+    var id = this.locations.length > 0? this.locations.length : 1; // changed after adding global room with id=0 || old: this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
         return location.id === id;
     });

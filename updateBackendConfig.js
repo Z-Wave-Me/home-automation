@@ -311,6 +311,11 @@
             delete profile.widgets;
             delete profile.positions;
         }
+
+        // delete profile.sid 
+        if(profile.sid){
+            delete profile.sid;
+        }
         
         // change MD5 hashed passwords back to string
         // replace it with profile.login or 'admin' as fallback
@@ -323,14 +328,20 @@
         if(!profile.rooms){
             profile.rooms = [0];
         }
+        
+        // transform room if it is no array
+        if(profile.rooms && !Array.isArray(profile.rooms)){
+            profile.rooms = !isNaN(profile.rooms) && profile.rooms % 1 === 0? [profile.rooms] : [0];
+        }
 
         // add room 0 if rooms exists but room 0 is missing
-        if(profile.rooms && Array.isArray(config.rooms)){
+        if(profile.rooms && Array.isArray(profile.rooms)){
           if(profile.rooms.indexOf(0) === -1 || profile.rooms.length === 0){
             var globalRoom = [0];
-            profile.rooms.concat(globalRoom);
+            profile.rooms = profile.rooms.concat(globalRoom);
           }
         }
+
         // transform positions into
         if(Array.isArray(profile.positions)){
           var unique = function (array) {
