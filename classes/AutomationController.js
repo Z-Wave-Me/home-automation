@@ -664,7 +664,7 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
 };
 
 AutomationController.prototype.addLocation = function (locProps, callback) {
-    var id = this.locations.length > 0? this.locations.length : 1; // changed after adding global room with id=0 || old: this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
+    var id = this.locations.length > 0 ? Math.max.apply(null, this.locations.map(function (location) { return location.id; })) + 1 : 1; // changed after adding global room with id=0 || old: this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
         return location.id === id;
     });

@@ -336,9 +336,8 @@
 
         // add room 0 if rooms exists but room 0 is missing
         if(profile.rooms && Array.isArray(profile.rooms)){
-          if(profile.rooms.indexOf(0) === -1 || profile.rooms.length === 0){
-            var globalRoom = [0];
-            profile.rooms = profile.rooms.concat(globalRoom);
+          if(profile.rooms.indexOf(0) === -1){
+            profile.rooms.push(0);
           }
         }
 

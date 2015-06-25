@@ -1202,7 +1202,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (matched) {
             // !!! change this to tokens
             var profileSID = this.req.headers['ZWAYSession'];
-            if (!profileSID) { // && this.req.url !== '/v1/login'
+            if (!profileSID) {
                 var cookies,
                     cookiesHeader = this.req.headers['Cookie'];
                 if (cookiesHeader) {
