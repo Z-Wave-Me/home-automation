@@ -1235,9 +1235,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                     }
                 }
             
-                if (session) {
-                    role = this.ROLE.USER; // change role type, since we found matching local/anonymous user
-                } else {
+                if (!session) {
                     if (matched.role === this.ROLE.ANONYMOUS) {
                         session = {
                             id: -1, // non-existant ID
@@ -1253,6 +1251,10 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                         };
                     }
                 }
+            }
+            
+            if (session.id !== -1 && (session.role === self.ROLE.LOCAL || session.role === this.ROLE.ANONYMOUS)) {
+                role = this.ROLE.USER; // change role type, since we found matching local/anonymous user (real user, not dummy with -1)
             }
             
             if (!role) {
