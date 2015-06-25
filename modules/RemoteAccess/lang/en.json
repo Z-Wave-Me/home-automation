@@ -2,7 +2,7 @@
 	"m_title":"Remote Access",
 	"m_descr":"Is necessary to configure remote access in SmartHome UI.",
 	"l_ra_path":"Absolute path to ZBWConnect on server:",
-	"h_ra_path":"e.g. /etc/zbw",
+	"h_ra_path":"e.g. /etc/zbw or ./zbw - not necessary on raspberry",
 	"load_zbw_error":"Cannot initialize ZBWConnect module. Error: ",
 	"setup_config_zbw_error":"Cannot read configurations from ZBWConnect module. Error: ",
 	"config_changed_successful":"Configuration of remote access has changed successfully.",
