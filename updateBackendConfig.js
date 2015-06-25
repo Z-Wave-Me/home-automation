@@ -92,10 +92,7 @@
             }
           }
 
-          /*
-          Commented by Poltos.
-          Niels, do we need this?
-          // +++++
+          // update/replace module title / module param to show it correct in instances overview 
           if(instance.moduleId && (!instance.state || !instance.title)){
             var moduleMeta,
                 moduleLang;
@@ -131,8 +128,7 @@
               console.log('Could not set state of instance ' + instance.id + '. ERROR: ' + e);
             }            
           }
-          // ------
-          */
+
 
           // delete userView
           if (instance.hasOwnProperty('userView')) {

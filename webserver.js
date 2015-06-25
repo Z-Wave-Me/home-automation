@@ -819,14 +819,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 // only Admin can change critical parameters
                 if (this.req.role === this.ROLE.ADMIN) {
                     // id is never changeable
-                    profile.login= reqObj.login && reqObj.login !== ''? reqObj.login : profile.login;
-                    profile.role = reqObj.role;
-                    profile.name = reqObj.name;
-                    profile.interval = reqObj.interval;
+                    // login is changed by updateProfileAuth()
+                    profile.role = reqObj.role;                    
                     profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
-                    profile.hide_system_events = reqObj.hide_system_events;
-                    profile.hide_all_device_events = reqObj.hide_all_device_events;
                 }
+                // could be changed by user role
+                profile.name = reqObj.name; // profile name
+                profile.interval = reqObj.interval; // update interval from ui
+                profile.hide_system_events = reqObj.hide_system_events;
+                profile.hide_all_device_events = reqObj.hide_all_device_events;
                 profile.lang = reqObj.lang;
                 profile.color = reqObj.color;
                 profile.dashboard = reqObj.dashboard;
