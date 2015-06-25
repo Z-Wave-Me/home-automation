@@ -52,12 +52,12 @@ RemoteAccess.prototype.init = function (config) {
     this.setRemoteConfigurations = function () {
         try{
             var raSshStatus = zbw.getSshStatus(),
-                raStatus = zbw.getSshStatus(),
+                raStatus = zbw.getStatus(),
                 password = self.config.pass? self.config.pass : '',
                 currDate = new Date();
 
             // stop and start zbw connect if necessary       
-            if(raStatus !== false && raStatus === self.config.zbwStatus && (raSshStatus !== self.config.sshStatus || password !== '')){
+            if(raStatus !== false && raStatus === self.config.zbwStatus && (raSshStatus !== self.config.sshStatus || password)){
                 zbw.setStatus(false); // stop zbw
                 console.log('--- Stopping ZBW Connect Service');
                 setTimeout(function() {
@@ -81,13 +81,13 @@ RemoteAccess.prototype.init = function (config) {
             }
 
             // set remote password
-            if(password !== ''){
+            if(password){
                 zbw.setPass(password);
                 self.config.pass = '';
                 self.config.lastChange.pass = currDate;
             }
 
-            if(raSshStatus !== self.config.sshStatus || raStatus !== self.config.zbwStatus || password !== '') {
+            if(raSshStatus !== self.config.sshStatus || raStatus !== self.config.zbwStatus || password) {
                 self.controller.addNotification("notification", langFile.config_changed_successful, "module", "RemoteAccess");
             }
 
