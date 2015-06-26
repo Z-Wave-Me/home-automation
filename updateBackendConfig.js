@@ -92,40 +92,45 @@
             }
           }
 
-          // update/replace module title / module param to show it correct in instances overview 
-          if(instance.moduleId && (!instance.state || !instance.title)){
+          // update/add instance title/module/state to show it correct in instances overview 
+          if(instance.moduleId && (!instance.state || !instance.title || !instance.module)){
             var moduleMeta,
-                moduleLang;
+                moduleLang,
+                modulesMetaPath = 'modules/'+ instance.moduleId + '/module.json',
+                modulesLangPath = 'modules/'+ instance.moduleId + '/lang/en.json',
+                userModulesMetaPath = 'userModules/' + instance.moduleId + '/module.json',
+                userModulesLangPath = 'userModules/'+ instance.moduleId + '/lang/en.json';
+
             try{
-              try{
-                moduleMeta = fs.loadJSON('modules/' + instance.moduleId + '/module.json');
-                moduleLang = fs.loadJSON('modules/' + instance.moduleId + '/lang/en.json');
-              } catch (e){
-                  try{
-                    moduleMeta = fs.loadJSON('userModules/' + instance.moduleId + '/module.json');
-                    moduleLang = fs.loadJSON('userModules/' + instance.moduleId + '/lang/en.json');
-                  } catch (e){
-                    moduleLang = null;
-                  }
+
+              // load meta data from module.json - returns null if error
+              moduleMeta = !!fs.loadJSON(modulesMetaPath)? fs.loadJSON(modulesMetaPath) : fs.loadJSON(userModulesMetaPath);
+              // load en.json - returns null if error
+              moduleLang = !!fs.loadJSON(modulesLangPath)? fs.loadJSON(modulesLangPath) : fs.loadJSON(userModulesLangPath);
+              
+              if(!!moduleMeta) {
+                // replace language keys
+                if (!!moduleLang) {
+                    metaStringify = JSON.stringify(moduleMeta);
+                    Object.keys(moduleLang).forEach(function (key) {
+                        var regExp = new RegExp('__' + key + '__', 'g');
+                        if (moduleLang[key]) {
+                            metaStringify = metaStringify.replace(regExp, moduleLang[key]);
+                        }
+                    });
+                    moduleMeta = JSON.parse(metaStringify);
+                }
+                
+                // update title / module / state
+                // title  ... instance title
+                // module ... module title, usually added by creating new instance - is not the same as className or moduleId
+                // state  ... could be 'hidden', 'camera' or null - will be used to hide core modules or to mark as camera module e.g.
+                instance.state = moduleMeta.state? moduleMeta.state : null;
+                instance.title = !instance.title? moduleMeta.defaults.title : instance.title;
+                instance.module = !instance.module? moduleMeta.defaults.title : instance.module;
               }
-
-              if (moduleLang !== null) {
-                  metaStringify = JSON.stringify(moduleMeta);
-                  Object.keys(moduleLang).forEach(function (key) {
-                      var regExp = new RegExp('__' + key + '__', 'g');
-                      if (moduleLang[key]) {
-                          metaStringify = metaStringify.replace(regExp, moduleLang[key]);
-                      }
-                  });
-                  moduleMeta = JSON.parse(metaStringify);
-              }
-
-              instance.state = moduleMeta.state? moduleMeta.state : null;
-              instance.title = !instance.title? moduleMeta.defaults.title : instance.title;
-              instance.module = !instance.module? moduleMeta.defaults.title : instance.module;
-
             }catch (e){
-              console.log('Could not set state of instance ' + instance.id + '. ERROR: ' + e);
+              console.log('Could not set state/title/module value of instance ' + instance.id + '. ERROR: ' + e);
             }            
           }
 
