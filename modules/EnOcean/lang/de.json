@@ -1,0 +1,17 @@
+{
+	"m_title":"EnOcean Netzwerksteuerung",
+	"m_descr":"Ermöglicht die Nutzung von EnOcean Geräten, die mit dem Gateway verbunden sind",
+	"l_port":"Serieller Port der verwendet werden soll:",
+	"l_name":"Interner Name",
+	"h_name":"Dies sollte ein valider JS key String sein. Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
+	"rl_enableAPI":"Enable EnOcean API",
+	"h_enableAPI":"Handler HTTP requests to /EnOceanAPI/* and /EnOcean/<internal zway name>/*",
+	"rl_publicAPI":"Allow public access to EnOcean API",
+	"h_publicAPI":"Do not ask for authentication to access EnOcean API",
+	"rl_createVDev":"Create virtual devices in Home Automation engine",
+	"h_createVDev":"Without this EnOcean devices will be visible only in Expert UI and via EnOcean API",
+	"l_config":"Pfad zum Ordner /config",
+	"h_change_sth":"Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
+	"err_binding_start":"Fehler beim Starten der EnOcean Bindung: ",
+	"err_dev_create":"vDev konnte mit den folgenden Daten nicht erstellt werden: "
+}

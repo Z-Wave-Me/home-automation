@@ -1,0 +1,17 @@
+{
+	"m_title":"EnOcean Network Access",
+	"m_descr":"Allows accessing EnOcean devices from attached EnOcean transceiver.",
+	"l_port":"Serial port to EnOcean dongle",
+	"l_name":"Internal name",
+	"h_name":"Should be a valid JS key string. Don't change unless you know what you are doing",
+	"rl_enableAPI":"Enable EnOcean API",
+	"h_enableAPI":"Handler HTTP requests to /EnOcean/* and /EnOcean/<internal zway name>/*",
+	"rl_publicAPI":"Allow public access to EnOcean API",
+	"h_publicAPI":"Do not ask for authentication to access EnOcean API",
+	"rl_createVDev":"Create virtual devices in Home Automation engine",
+	"h_createVDev":"Without this EnOcean devices will be visible only in Expert UI and via EnOcean API",
+	"l_config":"Path to config folder",
+	"h_change_sth":"Don't change unless you know what you are doing",
+	"err_binding_start":"Cannot start EnOcean binding: ",
+	"err_dev_create":"Cannot create vDev based on: "
+}
