@@ -1749,53 +1749,48 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 			}
 
-			if (withTemp && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatSetPoint"])) {
+			if (withTemp) {
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL];
+					
+				var createTemperatureSetpointDevice = function(mode) {
+				    var t_vDev = this.controller.devices.create({
+				        deviceId: deviceNamePrefix + self.CC["ThermostatSetPoint"] + separ + mode,
+				        defaults: {
+					        deviceType: "thermostat",
+					        metrics: {
+						        scaleTitle: instance.ThermostatSetPoint.data[mode].deviceScaleString.value,
+						        level: instance.ThermostatSetPoint.data[mode].val.value,
+						        min: 5,
+						        max: 40,
+						        icon: 'thermostat',
+						        title: compileTitle("Thermostat", vDevIdNI + separ + vDevIdC + separ + mode)
+					        }
+				        },
+				        overlay: {},
+				        handler: function (command, args) {
+					        instance.ThermostatSetPoint.Set(mode, args.level);
+				        },
+				        moduleId: self.id
+			        });
 
-				if (withTempHeat && withTempCool) {
-					withTempCool = false;
-				}
+			        if (t_vDev) {
+				        self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
+					        try {
+						        t_vDev.set("metrics:level", this.value);
+					        } catch (e) {}
+				        });
+		        	}
+			};
 
-				if (withTempHeat || withTempCool) {
-					var mode = withTempHeat ? MODE_HEAT : MODE_COOL,
-						DH = instance.ThermostatSetPoint.data[mode];
+                	if (withTempCool && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatSetPoint"] + separ + MODE_COOL)) {
+			        createTemperatureSetpointDevice(MODE_COOL);
+		        }
 
-					var t_vDev = this.controller.devices.create({
-						deviceId: deviceNamePrefix + this.CC["ThermostatSetPoint"],
-						defaults: {
-							deviceType: "thermostat",
-							metrics: {
-								scaleTitle: instance.ThermostatSetPoint.data[mode].deviceScaleString.value,
-								level: DH.val.value,
-								min: 5,
-								max: 40,
-								icon: 'thermostat',
-								title: compileTitle("Thermostat", vDevIdNI)
-							}
-						},
-						overlay: {},
-						handler: function (command, args) {
-							instance.ThermostatSetPoint.Set(mode, args.level);
-
-							// and turn change the mode
-							var _v = this.controller.devices.get(deviceNamePrefix + self.CC["ThermostatMode"]);
-							if (_v && _v.get("metrics:level") === "off") {
-								_v.performCommand("on");
-							}
-						},
-						moduleId: self.id
-					});
-
-					if (t_vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
-							try {
-								t_vDev.set("metrics:level", this.value);
-							} catch (e) {}
-						});
-					}
-				}
-			}
+		        if (withTempHeat && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatSetPoint"] + separ + MODE_HEAT)) {
+			        createTemperatureSetpointDevice(MODE_HEAT);
+		        }
+		    }
 		} else if (this.CC["AlarmSensor"] === commandClassId) {
 			a_defaults = {
 				deviceType: 'sensorBinary',
