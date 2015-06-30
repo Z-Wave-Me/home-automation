@@ -44,7 +44,7 @@ Sonos.prototype.init = function (config) {
  
     this.householdFinder();
     this.playersFinder();
-    self.notifier();
+    this.notifier();
 
     this.config.households.forEach(function(household) {
         self.playersFinderLookup(household);
@@ -52,9 +52,14 @@ Sonos.prototype.init = function (config) {
 };
 
 Sonos.prototype.stop = function () {
-    this.sockHouseholdFinder && this.sockHouseholdFinder.close() && this.sockHouseholdFinder = null;
-    this.sockPlayerFinder && this.sockPlayerFinder.close() && this.sockPlayerFinder = null;
-    this.sockNotifier && this.sockNotifier.close() && this.sockNotifier = null;
+    var self = this;
+    
+    this.sockHouseholdFinder && this.sockHouseholdFinder.close();
+    this.sockHouseholdFinder = null;
+    this.sockPlayerFinder && this.sockPlayerFinder.close();
+    this.sockPlayerFinder = null;
+    this.sockNotifier && this.sockNotifier.close();
+    this.sockNotifier = null;
 
     this.players.forEach(function(player) {
         self.controller.devices.remove("Sonos_Device_Play_" + player.host + "_" + self.id);
@@ -85,7 +90,7 @@ Sonos.prototype.householdFinder = function () {
         
         var household = String.fromCharCode.apply(null, arr.subarray(pos + 1, pos + 1 + arr[pos]));
         
-        if (self.config.households.filter(function(el) { el == household }).length === 0) {
+        if (self.config.households.filter(function(el) { return el == household; }).length === 0) {
             console.log("Detected Sonos Household:", household);
             self.config.households.push(household);
             self.saveConfig();
