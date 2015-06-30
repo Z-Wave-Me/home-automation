@@ -60,7 +60,6 @@ RGB.prototype.init = function (config) {
         },
         overlay: {},
         handler:  function (command, args) {
-            //var rgbDevices = self.config.devices;
             for (var prop in rgbDevices){
                 switch (command) {
                     case "off":
