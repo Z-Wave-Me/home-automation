@@ -67,23 +67,27 @@ RGB.prototype.init = function (config) {
         },
         overlay: {},
         handler:  function (command, args) {
-            if (command === "off") {
-                self.controller.devices.get(self.config.red).performCommand(command);
-                self.controller.devices.get(self.config.green).performCommand(command);
-                self.controller.devices.get(self.config.blue).performCommand(command);
-            } else {
-                self.controller.devices.get(self.config.red).performCommand("exact", { level: self.lastConfig.r } );
-                self.controller.devices.get(self.config.green).performCommand("exact", { level: self.lastConfig.g } );
-                self.controller.devices.get(self.config.blue).performCommand("exact", { level: self.lastConfig.b } );
-            }
-            if (command === "exact") {
-                self.lastConfig.r = colorToLevel(args.red);
-                self.lastConfig.g = colorToLevel(args.green);
-                self.lastConfig.b = colorToLevel(args.blue);
+            switch(command){
+                case "off":
+                    self.controller.devices.get(self.config.red).performCommand(command);
+                    self.controller.devices.get(self.config.green).performCommand(command);
+                    self.controller.devices.get(self.config.blue).performCommand(command);
+                    break;
+                case "exact":
+                    // change lastConfig values
+                    self.lastConfig.r = colorToLevel(args.red);
+                    self.lastConfig.g = colorToLevel(args.green);
+                    self.lastConfig.b = colorToLevel(args.blue);
 
-                self.controller.devices.get(self.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
-                self.controller.devices.get(self.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
-                self.controller.devices.get(self.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+                    // set color
+                    self.controller.devices.get(self.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
+                    self.controller.devices.get(self.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
+                    self.controller.devices.get(self.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+                    break;
+                default:
+                    self.controller.devices.get(self.config.red).performCommand("exact", { level: self.lastConfig.r } );
+                    self.controller.devices.get(self.config.green).performCommand("exact", { level: self.lastConfig.g } );
+                    self.controller.devices.get(self.config.blue).performCommand("exact", { level: self.lastConfig.b } );
             }
         },
         moduleId: this.id
