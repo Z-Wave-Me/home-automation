@@ -15,56 +15,72 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-		"red": null,
-		"green": null,
-		"blue": null
+		"devices":{			
+			"red": null,
+			"green": null,
+			"blue": null
+		},
+		"lastConfig":{
+			"red": 0,
+			"green": 0,
+			"blue": 0
+		}
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
-			"red": {
-				"field": "enum",
-				"datasource": "namespaces",
-				"enum": "namespaces:devices_switchMultilevel:deviceId",
-				"required": true
-			},
-			"green": {
-				"field": "enum",
-				"datasource": "namespaces",
-				"enum": "namespaces:devices_switchMultilevel:deviceId",
-				"required": true
-			},
-			"blue": {
-				"field": "enum",
-				"datasource": "namespaces",
-				"enum": "namespaces:devices_switchMultilevel:deviceId",
+			"devices":{
+				"type": "object",
+				"properties": {
+					"red": {
+						"field": "enum",
+						"datasource": "namespaces",
+						"enum": "namespaces:devices_switchMultilevel:deviceId",
+						"required": true
+					},
+					"green": {
+						"field": "enum",
+						"datasource": "namespaces",
+						"enum": "namespaces:devices_switchMultilevel:deviceId",
+						"required": true
+					},
+					"blue": {
+						"field": "enum",
+						"datasource": "namespaces",
+						"enum": "namespaces:devices_switchMultilevel:deviceId",
+						"required": true
+					}
+				},
 				"required": true
 			}
-		},
-		"required": true
+		}
 	},
 	"options": {
 		"fields": {
-			"red": {
-				"label": "__l_red__",
-				"type": "select",
-				"datasource": "namespaces",
-				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
-			},
-			"green": {
-				"label": "__l_green__",
-				"type": "select",
-				"datasource": "namespaces",
-				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
-			},
-			"blue": {
-				"label": "__l_blue__",
-				"type": "select",
-				"datasource": "namespaces",
-				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+			"devices":{
+				"fields": {
+					"red": {
+						"label": "__l_red__",
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+					},
+					"green": {
+						"label": "__l_green__",
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+					},
+					"blue": {
+						"label": "__l_blue__",
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+					}
+				}
 			}
 		}
 	}

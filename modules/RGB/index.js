@@ -3,7 +3,7 @@
 Version: 1.0.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Poltorak Serguei <ps@z-wave.me>
+Author: Poltorak Serguei <ps@z-wave.me> and Niels Roche <nir@zwave.eu>
 Description:
     Binds several dimmers to make RGB device
 ******************************************************************************/
@@ -28,10 +28,11 @@ _module = RGB;
 RGB.prototype.init = function (config) {
     RGB.super_.prototype.init.call(this, config);
 
-    var self = this;
+    var self = this,
+        rgbDevices = self.config.devices;
 
     function levelToColor(vDev) {
-        var val = vDev.get("metrics:level");
+        var val = self.controller.devices.get(vDev).get("metrics:level");
         
         if (val === "on" || val === "255") {
             return 255;
@@ -59,15 +60,22 @@ RGB.prototype.init = function (config) {
         },
         overlay: {},
         handler:  function (command, args) {
-            if (command === "on" || command === "off") {
-                self.controller.devices.get(self.config.red).performCommand(command);
-                self.controller.devices.get(self.config.green).performCommand(command);
-                self.controller.devices.get(self.config.blue).performCommand(command);
-            }
-            if (command === "exact") {
-                self.controller.devices.get(self.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
-                self.controller.devices.get(self.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
-                self.controller.devices.get(self.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+            //var rgbDevices = self.config.devices;
+            for (var prop in rgbDevices){
+                switch (command) {
+                    case "off":
+                        self.controller.devices.get(rgbDevices[prop]).performCommand(command);
+                        break;
+                    case "on":
+                        self.controller.devices.get(rgbDevices[prop]).performCommand("exact", { level: self.config.lastConfig[prop] } ); // take last value from lastConfig
+                        break;
+                    case "exact":
+                        var l = colorToLevel(args[prop]);
+
+                        self.config.lastConfig[prop] = l; // overwrite latest value
+                        self.controller.devices.get(rgbDevices[prop]).performCommand("exact", { level: l } ); // set color level
+                        break;
+                }
             }
         },
         moduleId: this.id
@@ -76,33 +84,35 @@ RGB.prototype.init = function (config) {
 
     this.handleLevel = function() {
         self.vDev.set("metrics:level", (
-            levelToColor(self.controller.devices.get(this.config.red)) ||
-            levelToColor(self.controller.devices.get(this.config.green)) ||
-            levelToColor(self.controller.devices.get(this.config.blue))
+            levelToColor(rgbDevices.red) ||
+            levelToColor(rgbDevices.green) ||
+            levelToColor(rgbDevices.blue)
         ) ? 'on' : 'off');
     };
     
     this.handleR = function () {
-        self.vDev.set("metrics:color:r", levelToColor(self.controller.devices.get(self.config.red)));
+        self.vDev.set("metrics:color:r", levelToColor(rgbDevices.red));
         self.handleLevel();
     };
     this.handleG = function () {
-        self.vDev.set("metrics:color:g", levelToColor(self.controller.devices.get(self.config.green)));
+        self.vDev.set("metrics:color:g", levelToColor(rgbDevices.green));
         self.handleLevel();
     };
     this.handleB = function () {
-        self.vDev.set("metrics:color:b", levelToColor(self.controller.devices.get(self.config.blue)));
+        self.vDev.set("metrics:color:b", levelToColor(rgbDevices.blue));
         self.handleLevel();
     };
-    this.controller.devices.on(self.config.red, "change:metrics:level", this.handleR);
-    this.controller.devices.on(self.config.green, "change:metrics:level", this.handleG);
-    this.controller.devices.on(self.config.blue, "change:metrics:level", this.handleB);
+    this.controller.devices.on(rgbDevices.red, "change:metrics:level", this.handleR);
+    this.controller.devices.on(rgbDevices.green, "change:metrics:level", this.handleG);
+    this.controller.devices.on(rgbDevices.blue, "change:metrics:level", this.handleB);
 };
 
 RGB.prototype.stop = function () {
-    this.controller.devices.off(this.config.red, "change:metrics:level", this.handleR);
-    this.controller.devices.off(this.config.green, "change:metrics:level", this.handleG);
-    this.controller.devices.off(this.config.blue, "change:metrics:level", this.handleB);
+    var rgbDevices = this.config.devices;
+
+    this.controller.devices.off(rgbDevices.red, "change:metrics:level", this.handleR);
+    this.controller.devices.off(rgbDevices.green, "change:metrics:level", this.handleG);
+    this.controller.devices.off(rgbDevices.blue, "change:metrics:level", this.handleB);
 
     this.handleR = null;
     this.handleG = null;
