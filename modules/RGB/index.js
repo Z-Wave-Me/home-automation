@@ -1,9 +1,11 @@
 /*** RGB Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Poltorak Serguei <ps@z-wave.me>
+Author: Poltorak Serguei <ps@z-wave.me> 
+-- changed by: Niels Roche <nir@zwave.eu>
+
 Description:
     Binds several dimmers to make RGB device
 ******************************************************************************/
@@ -29,6 +31,12 @@ RGB.prototype.init = function (config) {
     RGB.super_.prototype.init.call(this, config);
 
     var self = this;
+
+    this.lastConfig = {
+        r: 99,
+        g: 99,
+        b: 99
+    };
 
     function levelToColor(vDev) {
         var val = vDev.get("metrics:level");
@@ -59,15 +67,27 @@ RGB.prototype.init = function (config) {
         },
         overlay: {},
         handler:  function (command, args) {
-            if (command === "on" || command === "off") {
-                self.controller.devices.get(self.config.red).performCommand(command);
-                self.controller.devices.get(self.config.green).performCommand(command);
-                self.controller.devices.get(self.config.blue).performCommand(command);
-            }
-            if (command === "exact") {
-                self.controller.devices.get(self.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
-                self.controller.devices.get(self.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
-                self.controller.devices.get(self.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+            switch(command){
+                case "off":
+                    self.controller.devices.get(self.config.red).performCommand(command);
+                    self.controller.devices.get(self.config.green).performCommand(command);
+                    self.controller.devices.get(self.config.blue).performCommand(command);
+                    break;
+                case "exact":
+                    // change lastConfig values
+                    self.lastConfig.r = colorToLevel(args.red);
+                    self.lastConfig.g = colorToLevel(args.green);
+                    self.lastConfig.b = colorToLevel(args.blue);
+
+                    // set color
+                    self.controller.devices.get(self.config.red).performCommand("exact", { level: colorToLevel(args.red) } );
+                    self.controller.devices.get(self.config.green).performCommand("exact", { level: colorToLevel(args.green) } );
+                    self.controller.devices.get(self.config.blue).performCommand("exact", { level: colorToLevel(args.blue) } );
+                    break;
+                default:
+                    self.controller.devices.get(self.config.red).performCommand("exact", { level: self.lastConfig.r } );
+                    self.controller.devices.get(self.config.green).performCommand("exact", { level: self.lastConfig.g } );
+                    self.controller.devices.get(self.config.blue).performCommand("exact", { level: self.lastConfig.b } );
             }
         },
         moduleId: this.id
