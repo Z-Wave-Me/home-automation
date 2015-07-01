@@ -238,7 +238,7 @@
 									"required": true
 								},
 								"status": {
-									"type": "number",
+									"type": "string",
 									"required": true,
 									"enum": ["off", "on"]
 								}
@@ -276,7 +276,7 @@
 									"required": true
 								},
 								"status": {
-									"type": "number",
+									"type": "string",
 									"required": true,
 									"enum": ["close", "open"]
 								}
