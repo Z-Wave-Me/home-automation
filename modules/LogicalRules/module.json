@@ -238,7 +238,11 @@
 									"required": true
 								},
 								"status": {
+<<<<<<< HEAD
 									"type": "integer",
+=======
+									"type": "string",
+>>>>>>> upstream/develop
 									"required": true,
 									"enum": ["off", "on"]
 								}
@@ -276,7 +280,11 @@
 									"required": true
 								},
 								"status": {
+<<<<<<< HEAD
 									"type": "integer",
+=======
+									"type": "string",
+>>>>>>> upstream/develop
 									"required": true,
 									"enum": ["close", "open"]
 								}
