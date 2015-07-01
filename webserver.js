@@ -1198,6 +1198,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
     if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
+        return handlerFunc;
     } else {
         var matched = this.router.dispatch(method, url);
         if (matched) {

@@ -148,7 +148,7 @@ HTTPDevice.prototype.update = function (vDev) {
                         }
                     }
                 }
-                if (data !== null) {
+                if (data !== null && (self.config.skipEventIfSameValue !== true || data !== vDev.get("metrics:level"))) {
                     vDev.set("metrics:level", data);
                 }
             },
@@ -166,7 +166,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
         moduleName = "HTTPDevice",
         langFile = self.controller.loadModuleLang(moduleName);
     
-    if (url) {
+    if (!!url) {
     	if (subst) {
     		url = url.replace(/\$\$/g, subst);
     	}
@@ -178,7 +178,9 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
                 self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
             }
         });
-    } else if (selfValue !== null) {
+    }
+    
+    if ((!url || this.config.updateOnAction === true) && selfValue !== null) {
         vDev.set("metrics:level", selfValue);
     }
 };

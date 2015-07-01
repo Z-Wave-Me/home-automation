@@ -15,5 +15,9 @@
 	"l_getter_value":"Code to get value",
 	"h_getter_switchMultilevel":"Should return value from 0 to 99",
 	"l_getterPollInterval":"Interval in seconds between polling requests",
-	"h_getterPollInterval":"Empty or 0 to disable periodical requests (explicit update command will still initiate request process)"
+	"h_getterPollInterval":"Empty or 0 to disable periodical requests (explicit update command will still initiate request process)",
+	"rl_updateOnAction": "Update value on action",
+	"h_updateOnAction": "On actions (on/off/dimming) update value accordingly before it is polled",
+	"rl_skipEventIfSameValue": "Don't send update event if value has not changed",
+	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called."
 }
