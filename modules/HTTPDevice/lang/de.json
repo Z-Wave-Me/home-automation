@@ -1,6 +1,6 @@
 {
 	"m_title":"HTTP-Gerät",
-    "m_descr":"Erstellt ein virtuelles Gerä mittels HTTP-Daten.",
+	"m_descr":"Erstellt ein virtuelles Gerä mittels HTTP-Daten.",
 	"l_schema":"Wählen Sie einen Gerätetyp",
 	"l_setterOn":"Schalte das Gerät über die URL an (ON)",
 	"p_setterOn":"http://192.168.0.100/action/on",
@@ -19,5 +19,9 @@
 	"h_setterLevel":"$$ wird benutzt um das Level in der URL zu symbolisieren. Bsp.: http://host/dimmer/level/$$/set",
 	"l_scale":"Sensor Skala",
 	"l_method":"HTTP Methoden",
-	"err_req":"Es konnte kein Request gesendet werden: "
+	"err_req":"Es konnte kein Request gesendet werden: ",
+	"rl_updateOnAction": "Update value on action",
+	"h_updateOnAction": "On actions (on/off/dimming) update value accordingly before it is polled",
+	"rl_skipEventIfSameValue": "Don't send update event if value has not changed",
+	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called."
 }

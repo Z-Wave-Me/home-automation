@@ -40,7 +40,11 @@
 		"getterParser_switchMultilevel": "",
 		"getterPollInterval_switchMultilevel": 0,
 
-		"method": "GET"
+		"method": "GET",
+
+		"updateOnAction": false,
+
+		"skipEventIfSameValue": false
 	},
 	"schema": {
 		"type": "object",
@@ -146,6 +150,17 @@
 				"type": "string",
 				"required": true,
 				"enum": ["GET", "POST"]
+			},
+
+			"updateOnAction": {
+				"type": "boolean",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+
+			"skipEventIfSameValue": {
+				"type": "boolean",
+				"required": true
 			}
 		}
 	},
@@ -282,6 +297,21 @@
 			"method": {
 				"label": "__l_method__",
 				"type": "select"
+			},
+
+			"updateOnAction": {
+				"type": "checkbox",
+				"rightLabel": "__rl_updateOnAction__",
+				"helper": "__h_updateOnAction__",
+				"dependencies": {
+					"deviceType": [ "switchBinary", "switchMultilevel"]
+				}
+			},
+
+			"skipEventIfSameValue": {
+				"type": "checkbox",
+				"rightLabel": "__rl_skipEventIfSameValue__",
+				"helper": "__h_skipEventIfSameValue__"
 			}
 		}
 	}

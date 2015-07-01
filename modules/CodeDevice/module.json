@@ -34,7 +34,11 @@
 
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
-		"getterPollInterval_switchtMultilevel": 0
+		"getterPollInterval_switchtMultilevel": 0,
+
+		"updateOnAction": false,
+
+		"skipEventIfSameValue": false
 	},
 	"schema": {
 		"type": "object",
@@ -114,6 +118,17 @@
 				"type": "integer",
 				"required": false,
 				"dependencies": "deviceType"
+			},
+
+			"updateOnAction": {
+				"type": "boolean",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+
+			"skipEventIfSameValue": {
+				"type": "boolean",
+				"required": true
 			}
 		}
 	},
@@ -223,6 +238,21 @@
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
+			},
+
+			"updateOnAction": {
+				"type": "checkbox",
+				"rightLabel": "__rl_updateOnAction__",
+				"helper": "__h_updateOnAction__",
+				"dependencies": {
+					"deviceType": [ "switchBinary", "switchMultilevel"]
+				}
+			},
+
+			"skipEventIfSameValue": {
+				"type": "checkbox",
+				"rightLabel": "__rl_skipEventIfSameValue__",
+				"helper": "__h_skipEventIfSameValue__"
 			}
 		}
 	}

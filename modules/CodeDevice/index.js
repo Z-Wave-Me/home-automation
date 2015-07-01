@@ -122,7 +122,10 @@ CodeDevice.prototype.update = function (vDev) {
         getterCode = this.config["getter_" + deviceType];
 
     if (getterCode) {
-        vDev.set("metrics:level", eval(getterCode));
+        var newValue = eval(getterCode);
+        if (this.config.skipEventIfSameValue !== true || newValue !== vDev.get("metrics:level")) {
+            vDev.set("metrics:level", newValue);
+        }
     }
 };
 
@@ -131,12 +134,14 @@ CodeDevice.prototype.act = function (vDev, action, subst, selfValue) {
         deviceType = this.config.deviceType,
         setterCode = this.config["setter" + action + "_" + deviceType];
     
-    if (setterCode) {
+    if (!!setterCode) {
     	if (subst != null) {
             setterCode = setterCode.replace(/%%/g, subst);
     	}
         eval(setterCode);
-    } else if (selfValue !== null) {
+    }
+    
+    if ((!setterCode || this.config.updateOnAction === true) && selfValue !== null) {
         vDev.set("metrics:level", selfValue);
     }
 };

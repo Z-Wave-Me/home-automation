@@ -18,5 +18,9 @@
 	"h_setterLevel":"$$ is used to represent level in the URL. For example: http://host/dimmer/level/$$/set",
 	"l_scale":"Sensor scale",
 	"l_method":"HTTP method to use",
-	"err_req":"Can not make request: "
+	"err_req":"Can not make request: ",
+	"rl_updateOnAction": "Update value on action",
+	"h_updateOnAction": "On actions (on/off/dimming) update value accordingly before it is polled",
+	"rl_skipEventIfSameValue": "Don't send update event if value has not changed",
+	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called."
 }
