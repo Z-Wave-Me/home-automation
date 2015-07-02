@@ -47,6 +47,22 @@ OpenWeather.prototype.init = function (config) {
         },
         moduleId: this.id
     });
+	
+    this.vDev2 = self.controller.devices.create({
+        deviceId: "OpenWeatherDaylight_" + this.id,
+        defaults: {
+            deviceType: "sensorBinary",
+            metrics: {
+                probeTitle: 'Daylight'
+            }
+        },
+        overlay: {
+            metrics: {
+                title: this.config.city + " Daylight"
+            }
+        },
+        moduleId: this.id
+    });
 
     this.timer = setInterval(function() {
         self.fetchWeather(self);
@@ -64,6 +80,11 @@ OpenWeather.prototype.stop = function () {
         this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
+	
+    if (this.vDev2) {
+        this.controller.devices.remove(this.vDev2.id);
+        this.vDev2 = null;
+    }
 };
 
 // ----------------------------------------------------------------------------
@@ -80,6 +101,16 @@ OpenWeather.prototype.fetchWeather = function(instance) {
             try {
                 var temp = Math.round((self.config.units === "celsius" ? res.data.main.temp - 273.15 :  (res.data.main.temp - 273.15) * 1.8 + 32 ) * 10) / 10,
                     icon = "http://openweathermap.org/img/w/" + res.data.weather[0].icon + ".png";
+				
+				var sunrise = Math.round(res.data.sys.sunrise) * 1000;
+				var sunset = Math.round(res.data.sys.sunset) * 1000;
+					
+				var now = new Date().getTime();
+				
+				if (now > sunrise && now < sunset)
+					self.vDev2.set("metrics:level", 'on');
+				else
+					self.vDev2.set("metrics:level", 'off');
 
                 self.vDev.set("metrics:level", temp);
                 self.vDev.set("metrics:icon", icon);
