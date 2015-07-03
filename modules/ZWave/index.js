@@ -76,6 +76,8 @@ ZWave.prototype.init = function (config) {
 	ZWave.super_.prototype.init.call(this, config);
 
 	var self = this;
+
+	executeFile("postfix.js");
 	
 	this.startBinding();
 	if (!this.zway) {
@@ -1117,7 +1119,52 @@ ZWave.prototype.gateDevicesStart = function () {
 
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
 				if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-					self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
+					var create = true;
+					try {
+						var d = zway.devices[nodeId],
+							c = zway.controller;
+
+						// works of course only during inclusion - after restart hidden elements are visible again
+						if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
+							var intDone = d.instances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+							    intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
+
+							var i = 0;
+
+							// wait till interview is done
+							while ((new Date()).valueOf() < intDelay &&  intDone === false) {
+								intDone = d.instances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+								if(commandClassId === 119){
+									console.log("OOOO ---- try CC 119:",i++, intDone);
+								}
+							}
+							
+							if (intDone === false) {
+								try {
+									// call function from postfix.js
+									interviewFailedPostFix();
+								}catch(e){
+									console.log("##---INTERVIEW-HAS-FAILED-----POSTFIX-HAS-FAILED---##", e);
+								}							
+								console.log("type:",type, "| nodeId:", nodeId, "| instanceId:", instanceId,"| commandClassId:", commandClassId);
+								console.log("##-------------------------------------------------------------------##");
+							} else {
+								try {
+									// call function from postfix.js
+									create = interviewSuccessfulPostFix(d, instanceId, commandClassId);
+								}catch(e){
+									console.log("##---INTERVIEW-SUCCESSFUL-----POSTFIX-HAS-FAILED---##", e);
+								}
+								console.log("type:",type, "| nodeId:", nodeId, "| instanceId:", instanceId,"| commandClassId:", commandClassId);
+								console.log("##-------------------------------------------------------------------##");
+							}
+						}
+					}catch(e){
+						console.log("#### --- POSTFIX ERROR:", e);
+					}
+					if(create){
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
+					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}
