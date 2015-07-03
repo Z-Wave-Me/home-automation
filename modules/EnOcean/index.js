@@ -459,14 +459,20 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "switchControl",
 					metrics: {
-						level: '',
-						icon: '',
-						title: 'Right Rocker',
-						change: ''
+                                                level: '',
+                                                icon: '',
+                                                title: 'Right Rocker',
+                                                change: ''
 					}
 				},
 				overlay: {},
 				handler: function(command) {
+                                        if (command === "on" || command === "off") {
+                                                this.set("metrics:level", command);
+                                        }
+                                        if (command === "upstart" || command === "upstop" || command === "downstart" || command === "downstop") {
+                                                this.set("metrics:change", command);
+                                        }
 				},
 				moduleId: self.id
 			}),
@@ -525,6 +531,36 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			}
 		}
 
+		function thermostat(dh, type, scale, title) {
+			var vDev = self.controller.devices.create({
+				deviceId: vDevIdPrefix + type,
+				defaults: {
+					deviceType: "thermostat",
+					metrics: {
+						scaleTitle: scale,
+						level: '',
+						min: 5,
+						max: 40,
+						icon: 'thermostat',
+						title: title
+					}
+				},
+				overlay: {},
+				handler: function(command, args) {
+					this.set("metrics:level", args.level);
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
+					try {
+						vDev.set("metrics:level", this.value);
+					} catch (e) {}
+				}, "value");
+			}
+		}
+
 		if (matchDevice(0xf6, 0x02, 0x01)) {
 			// Rocker
 			rockerSwitch();
@@ -541,6 +577,37 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			if (deviceData.TSensor.value) {
 				multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
 			}
+		}
+
+		if (matchDevice(0xa5, 0x09, 0x04)) {
+			// CO2 & Tempretature & Humidity
+			multilevelSensor("concentration", "co", 'ppm', "CO2 Sesnor");
+			if (deviceData.HSensor.value) {
+				multilevelSensor("humidity", "humidity", '%', "Humidity Sesnor");
+						}
+			if (deviceData.TSensor.value) {
+				multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
+			}
+		}
+
+		if (matchDevice(0xa5, 0x10, 0x03)) {
+			// Temperature Sensor, Set Point Control
+			thermostat("setpoint", "heat", '°C', "Set Point Control");
+			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
+		}
+
+		if (matchDevice(0xa5, 0x10, 0x05)) {
+			// Temperature Sensor, Set Point and Occupancy Control
+			thermostat("setpoint", "heat", '°C', "Set Point Control");
+			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
+			binarySensor("occupancy", "motion", "Motion Sensor");
+		}
+
+		if (matchDevice(0xa5, 0x10, 0x0a)) {
+			// Temperature Sensor, Set Point Adjust and Single Inpu
+                        thermostat("setpoint", "heat", '°C', "Set Point Control");
+			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
+			binarySensor("contact", "door", "Door Sensor");
 		}
 	} catch (e) {
 		var moduleName = "EnOcean",
