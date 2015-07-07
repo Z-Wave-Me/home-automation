@@ -1759,7 +1759,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				        defaults: {
 					        deviceType: "thermostat",
 					        metrics: {
-						        scaleTitle: instance.ThermostatSetPoint.data[mode].deviceScaleString.value,
+						        scaleTitle: instance.ThermostatSetPoint.data[mode].scaleString.value,
 						        level: instance.ThermostatSetPoint.data[mode].val.value,
 						        min: 5,
 						        max: 40,
