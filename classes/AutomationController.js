@@ -432,6 +432,27 @@ AutomationController.prototype.registerInstance = function (instance) {
     }
 };
 
+AutomationController.prototype.listInstances = function (){
+    var self = this,
+        expInstances = [];
+
+    if(self.instances) {
+        self.instances.forEach(function (instance){
+            var moduleJSON = self.getModuleData(instance.moduleId);
+
+            expInstances.push(_.extend(instance, {
+                state : moduleJSON.state || null,
+                module : moduleJSON.defaults.title || null,
+                title : !instance.title || instance.title === ''? moduleJSON.defaults.title : instance.title
+            }));
+        });
+    } else {
+        expInstances = null;
+    }
+
+    return expInstances;
+}
+
 AutomationController.prototype.createInstance = function (reqObj) {
     //var instance = this.instantiateModule(id, className, config),
     var self = this,
@@ -440,14 +461,11 @@ AutomationController.prototype.createInstance = function (reqObj) {
         module = _.find(self.modules, function (module) {
             return module.meta.id === reqObj.moduleId;
         }),
-        moduleJSON = this.getModuleData(reqObj.moduleId),
         result;
 
     if (!!module) {
         instance = _.extend(reqObj, { 
-            id: id,
-            state: moduleJSON.state || null,
-            module: moduleJSON.defaults.title || null
+            id: id
         });
 
         self.instances.push(instance);
@@ -492,7 +510,6 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         }),
         index = this.instances.indexOf(instance),
         config = {},
-        moduleJSON = this.getModuleData(instanceObject.moduleId),
         result;
 
     if (instance) {
@@ -513,8 +530,6 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         _.extend(this.instances[index], {
             title: instanceObject.hasOwnProperty('title')? instanceObject.title : instance.title,
             description: instanceObject.hasOwnProperty('description')? instanceObject.description : instance.description,
-            state: moduleJSON.hasOwnProperty('state')? moduleJSON.state : null,
-            module: moduleJSON.defaults.hasOwnProperty('title')? moduleJSON.defaults.title : null,
             active: instanceObject.hasOwnProperty('active')? instanceObject.active : instance.active,
             params: config !== {}? config : instance.params
         });

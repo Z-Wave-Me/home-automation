@@ -158,6 +158,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 color: profile.color,
                 dashboard: profile.dashboard,
                 interval: profile.interval,
+                expert_view: profile.expert_view,
                 rooms: profile.rooms,
                 hide_all_device_events: profile.hide_all_device_events,
                 hide_system_events: profile.hide_system_events,
@@ -618,8 +619,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     error: null,
                     data: null,
                     code: 200
-                };
-        reply.data = this.controller.instances;
+                },
+            instances = this.controller.listInstances();
+        if(instances){
+            reply.data = instances;
+        } else {
+            reply.code = 500;
+            reply.error = 'Could not list Instances.';
+        }
+        
 
         return reply;
     },
@@ -781,6 +789,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 dashboard: [],
                 interval: 2000,
                 rooms: [0],
+                expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
                 hide_single_device_events: []
@@ -822,6 +831,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     // login is changed by updateProfileAuth()
                     profile.role = reqObj.role;                    
                     profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                    profile.expert_view = reqObj.expert_view;
                 }
                 // could be changed by user role
                 profile.name = reqObj.name; // profile name
