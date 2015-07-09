@@ -35,8 +35,8 @@ describe('Core.Model', function () {
 
     it('#has', function (done) {
         // tests
-        expect(DeviceModel.has('metrics.icon')).to.be.true();
-        expect(DeviceModel.has('test')).to.be.true();
+        expect(DeviceModel.has('metrics.icon')).to.be.true;
+        expect(DeviceModel.has('test')).to.be.true;
         done();
     });
 
@@ -45,7 +45,7 @@ describe('Core.Model', function () {
         DeviceModel.set('test2', 'test2');
         expect(DeviceModel.get('test2')).to.equal('test2');
         DeviceModel.unset('test2');
-        expect(DeviceModel.get('test2')).to.be.undefined();
+        expect(DeviceModel.get('test2')).to.not.exist;
 
         done();
     });
@@ -53,7 +53,7 @@ describe('Core.Model', function () {
     it('#isNew', function (done) {
         // tests
         var isNew = !Boolean(DeviceModel.get('id'));
-        expect(DeviceModel.isNew() === isNew).to.be.true();
+        expect(DeviceModel.isNew() === isNew).to.be.true;
 
         done();
     });
