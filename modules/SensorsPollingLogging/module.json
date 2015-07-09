@@ -1,9 +1,11 @@
 {
+    "dependencies": ["Cron"],
     "autoload": false,
     "singleton": true,
     "userView": true,
     "icon": "icon.png",
-        "moduleName": "SensorsPollingLogging",
+    "state" : "hidden",
+    "moduleName": "SensorsPollingLogging",
     "defaults": {
         "title": "Poll sensors and log values periodically",
         "description": "Regular sensors polling and logging",

@@ -893,7 +893,7 @@ AutomationController.prototype.getListProfiles = function () {
 
     this.profiles.forEach(function (profile){
         var prof = {},
-            excl = ["login", "password", "role", "sid"];
+            excl = ["login", "password", "role"];
         
         for (var property in profile) {
             if(excl.indexOf(property) === -1){

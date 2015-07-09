@@ -374,7 +374,7 @@
           delete profile.positions;
         }
 
-        if(!profile.expert_view){
+        if(!profile.expert_view && (profile.role === 1 || profile.role === 3)){
           profile.expert_view = false;
         }
       });
