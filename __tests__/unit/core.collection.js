@@ -68,7 +68,7 @@ describe('Core.Collection', function () {
         DevicesCollection.add({id: 5, location: 5, name: 'test5'});
         expect(DevicesCollection.get(5).get('id')).to.be.equal(5);
         DevicesCollection.remove(DevicesCollection.get(5));
-        expect(DevicesCollection.has(5)).to.be.false();
+        expect(DevicesCollection.has(5)).to.be.false;
         done();
     });
 
