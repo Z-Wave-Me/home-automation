@@ -54,9 +54,8 @@ SensorsPolling.prototype.init = function (config) {
         this.devices.forEach(function(dev) {
             devJSON = this.controller.devices.get(dev.id).toJSON();
 
-            if (self.config.devices.indexOf(dev.id) === -1 && devJSON.updateTime <= lastPoll && (dev.deviceType === 'sensorBinary' || dev.deviceType === 'sensorMultilevel')){
+            if (self.config.devices.indexOf(dev.id) === -1 && devJSON.updateTime <= lastPoll && (dev.get('deviceType') === 'sensorBinary' || dev.get('deviceType') === 'sensorMultilevel')){
                 dev.performCommand("update");
-                console.log('dev ID :' + dev.id + ' || decvice updateTime: ' + devJSON.updateTime + ' || lastPoll: ' + lastPoll);
             }
         });
 
