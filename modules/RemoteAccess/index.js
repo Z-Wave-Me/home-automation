@@ -97,7 +97,7 @@ RemoteAccess.prototype.init = function (config) {
     };
     
     // run first time to get the values from zbw module
-    if(self.config.userId === '' && self.config.actStatus === '' && self.config.sshStatus === '' && self.config.zbwStatus === '') {
+    if(self.config.userId === '' || self.config.actStatus === '' || self.config.sshStatus === '' || self.config.zbwStatus === '') {
         this.updateRemoteData();
     } else {
         this.setRemoteConfigurations();

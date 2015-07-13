@@ -35,6 +35,43 @@ MultilineSensor.prototype.init = function (config) {
 
     this.vDev = null;
 
+    this.updateAttributes = function(dev) {
+        var sensors = [],
+            indx = null;
+        
+        sensors = self.vDev.get('metrics:sensors');
+
+        indx = sensors.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
+
+        if(indx !== -1){
+            sensors[indx].set('title', dev.get('metrics:title'));
+            sensors[indx].set('metrics', dev.get('metrics'));
+        }
+    };
+
+    this.createVirtualDevice = function(dev){
+        var indx = self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
+        
+        if(indx > -1 && deviceMetrics.map(function(e) { return e.selectedDevice; }).indexOf(dev.id) === -1){
+            item = {
+                id: dev.id,
+                deviceType: dev.get('deviceType'),
+                metrics: dev.get('metrics')
+            };
+
+            deviceMetrics.push(item);
+
+            if(self.config.devices[indx].visible === false) {
+                dev.set({'visibility': false});
+            }
+
+            self.vDev.set('metrics:sensors', deviceMetrics);
+
+            self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
+            self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+        }
+    };
+
     self.controller.devices.filter(function (dev){
         return self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id) > -1;
     }).forEach(function (dev){
@@ -72,43 +109,6 @@ MultilineSensor.prototype.init = function (config) {
         },
         moduleId: this.id
     });
-
-    this.updateAttributes = function(dev) {
-        var sensors = [],
-            indx = null;
-        
-        sensors = self.vDev.get('metrics:sensors');
-
-        indx = sensors.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
-
-        if(indx !== -1){
-            sensors[indx].set('title', dev.get('metrics:title'));
-            sensors[indx].set('metrics', dev.get('metrics'));
-        }
-    };
-
-    this.createVirtualDevice = function(dev){
-        var indx = self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
-        
-        if(indx > -1 && deviceMetrics.map(function(e) { return e.selectedDevice; }).indexOf(dev.id) === -1){
-            item = {
-                id: dev.id,
-                deviceType: dev.get('deviceType'),
-                metrics: dev.get('metrics')
-            };
-
-            deviceMetrics.push(item);
-
-            if(self.config.devices[indx].visible === false) {
-                dev.set({'visibility': false});
-            }
-
-            self.vDev.set('metrics:sensors', deviceMetrics);
-
-            self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
-            self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
-        }
-    };
 
     self.controller.devices.on('created', self.createVirtualDevice);
 };
