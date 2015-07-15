@@ -33,28 +33,76 @@ InfoWidget.prototype.init = function (config) {
 
     this.vDev = [];
 
-    if(self.config.widgets.length > 0){
+    this.createTextWidgets = function(lang){
+        lng = lang? lang : self.controller.defaultLang
 
-        self.config.widgets.forEach(function (widget, indx) {
+        if(self.config.widgets.length > 0 && self.config.internationalize === false){
 
-            vDev = this.controller.devices.create({
-                deviceId: "InfoWidget_" + self.id + '_' + indx,
-                defaults: {
-                    metrics: {
-                        title: widget.headline,
-                        text: widget.text,
-                        img: widget.imgURI
-                    }          
-                },
-                overlay: {
-                    deviceType: "text"
-                },
-                moduleId: self.id
+            if(self.vDev) {
+                self.vDev.forEach(function (dev){
+                    this.controller.devices.remove(dev.id);
+                });
+
+                self.vDev = [];
+            }
+
+            self.config.widgets.forEach(function (widget, indx) {
+
+                vDev = this.controller.devices.create({
+                    deviceId: "InfoWidget_" + self.id + '_' + indx,
+                    defaults: {
+                        metrics: {
+                            title: widget.headline,
+                            text: widget.text,
+                            img: widget.imgURI
+                        }          
+                    },
+                    overlay: {
+                        deviceType: "text"
+                    },
+                    moduleId: self.id
+                });
+
+                self.vDev.push(vDev);
             });
+        }
 
-            self.vDev.push(vDev);
-        });
-    }
+        if(self.config.widgetsInt.length > 0 && self.config.internationalize === true){
+
+            if(self.vDev) {
+                self.vDev.forEach(function (dev){
+                    this.controller.devices.remove(dev.id);
+                });
+
+                self.vDev = [];
+            }
+            
+            self.config.widgetsInt.forEach(function (widget, indx) {
+                if(widget.lang === lng) {
+                    vDev = this.controller.devices.create({
+                        deviceId: "InfoWidget_" + self.id + '_' + widget.lang + '_'+ indx,
+                        defaults: {
+                            metrics: {
+                                title: widget.headline,
+                                text: widget.text,
+                                img: widget.imgURI
+                            }          
+                        },
+                        overlay: {
+                            deviceType: "text"
+                        },
+                        moduleId: self.id
+                    });
+
+                    self.vDev.push(vDev);
+                }
+            });
+        }
+    };
+
+    this.controller.on('language.changed',self.createTextWidgets);
+    this.createTextWidgets(self.controller.defaultLang);
+    
 };
 
 InfoWidget.prototype.stop = function () {

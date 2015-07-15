@@ -112,9 +112,14 @@ AutomationController.prototype.init = function () {
 };
 
 AutomationController.prototype.setDefaultLang = function (lang) {
-    var self = this;
+    var self = this,
+        oldLang = self.defaultLang;
 
     self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
+    
+    if(self.defaultLang !== oldLang) {
+        this.emit('language.changed', self.defaultLang);
+    }
 };
 
 AutomationController.prototype.saveConfig = function () {
