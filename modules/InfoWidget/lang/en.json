@@ -14,7 +14,7 @@
 	"rl_translate":"Activate Internationalization",
 	"p_translate":"'If activated you could add different texts for each language known in user interface.",
 	"l_lang":"Text Language",
-	"p_lang":"Please choose one language in that you will write your text message.",
+	"h_lang":"Please choose one language in that you will write your text message.",
 	"en":"English",
 	"de":"German",
 	"ru":"Russian",

@@ -14,7 +14,7 @@
 	"rl_translate":"Internationalisierung aktivieren",
 	"p_translate":"Bei Aktivierung lassen sich mehrere Texte für die entsprechend eingestellte Benutzeroberflächensprache erstellen.",
 	"l_lang":"Textsprache",
-	"p_lang":"Bitte wählen Sie eine der Sprachen in der Sie Ihren Text verfassen möchten aus.",
+	"h_lang":"Bitte wählen Sie eine der Sprachen in der Sie Ihren Text verfassen möchten aus.",
 	"en":"Englisch",
 	"de":"Deutsch",
 	"ru":"Russisch",

@@ -61,8 +61,10 @@ MultilineSensor.prototype.init = function (config) {
 
             deviceMetrics.push(item);
 
-            if(self.config.devices[indx].visible === false) {
+            if(self.config.devices[indx].hide === true) {
                 dev.set({'visibility': false});
+            }else{
+                dev.set({'visibility': true});
             }
 
             self.vDev.set('metrics:sensors', deviceMetrics);
@@ -85,8 +87,10 @@ MultilineSensor.prototype.init = function (config) {
 
         deviceMetrics.push(item);
 
-        if(self.config.devices[indx].visible === false) {
+        if(self.config.devices[indx].hide === true) {
             dev.set({'visibility': false});
+        }else{
+            dev.set({'visibility': true});
         }
 
         self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);

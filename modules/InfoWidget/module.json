@@ -1,5 +1,5 @@
 {
-	"singleton" : true,
+	"singleton" : false,
 	"dependencies": [],
 	"category": "devices",
 	"author": "Z-Wave.Me",
@@ -77,7 +77,6 @@
 					},
 					"imgURI" : {
 						"type" : "string",
-						"format" : "uri",
 						"required" : false
 					}
 				}
@@ -130,7 +129,7 @@
 						"imgURI" : {
 							"label" : "__l_imgURI__",
 							"placeholder": "__p_imgURI__",
-							"type" : "url"
+							"type" : "text"
 						}
 					},
 					"dependencies": {
@@ -152,7 +151,7 @@
 						"imgURI" : {
 							"label" : "__l_imgURI__",
 							"placeholder": "__p_imgURI__",
-							"type" : "url"
+							"type" : "text"
 						}
 					},
 					"dependencies": {
