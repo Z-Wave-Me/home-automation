@@ -35,44 +35,6 @@ MultilineSensor.prototype.init = function (config) {
 
     this.vDev = null;
 
-    self.controller.devices.filter(function (dev){
-        return self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id) > -1;
-    }).forEach(function (dev){
-        var indx = self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
-        
-        item = {
-            id: dev.id,
-            deviceType: dev.get('deviceType'),
-            metrics: dev.get('metrics')
-        };
-
-        deviceMetrics.push(item);
-
-        if(self.config.devices[indx].visible === false) {
-            dev.set({'visibility': false});
-        }
-
-        self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
-        self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
-    });
-
-    this.vDev = this.controller.devices.create({
-        deviceId: "Multiline_" + this.id,
-        defaults: {
-            metrics: {
-                title: 'Multiline Sensor ' + this.id,
-            }
-        },
-        overlay: {
-            deviceType: 'sensorMultiline',
-            metrics: {
-                title: 'Multiline Sensor ' + this.id,
-                sensors: deviceMetrics
-            }
-        },
-        moduleId: this.id
-    });
-
     this.updateAttributes = function(dev) {
         var sensors = [],
             indx = null;
@@ -99,8 +61,10 @@ MultilineSensor.prototype.init = function (config) {
 
             deviceMetrics.push(item);
 
-            if(self.config.devices[indx].visible === false) {
+            if(self.config.devices[indx].hide === true) {
                 dev.set({'visibility': false});
+            }else{
+                dev.set({'visibility': true});
             }
 
             self.vDev.set('metrics:sensors', deviceMetrics);
@@ -109,6 +73,46 @@ MultilineSensor.prototype.init = function (config) {
             self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
         }
     };
+
+    self.controller.devices.filter(function (dev){
+        return self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id) > -1;
+    }).forEach(function (dev){
+        var indx = self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
+        
+        item = {
+            id: dev.id,
+            deviceType: dev.get('deviceType'),
+            metrics: dev.get('metrics')
+        };
+
+        deviceMetrics.push(item);
+
+        if(self.config.devices[indx].hide === true) {
+            dev.set({'visibility': false});
+        }else{
+            dev.set({'visibility': true});
+        }
+
+        self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
+        self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+    });
+
+    this.vDev = this.controller.devices.create({
+        deviceId: "Multiline_" + this.id,
+        defaults: {
+            metrics: {
+                title: 'Multiline Sensor ' + this.id,
+            }
+        },
+        overlay: {
+            deviceType: 'sensorMultiline',
+            metrics: {
+                title: 'Multiline Sensor ' + this.id,
+                sensors: deviceMetrics
+            }
+        },
+        moduleId: this.id
+    });
 
     self.controller.devices.on('created', self.createVirtualDevice);
 };

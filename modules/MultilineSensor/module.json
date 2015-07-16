@@ -37,7 +37,7 @@
 						"datasource": "namespaces",
 						"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId"
 					},
-					"visible" : {
+					"hide" : {
 						"type" : "boolean",
 						"dependencies": "selectedDevice",
 						"required" : false
@@ -63,9 +63,9 @@
 							"field": "optionLabels",
 							"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"						
 						},
-						"visible": {
+						"hide": {
 							"type": "checkbox",
-							"rightLabel":"__rl_visible__"
+							"rightLabel":"__rl_hidden__"
 						}
 					}				
 				}

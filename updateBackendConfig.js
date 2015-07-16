@@ -37,6 +37,7 @@
         dashboard: [],
         interval: 2000,
         rooms:[0],
+        expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
         hide_single_device_events: []
@@ -52,6 +53,7 @@
         dashboard: [],
         interval: 2000,
         rooms:[0],
+        expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
         hide_single_device_events: []
@@ -91,7 +93,7 @@
               instance.active = true;
             }
           }
-
+          /*
           // update/add instance title/module/state to show it correct in instances overview 
           if(instance.moduleId && (!instance.state || !instance.title || !instance.module)){
             var moduleMeta,
@@ -133,11 +135,21 @@
               console.log('Could not set state/title/module value of instance ' + instance.id + '. ERROR: ' + e);
             }            
           }
-
+          */
 
           // delete userView
           if (instance.hasOwnProperty('userView')) {
             delete instance.userView;
+          }
+
+          // delete state
+          if (instance.hasOwnProperty('state')) {
+            delete instance.state;
+          }
+
+          // delete module
+          if (instance.hasOwnProperty('module')) {
+            delete instance.module;
           }
         });
       }
@@ -304,6 +316,7 @@
             profile.dashboard = profile.positions;
             profile.interval = 2000;
             profile.rooms = [0];
+            expert_view: false,
             profile.hide_all_device_events = false;
             profile.hide_system_events = false;
             profile.hide_single_device_events = [];
@@ -342,7 +355,7 @@
           }
         }
 
-        // transform positions into
+        // transform positions into dashboard
         if(Array.isArray(profile.positions)){
           var unique = function (array) {
               var a = array.concat();
@@ -360,6 +373,10 @@
 
           delete profile.positions;
         }
+
+        if(!profile.expert_view && (profile.role === 1 || profile.role === 3)){
+          profile.expert_view = false;
+        }
       });
   
       // add local user if he not exists
@@ -375,6 +392,7 @@
                 dashboard: [],
                 interval: 2000,
                 rooms:[0],
+                expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
                 hide_single_device_events: []

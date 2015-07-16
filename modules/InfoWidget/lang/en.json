@@ -9,5 +9,14 @@
 	"l_text":"Enter your text:",
 	"p_text":"Text...",
 	"l_imgURI":"URL of your image (optional):",
-	"p_imgURI":"e.g. 'http://www.images.com/nature/tree_xy.jpg'"
+	"p_imgURI":"e.g. 'http://www.images.com/nature/tree_xy.jpg'",
+	"l_translate":"Internationalization",
+	"rl_translate":"Activate Internationalization",
+	"p_translate":"'If activated you could add different texts for each language known in user interface.",
+	"l_lang":"Text Language",
+	"h_lang":"Please choose one language in that you will write your text message.",
+	"en":"English",
+	"de":"German",
+	"ru":"Russian",
+	"cn":"Chinese"
 }
