@@ -77,7 +77,7 @@ ZWave.prototype.init = function (config) {
 
 	var self = this;
 
-	executeFile("postfix.js");
+	this.postfix = fs.loadJSON("postfix.json");
 	
 	this.startBinding();
 	if (!this.zway) {
@@ -1117,50 +1117,76 @@ ZWave.prototype.gateDevicesStart = function () {
 				return;
 			}
 
+			var deviceData = zway.devices[nodeId].data,
+				deviceInstances = zway.devices[nodeId].instances,
+				c = zway.controller,
+				mId = deviceData.manufacturerId.value? deviceData.manufacturerId.value : null,
+				mPT = deviceData.manufacturerProductType.value? deviceData.manufacturerProductType.value : null,
+				mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
+				appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
+				appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
+				devId,postFix;
+
+			// try to get fix by manufacturerProductId and application Version
+			if(!!mId && !!mPT && !!mPId && !!self.postfix) {
+
+				devId = mId + '.' + mPT + '.' + mPId,
+				appMajorId = devId + '.' + appMajor,
+				appMinorId = devId + '.' + appMinor,
+				postFix = self.postfix.filter(function(device){
+					return 	device.id === devId || 		//search by manufacturerProductId
+							device.id === appMajorId || //search by applicationMajor
+							device.id === appMinorId; 	//search by applicationMinor
+				});
+			}
+
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
 				if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
 					var create = true;
 					try {
-						var d = zway.devices[nodeId],
-							c = zway.controller;
+						if(postFix) {
+							if(postFix.length > 0){
+								// works of course only during inclusion - after restart hidden elements are visible again
+								if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
+									var intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+								    	intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
 
-						// works of course only during inclusion - after restart hidden elements are visible again
-						if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
-							var intDone = d.instances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
-							    intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
-
-							var i = 0;
-
-							// wait till interview is done
-							while ((new Date()).valueOf() < intDelay &&  intDone === false) {
-								intDone = d.instances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
-								if(commandClassId === 119){
-									console.log("OOOO ---- try CC 119:",i++, intDone);
+									// wait till interview is done
+									while ((new Date()).valueOf() < intDelay &&  intDone === false) {
+										intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+									}
+									
+									if (intDone === false) {
+										try {
+											// call preInteview functions from postfix.json
+											postFix.forEach(function(fix){
+												if(!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0){
+													fix.preInterview.forEach(function(func){
+														eval(func);
+													});
+												}
+											});
+										}catch(e){
+											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
+										}
+									}
 								}
-							}
-							
-							if (intDone === false) {
 								try {
-									// call function from postfix.js
-									interviewFailedPostFix();
+									// call postInterview functions from postfix.json
+									postFix.forEach(function(fix){
+										if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0){
+											fix.postInterview.forEach(function(func){
+												eval(func);
+											});
+										}
+									});
 								}catch(e){
-									console.log("##---INTERVIEW-HAS-FAILED-----POSTFIX-HAS-FAILED---##", e);
-								}							
-								console.log("type:",type, "| nodeId:", nodeId, "| instanceId:", instanceId,"| commandClassId:", commandClassId);
-								console.log("##-------------------------------------------------------------------##");
-							} else {
-								try {
-									// call function from postfix.js
-									create = interviewSuccessfulPostFix(d, instanceId, commandClassId);
-								}catch(e){
-									console.log("##---INTERVIEW-SUCCESSFUL-----POSTFIX-HAS-FAILED---##", e);
+									console.log("##---POSTFIX-HAS-FAILED---##", e);
 								}
-								console.log("type:",type, "| nodeId:", nodeId, "| instanceId:", instanceId,"| commandClassId:", commandClassId);
-								console.log("##-------------------------------------------------------------------##");
 							}
 						}
 					}catch(e){
-						console.log("#### --- POSTFIX ERROR:", e);
+						console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
 					}
 					if(create){
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);

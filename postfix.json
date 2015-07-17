@@ -1,0 +1,16 @@
+[
+	{
+		"id":"316.2.13",
+		"product":"Philio Vision 1B",
+		"preInterview":[],
+		"postInterview":[]
+	},{
+		"id":"316.2.12",
+		"product":"Philio Vision 1A",
+		"preInterview":[],
+		"postInterview":[
+			"console.log('##--------------------- CREATE ?? --------------------------##'); if(commandClassId === 113){ create = false; console.log('##--------------------- CREATE = FALSE --------------------------##');};",
+			"if(commandClassId === 112 && deviceInstances[instanceId].commandClasses[112] && c.data.lastIncludedDevice.value === nodeId){ console.log('##--------------------- CHANGE VALUE ... --------------------------##'); deviceInstances[instanceId].commandClasses[112].Set(7,18,1); console.log('##---------------------316.2.12.112--------------------------##');}"
+		]
+	}
+]
