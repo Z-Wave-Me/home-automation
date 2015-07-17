@@ -1142,36 +1142,36 @@ ZWave.prototype.gateDevicesStart = function () {
 
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
 				if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-					var create = true;
-					try {
+					var create = true;					
 						if(postFix) {
 							if(postFix.length > 0){
-								// works of course only during inclusion - after restart hidden elements are visible again
-								if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
-									var intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
-								    	intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
+								try {
+									// works of course only during inclusion - after restart hidden elements are visible again
+									if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
+										var intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+									    	intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
 
-									// wait till interview is done
-									while ((new Date()).valueOf() < intDelay &&  intDone === false) {
-										intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
-									}
-									
-									if (intDone === false) {
-										try {
-											// call preInteview functions from postfix.json
-											postFix.forEach(function(fix){
-												if(!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0){
-													fix.preInterview.forEach(function(func){
-														eval(func);
-													});
-												}
-											});
-										}catch(e){
-											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
+										// wait till interview is done
+										while ((new Date()).valueOf() < intDelay &&  intDone === false) {
+											intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+										}
+										
+										if (intDone === false) {
+											try {
+												// call preInteview functions from postfix.json
+												postFix.forEach(function(fix){
+													if(!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0){
+														fix.preInterview.forEach(function(func){
+															eval(func);
+														});
+													}
+												});
+											}catch(e){
+												console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
+											}
 										}
 									}
-								}
-								try {
+																	
 									// call postInterview functions from postfix.json
 									postFix.forEach(function(fix){
 										if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0){
@@ -1181,13 +1181,10 @@ ZWave.prototype.gateDevicesStart = function () {
 										}
 									});
 								}catch(e){
-									console.log("##---POSTFIX-HAS-FAILED---##", e);
+									console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
 								}
 							}
 						}
-					}catch(e){
-						console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
-					}
 					if(create){
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
 					}
