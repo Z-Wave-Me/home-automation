@@ -404,6 +404,28 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     return true;
 };
 
+AutomationController.prototype.loadInstalledModule = function (moduleId, rootDirectory) {
+    var self = this,
+        successful = false;
+
+    try{
+        if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
+            console.log('Load app "' + moduleId + '" from folder ...');
+            self.loadModuleFromFolder(moduleId, rootDirectory);
+
+            if(self.modules[moduleId]){
+                self.loadModule(self.modules[moduleId]);
+
+                successful = true;
+            }
+        }
+    } catch (e){
+        console.log('Load app "' + moduleId + '" has failed. ERROR:', e);
+    }
+
+    return successful;
+};
+
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
         module;

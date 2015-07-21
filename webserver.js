@@ -584,34 +584,48 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             moduleUrl = this.req.body.moduleUrl;
             
         var result = "in progress";
+        var moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
-        installer.install(
-            moduleUrl,
-            function() {
-                    result = "done";
-            },  function() {
+        if (!this.controller.modules[moduleId]) {
+            installer.install(
+                moduleUrl,
+                function() {
+                        result = "done";
+                },  function() {
+                        result = "failed";
+                }
+            );
+            
+            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+            
+            while ((new Date()).valueOf() < d &&  result === "in progress") {
+                    processPendingCallbacks();
+            }
+            
+            if (result === "in progress") {
                     result = "failed";
             }
-        );
-        
-        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-        
-        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                processPendingCallbacks();
-        }
-        
-        if (result === "in progress") {
-                result = "failed";
-        }
 
-        if (result === "done") {
-            reply.code = 201;
-            reply.data = "Done";
+            if (result === "done") {
+                
+                loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'userModules/');
+
+                if(loadSuccessfully){
+                    reply.code = 201;
+                    reply.data = "app_installation_successful"; // send language key as response
+                } else {
+                    reply.code = 201;
+                    reply.data = "app_installation_successful_but_restart_necessary"; // send language key as response
+                }
+
+            } else {
+                reply.code = 500;
+                reply.error = "Failed to install module " + moduleUrl;
+            }
         } else {
-            reply.code = 500;
-            reply.error = "Failed to install module " + moduleUrl;
+            reply.code = 400;
+            reply.error = "The app from url '" + moduleUrl + "' already exists.";
         }
-
         return reply;
     },
 
