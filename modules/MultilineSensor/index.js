@@ -70,7 +70,8 @@ MultilineSensor.prototype.init = function (config) {
                 id: dev.id,
                 deviceType: dev.get('deviceType'),
                 metrics: dev.get('metrics'),
-                hasHistory: dev.get('hasHistory')
+                hasHistory: dev.get('hasHistory'),
+                updateTime: dev.get('updateTime')
             };
 
             deviceMetrics.push(item);
@@ -108,7 +109,8 @@ MultilineSensor.prototype.init = function (config) {
             id: dev.id,
             deviceType: dev.get('deviceType'),
             metrics: dev.get('metrics'),
-             hasHistory: dev.get('hasHistory')
+            hasHistory: dev.get('hasHistory'),
+            updateTime: dev.get('updateTime')
         };
 
         deviceMetrics.push(item);
