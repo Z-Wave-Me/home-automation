@@ -1660,7 +1660,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function() {
 					try {
-						vDev.set("metrics:level", this.value);
+						vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
 					} catch (e) {}
 				}, "value");
 			}
