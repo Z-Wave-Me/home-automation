@@ -76,6 +76,8 @@ ZWave.prototype.init = function (config) {
 	ZWave.super_.prototype.init.call(this, config);
 
 	var self = this;
+
+	this.postfix = fs.loadJSON("postfix.json");
 	
 	this.startBinding();
 	if (!this.zway) {
@@ -1117,7 +1119,77 @@ ZWave.prototype.gateDevicesStart = function () {
 
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
 				if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-					self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
+
+					var create = true,
+						deviceData = zway.devices[nodeId].data,
+						deviceInstances = zway.devices[nodeId].instances,
+						c = zway.controller,
+						mId = deviceData.manufacturerId.value? deviceData.manufacturerId.value : null,
+						mPT = deviceData.manufacturerProductType.value? deviceData.manufacturerProductType.value : null,
+						mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
+						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
+						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
+						devId,postFix;					
+					
+					// try to get fix by manufacturerProductId and application Version
+					if(!!mId && !!mPT && !!mPId && !!self.postfix) {
+
+						devId = mId + '.' + mPT + '.' + mPId,
+						appMajorId = devId + '.' + appMajor,
+						appMinorId = devId + '.' + appMinor,
+						postFix = self.postfix.filter(function(device){
+							return 	device.id === devId || 		//search by manufacturerProductId
+									device.id === appMajorId || //search by applicationMajor
+									device.id === appMinorId; 	//search by applicationMinor
+						});
+					}
+
+					if(postFix) {
+						if(postFix.length > 0){
+							try {
+								// works of course only during inclusion - after restart hidden elements are visible again
+								if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
+									var intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+								    	intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
+
+									// wait till interview is done
+									while ((new Date()).valueOf() < intDelay &&  intDone === false) {
+										intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+									}
+									
+									if (intDone === false) {
+										try {
+											// call preInteview functions from postfix.json
+											postFix.forEach(function(fix){
+												if(!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0){
+													fix.preInterview.forEach(function(func){
+														eval(func);
+													});
+												}
+											});
+										}catch(e){
+											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
+										}
+									}
+								}
+																
+								// call postInterview functions from postfix.json
+								postFix.forEach(function(fix){
+									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0){
+										fix.postInterview.forEach(function(func){
+											eval(func);
+										});
+									}
+								});
+							}catch(e){
+								console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
+							}
+						}
+					}
+
+					if(create){
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
+					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}

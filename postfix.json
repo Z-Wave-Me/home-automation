@@ -1,0 +1,16 @@
+[
+	{
+		"id":"316.2.13",
+		"product":"Philio Vision 1B",
+		"preInterview":[],
+		"postInterview":[]
+	},{
+		"id":"316.2.12",
+		"product":"Philio Vision 1A",
+		"preInterview":[],
+		"postInterview":[
+			"if(commandClassId === 113){ create = false; };",
+			"if(commandClassId === 112 && deviceInstances[instanceId].commandClasses[112] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[112].Set(7,18,1); console.log('##-------------CHANGED-VALUE-316.2.12.112---SET-PARAM-7-VALUE-18-SIZE-1---------##');}"
+		]
+	}
+]
