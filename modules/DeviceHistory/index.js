@@ -50,7 +50,7 @@ DeviceHistory.prototype.init = function (config) {
         countHistories = [],
         exclSensors = [],
         // define excluded device types
-        exclDevTypes = ['battery','text','camera','switchRGBW'];
+        exclDevTypes = ['battery','text','camera','switchRGBW','sensorMultiline'];
 
     this.history = loadObject('history') || [];
     this.switchHistory = [];
@@ -108,7 +108,6 @@ DeviceHistory.prototype.init = function (config) {
                 
             switch(devType){
                 case 'sensorMultilevel':
-                case 'sensorMultiline':
                 case 'switchMultilevel':
                 case 'thermostat':                       
                     lvl = dev.get("metrics:level");

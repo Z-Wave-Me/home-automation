@@ -163,15 +163,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 hide_system_events: profile.hide_system_events,
                 hide_single_device_events: profile.hide_single_device_events
             };
+            if(profile.role === 1 || profile.role === 3){
+                reply.data.expert_view = profile.expert_view;
+            }
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
-            }
+            };
         } else {
             reply.code = 401;
             reply.error = "User login/password is wrong.";
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
-            }
+            };
         }
         
         return reply;
@@ -581,34 +584,48 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             moduleUrl = this.req.body.moduleUrl;
             
         var result = "in progress";
+        var moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
-        installer.install(
-            moduleUrl,
-            function() {
-                    result = "done";
-            },  function() {
+        if (!this.controller.modules[moduleId]) {
+            installer.install(
+                moduleUrl,
+                function() {
+                        result = "done";
+                },  function() {
+                        result = "failed";
+                }
+            );
+            
+            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+            
+            while ((new Date()).valueOf() < d &&  result === "in progress") {
+                    processPendingCallbacks();
+            }
+            
+            if (result === "in progress") {
                     result = "failed";
             }
-        );
-        
-        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-        
-        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                processPendingCallbacks();
-        }
-        
-        if (result === "in progress") {
-                result = "failed";
-        }
 
-        if (result === "done") {
-            reply.code = 201;
-            reply.data = "Done";
+            if (result === "done") {
+                
+                loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'userModules/');
+
+                if(loadSuccessfully){
+                    reply.code = 201;
+                    reply.data = "app_installation_successful"; // send language key as response
+                } else {
+                    reply.code = 201;
+                    reply.data = "app_installation_successful_but_restart_necessary"; // send language key as response
+                }
+
+            } else {
+                reply.code = 500;
+                reply.error = "Failed to install module " + moduleUrl;
+            }
         } else {
-            reply.code = 500;
-            reply.error = "Failed to install module " + moduleUrl;
+            reply.code = 400;
+            reply.error = "The app from url '" + moduleUrl + "' already exists.";
         }
-
         return reply;
     },
 
@@ -618,8 +635,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     error: null,
                     data: null,
                     code: 200
-                };
-        reply.data = this.controller.instances;
+                },
+            instances = this.controller.listInstances();
+        if(instances){
+            reply.data = instances;
+        } else {
+            reply.code = 500;
+            reply.error = 'Could not list Instances.';
+        }
+        
 
         return reply;
     },
@@ -721,15 +745,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             profiles,
-            profile;
+            getProfile,
+            filteredProfile = {},
+            excl = [];
 
         // list all profiles only if user has 'admin' permissions
         if (!_.isNumber(profileId)) {
             if (this.req.role === this.ROLE.ADMIN) {
                 profiles = this.controller.getListProfiles();
             } else {
-                profile = this.controller.getProfile(this.req.user);
-                if (profile && this.req.user === profile.id) {
+                getProfile = this.controller.getProfile(this.req.user);
+                if (getProfile && this.req.user === getProfile.id) {
                     profiles = [profile];
                 }
             }
@@ -741,10 +767,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.data = profiles;
             }
         } else {
-            profile = this.controller.getProfile(profileId);
-            if (!!profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
+            getProfile = this.controller.getProfile(profileId);
+            if (!!getProfile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === getProfile.id))) {
+
+                // do not send password (also role if user is no admin)
+                if(this.req.role === this.ROLE.ADMIN){
+                    excl = ["password"];
+                } else {
+                    excl = ["password", "role"];
+                }                
+        
+                for (var property in getProfile) {
+                    if(excl.indexOf(property) === -1){
+                        filteredProfile[property] = getProfile[property];
+                    }
+                }
+
                 reply.code = 200;
-                reply.data = profile;
+                reply.data = filteredProfile;
             } else {
                 reply.code = 404;
                 reply.error = "Profile not found.";
@@ -781,6 +821,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 dashboard: [],
                 interval: 2000,
                 rooms: [0],
+                expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
                 hide_single_device_events: []
@@ -822,6 +863,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     // login is changed by updateProfileAuth()
                     profile.role = reqObj.role;                    
                     profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                    profile.expert_view = reqObj.expert_view;
                 }
                 // could be changed by user role
                 profile.name = reqObj.name; // profile name

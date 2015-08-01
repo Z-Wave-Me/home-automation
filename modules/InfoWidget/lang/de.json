@@ -9,5 +9,14 @@
 	"l_text":"Eingabe des Informationstextes",
 	"p_text":"Text...",
 	"l_imgURI":"URL des Bildes (optional):",
-	"p_imgURI":"z.B. 'http://www.images.com/nature/tree_xy.jpg'"
+	"p_imgURI":"z.B. 'http://www.images.com/nature/tree_xy.jpg'",
+	"l_translate":"Internationalisierung",
+	"rl_translate":"Internationalisierung aktivieren",
+	"p_translate":"Bei Aktivierung lassen sich mehrere Texte für die entsprechend eingestellte Benutzeroberflächensprache erstellen.",
+	"l_lang":"Textsprache",
+	"h_lang":"Bitte wählen Sie eine der Sprachen in der Sie Ihren Text verfassen möchten aus.",
+	"en":"Englisch",
+	"de":"Deutsch",
+	"ru":"Russisch",
+	"cn":"Chinesisch"
 }

@@ -1,5 +1,5 @@
 {
-	"singleton" : true,
+	"singleton" : false,
 	"dependencies": [],
 	"category": "devices",
 	"author": "Z-Wave.Me",
@@ -20,17 +20,35 @@
 	"schema" : {
 		"type":"object",
 		"properties" : {
+			"internationalize" : {
+				"type" : "boolean",
+				"required" : false
+			},
+			"widgetsInt": {
+				"type": "array",
+				"items": {
+					"$ref": "#/definitions/widgetInt"
+				},
+				"dependencies": "internationalize"
+			},
 			"widgets": {
 				"type": "array",
 				"items": {
 					"$ref": "#/definitions/widget"
-				}
+				},
+				"dependencies": "internationalize"
 			}
 		},
 		"definitions":{
-			"widget": {
+			"widgetInt": {
 				"type" : "object",
 				"properties":{
+					"lang" : {
+						"enum" : ["en","de","ru","cn"],
+						"type": "string",
+						"default": "en",
+						"required" : true
+					},
 					"headline" : {
 						"type" : "string",
 						"required" : true
@@ -45,18 +63,79 @@
 						"required" : false
 					}
 				}
+			},
+			"widget": {
+				"type" : "object",
+				"properties":{
+					"headline" : {
+						"type" : "string",
+						"required" : true
+					},
+					"text" : {
+						"type" : "string",
+						"required" : true
+					},
+					"imgURI" : {
+						"type" : "string",
+						"required" : false
+					}
+				}
 			}
 		}
 	},
 	"options" : {
 		"fields":{
+			"internationalize": {
+				"type": "checkbox",
+				"label":"__l_translate__",
+				"rightLabel":"__rl_translate__",
+				"default": false
+			},
 			"widgets":{
 				"label":"__l_widgets__",			
-				"helper":"__h_widgets__"
+				"helper":"__h_widgets__",
+				"dependencies": {
+					"internationalize": false
+				}
+			},
+			"widgetsInt":{
+				"label":"__l_widgets__",			
+				"helper":"__h_widgets__",
+				"dependencies": {
+					"internationalize": true
+				}
 			}
 		},
 		"definitions":{
 			"fields":{
+				"widgetInt":{
+					"fields": {
+						"lang" : {
+							"label" : "__l_lang__",
+							"placeholder": "__p_lang__",
+							"optionLabels":["__en__","__de__","__ru__","__cn__"],
+							"type" : "select"
+						},
+						"headline" : {
+							"label" : "__l_headline__",
+							"placeholder": "__p_headline__",
+							"type" : "text"
+						},
+						"text" : {
+							"label" : "__l_text__",
+							"placeholder": "__p_text__",
+							"type" : "textarea"
+						},
+						"imgURI" : {
+							"label" : "__l_imgURI__",
+							"placeholder": "__p_imgURI__",
+							"type" : "text"
+						}
+					},
+					"dependencies": {
+						"internationalize": true
+					}
+				},
 				"widget":{
 					"fields": {
 						"headline" : {
@@ -72,8 +151,11 @@
 						"imgURI" : {
 							"label" : "__l_imgURI__",
 							"placeholder": "__p_imgURI__",
-							"type" : "url"
+							"type" : "text"
 						}
+					},
+					"dependencies": {
+						"internationalize": false
 					}
 				}
 			}
