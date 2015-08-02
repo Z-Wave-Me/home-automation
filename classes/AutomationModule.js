@@ -106,3 +106,7 @@ AutomationModule.prototype.getMeta = function () {
     }
     return this.meta;
 };
+
+AutomationModule.prototype.loadModuleJSON = function (filename) {
+    return fs.loadJSON(this.meta.location + "/" + filename);
+};

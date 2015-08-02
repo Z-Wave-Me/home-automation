@@ -34,15 +34,15 @@ InfoWidget.prototype.init = function (config) {
 
     this.vDev = [];
 
-    this.createTextWidgets = function(lang){
+    this.createTextWidgets = function(lang) {
         lng = lang? lang : self.controller.defaultLang
 
-        if(self.config.widgets.length > 0 && self.config.internationalize === false){
+        if (self.config.widgets.length > 0 && self.config.internationalize === false) {
 
             self.config.widgets.forEach(function (widget, indx) {
                 var devId = "InfoWidget_" + self.id + '_' + indx;
 
-                if(self.vDev.indexOf(devId) === -1){
+                if (self.vDev.indexOf(devId) === -1) {
                     vDev = this.controller.devices.create({
                         deviceId: devId,
                         defaults: {
@@ -63,13 +63,13 @@ InfoWidget.prototype.init = function (config) {
             });
         }
 
-        if(self.config.widgetsInt.length > 0 && self.config.internationalize === true){
+        if (self.config.widgetsInt && self.config.widgetsInt.length > 0 && self.config.internationalize === true) {
             
             self.config.widgetsInt.forEach(function (widget) {
-                if(widget.lang === lng){
+                if (widget.lang === lng) {
                     var devId = "InfoWidget_" + self.id + "_Int";
 
-                    if(self.vDev.indexOf(devId) === -1) {
+                    if (self.vDev.indexOf(devId) === -1) {
                         vDev = this.controller.devices.create({
                             deviceId: devId,
                             defaults: {
@@ -94,11 +94,11 @@ InfoWidget.prototype.init = function (config) {
         }
     };
 
-    this.updateIntWidgets = function (lang){
+    this.updateIntWidgets = function (lang) {
         var dev = self.config.widgetsInt.filter(function(widget) {
                return widget.lang === lang;
             });
-        if(dev.length > 0){
+        if (dev.length > 0) {
             self.vDev[0].set('metrics:title',dev[0].headline);
             self.vDev[0].set('metrics:text',dev[0].text);
             self.vDev[0].set('metrics:icon',dev[0].imgURI);
@@ -114,8 +114,8 @@ InfoWidget.prototype.stop = function () {
     
     this.controller.off('language.changed',self.updateIntWidgets);
 
-    if(self.vDev) {
-        self.vDev.forEach(function (dev){
+    if (self.vDev) {
+        self.vDev.forEach(function (dev) {
             this.controller.devices.remove(dev.id);
         });
 

@@ -257,6 +257,7 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
     }
 
     moduleMeta.id = moduleClassName;
+    moduleMeta.location = folder + moduleClassName;
 
     // Grab _module and clear it out
     self.modules[moduleClassName] = {

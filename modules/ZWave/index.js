@@ -77,7 +77,7 @@ ZWave.prototype.init = function (config) {
 
 	var self = this;
 
-	this.postfix = fs.loadJSON("postfix.json");
+	this.postfix = this.loadModuleJSON("postfix.json");
 	
 	this.startBinding();
 	if (!this.zway) {
