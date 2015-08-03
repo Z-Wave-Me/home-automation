@@ -193,7 +193,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
 
         reply.data.structureChanged = this.controller.lastStructureChangeTime >= since ? true : false;
-        reply.data.devices = this.devicesByUser(this.req.user, function (dev) { return dev.get("updateTime") > (reply.data.structureChanged ? 0 : since); });
+        reply.data.devices = this.devicesByUser(this.req.user, function (dev) { return dev.get("updateTime") >= (reply.data.structureChanged ? 0 : since); });
         if (Boolean(this.req.query.pagination)) {
             reply.data.total_count = devices.length;
         }
