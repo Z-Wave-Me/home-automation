@@ -4,9 +4,8 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
-	"state" : "hidden",
     "moduleName":"SecurityMode",
-	"version": "1.0.0",
+	"version": "1.2.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -16,10 +15,13 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 		"tests": [],
+		"timeout": 60,
 		"action": {
-			      	"api_key": "",
-        			"phone": "",
-	    			"message": "__action_msg__"
+			"message" : "__action_msg__",
+			"phone": "",
+			"api_key_sms": "",
+			"email" : "",        
+	        "api_key_email": ""	
 		}
 	},
 	"schema": {
@@ -95,20 +97,33 @@
 					}
 				}
 			},
+            "timeout": {
+                "type": "number",
+                "required": true
+            },
 			"action": {
 				"type": "object",
 				"properties": {
+					"message": {
+						"type": "string",
+		                "required": true
+					},
 					"phone": {
-            			"required": false,
-            			"pattern": "[1-9][0-9]*"
-        			},
-        			"message": {
-            			"required": false
-        			},
-        			"api_key": {
-            			"required": false,
-            			"pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
-        			},
+		                "required": false,
+		                "pattern": "[1-9][0-9]*"
+		            },
+		            "api_key_sms": {
+		                "required": false,
+		                "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
+		            },
+		            "email": {
+						"type": "string",
+		                "required": false
+					},
+		            "api_key_email": {
+		                "required": false,
+		                "pattern": "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{8}"
+		            },
 					"switches": {
 						"type": "array",
 						"items": {
@@ -245,19 +260,30 @@
 					}
 				}
 			},
+			"timeout": {
+            	"label": "__l_timeout__",
+            	"helper": "__h_timeout__"
+            },
 			"action": {
 				"label": "__l_action__",
 				"fields": {
+					"message": {
+						"label": "__l_message__"
+					},
 					"phone": {
-                		"label": "__l_phone__"
-            		},
-            		"message": {
-                		"label": "__l_msg__"
-            		},
-            		"api_key": {
-                		"label": "__l_api_key__",
-                		"helper":"__h_api_key__"
-            		},
+		                "label": "__l_phone__"
+		            },
+		            "api_key_sms": {
+		                "label": "__l_api_key_sms__",
+						"helper": "__h_api_key_sms__"
+		            },
+					"email": {
+						"label": "__l_email__"
+					},
+					"api_key_email": {
+		                "label": "__l_api_key_email__",
+						"helper": "__h_api_key_email__"
+		            },
 					"switches": {
 						"label": "__l_switches__",
 						"fields": {
