@@ -5,7 +5,6 @@
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
-    "state" : "hidden",
     "moduleName":"SensorValueLogging",
     "version": "1.0.1",
     "maturity": "stable",

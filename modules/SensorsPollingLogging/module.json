@@ -4,7 +4,6 @@
     "singleton": true,
     "userView": true,
     "icon": "icon.png",
-    "state" : "hidden",
     "moduleName": "SensorsPollingLogging",
     "defaults": {
         "title": "Poll sensors and log values periodically",

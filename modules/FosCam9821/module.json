@@ -4,7 +4,6 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://www.foscam.com/",
-    "state": null,
     "icon": "icon.png",
     "moduleName":"FosCam9821",
     "version": "1.0.0",

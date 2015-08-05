@@ -4,7 +4,6 @@
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
-    "state" : "hidden",
     "moduleName":"YandexProbki",
     "maturity": "stable",
     "repository": {

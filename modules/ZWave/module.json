@@ -4,7 +4,6 @@
     "category": "peripherals",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "state": "hidden",
     "icon": "icon.png",
     "moduleName":"ZWave",
     "version": "2.0.0",

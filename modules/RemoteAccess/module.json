@@ -7,7 +7,6 @@
 	"icon": "icon.png",
 	"moduleName":"RemoteAccess",
 	"version" : "1.0.0",
-	"state": "hidden",
 	"maturity" : "stable",
 	"repository" : {
 		"type" : "git",
