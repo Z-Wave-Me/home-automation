@@ -1264,10 +1264,13 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 if (matched.role === this.ROLE.USER) {
                     // try to find Local user account
                     if (this.req.peer.address === "127.0.0.1") {
-                        // !!! cache this in future
-                        session = _.find(this.controller.profiles, function (profile) {
-                            return profile.role === self.ROLE.LOCAL;
-                        });
+                        // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
+                        if (!(this.req.headers['Cookie'] && this.req.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }))) {
+                            // TODO !!! cache this in future
+                            session = _.find(this.controller.profiles, function (profile) {
+                                return profile.role === self.ROLE.LOCAL;
+                            });
+                        }
                     }
                     
                     // try to find Anonymous user account
