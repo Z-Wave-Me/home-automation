@@ -1197,7 +1197,8 @@ ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
     } else {
         if (!!profile.rooms) {
             return devices.filter(function(dev) {
-                return profile.rooms.indexOf(dev.get("location")) !== -1;
+                // show only devices from allowed rooms (don't show unallocated devices)
+                return dev.get("location") != 0 && profile.rooms.indexOf(dev.get("location")) !== -1;
             });
         } else {
             return [];
