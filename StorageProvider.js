@@ -42,39 +42,48 @@ ZAutomationStorageWebRequest.prototype.uploadFileFunc = function () {
     var self = this;
 
     return function () {
-        var file = self.req.body.file,
-            date = new Date(),
+        var reply = {
+                error: 'Permission dendied',
+                data: null,
+                code: 403
+            };
+            
+        if (req.role === controller.auth.ROLE.ADMIN) {
+            var file = self.req.body.file,
+                date = new Date(),
+                extension = file.name.split('.').pop().toLowerCase(),
+                fileName,
+                type;
+
             reply = {
                 error: 'Allow extensions ' + self.allow_extensions.join(','),
                 data: null,
                 code: 400
-            },
-            extension = file.name.split('.').pop().toLowerCase(),
-            fileName,
-            type;
-
-        if (extension === 'jpg') {
-            extension = 'jpeg';
-        }
-        fileName = 'storage-' + (+date / 1000).toFixed(0) + '.' + extension;
-        
-        if (self.allow_extensions.indexOf(extension) !== -1) {
-            type = 'image/' + extension;
-            file.type = type;
-            file.createdAt = date.toJSON();
-
-            saveObject(fileName, file);
-
-            reply = {
-                error: null,
-                data: {
-                    uri: '/ZAutomation/storage/' + fileName,
-                    originalName: file.name,
-                    length: file.length,
-                    type: type
-                },
-                code: 200
             };
+            
+            if (extension === 'jpg') {
+                extension = 'jpeg';
+            }
+            fileName = 'storage-' + (+date / 1000).toFixed(0) + '.' + extension;
+            
+            if (self.allow_extensions.indexOf(extension) !== -1) {
+                type = 'image/' + extension;
+                file.type = type;
+                file.createdAt = date.toJSON();
+
+                saveObject(fileName, file);
+
+                reply = {
+                    error: null,
+                    data: {
+                        uri: '/ZAutomation/storage/' + fileName,
+                        originalName: file.name,
+                        length: file.length,
+                        type: type
+                    },
+                    code: 200
+                };
+            }
         }
 
         self.initResponse(reply)

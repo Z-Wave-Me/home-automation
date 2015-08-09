@@ -49,7 +49,7 @@ Object.defineProperty(EnOcean, "list", {
 	writable: false,  
 	configurable: false 
 });
-ws.allowExternalAccess("EnOcean.list");
+ws.allowExternalAccess("EnOcean.list", controller.auth.ROLE.ADMIN);
 
 EnOcean.prototype.init = function (config) {
 	EnOcean.super_.prototype.init.call(this, config);
@@ -193,9 +193,9 @@ EnOcean.prototype.terminating = function () {
 EnOcean.prototype.externalAPIAllow = function (name) {
 	var _name = !!name ? ("EnOcean." + name) : "EnOceanAPI";
 
-	ws.allowExternalAccess(_name);
-	ws.allowExternalAccess(_name + ".Run");
-	ws.allowExternalAccess(_name + ".Data");
+	ws.allowExternalAccess(_name, this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".Run", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".Data", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
 };
 
 EnOcean.prototype.externalAPIRevoke = function (name) {

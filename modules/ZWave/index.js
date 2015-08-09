@@ -70,7 +70,7 @@ Object.defineProperty(ZWave, "list", {
 	writable: false,  
 	configurable: false 
 });
-ws.allowExternalAccess("ZWave.list");
+ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
 
 ZWave.prototype.init = function (config) {
 	ZWave.super_.prototype.init.call(this, config);
@@ -233,19 +233,19 @@ ZWave.prototype.terminating = function () {
 ZWave.prototype.externalAPIAllow = function (name) {
 	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
-	ws.allowExternalAccess(_name);
-	ws.allowExternalAccess(_name + ".Run");
-	ws.allowExternalAccess(_name + ".Data");
-	ws.allowExternalAccess(_name + ".InspectQueue");
-	ws.allowExternalAccess(_name + ".Backup");
-	ws.allowExternalAccess(_name + ".Restore");
-	ws.allowExternalAccess(_name + ".CreateZDDX");
-	ws.allowExternalAccess(_name + ".CommunicationStatistics");
-	ws.allowExternalAccess(_name + ".FirmwareUpdate");
-	ws.allowExternalAccess(_name + ".ZMELicense");
-	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade");
-	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade");
-	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML");
+	ws.allowExternalAccess(_name, this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".Run", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".Data", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".InspectQueue", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".Backup", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".Restore", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".CreateZDDX", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
+	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ADMIN : this.controller.auth.ROLE.ANONYMOUS);
 };
 
 ZWave.prototype.externalAPIRevoke = function (name) {

@@ -312,7 +312,7 @@ OpenRemoteHelpers.prototype.init = function (config) {
 			     return "Error: Function " + cmd  + " is not defined in OpenRemoteHelpers";
         }
     };
-    ws.allowExternalAccess("OpenRemote");
+    ws.allowExternalAccess("OpenRemote", this.controller.auth.ROLE.USER); // login required
 };
 
 OpenRemoteHelpers.prototype.stop = function () {
