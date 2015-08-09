@@ -269,7 +269,7 @@ if (!config) {
     executeFile(config.classesPath + "/VirtualDevice.js");
     executeFile(config.classesPath + "/DevicesCollection.js");
     executeFile(config.classesPath + "/AutomationController.js");
-    executeFile(config.classesPath + "/AuthorizationController.js");
+    executeFile(config.classesPath + "/AuthController.js");
     executeFile(config.classesPath + "/AutomationModule.js");
     executeFile("request.js");
     executeFile("webserver.js");

@@ -44,6 +44,8 @@ function AutomationController() {
     this.lastStructureChangeTime = 0;
 
     this._loadedSingletons = [];
+    
+    this.auth = new AuthController(this);
 }
 
 inherits(AutomationController, EventEmitter2);

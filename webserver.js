@@ -16,12 +16,7 @@ executeFile("router.js");
 function ZAutomationAPIWebRequest (controller) {
     ZAutomationAPIWebRequest.super_.call(this);
 
-    this.ROLE = {
-        ADMIN: 1,
-        USER: 2,
-        LOCAL: 3,
-        ANONYMOUS: 4
-    };
+    this.ROLE = controller.auth.ROLE;
     
     this.router = new Router("/v1");
     this.controller = controller;
@@ -32,9 +27,6 @@ function ZAutomationAPIWebRequest (controller) {
         },
         body: null
     };
-
-    // !!! replace with tokens
-    this.sessions = [];
 
     this.registerRoutes();
 };
@@ -146,7 +138,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (profile && reqObj.password === profile.password) {
             var sid = crypto.guid();
-            this.sessions[sid] = profile;
+            this.controller.auth.checkIn(profile, sid);
 
             reply.code = 200;
             reply.data = {
@@ -1236,8 +1228,7 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     var self = this,
         handlerFunc = this.NotFound, // Default handler is NotFound
-        validParams,
-        role = null;
+        validParams;
 
     if ("OPTIONS" === method) {
         handlerFunc = this.CORSRequest;
@@ -1245,79 +1236,26 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     } else {
         var matched = this.router.dispatch(method, url);
         if (matched) {
-            // !!! change this to tokens
-            var profileSID = this.req.headers['ZWAYSession'];
-            if (!profileSID) {
-                var cookies,
-                    cookiesHeader = this.req.headers['Cookie'];
-                if (cookiesHeader) {
-                    cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZWAYSession" });
-                    if (!!cookie && !!cookie[0]) {
-                        profileSID = cookie[0][1];
-                    }
-                }
-            }
-            var session = this.sessions[profileSID];
-
-            if (!session) {
-                // no session found or session expired
-
-                if (matched.role === this.ROLE.USER) {
-                    // try to find Local user account
-                    if (this.req.peer.address === "127.0.0.1") {
-                        // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
-                        if (!(this.req.headers['Cookie'] && this.req.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }))) {
-                            // TODO !!! cache this in future
-                            session = _.find(this.controller.profiles, function (profile) {
-                                return profile.role === self.ROLE.LOCAL;
-                            });
-                        }
-                    }
-                    
-                    // try to find Anonymous user account
-                    if (!session) {
-                        // !!! cache this in future
-                        session = _.find(this.controller.profiles, function (profile) {
-                            return profile.role === self.ROLE.ANONYMOUS;
-                        });
-                    }
-                }
-            
-                if (!session) {
-                    if (matched.role === this.ROLE.ANONYMOUS) {
-                        session = {
-                            id: -1, // non-existant ID
-                            role: this.ROLE.ANONYMOUS
-                        };
-                    } else {
-                        return function() {
-                            return {
-                                error: 'Not logged in',
-                                data: null,
-                                code: 401
-                            };
-                        };
-                    }
-                }
-            }
-            
-            if (session.id !== -1 && (session.role === self.ROLE.LOCAL || session.role === this.ROLE.ANONYMOUS)) {
-                role = this.ROLE.USER; // change role type, since we found matching local/anonymous user (real user, not dummy with -1)
-            }
-            
-            if (!role) {
-                role = session.role;
+            var auth = this.controller.auth.resolve(this.req, matched.role);
+            if (!auth) {
+                return function() {
+                    return {
+                        error: 'Not logged in',
+                        data: null,
+                        code: 401
+                    };
+                };
             }
             
             // Role is less than allows
             if (
-                    (role === this.ROLE.ANONYMOUS && matched.role === this.ROLE.ANONYMOUS) ||
-                    (role === this.ROLE.USER && (matched.role === this.ROLE.USER || matched.role === this.ROLE.ANONYMOUS)) ||
-                    (role === this.ROLE.ADMIN)
+                    (auth.role === this.ROLE.ANONYMOUS && matched.role === this.ROLE.ANONYMOUS) ||
+                    (auth.role === this.ROLE.USER && (matched.role === this.ROLE.USER || matched.role === this.ROLE.ANONYMOUS)) ||
+                    (auth.role === this.ROLE.ADMIN)
                 ) {
                 // fill user field
-                this.req.user = session.id;
-                this.req.role = role;
+                this.req.user = auth.user;
+                this.req.role = auth.role;
                 
                 if (matched.params.length) {
                     validParams = _.every(matched.params), function(p) { return !!p; };
