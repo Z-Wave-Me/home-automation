@@ -87,7 +87,7 @@ InbandNotifications.prototype.init = function (config) {
                     lvl = lvl.toFixed(1);
                 }
 
-                if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && createItem === 1)){
+                if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && (createItem === 1 || devType === "toggleButton" || devType === "switchControl"))){
 
                     // depending on device type choose the correct notification
                     switch(devType) {
@@ -96,6 +96,7 @@ InbandNotifications.prototype.init = function (config) {
                         case 'sensorBinary':
                         case 'fan':
                         case 'doorlock':
+                        case 'toggleButton':
                             msg = {
                                 dev: devName,
                                 l:lvl

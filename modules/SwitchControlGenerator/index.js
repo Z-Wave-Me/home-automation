@@ -34,7 +34,8 @@ SwitchControlGenerator.prototype.init = function (config) {
         "Basic": 0x20,
         "SwitchBinary": 0x25,
         "SwitchMultilevel": 0x26,
-        "SceneActivation": 0x2b
+        "SceneActivation": 0x2b,
+        "CentralScene": 0x5b
     };
     
     this.generated = this.config.generated; // used to stop after config changed
@@ -56,7 +57,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                         deviceType: "switchControl",
                         metrics: {
                             icon: '',
-                            title: name,
+                            title: "Button", // this is always not the initial creation, so the default title is already filled 
                             level: "",
                             change: ""
                         }
@@ -80,7 +81,8 @@ SwitchControlGenerator.prototype.init = function (config) {
                 var dataB = insts[n].Basic.data,
                     dataSB = insts[n].SwitchBinary.data,
                     dataSML = insts[n].SwitchMultilevel.data,
-                    dataSc = insts[n].SceneActivation.data;
+                    dataSc = insts[n].SceneActivation.data,
+                    dataCSc = insts[n].commandClasses[self.CC["CentralScene"]] && insts[n].commandClasses[self.CC["CentralScene"]].data || null; // TODO: replace with a shortcut once fixed bug in Z-Way
                
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
                     var val, par = {};
@@ -119,6 +121,9 @@ SwitchControlGenerator.prototype.init = function (config) {
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
                     self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
+                }, "");
+                self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["CentralScene"], "currentScene", function(type) {
+                    self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value]);
                 }, "");
             })(i);
         }
@@ -191,7 +196,7 @@ SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
 SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     var postfix = ids.join("-"),
         name = "ZWayVDev_" + zwayName + "_Remote_" + postfix;
-    
+        
     if (this.config.generated.indexOf(name) === -1) {
         if (!this.config.trapNew || this.config.banned.indexOf(name) !== -1) {
             return;
@@ -203,7 +208,7 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
                 deviceType: "switchControl",
                 metrics: {
                     icon: '',
-                    title: name,
+                    title: "Button " + global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value + " " + ids.slice(1).join("-"),
                     level: "",
                     change: ""
                 }
