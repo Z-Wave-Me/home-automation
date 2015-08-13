@@ -39,7 +39,7 @@ _.extend(Camera.prototype, {
                 
                 if (vDev) {
                     var type = vDev.get("deviceType");
-                    if (type === "switchBinary") {
+                    if (type === "switchBinary" || "switchMultilevel") {
                         vDev.performCommand(command == "open" ? "on" : "off");
                     } else if (type === "doorlock") {
                             vDev.performCommand(command);
