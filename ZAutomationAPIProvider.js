@@ -93,6 +93,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/load/modulemedia/:module_name/:file_name", this.ROLE.ANONYMOUS, this.loadModuleMedia);
         
         this.router.get("/load/image/:img_name", this.ROLE.ANONYMOUS, this.loadImage);
+
+        this.router.get("/backup", this.ROLE.ADMIN, this.backup);
+        this.router.post("/restore", this.ROLE.ADMIN, this.restore);
+        this.router.post("/reset", this.ROLE.ADMIN, this.reset);
     },
 
     // !!! Do we need it?
@@ -1168,6 +1172,85 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.code = 400;
             reply.error = "Invalid request" ;
         }
+        return reply;
+    },
+    backup: function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            backupJSON = {};
+
+        var list = ["config.json"]; // TODO: loadObject("storageContentList");
+
+        try {        
+            // save all objects in storage
+            for (var ind in list) {
+                backupJSON[list[ind]] = loadObject(list[ind]);
+            }
+            
+            // save Z-Way and EnOcean objects
+            if (!!global.ZWave) {
+                backupJSON["__ZWay"] = {};
+                global.ZWave.list().forEach(function(zwayName) {
+                    backupJSON["__ZWay"][zwayName] = global.ZWave[zwayName].zway.controller.Backup();
+                });
+            }
+            /* TODO
+            if (!!global.EnOcean) {
+                backupJSON["__EnOcean"] = {};
+                global.EnOcean.list().forEach(function(zenoName) {
+                    backupJSON["__EnOcean"][zenoName] = global.EnOcean[zenoName].zeno.controller.Backup();
+                });
+            }
+            */
+            reply.code = 200;
+            reply.data = backupJSON;
+        } catch(e) {
+            reply.code = 500;
+            reply.error = e.toString();
+        }
+        
+        return reply;
+    },
+    restore: function () {
+        var reqObj,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+
+        try {
+            this.reset();
+            
+            reqObj = JSON.parse(this.req.body);
+            
+            for (var obj in reqObj) {
+                if (obj === "__ZWay" || obj === "__EnOcean") return;
+                saveObject(obj, reqObj[obj]);
+            }
+
+            // restart controller to apply config.json and other modules configs
+            this.controller.restart();
+            
+            // restore Z-Wave and EnOcean
+            !!reqObj["__ZWay"] && reqObj["__ZWay"].forEach(function(zwayName) {
+                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(reqObj["__ZWay"][zwayName], false);
+            });
+            /* TODO
+            !!reqObj["__EnOcean"] && reqObj["__EnOcean"].forEach(function(zenoName) {
+                global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj["__EnOcean"][zenoName]);
+            });
+            */
+            
+            // success
+            reply.code = 200;
+        } catch (e) {
+            reply.error = e.toString();
+        }
+        
         return reply;
     }
 });
