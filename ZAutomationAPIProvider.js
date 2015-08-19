@@ -1194,14 +1194,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             if (!!global.ZWave) {
                 backupJSON["__ZWay"] = {};
                 global.ZWave.list().forEach(function(zwayName) {
-                    backupJSON["__ZWay"][zwayName] = global.ZWave[zwayName].zway.controller.Backup();
+                    var bcp = "",
+                        data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
+                    
+                    for(var i = 0; i < data.length; i++) {
+                        bcp += String.fromCharCode(data[i]);
+                    }
+                    backupJSON["__ZWay"][zwayName] = bcp;
                 });
             }
             /* TODO
             if (!!global.EnOcean) {
                 backupJSON["__EnOcean"] = {};
                 global.EnOcean.list().forEach(function(zenoName) {
-                    backupJSON["__EnOcean"][zenoName] = global.EnOcean[zenoName].zeno.controller.Backup();
+                    // backupJSON["__EnOcean"][zenoName] = global.EnOcean[zenoName].zeno.controller.Backup();
                 });
             }
             */
@@ -1223,7 +1229,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
 
         try {
-            this.reset();
+            //this.reset();
             
             reqObj = JSON.parse(this.req.body);
             
@@ -1241,7 +1247,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             });
             /* TODO
             !!reqObj["__EnOcean"] && reqObj["__EnOcean"].forEach(function(zenoName) {
-                global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj["__EnOcean"][zenoName]);
+                // global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj["__EnOcean"][zenoName]);
             });
             */
             
