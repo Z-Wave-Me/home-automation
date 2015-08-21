@@ -1,6 +1,6 @@
 {
 	"m_title":"Virtual Thermostat",
-	"m_descr":"Create thermostat devices based on a switch and temperature sensor.",
+	"m_descr":"This app combines a actor and a temperature sensor to form a thermostat. The actor will be turned on off depending on the temperature measured and a set-point defined by the element that is created by this app.<br><br>Settings:<br><ul><li>Pick the actuator device. This can be any on/off switch in the network</li><li>Pick the temperature sensor</li></ul><br>Usage: The app will create an app that allows setting the target set-point temperature. Please note that the temperature sensor you pick may only report a new temperature within a given time interval, this may cause am overshooting oft he controlled temperature simply because the updated temperature value from the sensor comes very late. Hence, prefer temperature sensor devices that are mains powered and can therefore update their value more frequently.",
 	"l_switch":"Switch",
 	"l_sensor":"Temperature sensor",
 	"l_heaton":"Mode",

@@ -1,6 +1,6 @@
 {
 	"m_title":"Information Widget",
-	"m_descr":"This Module creates an information widget.",
+	"m_descr":"This app is used to display some text block in the UI. The main reason that this app exists is to give you some introductory information and a welcome greeting.  However you can use this e.g. as a link list since it allows defining pure HTML code as text block<br><br>Settings:<ul><li>Define your text to be shown in different languages. If there is no statement for the language of your UI, the English text will be used as default.</li></ul>",
 	"l_widgets":"Create one or nore Information Widgets",
 	"h_widgets":"Click to create a widget",
 	"l_widget": "Widget",

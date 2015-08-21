@@ -1,7 +1,7 @@
 {
     "singleton": false,
     "dependencies": [],
-    "category": "scheduling",
+    "category": "device_enhancements",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",

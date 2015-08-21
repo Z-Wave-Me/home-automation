@@ -1,6 +1,6 @@
 {
 	"m_title":"Logical Rule",
-	"m_descr":"Control one or more actuators due to an event, which can be further restricted by other conditions.",
+	"m_descr":"This app is the by far most complex but also most powerful app preloaded to your gateway. It allows to combine multiple status and events in a logical way using the Boolean operators AND, OR and NOT. You need to have basic knowledge about Boolean logic and/or software development to properly use this widget. Please not e that the final target of the Boolean logic is to trigger an action. This mean you need at least one (dynamic) event source that essentially triggers but many more (static) status information that you can make the action depending on. It is not suitable to combine two events because the final action will only happen if both events would occur at the very same moment. This is quite unlikely. The difference between a dynamic event and a static status can be explained using a simple motion sensor. The dynamic event is the moment when the motion sensor trips. The static status is the information if the motion sensor is actually in tripped state (has just detected a motion and wait for a few seconds before turning back into inactivity mode).<br><br>Settings: Select the status information and the events you want to logically combine and select the Boolean operators to combine them.",
 	"rl_options":"Start scene on change of any device mentioned in condition.",
 	"l_eventSource":"List of scenes to activate:",
 	"l_logicalOperator":"Boolean operator",

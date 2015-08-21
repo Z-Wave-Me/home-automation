@@ -82,7 +82,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                     dataSB = insts[n].SwitchBinary.data,
                     dataSML = insts[n].SwitchMultilevel.data,
                     dataSc = insts[n].SceneActivation.data,
-                    dataCSc = insts[n].CentralScene.data;
+                    dataCSc = insts[n].commandClasses[self.CC["CentralScene"]] && insts[n].commandClasses[self.CC["CentralScene"]].data || null; // TODO: replace with a shortcut once fixed bug in Z-Way
                
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
                     var val, par = {};

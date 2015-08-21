@@ -1,6 +1,6 @@
 {
 	"m_title":"Inband Notifier",
-	"m_descr":"Creates and records the presentation of events in the event list (Eventlog).",
+	"m_descr":"The inband notifier organizes to display the events of the system into the time line of your User Interface. It should be active all the time. There is nothing to be done right with the module but a lot of things that can be done wrong. This means, don’t touch it unless its really needed.",
 	"l_dev":"Devices to be monitored",
 	"l_devT":"Device types to be monitored",
 	"all":"all device types ",

@@ -1,6 +1,6 @@
 {
-	"m_title":"Light Scene",
-	"m_descr":"With Light Scene choosen switches, dimmers and motor controllers could be controlled together with just one element. Per device all statuses could be adjusted differently.",
+	"m_title":"Scene",
+	"m_descr":"The Scene is a basic function of a smart home. Multiple devices are switches into individual status by just one click. Using other apps like “Delayed Scene” or “Scheduled Scene” this scene can also be activated automatically depending on events generated in the Smart Home.  The app will create a new element to triggering the scene. The setup dialog allows selecting a series of switches and dimmers and defining the desired switching state of each individual device selected. Additionally it is possible to trigger other scenes as part of the scene. Please note that dimmers require a value between 0 and 100, while the switches can be selected between on and off.<br> <br>Setup: <ul><li>Select all switches that shall belong to the scene and define the switching state as ‘on’ or ‘off’</li><li>Select all dimmers that shall belong to the scene and define the dimming level as a value between 0 und 100</li><li>Optionally select other scenes that shall be trigger with this scene.</li></ul><br>Usage: The toggle button on the scene element will activate the defined scene",
 	"l_switches":"List of switches:",
 	"on":"On",
 	"off":"Off",
