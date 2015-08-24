@@ -1,0 +1,18 @@
+{
+	"m_title":"Geräte- und Elementverknüpfung",
+	"m_descr":"Ein oder mehrere Geräte werden immer DANN geschaltet, WENN ein gewähltes Ereignis eingetreten ist. Dieses Ereignis kann das Auslösen eines Bewegungsmelders oder Türkontaktes sein aber auch das Umschalten eines anderen Schaltaktors.",
+	"l_event_sources":"Wenn",
+	"l_actors":"Dann",
+	"on":"An",
+	"off":"Aus",
+	"l_level":"Level",
+	"open":"Öffnen",
+	"close":"Schließen",
+	"l_scene":"Szene",
+	"switchBinary":"Binärschalter",
+	"switchMultilevel":"Multilevelschalter",
+	"doorlock":"Türschloss",
+	"l_filter":"Filtern nach Typ",
+	"l_target_device":"Gerät",
+	"l_action":"Aktion"
+}
