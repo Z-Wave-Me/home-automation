@@ -1,6 +1,6 @@
 {
 	"m_title":"Erzeuge Gerät mit JS-Code",
-	"m_descr":"Erzeugt ein virtuelles Grät mit Hilfe von JavaScript Code.",
+	"m_descr":"Die Anwendung dieser App erfordert solide Kenntnisse in der JavaScript Programmierung. Diese App ermöglicht die Erstellung eines neuen Gerätes basierend auf einigen JavaScript Anweisungen. Das JavaScript kann alle möglichen Daten abfragen und berechnen so lange diese per JavaScript ausführbar sind. Das Gerät kann sowohl ein Sensor sein, welcher lediglich Daten anzeigt, als auch ein Java Script Code ausführender Aktor.<br><br>Einstellungen:<br><ul><li>Wählen Sie zu allererst den Elementtyp, der erstellt werden soll. Weitere Einstellungen sind vom Elementtyp abhängig.</li> <li>Alle Geräte benötigen eine URL, um den Wert aus dem Internet abzurufen.</li> <li>Es gibt eine Möglichkeit, die Ansprache mit mathematischer Logik zu entwickeln. Dafür werden fundierte Kenntnisse im JavaScript benötigt.</li> <li>Bestimmen Sie die Abrufzeit.</li> <li>Definieren Sie, ob „POST“ oder „GET“ verwendet wird.</li> <li>Bei mehrstufigen Sensoren können Sie den zu verwendenden Maßstab einstellen.</li> <li>Bei Schaltern können die URLs für Schaltungen bestimmt werden.</li> <ul><br>Beispiel: Die App soll ein Element erstellen, welches wahllos “An” oder “Aus” anzeigt. Der verwendete JavaScript Code lautet “Math.random() > 0.5 ? on : off  ",
 	"l_setterOn_toggleButton":"Code für den Befehl 'on'",
 	"h_getter_sensorBinary":"Rückgabe der Werte 'on' oder 'off'",
 	"h_getter_sensorMultilevel":"Rückgabe einer Zahlenwertes",

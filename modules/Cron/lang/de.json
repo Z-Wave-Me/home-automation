@@ -1,4 +1,4 @@
 {
 	"m_title":"Systemuhr (CRON)",
-	"m_descr":"Die Systemuhr wird von anderen Modulen benötigt, die mit Intervallabfragen arbeiten."
+	"m_descr":"Diese App generiert die ganze Zeit gesteuerte Ereignisse und sollte aus diesem Grund stets aktiviert sein.  In der Verwendung mit diesem Modul kann sehr viel falsch gemacht werden, daher lassen Sie es unberührt, solange es nicht wirklich benötigt wird."
 }

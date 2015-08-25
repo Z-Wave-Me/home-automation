@@ -1,6 +1,6 @@
 {
 	"m_title":"Benutzer JavaScript Code",
-	"m_descr":"Dieses Modul ermöglicht es eigenen JavaScript Code auf das System zu laden.",
+	"m_descr":"Die Anwendung dieser App erfordert solide Kenntnisse in der JavaScript Programmierung. Der in dieser App zur Verfügung gestellte Code wird ausgeführt, wenn die App geladen wird. Ein Element kann nicht erstellt werden, jedoch ist es möglich, auf die Inhaber der Netzwerkdaten zuzugreifen. Diese App richtet sich ausschließlich an JavaScript Experten.",
 	"l_options":"Ihr JavaScript Code:",
 	"err_load":"Das Skript konnte nicht geladen werden: "
 }

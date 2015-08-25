@@ -1,6 +1,6 @@
 {
 	"m_title":"SMS.ru Benachrichtigungen",
-	"m_descr":"Mit Hilfe eines Nutzerkontos von sms.ru können Benachrichtigungen über Ereignisse im Gateway per E-Mail oder SMS kostenfrei versendet werden.",
+	"m_descr":"Diese App sendet alle Mitteilungen an Ihr Handy unter Verwendung des kostenfreien russischen SMS Portals SMS.ru. Bitte beachten Sie, dass dieser Service nur in Russland zur Verfügung steht.<br><br>Einstellungen: <br><ul><li>Tragen Sie Ihre Handy Nummer ein.</li><li>Bestimmen Sie  die Vorwahl der zu sendenden SMS Nachrichten.</li><li>Fügen Sie den Zugangsschlüssel ein, den Sie bei der Serviceanmeldung erhalten.</li></ul> ",
 	"prefix":"Z-Way Benachrichtigung:",
 	"description":"Senden sie eine kostenfreie SMS über das SMS.ru Gateway. Um sich zu registrieren geben Sie bitte Ihren Namen, ein Passwort und die gewünschte Telefonnummer auf der folgenden Seite an: 'http://sms.ru/?panel=register' Und registrieren Sie Ihre Telefonnummer mit Hilfe des zugesendeten Codes.",
 	"l_phone":"Telefonnummer, an die eine SMS-Benachrichtigung geschickt werden soll (z.B.79261234567)",

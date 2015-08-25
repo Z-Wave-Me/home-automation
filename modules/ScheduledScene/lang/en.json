@@ -1,6 +1,6 @@
 {
 	"m_title":"Scheduled Scene",
-	"m_descr":"This app triggers a defined scene once per day on selected weekdays on a given time.<br><br>Settings:<br><ul><li>Pick the time of day</li><li>Pick the week days the scene shall be executed</li><li>Pick a predefined scene. Such a scene need to be defined using the app “Light Scene”</li></ul>",
+	"m_descr":"This app triggers a defined scene once per day on selected weekdays on a given time.<br><br>Settings:<br><ul><li>Pick the time of day</li><li>Pick the week days the scene shall be executed</li><li>Pick a predefined scene. Such a scene need to be defined using the app “Scene”</li></ul>",
 	"monday":"Monday",
 	"tuesday":"Tuesday",
 	"wednesday":"Wednesday",

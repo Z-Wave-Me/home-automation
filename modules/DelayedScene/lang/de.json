@@ -1,6 +1,6 @@
 {
 	"m_title":"Verzögerte Aktion",
-	"m_descr":"Aktiviert eine eingestellte Szene/Aktion nach einem bestimmten Timeout.",
+	"m_descr":"Diese App kann nach einer gewissen Verzögerungszeit auf eine bereits ausgelöste Szene eine weitere Szene auslösen.Zur Ausführung bedarf die App mindestens zweier Szenen (App Lichtszene): der auslösenden sowie der auszulösenden Szene. Die Verzögerungszeit zwischen beider Szenen kann individuell eingestellt werden.<br><br>Einstellungen:<br><ul><li>Wählen Sie die Szene, die eine weitere Szene auslösen soll.</li><li>Wählen Sie die Szene, die durch die Erste ausgelöst werden soll.</li><li>Definieren Sie die zeitliche Verzögerung in Sekunden zwischen beiden Szenen.</i></ul>",
 	"r_l_options":"Starte den Timer neu, wenn eine Szene/Aktion ausgelöst wird.",
 	"l_triggerScene":"Szene/Aktion die den Timer startet.",
 	"l_delayedScene":"Verzögerte Szene/Aktion:",
