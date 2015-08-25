@@ -1,6 +1,6 @@
 {
 	"m_title":"Gerätegruppe",
-	"m_descr":"Gruppiert mehrere Geräte in ein Element. Es können auch Lichtszenen hinzugefügt werden.",
+	"m_descr":"Gruppiert Geräte in einem Element. Das Element kann sowohl ein- und ausgeschalten werden und ist zusätzlich dimmbar. Es können außerdem Szenen aktiviert werden. Diese App ist im Grunde genommen eine andere Art und Weise, um Szenen zu definieren.<br><br>Einstellungen:<br><ul><li><li>Anzuwählen, wenn die Gerätegruppe ein einfacher An-/Ausschalter oder dimmbar sein soll.</li>  <li>Wählen Sie eine Reihe an Geräten als Teil der Gerätegruppe aus. Es ist möglich, die Aktion pro Gerät zu invertieren. Das heißt, dass das Einschalten der Gerätegruppe bedeutet, das Gerät mit einer invertierten Aktion zu schalten.</li><li>Wählen Sie weitere Lichtszenen aus, die Sie auf AN oder AUS aktivieren möchten. Hieran verdeutlicht sich der Vorteil einer Gerätegruppe im Vergleich zu einer Szene. Eine Szene kann nur aktiviert werden. Hat man zwei Szenen ermöglicht diese App zwischen beiden Szenen hin- und her zu schalten.</li></ul>",
 	"rl_options":"Dimmbar",
 	"l_devices":"Gerätegruppe",
 	"rl_invert":"Umgekehrte Aktionen",

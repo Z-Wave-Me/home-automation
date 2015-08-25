@@ -1,6 +1,6 @@
 {
 	"m_title":"RGB Steuerung aus 3 Dimmern",
-	"m_descr":"Ein RGB Steuerelement steuert drei unabhängige Dimmer. Diese App wird benötigt, wenn eine RGB Leuchte nicht durch normale Farbsteuerung konfiguriert werden kann.",
+	"m_descr":"RGB Geräte bieten einen entsprechenden Befehl zur Farbeinstellung. Einige veraltete Geräte unterstützen zwar diese spezielle Z-Wave Farbwahlmethode nicht, aber emulieren ihren Farbwechsel mit drei Dimmern für die Farben Rot, Grün und Blau. Diese App kombiniert diese drei Dimmer und bietet ein praktisches Element zur Farbwahl durch entsprechende Einstellung der drei Dimmerwerte.Beachten Sie bitte: Moderne Z-Wave Geräte sollten durch diese UI unterstützt werden ohne Installation zusätzlicher Apps wie dieser. Infolgedessen wird diese App nur für Altgeräte benötigt.  <br><br>Einstellungen:<br><ul><li>Auswahl freier Dimmer von veralteten RGB Steuergeräten</li></ul><br>Anwendung:Ein neues Element wird zur Einstellung von Farbwerten erstellt. Bitte beachten Sie, dass in der Regel ein weiteres Dimmerelement angelegt wird, dass schließlich die gewählte Farbe dimmt. ",
 	"l_red":"Rot",
 	"l_green":"Grün",
 	"l_blue":"Blau"

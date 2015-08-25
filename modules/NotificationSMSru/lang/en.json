@@ -1,6 +1,6 @@
 {
 	"m_title":"SMS.ru Notifications",
-	"m_descr":"This app sends all notifications to your mobile phone using the free Russian SMS portal SMS.ru. Please not that this service is available for Russia only.<br><br>Settings: <ul><li>Fill in your mobile phone number</li><li>Define the prefix oft he SMS messages to be sent</li><li>Insert the access key you will receive when signing up for the service.</li></ul>",
+	"m_descr":"This app sends all notifications to your mobile phone using the free Russian SMS portal SMS.ru. Please note that this service is available for Russia only.<br><br>Settings:<br><ul><li> Fill in your mobile phone number</li><li>Define the prefix of the SMS messages to be sent</li><li>Insert the access key you will receive when signing up for the service.</li></ul>",
 	"prefix":"Z-Way notification:",
 	"description":"Send SMS via SMS.ru gateway. To register enter your phone number, name and password on http://sms.ru/?panel=register and confirm your phone number with a code.",
 	"l_phone":"Phone number to send SMS. In form of 79261234567",

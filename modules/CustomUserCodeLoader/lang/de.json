@@ -1,6 +1,6 @@
 {
 	"m_title":"Lade JavaScript-Dateien von Benutzer",
-	"m_descr":"Ermöglicht es JavaScript-Dateien aus dem 'automation' Verzeichnis beim Systemstart zu laden.",
+	"m_descr":"Die Anwendung dieser App erfordert solide Kenntnisse in der JavaScript Programmierung. Der in der Datei bereitgestellte Code, auf welchen die App Einstellung hinweist, wird ausgeführt, wenn die App geladen wird. Ein Element kann nicht erstellt werden, jedoch ist es möglich, auf die Inhaber der Netzwerkdaten zuzugreifen. Diese App richtet sich ausschließlich an JavaScript Experten.",
 	"customCodeFiles_title":"Dateiname",
 	"err_load":"JavaScript-Datei konnte nicht geladen werden: ",
 	"h_options":"Fügt Pfad relativ zum 'automation' Verzeichnis hinzu."

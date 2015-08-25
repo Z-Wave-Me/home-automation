@@ -1,6 +1,6 @@
 {
 	"m_title":"Global Caché",
-	"m_descr":"Global Cache is a manufacturer of various devices that can be turned on/off using an IP command.   This app will create a new element and connect the toggle button of this element with a defined command sent to a global cache device.<br><br>Settings:<br><ul><li>IP Address or host name of the global cache device</li><li>Command String to execute the desired action on the global cache device. Please refer to the Global Cache manuals for information how to define this command.</li></ul>",
+	"m_descr":"Global Cache is a manufacturer of various devices that can be turned on/off using an IP command.   This app will create a new element and connect the toggle button of this element with a defined command sent to a Global Cache device.<br><br>Settings:<br><ul><li>IP Address or host name of the Global Cache device</li><li>Command String to execute the desired action on the Global Cache device. Please refer to the Global Cache manuals for information how to define this command.</li></ul>",
 	"l_host":"Global Caché IP or hostname",
 	"l_data":"Command to send",
 	"h_data":"Command as reported by Global Caché IR Learning Utility WITHOUT final new line symbols (\\r\\n\\r\\n)."

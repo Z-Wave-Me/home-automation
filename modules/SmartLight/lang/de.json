@@ -1,6 +1,6 @@
 {
 	"m_title":"Intelligente Lichtregelung",
-	"m_descr":"Am Tag lässt sich das Licht standardmäßig mit einer Lichtstärke von z.B. 100% anschalten, in der Nacht nur mit einer Lichtstärke von z.B. 20%. Über den Dimmer lässt sich die Lichtstärke auch weiterhin bis zu bis zu 100% erhöhen. Wird die Lichtstärke weiter heruntergeregelt, schaltet sich das Licht aus und der Bewegungssensor wird für eine Minute deaktiviert.",
+	"m_descr":"Diese App regelt auf intelligente Weise eine dimmbare Beleuchtung in Verbindung mit einem Bewegungsmelder. Bei erkannter Bewegung wird die Beleuchtung tagsüber auf 100%, nachts dagegen nur auf 20% eingeschalten. Sollten Sie einen Dimmer mit Lokalsteuerung wählen, können Sie diese automatische Einstellung durch Verwendung der lokalen Wippen überschreiben. Bei einer Überschreibung auf „0“ wird bei einer Bewegung nichts ausgeschalten.<br><br>Einstellungen:<br><ul><li>Wählen Sie den Bewegungsmelder aus.</li><li>Wählen Sie den zu regelnden Dimmer aus.</li><li><Ändern Sie – falls nötig – die Tag und Nacht Dimmstufe</li><li>Ändern Sie – falls nötig – den Zeitintervall für Tag und Nacht </li><li>Wählen Sie die Buttons zur Regelung des Dimmers</li></ul><br>Anwendung: Es ist kein Element erstellt.",
 	"l_MotionSensor":"Bewegungssensor:",
 	"l_Dimmer":"Dimmer",
 	"l_Level":"Dimmerlevel für Tag und Nacht",

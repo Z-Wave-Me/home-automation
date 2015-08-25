@@ -1,6 +1,6 @@
 {
 	"m_title":"Ereignisprotokoll ",
-	"m_descr":"Erzeugt und protokolliert die Darstellung der Ereignisse in der Ereignisübersicht (Eventlog).",
+	"m_descr":"Der Inband Notifier ordnet die Darstellung der Systemereignisse im Zeitrahmen Ihres User Interface an. Es sollte die ganze Zeit aktiviert sein. In der Verwendung mit diesem Modul kann sehr viel falsch gemacht werden, daher lassen Sie es unberührt, solange es nicht wirklich benötigt wird.",
 	"l_dev":"Geräte die überwacht werden sollen",
 	"l_devT":"Gerätetypen die überwacht werden sollen",
 	"all":"alle Gerätetypen",
