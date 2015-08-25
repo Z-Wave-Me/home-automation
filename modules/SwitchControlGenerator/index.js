@@ -54,7 +54,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                 self.controller.devices.create({
                     deviceId: name,
                     defaults: {
-                        deviceType: "switchControl",
+                        deviceType: "buttonControl",
                         metrics: {
                             icon: '',
                             title: "Button", // this is always not the initial creation, so the default title is already filled 
@@ -205,7 +205,7 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         this.controller.devices.create({
             deviceId: name,
             defaults: {
-                deviceType: "switchControl",
+                deviceType: "buttonControl",
                 metrics: {
                     icon: '',
                     title: "Button " + global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value + " " + ids.slice(1).join("-"),

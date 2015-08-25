@@ -44,7 +44,7 @@ IfThen.prototype.init = function (config) {
                     if (vDev.get("deviceType") === el.filter && el.filter === "switchMultilevel") {
                         vDev.performCommand("exact", { level: lvl });
                     } else if (vDev.get("deviceType") === "toggleButton" && el.filter === "scene") {
-                        vDev.performCommand(lvl);
+                        vDev.performCommand("on");
                     } else if (vDev.get("deviceType") === el.filter) {
                         vDev.performCommand(lvl);
                     }
