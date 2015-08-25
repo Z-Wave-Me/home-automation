@@ -1,4 +1,4 @@
 {
 	"m_title":"System Clock (CRON)",
-	"m_descr":"This app generates all time driven events and should therefore be active all the time.  There is nothing to be done right with the module but a lot of things that can be done wrong. This means, don’t touch it unless it is really needed. "
+	"m_descr":"This app generates all time driven events and should therefore be active all the time. There is nothing to be done right with the module but a lot of things that can be done wrong. This means, don't touch it unless it is really needed."
 }
