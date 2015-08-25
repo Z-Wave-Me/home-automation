@@ -1,6 +1,6 @@
 {
 	"m_title":"Z-Wave Network Access",
-	"m_descr":"This app maps the information of the Z-Wave network into your UI. Hence it must be active all the time if you want to work with Z-Wave device. There is nothing to be done right with the module but a lot of things that can be done wrong. This means, don’t touch it unless it’s really needed. ";
+	"m_descr":"This app maps the information of the Z-Wave network into your UI. Hence it must be active all the time if you want to work with Z-Wave device. There is nothing to be done right with the module but a lot of things that can be done wrong. This means, don’t touch it unless it’s really needed.",
 	"l_port":"Serial port to Z-Wave dongle",
 	"l_name":"Internal name",
 	"h_name":"Should be a valid JS key string. Don't change unless you know what you are doing",

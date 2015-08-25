@@ -1,0 +1,18 @@
+{
+	"m_title":"Связь устройств",
+	"m_descr":"Одно устройство делает те же действия, что и другое.",
+	"l_event_sources":"Список источников событий",
+	"l_actors":"Список исполнителей",
+	"on":"On",
+	"off":"Off",
+	"l_level":"Level",
+	"open":"Open",
+	"close":"Close",
+	"l_scene":"Scene",
+	"l_filter":"Filter by Type",
+	"switchBinary":"Binary Switch",
+	"switchMultilevel":"Multilevel Switch",
+	"doorlock":"Doorlock",
+	"l_target_device":"Device",
+	"l_action":"Action"
+}
