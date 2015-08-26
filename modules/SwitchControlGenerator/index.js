@@ -37,6 +37,29 @@ SwitchControlGenerator.prototype.init = function (config) {
         "SceneActivation": 0x2b,
         "CentralScene": 0x5b
     };
+
+    this.ZWAY_DEVICE_CHANGE_TYPES = {
+        "DeviceAdded": 0x01,
+        "DeviceRemoved": 0x02,
+        "InstanceAdded": 0x04,
+        "InstanceRemoved": 0x08,
+        "CommandAdded": 0x10,
+        "CommandRemoved": 0x20,
+        "ZDDXSaved": 0x100,
+        "EnumerateExisting": 0x200
+    };
+
+    this.ZWAY_DATA_CHANGE_TYPE = {
+        "Updated": 0x01,       // Value updated or child created
+        "Invalidated": 0x02,   // Value invalidated
+        "Deleted": 0x03,       // Data holder deleted - callback is called last time before being deleted
+        "ChildCreated": 0x04,  // New direct child node created
+
+        // ORed flags
+        "PhantomUpdate": 0x40, // Data holder updated with same value (only updateTime changed)
+        "ChildEvent": 0x80     // Event from child node
+    };
+
     
     this.generated = this.config.generated; // used to stop after config changed
     this.bindings = [];
@@ -85,45 +108,73 @@ SwitchControlGenerator.prototype.init = function (config) {
                     dataCSc = insts[n].CentralScene.data;
                
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
-                    var val, par = {};
-                    
-                    if (this.value === 0) {
-                        val = "off";
-                    } else if (this.value === 255) {
-                        val = "on";
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                     } else {
-                        val = "exact";
-                        par = { level: this.value };
+                        var val, par = {};
+                        
+                        if (this.value === 0) {
+                            val = "off";
+                        } else if (this.value === 255) {
+                            val = "on";
+                        } else {
+                            val = "exact";
+                            par = { level: this.value };
+                        }
+                        self.handler(zwayName, val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                     }
-                    self.handler(zwayName, val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchBinary"], "level", function(type) {
-                    self.handler(zwayName, this.value ? "on" : "off", {}, [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                    } else {
+                        self.handler(zwayName, this.value ? "on" : "off", {}, [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
+                    }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "level", function(type) {
-                    var val, par = {};
-                    
-                    if (this.value === 0) {
-                        val = "off";
-                    } else if (this.value === 255) {
-                        val = "on";
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
                     } else {
-                        val = "exact";
-                        par = { level: this.value };
+                        var val, par = {};
+                        
+                        if (this.value === 0) {
+                            val = "off";
+                        } else if (this.value === 255) {
+                            val = "on";
+                        } else {
+                            val = "exact";
+                            par = { level: this.value };
+                        }
+                        self.handler(zwayName, val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                     }
-                    self.handler(zwayName, val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "startChange", function(type) {
-                    self.handler(zwayName, this.value ? "upstart" : "downstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                    } else {
+                        self.handler(zwayName, this.value ? "upstart" : "downstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "stopChange", function(type) {
-                    self.handler(zwayName, dataSML.startChange.value ? "upstop" : "downstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                    } else {
+                        self.handler(zwayName, dataSML.startChange.value ? "upstop" : "downstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                    }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
-                    self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                    } else {
+                        self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
+                    }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["CentralScene"], "currentScene", function(type) {
-                    self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value]);
+                    if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                    } else {
+                        self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value]);
+                    }
                 }, "");
             })(i);
         }
@@ -232,4 +283,13 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     }
     
     this.widgetHandler.call(vDev, cmd, par);
+};
+
+SwitchControlGenerator.prototype.remove = function(zwayName, cmd, par, ids) {
+    var postfix = ids.join("-"),
+        name = "ZWayVDev_" + zwayName + "_Remote_" + postfix;
+        
+    if (this.config.generated.indexOf(name) === -1) {
+        this.controller.devices.remove(name);
+    }
 };

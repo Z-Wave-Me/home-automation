@@ -1015,7 +1015,7 @@ ZWave.prototype.dataUnbind = function(dataBindings) {
 	dataBindings.forEach(function (item) {
 		var devBind = ! ("instanceId" in item);
 
-		if (item.zway && item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))) {
+		if (item.zway && item.zway.isRunning() && item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))) {
 			var data = devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data,
 				pathArr = item.path ? item.path.split(".") : [];
 
