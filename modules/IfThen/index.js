@@ -34,7 +34,7 @@ IfThen.prototype.init = function (config) {
         var that = self,
             value = sDev.get("metrics:level");
 
-        if(value === self.config.sourceDevice.status){
+        if(value === self.config.sourceDevice.status || sDev.get("deviceType") === "buttonControl"){
             self.config.targets.forEach(function(el) {
                 var id = el[el.filter].target,
                     lvl = el[el.filter].status,

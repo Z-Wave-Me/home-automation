@@ -30,7 +30,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_switchControl:deviceId",
+					"enum": "namespaces:devices_buttonControl:deviceId",
 					"required": true
 				}
 			},
@@ -39,7 +39,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_switchControl:deviceId",
+					"enum": "namespaces:devices_buttonControl:deviceId",
 					"required": true
 				}
 			}
@@ -59,7 +59,7 @@
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_switchControl:deviceName"
+						"optionLabels": "namespaces:devices_buttonControl:deviceName"
 					}
 				}
 			},
@@ -71,7 +71,7 @@
 						"readonly": true,
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_switchControl:deviceName"
+						"optionLabels": "namespaces:devices_buttonControl:deviceName"
 					}
 				}
 			}

@@ -27,13 +27,14 @@
 					"device": {
 						"field": "enum",
 						"datasource": "namespaces",
-						"enum": "namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
+						"enum": "namespaces:devices_buttonControl:deviceId,namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
 						"required": true
 					},
 					"status": {
 						"type": "integer",
 						"enum": ["off", "on"],
-						"required": true
+						"required": true,
+						"dependencies": "device"
 					}
 				}
 			},
@@ -127,10 +128,13 @@
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
+						"optionLabels": "namespaces:devices_buttonControl:deviceName,namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
 					},
 					"status": {
-						"optionLabels": ["__off__", "__on__"]
+						"optionLabels": ["__off__", "__on__"],
+						"dependencies": {
+							"device" : ["namespaces:devices_switchControl:deviceId","namespaces:devices_switchBinary:deviceId","namespaces:devices_switchMultilevel:deviceId","namespaces:devices_sensorBinary:deviceId"]
+						}
 					}
 				}
 			},
