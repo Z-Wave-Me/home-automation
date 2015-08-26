@@ -1,6 +1,6 @@
 {
 	"m_title":"Local Weather",
-	"m_descr": "Weather informer provided by OpenWeatherMap.org",
+	"m_descr": "The Local Weather app creates an element showing the local weather data as provided by the Internet service openweather.org. The element is showing the local temperature but clicking on the created element will reveal humidity, wind speed, air pressure as well.<br><br>Setting:<br><ul><li>Pick your country and your city. You may want to check city names with openweather.org</li><li<Select if you want to see your temperature in Celsius or Fahrenheit.</li></ul>",
 	"l_units": "Units",
 	"l_country": "Country",
 	"p_country": "England",

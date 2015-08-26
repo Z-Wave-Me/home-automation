@@ -1,6 +1,6 @@
 {
 	"m_title":"Batteriestatus",
-	"m_descr":"Überprüft regelmäßig den Batteriestatus der Geräte.",
+	"m_descr":"Die Batteriestandabfrage aktualisiert den Batteriestatus durch wöchentliche Abfrage aller batteriebetriebener Geräte über deren aktuellen Batteriestatus. Sie können den Wochentag und die Warnstufe auswählen, wann dieses Modul Ihnen eine Warnmeldung sendet.",
 	"l_launch_wd":"Wochentag, an dem der Batteriestatus abgefragt werden soll:",
 	"every_d":"täglich", 
 	"mon":"Montag", 

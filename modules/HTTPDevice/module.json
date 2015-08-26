@@ -1,7 +1,7 @@
 {
 	"singleton": false,
 	"dependencies": [],
-	"category": "devices",
+	"category": "developers_stuff",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",

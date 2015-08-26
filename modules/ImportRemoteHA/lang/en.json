@@ -1,6 +1,6 @@
 {
-	"m_title":"Include devices from an other Z-Way HA",
-	"m_descr":"The devices of an other Z-Way HA will be shown on this gateway and could be controlled directly. Also that makes it possible to create scenes with devices from different Z-Way HA.",
+	"m_title":"Link other Z-Way controller",
+	"m_descr":"Z-Way controls one Z-Wave network with up to 232 devices. This app will combine multiple Z-Way entities into one User Interface. Essentially the app is mapping the data of another Z-Way powered Gateway into your gateway. The elements are displayed and can be used like the local ones. Please note that the function of the second gateway remains untouched. This means that this second gateway will not see the elements for your first gateway but can control and access their own elements without any further restrictions:<br><br>Settings:<br><ul><li> You need to set the IP address of the Remote Box including the port number.</li> You need to define the polling interval.  Once a second is a quite good choice.</li> You need to manage the remoted device to be included into your UI.</li></ul>",
 	"l_url":"URL to remote side",
 	"l_dT":"Update period (in milliseconds)",
 	"l_skipDevices":"List of devices not to import from remote side",

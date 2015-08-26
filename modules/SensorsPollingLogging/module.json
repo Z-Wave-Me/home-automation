@@ -7,7 +7,7 @@
     "moduleName": "SensorsPollingLogging",
     "defaults": {
         "title": "Poll sensors and log values periodically",
-        "description": "Regular sensors polling and logging",
+        "description": "This app just combines the Sensor Polling service with the Sensor Value Logging Service. Please refer to the description of the two apps for more information",
         "devices": [],
         "period": 60
     },

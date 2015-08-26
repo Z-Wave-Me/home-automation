@@ -1,5 +1,53 @@
 [
+         {
+            "id": "basic_gateway_modules",
+            "name": "Basic Gateway Modules",
+            "description": "Basic Gateway Modules",
+            "icon": ""
+        },
         {
+            "id": "legacy_products_workaround",
+            "name": "Legacy Products / Workaround",
+            "description": "Legacy Products / Workaround",
+            "icon": ""
+        },
+        {
+            "id": "support_external_ui",
+            "name": "Support of external UIs",
+            "description": "Support of external UIs",
+            "icon": ""
+        },
+        {
+            "id": "support_external_dev",
+            "name": "Support of external Devices/Services",
+            "description": "Support of external Devices/Services",
+            "icon": ""
+        },
+        {
+            "id": "automation_basic",
+            "name": "Automation Basics",
+            "description": "Automation Basics",
+            "icon": ""
+        },
+        {
+            "id": "device_enhancements",
+            "name": "Device enhancements",
+            "description": "Device enhancements",
+            "icon": ""
+        },
+        {
+            "id": "developers_stuff",
+            "name": "Developers Stuff",
+            "description": "Developers Stuff",
+            "icon": ""
+        },
+        {
+            "id": "complex_applications",
+            "name": "Complex Applications",
+            "description": "Complex Applications",
+            "icon": ""
+        },
+	{
             "id": "automation",
             "name": "Automation",
             "description": "Create home automation rules",

@@ -1,6 +1,6 @@
 {
 	"m_title":"Automated Locking of Door",
-	"m_descr":"Door/Window Sensor automatically closes lock when door is closed.",
+	"m_descr":"Electronic Doors typically move the dead bold of the door. If the dead bold is in the default position the door can be opened and closed using the door handle.  This app will automatically lock the door (means move the dead bold) when an opened door closes. The closing of the door is detected using a door sensor. Once this sensor signals a closing door the door lock is turned after a defined delay.<br><br>Settings:<br><ul><li>Select the door sensor detecting the position of the door</li><li>Select the door lock to be controlled</li><li>Select a delay between the detected closed door and the looking</li></ul>",
 	"l_dw_sensor":"Door/Window Sensor",
 	"l_doorlock":"Door Lock",
 	"l_delay_sec":"Delay in seconds"

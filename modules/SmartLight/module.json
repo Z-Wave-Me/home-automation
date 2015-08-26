@@ -1,7 +1,7 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"category": "automation",
+	"category": "complex_applications",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",

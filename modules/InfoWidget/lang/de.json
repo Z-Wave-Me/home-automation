@@ -1,6 +1,6 @@
 {	
 	"m_title":"Informations Widget",
-	"m_descr":"Dieses Modul erzeugt ein Informations Widget.",
+	"m_descr":"Diese App wird zur Darstellung einiger Textblöcke in der UI verwendet. Sie dient hauptsächlich zur einleitenden Information sowie zur Begrüßung.  Sie können sie z. B. auch als Linkliste verwenden, die es gestattet, den reinen HTML Code als Textblock umzusetzen. <br><br>Einstellungen:<br><ul><li>Erstellen Sie Ihren Text für die Darstellung in verschiedenen Sprachen. Bietet Ihre UI keine Sprachanweisungen, wird standardmäßig der Text in Englisch angezeigt.  </li></ul>",
 	"l_widgets":"Ein oder mehrere Informations Widgets erzeugen",
 	"h_widgets":"Klicken sie um ein Widget hinzuzufügen",
 	"l_widget": "Widget",

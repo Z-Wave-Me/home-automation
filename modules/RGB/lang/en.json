@@ -1,6 +1,6 @@
 {
 	"m_title":"RGB Light from 3 Dimmers",
-	"m_descr":"Creates RGB device based on three different dimmers. This app is required if an RGB light can not be configured by normal color control.",
+	"m_descr":"RGB devices offer a dedicated command to set their color. Some legacy devices don’t support this defined Z-Wave Color Choosing Method but emulate their color change with three dimmers for the three colors Red, Green, Blue. This app combines these three dimmers and offers a convenient element to pick the color by setting the three dimmer values accordingly.Note: Modern Z-Wave devices shall be supported by this UI without installing any additional app like this. Hence, this app is only needed for legacy devices<br><br>Settings:<br><ul><li>Pick the free dimmers of the legacy RGB control device</li></ul><br>Usage:A new element is created allowing setting the color value. Please note that usually another dimmer element is created that will finally dim the device with the selected color.",
 	"l_red":"Red",
 	"l_green":"Green",
 	"l_blue":"Blue"

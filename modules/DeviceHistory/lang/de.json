@@ -1,6 +1,6 @@
 {
 	"m_title":"24 Stunden Gerätehistorie",
-	"m_descr":"Dieses Modul zeichnet die Daten aller Geräte für die letzten 24 Stunden auf.",
+	"m_descr":"Diese App fügt jedem Sensor und Aktor ein kleines Icon bei. Klickt man auf dieses Icon, öffnet sich ein Splash-Fenster mit einer Graphik, die den Status der vergangenen 24 Stunden aufzeigt. Bitte beachten Sie, dass diese Anzeige nur der Schnellinformation dient. Es werden lediglich Durchschnittswerte angezeigt. Ein kurzes Einschalten des Lichtes könnte möglicherweise in dieser Chronik nicht wider gespiegelt werden. Trotz alledem bietet es eine schöne und schnelle Möglichkeit, sich über den Sensorstatus der letzten 24 Stunden zu informieren. Wenn Sie sich die Daten Ihres Smart Home präzisier aufzeigen lassen wollen, sollten Sie die App „Sensor logging“ zusammen mit einem Service oder einer Software durch dritte Dienstleister anwenden.<br><br>Einstellungen: Sie können eine Geräteliste bestimmen, die nicht erfasst ist. Bitte beachten Sie, dass ein Gerät, welches bereits vom Sendeabruf der Sensor Polling App ausgeschlossen ist, ohnehin nicht aufgezeichnet werden kann.",
 	"l_devices":"Speichere keine History für folgende Geräte:",
 	"h_devices":"Bei gleichzeitiger Verwendung der App 'Periodische Sensorabfrage' ist folgendes zu beachten: Ein dort von der Abfrage ausgeschlossenes Gerät kann keine Historie erzeugen."
 }

@@ -77,7 +77,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                 self.controller.devices.create({
                     deviceId: name,
                     defaults: {
-                        deviceType: "switchControl",
+                        deviceType: "buttonControl",
                         metrics: {
                             icon: '',
                             title: "Button", // this is always not the initial creation, so the default title is already filled 
@@ -105,7 +105,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                     dataSB = insts[n].SwitchBinary.data,
                     dataSML = insts[n].SwitchMultilevel.data,
                     dataSc = insts[n].SceneActivation.data,
-                    dataCSc = insts[n].CentralScene.data;
+                    dataCSc = insts[n].commandClasses[self.CC["CentralScene"]] && insts[n].commandClasses[self.CC["CentralScene"]].data || null; // TODO: replace with a shortcut once fixed bug in Z-Way
                
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
@@ -256,7 +256,7 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         this.controller.devices.create({
             deviceId: name,
             defaults: {
-                deviceType: "switchControl",
+                deviceType: "buttonControl",
                 metrics: {
                     icon: '',
                     title: "Button " + global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value + " " + ids.slice(1).join("-"),

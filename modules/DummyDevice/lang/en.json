@@ -1,5 +1,5 @@
 {
 	"m_title":"Dummy Device",
-	"m_descr":"Create a Dummy device.",
+	"m_descr":"As the name suggests this app creates a virtual device that just exists on the UI but does not link to any physical hardware. This may be useful for setting up certain scenes or to debug certain situations.<br><brSettings:<br><ul><li> You can define if your dummy device shall appear as binary switch or as multilevel l switch (dimmer, motor control).</li></ul>",
 	"l_options":"Select device type"
 }

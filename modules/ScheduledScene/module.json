@@ -1,6 +1,6 @@
 {
     "singleton": false,
-    "category": "scheduling",
+    "category": "automation_basic",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",

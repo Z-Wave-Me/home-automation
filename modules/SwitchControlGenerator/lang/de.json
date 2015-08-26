@@ -1,6 +1,6 @@
 {
 	"m_title":"Erzeuge Schaltersteuerung",
-	"m_descr":"Generiert zeitgleich neue Widgets für Fernbedienungen, Schalter und andere Geräte, die Kontrollkommandos zum Controller senden.",
+	"m_descr":"Fernbedienungen und andere mobile Steuerungen sowie auch batteriebetriebene Wandsteuerungen erstellen kein Element in der UI sondern nur Ereignisse. Diese App vereinfacht die Verwendung dieser Ereignisse. Ein Element erstellt veranschaulichend den Status der Fernbedienung. Gleichzeitig kann dieses Element als auslösendes Ereignis für Szenen etc. verwendet werden.",
 	"l_trapNew": "Erzeuge ein Kontrollgerät für neue Fernbedienungen und Schalter",
 	"l_banned": "Nicht instanziierte Fernbedienungen und Schalter",
 	"l_generated": "Instanziierte Fernbedienungen und Schalter (wird automatisch geladen)",

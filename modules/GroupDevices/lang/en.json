@@ -1,6 +1,6 @@
 {
 	"m_title":"Group devices",
-	"m_descr":"Groups multiple devices in one element. Also light scenes could be added.",
+	"m_descr":"Groups devices into one element. The element can either be on/off or even dimmable. Scenes can also be activated. This app is essentially a different way to define a scene.<br><br>Settings: <br><ul><li>Select if the group device shall be a simple on/off switch or dimmable. </li><li>Select a list of devices as part of the group. It’s possible to invert the action per device. This means that turning the group device on mean to turn of the device with inverted action.</li><li>Select further light scenes you like to activate on ON or OFF. Here you see the large advantage of the group device again a scene. A scene can only be activated. Having two scenes this app allows to toggle the two scenes.<li></ul>",
 	"rl_options":"Dimmable",
 	"l_devices":"Group devices",
 	"rl_invert":"Invert action",
