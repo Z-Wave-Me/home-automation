@@ -472,8 +472,8 @@ AutomationController.prototype.listInstances = function (){
 
             expInstances.push(_.extend(instance, {
                 state : moduleJSON.state || null,
-                module : moduleJSON.defaults.title || null,
-                title : !instance.title || instance.title === ''? moduleJSON.defaults.title : instance.title
+                module : moduleJSON.defaults && moduleJSON.defaults.title || null,
+                title : (!instance.title || instance.title === '') ? ((moduleJSON.defaults && moduleJSON.defaults.title) ? moduleJSON.defaults.title : "?") : instance.title
             }));
         });
     } else {
@@ -1105,6 +1105,10 @@ AutomationController.prototype.getModuleData = function (moduleName) {
         defaultLang = self.defaultLang,
         languageFile,
         data;
+    
+    if (!self.modules[moduleName]) {
+        return {}; // module not found (deleted from filesystem or broken?), return empty meta
+    }
     
     try {
         metaStringify = JSON.stringify(self.modules[moduleName].meta);
