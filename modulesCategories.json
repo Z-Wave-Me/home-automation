@@ -1,5 +1,134 @@
-[
-         {
+{
+    "de": [
+        {
+            "id": "basic_gateway_modules",
+            "name": "Basis Gateway Module",
+            "description": "Basis Gateway Module",
+            "icon": ""
+        },
+        {
+            "id": "legacy_products_workaround",
+            "name": "Ältere Produkte / Workaround",
+            "description": "Ältere Produkte / Workaround",
+            "icon": ""
+        },
+        {
+            "id": "support_external_ui",
+            "name": "Unterstützung externer UI´s",
+            "description": "Unterstützung externer UI´s",
+            "icon": ""
+        },
+        {
+            "id": "support_external_dev",
+            "name": "Unterstützung von externen Geräten/Diensten",
+            "description": "Unterstützung von externen Geräten/Diensten",
+            "icon": ""
+        },
+        {
+            "id": "automation_basic",
+            "name": "Automation Grundlagen",
+            "description": "Automation Grundlagen",
+            "icon": ""
+        },
+        {
+            "id": "device_enhancements",
+            "name": "Geräte-Erweiterungen",
+            "description": "Geräte-Erweiterungen",
+            "icon": ""
+        },
+        {
+            "id": "developers_stuff",
+            "name": "Entwickler Module",
+            "description": "Entwickler Module",
+            "icon": ""
+        },
+        {
+            "id": "complex_applications",
+            "name": "Komplexe Anwendungen",
+            "description": "Komplexe Anwendungen",
+            "icon": ""
+        },
+        {
+            "id": "automation",
+            "name": "Automation",
+            "description": "Automation ",
+            "icon": ""
+        },
+        {
+            "id": "security",
+            "name": "Sicherheit",
+            "description": "Verbessert Sicherheit",
+            "icon": ""
+        },
+        {
+            "id": "peripherals",
+            "name": "Peripheriegeräte",
+            "description": "Z-Wave und andere Peripheriegeräte",
+            "icon": ""
+        },
+        {
+            "id": "surveillance",
+            "name": "Video Überwachung",
+            "description": "Unterstützung für Kameras",
+            "icon": ""
+        },
+        {
+            "id": "logging",
+            "name": "Datenspeicherung",
+            "description": "Datenspeichern für Drittanbieter-anwendungen",
+            "icon": ""
+        },
+        {
+            "id": "scripting",
+            "name": "Skripte",
+            "description": "Skripte",
+            "icon": ""
+        },
+        {
+            "id": "devices",
+            "name": "Geräte",
+            "description": "Geräte",
+            "icon": ""
+        },
+        {
+            "id": "scheduling",
+            "name": "Ablaufsteuerung",
+            "description": "Zeitgesteuerte Abläufe",
+            "icon": ""
+        },
+        {
+            "id": "climate",
+            "name": "Klima",
+            "description": "Klima",
+            "icon": ""
+        },
+        {
+            "id": "environment",
+            "name": "Umgebung",
+            "description": "Umgebungsbezogene Daten",
+            "icon": ""
+        },
+        {
+            "id": "scenes",
+            "name": "Szenen",
+            "description": "Lichtszenen",
+            "icon": ""
+        },
+        {
+            "id": "notifications",
+            "name": "Benachrichtigungen",
+            "description": "SMS, E-mail und Push benachrichtigung",
+            "icon": ""
+        },
+        {
+            "id": "tagging",
+            "name": "Markierung",
+            "description": "Markieren/Taggen von Elementen",
+            "icon": ""
+        }
+    ],
+    "en": [
+        {
             "id": "basic_gateway_modules",
             "name": "Basic Gateway Modules",
             "description": "Basic Gateway Modules",
@@ -47,7 +176,7 @@
             "description": "Complex Applications",
             "icon": ""
         },
-	{
+        {
             "id": "automation",
             "name": "Automation",
             "description": "Create home automation rules",
@@ -125,4 +254,5 @@
             "description": "Tagging widgets",
             "icon": ""
         }
-]    
+    ]
+}  
