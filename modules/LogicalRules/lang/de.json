@@ -1,8 +1,8 @@
 {
 	"m_title":"Logische Regel",
 	"m_descr":"Diese App ist die bei Weitestem komplexeste aber auch leistungsfähigste App, die in Ihrem Gateway vorinstalliert ist.Sie erlaubt die logische Kombination mehrerer Zustände und Ereignisse zur Verwendung der Booleschen Befehle UND, ODER und NICHT. Zur Verwendung dieses Widgets benötigen Sie das Grundwissen über Boolesche Logik und/ oder Softwareentwicklung.Bitte beachten Sie, dass die Booleschen Logik letztendlich auf die Auslösung einer Aktion hinaus läuft. Das heißt, Sie benötigen zumindest ein (dynamisches) Ursprungsereignis, welches wesentlich mehr (statische) Statusinformation auslöst, von denen Sie die Aktion abhängig machen können. Es ist nicht angebracht, zwei Ereignisse zu kombinieren, da die finale Aktion nur eintritt, wenn beide Ereignisse zur gleichen Zeit auftreten. Das ist eher unwahrscheinlich. Der Unterschied zwischen einem dynamischen Ereignis und einem statischen Zustand kann mit der Verwendung eines einfachen Bewegungssensors erklärt werden. Das dynamische Ereignis ist der Moment, wenn der Bewegungssensor auslöst. Der statische Zustand ist die Information, dass der Bewegungssensor sich aktuell im auslösenden Status befindet (eine Bewegung erkannt hat und einige Sekunden wartet, bevor er wieder in den inaktiven Modus zurückkehrt).<br><br>Einstellungen: Wählen Sie Statusinformation und Ereignis, welche Sie sinnvoll mit einander kombinieren wollen und wählen Sie den Booleschen Befehl, diese zu verbinden.",
-	"rl_options":"Starte eine Szene/Aktion bei der Zustandsänderung aller in der Bedingung genannten Geräte.",
-	"l_eventSource":"Zu aktivierende szenen/Aktionen:",
+	"rl_options":"Trigger Regelprüfung bei Änderung jedes Gerät im Zustand erwähnt.",
+	"l_eventSource":"Trigger Rule Check bei der Aktivierung von Szenen:",
 	"l_logicalOperator":"Boolescher Operator (true/false)",
 	"l_tests":"Bedingungen",
 	"l_testBinary":"Binäre Bedingung",
