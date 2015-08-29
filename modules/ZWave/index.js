@@ -1798,7 +1798,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					};
 
 					var m_vDev = self.controller.devices.create({
-						deviceId: deviceNamePrefix + this.CC["ThermostatMode"], // this name is referenced again in SetPoint device!
+						deviceId: deviceNamePrefix + this.CC["ThermostatMode"],
 						defaults: defaults,
 						overlay: {},
 						handler: function (command) {
@@ -1856,9 +1856,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 					if (t_vDev[mode]) {
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
-							try {
-								t_vDev[mode].set("metrics:level", this.value);
-							} catch (e) {}
+                                                        if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+                                                                self.controller.devices.remove(deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode);
+                                                        } else {
+        							try {
+	        							t_vDev[mode].set("metrics:level", this.value);
+		        					} catch (e) {}
+                                                        }
 						});
 					}
 				});
