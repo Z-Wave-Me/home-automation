@@ -112,16 +112,6 @@ SecurityMode.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 SecurityMode.prototype.attachDetach = function (test, attachOrDetach) {
-    var vDev = this.controller.devices.get(test.device);
-    
-    if (!vDev) {
-        var moduleName = "SecurityMode",
-            langFile = this.controller.loadModuleLang(moduleName);
-
-        this.controller.addNotification("error", langFile.err_get_vDev + test.device, "module", moduleName);
-        return;
-    }
-    
     if (attachOrDetach) {
         this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
         this.controller.devices.on(test.device, "change:metrics:change", this._testRule);

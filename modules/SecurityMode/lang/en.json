@@ -24,6 +24,5 @@
 	"l_locks":"List of locks:",
 	"open":"Open",
 	"close":"Close",
-	"l_scenes":"List of scenes to activate:",
-	"err_get_vDev":"Can not get vDev: "
+	"l_scenes":"List of scenes to activate:"
 }

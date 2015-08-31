@@ -24,6 +24,5 @@
 	"l_locks":"Schlösser:",
 	"open":"Entriegeln",
 	"close":"Verriegeln",
-	"l_scenes":"Zu aktivierende Szenarios/Aktionen:",
-	"err_get_vDev":"Kein Zugriff auf das virtuelle Gerät: "
+	"l_scenes":"Zu aktivierende Szenarios/Aktionen:"
 }
