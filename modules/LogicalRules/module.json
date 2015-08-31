@@ -67,7 +67,8 @@
 								"testValue": {
 									"type": "string",
 									"enum": ["off", "on"],
-									"required": true
+									"required": true,
+									"default" : "on"
 								}
 							}
 						},
@@ -105,7 +106,8 @@
 								"testValue": {
 									"type": "string",
 									"enum": ["off", "on", "upstart", "upstop", "downstart", "downstop"],
-									"required": true
+									"required": true,
+									"default" : "on"
 								}
 							}
 						},
@@ -240,7 +242,8 @@
 								"status": {
 									"type": "string",
 									"required": true,
-									"enum": ["off", "on"]
+									"enum": ["off", "on"],
+									"default" : "on"
 								}
 							}
 						}
@@ -278,7 +281,8 @@
 								"status": {
 									"type": "string",
 									"required": true,
-									"enum": ["close", "open"]
+									"enum": ["close", "open"],
+									"default" : "open"
 								}
 							}
 						}
