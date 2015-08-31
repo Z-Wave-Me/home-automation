@@ -128,11 +128,12 @@ HomeKitGate.prototype.init = function (config) {
 	}
 	
 	this.onDeviceAdded = function (vDev) {
-		console.log("HK: added", vDev.id);
-		onDeviceAddedCore(vDev);
-		
-		// update device tree
-		self.hk.update();
+		if (!vDev.get("permanently_hidden")) {
+			console.log("HK: added", vDev.id);
+			onDeviceAddedCore(vDev);
+			// update device tree
+			self.hk.update();
+		}
 	};
 	
 	this.onDeviceRemoved = function (vDev) {
