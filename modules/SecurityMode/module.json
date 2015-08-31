@@ -1,4 +1,5 @@
 {
+	"dependencies": [],
 	"singleton": false,
 	"category": "complex_applications",
 	"author": "Z-Wave.Me",
@@ -50,7 +51,7 @@
 								},
 								"testValue": {
 									"type": "string",
-									"enum": ["on", "off"],
+									"enum": ["off", "on"],
 									"required": true,
 									"default" : "on"
 								}
@@ -63,7 +64,7 @@
 								"device": {
 									"field": "enum",
 									"datasource": "namespaces",
-									"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId",
+									"enum": "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_battery:deviceId",
 									"required": true
 								},
 								"testOperator": {
@@ -89,8 +90,9 @@
 								},
 								"testValue": {
 									"type": "string",
-									"enum": ["on", "off", "upstart", "upstop", "downstart", "downstop"],
-									"required": true
+									"enum": ["off", "on", "upstart", "upstop", "downstart", "downstop"],
+									"required": true,
+									"default" : "on"
 								}
 							}
 						}
@@ -136,10 +138,10 @@
 									"required": true
 								},
 								"status": {
-									"type": "number",
+									"type": "string",
 									"required": true,
-									"enum": ["on", "off"],
-									"default": true
+									"enum": ["off", "on"],
+									"default" : "on"
 								}
 							}
 						}
@@ -175,9 +177,10 @@
 									"required": true
 								},
 								"status": {
-									"type": "number",
+									"type": "string",
 									"required": true,
-									"enum": ["open", "close"]
+									"enum": ["close", "open"],
+									"default" : "open"
 								}
 							}
 						}
@@ -298,7 +301,7 @@
 									},
 									"status": {
 										"label": "",
-										"optionLabels": ["__on__", "__off__"]
+										"optionLabels": ["__off__", "__on__"]
 									}
 								}
 							}
@@ -338,7 +341,7 @@
 									},
 									"status": {
 										"label": "",
-										"optionLabels": ["__open__", "__close__"]
+										"optionLabels": ["__close__", "__open__"]
 									}
 								}
 							}

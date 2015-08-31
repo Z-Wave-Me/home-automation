@@ -82,7 +82,7 @@ SecurityMode.prototype.stop = function () {
     var self = this;
 
     if (this.timer) {
-        clearInterval(this.timer);
+        clearTimeout(this.timer);
     }
 
     if (this.vDev) {
