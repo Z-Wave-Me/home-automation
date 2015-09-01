@@ -76,7 +76,7 @@
         "title": "Remote Access",
         "description": "Is necessary to configure remote access in SmartHome UI.\n(Added by default)",
         "params": {
-            "path": "./bin/zbw",
+            "path": "./zbw",
             "userId": "",
             "actStatus": true,
             "sshStatus": false,
