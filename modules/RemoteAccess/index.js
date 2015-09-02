@@ -45,7 +45,7 @@ RemoteAccess.prototype.init = function (config) {
             self.config.sshStatus = zbw.getSshStatus();
             self.config.zbwStatus = zbw.getStatus();
         } catch(e) {
-            self.controller.addNotification("error", langFile.setup_config_zbw_error + e.message, "module", "RemoteAccess");
+            self.controller.addNotification("warning", langFile.setup_config_zbw_error + e.message, "module", "RemoteAccess");
         }
     };
 

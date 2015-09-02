@@ -4,7 +4,7 @@
 	"l_ra_path":"Absoluter Pfad auf dem Server zu ZBWConnect:",
 	"h_ra_path":"z.B. /etc/zbw oder ./zbw - wird auf dem Raspberry nicht benötigt",
 	"load_zbw_error":"ZBWConnect Modul konnte nicht initialisiert werden. Fehler: ",
-	"setup_config_zbw_error":"Die Konfiguration von ZBWConnect konnte nicht gelesen werden. Fehler: ",
+	"setup_config_zbw_error":"Der Remote-Zugriff konnte nicht initialisiert werden. Bitte checken Sie Ihre Internetverbindung und starten Sie den Service unter 'Apps > Active > Remote Access' erneut.",
 	"config_changed_successful":"Konfiguration des Remote-Zugriffs erfolgreich geändert.",
 	"config_changed_error":"Konfigurationsproblem: "
 }
