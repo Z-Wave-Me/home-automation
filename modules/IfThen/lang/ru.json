@@ -14,5 +14,10 @@
 	"switchMultilevel":"Multilevel Switch",
 	"doorlock":"Doorlock",
 	"l_target_device":"Device",
-	"l_action":"Action"
+	"l_action":"Action",
+	"buttonControl": "Switch Control (On only)",
+	"switchControl": "Switch Control (On/Off)",
+	"sensorBinary": "Binary Sensor",
+	"l_choose":"--- Choose a device type ---",
+	"h_statusOn":"The only command that will be send is 'On'."
 }

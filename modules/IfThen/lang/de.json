@@ -14,5 +14,10 @@
 	"doorlock":"Türschloss",
 	"l_filter":"Filtern nach Typ",
 	"l_target_device":"Gerät",
-	"l_action":"Aktion"
+	"l_action":"Aktion",
+	"buttonControl": "Schaltsteuerung (nur An)",
+	"switchControl": "Schaltsteuerung (An/Aus)",
+	"sensorBinary": "Binärsensor",
+	"l_choose":"--- Gerätetyp wählen ---",
+	"h_statusOn":"Es wird nur 'An' als Befehl gesendet."
 }
