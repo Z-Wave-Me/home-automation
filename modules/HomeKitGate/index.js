@@ -115,10 +115,15 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
-			var serviceUUID = "1004";
-		
-			var service = accessory.addService(serviceUUID, "Multilevel Switch");
-			
+			var serviceUUID = HomeKit.Services.Lightbulb;
+
+                        var service = accessory.addService(serviceUUID, title + " Dimmer");
+
+                        m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+                                get: function() { return (parseFloat(vDev.get("metrics:level")) || 0.0)>0; },
+                                set: function(value) { vDev.performCommand(value ? "on" : "off"); }
+                        });
+
 			m.level = service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
 				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; },
 				set: function(value) { vDev.performCommand("exact", { level: value }); }
