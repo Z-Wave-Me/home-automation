@@ -3,5 +3,6 @@
 	"m_descr":"(Führt mehrere Sensoren in einem Element zusammen.)<br>Diese App bündelt bis zu 10 Sensorwerte in einem UI Element. Der erste ausgewählte Sensor wird als Elementwert angezeigt. Jeder weitere ausgewählte Sensorwert erscheint in einem Splash-Screen, der bei Klick auf das Element sichtbar wird. Außerdem kann das ursprünglich für die erwählten Sensoren erstellte Element ausgeblendet werden. Diese App hilft zur Optimierung der Benutzeroberfläche durch Entfernung einiger zur Verwendung empfohlener Sensorelemente ohne den Zugang zu deren zur Nutzung zu blockieren. Das gilt zum Beispiel für die Zusammenfassung von Sensoren zu einer logischen Gruppe (Bsp.: ein intelligenter Stromzähler, der sowohl den Stromverbrauch aller Geräte sowie einige individuelle Werte, z. B. für die 3 Phasen im Haus liefert)<br><br>Einstellungen: Bestimmen Sie die Sensoren, welche Sie zusammenführen möchten und entscheiden Sie, ob diese als Einzelelement ausgeblendet werden sollen. ",
 	"l_devices":"Erzeuge ein neues virtuelles Gerät aus den folgenden Sensoren:",
 	"h_devices":"Es lassen sich maximal bis zu 10 Sensoren kombinieren.",
-	"rl_hidden":"Gerät in 'Elementeübersicht' ausblenden"
+	"rl_hidden":"Gerät in 'Elementeübersicht' ausblenden",
+	"l_choose_dev":"--- Gerät wählen ---"
 }

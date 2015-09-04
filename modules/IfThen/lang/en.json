@@ -19,5 +19,6 @@
 	"switchControl": "Switch Control (On/Off)",
 	"sensorBinary": "Binary Sensor",
 	"l_choose":"--- Choose a device type ---",
+	"l_choose_dev":"--- Choose a device ---",
 	"h_statusOn":"The only command that will be send is 'On'."
 }

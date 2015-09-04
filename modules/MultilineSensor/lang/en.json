@@ -3,5 +3,6 @@
 	"m_descr":"(Combine multiple sensors into one element) <br>This app allows grouping up to 10 sensor values into one element of the UI. The first selected sensor will be shown as the value of the element. Every additional selected sensor value will appear in a splash screen visible when clicking on the element.  Additionally the element originally created for the selected sensors may be hidden.This app helps improve the User Interface by removing some sensor elements without blocking access to its recommended to use this e.g. for sensors that form a logical group (like a smart power meter that provides both power draw for all devices plus some individual values e.g. for the three phases in the house)<br><br>Settings: Select the sensors you like to combine and decide if they shall be hidden as individual element.",
 	"l_devices":"Create a new virtual device with the sensors choosen below:",
 	"h_devices":"You can only combine up to 10 sensors with each other.",
-	"rl_hidden":"Do not show device in elements view"
+	"rl_hidden":"Do not show device in elements view",
+	"l_choose_dev":"--- Choose a device ---"
 }

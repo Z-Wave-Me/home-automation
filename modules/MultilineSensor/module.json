@@ -6,8 +6,8 @@
 	"homepage" : "http://razberry.z-wave.me",
 	"icon" : "icon.png",
 	"moduleName":"MultilineSensor",
-	"version" : "1.0.0",
-	"maturity" : "alpha",
+	"version" : "1.0.1",
+	"maturity" : "stable",
 	"repository" : {
 		"type" : "git",
 		"source" : "https://github.com/Z-Wave-Me/home-automation"
@@ -59,6 +59,8 @@
 					"fields": {
 						"selectedDevice" : {
 							"type": "select",
+							"removeDefaultNone": false,
+							"noneLabel": "__l_choose_dev__",
 							"datasource": "namespaces",
 							"field": "optionLabels",
 							"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"						

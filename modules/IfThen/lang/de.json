@@ -19,5 +19,6 @@
 	"switchControl": "Schaltsteuerung (An/Aus)",
 	"sensorBinary": "Binärsensor",
 	"l_choose":"--- Gerätetyp wählen ---",
+	"l_choose_dev":"--- Gerät wählen ---",
 	"h_statusOn":"Es wird nur 'An' als Befehl gesendet."
 }
