@@ -56,15 +56,16 @@ IfThen.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    self.controller.devices.on(ifElement.device, 'change:metrics:level', self.handlerLevel);
-
+    if(ifElement.device){
+        self.controller.devices.on(ifElement.device, 'change:metrics:level', self.handlerLevel);
+    }
 };
 
 IfThen.prototype.stop = function () {
     var self = this;
     
     // remove event listener
-    self.controller.devices.off(self.config.sourceDevice.device, 'change:metrics:level', self.handlerLevel);
+    self.controller.devices.off(self.config.sourceDevice[self.config.sourceDevice.filterIf],'change:metrics:level', self.handlerLevel);
 
     IfThen.super_.prototype.stop.call(this);
 };
