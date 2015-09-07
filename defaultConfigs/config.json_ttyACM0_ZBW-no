@@ -102,12 +102,12 @@
             "widgetsInt": [{
                 "lang": "en",
                 "headline": "Dear Expert User",
-                "text": "<center>If you still want to use ExpertUI please use this link <br><strong> >> <a href=\\\"/expert\\\" target=\\\"_blank\\\">Go to Expert UI!</a> << </strong> <br>or call after you are successfully logged in <br><strong> 'http://MYRASP:8083/expert'</strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
+                "text": "<center>If you still want to use ExpertUI please go, after you are successfully logged in, to menu <br><strong> Open ExpertUI </strong> <br> or call <br><strong> 'http://MYRASP:8083/expert'</strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
                 "imgURI": "app/img/logo-z-wave-z-only.png"
             }, {
                 "lang": "de",
                 "headline": "Lieber Expert User",
-                "text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte auf den Link <br><strong> >> <a href=\\\"/expert\\\" target=\\\"_blank\\\">Weiter zur Expert UI!</a> << </strong> <br>oder rufen Sie, nachdem Sie sich erfolgreich angemeldet haben <br><strong> 'http://MYRASP:8083/expert'</strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
+                "text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte, nachdem Sie sich erfolgreich angemeldet haben, im Menü auf den Link <br><strong> Öffne ExpertUI </strong> <br> oder rufen Sie <br><strong> http://MYRASP:8083/expert</strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
                 "imgURI": "app/img/logo-z-wave-z-only.png"
             }]
         }
