@@ -76,7 +76,100 @@ HomeKitGate.prototype.init = function (config) {
 
 	this.mapping = {}
 
-	var self = this;	
+	var self = this;
+
+	var RGB2HSB = function(r, g, b) {
+		if (r instanceof Object) {
+			g = r.g;
+			b = r.b;
+			r = r.r;
+		}
+
+		var hue, saturation, brightness;
+		var cmax = (r > g) ? r : g;
+ 		if (b > cmax) 
+ 			cmax = b;
+  		var cmin = (r < g) ? r : g;
+ 		if (b < cmin) 
+ 			cmin = b;
+
+		brightness = cmax / 255.0;
+		if (cmax > 0) {
+			saturation = (cmax - cmin) / cmax;
+		} else {
+			saturation = 0;
+		}
+		
+		if (saturation == 0) {
+			hue = 0;
+		} else {
+			var redc = (cmax - r) / (cmax - cmin);
+			var greenc = (cmax - g) / (cmax - cmin);
+			var bluec = (cmax - b) / (cmax - cmin);
+			if (r == cmax)
+				hue = bluec - greenc;
+			else if (g == cmax)
+				hue = 2.0 + redc - bluec;
+			else
+				hue = 4.0 + greenc - redc;
+			hue = hue / 6.0;
+			if (hue < 0)
+				hue = hue + 1.0;
+		}
+		return { hue: hue, saturation: saturation, brightness: brightness };
+	};
+
+	var HSB2RGB = function(hue, saturation, brightness) {
+		if (hue instanceof Object) {
+			saturation = hue.saturation;
+			brightness = hue.brightness;
+			hue = hue.hue;
+		}
+
+		var r = 0, g = 0, b = 0;
+		if (saturation == 0) {
+			r = g = b = Math.floor(brightness * 255.0 + 0.5);
+		} else {
+			var h = (hue - Math.floor(hue)) * 6.0;
+			var f = h - Math.floor(h);
+			var p = brightness * (1.0 - saturation);
+			var q = brightness * (1.0 - saturation * f);
+			var t = brightness * (1.0 - (saturation * (1.0 - f)));
+			switch (Math.floor(h)) {
+				case 0:
+					r = Math.floor(brightness * 255.0 + 0.5);
+					g = Math.floor(t * 255.0 + 0.5);
+					b = Math.floor(p * 255.0 + 0.5);
+					break;
+				case 1:
+					r = Math.floor(q * 255.0 + 0.5);
+					g = Math.floor(brightness * 255.0 + 0.5);
+					b = Math.floor(p * 255.0 + 0.5);
+					break;
+				case 2:
+					r = Math.floor(p * 255.0 + 0.5);
+					g = Math.floor(brightness * 255.0 + 0.5);
+					b = Math.floor(t * 255.0 + 0.5);
+					break;
+               	case 3:
+                   	r = Math.floor(p * 255.0 + 0.5);
+                   	g = Math.floor(q * 255.0 + 0.5);
+                   	b = Math.floor(brightness * 255.0 + 0.5);
+                   	break;
+               	case 4:
+                   	r = Math.floor(t * 255.0 + 0.5);
+                   	g = Math.floor(p * 255.0 + 0.5);
+                   	b = Math.floor(brightness * 255.0 + 0.5);
+                   	break;
+               	case 5:
+                  	r = Math.floor(brightness * 255.0 + 0.5);
+                  	g = Math.floor(p * 255.0 + 0.5);
+                   	b = Math.floor(q * 255.0 + 0.5);
+                  	break;
+            }
+        }
+        return { r: r, g: g, b: b};
+	};
 	
 	var onDeviceAddedCore = function (vDev) {
 		var title = vDev.get("metrics:title") || vDev.id;
@@ -239,9 +332,7 @@ HomeKitGate.prototype.init = function (config) {
 			}
 		}
 		else if (deviceType == "switchBinary") {
-			var serviceUUID = HomeKit.Services.Lightbulb;
-		
-			var service = accessory.addService(serviceUUID, "Binary Switch");
+			var service = accessory.addService(HomeKit.Services.Lightbulb, "Binary Switch");
 			
 			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
 				get: function() { return vDev.get("metrics:level") === "on"; },
@@ -249,9 +340,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
-			var serviceUUID = HomeKit.Services.Lightbulb;
-		
-			var service = accessory.addService(serviceUUID, "Multilevel Switch");
+			var service = accessory.addService(HomeKit.Services.Lightbulb, "Multilevel Switch");
 			
 			m.level = [];
 
@@ -263,6 +352,61 @@ HomeKitGate.prototype.init = function (config) {
 			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
 				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; },
 				set: function(value) { vDev.performCommand("exact", { level: value }); }
+			}));
+		}
+		else if (deviceType == "switchRGBW") {
+			var service = accessory.addService(HomeKit.Services.Lightbulb, "RGBW Switch");
+
+			m.level = [];
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+				get: function() { return vDev.get("metrics:level") === "on"; },
+				set: function(value) { vDev.performCommand(value ? "on" : "off"); }
+			}));
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Hue, "float", {
+				get: function() { 
+					var color = vDev.get("metrics:color");
+					var hsb = RGB2HSB(color);
+					return hsb.hue; 
+				},
+				set: function(value) { 
+					var color = vDev.get("metrics:color");
+					var hsb = RGB2HSB(color);
+					hsb.hue = value;
+					color = HSB2RGB(hsb);
+					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
+				}
+			}));
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Saturation, "int", {
+				get: function() { 
+					var color = vDev.get("metrics:color");
+					var hsb = RGB2HSB(color);
+					return Math.floor(hsb.saturation * 100.0 + 0.5); 
+				},
+				set: function(value) { 
+					var color = vDev.get("metrics:color");
+					var hsb = RGB2HSB(color);
+					hsb.saturation = value / 100.0;
+					color = HSB2RGB(hsb);
+					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
+				}
+			}));
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
+				get: function() { 
+					var color = vDev.get("metrics:color");
+					var hsb = RGB2HSB(color);
+					return Math.floor(hsb.brightness * 100.0 + 0.5); 
+				},
+				set: function(value) { 
+					var color = vDev.get("metrics:color");
+					var hsb = RGB2HSB(color);
+					hsb.brightness = value / 100.0;
+					color = HSB2RGB(hsb);
+					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
+				}
 			}));
 		}
 		// todo
@@ -322,6 +466,7 @@ HomeKitGate.prototype.init = function (config) {
 	this.controller.devices.on("created", this.onDeviceAdded);
 	this.controller.devices.on("removed", this.onDeviceRemoved);
 	this.controller.devices.on("change:metrics:level", this.onLevelChanged);
+	this.controller.devices.on("change:metrics:color", this.onLevelChanged);
 	
 	// update device tree
     this.hk.update();
