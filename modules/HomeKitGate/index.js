@@ -87,22 +87,156 @@ HomeKitGate.prototype.init = function (config) {
 		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, deviceType, vDev.id);
 
 		if (deviceType === "sensorMultilevel" && vDev.id.substring(0, 12) === "OpenWeather_") {
-			var serviceUUID = "1001";
-
-			var service = accessory.addService(serviceUUID, "Temperature");
+			// temperature sensor (OpenWeather)
+			var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
 
 			m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
-				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
+				get: function() { 
+					var value = parseFloat(vDev.get("metrics:level")) || 0.0;
+
+					var scaleTitle = vDev.get("metrics:scaleTitle");
+					if (scaleTitle != "°C") {
+						// temperature should always be in Celsius
+						value = (value - 32) * 5 / 9;
+					}
+
+					return value; 
+				}
+			});
+			m.units = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+				get: function() { 
+					return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
+				}
 			});
 		}
 		else if (deviceType == "sensorMultilevel") {
-			var serviceUUID = "1002";
-		
-			var service = accessory.addService(serviceUUID, "Multilevel Sensor");
-			
-			m.level = service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
-				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
-			});
+			var idParts = vDev.id.split('-');
+			if (idParts.length > 1) {
+				var sensorTypeId = parseInt(idParts[idParts.length-1]);
+
+				if (sensorTypeId === 1) {
+
+					// temperature
+					var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
+
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+						get: function() { 
+							var value = parseFloat(vDev.get("metrics:level")) || 0.0;
+
+							var scaleTitle = vDev.get("metrics:scaleTitle");
+							if (scaleTitle != "°C") {
+								// temperature should always be in Celsius
+								value = (value - 32) * 5 / 9;
+							}
+
+							return value;
+						}
+					});
+					m.units = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+						get: function() { 
+							return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
+						}
+					});
+
+				} else if (sensorTypeId === 3) {
+
+					// luminosity
+					var service = accessory.addService(HomeKit.Services.LightSensor, "Luminosity");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentLightLevel, "float", {
+						get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
+					});
+
+				} else if (sensorTypeId === 5) {
+					
+					// humidity
+					var service = accessory.addService(HomeKit.Services.HumiditySensor, "Humidity");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentRelativeHumidity, "float", {
+						get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
+					});
+
+				} else if (sensorTypeId === 17) {
+
+					// CO2
+					var service = accessory.addService(HomeKit.Services.CarbonDioxideSensor, "CO2");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CarbonDioxideLevel, "float", {
+						get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
+					});
+
+				} else {
+
+					// todo: other sensor types
+
+				}
+			}
+		}
+		else if (deviceType == "sensorBinary") {
+			var idParts = vDev.id.split('-');
+			if (idParts.length > 1) {
+				var sensorTypeId = parseInt(idParts[idParts.length-1]);
+
+				if (sensorTypeId === 2) {
+
+					// smoke
+					var service = accessory.addService(HomeKit.Services.SmokeSensor, "Smoke Sensor");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.SmokeDetected, "bool", {
+						get: function() { return vDev.get("metrics:level") === "on"; }
+					});
+
+				} else if (sensorTypeId === 3) {
+					
+					// CO
+					var service = accessory.addService(HomeKit.Services.CarbonMonoxideSensor, "CO Sensor");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CarbonMonoxideDetected, "bool", {
+						get: function() { return vDev.get("metrics:level") === "on"; }
+					});
+
+				} else if (sensorTypeId === 4) {
+
+					// CO2
+					var service = accessory.addService(HomeKit.Services.CarbonDioxideSensor, "CO2 Sensor");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CarbonDioxideDetected, "bool", {
+						get: function() { return vDev.get("metrics:level") === "on"; }
+					});
+
+				} else if (sensorTypeId === 6) {
+					
+					// flood
+					var service = accessory.addService(HomeKit.Services.LeakSensor, "Flood Sensor");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.LeakDetected, "bool", {
+						get: function() { return vDev.get("metrics:level") === "on"; }
+					});
+
+				} else if (sensorTypeId === 10) {
+
+					// door
+					var service = accessory.addService(HomeKit.Services.Door, "Door Sensor");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.ObstructionDetected, "bool", {
+						get: function() { return vDev.get("metrics:level") === "on"; }
+					});
+
+				} else if (sensorTypeId === 12) {
+					
+					// motion
+					var service = accessory.addService(HomeKit.Services.MotionSensor, "Motion Sensor");
+					
+					m.level = service.addCharacteristic(HomeKit.Characteristics.MotionDetected, "bool", {
+						get: function() { return vDev.get("metrics:level") === "on"; }
+					});
+
+				} else {
+
+					// todo: other sensor types
+
+				}
+			}
 		}
 		else if (deviceType == "switchBinary") {
 			var serviceUUID = HomeKit.Services.Lightbulb;
@@ -115,14 +249,21 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
-			var serviceUUID = "1004";
+			var serviceUUID = HomeKit.Services.Lightbulb;
 		
 			var service = accessory.addService(serviceUUID, "Multilevel Switch");
 			
-			m.level = service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
+			m.level = [];
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+				get: function() { return parseFloat(vDev.get("metrics:level")) > 0; },
+				set: function(value) { vDev.performCommand(value ? "on" : "off"); }
+			}));
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
 				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; },
 				set: function(value) { vDev.performCommand("exact", { level: value }); }
-			});
+			}));
 		}
 		// todo
 	}
@@ -159,10 +300,19 @@ HomeKitGate.prototype.init = function (config) {
 		var accessory = m.$accessory;
 		if (!accessory) return;
 		
-		var characteristics = m.level;
-		if (!characteristics) return;
-		
-		self.hk.update(accessory.aid, characteristics.iid);
+		if (m.level instanceof Array) {
+			for (var i = 0; i < m.level.length; i++) {
+				var characteristics = m.level[i];
+				if (!characteristics) return;
+
+				self.hk.update(accessory.aid, characteristics.iid);
+			};
+		} else {
+			var characteristics = m.level;
+			if (!characteristics) return;
+
+			self.hk.update(accessory.aid, characteristics.iid);
+		}
 	}
 	
 	// add existing devices
@@ -175,7 +325,7 @@ HomeKitGate.prototype.init = function (config) {
 	
 	// update device tree
     this.hk.update();
-    
+
     console.log("HomeKit PIN:", this.hk.pin);
 };
 
