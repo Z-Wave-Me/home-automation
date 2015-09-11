@@ -41,12 +41,32 @@ AuthController.prototype.resolve = function(request, requestedRole) {
             }
         }
     }
+
     session = this.sessions[profileSID];
 
     if (!session) {
         // no session found or session expired
 
-        if (requestedRole === this.ROLE.USER) {
+        // try Basic auth
+        var authHeader = request.headers['Authorization'];
+        if (authHeader && authHeader.substring(0, 6) === "Basic ") {
+            authHeader = Base64.decode(authHeader.substring(6));
+            if (authHeader) {
+                var authInfo = authHeader.split(':');
+                if (authInfo.length === 2 && authInfo[0].length > 0) {
+                    var profile = _.find(this.controller.profiles, function (profile) {
+                        return profile.login === authInfo[0];
+                    });
+                
+                    if (profile && profile.password === authInfo[1]) {
+                        // auth successful, use selected profile
+                        session = profile;
+                    }
+                }
+            }
+        }
+
+        if (!session && requestedRole === this.ROLE.USER) {
             // try to find Local user account
             if (request.peer.address === "127.0.0.1") {
                 // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
