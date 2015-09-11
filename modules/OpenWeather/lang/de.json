@@ -1,0 +1,12 @@
+{
+	"m_title":"Lokales Wetter",
+	"m_descr": "Die App zur Wettervorhersage erstellt ein Element, welches die vom Internetservice openweather.org. aufbereiteten lokalen Wetterdaten anzeigt. Das Element zeigt die lokal vorherrschende Temperatur an, aber durch Klick auf das angelegte Element werden Luftfeuchtigkeit, Windgeschwindigkeit und Luftdruck gleichermaßen aufgezeigt.<br><br>Einstellungen:<br><ul><li>Wählen Sie Ihr Land und Ihre Stadt. Sie haben die auch Möglichkeit Städtenamen mit openweather.org abzugleichen.</li><li>Sie können sich die Temperatur sowohl in Celsius als auch in Fahrenheit anzeigen lassen.</li></ul>",
+	"l_units": "Einheiten",
+	"l_country": "Land",
+	"p_country": "Deutschland",
+	"l_city": "Stadt",
+	"p_city": "Berlin",
+	"temp":"Temperatur",
+	"err_parse":"Fehler beim Einlesen der Wetterinformationen.",
+	"err_fetch":"Fehler beim Aktualisieren der Wetterinformationen."
+}

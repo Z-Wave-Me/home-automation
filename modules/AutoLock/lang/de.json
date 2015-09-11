@@ -1,0 +1,7 @@
+{
+	"m_title":"Automatisches Schließen einer Tür",
+	"m_descr":"Elektronische Türschlösser treiben zumeist Riegelschaltkontakte an. Befindet sich dieser Riegelschaltkontakt in der Standardposition kann die Tür per Türgriff geöffnet und geschlossen werden. Diese App verriegelt automatisch die Tür (d. h. treibt den Riegelschaltkontakt an) wenn eine geöffnete Tür sich schließt. Das Schließen der Tür wird durch einen Türsensor erkannt. Sobald dieser Sensor signalisiert, dass eine Tür schließt, wird das Türschloss nach einer bestimmten Zeit gedreht.  <br><br>Einstellungen:<br><ul><li>Wählen Sie den Türsensor, der die Türstellung erkennt.</li><li>Wählen Sie das zu steuernde Türschloss.</li><li>Wählen Sie den Zeitverzug der Verriegelung nach erkannter Türschließung</li></ul>",
+	"l_dw_sensor":"Tür-/Fenstersensor",
+	"l_doorlock":"Türverriegelung",
+	"l_delay_sec":"Verzögerung in Sekunden"
+}

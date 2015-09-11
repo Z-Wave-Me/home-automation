@@ -1,10 +1,11 @@
 {
     "dependencies": [],
-    "singleton": false,
-    "category": "peripherals",
+    "singleton": true,
+    "category": "basic_gateway_modules",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"ZWave",
     "version": "2.0.0",
     "maturity": "stable",
     "repository": {
@@ -12,13 +13,16 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Z-Wave binding",
-        "description": "Loads Z-Wave engine",
+        "title": "__m_title__",
+        "description": "__m_descr__",
         "name": "zway",
-        "port": "/dev/ttyUSB0",
-	"config": "config",
-	"translations": "translations",
-	"ZDDX": "ZDDX"
+        "port": "/dev/ttyACM0",
+        "enableAPI": true,
+        "publicAPI": true,
+        "createVDev": true,
+        "config": "config",
+        "translations": "translations",
+        "ZDDX": "ZDDX"
     },
     "schema": {
         "type": "object",
@@ -30,6 +34,18 @@
             "name": {
                 "type": "string",
                 "required": true
+            },
+            "enableAPI": {
+                "type": "boolean",
+                "default": true
+            },
+            "publicAPI": {
+                "type": "boolean",
+                "default": true
+            },
+            "createVDev": {
+                "type": "boolean",
+                "default": true
             },
             "config": {
                 "type": "string",
@@ -49,26 +65,41 @@
     "options": {
         "fields": {
             "port": {
-                "label": "Serial port to Z-Wave dongle"
+                "label": "__l_port__"
             },
             "name": {
-                "label": "Internal name",
-		"helper": "Chould be a valid JS key string. Don't change unless you know what you are doing"
+                "label": "__l_name__",
+                "helper": "__h_name__"
+            },
+            "enableAPI": {
+                "type": "checkbox",
+                "rightLabel": "__rl_enableAPI__",
+                "helper": "__h_enableAPI__"
+            },
+            "publicAPI": {
+                "type": "checkbox",
+                "rightLabel": "__rl_publicAPI__",
+                "helper": "__h_publicAPI__"
+            },
+            "createVDev": {
+                "type": "checkbox",
+                "rightLabel": "__rl_createVDev__",
+                "helper": "__h_createVDev__"
             },
             "config": {
-		"hidden": true,
-                "label": "Path to config folder",
-		"helper": "Don't change unless you know what you are doing"
+                "hidden": true,
+                "label": "__l_config__",
+                "helper": "__h_change_sth__"
             },
             "translations": {
-		"hidden": true,
-                "label": "Path to dictionaries folder",
-		"helper": "Don't change unless you know what you are doing"
+                "hidden": true,
+                "label": "__l_translations__",
+                "helper": "__h_change_sth__"
             },
             "ZDDX": {
-		"hidden": true,
-                "label": "Path to ZDDX database",
-		"helper": "Don't change unless you know what you are doing"
+                "hidden": true,
+                "label": "__l_zddx__",
+                "helper": "__h_change_sth__"
             }
         }
     }

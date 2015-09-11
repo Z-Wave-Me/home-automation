@@ -1,0 +1,23 @@
+{
+	"m_title":"Erzeuge Gerät mit JS-Code",
+	"m_descr":"Die Anwendung dieser App erfordert solide Kenntnisse in der JavaScript Programmierung. Diese App ermöglicht die Erstellung eines neuen Gerätes basierend auf einigen JavaScript Anweisungen. Das JavaScript kann alle möglichen Daten abfragen und berechnen so lange diese per JavaScript ausführbar sind. Das Gerät kann sowohl ein Sensor sein, welcher lediglich Daten anzeigt, als auch ein Java Script Code ausführender Aktor.<br><br>Einstellungen:<br><ul><li>Wählen Sie zu allererst den Elementtyp, der erstellt werden soll. Weitere Einstellungen sind vom Elementtyp abhängig.</li> <li>Alle Geräte benötigen eine URL, um den Wert aus dem Internet abzurufen.</li> <li>Es gibt eine Möglichkeit, die Ansprache mit mathematischer Logik zu entwickeln. Dafür werden fundierte Kenntnisse im JavaScript benötigt.</li> <li>Bestimmen Sie die Abrufzeit.</li> <li>Definieren Sie, ob „POST“ oder „GET“ verwendet wird.</li> <li>Bei mehrstufigen Sensoren können Sie den zu verwendenden Maßstab einstellen.</li> <li>Bei Schaltern können die URLs für Schaltungen bestimmt werden.</li> <ul><br>Beispiel: Die App soll ein Element erstellen, welches wahllos “An” oder “Aus” anzeigt. Der verwendete JavaScript Code lautet “Math.random() > 0.5 ? on : off  ",
+	"l_setterOn_toggleButton":"Code für den Befehl 'on'",
+	"h_getter_sensorBinary":"Rückgabe der Werte 'on' oder 'off'",
+	"h_getter_sensorMultilevel":"Rückgabe einer Zahlenwertes",
+	"l_scale_sensorMultilevel":"Sensoreinheit",
+	"l_setterOn_switchBinary":"Code für den Befehl 'on'",
+	"h_setterOn_switchBinary":"%% steht für 'on'",
+	"l_setterOff_switchBinary":"Code für den Befehl 'off'",
+	"h_setterOff_switchBinary":"%% steht für 'off'",
+	"h_getter_switchBinary":"Rückgabe der Werte 'on' oder 'off'",
+	"l_setterLevel_switchMultilevel":"Code für Aktion",
+	"h_setterLevel_switchMultilevel":"%% steht für einen Wert von 0 bis 99",
+	"l_getter_value":"Code um einen Wert abzufragen",
+	"h_getter_switchMultilevel":"Rückgabe eines Wertes von 0 bis 99",
+	"l_getterPollInterval":"Abfrageintervall in Sekunden:",
+	"h_getterPollInterval":"0 oder eine leere Eingabe deaktivieren die periodische Abfrage (explizite Update-Kommandos werden weiterhin ausgeführt)",
+	"rl_updateOnAction": "Update value on action",
+	"h_updateOnAction": "On actions (on/off/dimming) update value accordingly before it is polled",
+	"rl_skipEventIfSameValue": "Don't send update event if value has not changed",
+	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called."
+}

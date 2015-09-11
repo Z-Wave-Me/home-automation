@@ -1,0 +1,6 @@
+{
+	"m_title":"Erzeuge An/Aus-'tags'",
+	"m_descr":"Jedes Element kann durch den Benutzer mittels eines Konfigurationsdialogs gekennzeichnet werden. Die App kennzeichnet automatisch schaltende Geräte je nach deren Schaltzustand.<br><br>Einstellungen: Wählen Sie einfach das Zeichen für den An- und Ausstatus.",
+	"l_tagOn":"tag für An-Status:",
+	"l_tagOff":"tag für Aus-Status:"
+}

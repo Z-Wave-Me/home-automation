@@ -49,24 +49,29 @@ CodeDevice.prototype.init = function (config) {
     }
     
     var defaults = {
-        deviceType: deviceType,
         metrics: {
-            icon: icon,
             title: 'Code device ' + this.id
         }
     };
-    
+ 
+    var overlay = {
+            deviceType: deviceType,
+            metrics: {
+                icon: icon
+            }      
+    };
+       
     if (deviceType === "sensorMultilevel") {
-        defaults.metrics.scaleTitle = this.config.scale_sensorMultilevel || "";
+        overlay.metrics.scaleTitle = this.config.scale_sensorMultilevel || "";
     }
     if (deviceType === "sensorBinary") {
-        defaults.metrics.scaleTitle = "";
+        overlay.metrics.scaleTitle = "";
     }
 
     var vDev = self.controller.devices.create({
         deviceId: "Code_Device_" + deviceType + "_" + this.id,
         defaults: defaults,
-        overlay: {},
+        overlay: overlay,
         handler: function (command, args) {
             var vDevType = deviceType;
 
@@ -117,7 +122,10 @@ CodeDevice.prototype.update = function (vDev) {
         getterCode = this.config["getter_" + deviceType];
 
     if (getterCode) {
-        vDev.set("metrics:level", eval(getterCode));
+        var newValue = eval(getterCode);
+        if (this.config.skipEventIfSameValue !== true || newValue !== vDev.get("metrics:level")) {
+            vDev.set("metrics:level", newValue);
+        }
     }
 };
 
@@ -126,12 +134,14 @@ CodeDevice.prototype.act = function (vDev, action, subst, selfValue) {
         deviceType = this.config.deviceType,
         setterCode = this.config["setter" + action + "_" + deviceType];
     
-    if (setterCode) {
+    if (!!setterCode) {
     	if (subst != null) {
             setterCode = setterCode.replace(/%%/g, subst);
     	}
         eval(setterCode);
-    } else if (selfValue !== null) {
+    }
+    
+    if ((!setterCode || this.config.updateOnAction === true) && selfValue !== null) {
         vDev.set("metrics:level", selfValue);
     }
 };

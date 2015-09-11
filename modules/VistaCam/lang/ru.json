@@ -1,0 +1,6 @@
+{
+	"m_descr":"Поддержка Камеры MIOS VistaCam.",
+	"l_ip":"URL Камеры",
+	"h_ip":"В формате 'http://IPADDRESS:PORT'",
+	"l_door_dev":"Устройство управления доступом двери"
+}

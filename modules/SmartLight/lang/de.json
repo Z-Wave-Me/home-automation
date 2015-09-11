@@ -1,0 +1,15 @@
+{
+	"m_title":"Intelligente Lichtregelung",
+	"m_descr":"Diese App regelt auf intelligente Weise eine dimmbare Beleuchtung in Verbindung mit einem Bewegungsmelder. Bei erkannter Bewegung wird die Beleuchtung tagsüber auf 100%, nachts dagegen nur auf 20% eingeschalten. Sollten Sie einen Dimmer mit Lokalsteuerung wählen, können Sie diese automatische Einstellung durch Verwendung der lokalen Wippen überschreiben. Bei einer Überschreibung auf „0“ wird bei einer Bewegung nichts ausgeschalten.<br><br>Einstellungen:<br><ul><li>Wählen Sie den Bewegungsmelder aus.</li><li>Wählen Sie den zu regelnden Dimmer aus.</li><li><Ändern Sie – falls nötig – die Tag und Nacht Dimmstufe</li><li>Ändern Sie – falls nötig – den Zeitintervall für Tag und Nacht </li><li>Wählen Sie die Buttons zur Regelung des Dimmers</li></ul><br>Anwendung: Es ist kein Element erstellt.",
+	"l_MotionSensor":"Bewegungssensor:",
+	"l_Dimmer":"Dimmer",
+	"l_Level":"Dimmerlevel für Tag und Nacht",
+	"l_DayLevel":"Tageslicht",
+	"l_NightLevel":"Nachtlicht",
+	"l_Day":"Tageszeiten zu denen das Tageslicht de/aktiviert wird:",
+	"timeFormat":"hh:mm",
+	"l_DayTimeStart":"Start",
+	"l_DayTimeEnd":"Ende",
+	"l_DimmerButton":"Dimmertaste",
+	"h_DimmerButton":"Um eine Dimmertaste zu erzeugen, aktivieren Sie die App 'Erzeuge Schaltersteuerung' und drücken Sie dort auf 'Dimmer Button'."
+}

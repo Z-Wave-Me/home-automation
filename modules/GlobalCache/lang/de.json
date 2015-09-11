@@ -1,0 +1,7 @@
+{
+	"m_title":"Global Caché",
+	"m_descr":"Global Cache ist ein Hersteller verschiedener Geräte, die per IP Befehl an- bzw. ausgeschalten werden können. Diese App erstellt ein neues Element und verbindet dessen Schaltfläche mit einem bestimmten Befehl, der an ein Global Cache Gerät gesendet wird. <br><br>Einstellungen:<br><ul><li>IP Adresse oder Hostname des Global Cache Gerätes</li><li>Befehls-String zur Ausführung der gewünschten Aktion am Global Cache Gerät. Informationen zur Befehlsbestimmung entnehmen Sie bitte den Global Cache Anleitungen.</li></ul>",
+	"l_host":"Global Caché IP or hostname",
+	"l_data":"Command to send",
+	"h_data":"Command as reported by Global Caché IR Learning Utility WITHOUT final new line symbols (\\r\\n\\r\\n)."
+}

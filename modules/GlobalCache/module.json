@@ -1,0 +1,47 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "support_external_dev",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+        "moduleName": "GlobalCache",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"host": "",
+		"data": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"host": {
+				"type": "string",
+				"required": true
+			},
+			"data": {
+				"type": "string",
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"host": {
+				"label": "__l_host__",
+				"placeholder": "192.168.0.100 or hostname"
+			},
+			"data": {
+				"label": "__l_data__",
+				"placeholder": "sendir,1:1,7,35874,1,1,.......,2500",
+				"helper": "__h_data__"
+			}
+		}
+	}
+}

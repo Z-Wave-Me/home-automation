@@ -1,0 +1,19 @@
+{	
+	"m_title":"Periodische Schalterabfrage",
+	"m_descr":"Fragt regelmäßig den Status von den ausgewählten Schalters ab.",
+	"l_devices":"Von der Abfrage ausgeschlossene Schalter:",
+	"l_period":"Abfrageintervall:",
+	"one_m":"1 Minute", 
+	"two_m":"2 Minuten", 
+	"five_m":"5 Minuten", 
+	"ten_m":"10 Minuten", 
+	"twenty_m":"20 Minuten", 
+	"thirty_m":"30 Minuten", 
+	"one_h":"1 Stunde", 
+	"two_h":"2 Stunden", 
+	"four_h":"4 Stunden", 
+	"six_h":"6 Stunden", 
+	"half_d":"zweimal am Tag", 
+	"daily":"einmal täglich", 
+	"weekly":"einmal wöchentlich"
+}

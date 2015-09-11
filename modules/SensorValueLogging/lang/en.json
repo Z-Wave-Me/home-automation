@@ -1,0 +1,10 @@
+{
+	"m_title":"Sensor Values Logging",
+	"m_descr":"This app allows recording all information gathered in the Smart Home System and store them on an external service. Z-way does not offer any recording service or data analytics software but there are services in the Internet doing this. The use of this app requires detailed knowledge about the interface of the data logging and analytics service used.<br><br>Settings:<br><ul><li> Pick the sensor value you want to log.</li><li>Pick the method (JSON or HTTP) you want to use to send the values to an online service of your choice.</li><li>Define the HTTP command to use to deliver the value to an online logging service. This is for third party logging services only. You may need to setup an account with such a service.</li></ul>",
+	"l_device":"Sensor to log",
+	"l_logTo":"How to store:",
+	"l_logTo_json":"to JSON file in storage",
+	"l_logTo_http":"send via HTTP request",
+	"l_url":"HTTP request to do. Strings ${id} and ${value} are replaced by sensor ID and value correspondingly",
+	"h_url":"Example: http://mydomainname.org/path/to/something/${id}?myval=${value}"
+}

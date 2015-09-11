@@ -1,0 +1,17 @@
+{
+	"m_title":"Web Camera",
+	"m_descr":"This module include configuration for a camera and create camera device.",
+	"l_cam_url":"Camera URL",
+	"l_zoomin":"ZoomIn URL",
+	"l_zoomout":"ZoomOut URL",
+	"l_left":"Left URL",
+	"l_right":"Right URL",
+	"l_up":"Up URL",
+	"l_down":"Down URL",
+	"l_open":"Open URL",
+	"l_close":"Close URL",
+  	"l_user": "Username for HTTP authentication",
+  	"l_pw": "Password for HTTP authentication",
+  	"h_http_auth": "Leave empty if camera is not protected by a password",
+  	"l_door_dev": "Door device"
+}

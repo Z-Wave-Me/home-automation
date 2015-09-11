@@ -1,0 +1,8 @@
+{
+	"m_title":"Verbinde anderen Z-Way-Controller",
+	"m_descr":"Z-Way steuert ein Z-Wave Netzwerk mit bis zu 232 Geräten. Diese App führt mehrere Z-Way Einheiten in einem User Interface zusammen. Im Grunde bildet die App Daten eines anderen Z-Way betriebenen Gateways in Ihrem Gateway ab. Die Elemente werden dargestellt und können wie das vorliegende bedient werden. Bitte beachten Sie, dass die Funktion des zweiten Gateways unberührt bleibt. Das heißt, das zweite Gateway nimmt die Elemente Ihres ersten Gateways nicht wahr, kann sie aber steuern und dessen Elemente ohne weitere Einschränkungen abrufen:<br><br>Einstellungen: <br><ul><li>Stellen Sie die IP Adresse der Remote-Box einschließlich der Port-Nummer ein.  </li><li>Definieren Sie das Abrufintervall. Empfehlenswert wäre einmal pro Sekunde.</li><li>Inkludieren Sie das fernzusteuernde Gerät in Ihre UI. </li></ul>",
+	"l_url":"URL Z-Wave Homegateway",
+	"l_dT":"Updateperiode (in Millisekunden)",
+	"l_skipDevices":"Geräte die nicht aus dem Z-Wave Homegateway importiert werden sollen:",
+	"l_renderDevices":"Aus dem Z-Wave Homegateway importierte Geräte (wird automatisch geladen):"
+}

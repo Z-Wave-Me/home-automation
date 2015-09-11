@@ -1,11 +1,12 @@
 /*** SecurityMode Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.2.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Poltorak Serguei <ps@z-wave.me>
+Authors: Poltorak Serguei <ps@z-wave.me>
+         Yurkin Vitaliy   <aivs@z-wave.me>
 Description:
-    Implements logical rules and activates scene on rule match.
+    Implements Security rules and send notifications and activates scene on rule match.
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -18,10 +19,14 @@ function SecurityMode (id, controller) {
 
     var self = this;
     
-
     this._testRule = function () { // wrapper to correct this and parameters in testRule
         self.testRule.call(self, null);
     };
+
+    // Create instance variables
+    this.timer = null;
+
+    this.isSensorsCanReact = 1;
 }
 
 inherits(SecurityMode, AutomationModule);
@@ -37,9 +42,11 @@ SecurityMode.prototype.init = function (config) {
 
     var self = this;
 
-    if (config.action.api_key) {this.api_key = config.action.api_key.toString();};
-    if (config.action.phone) {this.phone = config.action.phone.toString();};
     if (config.action.message) {this.message = config.action.message.toString();}
+    if (config.action.api_key_sms) {this.api_key_sms = config.action.api_key_sms.toString();};
+    if (config.action.api_key_email) {this.api_key_email = config.action.api_key_email.toString();};    
+    if (config.action.phone) {this.phone = config.action.phone.toString();};
+    if (config.action.email) {this.email = config.action.email.toString();}
     
     this.vDev = this.controller.devices.create({
             deviceId: "SecurityMode_"+ this.id,
@@ -51,13 +58,14 @@ SecurityMode.prototype.init = function (config) {
                     title: 'SecurityMode ' + this.id
                 }
             },
+            overlay: {},
             handler: function(command, args) {
                 this.set("metrics:level", command);
             },
             moduleId: this.id
         });
 
-    self.attachDetach(this.vDev.id, true);
+    self.attachDetach({device: this.vDev.id}, true);
 
     this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
@@ -73,8 +81,12 @@ SecurityMode.prototype.init = function (config) {
 SecurityMode.prototype.stop = function () {
     var self = this;
 
+    if (this.timer) {
+        clearTimeout(this.timer);
+    }
+
     if (this.vDev) {
-        self.attachDetach(this.vDev.id, true);
+        self.attachDetach(this.vDev.id, false);
     }
     
     this.config.tests.forEach(function(test) {
@@ -100,13 +112,6 @@ SecurityMode.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 SecurityMode.prototype.attachDetach = function (test, attachOrDetach) {
-    var vDev = this.controller.devices.get(test.device);
-    
-    if (!vDev) {
-        this.controller.addNotification("error", "Can not get vDev " + test.device, "module");
-        return;
-    }
-    
     if (attachOrDetach) {
         this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
         this.controller.devices.on(test.device, "change:metrics:change", this._testRule);
@@ -128,6 +133,10 @@ SecurityMode.prototype.testRule = function (tree) {
     
     if (this.vDev.get("metrics:level") == "off")
         return;
+    
+    if (!this.isSensorsCanReact) {
+        return;
+    };
 
     res = false;
     tree.tests.forEach(function(test) {
@@ -145,37 +154,64 @@ SecurityMode.prototype.testRule = function (tree) {
     if (topLevel && res) {
         var self = this;
 
-        if (self.api_key && self.phone && self.message) {
+        // Disable sensors react to next period
+        self.isSensorsCanReact = 0;
+        self.timer = setTimeout(function () {
+            // Enable Sensors react after timeout
+            self.isSensorsCanReact = 1;
+            // And clearing out this.timer variable
+            self.timer = null;
+        }, self.config.timeout*1000);
+
+        // If API Key from sms.ru and Phone number exist, then send sms
+        if (self.api_key_sms && self.phone) {
             http.request({
                 method: 'POST',
                 url: "http://sms.ru/sms/send",
                 data: {
-                    api_id: self.api_key,
+                    api_id: self.api_key_sms,
                     to: self.phone,
                     text: self.message
                 }
             });
-        };
+        }
 
-        tree.action.switches.forEach(function(devState) {
+        // If API Key from mandrillapp.com and Email exist, then send email
+        if (self.api_key_email && self.email) {
+            http.request({
+                method: 'POST',
+                url: "https://mandrillapp.com/api/1.0/messages/send.json",
+                data: {
+                    key: self.api_key_email,
+                    message: {
+                        from_email: self.email,
+                        to: [{email: self.email, type: "to"}],
+                        subject: "Notification from Smart Home",
+                        text: self.message
+                    }
+                }
+            });
+        }
+
+        tree.action.switches && tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand(devState.status);
             }
         });
-        tree.action.dimmers.forEach(function(devState) {
+        tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand("exact", { level: devState.status });
             }
         });
-        tree.action.locks.forEach(function(devState) {
+        tree.action.locks && tree.action.locks.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
                 vDev.performCommand(devState.status);
             }
         });
-        tree.action.scenes.forEach(function(scene) {
+        tree.action.scenes && tree.action.scenes.forEach(function(scene) {
             var vDev = self.controller.devices.get(scene);
             if (vDev) {
                 vDev.performCommand("on");

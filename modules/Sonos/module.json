@@ -1,0 +1,43 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "support_external_dev",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+        "moduleName": "Sonos",
+	"version": "1.0.1",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"households": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"households": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				},
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"households": {
+				"fields": {
+					"item": {
+                                                "label": "__l_household__"
+					}
+				}
+			}
+		}
+	}
+}

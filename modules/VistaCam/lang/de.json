@@ -1,0 +1,6 @@
+{
+	"m_descr":"Ünterstützung der MIOS VistaCam",
+	"l_ip":"Kamera IP-Adresse",
+	"h_ip":"Beispielformat: 'http://IPADDRESS:PORT'",
+	"l_door_dev":"Türsensor"
+}

@@ -9,23 +9,23 @@ Router = function(namespace) {
 };
 
 Router.prototype = {
-  get: function(path, handler, preprocessors) {
-    return this.addRoute("GET", path, handler, preprocessors);
+  get: function(path, role, handler, preprocessors) {
+    return this.addRoute("GET", path, role, handler, preprocessors);
   },
 
-  post: function(path, handler, preprocessors) {
-    return this.addRoute("POST", path, handler, preprocessors);
+  post: function(path, role, handler, preprocessors) {
+    return this.addRoute("POST", path, role, handler, preprocessors);
   },
 
-  put: function(path, handler, preprocessors) {
-    return this.addRoute("PUT", path, handler, preprocessors);
+  put: function(path, role, handler, preprocessors) {
+    return this.addRoute("PUT", path, role, handler, preprocessors);
   },
 
-  del: function(path, handler, preprocessors) {
-    return this.addRoute("DELETE", path, handler, preprocessors);
+  del: function(path, role, handler, preprocessors) {
+    return this.addRoute("DELETE", path, role, handler, preprocessors);
   },
 
-  addRoute: function(method, path, handler, preprocessors) {
+  addRoute: function(method, path, role, handler, preprocessors) {
     var ns = this.routes[this.namespace] = this.routes[this.namespace] || {},
         preprocessors = preprocessors || [],
         route;
@@ -40,9 +40,9 @@ Router.prototype = {
     if (_.contains(path, ":")) {
       var route = this._parseRoute(path, preprocessors);
       ns[method].patterns = ns[method].patterns || [];
-      ns[method].patterns.push(_.extend(route, {handler: handler, preprocessors: preprocessors}));
+      ns[method].patterns.push(_.extend(route, {role: role, handler: handler, preprocessors: preprocessors}));
     } else {
-      ns[method][path] = {handler: handler, preprocessors: preprocessors};
+      ns[method][path] = {role: role, handler: handler, preprocessors: preprocessors};
     }
 
     return this;
@@ -72,18 +72,19 @@ Router.prototype = {
     var parts = url.split("/"),
         namespace = _.first(parts, 2).join("/"),
         path = "/" + _.rest(parts, 2).join("/"),
-        lookup, handler, params, preprocessors;
+        lookup, role, handler, params, preprocessors;
 
     var ns = this.routes[namespace];
     if (ns && ns[method]) {
       handler = ns[method][path];
       if (handler) {
-        return {handler: handler.handler, params: []};
+        return {role: handler.role, handler: handler.handler, params: []};
       } else {
         _.find(ns[method].patterns, function(r) {
           var matches = r.pattern.exec(path);
           if (!!matches) {
             params = matches.slice(1);
+            role = r.role;
             handler = r.handler;
             preprocessors = r.preprocessors;
             return true;
@@ -95,7 +96,7 @@ Router.prototype = {
               var proc = preprocessors[i] || _.identity;
               return proc(param);
           });
-          return {handler: handler, params: params};
+          return {role: role, handler: handler, params: params};
         }
       }
     }

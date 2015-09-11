@@ -35,7 +35,11 @@ CustomUserCode.prototype.init = function (config) {
     //try {
         executeJS(this.config.customCode);
     //} catch (e) {
-    //    controller.addNotification("warning", "Failed to load custom user code: " + this.get("metrics:title"), "module");
+    //      var  moduleName = "CustomUserCode",
+    //           langFile = self.controller.loadModuleLang(moduleName),
+    //           values = this.get("metrics:title");
+    //           
+    //    controller.addNotification("warning", langFile.err_load + values, "module", moduleName);
     //}
 };
 

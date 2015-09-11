@@ -18,20 +18,29 @@ VirtualDevice = function (options) {
             'tags',
             'updateTime',
             'permanently_hidden',
-            'creatorId'
+            'creatorId',
+            'h',
+            'hasHistory',
+            'visibility'
         ],
         collection: options.controller.devices,
         metrics: {},
         ready: false,
-        location: null,
+        location: 0,
         tags: [],
         updateTime: 0,
+        h: options.controller.hashCode(options.deviceId),
+        hasHistory: false,
+        visibility: true,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
             tags: [],
             permanently_hidden: false,
-            location: null
+            location: 0,
+            h: options.controller.hashCode(options.deviceId),
+            hasHistory: false,
+            visibility: true
         },
         changed: {},
         overlay: options.overlay || {},
@@ -240,7 +249,8 @@ _.extend(VirtualDevice.prototype, {
             try {
                 return this.handler.apply(this, arguments);
             } catch(e) {
-                this.controller.addNotification("error", "Error during perform command execution: " + e.toString(), "module");
+                var langFile = this.controller.loadMainLang();
+                this.controller.addNotification("error", langFile.vd_err_virtual_dev + e.toString(), "module", "VirtualDevice");
                 console.log(e.stack);
             }
         }

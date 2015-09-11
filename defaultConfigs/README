@@ -1,0 +1,14 @@
+These configs are used to prepare distribs for different platforms
+
+NB! Please keep all theses files beautified! Use http://jsbeautifier.org/ to keep them well formatted.
+
+Short legenda:
+config.json_ttyACM0 - for Raspberry Pi with UZB
+config.json_ttyACM0_ZBW-no - for any Linux machine with UZB but without remote access functionality
+config.json_ttyACM0_ZBW-WD - WD special config
+config.json_ttyAMA0 - for RaZberry
+config.json_ttyAMA0_NonExpert - for RaZberry but no expert view
+config.json_ttyS0 - for ttyS0 for embedded boxes
+config.json_ttyS1 - for ttyS1 for embedded boxes
+config.json_ttyUSB0_ZBW-no_vDev-no - for old white Z-Stick without any HA and with public Z-Wave API
+config.json_windows - for Windows

@@ -1,12 +1,11 @@
 .DS_Store
+/nbproject/*
 npm-debug.log
-config.json
 .SyncId
 .SyncIgnore
 .SyncTrash
-zwayTree.json
-ha-*.json
 storage/*
-htdocs
 .idea
 node_modules
+blub
+.gitignore

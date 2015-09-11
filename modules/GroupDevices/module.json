@@ -1,10 +1,11 @@
 {
 	"singleton": false,
 	"dependencies": [],
-	"category": "devices",
+	"category": "device_enhancements",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
-	"icon": "",
+	"icon": "icon.png",
+        "moduleName": "GroupDevices",
 	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
@@ -12,8 +13,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Group devices",
-		"description": "Group several devices together",
+		"title": "__m_title__",
+		"description": "__m_descr__",
 		"isDimmable": false,
 		"devices": [],
 		"scenesOn": [],
@@ -68,10 +69,10 @@
 		"fields": {
 			"isDimmable": {
 				"label": "",
-				"rightLabel": "Dimmable"
+				"rightLabel": "__rl_options__"
 			},
 			"devices": {
-				"label": "Group devices",
+				"label": "__l_devices__",
 				"fields": {
 					"item": {
 						"fields": {
@@ -83,14 +84,14 @@
 							},
 							"invert": {
 								"type": "checkbox",
-								"rightLabel": "Invert action"
+								"rightLabel": "__rl_invert__"
 							}
 						}
 					}
 				}
 			},
 			"scenesOn": {
-				"label": "List of scenes to activate on On action",
+				"label": "__l_scenesOn__",
 				"fields": {
 					"item": {
 						"datasource": "namespaces",
@@ -100,7 +101,7 @@
 				}
 			},
 			"scenesOff": {
-				"label": "List of scenes to activate on Off action",
+				"label": "__l_scenesOff__",
 				"fields": {
 					"item": {
 						"datasource": "namespaces",

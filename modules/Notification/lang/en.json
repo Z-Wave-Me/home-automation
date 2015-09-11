@@ -1,0 +1,11 @@
+{
+	"m_title":"Email&SMS Notification",
+	"m_descr":"Scene of send email or sms.",
+	"l_message":"Text message",
+	"l_phone":"Phone number to send SMS. In form of 79261234567",
+	"l_api_key_sms":"API key from http://sms.ru",
+	"h_api_key_sms":"After registration on the right you will see api_id (looks like: a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"l_email":"Email that will be notified",
+	"l_api_key_email":"API key from https://mandrillapp.com",
+	"h_api_key_email":"After registration email on the tab Setting create a key (looks like: VFfeEspkFL1YqVSihhfqHw)"
+}

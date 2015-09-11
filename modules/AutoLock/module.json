@@ -1,10 +1,11 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"category": "security",
+	"category": "device_enhancements",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
-	"icon": "",
+	"icon": "icon.png",
+    "moduleName": "AutoLock",
 	"version": "1.1.0",
 	"maturity": "stable",
 	"repository": {
@@ -12,8 +13,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Auto Lock",
-		"description": "Door/Window Sensor automatically closes lock when door is closed",
+		"title": "__m_title__",
+		"description": "__m_descr__",
 		"BinarySensor": null,
 		"DoorLock": null
 	},
@@ -42,21 +43,21 @@
 	"options": {
 		"fields": {
 			"BinarySensor": {
-				"label": "Door/Window Sensor",
+				"label": "__l_dw_sensor__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
                 "optionLabels": "namespaces:devices_sensorBinary:deviceName"
 			},
 			"DoorLock": {
-				"label": "Door Lock",
+				"label": "__l_doorlock__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
                 "optionLabels": "namespaces:devices_doorlock:deviceName"
 			},
 			"delay": {
-				"label": "Delay in seconds",
+				"label": "__l_delay_sec__",
 				"type": "integer"
 			}
 		}

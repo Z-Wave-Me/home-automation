@@ -1,0 +1,13 @@
+{
+	"m_title":"Zeitgesteuerte Szene/Aktion",
+	"m_descr":"Diese App löst zu einer festgelegten Zeit einmal an ausgewählten Wochentagen eine bestimmte Szene aus.  <br><br>Einstellungen:<br><ul><li>Wählen Sie Tageszeit.</li><li>Wählen Sie die Wochentage, an denen die Szene ausgeführt werden soll.</li><li>Wählen Sie eine vordefinierte Szene. Eine solche Szene muss in Verwendung mit der App „Szene“ definiert werden.</li></ul>",
+	"monday":"Montag",
+	"tuesday":"Dienstag",
+	"wednesday":"Mittwoch",
+	"thursday":"Donnerstag",
+	"friday":"Freitag",
+	"saturday":"Samstag",
+	"sunday":"Sonntag",
+	"timeFormat":"hh:mm",
+	"l_scene":"Zu aktivierende Szene/Aktion:"
+}

@@ -1,0 +1,18 @@
+{
+	"m_title":"If -> Then",
+	"m_descr":"The If->Then is the foundation of automation. A selected action (WHEN) is executed automatically at the moment when a certain event (IF) has happen. This app allows defining these relationships.  The (IF) event must be a event that happens at one time. Examples for this are a door that is opened (the door sensor trips) or a button that is pressed. A simple switch is also a reasonable source for an event because this switch can be switched. A temperature sensor is NO event in this regard because this sensor will continuously send temperature and not create an event. The event need to have two defines status of ‘0’ and ‘1’ Every binary sensor or switch button has these states. Status=1 will send a Command Set(1) to the list of selected actuators, Status=0 will sen Set(0) to these devices.<br> <br>Settings:<br> <ul><li>Pick the events that shall trigger. You can select multiple events and all of them will trigger the selected action (connected with Logical OR). If you pick a dimmer or a motor control the change to full 100 % will be considered as the event to trigger.</li> <li>Pick the devices that shall be switches depending on the action. Please not that these devices must be able to receive and execute Set(1) and set(0) commands.</li></ul>",
+	"l_event_sources":"If",
+	"l_actors":"Then",
+	"on":"On",
+	"off":"Off",
+	"l_level":"Level",
+	"open":"Open",
+	"close":"Close",
+	"l_scene":"Scene",
+	"l_filter":"Filter by Type",
+	"switchBinary":"Binary Switch",
+	"switchMultilevel":"Multilevel Switch",
+	"doorlock":"Doorlock",
+	"l_target_device":"Device",
+	"l_action":"Action"
+}

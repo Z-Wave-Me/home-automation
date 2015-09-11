@@ -1,19 +1,20 @@
 {
     "dependencies": [],
     "singleton": true,
-    "category": "peripherals",
+    "category": "support_external_ui",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
-    "version": "1.0.0",
+    "icon": "icon.png",
+    "moduleName":"OpenRemoteHelpers",
+    "version": "1.01.02",
     "maturity": "stable",
     "repository": {
             "type": "git",
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "OpenRemote helper",
-	"description": "Set of helpers for OpenRemote server"
+        "title": "__m_title__",
+	    "description": "__m_descr__"
     },
     "schema": {
     },

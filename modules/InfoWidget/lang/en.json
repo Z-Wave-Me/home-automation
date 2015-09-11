@@ -1,0 +1,22 @@
+{
+	"m_title":"Information Widget",
+	"m_descr":"This app is used to display some text block in the UI. The main reason that this app exists is to give you some introductory information and a welcome greeting.  However you can use this e.g. as a link list since it allows defining pure HTML code as text block<br><br>Settings:<br><ul><li>Define your text to be shown in different languages. If there is no statement for the language of your UI, the English text will be used as default.</li></ul>",
+	"l_widgets":"Create one or nore Information Widgets",
+	"h_widgets":"Click to create a widget",
+	"l_widget": "Widget",
+	"l_headline":"Enter your headline:",
+	"p_headline":"Headline",
+	"l_text":"Enter your text:",
+	"p_text":"Text...",
+	"l_imgURI":"URL of your image (optional):",
+	"p_imgURI":"e.g. 'http://www.images.com/nature/tree_xy.jpg'",
+	"l_translate":"Internationalization",
+	"rl_translate":"Activate Internationalization",
+	"p_translate":"'If activated you could add different texts for each language known in user interface.",
+	"l_lang":"Text Language",
+	"h_lang":"Please choose one language in that you will write your text message.",
+	"en":"English",
+	"de":"German",
+	"ru":"Russian",
+	"cn":"Chinese"
+}

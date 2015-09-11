@@ -1,0 +1,10 @@
+{
+	"m_title":"Sensorwert Protokollierung",
+	"m_descr":"Mit dieser App können alle im Smart Home gesammelten Informationen protokolliert und über einen externen Dienstleister gespeichert werden. Z-way bietet weder einen Aufzeichnungsservice noch eine Datenanalysesoftware an. Dafür gibt es genügend Dienste im Internet. Die Anwendung dieser App erfordert detaillierte Kenntnisse im Datalogging Interface und Analytics-Service.<br><br>Einstellungen:<br><ul><li> <li>Wählen Sie den Sensorwert aus, den sie aufzeichnen wollen.</li><li>Bestimmen Sie die Methode (JSON oder HTTP), mit welcher Sie die Werte an einen Online Dienst Ihrer Wahl senden wollen. </li><li>Definieren Sie den HTTP Befehl, den Sie anwenden, um den Wert an ein Online-Logging-Service zuzustellen. Das gilt nur für Protokollierungsdienste Dritter. Für deren Serviceleistungen benötigen Sie eventuell ein eingerichtetes Konto.</li></ul>",
+	"l_device":"Sensor der protokolliert werden soll:",
+	"l_logTo":"Wie soll protokolliert werden?",
+	"l_logTo_json":"als JSON-Datei im Z-Way Speicher",
+	"l_logTo_http":"als HTTP-Request versenden",
+	"l_url":"Sende einen HTTP-Request an: ",
+	"h_url":"Example: http://meindomainname.org/pfad/zu/irgendwas/${id}?meinwert=${wert} - '${id}' und '${wert}' müssen mit der Sensor ID und dem entsprechenden Wert ersetzt werden."
+}

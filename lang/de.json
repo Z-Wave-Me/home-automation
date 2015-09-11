@@ -1,0 +1,15 @@
+{
+	"ac_warn_restart":"Der Automation Controller wurde neu gestartet.",
+	"ac_err_init_module_not_found":"Das Modul kann nicht instanziiert werden: Das Modul wurde in der Modulliste nicht gefunden.",
+	"ac_err_init_module":"Das Modul kann nicht instanziiert werden: ",
+	"ac_err_dep_not_found":"Die Dependency wurde für das Modul nicht gefunden: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_loaded":"Das Modul kann nicht geladen werden, da folgende Dependency nicht geladen wurde: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_init":"Das Modul kann nicht geladen werden, da die Dependency nicht instanziiert wurde: [DEP]::[MODUL] = ",
+	"ac_err_file_load":"Fehler beim Laden von ",
+	"ac_err_invalid_module":"Nicht valides Modul: ",
+	"ac_err_load_mod_json":"modules.json kann nicht geladen werden. Modul: ",
+	"ac_err_stop_mod":"Das folgende Modul kann nicht gestoppt werden: ",
+	"profile_name": "Administrator",
+	"profile_descr": "Dies ist das Administratorprofil. Dieses wird automatisch angelegt.",
+	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: "
+}

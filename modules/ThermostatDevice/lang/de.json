@@ -1,0 +1,11 @@
+{
+	"m_title":"Virtueller Thermostat",
+	"m_descr":"Diese App kombiniert einen Aktor und einen Temperatursensor zu einem Thermostat. Die Schaltung des Aktors erfolgt in Abhängigkeit von gemessener Temperatur und dem durch die App definierten Sollwert.<br><br>Einstellungen:<br><ul><li>Wählen Sie ein Auslösergerät. Das kann jeder An-/Ausschalter im Netzwerk sein.</li><li>Wählen Sie den Temperatursensor.</li></ul><br>Anwendung: Die App erstellt eine App, die die Einstellung eines gezielten Temperatursollwertes ermöglicht.Bitte beachten Sie, dass der gewählte Temperatursensor eventuell nur eine neue Temperaturangabe während eines vorgegebenen Zeitintervalls meldet. Dies kann zum Überschreiten der geregelten Temperatur führen, da ganz einfach der aktualisierte Temperaturwert des Sensors verzögert erfolgt. Infolgedessen achten Sie auf netzbetriebene Geräte mit Temperatursensoren. Denn diese können ihre Messungen häufiger aktualisieren.",
+	"l_switch":"Schalter",
+	"l_sensor":"Temperatursensor",
+	"l_heaton":"Modus",
+	"heat":"Heizen",
+	"cool":"Kühlen",
+	"l_hysteresis":"Hysteresis",
+	"h_hysteresis":"Maximaler Bereich zwischen Ist- und Solltemperatur, nachdem sich das Thermostat an/ausschalten soll."
+}

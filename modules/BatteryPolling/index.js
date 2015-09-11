@@ -1,11 +1,11 @@
 /*** BatteryPolling Z-Way HA module *******************************************
 
-Version: 2.0.0
+Version: 2.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Gregory Sitnin <sitnin@z-wave.me> nad Serguei Poltorak <ps@z-wave.me>
 Description:
-    This module periodically requests all batery devices for battery level report
+    This module periodically requests all battery devices for battery level report
 
 ******************************************************************************/
 
@@ -51,11 +51,12 @@ BatteryPolling.prototype.init = function (config) {
                 title: "Battery digest " + this.id
             }
         },
+        overlay: {},
         handler: this.onPoll,
         moduleId: this.id
     });
 
-    this.onMetricUpdated = function (vDev) {
+    this.onMetricUpdated = function (vDev) {      
         if (!vDev || vDev.id === self.vDev.id) {
             return; // prevent infinite loop with updates from itself and allows first fake update
         }
@@ -66,7 +67,10 @@ BatteryPolling.prototype.init = function (config) {
         
         self.vDev.set("metrics:level", self.minimalBatteryValue());
         if (vDev.get("metrics:level") <= self.config.warningLevel) {
-            self.controller.addNotification("warning", "Device " + vDev.get("metrics:title") + " is low battery", "battery");
+            var values = vDev.get("metrics:title"),
+                langFile = self.controller.loadModuleLang("BatteryPolling");
+                
+            self.controller.addNotification("warning", langFile.warning + values, "battery", self.vDev.get(id));
         }
     };
     
@@ -76,14 +80,28 @@ BatteryPolling.prototype.init = function (config) {
     // set up cron handler
     this.controller.on("batteryPolling.poll", this.onPoll);
 
-    // add cron schedule
-    this.controller.emit("cron.addTask", "batteryPolling.poll", {
-        minute: 0,
-        hour: 0,
-        weekDay: this.config.launchWeekDay,
-        day: null,
-        month: null
-    });
+    // Every Day is equal -1 in module.json
+    var everyDay = -1;
+    if (this.config.launchWeekDay == everyDay) {
+        // add cron schedule every day
+        this.controller.emit("cron.addTask", "batteryPolling.poll", {
+            minute: null,
+            hour: 0,
+            weekDay: null,
+            day: null,
+            month: null
+        });
+    }
+    else {
+        // add cron schedule every week
+        this.controller.emit("cron.addTask", "batteryPolling.poll", {
+            minute: 0,
+            hour: 0,
+            weekDay: this.config.launchWeekDay,
+            day: null,
+            month: null
+        });
+    }
     
     // run first time to set up the value
     this.onMetricUpdated();

@@ -1,10 +1,11 @@
 {
 	"dependencies": [],
 	"singleton": true,
-	"category": "peripherals",
+	"category": "automation_basic",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
-	"icon": "",
+	"icon": "icon.png",
+        "moduleName":"SwitchControlGenerator",
 	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
@@ -12,8 +13,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Trap events from Remotes and Sensors",
-		"description": "Generates new widgets on the fly for Remote Switch Controls and other devices sending control commands to controller",
+		"title": "__m_title__",
+		"description": "__m_descr__",
 		"trapNew": true,
 		"generated": [],
 		"banned": []
@@ -29,7 +30,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_switchControl:deviceId",
+					"enum": "namespaces:devices_buttonControl:deviceId",
 					"required": true
 				}
 			},
@@ -38,7 +39,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_switchControl:deviceId",
+					"enum": "namespaces:devices_buttonControl:deviceId",
 					"required": true
 				}
 			}
@@ -49,28 +50,28 @@
 		"fields": {
 			"trapNew": {
 				"label": "",
-				"rightLabel": "Create control device for new remote controls and switches"
+				"rightLabel": "__l_trapNew__"
 			},
 			"banned": {
-				"label": "List of remotes and switches not to instanciate",
+				"label": "__l_banned__",
 				"fields": {
 					"item": {
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_switchControl:deviceName"
+						"optionLabels": "namespaces:devices_buttonControl:deviceName"
 					}
 				}
 			},
 			"generated": {
-				"label": "List of remotes and switches to instanciate (filled automatically)",
+				"label": "__l_generated__",
 				"fields": {
 					"item": {
 						"type": "select",
 						"readonly": true,
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_switchControl:deviceName"
+						"optionLabels": "namespaces:devices_buttonControl:deviceName"
 					}
 				}
 			}

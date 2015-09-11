@@ -1,0 +1,8 @@
+{
+	"m_title":"Trap events from Remotes and Sensors",
+	"m_descr":"Remote Controls and other mobile controller but also battery operated wall controllers do not create an element in the UI but create events only.  This app simplifies the use of these events. An element creates visualizing the status of the remote control. The same time this element can be used as triggering event for scenes etc.",
+	"l_trapNew": "Create control device for new remote controls and switches",
+	"l_banned": "List of remotes and switches not to instantiate",
+	"l_generated": "List of remotes and switches to instantiate (filled automatically)",
+	"err":"SwitchControlGenerator: Virtual device should exist, but was not found."
+}

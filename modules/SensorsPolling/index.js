@@ -37,6 +37,7 @@ SensorsPolling.prototype.init = function (config) {
     var m = (p < 60) ? [0, 59, p] : 0;
     var h = p >= 24*60 ? 0 : (p/60 >=1 ? [0, 23, Math.round(p/60)] : null);
     var wd = p/24/60 >=1 ? [0, 6, Math.round(p/24/60)] : null;
+    var currentPoll, lastPoll, devJSON;
      
     this.controller.emit("cron.addTask", "sensorsPolling.poll", {
         minute: m,
@@ -47,13 +48,20 @@ SensorsPolling.prototype.init = function (config) {
     });
 
     this.onPoll = function () {
-        self.config.devices.forEach(function(vDevId) {
-            var vDev = this.controller.devices.get(vDevId);
-            
-            if (vDev)
-                vDev.performCommand("update");
+
+        currentPoll = Math.floor(new Date().getTime() / 1000);
+
+        this.devices.forEach(function(dev) {
+            devJSON = this.controller.devices.get(dev.id).toJSON();
+
+            if (self.config.devices.indexOf(dev.id) === -1 && devJSON.updateTime <= lastPoll && (dev.get('deviceType') === 'sensorBinary' || dev.get('deviceType') === 'sensorMultilevel')){
+                dev.performCommand("update");
+            }
         });
+
+        lastPoll = currentPoll;
     };
+    
     this.controller.on('sensorsPolling.poll', this.onPoll);
 };
 

@@ -1,6 +1,6 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.1.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -17,6 +17,8 @@ function LogicalRules (id, controller) {
     LogicalRules.super_.call(this, id, controller);
 
     var self = this;
+    
+    this.attachedList = [];
     
     this._testRule = function () { // wrapper to correct this and parameters in testRule
         self.testRule.call(self, null);
@@ -45,12 +47,12 @@ LogicalRules.prototype.init = function (config) {
             self.attachDetach(test.testRemote, true);
         } else if (test.testType === "nested") {
             test.testNested.tests.forEach(function(xtest) {
-                if (test.testType === "binary") {
-                    self.attachDetach(test.testBinary, true);
-                } else if (test.testType === "multilevel") {
-                    self.attachDetach(test.testMultilevel, true);
-                } else if (test.testType === "remote") {
-                    self.attachDetach(test.testRemote, true);
+                if (xtest.testType === "binary") {
+                    self.attachDetach(xtest.testBinary, true);
+                } else if (xtest.testType === "multilevel") {
+                    self.attachDetach(xtest.testMultilevel, true);
+                } else if (xtest.testType === "remote") {
+                    self.attachDetach(xtest.testRemote, true);
                 }
             });
         }
@@ -81,17 +83,19 @@ LogicalRules.prototype.stop = function () {
             self.attachDetach(test.testRemote, false);
         } else if (test.testType === "nested") {
             test.testNested.tests.forEach(function(xtest) {
-                if (test.testType === "binary") {
-                    self.attachDetach(test.testBinary, false);
-                } else if (test.testType === "multilevel") {
-                    self.attachDetach(test.testMultilevel, false);
-                } else if (test.testType === "remote") {
-                    self.attachDetach(test.testRemote, false);
+                if (xtest.testType === "binary") {
+                    self.attachDetach(xtest.testBinary, false);
+                } else if (xtest.testType === "multilevel") {
+                    self.attachDetach(xtest.testMultilevel, false);
+                } else if (xtest.testType === "remote") {
+                    self.attachDetach(xtest.testRemote, false);
                 }
             });
         }
     });
 
+    this.attachedList = [];
+    
     LogicalRules.super_.prototype.stop.call(this);
 };
 
@@ -105,8 +109,11 @@ LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
     }
     
     if (attachOrDetach) {
-        this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
-        this.controller.devices.on(test.device, "change:metrics:change", this._testRule);
+        if (this.attachedList.indexOf(test.device) === -1) {
+            this.attachedList.push(test.device);
+            this.controller.devices.on(test.device, "change:metrics:level", this._testRule);
+            this.controller.devices.on(test.device, "change:metrics:change", this._testRule);
+        }
     } else {
         this.controller.devices.off(test.device, "change:metrics:level", this._testRule);
         this.controller.devices.off(test.device, "change:metrics:change", this._testRule);
@@ -188,6 +195,8 @@ LogicalRules.prototype.testRule = function (tree) {
             }
         });
     }
+
+    return res;
 };
 
 LogicalRules.prototype.op = function (dval, op, val) {

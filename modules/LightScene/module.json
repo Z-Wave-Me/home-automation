@@ -1,19 +1,20 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"category": "scenes",
+	"category": "automation_basic",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
-	"icon": "",
-	"version": "1.0.0",
+	"icon": "icon.png",
+    "moduleName":"LightScene",
+	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "Light scene",
-		"description": "Light scene defines state of switches, dimmers, blinds",
+		"title": "__m_title__",
+		"description": "__m_descr__",
 		"switches": [],
 		"dimmers": [],
 		"scenes": []
@@ -33,7 +34,7 @@
 							"required": true
 						},
 						"status": {
-							"type": "number",
+							"type": "integer",
 							"required": true,
 							"enum": ["off", "on"]
 						}
@@ -52,9 +53,10 @@
 							"required": true
 						},
 						"status": {
-							"required": true,
+							"type": "integer",
 							"minimum": 0,
-							"maximum": 99
+							"maximum": 99,
+							"required": true
 						}
 					}
 				}
@@ -74,7 +76,7 @@
 	"options": {
 		"fields": {
 			"switches": {
-				"label": "List of switches",
+				"label": "__l_switches__",
 				"fields": {
 					"item": {
 						"fields": {
@@ -87,14 +89,14 @@
 							},
 							"status": {
 								"label": "",
-								"optionLabels": ["Off", "On"]
+								"optionLabels": ["__off__", "__on__"]
 							}
 						}
 					}
 				}
 			},
 			"dimmers": {
-				"label": "List of dimmers",
+				"label": "__l_dimmers__",
 				"fields": {
 					"item": {
 						"fields": {
@@ -106,15 +108,14 @@
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 							},
 							"status": {
-								"label": "State",
-								"type": "integer"
+								"label": "__l_level__"
 							}
 						}
 					}
 				}
 			},
 			"scenes": {
-				"label": "List of scenes to activate",
+				"label": "__l_scenes__",
 				"fields": {
 					"item": {
 						"type": "select",

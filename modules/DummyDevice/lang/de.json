@@ -1,0 +1,5 @@
+{
+	"m_title":"Gerätattrappe",
+	"m_descr":"Wie der Name verrät, erstellt diese App ein virtuelles Gerät, welches nur auf der UI existiert, jedoch mit keiner physischen Hardware verknüpft ist. Das kann zur Einstellung bestimmter Szenen oder zum Austesten mancher Situationen sinnvoll sein.<br><br>Einstellungen:<br><ul><li> Sie können bestimmen, ob Ihr Dummy Gerät als Binärschaltung oder als Multilevel-Schaltung auftreten soll (Dimmer, Motorsteuerung).</li></ul>",
+	"l_options":"Wählen Sie einen Gerätetyp:"
+}

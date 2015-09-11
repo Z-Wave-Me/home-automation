@@ -1,29 +1,25 @@
 {
-  // Details: https://github.com/victorporof/Sublime-JSHint#using-your-own-jshintrc-options
-  // Example: https://github.com/jshint/jshint/blob/master/examples/.jshintrc
-  // Documentation: http://www.jshint.com/docs/
-  "esnext": false,
-  "strict": true,
-  "globalstrict": true,
+  "nonew": true,
+  "curly": true,
+  "noarg": true,
+  "forin": true,
+  "noempty": true,
+  "eqeqeq":true,
+  "strict":true,
+  "undef":true,
+  "bitwise":true,
+  "browser":true,
+  "devel":true,
+  "mocha": true,
+  "node": true,
   "globals": {
-      "zway": true,
-      "inherits": true,
-      "AutomationControler": true,
-      "AutomationModule": true,
-      "VirtualDevice": true,
-      "$": true,
-      "React": true,
-      "Immutable": true,
-      "_": true,
-      "define": true,
-      "require": true
-  },
-  "browser": true,
-  "es5" : true,
-  "jquery": true,
-  "quotmark": false,
-  "smarttabs": true,
-  "trailing": true,
-  "undef": true,
-  "unused": true
+    "describe": true,
+    "it": true,
+    "executeFile": true,
+    "_": true,
+    "Core": true,
+    "global": true
+  }
 }
+
+

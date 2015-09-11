@@ -1,0 +1,11 @@
+{
+	"m_title":"PoppCam",
+	"m_descr":"Support the PoppCam",
+	"l_ip":"Camera IP URL",
+	"h_ip":"in the format 'http://IPADDRESS:PORT'. Default Port is 81",
+	"l_user":"Username",
+	"h_user":"This is the username that was set up during camera configuration. Default is 'admin'",
+	"l_pw":"Password",
+	"h_pw":"This is the password that was set up during camera configuration. Default is 'admin'",
+	"l_door_dev":"Door device"
+}

@@ -4,7 +4,8 @@
     "category": "surveillance",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"Camera",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {
@@ -12,8 +13,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Web Camera",
-        "description": "This module include configuration for a camera and create camera device",
+        "title": "__m_title__",
+        "description": "__m_descr__",
 	"url": "",
 	"zoomInUrl": "",
 	"zoomOutUrl": "",
@@ -77,7 +78,7 @@
                 "items": {
                     "field": "enum",
                     "datasource": "namespaces",
-                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
                     "required": false
                 }
             }
@@ -87,68 +88,68 @@
     "options": {
         "fields": {
             "url": {
-                "label": "Camera URL",
+                "label": "__l_cam_url__",
                 "type": "url",
                 "required": true
             },
             "zoomInUrl": {
-                "label": "ZoomIn URL",
+                "label": "__l_zoomin__",
                 "type": "url",
                 "required": false
             },
             "zoomOutUrl": {
-                "label": "ZoomOut URL",
+                "label": "__l_zoomout__",
                 "type": "url",
                 "required": false
             },
             "leftUrl": {
-                "label": "Left URL",
+                "label": "__l_left__",
                 "type": "url",
                 "required": false
             },
             "rightUrl": {
-                "label": "Right URL",
+                "label": "__l_right__",
                 "type": "url",
                 "required": false
             },
             "upUrl": {
-                "label": "Up URL",
+                "label": "__l_up__",
                 "type": "url",
                 "required": false
             },
             "downUrl": {
-                "label": "Down URL",
+                "label": "__l_down__",
                 "type": "url",
                 "required": false
             },
             "openUrl": {
-                "label": "Open URL",
+                "label": "__l_open__",
                 "type": "url",
                 "required": false
             },
             "closeUrl": {
-                "label": "Close URL",
+                "label": "__l_close__",
                 "type": "url",
                 "required": false
             },
             "user": {
-                "label": "Username for HTTP authentication",
-		"helper": "Leave empty if camera is not protected by a password",
+                "label": "__l_user__",
+		        "helper": "__h_http_auth__",
                 "required": false
             },
             "password": {
-                "label": "Password for HTTP authentication",
-		"helper": "Leave empty if camera is not protected by a password",
+                "label": "__l_pw__",
+		        "helper": "__h_http_auth__",
                 "required": false
             },
             "doorDevices": {
-                "label": "Door device",
+                "label": "__l_door_dev__",
                 "fields": {
                     "item": {
-			"type": "select",
+			        "type": "select",
                         "datasource": "namespaces",
                         "field": "optionLabels",
-                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
                     }
                 }
             }

@@ -1,10 +1,11 @@
 {
     "dependencies": [],
     "singleton": false,
-    "category": "notifications",
+    "category": "support_external_dev",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"NotificationSMSru",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {
@@ -12,14 +13,14 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "SMS.ru Notifications",
-        "description": "Sends all notifications via free SMS poroxy SMS.ru",
+        "title": "__m_title__",
+        "description": "__m_descr__",
         "api_key": "",
         "phone": "",
-	    "prefix": "Z-Way notification:"
+	    "prefix": "__prefix__"
     },
     "schema": {
-        "description": "Send SMS via SMS.ru gateway. To register enter your phone number, name and password on http://sms.ru/?panel=register and confirm your phone number with a code.",
+        "description": "__description__",
         "type": "object",
         "properties": {
             "phone": {
@@ -39,14 +40,14 @@
     "options": {
         "fields": {
             "phone": {
-                "label": "Phone number to send SMS. In form of 79261234567"
+                "label": "__l_phone__"
             },
             "prefix": {
-                "label": "Prefix for all messages"
+                "label": "__l_prefix__"
             },
             "api_key": {
-                "label": "API key from SMS.ru",
-		"helper": "After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+                "label": "__l_api_key__",
+		        "helper": "__h_api_key__"
             }
         }
     }

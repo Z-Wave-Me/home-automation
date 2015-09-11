@@ -1,0 +1,16 @@
+{
+	"m_title":"Battery Polling",
+	"m_descr":"The battery polling will update the battery status by asking all battery-operated device once a week for a battery status update.. You can pick the day of the week and a warning level, when this module will send you a warning note.",
+	"l_launch_wd":"Do battery polling on",
+	"every_d":"Every Day", 
+	"mon":"Monday", 
+	"tue":"Tuesday", 
+	"wed":"Wednesday", 
+	"thu":"Thursday", 
+	"fri":"Friday", 
+	"sat":"Saturday", 
+	"sun":"Sunday",
+	"l_warning_lvl":"Warning Level",
+	"h_warning_lvl":"Warn if device's battery is below this level",
+	"warning":"Attention! Device is low battery >:> "
+}

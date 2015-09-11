@@ -1,0 +1,11 @@
+{
+	"m_title":"Email и СМС Уведомление",
+	"m_descr":"Сцена отправки СМС и/или Email.",
+	"l_message":"Текстовое сообщение",
+	"l_phone":"Номер телефона на который будет отправляться СМС. Формат: 79261234567",
+	"l_api_key_sms":"API ключ с сайта http://sms.ru",
+	"h_api_key_sms":"После регистрации телефона на http://sms.ru в правой колонке появится ключ api_id (пример: a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"l_email":"Email адрес на который будет отправляться сообщение",
+	"l_api_key_email":"API ключ с сайта https://mandrillapp.com",
+	"h_api_key_email":"После регистрации email на https://mandrillapp.com в разделе Setting создайте ключ (пример: VFfeEspkFL1YqVSihhfqHw)"
+}

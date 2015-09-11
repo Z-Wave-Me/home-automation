@@ -1,0 +1,15 @@
+{
+	"m_title":"Smart Light",
+	"m_descr":"This app controls a dimmable light in a smart way in combination with a motion detector. At daytime and detected motion light is switched on for 100%, at night the light turns on for 20% only. If you select a dimmer with local control you can overwrite this automated setting using the local rockers. When overwritten to 0 the motion will not turn it off.<br><br>Settings:<br><ul><li>Select the motion sensor</li><li>Select the dimmer to control.</li><li>Change – if needed – the dimmer level for day and night</li><li>Change – if needed – the time interval for day and night</li><li>Pick the buttons to control the dimmer</li></ul><br>Usage: No element is created.",
+	"l_MotionSensor":"Motion Sensor",
+	"l_Dimmer":"Dimmer",
+	"l_Level":"Dimmer levels for day and night",
+	"l_DayLevel":"Day Level",
+	"l_NightLevel":"Night Level",
+	"l_Day":"The time interval when the light is switched on for Day Level",
+	"timeFormat":"hh:mm",
+	"l_DayTimeStart":"Start",
+	"l_DayTimeEnd":"End",
+	"l_DimmerButton":"Dimmer Button",
+	"h_DimmerButton":"To generate dimmer button activate module SwitchControlGenerator and then press dimmer button"
+}

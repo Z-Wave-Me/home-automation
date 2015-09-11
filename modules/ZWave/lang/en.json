@@ -1,0 +1,21 @@
+{
+	"m_title":"Z-Wave Network Access",
+	"m_descr":"Z-Way controls one Z-Wave network with up to 232 devices. This app will combine multiple Z-Way entities into one User Interface. Essentially the app is mapping the data of another Z-Way powered Gateway into your gateway. The elements are displayed and can be used like the local ones. Please note that the function of the second gateway remains untouched. This means that this second gateway will not see the elements for your first gateway but can control and access their own elements without and further restrictions: <br><br> Settings: <br><ul><li>You need to set the IP address of the Remote Box including the port number. </li><li>You need to define the polling interval. Once second in a quite good choice.</li> <li>You need to manage the remove device to be included into you UI.</li></ul>",
+	"l_port":"Serial port to Z-Wave dongle",
+	"l_name":"Internal name",
+	"h_name":"Should be a valid JS key string. Don't change unless you know what you are doing",
+	"rl_enableAPI":"Enable Z-Wave API",
+	"h_enableAPI":"Handler HTTP requests to /ZWaveAPI/* and /ZWave/<internal zway name>/*",
+	"rl_publicAPI":"Allow public access to Z-Wave API",
+	"h_publicAPI":"Do not ask for authentication to access Z-Wave API",
+	"rl_createVDev":"Create virtual devices in Home Automation engine",
+	"h_createVDev":"Without this Z-Wave devices will be visible only in Expert UI and via Z-Wave API",
+	"l_config":"Path to config folder",
+	"l_translations":"Path to dictionaries folder",
+	"l_zddx":"Path to ZDDX database",
+	"h_change_sth":"Don't change unless you know what you are doing",
+	"err_binding_start":"Cannot start Z-Wave binding: ",
+	"err_connct":"Connection lost to Z-Wave device ID: ",
+	"dev_btl":"Z-Wave device ID is back to life: ",
+	"err_dev_create":"Cannot create vDev based on: "
+}

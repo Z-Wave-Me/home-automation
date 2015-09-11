@@ -1,10 +1,11 @@
 {
     "dependencies": [],
     "singleton": false,
-    "category": "logging",
+    "category": "support_external_dev",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName":"SensorValueLogging",
     "version": "1.0.1",
     "maturity": "stable",
     "repository": {
@@ -12,8 +13,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Sensor values logging",
-        "description": "Store sensor values in JSON file or via HTTP requests to your server",
+        "title": "__m_title__",
+        "description": "__m_descr__",
         "device": ""
     },
     "schema": {
@@ -41,18 +42,18 @@
     "options": {
         "fields": {
             "device": {
-                "label": "Sensor to log",
+                "label": "__l_device__",
                 "datasource": "namespaces",
                 "field": "optionLabels",
                 "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_doorlock:deviceName,namespaces:devices_switchControl:deviceName"
             },
             "logTo": {
-            	"label": "How to store:",
-            	"optionLables": ["to JSON file in storage", "send via HTTP request"]
+            	"label": "__l_logTo__",
+            	"optionLables": ["__l_logTo_json__", "__l_logTo_http__"]
             },
             "url": {
-            	"label": "HTTP request to do. Strings ${id} and ${value} are replaced by sensor ID and value correspondingly",
-            	"helper": "Example: http://mydomainname.org/path/to/something/${id}?myval=${value}",
+            	"label": "__l_url__",
+            	"helper": "__h_url__",
             	"dependencies": {
             		"logTo": "HTTPGET"
 		}

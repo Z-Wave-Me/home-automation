@@ -1,0 +1,17 @@
+{
+  "m_title":"Web Kamera",
+  "m_descr":"Dieses Modul konfiguriert die eingebundene Kamera und erstellt ein virtuelles Gerät.",
+  "l_cam_url": "URL - Kamera",
+  "l_zoomin": "URL - Herein zommen",
+  "l_zoomout": "URL - Heraus zoomen",
+  "l_left": "URL - Drehung nach links",
+  "l_right": "URL - Drehung nach rechts",
+  "l_up": "URL - Drehung nach oben",
+  "l_down": "URL - Drehung nach unten",
+  "l_open": "URL - Öffen",
+  "l_close": "URL - Schließen",
+  "l_user": "Benutzername für HTTP Authentifizierung",
+  "h_http_auth": "Lassen Sie das Feld frei, wenn die Kamera nicht mit einem Passwort geschütztt ist.",
+  "l_pw":"Passwort für HTTP Authentifiziereung.",
+  "l_door_dev": "Door device"
+}

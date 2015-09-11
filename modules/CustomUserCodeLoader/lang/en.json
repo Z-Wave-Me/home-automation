@@ -1,0 +1,7 @@
+{
+	"m_title":"Load custom JavaScript file",
+	"m_descr":"The use of this app requires solid knowledge of JavaScript programming. The code provided in the file the app setup points to will be executed when the app is loaded. There is no way to create an element but its possible to access the Network data holders. This app is for JavaScript professionals only.",
+	"customCodeFiles_title":"File name",
+	"err_load":"Failed to load JavaScript file: ",
+	"h_options":"Add paths to files relative to automation/ folder."
+}

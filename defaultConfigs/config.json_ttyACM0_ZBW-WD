@@ -1,0 +1,161 @@
+{
+    "controller": {},
+    "vdevInfo": {},
+    "locations": [{
+        "id": 0,
+        "title": "globalRoom",
+        "user_img": "",
+        "default_img": "",
+        "img_type": ""
+    }],
+    "profiles": [{
+        "id": 1,
+        "role": 1,
+        "login": "admin",
+        "password": "admin",
+        "name": "Administrator",
+        "lang": "en",
+        "color": "#dddddd",
+        "dashboard": [],
+        "interval": 2000,
+        "rooms": [0],
+        "expert_view": false,
+        "hide_all_device_events": false,
+        "hide_system_events": false,
+        "hide_single_device_events": []
+    }, {
+        "id": 2,
+        "role": 3,
+        "login": "local",
+        "password": "local",
+        "name": "Local User",
+        "lang": "en",
+        "color": "#dddddd",
+        "dashboard": [],
+        "interval": 2000,
+        "rooms": [0],
+        "expert_view": false,
+        "hide_all_device_events": false,
+        "hide_system_events": false,
+        "hide_single_device_events": []
+    }],
+    "instances": [{
+        "id": 1,
+        "moduleId": "ZWave",
+        "params": {
+            "name": "zway",
+            "port": "/dev/ttyACM0",
+            "enableAPI": true,
+            "publicAPI": false,
+            "createVDev": true,
+            "config": "config",
+            "translations": "translations",
+            "ZDDX": "ZDDX"
+        },
+        "active": true,
+        "title": "Z-Wave Network Access",
+        "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)"
+    }, {
+        "id": 2,
+        "moduleId": "Cron",
+        "params": {},
+        "active": true,
+        "title": "System Clock (CRON)",
+        "description": "Scheduler used by other modules\n(Added by default)"
+    }, {
+        "id": 3,
+        "moduleId": "InbandNotifications",
+        "params": {},
+        "active": true,
+        "title": "Inband Notifier",
+        "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
+    }, {
+        "id": 4,
+        "moduleId": "RemoteAccess",
+        "active": true,
+        "title": "Remote Access",
+        "description": "Is necessary to configure remote access in SmartHome UI.\n(Added by default)",
+        "params": {
+            "path": "./zbw",
+            "userId": "",
+            "actStatus": true,
+            "sshStatus": false,
+            "zbwStatus": true,
+            "pass": "",
+            "lastChange": {}
+        }
+    }, {
+        "id": 5,
+        "moduleId": "InfoWidget",
+        "active": "true",
+        "title": "Welcome to your Smart Home!",
+        "description": "This Module creates an information widget.",
+        "params": {
+            "widgets": [],
+            "internationalize": true,
+            "widgetsInt": [{
+                "lang": "en",
+                "headline": "Welcome to your Smart Home!",
+                "text": "This interface allows managing your Smart Home equipped with interconnected Z-Wave devices. It will show every function of the device as one single <strong>Element</strong> (In case a physical device has multiple functions like switching and metering – it will generate multiple elements). All elements are listed in the <strong>Element View</strong> and can be filtered by function type (switch, dimmer, sensor) or other filtering criteria. <br><br>Each Element has an <strong>Element Configuration Dialog</strong> to rename it or to hide it in case was created but it is not needed. Important elements can be marked to be shown in the <strong>Dashboard</strong>. Additionally the elements can be grouped into rooms. <br><br>Every change of a sensor value or a switching status is called an <strong>Event</strong> and is shown in the <strong>Timeline</strong>. Filtering allows monitoring the changes of one single function or device. <br><br>All other functions such as time triggered actions, the use of information from the Internet, scenes plugin of other technologies and service are realized in <strong>Apps</strong>. These apps can create none, one or multiple new elements and events. The menu <strong>Settings > Apps</strong> allows downloading, activating and configuring your Apps. <br><br>To Add a new device please follow the instruction under <strong>Settings > Devices</strong>.",
+                "imgURI": "app/img/logo-z-wave-z-only.png"
+            }, {
+                "lang": "de",
+                "headline": "Willkommen in ihrem Smart Home!",
+                "text": "Hier können Sie die Z-Wave Geräte in ihrem Haus managen. Jede Funktion eines Gerätes wird als ein <strong>Element</strong> dargestellt (Hat ein physisches Gerät mehrere Funktionen, wie Sensoren oder Aktoren dann werden mehrere Elemente erzeugt). Alle Elemente sind in der <strong>Elementeübersicht</strong> dargestellt und können hier nach Name oder Elementtyp gefiltert werden. <br><br>Jedes Element hat ein <strong>Konfigurationsmenü</strong>, wo es unter anderem auch ausgeblendet werden kann, wenn es nicht benötigt wird. Wichtige Elemente können dort für das <strong>Dashboard</strong> markiert werden. Zusätzlich können die Elemente auch nach Räumen angeordnet werden. <br><br>Jeder Neue Sensorwert oder jede Statusänderung eines Sensors ist ein Ereignis und wird in der <strong>Ereignisübersicht</strong> angezeigt. Die Ereignisse eines einzelnen Elementes oder einer einzelnen Funktionsgruppe können herausgefiltert werden.<br><br>Alle anderen Funktionen, wie das Aktivieren einer Szene im Haus, die Nutzung von über Ethernet erreichbaren Geräten oder Internetdiensten werden alle als <strong>Anwendungen</strong>  bezeichnet. Diese Anwendungen erzeugen wieder entsprechend ihrer Funktion keine, ein oder mehrere Elemente. Der Menüpunkt <strong>Einstellungen > Anwendungen</strong> ermöglicht das Herunterladen, Installieren, Aktivieren und Konfigurieren dieser Anwendungen.<br><br>Um ein neues Gerät zur Smart Home-Steuerung hinzuzufügen, folgen Sie den Anweisungen unter <strong>Einstellungen > Geräte</strong>.",
+                "imgURI": "app/img/logo-z-wave-z-only.png"
+            }]
+        }
+    }, {
+        "id": 6,
+        "moduleId": "SensorsPolling",
+        "active": "true",
+        "title": "Periodical Sensor Polling",
+        "description": "Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.\n(Added by default)",
+        "params": {
+            "devices": [],
+            "period": "10"
+        }
+    }, {
+        "id": 7,
+        "moduleId": "BatteryPolling",
+        "active": "true",
+        "title": "Battery Polling Cooler Name",
+        "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
+        "params": {
+            "launchWeekDay": 0,
+            "warningLevel": "20"
+        }
+    }, {
+        "id": 8,
+        "moduleId": "SwitchControlGenerator",
+        "active": "true",
+        "title": "Trap events from Remotes and Sensors",
+        "description": "",
+        "params": {
+            "trapNew": true,
+            "banned": [],
+            "generated": []
+        }
+    }, {
+        "id": 9,
+        "moduleId": "InfoWidget",
+        "active": "true",
+        "title": "Licence Upgrade",
+        "description": "Please follow the steps for licence upgrade.",
+        "params": {
+            "widgets": [],
+            "internationalize": true,
+            "widgetsInt": [{
+                "lang": "en",
+                "headline": "Licence Upgrade",
+                "text": "Please enter the licence key to activate all of your WD SmartHome center’s functions. You can find the key on the keycard provided with your Smart Home Stick. <br><br>Go to the SmartHomeUI and select <strong>My Settings > Management > Licence Upgrade</strong> and enter the licence key.",
+                "imgURI": "app/img/logo-z-wave-z-only.png"
+            }, {
+                "lang": "de",
+                "headline": "Lizenzerweiterung ",
+                "text": "Um alle Funktionen Ihrer WD SmartHome Zentrale nutzen zu können, geben Sie bitte den Lizenzcode ein. Dieser liegt dem Smart Home Stick als Code-Karte bei. <br><br>Wählen Sie in der SmartHomeUI <strong>Einstellungen > Management > Lizenzerweiterung</strong> und geben Sie den Lizenzcode ein.",
+                "imgURI": "app/img/logo-z-wave-z-only.png"
+            }]
+        }
+    }]
+}

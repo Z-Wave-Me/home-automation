@@ -1,10 +1,11 @@
 {
 	"singleton": false,
 	"dependencies": [],
-	"category": "devices",
+	"category": "developers_stuff",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
-	"icon": "",
+	"icon": "icon.png",
+    "moduleName": "HTTPDevice",
 	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
@@ -12,8 +13,8 @@
 		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "HTTP device",
-		"description": "Create virtual device based on HTTP data.",
+		"title": "__m_title__",
+		"description": "__m_descr__",
 
 		"deviceType": "",
 
@@ -39,10 +40,13 @@
 		"getterParser_switchMultilevel": "",
 		"getterPollInterval_switchMultilevel": 0,
 
-		"method": "GET"
+		"method": "GET",
+
+		"updateOnAction": false,
+
+		"skipEventIfSameValue": false
 	},
 	"schema": {
-		"label": "Select action condition",
 		"type": "object",
 		"properties": {
 			"deviceType": {
@@ -146,6 +150,17 @@
 				"type": "string",
 				"required": true,
 				"enum": ["GET", "POST"]
+			},
+
+			"updateOnAction": {
+				"type": "boolean",
+				"required": true,
+				"dependencies": "deviceType"
+			},
+
+			"skipEventIfSameValue": {
+				"type": "boolean",
+				"required": true
 			}
 		}
 	},
@@ -156,132 +171,147 @@
 			},
 
 			"setterOn_toggleButton": {
-				"label": "URL for action On",
-				"placeholder": "http://192.168.0.100/action/on",
+				"label": "__l_setterOn__",
+				"placeholder": "__p_setterOn__",
 				"dependencies": {
 					"deviceType": "toggleButton"
 				}
 			},
 
 			"getter_sensorBinary": {
-				"label": "URL to get value",
-				"placeholder": "http://192.168.0.100/get/value",
+				"label": "__l_getter__",
+				"placeholder": "__p_getter__",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
 			},
 			"getterParser_sensorBinary": {
-				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
-				"helper": "Can be empty to use string as is. Example: $$.split(\":\")[1] or $$.data.metrics.level or $$ === \"ON\" ? \"on\" : \"off\"",
+				"label": "__l_getterParser_Binary__",
+				"helper": "__h_getterParser_Binary__",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
 			},
 			"getterPollInterval_sensorBinary": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "sensorBinary"
 				}
 			},
 
 			"getter_sensorMultilevel": {
-				"label": "URL to get value",
-				"placeholder": "http://192.168.0.100/get/value",
+				"label": "__l_getter__",
+				"placeholder": "__p_getter__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 			"getterParser_sensorMultilevel": {
-				"label": "Inline Javascript to parse incoming data to number",
-				"helper": "Can be empty to use parseFloat() function. Example: $$.split(\":\")[1] or parseInt($$, 16) or $$.data.metrics.level or parseFloat($$.findOne(\"/A/B[C='123']/D/text()\"))",
+				"label": "__l_getterParser_Multilevel__",
+				"helper": "__h_getterParser_Multilevel__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 			"getterPollInterval_sensorMultilevel": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 			"scale_sensorMultilevel": {
-				"label": "Sensor scale",
+				"label": "__l_scale__",
 				"dependencies": {
 					"deviceType": "sensorMultilevel"
 				}
 			},
 
 			"setterOn_switchBinary": {
-				"label": "URL for action On",
-				"placeholder": "http://192.168.0.100/action/on",
+				"label": "__l_setterOn__",
+				"placeholder": "__p_setterOn__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"setterOff_switchBinary": {
-				"label": "URL for action Off",
-				"placeholder": "http://192.168.0.100/action/off",
+				"label": "__l_setterOff__",
+				"placeholder": "__p_setterOff__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"getter_switchBinary": {
-				"label": "URL to get value",
-				"placeholder": "http://192.168.0.100/get/value",
+				"label": "__l_getter__",
+				"placeholder": "__p_getter__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"getterParser_switchBinary": {
-				"label": "Inline Javascript to parse incoming data to \"on\"/\"off\" strings",
-				"helper": "Can be empty to use string as is. Example: $$.split(\":\")[1] or $$.data.metrics.level or $$ === \"ON\" ? \"on\" : \"off\"",
+				"label": "__l_getterParser_Binary__",
+				"helper": "__h_getterParser_Binary__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 			"getterPollInterval_switchBinary": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "switchBinary"
 				}
 			},
 
 			"setterLevel_switchMultilevel": {
-				"label": "URL for action",
-				"placeholder": "http://192.168.0.100/action/set/$$",
-				"helper": "$$ is used to represent level in the URL. For example: http://host/dimmer/level/$$/set",
+				"label": "__l_setterLevel__",
+				"placeholder": "__p_setterLevel__",
+				"helper": "__h_setterLevel__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
 			},
 			"getter_switchMultilevel": {
-				"label": "URL to get value",
-				"placeholder": "http://192.168.0.100/get/value",
+				"label": "__l_getter__",
+				"placeholder": "__p_getter__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
 			},
 			"getterParser_switchMultilevel": {
-				"label": "Inline Javascript to parse incoming data to number",
-				"helper": "Can be empty to use parseFloat() function. Example: $$.split(\":\")[1] or parseInt($$, 16) or $$.data.metrics.level or parseFloat($$.findOne(\"/A/B[C='123']/D/text()\"))",
+				"label": "__l_getterParser_Multilevel__",
+				"helper": "__h_getterParser_Multilevel__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
 			},
 			"getterPollInterval_switchMultilevel": {
-				"label": "Interval in seconds between polling requests",
-				"helper": "Empty or 0 to disable periodical requests (explicit update command will stll initiate request process)",
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__",
 				"dependencies": {
 					"deviceType": "switchMultilevel"
 				}
 			},
 
 			"method": {
-				"label": "HTTP method to use",
+				"label": "__l_method__",
 				"type": "select"
+			},
+
+			"updateOnAction": {
+				"type": "checkbox",
+				"rightLabel": "__rl_updateOnAction__",
+				"helper": "__h_updateOnAction__",
+				"dependencies": {
+					"deviceType": [ "switchBinary", "switchMultilevel"]
+				}
+			},
+
+			"skipEventIfSameValue": {
+				"type": "checkbox",
+				"rightLabel": "__rl_skipEventIfSameValue__",
+				"helper": "__h_skipEventIfSameValue__"
 			}
 		}
 	}

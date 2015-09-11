@@ -1,0 +1,59 @@
+{
+    "singleton": false,
+    "dependencies": [],
+    "category": "surveillance",
+    "author": "Z-Wave.Me",
+    "homepage": "http://www.foscam.com/",
+    "icon": "icon.png",
+    "moduleName":"VistaCam",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "VisaCam",
+        "description": "__m_descr__",
+	"url": "",
+	"doorDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "url": {
+                "required": true
+            },
+            "doorDevices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+                    "required": false
+                }
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "url": {
+                "label": "__l_ip__",
+				"helper": "__h_ip__",                
+                "required": true
+            },
+            "doorDevices": {
+                "label": "__l_door_dev__",
+                "fields": {
+                    "item": {
+			"type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+                    }
+                }
+            }
+        }
+    }
+}

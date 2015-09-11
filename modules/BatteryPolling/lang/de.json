@@ -1,0 +1,16 @@
+{
+	"m_title":"Batteriestatus",
+	"m_descr":"Die Batteriestandabfrage aktualisiert den Batteriestatus durch wöchentliche Abfrage aller batteriebetriebener Geräte über deren aktuellen Batteriestatus. Sie können den Wochentag und die Warnstufe auswählen, wann dieses Modul Ihnen eine Warnmeldung sendet.",
+	"l_launch_wd":"Wochentag, an dem der Batteriestatus abgefragt werden soll:",
+	"every_d":"täglich", 
+	"mon":"Montag", 
+	"tue":"Dienstag", 
+	"wed":"Mittwoch", 
+	"thu":"Donnerstag", 
+	"fri":"Freitag", 
+	"sat":"Samstag", 
+	"sun":"Sonntag",
+	"l_warning_lvl":"Benachrichtigungslevel",
+	"h_warning_lvl":"Das Modul sendet eine Benachrichtigung, wenn der Batteriestatus eines Gerätes unterhalb dieses Levels fällt.",
+	"warning":"Achtung! Das Batterielevel des Gerätes beträgt nur noch >:> "
+}

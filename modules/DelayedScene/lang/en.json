@@ -1,0 +1,8 @@
+{
+	"m_title":"Delayed Action",
+	"m_descr":"This app can trigger one scene after a defined delay after another scene was triggered. The app requires at least two scenes (app Light Scene) to function: The triggering scene and the triggered scene. The delay between the two scenes can be defines too.<br><br>Settings:<br><ul><li>Select the scene that shall trigger another scene</li><li>Select the scene that shall be triggered by the first scene</li><li>Define the delay in Seconds between the two scenes</li></ul>",
+	"r_l_options":"Restart timer on trigger instead of starting new timer",
+	"l_triggerScene":"Scene that trigger timer start",
+	"l_delayedScene":"Delayed scene:",
+	"l_delay":"Delay in seconds:"
+}

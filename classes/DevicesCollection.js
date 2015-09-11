@@ -86,7 +86,7 @@ _.extend(DevicesCollection.prototype, {
         } else if (this.db.cid.hasOwnProperty(identificator)) {
             result = this.db.cid[identificator];
         }
-        return result;
+        return result || null;
     },
     first: function () {
         return _.first(this.models);
@@ -170,7 +170,7 @@ _.extend(DevicesCollection.prototype, {
         return _.each(this.models, callback);
     },
     forEach: function (callback) {
-        return _.forEach(this.models, callback);
+        return this.each(callback);
     },
     on: function () {
         var vDevId = "",

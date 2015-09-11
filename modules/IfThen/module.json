@@ -1,0 +1,227 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "automation_basic",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+    "moduleName": "IfThen",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"sourceDevice": {},
+		"targets": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"sourceDevice": {
+				"type": "object",
+				"properties": {
+					"device": {
+						"field": "enum",
+						"datasource": "namespaces",
+						"enum": "namespaces:devices_buttonControl:deviceId,namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
+						"required": true
+					},
+					"status": {
+						"type": "integer",
+						"enum": ["off", "on"],
+						"required": true,
+						"dependencies": "device"
+					}
+				}
+			},
+			"targets": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"filter": {
+							"type":"string",
+							"enum": ["switchBinary","switchMultilevel","doorlock","scene"],
+							"default": "switchBinary",
+							"required": true
+						},
+						"switchBinary": {
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {
+								"target": {
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchBinary:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "integer",
+									"enum": ["off", "on"],
+									"required": true
+								}
+							}
+						},
+						"switchMultilevel":{
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {
+								"target": {
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "integer",
+									"minimum": 0,
+									"maximum": 99,
+									"required": true
+								}
+							}
+						},
+						"doorlock":{
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {
+								"target": {
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_doorlock:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "integer",
+									"enum": ["close", "open"],
+									"required": true
+								}
+							}
+						},
+						"scene":{
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {				
+								"target":{
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_toggleButton:deviceId",
+									"required": true
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"sourceDevice": {
+				"label": "__l_event_sources__",
+				"fields": {
+					"device": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_buttonControl:deviceName,namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
+					},
+					"status": {
+						"optionLabels": ["__off__", "__on__"],
+						"dependencies": {
+							"device" : ["namespaces:devices_switchControl:deviceId","namespaces:devices_switchBinary:deviceId","namespaces:devices_switchMultilevel:deviceId","namespaces:devices_sensorBinary:deviceId"]
+						}
+					}
+				}
+			},
+			"targets": {
+				"label": "__l_actors__",
+				"fields": {
+					"item": {
+						"fields": {
+							"filter": {
+								"type": "select",
+								"label":"__l_filter__",
+								"optionLabels": ["__switchBinary__","__switchMultilevel__","__doorlock__","__l_scene__"]
+							},
+							"switchBinary": {
+								"dependencies": {
+									"filter": "switchBinary"
+								},
+								"fields":{
+									"target" :{
+										"type": "select",
+										"label": "__l_target_device__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchBinary:deviceName"
+									},
+									"status": {
+										"label": "__l_action__",
+										"optionLabels": ["__off__", "__on__"]
+									}
+								}
+							},
+							"switchMultilevel": {
+								"dependencies": {
+									"filter": "switchMultilevel"
+								},
+								"fields":{
+									"target" :{
+										"type": "select",
+										"label": "__l_target_device__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+									},
+									"status": {
+										"label": "__l_level__"
+									}
+								}
+							},
+							"doorlock": {
+								"dependencies": {
+									"filter": "doorlock"
+								},
+								"fields":{
+									"target" :{
+										"type": "select",
+										"label": "__l_target_device__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_doorlock:deviceName"
+									},
+									"status": {
+										"label": "__l_action__",
+										"optionLabels": ["__close__", "__open__"]
+									}
+								}
+							},
+							"scene": {
+								"dependencies": {
+									"filter": "scene"
+								},
+								"fields":{
+									"target" :{
+										"type": "select",
+										"label": "__l_scene__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_toggleButton:deviceName"								},
+									"status": {
+										"label": "__l_action__",
+										"optionLabels": ["__off__", "__on__"]
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

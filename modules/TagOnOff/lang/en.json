@@ -1,0 +1,6 @@
+{
+	"m_title":"Tag devices with On/Off",
+	"m_descr":"Every element can be tagged by the user using the configuration dialog. The app automatically tags switching devices depending on their switching state.<br>Settings: Just pick the tag of the on state and the off state.",
+	"l_tagOn":"Tag for On state",
+	"l_tagOff":"Tag for Off state"
+}

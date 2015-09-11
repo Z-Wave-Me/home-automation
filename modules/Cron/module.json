@@ -1,10 +1,11 @@
 {
     "singleton": true,
     "dependencies": [],
-    "category": "scheduling",
+    "category": "basic_gateway_modules",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
-    "icon": "",
+    "icon": "icon.png",
+    "moduleName": "Cron",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {
@@ -12,8 +13,8 @@
             "source": "https://github.com/Z-Wave-Me/home-automation"
     },
     "defaults": {
-        "title": "Cron scheduler",
-	    "description": "Scheduler used by other modules"
+        "title": "__m_title__",
+	    "description": "__m_descr__"
     },
     "schema": {
     },
