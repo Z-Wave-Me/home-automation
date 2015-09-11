@@ -172,35 +172,49 @@ HomeKitGate.prototype.init = function (config) {
 	};
 	
 	var onDeviceAddedCore = function (vDev) {
-		var title = vDev.get("metrics:title") || vDev.id;
+		var uniqueId = vDev.get("creatorId") || 1;
 		var manufacturer = "z-wave.me"; // todo
 		var deviceType = vDev.get("deviceType") || "virtualDevice";
 		
 		var m = self.mapping[vDev.id] = {};
-		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, deviceType, vDev.id);
+		var accessory = m.$accessory = self.hk.accessories.addAccessory({
+			get: function() { return vDev.get("metrics:title") || vDev.id; }
+		}, manufacturer, deviceType, vDev.id, uniqueId);
 
-		if (deviceType === "sensorMultilevel" && vDev.id.substring(0, 12) === "OpenWeather_") {
+		if ((deviceType === "sensorMultilevel" || deviceType === "sensorMultiline") && vDev.id.substring(0, 12) === "OpenWeather_") {
 			// temperature sensor (OpenWeather)
-			var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
+			var service = accessory.addService(HomeKit.Services.TemperatureSensor, "OpenWeather");
 
-			m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+			m.level = [];
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 				get: function() { 
 					var value = parseFloat(vDev.get("metrics:level")) || 0.0;
 
 					var scaleTitle = vDev.get("metrics:scaleTitle");
-					if (scaleTitle != "°C") {
+					if (scaleTitle && scaleTitle != "°C") {
 						// temperature should always be in Celsius
 						value = (value - 32) * 5 / 9;
 					}
 
 					return value; 
 				}
-			});
-			m.units = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+			}, { unit: "celsius" }));
+
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
 				get: function() { 
 					return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
 				}
-			});
+			}));
+
+			if (deviceType === "sensorMultiline") {
+				m.level.push(service.addCharacteristic(HomeKit.Characteristics.CurrentRelativeHumidity, "float", {
+					get: function() {
+						var info = vDev.get("metrics:zwaveOpenWeather");
+						return (info && info.main && info.main.humidity) || 0.0;
+					}
+				}, { "unit": "percentage" }));
+			}
 		}
 		else if (deviceType == "sensorMultilevel") {
 			var idParts = vDev.id.split('-');
@@ -212,7 +226,9 @@ HomeKitGate.prototype.init = function (config) {
 					// temperature
 					var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
 
-					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+					m.level = [];
+
+					m.level.push(service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 						get: function() { 
 							var value = parseFloat(vDev.get("metrics:level")) || 0.0;
 
@@ -224,12 +240,13 @@ HomeKitGate.prototype.init = function (config) {
 
 							return value;
 						}
-					});
-					m.units = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+					}, { unit: "celsius" }));
+
+					m.level.push(service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
 						get: function() { 
 							return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
 						}
-					});
+					}));
 
 				} else if (sensorTypeId === 3) {
 
@@ -345,14 +362,14 @@ HomeKitGate.prototype.init = function (config) {
 			m.level = [];
 
 			m.level.push(service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
-				get: function() { return parseFloat(vDev.get("metrics:level")) > 0; },
+				get: function() { return parseInt(vDev.get("metrics:level")) > 0; },
 				set: function(value) { vDev.performCommand(value ? "on" : "off"); }
 			}));
 
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "float", {
-				get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; },
+			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
+				get: function() { return Math.min(parseInt(vDev.get("metrics:level")) || 0, 100); },
 				set: function(value) { vDev.performCommand("exact", { level: value }); }
-			}));
+			}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }));
 		}
 		else if (deviceType == "switchRGBW") {
 			var service = accessory.addService(HomeKit.Services.Lightbulb, "RGBW Switch");
@@ -368,16 +385,16 @@ HomeKitGate.prototype.init = function (config) {
 				get: function() { 
 					var color = vDev.get("metrics:color");
 					var hsb = RGB2HSB(color);
-					return hsb.hue; 
+					return hsb.hue * 360.0; 
 				},
 				set: function(value) { 
 					var color = vDev.get("metrics:color");
 					var hsb = RGB2HSB(color);
-					hsb.hue = value;
+					hsb.hue = value / 360.0;
 					color = HSB2RGB(hsb);
 					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
 				}
-			}));
+			}, { unit: "arcdegrees", minValue: 0, maxValue: 360, minStep: 1 }));
 
 			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Saturation, "int", {
 				get: function() { 
@@ -392,7 +409,7 @@ HomeKitGate.prototype.init = function (config) {
 					color = HSB2RGB(hsb);
 					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
 				}
-			}));
+			}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }));
 
 			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
 				get: function() { 
@@ -407,7 +424,14 @@ HomeKitGate.prototype.init = function (config) {
 					color = HSB2RGB(hsb);
 					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
 				}
-			}));
+			}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }));
+		}
+		else if (deviceType == "battery") {
+			var service = accessory.addService(HomeKit.Services.Battery, "Battery");
+			
+			m.level = service.addCharacteristic(HomeKit.Characteristics.BatteryLevel, "int", {
+				get: function() { return parseInt(vDev.get("metrics:level")); }
+			}, { unit: "percentage", minValue: 0, maxValue: 100 });
 		}
 		// todo
 	}
@@ -435,7 +459,7 @@ HomeKitGate.prototype.init = function (config) {
 		// update device tree
 		self.hk.update();
 	}
-	
+
 	this.onLevelChanged = function (vDev) {
 		console.log("HK: updated", vDev.id);
 		var m = self.mapping[vDev.id];
@@ -465,8 +489,11 @@ HomeKitGate.prototype.init = function (config) {
 	// listen for future device collection changes
 	this.controller.devices.on("created", this.onDeviceAdded);
 	this.controller.devices.on("removed", this.onDeviceRemoved);
+
 	this.controller.devices.on("change:metrics:level", this.onLevelChanged);
 	this.controller.devices.on("change:metrics:color", this.onLevelChanged);
+	this.controller.devices.on("change:metrics:scaleTitle", this.onLevelChanged);
+	this.controller.devices.on("change:metrics:zwaveOpenWeather", this.onLevelChanged);
 	
 	// update device tree
     this.hk.update();
