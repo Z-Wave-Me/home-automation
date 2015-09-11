@@ -32,6 +32,8 @@ HomeKitGate.prototype.init = function (config) {
     // Call superclass' init (this will process config argument and so on)
     HomeKitGate.super_.prototype.init.call(this, config);
 
+    var that = this;
+
     this.hk = new HomeKit(this.config.name, function(r) {
         if (r.method == "GET" && r.path == "/accessories") {
         	return this.accessories.serialize(r);
@@ -65,7 +67,7 @@ HomeKitGate.prototype.init = function (config) {
                 };
             }
         } else if (r.path == "/identify") {
-        	console.log(this.name, "PIN:", this.pin);
+        	that.controller.addNotification("info", "HomeKit PIN: " + this.pin, "module", "HomeKit");
         }
     });
 
