@@ -183,40 +183,31 @@ HomeKitGate.prototype.init = function (config) {
 			get: function() { return vDev.get("metrics:title") || vDev.id; }
 		}, manufacturer, deviceType, vDev.id, uniqueId);
 
-		if ((deviceType === "sensorMultilevel" || deviceType === "sensorMultiline") && vDev.id.substring(0, 12) === "OpenWeather_") {
+		if (deviceType === "sensorMultiline" && vDev.id.substring(0, 12) === "OpenWeather_") {
 			// temperature sensor (OpenWeather)
 			var service = accessory.addService(HomeKit.Services.TemperatureSensor, "OpenWeather");
 
-			m.level = [];
-
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
-				get: function() { 
-					var value = parseFloat(vDev.get("metrics:level")) || 0.0;
-
-					var scaleTitle = vDev.get("metrics:scaleTitle");
-					if (scaleTitle && scaleTitle != "°C") {
-						// temperature should always be in Celsius
-						value = (value - 32) * 5 / 9;
+			m.zwaveOpenWeather = [
+				service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+					get: function() { 
+						var info = vDev.get("metrics:zwaveOpenWeather");
+						return (info && info.main) ? (info.main.temp - 273.15) : 0.0; 
 					}
+				}, { unit: "celsius" }),
 
-					return value; 
-				}
-			}, { unit: "celsius" }));
+				service.addCharacteristic(HomeKit.Characteristics.CurrentRelativeHumidity, "float", {
+					get: function() {
+						var info = vDev.get("metrics:zwaveOpenWeather");
+						return (info && info.main && parseInfinfo.main.humidity) || 0.0;
+					}
+				}, { "unit": "percentage" })
+			];
 
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+			m.scaleTitle = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
 				get: function() { 
 					return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
 				}
-			}));
-
-			if (deviceType === "sensorMultiline") {
-				m.level.push(service.addCharacteristic(HomeKit.Characteristics.CurrentRelativeHumidity, "float", {
-					get: function() {
-						var info = vDev.get("metrics:zwaveOpenWeather");
-						return (info && info.main && info.main.humidity) || 0.0;
-					}
-				}, { "unit": "percentage" }));
-			}
+			});
 		}
 		else if (deviceType == "sensorMultilevel") {
 			var idParts = vDev.id.split('-');
@@ -228,9 +219,7 @@ HomeKitGate.prototype.init = function (config) {
 					// temperature
 					var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
 
-					m.level = [];
-
-					m.level.push(service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 						get: function() { 
 							var value = parseFloat(vDev.get("metrics:level")) || 0.0;
 
@@ -242,13 +231,13 @@ HomeKitGate.prototype.init = function (config) {
 
 							return value;
 						}
-					}, { unit: "celsius" }));
+					}, { unit: "celsius" });
 
-					m.level.push(service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+					m.scaleTitle = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
 						get: function() { 
 							return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
 						}
-					}));
+					});
 
 				} else if (sensorTypeId === 3) {
 
@@ -361,72 +350,72 @@ HomeKitGate.prototype.init = function (config) {
 		else if (deviceType == "switchMultilevel") {
 			var service = accessory.addService(HomeKit.Services.Lightbulb, "Multilevel Switch");
 			
-			m.level = [];
+			m.level = [ 
+				service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+					get: function() { return parseInt(vDev.get("metrics:level")) > 0; },
+					set: function(value) { vDev.performCommand(value ? "on" : "off"); }
+				}),
 
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
-				get: function() { return parseInt(vDev.get("metrics:level")) > 0; },
-				set: function(value) { vDev.performCommand(value ? "on" : "off"); }
-			}));
-
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
-				get: function() { return Math.min(parseInt(vDev.get("metrics:level")) || 0, 100); },
-				set: function(value) { vDev.performCommand("exact", { level: value }); }
-			}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }));
+				service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
+					get: function() { return Math.min(parseInt(vDev.get("metrics:level")) || 0, 100); },
+					set: function(value) { vDev.performCommand("exact", { level: value }); }
+				}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 })
+			];
 		}
 		else if (deviceType == "switchRGBW") {
 			var service = accessory.addService(HomeKit.Services.Lightbulb, "RGBW Switch");
 
-			m.level = [];
-
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
+			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
 				get: function() { return vDev.get("metrics:level") === "on"; },
 				set: function(value) { vDev.performCommand(value ? "on" : "off"); }
-			}));
+			});
 
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Hue, "float", {
-				get: function() { 
-					var color = vDev.get("metrics:color");
-					var hsb = RGB2HSB(color);
-					return hsb.hue * 360.0; 
-				},
-				set: function(value) { 
-					var color = vDev.get("metrics:color");
-					var hsb = RGB2HSB(color);
-					hsb.hue = value / 360.0;
-					color = HSB2RGB(hsb);
-					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
-				}
-			}, { unit: "arcdegrees", minValue: 0, maxValue: 360, minStep: 1 }));
+			m.color = [
+				service.addCharacteristic(HomeKit.Characteristics.Hue, "float", {
+					get: function() { 
+						var color = vDev.get("metrics:color");
+						var hsb = RGB2HSB(color);
+						return hsb.hue * 360.0; 
+					},
+					set: function(value) { 
+						var color = vDev.get("metrics:color");
+						var hsb = RGB2HSB(color);
+						hsb.hue = value / 360.0;
+						color = HSB2RGB(hsb);
+						vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
+					}
+				}, { unit: "arcdegrees", minValue: 0, maxValue: 360, minStep: 1 }),
 
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Saturation, "int", {
-				get: function() { 
-					var color = vDev.get("metrics:color");
-					var hsb = RGB2HSB(color);
-					return Math.floor(hsb.saturation * 100.0 + 0.5); 
-				},
-				set: function(value) { 
-					var color = vDev.get("metrics:color");
-					var hsb = RGB2HSB(color);
-					hsb.saturation = value / 100.0;
-					color = HSB2RGB(hsb);
-					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
-				}
-			}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }));
+				service.addCharacteristic(HomeKit.Characteristics.Saturation, "int", {
+					get: function() { 
+						var color = vDev.get("metrics:color");
+						var hsb = RGB2HSB(color);
+						return Math.floor(hsb.saturation * 100.0 + 0.5); 
+					},
+					set: function(value) { 
+						var color = vDev.get("metrics:color");
+						var hsb = RGB2HSB(color);
+						hsb.saturation = value / 100.0;
+						color = HSB2RGB(hsb);
+						vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
+					}
+				}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }),
 
-			m.level.push(service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
-				get: function() { 
-					var color = vDev.get("metrics:color");
-					var hsb = RGB2HSB(color);
-					return Math.floor(hsb.brightness * 100.0 + 0.5); 
-				},
-				set: function(value) { 
-					var color = vDev.get("metrics:color");
-					var hsb = RGB2HSB(color);
-					hsb.brightness = value / 100.0;
-					color = HSB2RGB(hsb);
-					vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
-				}
-			}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 }));
+				service.addCharacteristic(HomeKit.Characteristics.Brightness, "int", {
+					get: function() { 
+						var color = vDev.get("metrics:color");
+						var hsb = RGB2HSB(color);
+						return Math.floor(hsb.brightness * 100.0 + 0.5); 
+					},
+					set: function(value) { 
+						var color = vDev.get("metrics:color");
+						var hsb = RGB2HSB(color);
+						hsb.brightness = value / 100.0;
+						color = HSB2RGB(hsb);
+						vDev.performCommand("exact", { red: color.r, green: color.g, blue: color.b }); 
+					}
+				}, { unit: "percentage", minValue: 0, maxValue: 100, minStep: 1 })
+			];
 		}
 		else if (deviceType == "battery") {
 			var service = accessory.addService(HomeKit.Services.Battery, "Battery");
@@ -439,49 +428,55 @@ HomeKitGate.prototype.init = function (config) {
 	}
 	
 	this.onDeviceAdded = function (vDev) {
-		if (!vDev.get("permanently_hidden")) {
-			console.log("HK: added", vDev.id);
-			onDeviceAddedCore(vDev);
-			// update device tree
-			self.hk.update();
-		}
+		if (vDev.get("permanently_hidden")) return;
+
+		console.log("HK: added", vDev.id);
+
+		onDeviceAddedCore(vDev);
+		// update device tree
+		self.hk.update();
 	};
 	
 	this.onDeviceRemoved = function (vDev) {
-		console.log("HK: removed", vDev.id);
 		var m = self.mapping[vDev.id];
-		if (m) {
-			var accessory = m.$accessory;
-			if (accessory)
-				accessory.remove();
+		if (!m) return;
+
+		console.log("HK: removed", vDev.id);
+
+		var accessory = m.$accessory;
+		if (accessory)
+			accessory.remove();
 			
-			delete self.mapping[vDev.id];
-		}
+		delete self.mapping[vDev.id];
 		
 		// update device tree
 		self.hk.update();
 	}
 
-	this.onLevelChanged = function (vDev) {
-		console.log("HK: updated", vDev.id);
+	this.onMetricsChanged = function (vDev, metrics) {
+		if (metrics.length < 9 || metrics.substring(0, 8) !== "metrics:") return;
+		metrics = metrics.substring(8);
+
 		var m = self.mapping[vDev.id];
 		if (!m) return;
 		
 		var accessory = m.$accessory;
 		if (!accessory) return;
-		
-		if (m.level instanceof Array) {
-			for (var i = 0; i < m.level.length; i++) {
-				var characteristics = m.level[i];
-				if (!characteristics) return;
 
-				self.hk.update(accessory.aid, characteristics.iid);
+		var characteristic = m[metrics];
+		if (!characteristic) return;
+
+		console.log("HK: updated", metrics, "on", vDev.id);
+
+		if (characteristic instanceof Array) {
+			for (var i = 0; i < characteristic.length; i++) {
+				var c = characteristic[i];
+				if (!c) continue;
+
+				self.hk.update(accessory.aid, c.iid);
 			};
 		} else {
-			var characteristics = m.level;
-			if (!characteristics) return;
-
-			self.hk.update(accessory.aid, characteristics.iid);
+			self.hk.update(accessory.aid, characteristic.iid);
 		}
 	}
 	
@@ -492,10 +487,10 @@ HomeKitGate.prototype.init = function (config) {
 	this.controller.devices.on("created", this.onDeviceAdded);
 	this.controller.devices.on("removed", this.onDeviceRemoved);
 
-	this.controller.devices.on("change:metrics:level", this.onLevelChanged);
-	this.controller.devices.on("change:metrics:color", this.onLevelChanged);
-	this.controller.devices.on("change:metrics:scaleTitle", this.onLevelChanged);
-	this.controller.devices.on("change:metrics:zwaveOpenWeather", this.onLevelChanged);
+	this.controller.devices.on("change:metrics:level", this.onMetricsChanged);
+	this.controller.devices.on("change:metrics:color", this.onMetricsChanged);
+	this.controller.devices.on("change:metrics:scaleTitle", this.onMetricsChanged);
+	this.controller.devices.on("change:metrics:zwaveOpenWeather", this.onMetricsChanged);
 	
 	// update device tree
     this.hk.update();
