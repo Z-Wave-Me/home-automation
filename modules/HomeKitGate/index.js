@@ -183,6 +183,12 @@ HomeKitGate.prototype.init = function (config) {
 			get: function() { return vDev.get("metrics:title") || vDev.id; }
 		}, manufacturer, deviceType, vDev.id, uniqueId);
 
+		// m field name is metric name on which characteristics depend
+		// m field value is characteristic (or array of characteristics) which depend on it
+		// one characteristic may be a part of multiple fields (in case characteristic value depends on several metrics)
+		// when metric changes, all corresponding characteristics will be updated automatically
+		// updated value will be automatically pushed to HomeKit controller (in case it has subscribed to characteristic changes)
+
 		if (deviceType === "sensorMultiline" && vDev.id.substring(0, 12) === "OpenWeather_") {
 			// temperature sensor (OpenWeather)
 			var service = accessory.addService(HomeKit.Services.TemperatureSensor, "OpenWeather");
@@ -191,6 +197,7 @@ HomeKitGate.prototype.init = function (config) {
 				service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 					get: function() { 
 						var info = vDev.get("metrics:zwaveOpenWeather");
+						// according to HomeKit specs, temperature should always be in Celsius
 						return (info && info.main) ? (info.main.temp - 273.15) : 0.0; 
 					}
 				}, { unit: "celsius" }),
@@ -219,13 +226,13 @@ HomeKitGate.prototype.init = function (config) {
 					// temperature
 					var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
 
-					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
+					var temperature = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 						get: function() { 
 							var value = parseFloat(vDev.get("metrics:level")) || 0.0;
 
 							var scaleTitle = vDev.get("metrics:scaleTitle");
 							if (scaleTitle != "°C") {
-								// temperature should always be in Celsius
+								// according to HomeKit specs, temperature should always be in Celsius
 								value = (value - 32) * 5 / 9;
 							}
 
@@ -233,11 +240,14 @@ HomeKitGate.prototype.init = function (config) {
 						}
 					}, { unit: "celsius" });
 
-					m.scaleTitle = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
+					var scale = service.addCharacteristic(HomeKit.Characteristics.TemperatureUnits, "int", {
 						get: function() { 
 							return vDev.get("metrics:scaleTitle") == "°C" ? 0 : 1; 
 						}
 					});
+
+					m.level = temperature;
+					m.scaleTitle = [ temperature, scale ];
 
 				} else if (sensorTypeId === 3) {
 
@@ -463,20 +473,16 @@ HomeKitGate.prototype.init = function (config) {
 		var accessory = m.$accessory;
 		if (!accessory) return;
 
-		var characteristic = m[metrics];
-		if (!characteristic) return;
+		var characteristics = m[metrics];
+		if (!characteristics) return;
 
 		console.log("HK: updated", metrics, "on", vDev.id);
 
-		if (characteristic instanceof Array) {
-			for (var i = 0; i < characteristic.length; i++) {
-				var c = characteristic[i];
-				if (!c) continue;
-
-				self.hk.update(accessory.aid, c.iid);
-			};
+		if (characteristics instanceof Array) {
+			for (var i = 0; i < characteristics.length; i++)
+				self.hk.update(accessory.aid, characteristics[i].iid);
 		} else {
-			self.hk.update(accessory.aid, characteristic.iid);
+			self.hk.update(accessory.aid, characteristics.iid);
 		}
 	}
 	
@@ -487,6 +493,7 @@ HomeKitGate.prototype.init = function (config) {
 	this.controller.devices.on("created", this.onDeviceAdded);
 	this.controller.devices.on("removed", this.onDeviceRemoved);
 
+	// all used metrics should be listed here:
 	this.controller.devices.on("change:metrics:level", this.onMetricsChanged);
 	this.controller.devices.on("change:metrics:color", this.onMetricsChanged);
 	this.controller.devices.on("change:metrics:scaleTitle", this.onMetricsChanged);
@@ -503,7 +510,12 @@ HomeKitGate.prototype.stop = function () {
 
 	this.controller.devices.off("created", this.onDeviceAdded);
 	this.controller.devices.off("removed", this.onDeviceRemoved);
-	this.controller.devices.off("change:metrics:level", this.onLevelChanged);
+
+	// all used metrics should be listed here:
+	this.controller.devices.off("change:metrics:level", this.onMetricsChanged);
+	this.controller.devices.off("change:metrics:color", this.onMetricsChanged);
+	this.controller.devices.off("change:metrics:scaleTitle", this.onMetricsChanged);
+	this.controller.devices.off("change:metrics:zwaveOpenWeather", this.onMetricsChanged);
 
     if (this.hk) {
         this.hk.stop();
@@ -512,7 +524,7 @@ HomeKitGate.prototype.stop = function () {
     delete this.mapping;
     delete this.onDeviceAdded;
     delete this.onDeviceRemoved;
-    delete this.onLevelChanged;
+    delete this.onMetricsChanged;
 };
 // ----------------------------------------------------------------------------
 // --- Module methods
