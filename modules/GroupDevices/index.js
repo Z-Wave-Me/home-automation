@@ -90,18 +90,20 @@ GroupDevices.prototype.init = function (config) {
     };
     
     this.config.devices.forEach(function(dev) {
-        this.controller.devices.on(dev.device, "change:metrics:level", this.handler);
+        this.controller.devices.on(dev.device, "change:metrics:level", self.handler);
     });
 };
 
 GroupDevices.prototype.stop = function () {
+    var self = this;
+    
     if (this.vDev) {
         this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
     }
 
     this.config.devices.forEach(function(dev) {
-        this.controller.devices.off(dev.device, "change:metrics:level", this.handler);
+        this.controller.devices.off(dev.device, "change:metrics:level", self.handler);
     });
 
     GroupDevices.super_.prototype.stop.call(this);
