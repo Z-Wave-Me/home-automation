@@ -95,9 +95,9 @@ _.extend(BaseModel.prototype, {
 
             changes.forEach(function (key) {
                 if (!!that.collection) {
-                    that.collection.emit('change:' + key, that);
+                    that.collection.emit('change:' + key, that, key);
                 }
-                that.emit('change:' + key, that);
+                that.emit('change:' + key, that, key);
             });
         }
 
