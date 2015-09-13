@@ -7,5 +7,8 @@
 	"heat":"Heizen",
 	"cool":"Kühlen",
 	"l_hysteresis":"Hysteresis",
-	"h_hysteresis":"Maximaler Bereich zwischen Ist- und Solltemperatur, nachdem sich das Thermostat an/ausschalten soll."
+	"h_hysteresis":"Maximaler Bereich zwischen Ist- und Solltemperatur, nachdem sich das Thermostat an/ausschalten soll.",
+	"l_scale": "Scale",
+	"scale_C": "°C",
+	"scale_F": "°F"
 }

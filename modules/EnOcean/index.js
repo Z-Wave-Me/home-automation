@@ -537,7 +537,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "thermostat",
 					metrics: {
-						scaleTitle: scale,
+						scaleTitle: scale, // TODO!!! Check if F scale is defined in EnOcean
 						level: '',
 						min: 5,
 						max: 40,

@@ -1,6 +1,6 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.0.0
+Version: 2.1.2
 -------------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>
 Copyright: (c) Z-Wave.Me, 2014
@@ -1848,8 +1848,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
                                                                 metrics: {
                                                                         scaleTitle: instance.ThermostatSetPoint.data[mode].scaleString.value,
                                                                         level: DH.val.value,
-                                                                        min: 5,
-                                                                        max: 40,
+                                                                        min: instance.ThermostatSetPoint.data[mode].scale.value === 0 ? 5 : 41,
+                                                                        max: instance.ThermostatSetPoint.data[mode].scale.value === 0 ? 40 : 104,
                                                                         icon: 'thermostat',
                                                                         title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
                                                                 }

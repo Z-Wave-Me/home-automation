@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
         "moduleName":"ThermostatDevice",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -17,7 +17,8 @@
 		"description": "__m_descr__",
 		"switch": "",
 		"sensor": "",
-		"heaton": true
+		"heaton": true,
+		"scale": "C"
 	},
 	"schema": {
 		"type": "object",
@@ -41,6 +42,10 @@
 			"hysteresis": {
 				"minimum": 0,
 				"maximum": 5,
+				"required": true
+			},
+			"scale": {
+				"enum": ["C", "F"],
 				"required": true
 			}
 		},
@@ -71,6 +76,11 @@
 				"label": "__l_hysteresis__",
 				"type": "number",
 				"helper": "__h_hysteresis__"
+			},
+			"scale": {
+				"label": "__l_scale__",
+				"type": "select",
+				"optionLabels": ["__scale_C__", "__scale_F__"]
 			}
 		}
 	}
