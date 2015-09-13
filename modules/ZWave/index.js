@@ -1841,15 +1841,18 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
                                                 _vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode;
 					
 					if (!self.controller.devices.get(_vDevId)) {
+												var tmin = DH.min ? DH.min.value : (DH.scale == 0 ? 5 : 41);
+												var tmax = DH.max ? DH.max.value : (DH.scale == 0 ? 40 : 104);
+
                                                 t_vDev[mode] = self.controller.devices.create({
                                                         deviceId: _vDevId,
                                                         defaults: {
                                                                 deviceType: "thermostat",
                                                                 metrics: {
-                                                                        scaleTitle: instance.ThermostatSetPoint.data[mode].scaleString.value,
+                                                                        scaleTitle: DH.scaleString.value,
                                                                         level: DH.val.value,
-                                                                        min: instance.ThermostatSetPoint.data[mode].scale.value === 0 ? 5 : 41,
-                                                                        max: instance.ThermostatSetPoint.data[mode].scale.value === 0 ? 40 : 104,
+                                                                        min: tmin,
+                                                                        max: tmax,
                                                                         icon: 'thermostat',
                                                                         title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
                                                                 }
