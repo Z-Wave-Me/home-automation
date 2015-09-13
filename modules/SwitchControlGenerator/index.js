@@ -91,11 +91,22 @@ SwitchControlGenerator.prototype.init = function (config) {
                 });
             }
         });
-
-
-
                 
         self.bindings[zwayName] = [];
+
+        self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "lastExcludedDevice", function(type) {
+            var _id = this.value;
+            // remove vDev and cleanup vDev info
+            self.generated.filter(function(el) { return !!el && el.indexOf("ZWayVDev_" + zwayName + "_Remote_" + _id) === 0; }).forEach(function(name) {
+                self.controller.devices.remove(name);
+                self.controller.devices.cleanup(name);
+            });
+            // remove from generated and banned lists
+            self.generated = self.generated.filter(function(el) { return !!el && el.indexOf("ZWayVDev_" + zwayName + "_Remote_" + _id) !== 0; });
+            self.config.generated = self.config.generated.filter(function(el) { return !!el && el.indexOf("ZWayVDev_" + zwayName + "_Remote_" + _id) !== 0; });
+            self.config.banned = self.config.banned.filter(function(el) { return !!el && el.indexOf("ZWayVDev_" + zwayName + "_Remote_" + _id) !== 0; });
+            self.saveConfig();
+        }, "");
 
         var ctrlNodeId = zway.controller.data.nodeId.value,
             insts = zway.devices[ctrlNodeId].instances;
@@ -285,7 +296,7 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     this.widgetHandler.call(vDev, cmd, par);
 };
 
-SwitchControlGenerator.prototype.remove = function(zwayName, cmd, par, ids) {
+SwitchControlGenerator.prototype.remove = function(zwayName, ids) {
     var postfix = ids.join("-"),
         name = "ZWayVDev_" + zwayName + "_Remote_" + postfix;
         
