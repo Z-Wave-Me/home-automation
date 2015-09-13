@@ -212,6 +212,13 @@ SwitchControlGenerator.prototype.init = function (config) {
             this.zwayReg(name);
         }
     }
+    
+    this.controller.on("SwitchControlGenerator.register", function(zwayName, srcNodeId, srcInstanceId, dstInstanceId) {
+        var _trapNew = self.config.trapNew;
+        self.config.trapNew = true; // to force creation of new elements even if not allowed to do it on event trap
+        self.handler(zwayName, "", {}, [srcNodeId, srcInstanceId, dstInstanceId]);
+        self.config.trapNew = _trapNew;
+    });
 };
 
 SwitchControlGenerator.prototype.stop = function () {
@@ -264,13 +271,19 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
             return;
         }
 
+        var vendor = "";
+        try {
+            vendor = global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value;
+        } catch (e) {
+        }
+        
         this.controller.devices.create({
             deviceId: name,
             defaults: {
                 deviceType: "buttonControl",
                 metrics: {
                     icon: '',
-                    title: "Button " + global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value + " " + ids.slice(1).join("-"),
+                    title: "Button " + vendor + " " + ids.slice(1).join("-"),
                     level: "",
                     change: ""
                 }
@@ -284,11 +297,11 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         this.saveConfig();
     }
     
-    var vDev = this.controller.devices.get(name),
-        moduleName = "SwitchControlGenerator",
-        langFile = this.controller.loadModuleLang(moduleName);
+    var vDev = this.controller.devices.get(name);
     
     if (vDev === null) {
+        var moduleName = "SwitchControlGenerator",
+            langFile = this.controller.loadModuleLang(moduleName);
         this.controller.addNotification("critical", langFile.err, "controller", moduleName);
         return;
     }
