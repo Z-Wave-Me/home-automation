@@ -139,6 +139,16 @@ _.extend(DevicesCollection.prototype, {
         that.controller.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
         return model;
     },
+    cleanup: function (identificator) {
+        var that = this,
+            model = that.get(identificator);
+
+        if (model) {
+            console.log("Can not cleanup device info: device " + identificator + " exists");
+        }
+        
+        that.controller.clearVdevInfo(identificator);
+    },
     where: function (obj) {
         var that = this,
             check,

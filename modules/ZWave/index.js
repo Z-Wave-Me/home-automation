@@ -828,7 +828,7 @@ ZWave.prototype.defineHandlers = function () {
 					result = "failed";
 				}
 			});
-    
+
 			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
 			
 			while ((new Date()).valueOf() < d &&  result === "in progress") {
@@ -951,15 +951,24 @@ ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId,
 		}
 	}
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
-	// two prototypes:
+	// three prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
-	//  (dataBindings, zway, nodeId,			     path, func)
+	//  (dataBindings, zway, nodeId,                             path, func)
+	//  (dataBindings, zway,                                     path, func) // bind to controller data
 
 	var pathArr = [],
 		data = null,
+		ctrlBind = is_function(instanceId),
 		devBind = is_function(commandClassId);
 
-	if (devBind) {
+	if (ctrlBind) {
+		path = nodeId;
+		func = instanceId;
+		nodeId = undefined;
+		instanceId = undefined;
+		commandClassId = undefined;
+		data = zway.controller.data;
+	} else if (devBind) {
 		path = instanceId;
 		func = commandClassId;
 		instanceId = undefined;
@@ -986,7 +995,13 @@ ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, comm
 	}
 
 	if (data) {
-		if (devBind) {
+		if (ctrlBind) {
+			dataBindings.push({
+				"zway": zway,
+				"path": path,
+				"func": data.bind(func, false)
+			});
+		} else if (devBind) {
 			dataBindings.push({
 				"zway": zway,
 				"nodeId": nodeId,
@@ -1013,10 +1028,11 @@ ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, comm
 
 ZWave.prototype.dataUnbind = function(dataBindings) {
 	dataBindings.forEach(function (item) {
-		var devBind = ! ("instanceId" in item);
+		var ctrlBind = ! ("nodeId" in item),
+		    devBind = ! ("instanceId" in item);
 
-		if (item.zway && item.zway.isRunning() && item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))) {
-			var data = devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data,
+		if (item.zway && item.zway.isRunning() && (ctrlBind || (item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))))) {
+			var data = ctrlBind ? item.zway.controller.data : (devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data),
 				pathArr = item.path ? item.path.split(".") : [];
 
 			while (pathArr.length) {
@@ -1129,26 +1145,27 @@ ZWave.prototype.gateDevicesStart = function () {
 						mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
 						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
 						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
-						devId,postFix;					
+						devId,
+						postFix;					
 					
 					// try to get fix by manufacturerProductId and application Version
-					if(!!mId && !!mPT && !!mPId && !!self.postfix) {
+					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
 
 						devId = mId + '.' + mPT + '.' + mPId,
 						appMajorId = devId + '.' + appMajor,
 						appMinorId = devId + '.' + appMinor,
-						postFix = self.postfix.filter(function(device){
+						postFix = self.postfix.filter(function(device) {
 							return 	device.id === devId || 		//search by manufacturerProductId
 									device.id === appMajorId || //search by applicationMajor
 									device.id === appMinorId; 	//search by applicationMinor
 						});
 					}
 
-					if(postFix) {
-						if(postFix.length > 0){
+					if (postFix) {
+						if (postFix.length > 0) {
 							try {
 								// works of course only during inclusion - after restart hidden elements are visible again
-								if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
+								if (!!nodeId && c.data.lastIncludedDevice.value === nodeId) {
 									var intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
 								    	intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
 
@@ -1161,33 +1178,33 @@ ZWave.prototype.gateDevicesStart = function () {
 										try {
 											// call preInteview functions from postfix.json
 											postFix.forEach(function(fix){
-												if(!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0){
+												if (!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0) {
 													fix.preInterview.forEach(function(func){
 														eval(func);
 													});
 												}
 											});
-										}catch(e){
+										} catch(e) {
 											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
 										}
 									}
 								}
 																
 								// call postInterview functions from postfix.json
-								postFix.forEach(function(fix){
-									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0){
-										fix.postInterview.forEach(function(func){
+								postFix.forEach(function(fix) {
+									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0) {
+										fix.postInterview.forEach(function(func) {
 											eval(func);
 										});
 									}
 								});
-							}catch(e){
+							} catch(e) {
 								console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
 							}
 						}
 					}
 
-					if(create){
+					if (create) {
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
 					}
 				} else {
@@ -1198,6 +1215,16 @@ ZWave.prototype.gateDevicesStart = function () {
 			self.parseDelCommandClass(nodeId, instanceId, commandClassId);
 		}
 	}, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+	
+	self.dataBind(self.gateDataBinding, self.zway, "lastExcludedDevice", function(type) {
+		var _id = this.value,
+		    _toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id) === 0; }).map(function(el) { return el.id; });
+
+                _toRemove.forEach(function (name) {
+                        self.controller.devices.remove(name);
+        		self.controller.devices.cleanup(name);
+                });
+	}, "");	
 };
 
 ZWave.prototype.gateDevicesStop = function () {
@@ -1384,11 +1411,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type, arg) {
-				        if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"]) && this.updateTime > this.invalidateTime) {
-				                setTimeout(function () {
-				                        self.zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].Get();
-                                                }, 1000);
-				        }
+					if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"]) && this.updateTime > this.invalidateTime) {
+						setTimeout(function () {
+							self.zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].Get();
+						}, 1000);
+					}
 					try {
 						vDev.set("metrics:level", this.value);
 					} catch (e) {}
@@ -1803,12 +1830,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						overlay: {},
 						handler: function (command) {
 							if ("on" === command) {
-							        var lastMode = withModeHeat ? MODE_HEAT : MODE_COOL;
-							        
-							        // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
-							        if (withModeHeat && withModeCool && instance.ThermostatSetPoint && instance.ThermostatSetPoint.data[MODE_HEAT] && instance.ThermostatSetPoint.data[MODE_COOL]) {
-							                lastMode = instance.ThermostatSetPoint.data[MODE_HEAT].setVal.updateTime > instance.ThermostatSetPoint.data[MODE_COOL].setVal.updateTime ? MODE_HEAT : MODE_COOL;
-                                                                }
+								var lastMode = withModeHeat ? MODE_HEAT : MODE_COOL;
+								
+								// modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
+								if (withModeHeat && withModeCool && instance.ThermostatSetPoint && instance.ThermostatSetPoint.data[MODE_HEAT] && instance.ThermostatSetPoint.data[MODE_COOL]) {
+									lastMode = instance.ThermostatSetPoint.data[MODE_HEAT].setVal.updateTime > instance.ThermostatSetPoint.data[MODE_COOL].setVal.updateTime ? MODE_HEAT : MODE_COOL;
+								}
 								instance.ThermostatMode.Set(lastMode);
 							} else if ("off" === command) {
 								instance.ThermostatMode.Set(MODE_OFF);
@@ -1831,53 +1858,53 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL],
 					modes = [];
-                                
+				
 				withTempHeat && modes.push(MODE_HEAT);
 				withTempCool && modes.push(MODE_COOL);
 				
 				var t_vDev = [];
 				modes.forEach(function(mode) {
 					var DH = instance.ThermostatSetPoint.data[mode],
-                                                _vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode;
+						_vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode;
 					
 					if (!self.controller.devices.get(_vDevId)) {
-												var tmin = DH.min ? DH.min.value : (DH.scale == 0 ? 5 : 41);
-												var tmax = DH.max ? DH.max.value : (DH.scale == 0 ? 40 : 104);
+						var tmin = DH.min ? DH.min.value : (DH.scale == 0 ? 5 : 41);
+						var tmax = DH.max ? DH.max.value : (DH.scale == 0 ? 40 : 104);
 
-                                                t_vDev[mode] = self.controller.devices.create({
-                                                        deviceId: _vDevId,
-                                                        defaults: {
-                                                                deviceType: "thermostat",
-                                                                metrics: {
-                                                                        scaleTitle: DH.scaleString.value,
-                                                                        level: DH.val.value,
-                                                                        min: tmin,
-                                                                        max: tmax,
-                                                                        icon: 'thermostat',
-                                                                        title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
-                                                                }
-                                                        },
-                                                        overlay: {},
-                                                        handler: function (command, args) {
-                                                                instance.ThermostatSetPoint.Set(mode, args.level);
-                                                                instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
-                                                        },
-                                                        moduleId: self.id
-                                                });
+						t_vDev[mode] = self.controller.devices.create({
+							deviceId: _vDevId,
+							defaults: {
+								deviceType: "thermostat",
+								metrics: {
+									scaleTitle: DH.scaleString.value,
+									level: DH.val.value,
+									min: tmin,
+									max: tmax,
+									icon: 'thermostat',
+									title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
+								}
+							},
+							overlay: {},
+							handler: function (command, args) {
+								instance.ThermostatSetPoint.Set(mode, args.level);
+								instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
+							},
+							moduleId: self.id
+						});
 
-                                                if (t_vDev[mode]) {
-                                                        self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
-                                                                if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                                                                        delete t_vDev[mode];
-                                                                        self.controller.devices.remove(_vDevId);
-                                                                } else {
-                                                                        try {
-                                                                                t_vDev[mode].set("metrics:level", this.value);
-                                                                        } catch (e) {}
-                                                                }
-                                                        });
-                                                }
-                                        }
+						if (t_vDev[mode]) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									delete t_vDev[mode];
+									self.controller.devices.remove(_vDevId);
+								} else {
+									try {
+										t_vDev[mode].set("metrics:level", this.value);
+									} catch (e) {}
+								}
+							});
+						}
+					}
 				});
 			}
 		} else if (this.CC["AlarmSensor"] === commandClassId) {
@@ -1982,44 +2009,44 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				notificationTypeId = parseInt(notificationTypeId, 10);
 
 				if (!isNaN(notificationTypeId)) {
-				        var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
+					var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
 					if (notificationTypeId === 0x06 && (cc.data[notificationTypeId].eventMask.value & ((1 << DOOR_OPEN) | (1 << DOOR_CLOSE)))) { // Very special case of Door
-                                                a_defaults.metrics.icon = 'door';
-                                                
-                                                var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
+						a_defaults.metrics.icon = 'door';
+						
+						var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
-                                                if (!self.controller.devices.get(a_id)) {
-                                                        a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+						if (!self.controller.devices.get(a_id)) {
+							a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 
-                                                        var a_vDev = self.controller.devices.create({
-                                                                deviceId: a_id,
-                                                                defaults: a_defaults,
-                                                                overlay: {},
-                                                                handler: function(command) {
-                                                                        if (command === "update") {
-                                                                                cc.Get(0, notificationTypeId, DOOR_OPEN);
-                                                                                cc.Get(0, notificationTypeId, DOOR_CLOSE);
-                                                                        }
-                                                                },
-                                                                moduleId: self.id
-                                                        });
+							var a_vDev = self.controller.devices.create({
+								deviceId: a_id,
+								defaults: a_defaults,
+								overlay: {},
+								handler: function(command) {
+									if (command === "update") {
+										cc.Get(0, notificationTypeId, DOOR_OPEN);
+										cc.Get(0, notificationTypeId, DOOR_CLOSE);
+									}
+								},
+								moduleId: self.id
+							});
 
-                                                        if (a_vDev) {
-                                                                self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-                                                                        if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                                                                                self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
-                                                                        } else {
-                                                                                if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) {
-                                                                                        try {
-                                                                                                a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
-                                                                                        } catch (e) {}
-                                                                                }
-                                                                        }
-                                                                }, "value");
-                                                        }
-                                                }
-                                        }
-                                        
+							if (a_vDev) {
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+										self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
+									} else {
+										if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) {
+											try {
+												a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
+											} catch (e) {}
+										}
+									}
+								}, "value");
+							}
+						}
+					}
+					
 					// we handle only few Notification Types
 					switch (notificationTypeId) {
 						case 0x01: // Smoke

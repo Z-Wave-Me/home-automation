@@ -633,6 +633,11 @@ AutomationController.prototype.setVdevInfo = function (id, device) {
     return this.vdevInfo[id];
 };
 
+AutomationController.prototype.clearVdevInfo = function (id) {
+    delete this.vdevInfo[id];
+    this.saveConfig();
+};
+
 AutomationController.prototype.saveNotifications = function () {
     saveObject("notifications", this.notifications);
 };
