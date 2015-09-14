@@ -205,7 +205,7 @@ HomeKitGate.prototype.init = function (config) {
 				service.addCharacteristic(HomeKit.Characteristics.CurrentRelativeHumidity, "float", {
 					get: function() {
 						var info = vDev.get("metrics:zwaveOpenWeather");
-						return (info && info.main && parseInfinfo.main.humidity) || 0.0;
+						return (info && info.main && info.main.humidity) || 0.0;
 					}
 				}, { "unit": "percentage" })
 			];
