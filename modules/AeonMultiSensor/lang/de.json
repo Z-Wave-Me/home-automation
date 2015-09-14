@@ -1,0 +1,18 @@
+{
+	"m_title":"Aeon Multi Sensor",
+	"m_descr":"Aeon-Multi-Sensor-Modul wurde speziell für die Aeotec 4 in 1 Multi-Sensor geschrieben. Tagsüber Licht eingeschaltet, wenn die Lumineszenz unter dem vorgesehenen Wert, in der Nacht das Licht schaltet auf die gewünschte Stufe. Wenn Ihr Sensor unterstützt humdity, können Sie an einem Switch drehen, wenn die Feuchtigkeit erreicht ein hohes Niveau und aus, wenn es einen niedrigen Pegel erreicht. Die perfekte Anwendung dieses Moduls ist, wenn der Sensor in einem Badezimmer verwendet wird. Stellen Sie die Helligkeitswerte und wenn der Pegel auf oder unter diesem Wert wird das Licht eingeschaltet, wenn ein Dimmer ausgewählt wird das Licht an den Dimmwert zwischen den geraden und Morgenstunden konfiguriert gesetzt; sonst wird es mit voller Reichweite eingeschaltet werden. Geben Sie die Feuchtewerte und wählen Sie eine andere binäre Schalter, in diesem Fall einen Ventilator, um die Luftfeuchtigkeit im Raum zu löschen.",
+	"l_Motion_Sensor":"Bewegungssensor",
+	"l_Dimmer":"Dimmer",
+	"l_Dimmer_Level":"Dimmer Level",
+	"l_Luminosity":"Das Licht wird eingeschaltet, wenn Leuchtkraft es bei oder unter dem eingegebenen Wert",
+	"l_Luminosity_Sensor":"Helle Sensor",
+	"l_Luminosity_Value":"Helle Wert",
+	"l_Humidity_Sensor":"Sensor, der die Luftfeuchtigkeit erfasst und schaltet ein Gerät also Ventilator.",
+	"l_Humidity_Value":"Feuchtewert",
+	"l_Switch":"Switch",
+	"l_Hum_Value_Low":"Luftfeuchtigkeit Low Value",
+	"l_Hum_Value_High":"Luftfeuchtigkeit High Value",
+	"l_Day":"Die Zeit, wenn das Licht eingeschaltet",
+	"l_Start":"Anfang",
+	"l_End":"Ende"
+}
