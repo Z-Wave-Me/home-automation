@@ -1,0 +1,10 @@
+{
+	"m_title":"Counter triggering binary sensor",
+	"m_descr":"The module considers how many times have triggered the sensor. Used in the calculation of water flow.",
+	"l_BinarySensor":"Binary sensor",
+	"on":"An",
+	"off":"Aus",
+	"l_EventSensor":"Event from sensor",
+	"l_ValueToAdd":"Value to add",
+	"l_ScaleTitle":"Sensoreinheit"
+}
