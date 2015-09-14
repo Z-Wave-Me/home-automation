@@ -115,14 +115,14 @@
         "optionLabels": "namespaces:devices_sensorBinary:deviceName"
       },
       "Dimmer": {
-        "label": "l_Dimmer",
+        "label": "__l_Dimmer__",
         "type": "select",
         "datasource": "namespaces",
         "field": "optionLabels",
         "optionLabels": "namespaces:devices_switchMultilevel:deviceName"
       },
       "Level": {
-        "label": "l_Dimmer_Level",
+        "label": "__l_Dimmer_Level__",
         "type": "number",
         "minimum": 0,
         "maximum": 99,
