@@ -132,7 +132,7 @@
         "label": "__l_Luminosity__",
         "fields": {
           "LuminositySensor": {
-            "label": "l_Luminosity_Sensor",
+            "label": "__l_Luminosity_Sensor",
             "type": "select",
             "datasource": "namespaces",
             "field": "optionLabels",
