@@ -87,7 +87,7 @@ InbandNotifications.prototype.init = function (config) {
                     lvl = lvl.toFixed(1);
                 }
 
-                if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && (createItem === 1 || devType === "toggleButton" || devType === "switchControl"))){
+                if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && (createItem === 1 || devType === "toggleButton" || devType === "switchControl" || devType === "buttonControl"))){
 
                     // depending on device type choose the correct notification
                     switch(devType) {

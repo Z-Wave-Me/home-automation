@@ -44,7 +44,7 @@ CounterTriggeringSensor.prototype.init = function (config) {
                 scaleTitle: this.config.scaleTitle
             }
         },
-        handler: function(command, args) {console.log("updated")},
+        handler: function(command, args) {console.log("CounterTriggeringSensor_" + this.id + " updated")},
         moduleId: this.id
     });
 
