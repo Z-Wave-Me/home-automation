@@ -1,0 +1,19 @@
+{
+	"m_title":"Periodische Tür Polling",
+	"m_descr":"Die Sensorabfrage App veranlasst, dass regelmäßig alle Sensoren ihren Wert im User Interface aktualisieren. Sollte ein Modul nicht aktiv sein, laufen alle Funktionen des Z-Wave Systems zwar weiter, aber die in der UI angezeigten und für Logical Rules verwendeten Werte können veraltet sein. Das bedeutet, um die  Informationen auf der UI möglichst aktuell zu halten, wäre eine häufige Abfrage sehr vorteilhaft. Bei batteriebetriebenen Geräten wird der jüngste Wert durch dessen Aufwach-Intervall definiert. In der Zeit zwischen zwei Aufwachmomenten ruht das Gerät und sendet dem Sensor keine aktuellen Informationen, es sei denn es unterstützt die sogenannte unaufgeforderte Sensorberichterstattung, welche bei Änderungen des Sensorwertes angestoßen wird. Das bedeutet, dass die Abfragefrequenz von batteriebetriebenen Geräten ohnehin begrenzt ist, und häufigere Abfragen damit zu keiner erhöhten Benutzerfreundlichkeit führen können.Am Netz angeschlossene Geräte können dagegen beliebig oft abgefragt werden. Um jedoch eine Überlastung des Z-Wave Netzwerks durch ständige Abfrage- und Antwortpakete zu vermeiden, sollte diese Abfrage stets mit Vorsicht behandelt werden. Die App ermöglicht daher, Geräte von der Abfrage auszuschließen (von Vorteil bei batteriebetriebenen Geräten ohne Aufwachintervall, um deren Batterie zu sparen) und das Abfrageintervall anzupassen.  <br><br>Einstellungen:<br><ul><li> Wählen Sie den abzufragenden Sensor. Im Grundzustand werden alle Sensoren im vorgegebenen Intervall abgefragt. </li><li>Wählen Sie den Abfrageintervall.</li></ul>",
+	"l_devices":"Türen, die abgefragt werden sollen:",
+	"l_period":"Abrufintervall für Geräte:",
+	"one_m":"1 Minute", 
+	"two_m":"2 Minuten", 
+	"five_m":"5 Minuten", 
+	"ten_m":"10 Minuten", 
+	"twenty_m":"20 Minuten", 
+	"thirty_m":"30 Minuten", 
+	"one_h":"1 Stunde", 
+	"two_h":"2 Stunden", 
+	"four_h":"4 Stunden", 
+	"six_h":"6 Stunden", 
+	"half_d":"zweimal am Tag", 
+	"daily":"einmal täglich", 
+	"weekly":"einmal wöchentlich"
+}
