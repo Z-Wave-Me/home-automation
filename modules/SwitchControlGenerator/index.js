@@ -213,18 +213,21 @@ SwitchControlGenerator.prototype.init = function (config) {
         }
     }
     
-    this.controller.on("SwitchControlGenerator.register", function(zwayName, srcNodeId, srcInstanceId, dstInstanceId) {
+    this.api = function(zwayName /* srcNodeId, srcInstanceId, dstInstanceId, sceneId */) {
         var _trapNew = self.config.trapNew;
         self.config.trapNew = true; // to force creation of new elements even if not allowed to do it on event trap
-        self.handler(zwayName, "", {}, [srcNodeId, srcInstanceId, dstInstanceId]);
+        self.handler(zwayName, "", {}, Array.prototype.slice.call(arguments, 1));
         self.config.trapNew = _trapNew;
-    });
-};
+    };
+    
+    this.controller.on("SwitchControlGenerator.register", this.api);
+}
 
 SwitchControlGenerator.prototype.stop = function () {
     // unsign event handlers
     this.controller.off("ZWave.register", this.zwayReg);
     this.controller.off("ZWave.unregister", this.zwayUnreg);
+    this.controller.off("SwitchControlGenerator.register", this.api);
 
     // detach handlers
     for (var name in this.bindings) {
