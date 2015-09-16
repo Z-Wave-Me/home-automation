@@ -56,16 +56,15 @@ HomeKitGate.prototype.init = function (config) {
             }, this);
             return null; // 204
         } else if (r.method == "GET" && r.path.substring(0, 20) == "/characteristics?id=") {
-            var ids = r.path.substring(20).split('.').map(function(x) { return parseInt(x) });
-
-            var characteristic = this.accessories.find(ids[0], ids[1]);
-            if (characteristic) {
-                return {
-                    characteristics: [
-                        { aid: ids[0], iid: ids[1], value: characteristic.value }
-                    ]
-                };
-            }
+        	var values = []; 
+        	r.path.substring(20).split(',').forEach(function(characteristicId) {
+        		var idParts = characteristicId.split('.'),
+        			aid = parseInt(idParts[0]), iid = parseInt(idParts[1]);
+        		var characteristic = this.accessories.find(aid, iid);
+        		if (characteristic)
+        			values.push({ aid: aid, iid: iid, value: characteristic.value });
+        	}, this);
+        	return { characteristics: values; };
         } else if (r.path == "/identify") {
         	that.controller.addNotification("info", "HomeKit PIN: " + this.pin, "module", "HomeKit");
         }
