@@ -78,7 +78,7 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
         lang = self.controller.defaultLang;
     
     http.request({
-        url: "http://api.openweathermap.org/data/2.5/weather?q=" + self.config.city + "," + self.config.country +"&lang=" + lang,
+        url: "http://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(self.config.city) + "," + encodeURIComponent(self.config.country) +"&lang=" + lang,
         async: true,
         success: function(res) {
             try {
