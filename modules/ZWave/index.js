@@ -219,10 +219,10 @@ ZWave.prototype.terminating = function () {
 
 		var self = this;
 		setTimeout(function() {
-			// retry open after 5 seconds
+			// retry open after 10 seconds
 			console.log("Restarting Z-Wave binding");
 			self.startBinding();
-		}, 5000);
+		}, 10000);
 	}
 };
 
