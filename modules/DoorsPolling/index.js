@@ -1,4 +1,4 @@
-/*** SensorsPolling Z-Way HA module *******************************************
+/*** DoorsPolling Z-Way HA module *******************************************
 
 Version: 1.0.0
 (c) Z-Wave.Me, 2014
@@ -54,9 +54,31 @@ DoorsPolling.prototype.init = function (config) {
         this.devices.forEach(function(dev) {
             devJSON = this.controller.devices.get(dev.id).toJSON();
 
-            if (self.config.devices.indexOf(dev.id) === 1 && devJSON.updateTime <= lastPoll && (dev.get('deviceType') === 'sensorBinary' || dev.get('deviceType') === 'sensorMultilevel')){
-                dev.performCommand("update");
+//            if (self.config.devices.indexOf(dev.id) === 1 && devJSON.updateTime <= lastPoll && (dev.get('deviceType') === 'sensorBinary' || dev.get('deviceType') === 'sensorMultilevel')){
+            if (devJSON.updateTime <= lastPoll && (dev.get('deviceType') === 'doorlock')){
+//                dev.performCommand("update");
+/*
+console.log("INFO DoorPolling: dev = " + dev);
+console.log("INFO DoorPolling: devJSON = " + devJSON);
+console.log("INFO DoorPolling: devJSON.updateTime = " + devJSON.updateTime);
+
+console.log("INFO DoorPolling: lastPoll = " + lastPoll);
+console.log("INFO DoorPolling: dev.get('devicetype') = " + dev.get('deviceType'));
+console.log("INFO DoorPolling: dev.id = " + dev.id);
+*/
+                var res = dev.id.split("_");
+                var nodeId = res[2].split("-")[0];
+                var iId = res[2].split("-")[1];
+                var ccId = res[2].split("-")[2];
+/*
+console.log("INFO DoorPolling: res = " + res);
+console.log("INFO DoorPolling: nodeId = " + nodeId);
+console.log("INFO DoorPolling: iId = " + iId);
+console.log("INFO DoorPolling: ccId = " + ccId);
+*/
+                zway.devices[nodeId].instances[iId].commandClasses[ccId].Get("255");
             }
+
         });
 
         lastPoll = currentPoll;
