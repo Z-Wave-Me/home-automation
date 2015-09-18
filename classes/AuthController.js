@@ -25,6 +25,15 @@ function AuthController (controller) {
     this.controller = controller;
 }
 
+AuthController.prototype.isAuthorized = function(myRole, requiredRole) {
+    if (!requiredRole) {
+        // no role required, allow access
+        return true;
+    }
+
+    return myRole <= requiredRole;
+}
+
 AuthController.prototype.resolve = function(request, requestedRole) {
     var role, session,
         self = this;

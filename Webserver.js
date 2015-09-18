@@ -11,13 +11,15 @@ ws = new WebServer(8083, function(req) {
 		return (ext.name.length < q.length && q.slice(0, ext.name.length + 1) === ext.name + ".") || (ext.name === q);
 	}) && found) {
 		var auth = controller.auth.resolve(req, found.role);
-		if (auth && 
-		        (
-		        	(auth.role === controller.auth.ROLE.ANONYMOUS && found.role === controller.auth.ROLE.ANONYMOUS) ||
-		        	(auth.role === controller.auth.ROLE.USER && (found.role === controller.auth.ROLE.USER || found.role === controller.auth.ROLE.ANONYMOUS)) ||
-        			(auth.role === controller.auth.ROLE.ADMIN)
-			)
-                ) {
+		if (!auth) {
+
+			return {
+				status: 401,
+				body: "Not logged in"
+			};
+
+		} else if (controller.auth.isAuthorized(auth.role, found.role)) {
+
 			// fill user field
 			req.user = auth.user;
 			req.role = auth.role;
@@ -25,12 +27,15 @@ ws = new WebServer(8083, function(req) {
 			var cache = this.evalCache || (this.evalCache = {});
 			var handler = cache[found.name] || (cache[found.name] = evalPath(found.name));
 			return handler(req.url.substring(found.name.length + 1), req);
-                }
-		
-		return {
-			status: 403,
-			body: 'Permission denied'
-		};
+
+		} else {
+
+			return {
+				status: 403,
+				body: 'Permission denied'
+			};
+			
+		}
 	}
 	
 	return null;

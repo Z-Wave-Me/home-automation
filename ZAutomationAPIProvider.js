@@ -1314,6 +1314,22 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
     }
 };
 
+ZAutomationAPIWebRequest.prototype.Unauthorized = function () {
+    return {
+        error: 'Not logged in',
+        data: null,
+        code: 401
+    };
+}
+
+ZAutomationAPIWebRequest.prototype.Forbidden = function () {
+    return {
+        error: 'Permission denied',
+        data: null,
+        code: 403
+    };
+}
+
 ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
     var self = this,
         handlerFunc = this.NotFound, // Default handler is NotFound
@@ -1327,21 +1343,11 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         if (matched) {
             var auth = this.controller.auth.resolve(this.req, matched.role);
             if (!auth) {
-                return function() {
-                    return {
-                        error: 'Not logged in',
-                        data: null,
-                        code: 401
-                    };
-                };
-            }
-            
-            // Role is less than allows
-            if (
-                    (auth.role === this.ROLE.ANONYMOUS && matched.role === this.ROLE.ANONYMOUS) ||
-                    (auth.role === this.ROLE.USER && (matched.role === this.ROLE.USER || matched.role === this.ROLE.ANONYMOUS)) ||
-                    (auth.role === this.ROLE.ADMIN)
-                ) {
+
+                return this.Unauthorized;
+
+            } else if (this.controller.auth.isAuthorized(auth.role, matched.role)) {
+
                 // fill user field
                 this.req.user = auth.user;
                 this.req.role = auth.role;
@@ -1359,15 +1365,12 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 
                 // --- Proceed to checkout =)
                 return handlerFunc;
+
+            } else {
+
+                return this.Forbidden;
+
             }
-            
-            return function() {
-                return {
-                    error: 'Permission denied',
-                    data: null,
-                    code: 403
-                };
-            };
         }
     }
 };
