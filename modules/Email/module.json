@@ -1,0 +1,55 @@
+{
+        "dependencies": [],
+        "singleton": false,
+        "category": "notifications",
+        "author": "Z-Wave.Me",
+        "homepage": "http://razberry.z-wave.me",
+        "icon": "icon.png",
+        "moduleName":"Email",
+        "version": "1.0.0",
+        "maturity": "stable",
+        "repository": {
+                "type": "git",
+                "source": "https://github.com/Z-Wave-Me/home-automation"
+        },
+        "defaults": {
+                "title": "__m_title__",
+                "description": "__m_descr__",
+                "message" : "",
+                "phone": "",
+                "email" : ""
+        },
+        "schema": {
+                "type": "object",
+                "properties": {
+                        "message": {
+                                "type": "string",
+                "required": true
+                        },
+                        "phone": {
+                "required": false,
+                "pattern": "[1-9][0-9]*@[a-z0-9]*.[a-z]{3}"
+            },
+            "email": {
+                "type": "string",
+                "required": false,
+                "pattern": "[1-9][0-9]*@[a-z0-9]*.[a-z]{3}"
+            }
+        },
+        "required": false
+        },
+        "options": {
+                "fields": {
+                        "message": {
+                                "label": "__l_message__"
+                        },
+                        "phone": {
+                "label": "__l_phone__"
+            },
+                "email": {
+                        "label": "__l_email__"
+            }
+
+        }
+        }
+}
