@@ -1018,6 +1018,8 @@ AutomationController.prototype.removeProfile = function (profileId) {
 // namespaces
 AutomationController.prototype.generateNamespaces = function (callback) {
     var that = this,
+        alarmCategories = ['alarmSmoke','alarmCarbonOxide','alarmCarbonDiOxide','alarmHeat','alarmWater','alarmDoor','alarmBurglar','alarmPower','alarmSystem','alarmEmergency','alarmClock'],
+        sensorBinaryCategories = ['sensorBinaryMotion','sensorBinarySmoke','sensorBinaryCarbonOxide','sensorBinaryFlood','sensorBinaryCooling','sensorBinaryDoor'],
         devices = that.devices.filter(function(device){
             if(device.get('permanently_hidden') === false){
                 return device;
@@ -1025,7 +1027,9 @@ AutomationController.prototype.generateNamespaces = function (callback) {
         }),
         deviceTypes = _.uniq(_.map(devices, function (device) {
                 return device.get('deviceType');
-        }));
+        })),
+        filteredAlarmTypes = [],
+        filteredSensorBinaryTypes = [];
 
     that.namespaces = [];
     deviceTypes.forEach(function (type) {
@@ -1035,6 +1039,72 @@ AutomationController.prototype.generateNamespaces = function (callback) {
                 return {deviceId: device.id, deviceName: device.get('metrics:title')};
         }));
     });
+
+    //check for ALARM TYPES
+    for (i = 1; i <= alarmCategories.length; i++){
+        filteredAlarmTypes = devices.filter(function (dev){
+            var cutDevId = dev.id.split('-'),
+                ccAlarm = cutDevId.indexOf('113'),
+                ccAlarmSensor = cutDevId.indexOf('156');    
+            
+            //return correct sensor type
+            return (ccAlarm !== -1 && parseInt(cutDevId[ccAlarm + 1]) === i ) || 
+                    (ccAlarmSensor !== -1 && parseInt(cutDevId[ccAlarmSensor + 1]) === i);
+        }).map(function (dev) {
+            return {deviceId: dev.id, deviceName: dev.get('metrics:title')};
+        });
+
+        //add alarm types
+        if (filteredAlarmTypes.length > 0){
+            that.setNamespace('devices_' + alarmCategories[i-1], filteredAlarmTypes);
+        }
+    };
+
+    //check for SENSOR BINARY TYPES
+    for (i = 1; i <= sensorBinaryCategories.length; i++){
+        filteredSensorBinaryTypes = devices.filter(function (dev){
+            var cutDevId = dev.id.split('-'),
+                ccSensorBinary = cutDevId.indexOf('48');
+
+            switch(i){
+                //motion
+                case 1:
+                    //array with sensor type id
+                    var sensorTypes = [2,3,4,6,7,10];
+                    
+                    //return sensor type 'motion'
+                    return (ccSensorBinary !== -1 && sensorTypes[parseInt(cutDevId[ccSensorBinary + 1])] === -1);
+                //smoke
+                case 2:
+                    //return sensor type 'smoke'
+                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 2);
+                //co
+                case 3:
+                    //return sensor type 'co'
+                    return (ccSensorBinary !== -1 && (parseInt(cutDevId[ccSensorBinary + 1]) === 3 || parseInt(cutDevId[ccSensorBinary + 1]) === 4));
+                //flood
+                case 4:
+                    //return sensor type 'flood'
+                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 6);
+                //cooling
+                case 5:
+                    //return sensor type 'cooling'
+                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 7);
+                //door
+                case 6:
+                    //return sensor type 'door'
+                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 10);
+            }
+        }).map(function (dev) {
+            return {deviceId: dev.id, deviceName: dev.get('metrics:title')};
+        });
+
+        //add sensor binary types
+        if (filteredSensorBinaryTypes.length > 0){
+            that.setNamespace('devices_' + sensorBinaryCategories[i-1], filteredSensorBinaryTypes);
+        }
+    };
+
     that.setNamespace('devices_all', devices.filter(function (device){
             return device;
     }).map(function (device) {
