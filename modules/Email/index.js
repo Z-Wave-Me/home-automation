@@ -56,7 +56,7 @@ Email.prototype.init = function (config) {
                 console.log("INFO Email: message " + self.config.message);
                 console.log("INFO Email: message " + self.config.phone);
                 console.log("INFO Email: message " + self.config.subject);                
-                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + self.config.email);
+                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + self.config.phone);
             }
 
             // If API Key from mandrillapp.com and Email exist, then send email
