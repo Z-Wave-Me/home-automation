@@ -97,6 +97,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
+
+        // reinitialize apps from /modules or /userModules directory
+        this.router.get("/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
     },
 
     // !!! Do we need it?
@@ -1253,6 +1256,28 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // success
             reply.code = 200;
+        } catch (e) {
+            reply.error = e.toString();
+        }
+        
+        return reply;
+    },
+    // reinitialize modules
+    reinitializeModule: function(moduleId) {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            location = fs.list('modules/' + moduleId)? 'modules/' : 'userModules/';
+
+        try {
+            loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
+            
+            if(loadSuccessfully){
+                reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
+                reply.code = 200;
+            }
         } catch (e) {
             reply.error = e.toString();
         }

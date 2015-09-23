@@ -429,6 +429,53 @@ AutomationController.prototype.loadInstalledModule = function (moduleId, rootDir
     return successful;
 };
 
+AutomationController.prototype.reinitializeModule = function (moduleId, rootDirectory) {
+    var self = this,
+        successful = false,
+        activeInstances = [];
+
+    // filter for active instances of moduleId
+    activeInstances = self.instances.filter(function (instance) {
+        return instance.moduleId === moduleId &&
+                (instance.active === true ||
+                    instance.active === 'true');
+    });
+
+    // stopp all active instances of moduleId
+    if (activeInstances.length > 0) {
+        activeInstances.forEach(function (instance) {
+            instance.active = false;
+            self.reconfigureInstance(instance.id, instance);
+        });
+    }
+
+    // try to reinitialize app
+    try{
+        if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
+            console.log('Load app "' + moduleId + '" from folder ...');
+            self.loadModuleFromFolder(moduleId, rootDirectory);
+
+            if(self.modules[moduleId]){
+                self.loadModule(self.modules[moduleId]);
+
+                successful = true;
+            }
+        }
+    } catch (e){
+        console.log('Load app "' + moduleId + '" has failed. ERROR:', e);
+    }
+
+    // start instances of moduleId again
+    if (activeInstances.length > 0) {
+        activeInstances.forEach(function (instance) {
+            instance.active = true;
+            self.reconfigureInstance(instance.id, instance);
+        });
+    }
+
+    return successful;
+};
+
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
         module;
