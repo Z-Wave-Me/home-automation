@@ -1,0 +1,7 @@
+{
+        "m_title":"Email & Text",
+        "m_descr":"Scene of send email or sms.",
+        "l_message":"Text message",
+        "l_phone":"Phone number to send SMS include country code; example [0-9]@tmomail.net",
+        "l_email":"Email that will be notified"
+}
