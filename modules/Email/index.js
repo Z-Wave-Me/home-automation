@@ -55,7 +55,8 @@ Email.prototype.init = function (config) {
             if (self.config.phone) {
                 console.log("INFO Email: message " + self.config.message);
                 console.log("INFO Email: message " + self.config.phone);
-                system('echo "' + self.config.message + '" | mail -s "Notification from Smart Home" ' + self.config.phone);
+                console.log("INFO Email: message " + self.config.subject);                
+                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + self.config.email);
             }
 
             // If API Key from mandrillapp.com and Email exist, then send email
@@ -63,7 +64,8 @@ Email.prototype.init = function (config) {
             if (self.config.email) {
                 console.log("INFO Email: message " + self.config.message);
                 console.log("INFO Email: message " + self.config.email);
-                system('echo "' + self.config.message + '" | mail -s "Notification from Smart Home" ' + self.config.email);
+                console.log("INFO Email: message " + self.config.subject);
+                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + self.config.email);
             }
 
             self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
