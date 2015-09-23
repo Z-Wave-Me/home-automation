@@ -24,17 +24,21 @@
                 "properties": {
                         "message": {
                                 "type": "string",
-                "required": true
+                                "required": true
+                        },
+                        "subject": {
+                                "type": "string",
+                                "required": true
                         },
                         "phone": {
-                "required": false,
-                "pattern": "[1-9][0-9]*@[a-z0-9]*.[a-z]{3}"
-            },
-            "email": {
-                "type": "string",
-                "required": false,
-                "pattern": "[1-9][0-9]*@[a-z0-9]*.[a-z]{3}"
-            }
+                                "required": false,
+                                "pattern": "[1-9][0-9]*@[a-z0-9]*.[a-z]{3}"
+                        },
+                        "email": {
+                                "type": "string",
+                                "required": false,
+                                "pattern": "[1-9][0-9]*@[a-z0-9]*.[a-z]{3}"
+                }
         },
         "required": false
         },
@@ -43,13 +47,15 @@
                         "message": {
                                 "label": "__l_message__"
                         },
+                        "subject": {
+                                "label": "__l_subject__"
+                        },
                         "phone": {
-                "label": "__l_phone__"
-            },
-                "email": {
-                        "label": "__l_email__"
-            }
-
+                                "label": "__l_phone__"
+                        },
+                        "email": {
+                                "label": "__l_email__"
+                }
         }
         }
 }
