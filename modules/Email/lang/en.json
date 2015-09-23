@@ -1,7 +1,8 @@
 {
         "m_title":"Email & Text",
         "m_descr":"Scene of send email or sms.",
-        "l_message":"Text message",
-        "l_phone":"Phone number to send SMS include country code; example [0-9]@tmomail.net",
-        "l_email":"Email that will be notified"
+        "l_subject":"Subject for you email."
+        "l_message":"Text message.",
+        "l_phone":"Phone number to send SMS to in email format. Must know carriers domain.",
+        "l_email":"Your email address."
 }
