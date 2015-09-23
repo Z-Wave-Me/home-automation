@@ -1,7 +1,7 @@
 {
         "m_title":"Email & Text",
         "m_descr":"Szene von send Email oder SMS.",
-        "l_subject":"Thema für Sie per E-Mail."
+        "l_subject":"Thema für Sie per E-Mail.",
         "l_message":"Textnachricht.",
         "l_phone":"Telefonnummer für SMS in E-Mail-Format zu senden. Muss Träger Domain kennen.",
         "l_email":"Ihre E-Mail-Adresse."
