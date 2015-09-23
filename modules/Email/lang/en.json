@@ -1,7 +1,7 @@
 {
         "m_title":"Email & Text",
         "m_descr":"Scene of send email or sms.",
-        "l_subject":"Subject for you email."
+        "l_subject":"Subject for you email.",
         "l_message":"Text message.",
         "l_phone":"Phone number to send SMS to in email format. Must know carriers domain.",
         "l_email":"Your email address."
