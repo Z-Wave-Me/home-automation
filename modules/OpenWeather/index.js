@@ -37,6 +37,7 @@ OpenWeather.prototype.init = function (config) {
         defaults: {
             deviceType: "sensorMultiline",
             metrics: {
+                multilineType: 'openWeather',
                 probeTitle: 'Temperature'
             }
         },

@@ -127,6 +127,7 @@ MultilineSensor.prototype.init = function (config) {
         deviceId: "Multiline_" + this.id,
         defaults: {
             metrics: {
+                multilineType: 'multilineSensor',
                 title: self.getInstanceTitle(this.id),
                 icon: self.getIcon(deviceMetrics[0]),
                 level: self.getLevel(deviceMetrics[0]),
