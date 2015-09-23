@@ -15,6 +15,7 @@
         "defaults": {
                 "title": "__m_title__",
                 "description": "__m_descr__",
+                "subject" : "",
                 "message" : "",
                 "phone": "",
                 "email" : ""
