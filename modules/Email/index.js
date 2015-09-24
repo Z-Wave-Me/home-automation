@@ -50,23 +50,13 @@ Email.prototype.init = function (config) {
         },
         overlay: {},
         handler: function () {
-            // If API Key from sms.ru and Phone number exist, then send sms
-            // if (typeof self.config.api_key_sms !== 'undefined' && typeof self.config.phone !== 'undefined') {
-            if (self.config.phone) {
-                console.log("INFO Email: message " + self.config.message);
-                console.log("INFO Email: message " + self.config.phone);
-                console.log("INFO Email: message " + self.config.subject);                
-                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + self.config.phone);
-            }
+//            console.log("INFO Email: subject " + self.config.subject);
+//            console.log("INFO Email: message " + self.config.message);
+            _.unique(self.config.devices).forEach(function(email) {
+//                console.log("INFO Email: email " + email);
+                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + email);
+            });
 
-            // If API Key from mandrillapp.com and Email exist, then send email
-            //if (typeof self.config.api_key_email !== 'undefined' && typeof self.config.email !== 'undefined') {
-            if (self.config.email) {
-                console.log("INFO Email: message " + self.config.message);
-                console.log("INFO Email: message " + self.config.email);
-                console.log("INFO Email: message " + self.config.subject);
-                system('echo "' + self.config.message + '" | mail -s "' + self.config.subject + '" ' + self.config.email);
-            }
 
             self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
         },
