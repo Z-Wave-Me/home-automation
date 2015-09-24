@@ -1,8 +1,7 @@
 {
-        "m_title":"Email & Text",
-        "m_descr":"Szene von send Email oder SMS.",
-        "l_subject":"Thema für Sie per E-Mail.",
-        "l_message":"Textnachricht.",
-        "l_phone":"Telefonnummer für SMS in E-Mail-Format zu senden. Muss Träger Domain kennen.",
-        "l_email":"Ihre E-Mail-Adresse."
+        "m_title":"Email",
+        "m_descr":"Szene von E-Mail senden. Sie müssen sendmail oder postfix oder eine gleichwertige Mail-Programm installiert und eingerichtet haben, um dies richtig zu verwenden.",
+        "l_message":"Meldung",
+        "l_subject":"Subjekt",
+        "l_email":"E-Mail-Adresse"
 }
