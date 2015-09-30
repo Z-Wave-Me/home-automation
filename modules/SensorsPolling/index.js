@@ -72,13 +72,15 @@ SensorsPolling.prototype.init = function (config) {
         lastPoll = currentPoll;
     };
     
-    this.controller.on('sensorsPolling.poll', this.onPoll);
+    this.controller.on('sensorsPolling.poll', self.onPoll);
 };
 
 SensorsPolling.prototype.stop = function () {
-    SensorsPolling.super_.prototype.stop.call(this);
+    var self = this;
 
-    this.controller.off('sensorsPolling.poll', this.onPoll);
+    this.controller.off('sensorsPolling.poll', self.onPoll);
+
+    SensorsPolling.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
