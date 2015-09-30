@@ -49,26 +49,38 @@ SensorsPolling.prototype.init = function (config) {
 
     this.onPoll = function () {
 
-        currentPoll = Math.floor(new Date().getTime() / 1000);
+        var currentPoll = Math.floor(new Date().getTime() / 1000),
+            devicesToUpdate = [],
+            devJSON;
 
-        this.devices.forEach(function(dev) {
-            devJSON = this.controller.devices.get(dev.id).toJSON();
+        //update only binary and multilevel sensors that has no change during the update interval
+        devicesToUpdate = self.controller.devices.filter(function (dev) {
+            devJSON = dev.toJSON();
 
-            if (self.config.devices.indexOf(dev.id) === -1 && devJSON.updateTime <= lastPoll && (dev.get('deviceType') === 'sensorBinary' || dev.get('deviceType') === 'sensorMultilevel')){
-                dev.performCommand("update");
-            }
+            return self.config.devices.indexOf(dev.id) === -1 && 
+                        devJSON.updateTime <= lastPoll && 
+                            (dev.get('deviceType') === 'sensorBinary' || 
+                                dev.get('deviceType') === 'sensorMultilevel');
         });
+
+        if (devicesToUpdate.length > 0) {
+            devicesToUpdate.forEach(function (dev) {
+                dev.performCommand("update");
+            });
+        }
 
         lastPoll = currentPoll;
     };
     
-    this.controller.on('sensorsPolling.poll', this.onPoll);
+    this.controller.on('sensorsPolling.poll', self.onPoll);
 };
 
 SensorsPolling.prototype.stop = function () {
-    SensorsPolling.super_.prototype.stop.call(this);
+    var self = this;
 
-    this.controller.off('sensorsPolling.poll', this.onPoll);
+    this.controller.off('sensorsPolling.poll', self.onPoll);
+
+    SensorsPolling.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
