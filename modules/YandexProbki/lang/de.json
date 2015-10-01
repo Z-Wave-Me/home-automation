@@ -1,5 +1,0 @@
-{
-  "m_descr": "Diese von Yandex zur Verfügung gestellte App ermöglicht die Anzeige der Verkehrssituation in etlichen Städten Russlands. Der Service ist nur in Russland verfügbar.<br>Einstellungen. Wählen Sie die gewünschte Stadt aus.<br>Anwendung: Es wird ein neues Element erstellt, welches die Verkehrssituation in der ausgewählten Stadt erkennen lässt.",
-  "err_parse":"Fehler beim Einlesen der Yandex Jam Informationen.",
-  "err_fetch":"Fehler beim Aktualisieren der Yandex Jam Informationen."
-}
