@@ -515,7 +515,6 @@ HomeKitGate.prototype.init = function (config) {
     this.hk.update();
 
     console.log("HomeKit PIN:", this.hk.pin);
-    that.controller.addNotification("info", "HomeKit PIN: " + this.hk.pin, "module", "HomeKit");
 };
 
 HomeKitGate.prototype.stop = function () {
