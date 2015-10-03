@@ -29,7 +29,7 @@
             "warningLevel": {
                 "type": "select",
                 "required": true,
-                "enum": [5, 10, 15, 20]
+                "enum": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
             }
         },
         "required": false
@@ -43,7 +43,7 @@
             "warningLevel": {
                 "label": "__l_warning_lvl__",
                 "helper": "__h_warning_lvl__",
-                "optionLabels": ["5%", "10%", "15%", "20%"]
+                "optionLabels": ["5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%", "50%"]
             }
         }
     }
