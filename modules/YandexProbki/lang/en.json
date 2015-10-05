@@ -1,5 +1,0 @@
-{
-  "m_descr": "This App allows you showing the traffic situation of several Russian towns provided by Yandex. The service is only available for Russia.<br>Settings. Pick the city you want to choose<br>Usage: A new element is created indicating the traffic situation in the selected city",
-  "err_parse":"Can not parse yandex jam information.",
-  "err_fetch":"Can not fetch yandex jam information."
-}

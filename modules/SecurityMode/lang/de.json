@@ -1,6 +1,6 @@
 {
 	"m_title":"Sicherheitsmodus",
-    "m_descr":"Der Sicherheitsmodus ermöglicht es bestimmte Szenarien/Aktionen abhängig vom Gerätestatus auszulösen.",
+    "m_descr":"Der Sicherheitsmodus ermöglicht es bestimmte Szenarien/Aktionen abhängig vom Gerätestatus auszulösen. Sends a notification of type 'Warning' if one sensor of all triggered.",
 	"action_msg":"Alarm!",
 	"l_tests":"Sensoren:",
 	"l_test_binary":"Binäre Bedingung",
