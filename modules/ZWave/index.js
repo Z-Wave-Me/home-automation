@@ -1411,11 +1411,6 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type, arg) {
-					if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"]) && this.updateTime > this.invalidateTime) {
-						setTimeout(function () {
-							self.zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].Get();
-						}, 1000);
-					}
 					try {
 						vDev.set("metrics:level", this.value);
 					} catch (e) {}
