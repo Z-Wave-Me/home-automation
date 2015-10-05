@@ -1,7 +1,7 @@
 /*** SwitchPolling Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 1.0.1
+(c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Description:
@@ -37,6 +37,7 @@ SwitchPolling.prototype.init = function (config) {
     var m = (p < 60) ? [0, 59, p] : 0;
     var h = p >= 24*60 ? 0 : (p/60 >=1 ? [0, 23, Math.round(p/60)] : null);
     var wd = p/24/60 >=1 ? [0, 6, Math.round(p/24/60)] : null;
+    var currentPoll, lastPoll, devJSON;
      
     this.controller.emit("cron.addTask", "SwitchPolling.poll", {
         minute: m,
@@ -47,27 +48,39 @@ SwitchPolling.prototype.init = function (config) {
     });
 
     this.onPoll = function () {
-        var exclDev = [],
-            filteredDev = [];
 
-        _.unique(self.config.devices).forEach(function(devId) {
-            exclDev.push(self.controller.hashCode(devId));
+        var currentPoll = Math.floor(new Date().getTime() / 1000),
+            devicesToUpdate = [],
+            devJSON;
+
+        //update only binary and multilevel switches that has no change during the update interval
+        devicesToUpdate = self.controller.devices.filter(function (dev) {
+            devJSON = dev.toJSON();
+
+            return _.unique(self.config.devices).indexOf(dev.id) === -1 && 
+                        devJSON.updateTime <= lastPoll && 
+                            (dev.get('deviceType') === 'switchBinary' || 
+                                dev.get('deviceType') === 'switchMultilevel');
         });
 
-        self.controller.devices.filter(function(dev){
-            return (dev.get('deviceType') === 'switchBinary' || dev.get('deviceType') === 'switchMultilevel') && exclDev.indexOf(dev.get('h')) === -1;
-        }).forEach(function(dev) {
-            dev.performCommand("update");
-        });
+        if (devicesToUpdate.length > 0) {
+            devicesToUpdate.forEach(function (dev) {
+                dev.performCommand("update");
+            });
+        }
+
+        lastPoll = currentPoll;
     };
 
     this.controller.on('SwitchPolling.poll', this.onPoll);
 };
 
 SwitchPolling.prototype.stop = function () {
-    SwitchPolling.super_.prototype.stop.call(this);
 
     this.controller.off('SwitchPolling.poll', this.onPoll);
+    this.controller.emit("cron.removeTask", "SwitchPolling.poll");
+
+    SwitchPolling.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------

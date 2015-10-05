@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName":"SwitchPolling",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "maturity": "stable",
     "repository": {
             "type": "git",

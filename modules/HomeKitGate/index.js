@@ -69,6 +69,7 @@ HomeKitGate.prototype.init = function (config) {
         	}, this);
         	return { characteristics: values };
         } else if (r.path == "/identify") {
+        	console.log("HomeKit PIN:", this.pin);
         	that.controller.addNotification("info", "HomeKit PIN: " + this.pin, "module", "HomeKit");
         }
     });

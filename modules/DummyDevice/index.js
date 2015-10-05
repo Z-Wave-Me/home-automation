@@ -42,20 +42,25 @@ DummyDevice.prototype.init = function (config) {
             deviceType: this.config.deviceType
         },
         handler: function(command, args) {
-            var level = command;
-            if (this.get('deviceType') === "switchMultilevel") {
-                if (command === "on") {
-                    level = 99;
-                } else if (command === "off") {
-                    level = 0;
-                } else {
-                    level = args.level;
+            
+            if (command != 'update') {
+                var level = command;
+                
+                if (this.get('deviceType') === "switchMultilevel") {
+                    if (command === "on") {
+                        level = 99;
+                    } else if (command === "off") {
+                        level = 0;
+                    } else {
+                        level = args.level;
+                    }
                 }
+
+                this.set("metrics:level", level);
             }
-            this.set("metrics:level", level);
         },
         moduleId: this.id
-    })
+    });
 };
 
 DummyDevice.prototype.stop = function () {
