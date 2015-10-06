@@ -1,6 +1,6 @@
 /*** SwitchControlGenerator Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -298,9 +298,10 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         });
         
         this.config.generated.push(name);
+        this.generated = this.config.generated;
         this.saveConfig();
     }
-    
+
     var vDev = this.controller.devices.get(name);
     
     if (vDev === null) {

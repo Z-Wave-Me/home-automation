@@ -15,7 +15,7 @@
 	"doorlock":"Doorlock",
 	"l_target_device":"Device",
 	"l_action":"Action",
-	"buttonControl": "Switch Control (On only)",
+	"toggleButton": "Switch Control / Scene (On only)",
 	"switchControl": "Switch Control (On/Off)",
 	"sensorBinary": "Binary Sensor",
 	"l_choose":"--- Choose a device type ---",
