@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
         "moduleName":"SwitchControlGenerator",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -30,7 +30,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_buttonControl:deviceId",
+					"enum": "namespaces:devices_toggleButton:deviceId,namespaces:devices_switchControl:deviceId",
 					"required": true
 				}
 			},
@@ -39,7 +39,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_buttonControl:deviceId",
+					"enum": "namespaces:devices_toggleButton:deviceId,namespaces:devices_switchControl:deviceId",
 					"required": true
 				}
 			}
@@ -59,7 +59,7 @@
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_buttonControl:deviceName"
+						"optionLabels": "namespaces:devices_toggleButton:deviceName,namespaces:devices_switchControl:deviceName"
 					}
 				}
 			},
@@ -71,7 +71,7 @@
 						"readonly": true,
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_buttonControl:deviceName"
+						"optionLabels": "namespaces:devices_toggleButton:deviceName,namespaces:devices_switchControl:deviceName"
 					}
 				}
 			}

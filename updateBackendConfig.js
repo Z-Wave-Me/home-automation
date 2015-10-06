@@ -233,12 +233,22 @@
     {      
       function getNewID(id) {
         var pattern1 = /^ZWayVDev_([0-9]+(:[0-9]+)+)$/,
-          pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9]+)+)$/;
+          pattern2 = /^Remote_[0-9]+_([0-9]+(:[0-9]+)+)$/,
+          pattern3 = /^ZWayVDev_(.*)_Remote_[0-9]+-[0-9]+-[0-9]+$/,
+          pattern4 = /^ZWayVDev_(.*)_Remote_[0-9]+-[0-9]+-[0-9]+-[0-9]+$/;
         
         if (id.match(pattern1)) {
+          // replace : to - in Z-Way vDev
           return id.replace(pattern1, "ZWayVDev_zway_$1").replace(/:/g, "-");
         } else if (id.match(pattern2)) {
+          // replace : to - in Z-Way Remote vDev and add ZWayVDev_zway_ prefix (removing module id from name)
           return id.replace(pattern2, "ZWayVDev_zway_Remote_$1").replace(/:/g, "-");
+        } else if (id.match(pattern3)) {
+          // add -B suffixes to ZWayVDev_zway_Remote (switchControl buttons)
+          return id.replace(pattern3, "$&-B");
+        } else if (id.match(pattern4)) {
+          // add -S suffixes to ZWayVDev_zway_Remote (toggleButton scenes)
+          return id.replace(pattern4, "$&-S");
         } else {
           return id;
         }

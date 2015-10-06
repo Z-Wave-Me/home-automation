@@ -1,6 +1,6 @@
 /*** SwitchControlGenerator Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -77,7 +77,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                 self.controller.devices.create({
                     deviceId: name,
                     defaults: {
-                        deviceType: "buttonControl",
+                        deviceType: name[name.length-1] === "S" ? "toggleButton" : "switchControl",
                         metrics: {
                             icon: '',
                             title: "Button", // this is always not the initial creation, so the default title is already filled 
@@ -120,7 +120,7 @@ SwitchControlGenerator.prototype.init = function (config) {
                
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["Basic"], "level", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "B"]);
                     } else {
                         var val, par = {};
                         
@@ -132,19 +132,19 @@ SwitchControlGenerator.prototype.init = function (config) {
                             val = "exact";
                             par = { level: this.value };
                         }
-                        self.handler(zwayName, val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.handler(zwayName, val, par, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "B"]);
                     }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchBinary"], "level", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "B"]);
                     } else {
-                        self.handler(zwayName, this.value ? "on" : "off", {}, [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n]);
+                        self.handler(zwayName, this.value ? "on" : "off", {}, [dataSB.srcNodeId.value, dataSB.srcInstanceId.value, n, "B"]);
                     }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "level", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "B"]);
                     } else {
                         var val, par = {};
                         
@@ -156,35 +156,35 @@ SwitchControlGenerator.prototype.init = function (config) {
                             val = "exact";
                             par = { level: this.value };
                         }
-                        self.handler(zwayName, val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                        self.handler(zwayName, val, par, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n, "B"]);
                     }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "startChange", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "B"]);
                     } else {
-                        self.handler(zwayName, this.value ? "upstart" : "downstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                        self.handler(zwayName, this.value ? "upstart" : "downstart", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n, "B"]);
                     }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SwitchMultilevel"], "stopChange", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "B"]);
                     } else {
-                        self.handler(zwayName, dataSML.startChange.value ? "upstop" : "downstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n]);
+                        self.handler(zwayName, dataSML.startChange.value ? "upstop" : "downstop", {}, [dataSML.srcNodeId.value, dataSML.srcInstanceId.value, n, "B"]);
                     }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "S"]);
                     } else {
-                        self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value]);
+                        self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value, "S"]);
                     }
                 }, "");
                 self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["CentralScene"], "currentScene", function(type) {
                     if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n]);
+                        self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "S"]);
                     } else {
-                        self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value]);
+                        self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value, "S"]);
                     }
                 }, "");
             })(i);
@@ -213,7 +213,7 @@ SwitchControlGenerator.prototype.init = function (config) {
         }
     }
     
-    this.api = function(zwayName /* srcNodeId, srcInstanceId, dstInstanceId, sceneId */) {
+    this.api = function(zwayName /* srcNodeId, srcInstanceId, dstInstanceId, [sceneId], type */) {
         var _trapNew = self.config.trapNew;
         self.config.trapNew = true; // to force creation of new elements even if not allowed to do it on event trap
         self.handler(zwayName, "", {}, Array.prototype.slice.call(arguments, 1));
@@ -267,6 +267,7 @@ SwitchControlGenerator.prototype.widgetHandler = function(command, params) {
 
 SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     var postfix = ids.join("-"),
+        type = ids[ids.length - 1],
         name = "ZWayVDev_" + zwayName + "_Remote_" + postfix;
         
     if (this.config.generated.indexOf(name) === -1) {
@@ -283,10 +284,10 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         this.controller.devices.create({
             deviceId: name,
             defaults: {
-                deviceType: "buttonControl",
+                deviceType: type === "S" ? "toggleButton" : "switchControl",
                 metrics: {
                     icon: '',
-                    title: "Button " + vendor + " " + ids.slice(1).join("-"),
+                    title: "Button " + vendor + " " + ids.slice(0, -1).join("-"),
                     level: "",
                     change: ""
                 }
@@ -297,9 +298,10 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
         });
         
         this.config.generated.push(name);
+        this.generated = this.config.generated;
         this.saveConfig();
     }
-    
+
     var vDev = this.controller.devices.get(name);
     
     if (vDev === null) {

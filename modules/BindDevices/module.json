@@ -26,7 +26,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_buttonControl:deviceId,namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
+					"enum": "namespaces:devices_toggleButton:deviceId,namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
 					"required": true
 				}
 			},
@@ -51,7 +51,7 @@
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_buttonControl:deviceName,namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
+						"optionLabels": "namespaces:devices_toggleButton:deviceName,namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
 					}
 				}
 			},
