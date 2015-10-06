@@ -1018,8 +1018,27 @@ AutomationController.prototype.removeProfile = function (profileId) {
 // namespaces
 AutomationController.prototype.generateNamespaces = function (callback) {
     var that = this,
-        alarmCategories = ['alarmSmoke','alarmCarbonOxide','alarmCarbonDiOxide','alarmHeat','alarmWater','alarmDoor','alarmBurglar','alarmPower','alarmSystem','alarmEmergency','alarmClock'],
-        sensorBinaryCategories = ['sensorBinaryMotion','sensorBinarySmoke','sensorBinaryCarbonOxide','sensorBinaryFlood','sensorBinaryCooling','sensorBinaryDoor'],
+        /*alarmCategories = [
+            'alarmSmoke',
+            'alarmCarbonOxide',
+            'alarmCarbonDiOxide',
+            'alarmHeat',
+            'alarmWater',
+            'alarmDoor',
+            'alarmBurglar',
+            'alarmPower',
+            'alarmSystem',
+            'alarmEmergency',
+            'alarmClock'
+        ],
+        sensorBinaryCategories = [
+            'sensorBinaryMotion',
+            'sensorBinarySmoke',
+            'sensorBinaryCarbonOxide',
+            'sensorBinaryFlood',
+            'sensorBinaryCooling',
+            'sensorBinaryDoor'
+        ],*/
         devices = that.devices.filter(function(device){
             if(device.get('permanently_hidden') === false){
                 return device;
@@ -1027,11 +1046,12 @@ AutomationController.prototype.generateNamespaces = function (callback) {
         }),
         deviceTypes = _.uniq(_.map(devices, function (device) {
                 return device.get('deviceType');
-        })),
+        }))/*,
         filteredAlarmTypes = [],
-        filteredSensorBinaryTypes = [];
+        filteredSensorBinaryTypes = []*/;
 
     that.namespaces = [];
+    
     deviceTypes.forEach(function (type) {
         that.setNamespace('devices_' + type, devices.filter(function (device) {
                 return device.get('deviceType') === type;
@@ -1041,7 +1061,7 @@ AutomationController.prototype.generateNamespaces = function (callback) {
     });
 
     //check for ALARM TYPES
-    for (i = 1; i <= alarmCategories.length; i++){
+    /*for (i = 1; i <= alarmCategories.length; i++){
         filteredAlarmTypes = devices.filter(function (dev){
             var cutDevId = dev.id.split('-'),
                 ccAlarm = cutDevId.indexOf('113'),
@@ -1058,10 +1078,10 @@ AutomationController.prototype.generateNamespaces = function (callback) {
         if (filteredAlarmTypes.length > 0){
             that.setNamespace('devices_' + alarmCategories[i-1], filteredAlarmTypes);
         }
-    };
+    };*/
 
     //check for SENSOR BINARY TYPES
-    for (i = 1; i <= sensorBinaryCategories.length; i++){
+    /*for (i = 1; i <= sensorBinaryCategories.length; i++){
         filteredSensorBinaryTypes = devices.filter(function (dev){
             var cutDevId = dev.id.split('-'),
                 ccSensorBinary = cutDevId.indexOf('48');
@@ -1103,7 +1123,7 @@ AutomationController.prototype.generateNamespaces = function (callback) {
         if (filteredSensorBinaryTypes.length > 0){
             that.setNamespace('devices_' + sensorBinaryCategories[i-1], filteredSensorBinaryTypes);
         }
-    };
+    };*/
 
     that.setNamespace('devices_all', devices.filter(function (device){
             return device;
@@ -1123,15 +1143,41 @@ AutomationController.prototype.getListNamespaces = function (id) {
     id = id || null;
 
     if (!!id) {
-        result = namespaces.filter(function (namespace) {
-            return namespace.id === parseInt(id);
-        })[0];
+        result = _.findWhere(namespaces, { id: id });
     } else {
         result = namespaces;
     }
 
     return result;
 };
+
+/*AutomationController.prototype.getListNamespaces = function (id) {
+    var result = null,
+        namespaces = this.namespaces,
+        id = id || null,
+        pathArr = id.split('.') || [],
+        namespacesPath = '';
+
+    if (!!id) {
+        result = namespaces.filter(function (namespace) {
+            if (pathArr.length > 1) {
+                for (var i = 0; i < pathArr.length; i++) {
+                    if(namespaces[namespacesPath + pathArr[i+1]]) {
+                        namespacesPath.concat(pathArr[i+1]);
+                    } else {
+                        return namespace[namespacesPath] === pathArr[pathArr.length - 1];
+                    }
+                }
+            } else {
+                return namespace.id === parseInt(id);
+            }
+        })[0];
+    } else {
+        result = namespaces;
+    }
+
+    return result;
+};*/
 
 AutomationController.prototype.setNamespace = function (id, data) {
     var result = null,
@@ -1141,9 +1187,7 @@ AutomationController.prototype.setNamespace = function (id, data) {
     id = id || null;
 
     if (id && this.getListNamespaces(id)) {
-        namespace = _.find(this.namespaces, function (namespace) {
-            return namespace.id === id;
-        });
+        namespace = _.findWhere(this.namespaces, {id : id});
         if (!!namespace) {
             index = this.namespaces.indexOf(namespace);
             this.namespaces[index].params = data;

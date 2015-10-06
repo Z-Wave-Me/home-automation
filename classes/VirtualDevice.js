@@ -21,7 +21,7 @@ VirtualDevice = function (options) {
             'creatorId',
             'h',
             'hasHistory',
-            'visibility'
+            'visibility',
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -32,6 +32,7 @@ VirtualDevice = function (options) {
         h: options.controller.hashCode(options.deviceId),
         hasHistory: false,
         visibility: true,
+        probeType: getProbeType(options),
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -40,7 +41,8 @@ VirtualDevice = function (options) {
             location: 0,
             h: options.controller.hashCode(options.deviceId),
             hasHistory: false,
-            visibility: true
+            visibility: true,
+            probeType: getProbeType(options)
         },
         changed: {},
         overlay: options.overlay || {},
@@ -64,6 +66,71 @@ VirtualDevice = function (options) {
 
     this.initialize.apply(this, arguments);
     return this;
+};
+
+function getProbeType(options) {
+    //ZWayVDev_zway_3-0-156-0-A
+    //ZWayVDev_zway_Remote_23-0-0-1
+    //ZEnoVDev_zeno_3_1
+
+    var probeType = '',
+        cutUndScre = options.deviceId.split('_'),
+        cutNbrs = [];
+
+    // check if ZWay device
+    if(cutUndScre[0] === 'ZWayVDev') {
+        cutNbrs = cutUndScre[cutUndScre.length -1].split('-');
+        /*
+         * cutNbrs[0] ... nodeId
+         * cutNbrs[1] ... instanceId
+         * cutNbrs[2] ... commandClassId
+         * cutNbrs[3] ... subClassId - necessary for probeType
+        */
+        
+        //check for binary sensor (CC 48) subtypes
+        if(parseInt(cutNbrs[2], 10) === 48){
+            var types = [
+                    '',
+                    '',
+                    'binarySensor_smoke',
+                    'binarySensor_co',
+                    '',
+                    '',
+                    'binarySensor_flood',
+                    'binarySensor_cooling',
+                    '',
+                    '',
+                    'binarySensor_door'
+                ],
+                currType = types[parseInt(cutNbrs[3], 10)]; 
+            
+            probeType = currType === '' || currType === -1? 'binarySensor_general_purpose' : currType;
+        }
+
+        // check for alarm (CC 113) and alarm sensor (CC 156) subtypes
+        if (parseInt(cutNbrs[2], 10) === 113 || parseInt(cutNbrs[2], 10) === 156) {
+
+            var prefSensor = parseInt(cutNbrs[2], 10) === 156? 'Sensor' : '',
+                types = [
+                    'alarm' + prefSensor +'_general_purpose',
+                    'alarm' + prefSensor +'_smoke',
+                    'alarm' + prefSensor +'_co',
+                    'alarm' + prefSensor +'_coo',
+                    'alarm' + prefSensor +'_heat',
+                    'alarm' + prefSensor +'_flood',
+                    'alarm' + prefSensor +'_door',
+                    'alarm' + prefSensor +'_burglar',
+                    'alarm' + prefSensor +'_power',
+                    'alarm' + prefSensor +'_system',
+                    'alarm' + prefSensor +'_emergency',
+                    'alarm' + prefSensor +'_clock'
+                ],
+                probeType = types[parseInt(cutNbrs[3], 10)];
+        }
+
+        // What about enocean devices??
+    }
+    return probeType;
 };
 
 function inObj(obj, arr) {
