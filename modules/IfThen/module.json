@@ -26,7 +26,7 @@
 				"properties": {
 					"filterIf": {
 						"type":"string",
-						"enum": ["buttonControl","switchControl","switchBinary","switchMultilevel","sensorBinary"],
+						"enum": ["scene","switchControl","switchBinary","switchMultilevel","sensorBinary"],
 						"required": true
 					},
 					"switchBinary": {
@@ -46,14 +46,14 @@
 							}
 						}
 					},
-					"buttonControl": {
+					"scene": {
 						"type": "object",
 						"dependencies":"filterIf",
 						"properties": {
 							"device": {
 								"field": "enum",
 								"datasource": "namespaces",
-								"enum": "namespaces:devices_buttonControl:deviceId",
+								"enum": "namespaces:devices_toggleButton:deviceId",
 								"required": true
 							}
 						}
@@ -200,7 +200,7 @@
 						"removeDefaultNone": false,
 						"noneLabel": "__l_choose__",
 						"label":"__l_filter__",
-						"optionLabels": ["__buttonControl__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__"]
+						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__"]
 					},
 					"switchBinary": {
 						"dependencies": {
@@ -220,9 +220,9 @@
 							}
 						}
 					},
-					"buttonControl": {
+					"scene": {
 						"dependencies": {
-							"filterIf": "buttonControl"
+							"filterIf": "scene"
 						},
 						"fields": {
 							"device": {
@@ -232,7 +232,7 @@
 								"datasource": "namespaces",
 								"field": "optionLabels",
 								"helper": "__h_statusOn__",
-								"optionLabels": "namespaces:devices_buttonControl:deviceName"
+								"optionLabels": "namespaces:devices_toggleButton:deviceName"
 							}
 						}
 					},

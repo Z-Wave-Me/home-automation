@@ -75,7 +75,7 @@
 			"DimmerButton": {
 				"field": "enum",
 				"datasource": "namespaces",
-				"enum": "namespaces:devices_switchControl:deviceId, namespaces:devices_buttonControl:deviceId",
+				"enum": "namespaces:devices_switchControl:deviceId, namespaces:devices_toggleButton:deviceId",
 				"required": false
 			}
 		},
@@ -132,7 +132,7 @@
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
-                "optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_buttonControl:deviceName",
+                "optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName",
                 "helper":"__h_DimmerButton__"
 			}
 		}

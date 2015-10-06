@@ -35,7 +35,7 @@ IfThen.prototype.init = function (config) {
         var that = self,
             value = sDev.get("metrics:level");
 
-        if(value === ifElement.status || sDev.get("deviceType") === "buttonControl"){
+        if(value === ifElement.status || sDev.get('deviceType') === 'toggleButton'){
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,

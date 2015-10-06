@@ -15,7 +15,7 @@
 	"l_filter":"Filtern nach Typ",
 	"l_target_device":"Gerät",
 	"l_action":"Aktion",
-	"buttonControl": "Schaltsteuerung (nur An)",
+	"toggleButton": "Schaltsteuerung / Szene (nur An)",
 	"switchControl": "Schaltsteuerung (An/Aus)",
 	"sensorBinary": "Binärsensor",
 	"l_choose":"--- Gerätetyp wählen ---",
