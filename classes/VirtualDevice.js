@@ -74,12 +74,14 @@ function getProbeType(options) {
     //ZEnoVDev_zeno_3_1
 
     var probeType = '',
-        cutUndScre = options.deviceId.split('_'),
+        cutUndscre = options.deviceId.split('_'),
         cutNbrs = [];
 
     // check if ZWay device
-    if(cutUndScre[0] === 'ZWayVDev') {
-        cutNbrs = cutUndScre[cutUndScre.length -1].split('-');
+    if(cutUndscre[0] === 'ZWayVDev') {
+        cutNbrs = cutUndscre[cutUndscre.length -1].split('-');
+        var ccId = parseInt(cutNbrs[2], 10),
+            subCCId = parseInt(cutNbrs[3], 10);
         /*
          * cutNbrs[0] ... nodeId
          * cutNbrs[1] ... instanceId
@@ -88,44 +90,88 @@ function getProbeType(options) {
         */
         
         //check for binary sensor (CC 48) subtypes
-        if(parseInt(cutNbrs[2], 10) === 48){
-            var types = [
-                    '',
-                    '',
-                    'binarySensor_smoke',
-                    'binarySensor_co',
-                    '',
-                    '',
-                    'binarySensor_flood',
-                    'binarySensor_cooling',
-                    '',
-                    '',
-                    'binarySensor_door'
-                ],
-                currType = types[parseInt(cutNbrs[3], 10)]; 
+        if(ccId === 48){
+            var currType = 'general_purpose'; // general_purpose as default
+
+            switch (subCCId) {
+                case 2:
+                    currType = 'smoke';
+                    break;
+                case 3:
+                    currType = 'co';
+                    break;
+                case 6:
+                    currType = 'flood';
+                    break;
+                case 7:
+                    currType = 'cooling';
+                    break;
+                case 10:
+                    currType = 'door';
+                    break;
+            }
             
-            probeType = currType === '' || currType === -1? 'binarySensor_general_purpose' : currType;
+            probeType = 'binarySensor_' + currType;
+        }
+
+        //check for multilevel sensor (CC 49) subtypes
+        if(ccId === 49){
+            var currType = '';
+
+            switch (subCCId) {
+                case 1:
+                    currType = 'temperature';
+                    break;
+                case 3:
+                    currType = 'luminosity';
+                    break;
+                case 4:
+                case 15:
+                case 16:
+                    currType = 'energy';
+                    break;
+                case 5:
+                    currType = 'humidity';
+                    break;
+            }
+            
+            probeType = currType !== ''? 'binarySensor_' + currType : probeType;
+        }
+
+        //check for metric (CC 50) subtypes
+        if(ccId === 50){
+            var types = [
+                    'kilowattPerHour',
+                    '',
+                    'watt',
+                    'pulseCount',
+                    'voltage',
+                    'ampere',
+                    'powerFactor'
+                ];
+            
+            probeType = types[subCCId] !== ''? 'meterElectric_' + ypes[subCCId] : probeType;
         }
 
         // check for alarm (CC 113) and alarm sensor (CC 156) subtypes
-        if (parseInt(cutNbrs[2], 10) === 113 || parseInt(cutNbrs[2], 10) === 156) {
+        if (ccId === 113 || ccId === 156) {
 
-            var prefSensor = parseInt(cutNbrs[2], 10) === 156? 'Sensor' : '',
+            var prefSensor = ccId === 156? 'Sensor' : '',
                 types = [
-                    'alarm' + prefSensor +'_general_purpose',
-                    'alarm' + prefSensor +'_smoke',
-                    'alarm' + prefSensor +'_co',
-                    'alarm' + prefSensor +'_coo',
-                    'alarm' + prefSensor +'_heat',
-                    'alarm' + prefSensor +'_flood',
-                    'alarm' + prefSensor +'_door',
-                    'alarm' + prefSensor +'_burglar',
-                    'alarm' + prefSensor +'_power',
-                    'alarm' + prefSensor +'_system',
-                    'alarm' + prefSensor +'_emergency',
-                    'alarm' + prefSensor +'_clock'
+                    'general_purpose',
+                    'smoke',
+                    'co',
+                    'coo',
+                    'heat',
+                    'flood',
+                    'door',
+                    'burglar',
+                    'power',
+                    'system',
+                    'emergency',
+                    'clock'
                 ],
-                probeType = types[parseInt(cutNbrs[3], 10)];
+                probeType = 'alarm' + prefSensor + '_' + types[subCCId];
         }
 
         // What about enocean devices??
