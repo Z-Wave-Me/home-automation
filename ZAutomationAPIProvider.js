@@ -86,7 +86,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
 
-        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc, [parseInt]);
+        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
         this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 

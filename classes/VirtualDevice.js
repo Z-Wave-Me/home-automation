@@ -72,25 +72,36 @@ function getProbeType(options) {
     //ZWayVDev_zway_3-0-156-0-A
     //ZWayVDev_zway_Remote_23-0-0-1
     //ZEnoVDev_zeno_3_1
+    
+    this.CC = {
+        'SensorBinary': 0x30,
+        'SensorMultilevel': 0x31,
+        'Meter': 0x32,
+        'SwitchColor': 0x33,
+        'Alarm': 0x71,
+        'AlarmSensor': 0x9c
+    };
 
     var probeType = '',
         cutUndscre = options.deviceId.split('_'),
         cutNbrs = [];
 
-    // check if ZWay device
+    // looking for probetypes only at Z-Way devices
     if(cutUndscre[0] === 'ZWayVDev') {
         cutNbrs = cutUndscre[cutUndscre.length -1].split('-');
-        var ccId = parseInt(cutNbrs[2], 10),
-            subCCId = parseInt(cutNbrs[3], 10);
+
         /*
          * cutNbrs[0] ... nodeId
          * cutNbrs[1] ... instanceId
          * cutNbrs[2] ... commandClassId
          * cutNbrs[3] ... subClassId - necessary for probeType
         */
+       
+        var ccId = parseInt(cutNbrs[2], 10),
+            subCCId = parseInt(cutNbrs[3], 10);
         
         //check for binary sensor (CC 48) subtypes
-        if(ccId === 48){
+        if(ccId === this.CC['SensorBinary']){
             var currType = 'general_purpose'; // general_purpose as default
 
             switch (subCCId) {
@@ -111,11 +122,11 @@ function getProbeType(options) {
                     break;
             }
             
-            probeType = 'binarySensor_' + currType;
+            probeType = currType;
         }
 
         //check for multilevel sensor (CC 49) subtypes
-        if(ccId === 49){
+        if(ccId === this.CC['SensorMultilevel']){
             var currType = '';
 
             switch (subCCId) {
@@ -135,28 +146,41 @@ function getProbeType(options) {
                     break;
             }
             
-            probeType = currType !== ''? 'binarySensor_' + currType : probeType;
+            probeType = currType !== ''? currType : probeType;
         }
 
-        //check for metric (CC 50) subtypes
-        if(ccId === 50){
+        //check for meter (CC 50) subtypes
+        if(ccId === this.CC['Meter']){
             var types = [
-                    'kilowattPerHour',
+                    'kilowatt_per_hour',
                     '',
                     'watt',
-                    'pulseCount',
+                    'pulse_count',
                     'voltage',
                     'ampere',
-                    'powerFactor'
+                    'power_factor'
                 ];
             
             probeType = types[subCCId] !== ''? 'meterElectric_' + ypes[subCCId] : probeType;
         }
 
-        // check for alarm (CC 113) and alarm sensor (CC 156) subtypes
-        if (ccId === 113 || ccId === 156) {
+        //check for switch color (CC 51) subtypes
+        if(ccId === this.CC['SwitchColor']){
+            var types = [
+                    'soft_white',
+                    'cold_white',
+                    'red',
+                    'green',
+                    'blue'
+                ];            
+            
+            probeType = types[subCCId] !== ''? 'switchColor_' + ypes[subCCId] : probeType;
+        }
 
-            var prefSensor = ccId === 156? 'Sensor' : '',
+        // check for alarm (CC 113) and alarm sensor (CC 156) subtypes
+        if (ccId === this.CC['Alarm'] || ccId === this.CC['AlarmSensor']) {
+
+            var prefSensor = ccId === this.CC['AlarmSensor']? 'Sensor' : '',
                 types = [
                     'general_purpose',
                     'smoke',
@@ -170,12 +194,12 @@ function getProbeType(options) {
                     'system',
                     'emergency',
                     'clock'
-                ],
-                probeType = 'alarm' + prefSensor + '_' + types[subCCId];
+                ];
+                
+            probeType = 'alarm' + prefSensor + '_' + types[subCCId];
         }
-
-        // What about enocean devices??
     }
+    
     return probeType;
 };
 
