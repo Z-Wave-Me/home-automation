@@ -1879,7 +1879,6 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							overlay: {},
 							handler: function (command, args) {
 								instance.ThermostatSetPoint.Set(mode, args.level);
-								instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
 							},
 							moduleId: self.id
 						});
