@@ -1,6 +1,6 @@
 /*** ImportRemoteHA Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 2.0.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
