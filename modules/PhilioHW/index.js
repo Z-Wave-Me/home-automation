@@ -125,6 +125,14 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         }
     }, "");
 
+    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.funcA.state", function(type) {
+        switch (this.value) {
+            case 3:
+                system("/etc/btnd/wps_click.sh");
+                break;
+        }
+    }, "");
+
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.funcB.state", function(type) {
         switch (this.value) {
             case 3:
