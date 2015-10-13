@@ -1278,6 +1278,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
     var self = this,
         moduleMeta = moduleMeta || null;
 
+    // loop through object
     function replaceNspcFilters (obj, key) {
         var objects = [];
 
@@ -1288,6 +1289,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
             if (typeof obj[i] === 'object') {
                 objects = objects.concat(replaceNspcFilters(obj[i], key));
             } else if (i == key && !_.isArray(obj[key])) {
+                // overwrite old key with new namespaces array
                 obj[key] = _.uniq(getNspc(obj[key]));
             }
         }
@@ -1295,6 +1297,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         return obj;
     };
 
+    // generate namespace arry from filter string 
     function getNspc (filters) {
         var namespaces = [],
             filters = filters.split(','),
@@ -1305,24 +1308,31 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
             return false;
         }
         
+        // do it for each filter
         _.forEach(filters, function (flr,i){
             var id = flr.split(':'),
                 path;
 
             if(apis.indexOf(id[0]) > -1){
                 
+                //if location
                 if (id[0] === 'locations'){
+                    // get location namespaces
                     locationNspc = _.filter(self.locations, function(location){
                         return location.id === parseInt(id[1],10);
                     })[0].namespaces;
 
+                    // cut path
                     path = flr.substring(id[0].length + id[1].length + 2).replace(/:/gi, '.');
 
+                    // get namespaces
                     namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, locationNspc)));
-
+                // if namespace
                 } else {
+                    // cut path
                     path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
 
+                    // get namespaces
                     namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, self.namespaces)));
                 }
             }
@@ -1335,8 +1345,8 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         try {
             var params = ['schema', 'options'],
                 keys = ['enum', 'optionLabels'];
-
             
+            // transform filters
             params.forEach(function(par) {
                 if (moduleMeta[par]) {
                     keys.forEach(function(key) {                            
