@@ -713,6 +713,36 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     that.saveNotifications();
 };
 
+AutomationController.prototype.getLocation = function (locations, locationId) {
+    var location = [],
+        nspc = null;
+
+    location = locations.filter(function (location) {
+        if (locationId === 'globalRoom') {
+            return location.id === 0 &&
+                    location.title === locationId;
+        } else {
+            return location.id === locationId;
+        }
+    });
+
+    // generate namespaces for location
+    if (location.length > 0) {
+
+        this.generateNamespaces(function (namespaces) {
+                if (_.isArray(namespaces)) {
+                    nspc = namespaces;
+                }
+            }, location[0].id);
+
+        location = _.extend(location[0], {
+            namespaces: nspc
+        });
+    }
+
+    return location;
+}
+
 AutomationController.prototype.addLocation = function (locProps, callback) {
     var id = this.locations.length > 0 ? Math.max.apply(null, this.locations.map(function (location) { return location.id; })) + 1 : 1; // changed after adding global room with id=0 || old: this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
@@ -1020,9 +1050,9 @@ AutomationController.prototype.generateNamespaces = function (callback, location
     var that = this,
         devices = that.devices.filter(function(device){
             // filter by location id
-            if(!!locationId){
+            if(locationId){
                 return device.get('permanently_hidden') === false && 
-                        device.get('location') === roomId;
+                        device.get('location') === parseInt(locationId, 10);
             } else {
                 return device.get('permanently_hidden') === false;
             }
@@ -1117,16 +1147,16 @@ AutomationController.prototype.generateNamespaces = function (callback, location
     }
 };
 
-AutomationController.prototype.getListNamespaces = function (id) {
+AutomationController.prototype.getListNamespaces = function (path, namespacesObj) {
     var result = null,
-        namespaces = this.namespaces,
-        id = id || null,
+        namespaces = namespacesObj,
+        path = path || null,
         pathArr = [],
         namespacesPath = '';
 
-    if (!!id) {
+    if (!!path) {
 
-        pathArr = id.split('.');
+        pathArr = path.split('.');
 
         // add 'params' to path array if neccessary
         if (pathArr.length > 1 && pathArr.indexOf('params') === -1) {
@@ -1139,7 +1169,7 @@ AutomationController.prototype.getListNamespaces = function (id) {
         })[0];
 
         // get object/array by path
-        if (pathArr.length > 1) {
+        if (nspc && pathArr.length > 1) {
             for (var i = 0; i < pathArr.length; i++) {
                 var currPath = pathArr[i + 1];
                 
@@ -1171,7 +1201,7 @@ AutomationController.prototype.setNamespace = function (id, data) {
 
     id = id || null;
 
-    if (id && this.getListNamespaces(id)) {
+    if (id && this.getListNamespaces(id, this.namespaces)) {
         namespace = _.findWhere(this.namespaces, {id : id});
         if (!!namespace) {
             index = this.namespaces.indexOf(namespace);
@@ -1207,15 +1237,16 @@ AutomationController.prototype.getListModulesCategories = function (id) {
 AutomationController.prototype.getModuleData = function (moduleName) {
     var self = this,
         defaultLang = self.defaultLang,
-        languageFile,
-        data;
+        moduleMeta = self.modules[moduleName].meta || null;
+        languageFile = self.loadModuleLang(moduleName),
+        data = {};
     
     if (!self.modules[moduleName]) {
         return {}; // module not found (deleted from filesystem or broken?), return empty meta
     }
     
     try {
-        metaStringify = JSON.stringify(self.modules[moduleName].meta);
+        metaStringify = JSON.stringify(moduleMeta);
     } catch(e){
         try {
             metaStringify = JSON.stringify(fs.loadJSON('modules/' + moduleName + '/module.json'));
@@ -1227,8 +1258,6 @@ AutomationController.prototype.getModuleData = function (moduleName) {
             }
         }
     }
-
-    languageFile = self.loadModuleLang(moduleName);
 
     if (languageFile !== null) {
         Object.keys(languageFile).forEach(function (key) {
@@ -1243,6 +1272,84 @@ AutomationController.prototype.getModuleData = function (moduleName) {
     }
 
     return data;
+};
+
+AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
+    var self = this,
+        moduleMeta = moduleMeta || null;
+
+    function replaceNspcFilters (obj, key) {
+        var objects = [];
+
+        for (var i in obj) {
+            if (obj && !obj[i]){
+                continue;
+            }
+            if (typeof obj[i] === 'object') {
+                objects = objects.concat(replaceNspcFilters(obj[i], key));
+            } else if (i == key && !_.isArray(obj[key])) {
+                obj[key] = _.uniq(getNspc(obj[key]));
+            }
+        }
+
+        return obj;
+    };
+
+    function getNspc (filters) {
+        var namespaces = [],
+            filters = filters.split(','),
+            apis = ['locations','namespaces'],
+            filteredDev = [];
+        
+        if (!_.isArray(filters)) {
+            return false;
+        }
+        
+        _.forEach(filters, function (flr,i){
+            var id = flr.split(':'),
+                path;
+
+            if(apis.indexOf(id[0]) > -1){
+                
+                if (id[0] === 'locations'){
+                    locationNspc = _.filter(self.locations, function(location){
+                        return location.id === parseInt(id[1],10);
+                    })[0].namespaces;
+
+                    path = flr.substring(id[0].length + id[1].length + 2).replace(/:/gi, '.');
+
+                    namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, locationNspc)));
+
+                } else {
+                    path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
+
+                    namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, self.namespaces)));
+                }
+            }
+        });
+
+        return namespaces;
+    };
+
+    if (!!moduleMeta) {
+        try {
+            var params = ['schema', 'options'],
+                keys = ['enum', 'optionLabels'];
+
+            
+            params.forEach(function(par) {
+                if (moduleMeta[par]) {
+                    keys.forEach(function(key) {                            
+                        moduleMeta[par] = replaceNspcFilters(moduleMeta[par], key);
+                    });                   
+                }
+            });      
+        } catch (e) {
+            console.log('Cannot transform filters from module ' + moduleMeta.id + '. ERROR: ' + e);
+        }
+    }
+
+    return moduleMeta;
 };
 
 // load module lang folder
