@@ -5,6 +5,7 @@
 	"on":"On",
 	"off":"Off",
 	"l_EventSensor":"Event from sensor",
+	"l_InitialValue":"Initial value",
 	"l_ValueToAdd":"Value to add",
 	"l_ScaleTitle":"Sensor scale"
 }

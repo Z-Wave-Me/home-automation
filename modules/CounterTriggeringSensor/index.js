@@ -34,7 +34,7 @@ CounterTriggeringSensor.prototype.init = function (config) {
         defaults: {
             deviceType: "sensorMultilevel",
             metrics: {
-                level: 0,
+                level: this.config.initialValue,
                 icon: 'meter',
                 title: 'Counter Triggering ' + this.id,
             }
@@ -52,7 +52,7 @@ CounterTriggeringSensor.prototype.init = function (config) {
     // Plus 1, when binary sensor triggered
     this.handler = function (sensor) {
         if (sensor.get("metrics:level") === self.config.eventSensor) {
-            var currentValue = parseInt(self.vDev.get("metrics:level"));
+            var currentValue = parseFloat(self.vDev.get("metrics:level"));
             if (isNaN(currentValue)) {
                     currentValue = 0;
             }

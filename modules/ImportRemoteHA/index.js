@@ -1,6 +1,6 @@
 /*** ImportRemoteHA Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 2.0.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -71,6 +71,10 @@ ImportRemoteHA.prototype.requestUpdate = function () {
             url: this.urlPrefix + "?since=" + this.timestamp.toString(),
             method: "GET",
             async: true,
+            auth: {
+                login: self.config.login,
+                password: self.config.password
+            },
             success: function(response) {
                 self.parseResponse(response);
             },
@@ -166,6 +170,8 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
 };
 
 ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
+    var self = this;
+    
     var argsFlat = "";
     if (args) {
         for (var key in args) {
@@ -179,6 +185,10 @@ ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
         url: this.urlPrefix + "/" + remoteId + "/command/" + command + argsFlat,
         method: "GET",
         async: true,
+        auth: {
+            login: self.config.login,
+            password: self.config.password
+        },
         error: function(response) {
             console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
         }

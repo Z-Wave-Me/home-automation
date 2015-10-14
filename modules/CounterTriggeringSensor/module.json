@@ -17,7 +17,8 @@
 		"description": "__m_descr__",
 		"binarySensor": null,
 		"eventSensor": "on",
-		"valueToAdd": "1",
+		"initialValue":"0.0",
+		"valueToAdd": "1.0",
 		"scaleTitle": "L"
 	}, 
 	"schema": {
@@ -33,6 +34,10 @@
 				"type": "integer",
 				"required": true,
 				"enum": ["on", "off"]
+			},
+			"initialValue": {
+				"type": "number",
+				"required": true
 			},
 			"valueToAdd": {
 				"type": "number",
@@ -58,6 +63,9 @@
 			"eventSensor": {
 				"label": "__l_EventSensor__",
 				"optionLabels": ["__on__", "__off__"]
+			},
+			"initialValue": {
+				"label": "__l_InitialValue__"
 			},
 			"valueToAdd": {
 				"label": "__l_ValueToAdd__"
