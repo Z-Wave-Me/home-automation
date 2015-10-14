@@ -1040,7 +1040,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         namespace;
 
         this.controller.generateNamespaces();
-        namespace = this.controller.getListNamespaces(namespaceId, this.namespaces);
+        namespace = this.controller.getListNamespaces(namespaceId, this.controller.namespaces);
         if (namespace) {
             reply.data = namespace;
             reply.code = 200;

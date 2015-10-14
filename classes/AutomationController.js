@@ -1170,13 +1170,20 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
 
         // get object/array by path
         if (nspc && pathArr.length > 1) {
+            var shift = 1;
             for (var i = 0; i < pathArr.length; i++) {
-                var currPath = pathArr[i + 1];
+                var currPath = pathArr[i + shift];
                 
                 if(nspc[currPath]) {
                     nspc = nspc[currPath];
                     result = nspc;
-                } else if (currPath === 'deviceId' || currPath === 'deviceName' && _.isArray(nspc)) {
+                // add backward compatibility
+                } else if (!nspc[currPath] && nspc['devices_all']) {
+                    nspc = nspc['devices_all'];
+                    result = nspc;
+                    // change shift to get last path entry
+                    shift = 0;
+                }else if (currPath === 'deviceId' || currPath === 'deviceName' && _.isArray(nspc)) {
                     // map all device id's or device names
                     result = _.map(nspc, function(entry) { return entry[currPath] });
                 } else if (currPath) {
@@ -1290,7 +1297,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                 objects = objects.concat(replaceNspcFilters(obj[i], key));
             } else if (i == key && !_.isArray(obj[key])) {
                 // overwrite old key with new namespaces array
-                obj[key] = _.uniq(getNspcFromFilters(obj[key]));
+                obj[key] = getNspcFromFilters(obj[key]);
             }
         }
 
@@ -1302,7 +1309,8 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         var namespaces = [],
             filters = filters.split(','),
             apis = ['locations','namespaces'],
-            filteredDev = [];
+            filteredDev = []
+            nspc;
         
         if (!_.isArray(filters)) {
             return false;
@@ -1334,14 +1342,20 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                     path = flr.substring(id[0].length + id[1].length + 2).replace(/:/gi, '.');
 
                     // get namespaces
-                    namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, locationNspc)));
+                    nspc = self.getListNamespaces(path, locationNspc);
+                    if (nspc) {
+                        namespaces = namespaces.concat(nspc);
+                    }
                 // get namespaces of devices ignoring locations
                 } else {
                     // cut path
                     path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
 
                     // get namespaces
-                    namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, self.namespaces)));
+                    nspc = self.getListNamespaces(path, self.namespaces);
+                    if (nspc) {
+                        namespaces = namespaces.concat(nspc);
+                    }
                 }
             }
         });
