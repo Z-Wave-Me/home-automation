@@ -25,6 +25,7 @@
 			"DayTimeStart": "07:00",
 			"DayTimeEnd": "23:59"
 		},
+		"timeout": 0,
 		"DimmerButton": null	
 	},
 	"schema": {
@@ -72,6 +73,10 @@
 					}
 				}
 			},
+			"timeout": {
+                "type": "number",
+                "required": false
+            },
 			"DimmerButton": {
 				"field": "enum",
 				"datasource": "namespaces",
@@ -127,6 +132,11 @@
 					}
 				}
 			},
+			"timeout": {
+                "label": "__l_timeout__",
+                "helper":"__h_timeout__"
+
+            },
 			"DimmerButton": {
 				"label": "__l_DimmerButton__",
 				"type": "select",
