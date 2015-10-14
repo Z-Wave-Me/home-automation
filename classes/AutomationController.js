@@ -1290,7 +1290,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                 objects = objects.concat(replaceNspcFilters(obj[i], key));
             } else if (i == key && !_.isArray(obj[key])) {
                 // overwrite old key with new namespaces array
-                obj[key] = _.uniq(getNspc(obj[key]));
+                obj[key] = _.uniq(getNspcFromFilters(obj[key]));
             }
         }
 
@@ -1298,7 +1298,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
     };
 
     // generate namespace arry from filter string 
-    function getNspc (filters) {
+    function getNspcFromFilters (filters) {
         var namespaces = [],
             filters = filters.split(','),
             apis = ['locations','namespaces'],
@@ -1307,7 +1307,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         if (!_.isArray(filters)) {
             return false;
         }
-        
+
         // do it for each filter
         _.forEach(filters, function (flr,i){
             var id = flr.split(':'),
@@ -1315,8 +1315,16 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
 
             if(apis.indexOf(id[0]) > -1){
                 
-                //if location
-                if (id[0] === 'locations'){
+                // get location ids or titles - except location 0/globalRoom
+                // should allow dynamic filtering per location
+                if (id[0] === 'locations' && (id[1] === 'id' || id[1] === 'title')) {
+                    namespaces = _.filter(self.locations, function(location) {
+                        return location[id[1]] !== 0 && location[id[1]] !== 'globalRoom';
+                    }).map(function(location) { 
+                            return location[id[1]];
+                    });
+                // get namespaces of devices per location                    
+                } else if (id[0] === 'locations'){
                     // get location namespaces
                     locationNspc = _.filter(self.locations, function(location){
                         return location.id === parseInt(id[1],10);
@@ -1327,7 +1335,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
 
                     // get namespaces
                     namespaces = _.uniq(namespaces.concat(self.getListNamespaces(path, locationNspc)));
-                // if namespace
+                // get namespaces of devices ignoring locations
                 } else {
                     // cut path
                     path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
