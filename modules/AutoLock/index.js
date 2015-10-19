@@ -76,7 +76,7 @@ AutoLock.prototype.stop = function () {
     AutoLock.super_.prototype.stop.call(this);
 
     if (this.timer)
-        clearInterval(this.timer);
+        clearTimeout(this.timer);
 
     this.controller.devices.off(this.config.BinarySensor, 'change:metrics:level', this.handler);
 };

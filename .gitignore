@@ -9,3 +9,4 @@ storage/*
 node_modules
 blub
 .gitignore
+userModules/

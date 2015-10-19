@@ -63,9 +63,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         // the parameters.
         this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
 
+        this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
+
         this.router.del("/locations/:location_id", this.ROLE.ADMIN, this.removeLocation, [parseInt]);
         this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
-        this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.listLocations, [parseInt]);
+        this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.getLocationFunc);
 
         this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 
@@ -86,7 +88,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
 
-        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc, [parseInt]);
+        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
         this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 
@@ -330,37 +332,94 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     //locations
-    listLocations: function (locationId) {
+    listLocations: function () {
         var reply = {
                 data: null,
                 error: null
             },
-            locations = this.locationsByUser(this.req.user);
+            locations = this.locationsByUser(this.req.user),
+            expLocations = [];
 
-            locations = locations.filter(function(location){ return location.id !== 0 && location.title !== 'globalRoom'; });
+        // generate namespaces per location
+        if (locations.length > 0) {
+            locations.forEach(function (location) {
+                var nspc = null;
 
-        if (locationId === undefined){
-            if (Boolean(this.req.query.pagination)) {
-                reply.data.total_count = reply.locations.length;
-                // !!! fix pagination
-                locations = locations.slice();
-            }
+                this.controller.generateNamespaces(function (namespaces) {
+                        if (_.isArray(namespaces)) {
+                            nspc = namespaces;
+                        }
+                    }, location.id);
+
+                expLocations.push(_.extend(location, {
+                    namespaces: nspc
+                }));
+            });
+
+            locations = expLocations.length > 0? expLocations : locations;
 
             reply.code = 200;
             reply.data = locations;
         } else {
-            var _location = locations.filter(function (location) {
-                return location.id === locationId;
-            });
+            reply.code = 500;
+            reply.error = 'Could not list Instances.';
+        }
 
-            if (_location.length > 0) {
-                reply.data = _location[0];
+        return reply;
+    },
+    // get location
+    getLocationFunc: function (locationId) {
+        var reply = {
+                data: null,
+                error: null
+            },
+            locations = this.locationsByUser(this.req.user),
+            _location = [],
+            locationId = !isNaN(locationId)? parseInt(locationId, 10) : locationId;
+
+        _location = this.controller.getLocation(locations, locationId);
+
+        // generate namespaces for location
+        if (_location) {
+            reply.data = _location;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Location " + locationId + " not found";
+        }
+
+        return reply;
+    },
+    //filter location namespaces
+    getLocationNamespacesFunc: function (locationId, namespaceId) {
+        var reply = {
+                data: null,
+                error: null
+            },
+            locations = this.locationsByUser(this.req.user),
+            _location = [],
+            locationId = !isNaN(locationId)? parseInt(locationId, 10) : locationId;
+
+        _location = this.controller.getLocation(locations, locationId);
+
+        // generate namespaces for location and get its namespaces
+        if (_location) {
+
+            // get namespaces by path (namespaceId)
+            getFilteredNspc = this.controller.getListNamespaces(namespaceId, _location.namespaces);
+
+            if (getFilteredNspc) {
+               reply.data = getFilteredNspc;
                 reply.code = 200;
             } else {
-                reply.code = 404;
-                reply.error = "Location " + locationId + " not found";
+                reply.code = 500;
+                reply.error = "Couldn't find namespaces entry with: '" + namespaceId + "'";
             }
+        } else {
+            reply.code = 404;
+            reply.error = "Location " + locationId === 0? 'globalRoom' : locationId + " not found";
         }
+
         return reply;
     },
     addLocation: function () {
@@ -530,14 +589,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: null
-            };
+            }, 
+            moduleData;
 
         if (!this.controller.modules.hasOwnProperty(moduleId)) {
             reply.code = 404;
             reply.error = 'Instance ' + moduleId + ' not found';
         } else {
+            // get module data
+            moduleData = this.controller.getModuleData(moduleId);
             reply.code = 200;
-            reply.data = this.controller.getModuleData(moduleId);
+            // replace namspace filters
+            reply.data = this.controller.replaceNamespaceFilters(moduleData);
         }
         
         return reply;
@@ -980,7 +1043,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         namespace;
 
         this.controller.generateNamespaces();
-        namespace = this.controller.getListNamespaces(namespaceId);
+        namespace = this.controller.getListNamespaces(namespaceId, this.controller.namespaces);
         if (namespace) {
             reply.data = namespace;
             reply.code = 200;

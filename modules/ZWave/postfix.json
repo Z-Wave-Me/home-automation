@@ -1,31 +1,41 @@
 [
 	{
 		"id":"340.256.257",
-		"product":"KFOBC",
+		"product":"Wall-C",
 		"preInterview":[],
 		"postInterview":[
-			"var trapArray = [];trapArray = self.controller.instances.filter(function(instance) { return instance.moduleId === 'SwitchControlGenerator'; }); if (commandClassId === 91 && deviceInstances[instanceId].commandClasses[91] && c.data.lastIncludedDevice.value === nodeId) { if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-0-0-1') === -1) { for (i = 1; i < 5; i++) { this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId,'0',i); console.log('#####------Switch-Control-Element-Created-------#####');}}}"
+			"supportSwitchController(91,4,'S');"
 		]
 	},{
-		"id":"316.2.13",
-		"product":"Philio Vision 1B",
+		"id":"277.256.259",
+		"product":"POPP Key Fob",
 		"preInterview":[],
-		"postInterview":[]
+		"postInterview":[
+			"supportSwitchController(91,4,'S');"
+		]
 	},{
 		"id":"316.2.12",
 		"product":"Philio Vision 1A",
 		"preInterview":[],
 		"postInterview":[
-			"if(commandClassId === 113){ create = false; };",
-			"if(commandClassId === 112 && deviceInstances[instanceId].commandClasses[112] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[112].Set(7,22,1); console.log('##-------------CHANGED-VALUE-316.2.12.112---SET-PARAM-7-VALUE-22-SIZE-1---------##');}"
+			"preventDeviceCreation(113, {});",
+			"setConfig(7,22,1);"
 		]
 	},{
 		"id":"316.2.2",
 		"product":"Philio PST02-A RU",
 		"preInterview":[],
 		"postInterview":[
-			"if(commandClassId === 113){ create = false; };",
-			"if(commandClassId === 112 && deviceInstances[instanceId].commandClasses[112] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[112].Set(7,22,1); console.log('##-------------CHANGED-VALUE-316.2.2.112---SET-PARAM-7-VALUE-22-SIZE-1---------##');}"
+			"preventDeviceCreation(113, {});",
+			"setConfig(7,22,1);"
+		]
+	},{
+		"id":"271.3074.4098",
+		"product":"Fibaro Smoke Sensor",
+		"preInterview":[],
+		"postInterview":[
+			"preventDeviceCreation(156, {});",
+			"preventDeviceCreation(113, { '1':[2], '7':[], '8':[], '9':[] });"
 		]
 	}
 ]
