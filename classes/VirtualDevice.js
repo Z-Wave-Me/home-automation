@@ -74,6 +74,7 @@ function getProbeType(options) {
     //ZEnoVDev_zeno_3_1
     
     this.CC = {
+        "SwitchMultilevel": 0x26,
         'SensorBinary': 0x30,
         'SensorMultilevel': 0x31,
         'Meter': 0x32,
@@ -97,9 +98,17 @@ function getProbeType(options) {
          * cutNbrs[3] ... subClassId - necessary for probeType
         */
        
-        var ccId = parseInt(cutNbrs[2], 10),
+        var nodeId = parseInt(cutNbrs[0], 10),
+            ccId = parseInt(cutNbrs[2], 10),
             subCCId = parseInt(cutNbrs[3], 10);
         
+        //check for switch multilevel (CC 38) subtypes
+        if(ccId === this.CC['SwitchMultilevel']){
+            var isBlind = zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], zway.devices[nodeId].data.specificType.value);
+
+            probeType = isBlind? 'blind' : 'dimmer';
+        }
+
         //check for binary sensor (CC 48) subtypes
         if(ccId === this.CC['SensorBinary']){
             var currType = 'general_purpose'; // general_purpose as default
@@ -161,7 +170,7 @@ function getProbeType(options) {
                     'power_factor'
                 ];
             
-            probeType = types[subCCId] !== ''? 'meterElectric_' + ypes[subCCId] : probeType;
+            probeType = types[subCCId] !== ''? 'meterElectric_' + types[subCCId] : probeType;
         }
 
         //check for switch color (CC 51) subtypes

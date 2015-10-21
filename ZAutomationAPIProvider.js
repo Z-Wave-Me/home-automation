@@ -409,7 +409,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                reply.data = getFilteredNspc;
                 reply.code = 200;
             } else {
-                reply.code = 500;
+                reply.code = 404;
                 reply.error = "Couldn't find namespaces entry with: '" + namespaceId + "'";
             }
         } else {

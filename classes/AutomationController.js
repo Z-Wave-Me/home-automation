@@ -1191,7 +1191,7 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
                 }
             }
         } else {
-            result = nspc;
+            result = nspc && nspc['params'] && nspc['params']['devices_all']? nspc['params']['devices_all'] : nspc;
         }        
         
     } else {
@@ -1305,9 +1305,9 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
     };
 
     // generate namespace arry from filter string 
-    function getNspcFromFilters (filters) {
+    function getNspcFromFilters (nspcfilters) {
         var namespaces = [],
-            filters = filters.split(','),
+            filters = nspcfilters.split(','),
             apis = ['locations','namespaces'],
             filteredDev = []
             nspc;
@@ -1332,20 +1332,9 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                             return location[id[1]];
                     });
                 // get namespaces of devices per location                    
-                } else if (id[0] === 'locations'){
-                    // get location namespaces
-                    locationNspc = _.filter(self.locations, function(location){
-                        return location.id === parseInt(id[1],10);
-                    })[0].namespaces;
-
-                    // cut path
-                    path = flr.substring(id[0].length + id[1].length + 2).replace(/:/gi, '.');
-
-                    // get namespaces
-                    nspc = self.getListNamespaces(path, locationNspc);
-                    if (nspc) {
-                        namespaces = namespaces.concat(nspc);
-                    }
+                } else if (id[0] === 'locations' && id[1] === 'locationId'){
+                    // don't replace set filters instead
+                    namespaces = nspcfilters;
                 // get namespaces of devices ignoring locations
                 } else {
                     // cut path
