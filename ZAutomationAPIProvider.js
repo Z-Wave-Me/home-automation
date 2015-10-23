@@ -53,6 +53,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
         this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
         this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
+        this.router.post("/modules/update", this.ROLE.ADMIN, this.updateModule);
+        this.router.get("/modules/tokens", this.ROLE.ADMIN, this.getModuleTokens);
+        this.router.put("/modules/tokens", this.ROLE.ADMIN, this.storeModuleToken);
+        this.router.del("/modules/tokens", this.ROLE.ADMIN, this.deleteModuleToken);
         this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
         this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
@@ -687,7 +691,152 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
         return reply;
     },
+    updateModule: function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            moduleUrl = this.req.body.moduleUrl;
+            
+        var result = "in progress";
+        var moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
+        if (this.controller.modules[moduleId]) {
+            installer.install(
+                moduleUrl,
+                function() {
+                        result = "done";
+                },  function() {
+                        result = "failed";
+                }
+            );
+            
+            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+            
+            while ((new Date()).valueOf() < d &&  result === "in progress") {
+                    processPendingCallbacks();
+            }
+            
+            if (result === "in progress") {
+                    result = "failed";
+            }
+
+            if (result === "done") {
+
+                loadSuccessfully = this.controller.reinitializeModule(moduleId, 'userModules/');
+
+                if(loadSuccessfully){
+                    reply.code = 200;
+                    reply.data = "app_update_successful"; // send language key as response
+                } else {
+                    reply.code = 200;
+                    reply.data = "app_update_successful_but_restart_necessary"; // send language key as response
+                }
+
+            } else {
+                reply.code = 500;
+                reply.error = "Failed to update module " + moduleUrl;
+            }
+        } else {
+            reply.code = 400;
+            reply.error = "The app from url '" + moduleUrl + "' doesn't exists.";
+        }
+        return reply;
+    },
+    getModuleTokens: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                }, 
+                tokenObj = {
+                    tokens: []
+                },
+                getTokens = function () {
+                    return loadObject('moduleTokens.json');
+                };
+
+        if (getTokens() === null) {
+            saveObject('moduleTokens.json', tokenObj);
+        }
+            
+        if (!!getTokens()) {
+            reply.data = getTokens();
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_tokens';
+        }
+
+        return reply;
+    },
+    storeModuleToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('moduleTokens.json');
+
+        if (tokenObj === null) {
+            saveObject('moduleTokens.json', tokenObj);
+
+            // try to load it again
+            tokenObj = loadObject('moduleTokens.json');
+        }
+
+        if (reqObj && reqObj.token && !!tokenObj && tokenObj.tokens) {
+            if (tokenObj.tokens.indexOf(reqObj.token) < 0) {
+                // add new token id
+                tokenObj.tokens.push(reqObj.token);
+
+                // save tokens
+                saveObject('moduleTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 201;
+            } else {
+                reply.code = 409;
+                reply.error = 'token_not_unique';
+            }
+        } else {
+            reply.error = 'failed_to_load_tokens';
+        }
+
+        return reply;
+    },
+    deleteModuleToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('moduleTokens.json');
+
+        if (reqObj && reqObj.token && !!tokenObj && tokenObj.tokens) {
+            if (tokenObj.tokens.indexOf(reqObj.token) > -1) {
+                // add new token id
+                tokenObj.tokens = _.filter(tokenObj.tokens, function(token) {
+                    return token !== reqObj.token;
+                });
+
+                // save tokens
+                saveObject('moduleTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'not_existing_token';
+            }
+        } else {
+            reply.error = 'failed_to_load_tokens';
+        }
+
+        return reply;
+    },
     // instances
     listInstances: function () {
         var reply = {

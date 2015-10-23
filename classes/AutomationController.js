@@ -936,7 +936,7 @@ AutomationController.prototype.getDevHistory = function (dev, since, show) {
 
             averageEntries.push(metric);
             
-            l = 0,
+            l = 0;
             metric = {};
         }
 
@@ -1244,7 +1244,7 @@ AutomationController.prototype.getListModulesCategories = function (id) {
 AutomationController.prototype.getModuleData = function (moduleName) {
     var self = this,
         defaultLang = self.defaultLang,
-        moduleMeta = self.modules[moduleName].meta || null;
+        moduleMeta = self.modules[moduleName].meta || null,
         languageFile = self.loadModuleLang(moduleName),
         data = {};
     
@@ -1286,7 +1286,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         moduleMeta = moduleMeta || null;
 
     // loop through object
-    function replaceNspcFilters (obj, key) {
+    function replaceNspcFilters (moduleMeta, obj, key) {
         var objects = [];
 
         for (var i in obj) {
@@ -1294,10 +1294,10 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                 continue;
             }
             if (typeof obj[i] === 'object') {
-                objects = objects.concat(replaceNspcFilters(obj[i], key));
+                objects = objects.concat(replaceNspcFilters(moduleMeta, obj[i], key));
             } else if (i == key && !_.isArray(obj[key])) {
                 // overwrite old key with new namespaces array
-                obj[key] = getNspcFromFilters(obj[key]);
+                obj[key] = getNspcFromFilters(moduleMeta, obj[key]);
             }
         }
 
@@ -1305,10 +1305,10 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
     };
 
     // generate namespace arry from filter string 
-    function getNspcFromFilters (nspcfilters) {
+    function getNspcFromFilters (moduleMeta, nspcfilters) {
         var namespaces = [],
             filters = nspcfilters.split(','),
-            apis = ['locations','namespaces'],
+            apis = ['locations','namespaces','loadFunction'],
             filteredDev = []
             nspc;
         
@@ -1323,7 +1323,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
 
             if(apis.indexOf(id[0]) > -1){
                 
-                // get location ids or titles - except location 0/globalRoom
+                // get location ids or titles - except location 0/globalRoom - 'locations:id' or 'locations:title'
                 // should allow dynamic filtering per location
                 if (id[0] === 'locations' && (id[1] === 'id' || id[1] === 'title')) {
                     namespaces = _.filter(self.locations, function(location) {
@@ -1331,10 +1331,25 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                     }).map(function(location) { 
                             return location[id[1]];
                     });
-                // get namespaces of devices per location                    
+                
+                // get namespaces of devices per location - 'locations:locationId:filterPath'                   
                 } else if (id[0] === 'locations' && id[1] === 'locationId'){
                     // don't replace set filters instead
                     namespaces = nspcfilters;
+
+                // load function from file
+                } else if (id[0] === 'loadFunction') {
+                    var jsFile = fs.stat(moduleMeta.location + '/htdocs/' + id[1]);
+                    
+                    if (id[1] && jsFile && jsFile.type === 'file') {
+                        jsFile = fs.load(moduleMeta.location + '/htdocs/' + id[1]);
+
+                        if (!!jsFile) {
+                           //compress string 
+                           namespaces = jsFile.replace(/(^\s+|\s+$|\n|\r|\t)/g,'');
+                        }
+                    }
+                
                 // get namespaces of devices ignoring locations
                 } else {
                     // cut path
@@ -1354,17 +1369,20 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
 
     if (!!moduleMeta) {
         try {
-            var params = ['schema', 'options'],
-                keys = ['enum', 'optionLabels'];
+            var params = {
+                    schema: ['enum'],
+                    options: ['optionLabels', 'click']
+                };
             
             // transform filters
-            params.forEach(function(par) {
-                if (moduleMeta[par]) {
-                    keys.forEach(function(key) {                            
-                        moduleMeta[par] = replaceNspcFilters(moduleMeta[par], key);
+            for (property in params) {
+                if (moduleMeta[property]) {
+                    params[property].forEach(function(key) {                            
+                        moduleMeta[property] = replaceNspcFilters(moduleMeta, moduleMeta[property], key);
                     });                   
                 }
-            });      
+            }
+     
         } catch (e) {
             console.log('Cannot transform filters from module ' + moduleMeta.id + '. ERROR: ' + e);
         }
