@@ -52,6 +52,7 @@ function ZWave (id, controller) {
 		"ThermostatSetPoint": 0x43,
 		"ThermostatFanMode": 0x44,
 		"DoorLock": 0x62,
+		"CentralScene": 0x5b,
 		"Battery": 0x80
 	};
 }

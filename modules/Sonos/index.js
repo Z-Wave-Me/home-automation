@@ -1,6 +1,6 @@
 /*** Sonos Z-Way HA module *******************************************
 
-Version: 1.0.1
+Version: 1.0.2
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -13,8 +13,6 @@ Description:
     TODO
     
     Add periodic M-SEARCH if needed
-    Unsubscribe on module stop.
-    
 */
 
 // ----------------------------------------------------------------------------
@@ -26,6 +24,7 @@ function Sonos (id, controller) {
     Sonos.super_.call(this, id, controller);
     
     this.players = [];
+    this.subscribeTimer = [];
     this.hostnames = {};
 }
 
@@ -64,6 +63,10 @@ Sonos.prototype.stop = function () {
     this.players.forEach(function(player) {
         self.controller.devices.remove("Sonos_Device_Play_" + player.host + "_" + self.id);
         self.controller.devices.remove("Sonos_Device_Volume_" + player.host + "_" + self.id);
+    });
+    
+    this.subscribeTimer.forEach(function(timer) {
+        clearInterval(timer);
     });
     
     Sonos.super_.prototype.stop.call(this);
@@ -217,6 +220,18 @@ Sonos.prototype.renderPlayer = function(household, host) {
         moduleId: this.id
     });
     
+    // subscribe to notifications
+    this.subscribe(household, host);
+    
+    // repeat subscription every hour
+    this.subscribeTimer.push(setInterval(function() {
+        self.subscribe(household, host);
+    }, 3600*1000));
+};
+
+Sonos.prototype.subscribe = function (household, host) {
+    var self = this;
+    
     [
         "/MediaRenderer/AVTransport/Event",
         "/MediaRenderer/RenderingControl/Event"
@@ -272,7 +287,7 @@ Sonos.prototype.notifier = function () {
                     var x = new ZXmlDocument(data);
                     var lastChange = x.findOne('//LastChange/text()');
                     if (lastChange) {
-                        lastChange = lastChange.replace(" xmlns=\"urn:schemas-upnp-org:metadata-1-0/RCS/\"", ""); // TODO: temp hack until we fix xmlns problem
+                        lastChange = lastChange.replace(" xmlns=\"urn:schemas-upnp-org:metadata-1-0/RCS/\"", ""); // TODO: temp hack until we fix xmlns problem // fixed, but need time to redo this part
                         lastChange = lastChange.replace(" xmlns=\"urn:schemas-upnp-org:metadata-1-0/AVT/\"", ""); // TODO: temp hack until we fix xmlns problem
                         var vol = (new ZXmlDocument(lastChange)).findOne('/Event/InstanceID/Volume[@channel="Master"]/@val');
                         if (vol) {

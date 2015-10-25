@@ -1,6 +1,6 @@
 {
     "dependencies": [],
-    "singleton": true,
+    "singleton": false,
     "category": "basic_gateway_modules",
     "author": "Z-Wave.Me",
     "homepage": "http://razberry.z-wave.me",
