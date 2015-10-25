@@ -56,7 +56,7 @@ IfThen.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    if(ifElement.device){
+    if(ifElement && ifElement.device){
         self.controller.devices.on(ifElement.device, 'change:metrics:level', self.handlerLevel);
     }
 };
