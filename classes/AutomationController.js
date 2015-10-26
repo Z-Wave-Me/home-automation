@@ -1244,7 +1244,7 @@ AutomationController.prototype.getListModulesCategories = function (id) {
 AutomationController.prototype.getModuleData = function (moduleName) {
     var self = this,
         defaultLang = self.defaultLang,
-        moduleMeta = self.modules[moduleName].meta || null,
+        moduleMeta = self.modules[moduleName] && self.modules[moduleName].meta || null,
         languageFile = self.loadModuleLang(moduleName),
         data = {};
     
