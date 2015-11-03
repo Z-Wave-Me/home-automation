@@ -290,7 +290,8 @@ _.extend(VirtualDevice.prototype, {
             prev = this._previousAttributes,
             accessAttrs,
             attrs,
-            findObj;
+            findObj,
+            checkForNull = ['probeTitle', 'scaleTitle'];
 
         function findX(obj, key) {
             var val = obj[key];
@@ -305,6 +306,30 @@ _.extend(VirtualDevice.prototype, {
             }
             return undefined;
         }
+
+        // workaround updating scaleTitle and probeTitle if they are null
+        // does not solve the real problem (more in depth)
+        if (current.metrics) {
+            for ( prop in checkForNull) {
+                var p = checkForNull[prop];
+                
+                if (current.metrics[p] === null) {
+                    var ids = this.id.split('_').pop().split('-');
+                    
+                    if (zway && ids && ids.length > 3) {
+                        //overwrite null value
+                        switch(p){
+                            case 'probeTitle':
+                                current.metrics[p] = zway.devices[ids[0]].instances[ids[1]].commandClasses[ids[2]].data[ids[3]].sensorTypeString.value;
+                                break;
+                            case 'scaleTitle':
+                                current.metrics[p] = zway.devices[ids[0]].instances[ids[1]].commandClasses[ids[2]].data[ids[3]].scaleString.value;
+                                break;
+                        }
+                    }        
+                }
+            }
+        } 
 
         options = options || {};
         accessAttrs = options.accessAttrs || that.accessAttrs;
