@@ -1344,14 +1344,40 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		function compileTitle() {
-			var args = new Array();
+			var args = [],
+				sortArgs = [],
+				last = 0;
+
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
 			}
+
+			last = args.length - 1
+
+			// add vendorName on first position
 			if (vendorName) {
-				args.push(vendorName);
+				sortArgs.push(vendorName);
 			}
-			return args.join(' ');
+
+			// add probeType on second position if available
+			if(last > 1 && args[1]) {
+				sortArgs.push(args[1]);
+			}
+
+			// add CC type if array is still empty
+			if (sortArgs.length < 1) {
+				sortArgs.push(args[0]);
+			}
+
+			// add id
+			sortArgs.push('(' + args[last] + ')');
+
+			// add CC type
+			if (sortArgs.indexOf(args[0]) < 0 && args[0] !== 'Sensor') {
+				sortArgs.push(args[0]);
+			}
+			
+			return sortArgs.join(' ');
 		}
 
 		if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
