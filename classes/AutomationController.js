@@ -1403,6 +1403,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                     path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
 
                     // get namespaces
+                    self.generateNamespaces();
                     nspc = self.getListNamespaces(path, self.namespaces);
                     if (nspc) {
                         namespaces = namespaces.concat(nspc);
