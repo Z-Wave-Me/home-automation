@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName":"ZWave",
-    "version": "2.0.0",
+    "version": "2.1.3",
     "maturity": "stable",
     "repository": {
             "type": "git",

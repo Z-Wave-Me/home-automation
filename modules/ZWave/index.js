@@ -1,6 +1,6 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.1.2
+Version: 2.1.3
 -------------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>
 Copyright: (c) Z-Wave.Me, 2014
