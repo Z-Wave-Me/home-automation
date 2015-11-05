@@ -407,6 +407,44 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     return true;
 };
 
+AutomationController.prototype.unloadModule = function (moduleId) {
+    var self = this,
+        activeInstances = [],
+        result = 'failed';
+
+    try {
+        // filter for instances of moduleId
+        activeInstances = self.instances.filter(function (instance) {
+            return instance.moduleId === moduleId;
+        }).map(function (instance) {
+            return instance.id;
+        });
+
+        // remove all instances of moduleId
+        if (activeInstances.length > 0) {
+            activeInstances.forEach(function (instanceId) {
+                self.deleteInstance(instanceId);
+            });
+        }
+
+        //remove from loaded Modules
+        self.loadedModules = self.loadedModules.filter(function (module) {
+            return module.meta.id !== moduleId;
+        });
+
+        // remove from modules list
+        if (self.modules[moduleId]){
+            delete self.modules[moduleId];
+
+            result = 'success';
+        }
+    } catch (e) {
+        result = e;
+    }
+
+    return result;
+};
+
 AutomationController.prototype.loadInstalledModule = function (moduleId, rootDirectory) {
     var self = this,
         successful = false;

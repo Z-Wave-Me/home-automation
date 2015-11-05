@@ -1,48 +1,69 @@
-[
-	{
-		"id":"340.256.257",
-		"product":"Wall-C",
-		"preInterview":[],
-		"postInterview":[
-			"supportSwitchController(91,4,'S');"
-		]
-	},{
-		"id":"277.256.259",
-		"product":"POPP Key Fob",
-		"preInterview":[],
-		"postInterview":[
-			"supportSwitchController(91,4,'S');"
-		]
-	},{
-		"id":"357.2.2",
-		"product":"NodOn",
-		"preInterview":[],
-		"postInterview":[
-			"supportSwitchController(91,4,'S');"
-		]
-	},{
-		"id":"316.2.12",
-		"product":"Philio Vision 1A",
-		"preInterview":[],
-		"postInterview":[
-			"preventDeviceCreation(113, {});",
-			"setConfig(7,22,1);"
-		]
-	},{
-		"id":"316.2.2",
-		"product":"Philio PST02-A RU",
-		"preInterview":[],
-		"postInterview":[
-			"preventDeviceCreation(113, {});",
-			"setConfig(7,22,1);"
-		]
-	},{
-		"id":"271.3074.4098",
-		"product":"Fibaro Smoke Sensor",
-		"preInterview":[],
-		"postInterview":[
-			"preventDeviceCreation(156, {});",
-			"preventDeviceCreation(113, { '1':[2], '7':[], '8':[], '9':[] });"
-		]
-	}
-]
+[{
+	"id": "2",
+	"p_id": "340.256.257",
+	"product": "Wall-Controller ZME",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(91,4,'S');"
+	]
+}, {
+	"id": "3",
+	"p_id": "277.256.259",
+	"product": "POPP Key Fob",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(91,4,'S');"
+	]
+}, {
+	"id": "4",
+	"p_id": "316.2.12",
+	"product": "Philio Vision 1A",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(113, {});",
+		"setConfig(7,22,1);"
+	]
+}, {
+	"id": "5",
+	"p_id": "316.2.2",
+	"product": "Philio PST02-A RU",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(113, {});",
+		"setConfig(7,22,1);"
+	]
+}, {
+	"id": "6",
+	"p_id": "271.3074.4098",
+	"product": "Fibaro Smoke Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(156, {});",
+		"preventDeviceCreation(113, { '1':[2], '7':[], '8':[], '9':[] });"
+	]
+}, {
+	"id": "23",
+	"p_id": "271.2816.4097",
+	"product": "Fibaro Flood Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0, { '156':[0], '48':[1]});",
+		"preventDeviceCreation(1, { '48':[1]});"
+	]
+}, {
+	"id": "24",
+	"p_id": "277.4.3",
+	"product": "Popp",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(113, {});"
+	]
+}, {
+	"id": "25",
+	"p_id": "357.2.2",
+	"product": "NodOn Soft Remote",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(91,4,'S');"
+	]
+}]

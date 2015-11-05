@@ -246,6 +246,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".Blacklist", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -264,6 +266,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
 	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
+	ws.revokeExternalAccess(_name + ".Blacklist");
+	ws.revokeExternalAccess(_name + ".Postfix");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -845,6 +849,56 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
+	this.ZWaveAPI.Blacklist = function() {
+		var blacklist = fs.loadJSON('modules/ZWave/blacklist.json');
+
+		if (!!blacklist) {
+			return {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "keep-alive"
+				},
+				body: blacklist
+			};
+		} else {
+			return {
+				status: 500,
+				body: 'Cannot load blacklist.'
+			};
+
+		}
+	};
+
+	this.ZWaveAPI.Postfix = function(url, request) {
+		var postfix = fs.loadJSON('modules/ZWave/postfix.json'),
+			show = request.query && request.query.full? request.query.full : 'false';
+
+		if (!!postfix) {
+
+			if (show === 'false') {
+				postfix = postfix.map(function (fix) { 
+						return { p_id: fix.p_id, product: fix.product }
+					});
+			}
+		
+			return {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "keep-alive"
+				},
+				body: postfix
+			};
+		} else {
+			return {
+				status: 500,
+				body: 'Cannot load postfix.'
+			};
+
+		}
+	};
+
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
@@ -1157,10 +1211,10 @@ ZWave.prototype.gateDevicesStart = function () {
 						devId = mId + '.' + mPT + '.' + mPId,
 						appMajorId = devId + '.' + appMajor,
 						appMinorId = devId + '.' + appMinor,
-						postFix = self.postfix.filter(function(device) {
-							return 	device.id === devId || 		//search by manufacturerProductId
-									device.id === appMajorId || //search by applicationMajor
-									device.id === appMinorId; 	//search by applicationMinor
+						postFix = self.postfix.filter(function(fix) {
+							return 	fix.p_id === devId || 		//search by manufacturerProductId
+									fix.p_id === appMajorId || //search by applicationMajor
+									fix.p_id === appMinorId; 	//search by applicationMinor
 						});
 					}
 

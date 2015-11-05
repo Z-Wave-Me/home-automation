@@ -52,11 +52,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations/update", this.ROLE.ADMIN, this.updateLocation);
         this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
         this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
+        
+        // module installation / update
         this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
         this.router.post("/modules/update", this.ROLE.ADMIN, this.updateModule);
+
+        // module tokens
         this.router.get("/modules/tokens", this.ROLE.ADMIN, this.getModuleTokens);
         this.router.put("/modules/tokens", this.ROLE.ADMIN, this.storeModuleToken);
         this.router.del("/modules/tokens", this.ROLE.ADMIN, this.deleteModuleToken);
+
         this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
         this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
@@ -67,6 +72,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         // the parameters.
         this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
 
+        this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
         this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 
         this.router.del("/locations/:location_id", this.ROLE.ADMIN, this.removeLocation, [parseInt]);
@@ -88,6 +94,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.ROLE.ADMIN, this.deleteInstanceFunc, [parseInt]);
 
+        this.router.post("/modules/reset/:module_id", this.ROLE.ADMIN, this.resetModule);
+        this.router.del("/modules/delete/:module_id", this.ROLE.ADMIN, this.deleteModule);
         this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
         this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
@@ -410,7 +418,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if (_location) {
 
             // get namespaces by path (namespaceId)
-            getFilteredNspc = this.controller.getListNamespaces(namespaceId, _location.namespaces);
+            if (!namespaceId) {
+                getFilteredNspc = _location.namespaces;
+            } else {
+                getFilteredNspc = this.controller.getListNamespaces(namespaceId, _location.namespaces);
+            }
 
             if (getFilteredNspc) {
                reply.data = getFilteredNspc;
@@ -578,6 +590,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         Object.keys(this.controller.modules).sort().forEach(function (className) {
             module = this.controller.getModuleData(className);
             module.className = className;
+
+            if(module.location === ('userModules/' + className) && fs.list('modules/'+ className)) {
+                module.hasReset = true;
+            } else {
+                module.hasReset = false;
+            }
+
             if (module.singleton && _.any(this.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
                 module.created = true;
             } else {
@@ -602,6 +621,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             // get module data
             moduleData = this.controller.getModuleData(moduleId);
+
+            if(moduleData.location === ('userModules/' + moduleId) && fs.list('modules/'+ moduleId)) {
+                moduleData.hasReset = true;
+            } else {
+                moduleData.hasReset = false;
+            }
+
             reply.code = 200;
             // replace namspace filters
             reply.data = this.controller.replaceNamespaceFilters(moduleData);
@@ -643,8 +669,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     // install module
     installModule: function () {
         var reply = {
-                error: null,
-                data: null,
+                error: {
+                    key: null,
+                    request: null,
+                    errorMsg: null
+                },
+                data: {
+                    key: null,
+                    appendix: null
+                },
                 code: 500
             },
             moduleUrl = this.req.body.moduleUrl;
@@ -678,26 +711,35 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if(loadSuccessfully){
                     reply.code = 201;
-                    reply.data = "app_installation_successful"; // send language key as response
+                    reply.data.key = "app_installation_successful"; // send language key as response
                 } else {
                     reply.code = 201;
-                    reply.data = "app_installation_successful_but_restart_necessary"; // send language key as response
+                    reply.data.key = "app_installation_successful_but_restart_necessary"; // send language key as response
                 }
 
             } else {
                 reply.code = 500;
-                reply.error = "Failed to install module " + moduleUrl;
+                reply.error.key = 'app_failed_to_install';
+                reply.error.request = moduleUrl;
             }
         } else {
-            reply.code = 400;
-            reply.error = "The app from url '" + moduleUrl + "' already exists.";
+            reply.code = 409;
+            reply.error.key = 'app_from_url_already_exist';
+            reply.error.request = moduleUrl;
         }
         return reply;
     },
     updateModule: function () {
         var reply = {
-                error: null,
-                data: null,
+                error: {
+                    key: null,
+                    request: null,
+                    errorMsg: null
+                },
+                data: {
+                    key: null,
+                    appendix: null
+                },
                 code: 500
             },
             moduleUrl = this.req.body.moduleUrl;
@@ -731,19 +773,169 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if(loadSuccessfully){
                     reply.code = 200;
-                    reply.data = "app_update_successful"; // send language key as response
+                    reply.data.key = "app_update_successful"; // send language key as response
                 } else {
                     reply.code = 200;
-                    reply.data = "app_update_successful_but_restart_necessary"; // send language key as response
+                    reply.data.key = "app_update_successful_but_restart_necessary"; // send language key as response
                 }
 
             } else {
                 reply.code = 500;
-                reply.error = "Failed to update module " + moduleUrl;
+                reply.error.key = 'app_failed_to_update';
+                reply.error.request = moduleUrl;
             }
         } else {
-            reply.code = 400;
-            reply.error = "The app from url '" + moduleUrl + "' doesn't exists.";
+            reply.code = 404;
+            reply.error.key = 'app_from_url_not_exist';
+            reply.error.request = moduleUrl;
+        }
+        return reply;
+    },
+    deleteModule: function (moduleId) {
+        var reply = {
+                error: {
+                    key: null,
+                    request: null,
+                    errorMsg: null
+                },
+                data: {
+                    key: null,
+                    appendix: null
+                },
+                code: 500
+            }, 
+            unload;
+            
+        var result = "in progress";
+
+        if (this.controller.modules[moduleId]) {
+
+            unload = this.controller.unloadModule(moduleId);
+
+            if (unload === 'success') {
+                try {
+                    installer.remove(
+                        moduleId,
+                        function() {
+                                result = "done";
+                        },  function() {
+                                result = "failed";
+                        }
+                    );
+                    
+                    var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+                    
+                    while ((new Date()).valueOf() < d &&  result === "in progress") {
+                            processPendingCallbacks();
+                    }
+                    
+                    if (result === "in progress") {
+                            result = "failed";
+                    }
+
+                    if (result === "done") {
+                        
+                        reply.code = 200;
+                        reply.data.key = "app_delete_successful"; // send language key as response
+                    } else {
+                        reply.code = 500;
+                        reply.error.key = 'app_failed_to_delete';
+                        reply.error.request = moduleId;
+                    }
+                } catch (e) {
+                    reply.code = 500;
+                    reply.error.key = 'app_failed_to_delete';
+                    reply.error.request = moduleId;
+                    reply.error.errorMsg = e;
+                }
+            } else {
+                reply.code = 500;
+                reply.error.key = 'app_failed_to_delete';
+                reply.error.request = moduleId;
+                reply.error.errorMsg = unload;
+            }       
+        } else {
+            reply.code = 404;
+            reply.error.key = 'app_not_exist';
+            reply.error.request = moduleId;
+        }
+        return reply;
+    },
+    resetModule: function (moduleId) {
+        var reply = {
+                error: {},
+                data: {},
+                code: 500
+            }, 
+            unload;
+            
+        var result = "in progress";
+
+        if (this.controller.modules[moduleId]) {
+
+            if (this.controller.modules[moduleId].location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)){
+
+                unload = this.controller.unloadModule(moduleId);
+
+                if (unload === 'success') {
+                    try {
+                        installer.remove(
+                            moduleId,
+                            function() {
+                                    result = "done";
+                            },  function() {
+                                    result = "failed";
+                            }
+                        );
+                        
+                        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+                        
+                        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                                processPendingCallbacks();
+                        }
+                        
+                        if (result === "in progress") {
+                                result = "failed";
+                        }
+
+                        if (result === "done") {
+
+                            loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'modules/');
+                            
+                            if(loadSuccessfully) {
+                                reply.code = 200;
+                                reply.data.key = 'app_reset_successful_to_version';
+                                reply.data.appendix = this.controller.modules[moduleId].meta.version; 
+                            } else {
+                                reply.code = 200;
+                                reply.data.key = "app_reset_successful_but_restart_necessary"; // send language key as response
+                            }
+                        } else {
+                            reply.code = 500;
+                            reply.error.key = 'app_failed_to_remove_old';
+                            reply.error.request = moduleId;
+                        }
+                    } catch (e) {
+                        reply.code = 500;
+                        reply.error.key = 'app_failed_to_reset';
+                        reply.error.request = moduleId;
+                        reply.error.errMsg = e;
+                    }
+                } else {
+                    reply.code = 500;
+                    reply.error.key = 'app_failed_to_reset';
+                    reply.error.request = moduleId;
+                    reply.error.errMsg = unload;
+                }       
+            } else {
+                reply.code = 412;
+                reply.error.key = 'app_is_still_reseted';
+                reply.error.request = moduleId;
+            }
+        } else {
+            reply.code = 404;
+            reply.error.key = 'app_not_exist';
+            reply.error.request = moduleId;
         }
         return reply;
     },
@@ -1481,7 +1673,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            location = fs.list('modules/' + moduleId)? 'modules/' : 'userModules/';
+            location = fs.list('userModules/' + moduleId)? 'userModules/' : 'modules/';
 
         try {
             loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
