@@ -72,8 +72,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         // the parameters.
         this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
 
-        this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
         this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
+        this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 
         this.router.del("/locations/:location_id", this.ROLE.ADMIN, this.removeLocation, [parseInt]);
         this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);

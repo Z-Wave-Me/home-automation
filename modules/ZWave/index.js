@@ -1325,11 +1325,11 @@ ZWave.prototype.gateDevicesStart = function () {
 	
 	self.dataBind(self.gateDataBinding, self.zway, "lastExcludedDevice", function(type) {
 		var _id = this.value,
-		    _toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id) === 0; }).map(function(el) { return el.id; });
+		    _toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0; }).map(function(el) { return el.id; });
 
                 _toRemove.forEach(function (name) {
                         self.controller.devices.remove(name);
-        		self.controller.devices.cleanup(name);
+        				self.controller.devices.cleanup(name);
                 });
 	}, "");	
 };
