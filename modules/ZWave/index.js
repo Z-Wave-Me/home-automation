@@ -1424,7 +1424,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			// add id
-			sortArgs.push('(' + args[last] + ')');
+			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
 
 			// add CC type
 			if (sortArgs.indexOf(args[0]) < 0 && args[0] !== 'Sensor') {

@@ -6,5 +6,6 @@
 	"load_zbw_error":"ZBWConnect Modul konnte nicht initialisiert werden. Fehler: ",
 	"setup_config_zbw_error":"Der Remote-Zugriff konnte nicht initialisiert werden. Bitte checken Sie Ihre Internetverbindung und starten Sie den Service unter 'Apps > Active > Remote Access' erneut.",
 	"config_changed_successful":"Konfiguration des Remote-Zugriffs erfolgreich geändert.",
-	"config_changed_error":"Konfigurationsproblem: "
+	"config_changed_error":"Konfigurationsproblem: ",
+	"zbw_service_timeout":"The connection to the ZBW Service has timed out. Please restart the App 'Remote Access' and try it again."
 }
