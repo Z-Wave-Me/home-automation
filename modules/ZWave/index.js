@@ -53,7 +53,8 @@ function ZWave (id, controller) {
 		"ThermostatFanMode": 0x44,
 		"DoorLock": 0x62,
 		"CentralScene": 0x5b,
-		"Battery": 0x80
+		"Battery": 0x80,
+		"DeviceResetLocally": 0x5a
 	};
 }
 
@@ -2307,6 +2308,15 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					}
 				}, "child");
 			}
+		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
+			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
+				if (this.value) {
+					var moduleName = self.getName(),
+					    langFile = self.controller.loadModuleLang(moduleName);
+					
+					self.controller.addNotification("error", langFile.err_reset + nodeId, "connection", moduleName);
+				}
+			});
 		}
 	} catch (e) {
 		var moduleName = this.getName(),
