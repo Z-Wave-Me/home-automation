@@ -265,6 +265,7 @@ Sonos.prototype.notifier = function () {
     var self = this;
     
     var sockNotifier = new sockets.tcp();
+    sockNotifier.reusable();
     sockNotifier.bind(3400);
     sockNotifier.onconnect = function(host, port) {
         this.msg = "";
