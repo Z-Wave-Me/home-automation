@@ -16,6 +16,7 @@
 	"h_change_sth":"Don't change unless you know what you are doing",
 	"err_binding_start":"Cannot start Z-Wave binding: ",
 	"err_connct":"Connection lost to Z-Wave device ID: ",
+	"err_reset": "User reset to factory defaults Z-Wave device ID: ",
 	"dev_btl":"Z-Wave device ID is back to life: ",
 	"err_dev_create":"Cannot create vDev based on: "
 }

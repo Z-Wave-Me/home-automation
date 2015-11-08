@@ -16,6 +16,7 @@
 	"h_change_sth":"Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
 	"err_binding_start":"Fehler beim Starten der Z-Wave Bindung: ",
 	"err_connct":"Verbindung verloren zur Z-Wave Geräte-ID: ",
+	"err_reset": "Benutzer zurückgesetzt Z-Wave-Gerät ID: ",
 	"dev_btl":"Z-Wave Geräte-ID ist wieder verbunden: ",
 	"err_dev_create":"vDev konnte mit den folgenden Daten nicht erstellt werden: "
 }

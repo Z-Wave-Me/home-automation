@@ -101,9 +101,7 @@ ZWave.prototype.init = function (config) {
 };
 
 ZWave.prototype.startBinding = function () {
-	var self = this,
-		moduleName = "ZWave",
-		langFile = self.controller.loadModuleLang(moduleName);
+	var self = this;
 
 	try {
 		this.zway = new ZWaveBinding(this.config.name, this.config.port, {
@@ -122,6 +120,9 @@ ZWave.prototype.startBinding = function () {
 			throw e1;
 		}
 	} catch(e) {
+		var moduleName = this.getName(),
+		    langFile = self.controller.loadModuleLang(moduleName);
+		
 		this.controller.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave", moduleName);
 		this.zway = null;
 		return;
@@ -1157,8 +1158,8 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-	moduleName = "ZWave",
-	langFile = this.controller.loadModuleLang(moduleName);
+	    moduleName = this.getName(),
+	    langFile = this.controller.loadModuleLang(moduleName);
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
@@ -2308,9 +2309,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		}
 	} catch (e) {
-		var moduleName = "ZWave",
-		langFile = this.controller.loadModuleLang(moduleName),
-	   	values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
+		var moduleName = this.getName(),
+		    langFile = this.controller.loadModuleLang(moduleName),
+		    values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
 		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
 		console.log(e.stack);
