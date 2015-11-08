@@ -1648,6 +1648,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							defaults.metrics.icon = "energy";
 					} else if (sensorTypeId === 5) {
 							defaults.metrics.icon = "humidity";
+					} else if (sensorTypeId === 9) {
+							defaults.metrics.icon = "barometer";
+					} else if (sensorTypeId === 27) {
+							defaults.metrics.icon = "ultraviolet";
 					}
 
 					var vDev = self.controller.devices.create({
