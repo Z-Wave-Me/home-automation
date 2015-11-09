@@ -1224,7 +1224,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					// --- postfix functions
 					// ----------------------------------------------------------------------------
 					// 
-					function supportSwitchController (commandClass, maxBtnNr, type) {
+					function supportSwitchController (instId, commandClass, maxBtnNr, type) {
 						var trapArray = [],
 							commandClass = commandClass || null,
 							maxBtnNr = maxBtnNr || 0;
@@ -1232,7 +1232,7 @@ ZWave.prototype.gateDevicesStart = function () {
 						trapArray = self.controller.instances.filter(function (instance) {
 								return instance.moduleId === 'SwitchControlGenerator';
 							});
-						if (commandClassId === commandClass && deviceCC && c.data.lastIncludedDevice.value === nodeId) {
+						if (instId === instanceId && commandClassId === commandClass && deviceCC && c.data.lastIncludedDevice.value === nodeId) {
 							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
 								for (i = 1; i <= maxBtnNr; i++) {
 									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
@@ -1242,22 +1242,23 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
-					function preventDeviceCreation (commandClass, subClassesEventTypeObject) {
+					function preventDeviceCreation (instId, commandClass, subClassesEventTypeObject) {
 						var commandClass = commandClass || null;
 
-						preventCreation = commandClass === commandClassId && subClassesEventTypeObject? subClassesEventTypeObject : {};
+						if (instId === instanceId && commandClassId === commandClass) {
 							
-						if (commandClassId === commandClass) { 
+							preventCreation = subClassesEventTypeObject? subClassesEventTypeObject : {};
+							 
 							create = false; 
 						}
 					}
 
-					function setConfig (parameter, value, size) {
+					function setConfig (instId, parameter, value, size) {
 						var parameter = parseInt(parameter) || null,
 							value = parseInt(value) || null,
 							size = parseInt(size) || null;
 
-						if(!!parameter && !!value && !!size){
+						if(instId === instanceId && !!parameter && !!value && !!size){
 							// set config after inclusion only
 							if(commandClassId === 112 && deviceCC && c.data.lastIncludedDevice.value === nodeId){ 
 								deviceCC.Set(parameter, value, size);

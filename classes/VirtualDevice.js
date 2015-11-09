@@ -136,24 +136,19 @@ function getProbeType(options) {
 
         //check for multilevel sensor (CC 49) subtypes
         if(ccId === this.CC['SensorMultilevel']){
-            var currType = '';
+            var currType = '',
+                typesObj = {
+                    '1': 'temperature',
+                    '3': 'luminosity',
+                    '4': 'energy',
+                    '5': 'humidity',
+                    '9': 'barometer',
+                    '15': 'energy',
+                    '16': 'energy',
+                    '27': 'ultraviolet'
+                };
 
-            switch (subCCId) {
-                case 1:
-                    currType = 'temperature';
-                    break;
-                case 3:
-                    currType = 'luminosity';
-                    break;
-                case 4:
-                case 15:
-                case 16:
-                    currType = 'energy';
-                    break;
-                case 5:
-                    currType = 'humidity';
-                    break;
-            }
+            currType = typesObj[String(subCCId)]? typesObj[String(subCCId)] : '';
             
             probeType = currType !== ''? currType : probeType;
         }
