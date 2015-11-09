@@ -671,7 +671,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reply = {
                 error: {
                     key: null,
-                    request: null,
                     errorMsg: null
                 },
                 data: {
@@ -720,12 +719,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             } else {
                 reply.code = 500;
                 reply.error.key = 'app_failed_to_install';
-                reply.error.request = moduleUrl;
             }
         } else {
             reply.code = 409;
             reply.error.key = 'app_from_url_already_exist';
-            reply.error.request = moduleUrl;
         }
         return reply;
     },
@@ -733,7 +730,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reply = {
                 error: {
                     key: null,
-                    request: null,
                     errorMsg: null
                 },
                 data: {
@@ -782,12 +778,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             } else {
                 reply.code = 500;
                 reply.error.key = 'app_failed_to_update';
-                reply.error.request = moduleUrl;
             }
         } else {
             reply.code = 404;
             reply.error.key = 'app_from_url_not_exist';
-            reply.error.request = moduleUrl;
         }
         return reply;
     },
@@ -795,7 +789,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reply = {
                 error: {
                     key: null,
-                    request: null,
                     errorMsg: null
                 },
                 data: {
@@ -840,24 +833,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     } else {
                         reply.code = 500;
                         reply.error.key = 'app_failed_to_delete';
-                        reply.error.request = moduleId;
                     }
                 } catch (e) {
                     reply.code = 500;
                     reply.error.key = 'app_failed_to_delete';
-                    reply.error.request = moduleId;
                     reply.error.errorMsg = e;
                 }
             } else {
                 reply.code = 500;
                 reply.error.key = 'app_failed_to_delete';
-                reply.error.request = moduleId;
                 reply.error.errorMsg = unload;
             }       
         } else {
             reply.code = 404;
             reply.error.key = 'app_not_exist';
-            reply.error.request = moduleId;
         }
         return reply;
     },
@@ -913,29 +902,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         } else {
                             reply.code = 500;
                             reply.error.key = 'app_failed_to_remove_old';
-                            reply.error.request = moduleId;
                         }
                     } catch (e) {
                         reply.code = 500;
                         reply.error.key = 'app_failed_to_reset';
-                        reply.error.request = moduleId;
                         reply.error.errMsg = e;
                     }
                 } else {
                     reply.code = 500;
                     reply.error.key = 'app_failed_to_reset';
-                    reply.error.request = moduleId;
                     reply.error.errMsg = unload;
                 }       
             } else {
                 reply.code = 412;
                 reply.error.key = 'app_is_still_reseted';
-                reply.error.request = moduleId;
             }
         } else {
             reply.code = 404;
             reply.error.key = 'app_not_exist';
-            reply.error.request = moduleId;
         }
         return reply;
     },
