@@ -1,0 +1,15 @@
+{	
+	"ac_warn_restart":"Automatizačný Kontrolér je reštartovaný.",
+	"ac_err_init_module_not_found":"Nie je možné vytvoriť inštanciu modulu: modul nenájdený v zozname všetkých modulov.",
+	"ac_err_init_module":"Nie je možné vytvoriť inštanciu modulu: ",
+	"ac_err_dep_not_found":"Nebola nájdená závislosť modulu: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_loaded":"Načítanie modulu zlyhalo, pretože závislosť modulu nebola načítana: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_init":"Načítanie modulu zlyhalo, pretože pre závislosť modulu nebola vytvorená inštancia: [DEP]::[MODUL] = ",
+	"ac_err_file_load":"Nedá sa načítať ",
+	"ac_err_invalid_module":"Neplatný modul ",
+	"ac_err_load_mod_json":"Nedá sa načítať modules.json z ",
+	"ac_err_stop_mod":"Nedá sa zastaviť modul ",
+	"profile_name": "Administrátor",
+	"profile_descr": "Toto je profil admina. Profil admina je vytvorený automaticky.", 
+	"vd_err_virtual_dev":"Chyba, počas vykonávania príkazu: "
+}

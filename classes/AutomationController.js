@@ -26,7 +26,7 @@ function AutomationController() {
         'ZWAYSession'
     ];
     this.config = config.controller || {};
-    this.availableLang = ['en', 'ru', 'de'];
+    this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se']; // will be updated by correct ISO language codes in future
     this.defaultLang = 'en';
     this.profiles = config.profiles;
     this.instances = config.instances;
