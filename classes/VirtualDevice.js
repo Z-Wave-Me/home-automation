@@ -178,7 +178,7 @@ function getProbeType(options) {
                     'blue'
                 ];            
             
-            probeType = types[subCCId] !== ''? 'switchColor_' + ypes[subCCId] : probeType;
+            probeType = types[subCCId] !== ''? 'switchColor_' + types[subCCId] : probeType;
         }
 
         // check for alarm (CC 113) and alarm sensor (CC 156) subtypes
