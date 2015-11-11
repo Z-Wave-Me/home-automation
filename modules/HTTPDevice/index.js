@@ -121,41 +121,86 @@ HTTPDevice.prototype.update = function (vDev) {
         parser = this.config["getterParser_" + deviceType];
     
     if (url) {
-        http.request({
-            url: url,
-            method: this.config.method,
-            async: true,
-            success: function(response) {
-                var data = null;
-                if (parser) {
-                    data = (function($$) {
-                        return eval(parser);
-                    })(response.data);
-                } else {
-                    if (typeof(response.data) === "string") {
-                        var _data = response.data.trim();
-                        if (deviceType === "switchBinary" || deviceType === "sensorBinary") {
-                            if (_data === "1" || _data === "on" || _data === "true") {
-                                data = "on";
-                            } else if (_data === "0" || _data === "off" || _data === "false") {
-                                data = "off";
+        // With authorization
+        if (self.config.login && self.config.password) {
+            http.request({
+                url: url,
+                method: this.config.method,
+                async: true,
+                auth: {
+                    login: self.config.login,
+                    password: self.config.password
+                },
+                success: function(response) {
+                    var data = null;
+                    if (parser) {
+                        data = (function($$) {
+                            return eval(parser);
+                        })(response.data);
+                    } else {
+                        if (typeof(response.data) === "string") {
+                            var _data = response.data.trim();
+                            if (deviceType === "switchBinary" || deviceType === "sensorBinary") {
+                                if (_data === "1" || _data === "on" || _data === "true") {
+                                    data = "on";
+                                } else if (_data === "0" || _data === "off" || _data === "false") {
+                                    data = "off";
+                                }
                             }
-                        }
-                        if (deviceType === "switchMultilevel" || deviceType === "sensorMultilevel") {
-                            if (parseFloat(_data) != NaN) {
-                                data = parseFloat(_data);
+                            if (deviceType === "switchMultilevel" || deviceType === "sensorMultilevel") {
+                                if (parseFloat(_data) != NaN) {
+                                    data = parseFloat(_data);
+                                }
                             }
                         }
                     }
-                }
-                if (data !== null && (self.config.skipEventIfSameValue !== true || data !== vDev.get("metrics:level"))) {
-                    vDev.set("metrics:level", data);
-                }
-            },
-            error: function(response) {
-                console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
-            } 
-        });
+                    if (data !== null && (self.config.skipEventIfSameValue !== true || data !== vDev.get("metrics:level"))) {
+                        vDev.set("metrics:level", data);
+                    }
+                },
+                error: function(response) {
+                    console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
+                } 
+            });
+        }
+        // Without authorization
+        else {
+            http.request({
+                url: url,
+                method: this.config.method,
+                async: true,
+                success: function(response) {
+                    var data = null;
+                    if (parser) {
+                        data = (function($$) {
+                            return eval(parser);
+                        })(response.data);
+                    } else {
+                        if (typeof(response.data) === "string") {
+                            var _data = response.data.trim();
+                            if (deviceType === "switchBinary" || deviceType === "sensorBinary") {
+                                if (_data === "1" || _data === "on" || _data === "true") {
+                                    data = "on";
+                                } else if (_data === "0" || _data === "off" || _data === "false") {
+                                    data = "off";
+                                }
+                            }
+                            if (deviceType === "switchMultilevel" || deviceType === "sensorMultilevel") {
+                                if (parseFloat(_data) != NaN) {
+                                    data = parseFloat(_data);
+                                }
+                            }
+                        }
+                    }
+                    if (data !== null && (self.config.skipEventIfSameValue !== true || data !== vDev.get("metrics:level"))) {
+                        vDev.set("metrics:level", data);
+                    }
+                },
+                error: function(response) {
+                    console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
+                } 
+            });
+        }
     }
 };
 
@@ -170,14 +215,32 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
     	if (subst) {
     		url = url.replace(/\$\$/g, subst);
     	}
-        http.request({
-            url: url,
-            method: this.config.method,
-            async: true,
-            error: function(response) {
-                self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
-            }
-        });
+        // With authorization
+        if (self.config.login && self.config.password) {
+            http.request({
+                url: url,
+                method: this.config.method,
+                async: true,
+                auth: {
+                    login: self.config.login,
+                    password: self.config.password
+                },
+                error: function(response) {
+                    self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
+                }
+            });
+        }
+        // Without authorization
+        else {
+            http.request({
+                url: url,
+                method: this.config.method,
+                async: true,
+                error: function(response) {
+                    self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
+                }
+            });
+        }
     }
     
     if ((!url || this.config.updateOnAction === true) && selfValue !== null) {
