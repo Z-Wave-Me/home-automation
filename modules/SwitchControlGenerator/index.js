@@ -1,9 +1,9 @@
 /*** SwitchControlGenerator Z-Way HA module *******************************************
 
-Version: 1.0.1
+Version: 1.0.2
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Poltorak Serguei <ps@z-wave.me>
+Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
     Generates new widgets on the fly for Remote Switches and other devices sending control commands to controller
 ******************************************************************************/
@@ -74,13 +74,26 @@ SwitchControlGenerator.prototype.init = function (config) {
         // create devices
         self.generated.filter(function(el) { return !!el && el.indexOf("ZWayVDev_" + zwayName + "_Remote_") === 0; }).forEach(function(name) {
             if (self.config.banned.indexOf(name) === -1) {
+
+                var vendor = "",
+                    ids = [],
+                    idString = "";
+                try {
+                    ids = name.split('_').pop().split('-').slice(0, -1);
+                    idString = ids && ids.length > 0? " (" + ids.join(".") + ") " : idString;
+
+                    var v = zway.devices[ids[0]].data.vendorString.value;
+                    vendor = !!v? v : vendor;
+                } catch (e) {
+                }
+
                 self.controller.devices.create({
                     deviceId: name,
                     defaults: {
                         deviceType: name[name.length-1] === "S" ? "toggleButton" : "switchControl",
                         metrics: {
                             icon: '',
-                            title: "Button", // this is always not the initial creation, so the default title is already filled 
+                            title: vendor + idString + "Button", // this is always not the initial creation, so the default title is already filled 
                             level: "",
                             change: ""
                         }
@@ -277,7 +290,8 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
 
         var vendor = "";
         try {
-            vendor = global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value;
+            var v = global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value;
+            vendor = !!v? v : vendor;
         } catch (e) {
         }
         
@@ -287,7 +301,7 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
                 deviceType: type === "S" ? "toggleButton" : "switchControl",
                 metrics: {
                     icon: '',
-                    title: "Button " + vendor + " " + ids.slice(0, -1).join("-"),
+                    title: vendor + " (" + ids.slice(0, -1).join(".") + ") Button",
                     level: "",
                     change: ""
                 }
