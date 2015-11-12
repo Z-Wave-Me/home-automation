@@ -1659,15 +1659,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             location = fs.list('userModules/' + moduleId)? 'userModules/' : 'modules/';
 
-        try {
-            loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
-            
-            if(loadSuccessfully){
-                reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
-                reply.code = 200;
+        if (fs.list(location)) {
+            try {
+                loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
+                
+                if(loadSuccessfully){
+                    reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
+                    reply.code = 200;
+                }
+            } catch (e) {
+                reply.error = e.toString();
             }
-        } catch (e) {
-            reply.error = e.toString();
+        } else {
+            reply.code = 404;
+            reply.error.key = "App not found.";
         }
         
         return reply;
