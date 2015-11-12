@@ -47,9 +47,8 @@
 	"product": "Fibaro Flood Sensor",
 	"preInterview": [],
 	"postInterview": [
-		"preventDeviceCreation(0,156, {'0':[]});",
-		"preventDeviceCreation(0,48, {'1':[]});",
-		"preventDeviceCreation(1,48, {'1':[]});"
+		"preventDeviceCreation(0, { '156':[0], '48':[1]});",
+		"preventDeviceCreation(1, { '48':[1]});"
 	]
 }, {
 	"id": "24",
@@ -66,5 +65,13 @@
 	"preInterview": [],
 	"postInterview": [
 		"supportSwitchController(0,91,4,'S');"
+	]
+}, {
+	"id": "26",
+	"p_id": "316.9.34",
+	"product": "Philio PSR04 Smart Color Button",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(0,91,1,'S');"
 	]
 }]

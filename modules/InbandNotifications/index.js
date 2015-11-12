@@ -1,12 +1,14 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.0.2
+Version: 1.0.5
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Description:
     Creates a module that listens to the status of every device in the background. 
     It sends notifications automatically if it has changed.
+    Notifications are stored hourly to storage and checked once a day if they are older than one week. 
+    The older ones will eb deleted
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -177,8 +179,8 @@ InbandNotifications.prototype.init = function (config) {
     self.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
     self.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 
-    //this.onPollDeleteNotifications();
-    //this.onPollSaveNotifications();
+    // initial saving of notifications
+    self.controller.saveNotifications();
 };
 
 InbandNotifications.prototype.stop = function () {

@@ -128,7 +128,7 @@ AutomationController.prototype.saveConfig = function () {
     var cfgObject = {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
-        "locations": this.locations,
+        "locations": this.removeNamespacesFromLocations(this.locations),
         "profiles": this.profiles,
         "instances": this.instances,
         "modules_categories": this.modules_categories
@@ -597,14 +597,34 @@ AutomationController.prototype.createInstance = function (reqObj) {
 };
 
 AutomationController.prototype.stopInstance = function (instance) {
-    var langFile = this.loadMainLang(),
+    var self = this,
+        langFile = this.loadMainLang(),
+        instId = instance.id,
         values;
 
     try {
         instance.stop();
-        delete this.registerInstances[instance.id];
+        delete this.registerInstances[instId];
+
+        // get all devices created by instance 
+        instDevices = _.map(this.devices.filter(function (dev) {
+            return dev.get('creatorId') === instId;
+        }), function (dev) {
+            return dev.id;
+        });
+
+        // cleanup devices 
+        if (instDevices.length > 0) {
+            instDevices.forEach(function (id) {
+                // check for device entry again
+                if (!!self.devices.get(id)) {
+                    self.devices.remove(id);
+                }
+            });
+        }
+
     } catch (e) {
-        values = ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString();
+        values = ((instance && instId) ? instId : "<unknow id>") + ": " + e.toString();
 
         this.addNotification("error", langFile.ac_err_stop_mod + values, "core", "AutomationController");
         console.log(e.stack);
@@ -675,7 +695,8 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
 
 AutomationController.prototype.removeInstance = function (id) {
     var instance = this.registerInstances[id],
-        instanceClass = id;
+        instanceClass = id,
+        instDevices = [];
 
 
     if (!!instance) {
@@ -695,11 +716,32 @@ AutomationController.prototype.removeInstance = function (id) {
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
+    var instDevices = [],
+        self = this;
+    
+    // get all devices created by instance 
+    instDevices = _.map(this.devices.filter(function (dev) {
+        return dev.get('creatorId') === id;
+    }), function (dev) {
+        return dev.id;
+    });
+    
     this.removeInstance(id);
 
     this.instances = this.instances.filter(function (model) {
         return id !== model.id;
-    })
+    });
+
+    // cleanup 
+    if (instDevices.length > 0) {
+        instDevices.forEach(function (id) {
+            // check for vDevInfo entry
+            if (self.getVdevInfo[id]) {
+                self.devices.cleanup(id);
+            }
+        });
+    }
+
     this.saveConfig();
     this.emit('core.instanceDeleted', id);
 };
@@ -894,19 +936,22 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
         return location.id === id;
     });
     if (locations.length > 0) {
-        this.locations[this.locations.indexOf(locations[0])].title = title;
+        location = this.locations[this.locations.indexOf(locations[0])];
+
+        location.title = title;
         if (typeof user_img === 'string' && user_img.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].user_img = user_img;
+            location.user_img = user_img;
         }
         if (typeof default_img === 'string' && default_img.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].default_img = default_img;
+            location.default_img = default_img;
         }
         if (typeof img_type === 'string' && img_type.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].img_type = img_type;
+            location.img_type = img_type;
         }
         if (typeof callback === 'function') {
-            callback(this.locations[this.locations.indexOf(locations[0])]);
+            callback(location);
         }
+
         this.saveConfig();
         this.emit('location.updated', id);
     } else {
@@ -915,6 +960,19 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
         }
         this.emit('core.error', new Error("Cannot update location " + id + " - doesn't exist"));
     }
+};
+
+AutomationController.prototype.removeNamespacesFromLocations = function (locations) {
+    if (_.isArray(locations) && locations.length > 0) {
+        locations.forEach(function (location) {
+            // avoid storing namespaces 
+            if (location['namespaces']) {
+                delete location['namespaces'];
+            }
+        });
+    }
+
+    return locations;
 };
 
 AutomationController.prototype.listNotifications = function (since, to) {
