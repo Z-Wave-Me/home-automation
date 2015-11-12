@@ -1227,7 +1227,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					function supportSwitchController (instId, commandClass, maxBtnNr, type) {
 						var trapArray = [],
 							commandClass = commandClass || null,
-							maxBtnNr = maxBtnNr || 0;
+							maxBtnNr = deviceCC.data.maxScenes && deviceCC.data.maxScenes <= maxBtnNr? deviceCC.data.maxScenes : maxBtnNr || 0;
 						
 						trapArray = self.controller.instances.filter(function (instance) {
 								return instance.moduleId === 'SwitchControlGenerator';
