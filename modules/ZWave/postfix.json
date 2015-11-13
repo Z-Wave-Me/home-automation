@@ -74,4 +74,28 @@
 	"postInterview": [
 		"supportSwitchController(0,91,1,'S');"
 	]
+}, {
+	"id": "28",
+	"p_id": "357.2.1",
+	"product": "NodOn Octan Remote",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(0,91,4,'S');"
+	]
+}, {
+	"id": "29",
+	"p_id": "357.2.3",
+	"product": "NodOn Wall Switch",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(0,91,4,'S');"
+	]
+}, {
+	"id": "30",
+	"p_id": "2.3.32784",
+	"product": "Danfoss Temperature Room Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"supportSwitchController(0,91,1,'S');"
+	]
 }]
