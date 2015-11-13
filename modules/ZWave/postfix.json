@@ -47,8 +47,8 @@
 	"product": "Fibaro Flood Sensor",
 	"preInterview": [],
 	"postInterview": [
-		"preventDeviceCreation(0, { '156':[0], '48':[1]});",
-		"preventDeviceCreation(1, { '48':[1]});"
+		"preventDeviceCreation(0, 156, { '0':[]});",
+		"preventDeviceCreation(1, 48, { '1':[]});"
 	]
 }, {
 	"id": "24",
