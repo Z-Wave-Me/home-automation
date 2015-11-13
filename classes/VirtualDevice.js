@@ -22,6 +22,7 @@ VirtualDevice = function (options) {
             'h',
             'hasHistory',
             'visibility',
+            'creationTime'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -42,7 +43,8 @@ VirtualDevice = function (options) {
             h: options.controller.hashCode(options.deviceId),
             hasHistory: false,
             visibility: true,
-            probeType: getProbeType(options)
+            probeType: getProbeType(options),
+            creationTime: 0
         },
         changed: {},
         overlay: options.overlay || {},
@@ -253,6 +255,9 @@ _.extend(VirtualDevice.prototype, {
         _.defaults(this.attributes, this.defaults); // set default params
         _.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
 
+        // set device creation time
+        this.setCreationTime();
+
         this.attributes = this._sortObjectByKey(this.attributes);
         
         // cleanup
@@ -263,6 +268,22 @@ _.extend(VirtualDevice.prototype, {
     setReady: function () {
         this.ready = true;
         this.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
+    },
+    setCreationTime: function() {
+        var vDevInfo = this.collection.controller.vdevInfo[this.id];
+        
+        if (vDevInfo) {
+            // check vdevInfo for creation time
+            if (vDevInfo.creationTime) {
+                this.attributes.creationTime = vDevInfo.creationTime > 0? vDevInfo.creationTime : Math.floor(new Date().getTime() / 1000);
+            // add new if it doesn't exist
+            } else {
+                this.attributes.creationTime = Math.floor(new Date().getTime() / 1000);
+            }
+        // add new if it doesn't exist
+        } else {
+            this.attributes.creationTime = Math.floor(new Date().getTime() / 1000);
+        }
     },
     get: function (param) {
         'use strict';
@@ -354,7 +375,7 @@ _.extend(VirtualDevice.prototype, {
             this.set(attrs, options);
         }
         this.collection.controller.setVdevInfo(this.id, this.attributes);
-        this.collection.controller.saveConfig();
+        //this.collection.controller.saveConfig();
         return this;
     },
     toJSON: function () {

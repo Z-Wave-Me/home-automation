@@ -282,6 +282,11 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         self.addNotification("error", langFile.ac_err_init_module_not_found, "core", "AutomationController");
     }
 
+    // add creation time
+    if (!instanceModel.creationTime) {
+        instanceModel.creationTime = Math.floor(new Date().getTime() / 1000);
+    }
+
     if (Boolean(instanceModel.active)) {
         try {
             instance = new global[module.meta.id](instanceModel.id, self);
@@ -736,7 +741,7 @@ AutomationController.prototype.deleteInstance = function (id) {
     if (instDevices.length > 0) {
         instDevices.forEach(function (id) {
             // check for vDevInfo entry
-            if (self.getVdevInfo[id]) {
+            if (self.vdevInfo[id]) {
                 self.devices.cleanup(id);
             }
         });
@@ -755,7 +760,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 };
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden");
+    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden", "creationTime");
     this.saveConfig();
     return this.vdevInfo[id];
 };
