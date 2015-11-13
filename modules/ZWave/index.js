@@ -1226,13 +1226,14 @@ ZWave.prototype.gateDevicesStart = function () {
 					// 
 					function supportSwitchController (instId, commandClass, maxBtnNr, type) {
 						var trapArray = [],
-							commandClass = commandClass || null,
-							maxBtnNr = deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr? deviceCC.data.maxScenes.value : maxBtnNr || 0;
+							commandClass = commandClass || null;
 						
 						trapArray = self.controller.instances.filter(function (instance) {
 								return instance.moduleId === 'SwitchControlGenerator';
 							});
 						if (instId === instanceId && commandClassId === commandClass && deviceCC && c.data.lastIncludedDevice.value === nodeId) {
+							maxBtnNr = (deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr? deviceCC.data.maxScenes.value : maxBtnNr) || 0
+							
 							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
 								for (i = 1; i <= maxBtnNr; i++) {
 									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
