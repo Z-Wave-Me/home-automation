@@ -98,4 +98,12 @@
 	"postInterview": [
 		"supportSwitchController(0,91,1,'S');"
 	]
+}, {
+	"id": "32",
+	"p_id": "316.2.14",
+	"product": "Philio Vision 1C",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,48, {'10':[]});"
+	]
 }]

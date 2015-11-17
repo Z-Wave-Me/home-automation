@@ -1,6 +1,6 @@
 /*** RemoteAccess Z-Way HA module *******************************************
 
-Version: 1.0.1
+Version: 1.0.2
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -37,11 +37,12 @@ RemoteAccess.prototype.init = function (config) {
 
     this.setZBWService = function() {
         // look if ZBW Service is available 
-        if (ZBWConnect) {
+        if (typeof ZBWConnect === 'function') {
             try {
                 zbw = path? new ZBWConnect(path) : new ZBWConnect(); // find zbw by path or use (raspberry) location /etc/zbw as default
             } catch (e) {
-                self.controller.addNotification("error", langFile.load_zbw_error + e.message, "module", "RemoteAccess");
+                self.controller.addNotification("error", langFile.load_zbw_error, "module", "RemoteAccess");
+                console.log(langFile.load_zbw_error,'Error:', e.message);
 
                 // clear interval
                 if (self.timer) {
