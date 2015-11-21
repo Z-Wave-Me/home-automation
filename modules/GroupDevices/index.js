@@ -90,7 +90,7 @@ GroupDevices.prototype.init = function (config) {
     };
     
     this.config.devices.forEach(function(dev) {
-        this.controller.devices.on(dev.device, "change:metrics:level", this.handler);
+        this.controller.devices.on(dev.device, "change:metrics:level", self.handler);
     });
 };
 
