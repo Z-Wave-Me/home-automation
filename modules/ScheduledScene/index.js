@@ -44,7 +44,7 @@ ScheduledScene.prototype.init = function (config) {
     // add cron schedule
     var wds = this.config.weekdays.map(function(x) { return parseInt(x, 10); });
     
-    if (wds.lenth == 7) {
+    if (wds.length == 7) {
         wds = [null]; // same as all - hack to add single cron record. NB! changes type of wd elements from integer to null
     }
     
