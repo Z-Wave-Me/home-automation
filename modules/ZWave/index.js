@@ -1427,13 +1427,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				sortArgs.push(args[0]);
 			}
 
-			// add id
-			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
-
 			// add CC type
 			if (sortArgs.indexOf(args[0]) < 0 && args[0] !== 'Sensor') {
 				sortArgs.push(args[0]);
 			}
+
+			// add id
+			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
 			
 			return sortArgs.join(' ');
 		}
