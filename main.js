@@ -22,6 +22,17 @@ executeFile("Utils.js");
 // do transition script to adopt old versions to new
 executeFile("updateBackendConfig.js");
 
+// overload saveObject to allow backup/restore of all JSON files in storage
+__saveObject = saveObject;
+__storageContent = loadObject("__storageContent") || [];
+saveObject = function(name, object) {
+    if (__storageContent.indexOf(name) === -1) {
+        __storageContent.push(name);
+        __saveObject("__storageContent", __storageContent);
+    }
+    __saveObject(name, object);
+};
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {

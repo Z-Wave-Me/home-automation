@@ -1608,7 +1608,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             backupJSON = {};
 
-        var list = ["config.json"]; // TODO: loadObject("storageContentList");
+        var list = loadObject("__storageContent");
 
         try {        
             // save all objects in storage
