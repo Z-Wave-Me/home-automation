@@ -1520,7 +1520,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         try {
             var params = {
                     schema: ['enum'],
-                    options: ['optionLabels', 'click']
+                    options: ['optionLabels', 'onFieldChange']
                 };
             
             // transform filters
