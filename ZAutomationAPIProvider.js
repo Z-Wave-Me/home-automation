@@ -1618,15 +1618,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // save Z-Way and EnOcean objects
             if (!!global.ZWave) {
-                backupJSON["__ZWay"] = {};
+                backupJSON["__ZWay"] = [];
                 global.ZWave.list().forEach(function(zwayName) {
                     var bcp = "",
-                        data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
+                        data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup()),
+                        obj = {};
                     
                     for(var i = 0; i < data.length; i++) {
                         bcp += String.fromCharCode(data[i]);
                     }
-                    backupJSON["__ZWay"][zwayName] = bcp;
+
+                    obj[zwayName] = bcp;
+
+                    backupJSON["__ZWay"].push(obj);
                 });
             }
             /* TODO
@@ -1657,10 +1661,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         try {
             //this.reset();
             
-            reqObj = JSON.parse(this.req.body);
+            reqObj = JSON.parse(this.req.body.backupFile.content);
             
             for (var obj in reqObj) {
-                if (obj === "__ZWay" || obj === "__EnOcean") return;
+                if (obj === "__ZWay" || obj === "__EnOcean") break;
                 saveObject(obj, reqObj[obj]);
             }
 
@@ -1669,7 +1673,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // restore Z-Wave and EnOcean
             !!reqObj["__ZWay"] && reqObj["__ZWay"].forEach(function(zwayName) {
-                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(reqObj["__ZWay"][zwayName], false);
+                _zwayName = _.keys(zwayName)[0];
+                global.ZWave[_zwayName] && global.ZWave[_zwayName].zway.controller.Restore(zwayName[_zwayName], false);
             });
             /* TODO
             !!reqObj["__EnOcean"] && reqObj["__EnOcean"].forEach(function(zenoName) {

@@ -26,7 +26,10 @@ executeFile("updateBackendConfig.js");
 __saveObject = saveObject;
 __storageContent = loadObject("__storageContent") || [];
 saveObject = function(name, object) {
-    if (__storageContent.indexOf(name) === -1) {
+    // avoid pushing unneccessary response stuff
+    var ignored =  ["data","code","message","error"];
+
+    if (__storageContent.indexOf(name) === -1 && ignored.indexOf(name) === -1) {
         __storageContent.push(name);
         __saveObject("__storageContent", __storageContent);
     }

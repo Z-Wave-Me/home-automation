@@ -173,6 +173,27 @@ AutomationController.prototype.start = function () {
 };
 
 AutomationController.prototype.stop = function () {
+    var self = this,
+        zwaveInstanceId;
+
+    // Clean modules
+    console.log("Stopping modules...");
+    self.instances.forEach(function (instance) {
+        if (instance.moduleId !== 'ZWave') {
+            self.removeInstance(instance.id);
+        } else {
+            zwaveInstanceId = instance.id;
+        }
+    });
+
+    // stop ZWave at least
+    if (zwaveInstanceId) {
+        console.log("Stopping ZWave...");
+        self.removeInstance(zwaveInstanceId);
+    }
+
+    this._loadedSingletons = [];
+
     // Remove API webserver
     console.log("Stopping automation...");
     ZAutomation = null;
@@ -180,15 +201,6 @@ AutomationController.prototype.stop = function () {
     ws.revokeExternalAccess("ZAutomation");
     ws.revokeExternalAccess("ZAutomation.api");
     ws.revokeExternalAccess("ZAutomation.storage");
-
-    var self = this;
-
-    // Clean modules
-    console.log("Stopping modules...");
-    Object.keys(this.instances).forEach(function (instanceId) {
-        self.removeInstance(instanceId);
-    });
-    this._loadedSingletons = [];
 
     // Notify core
     this.emit("core.stop");
