@@ -23,6 +23,10 @@
         } else {
           profile.positions = [];
         }
+
+        if (!profile.email) {
+          profile.email = '';
+        }
       });
     } else {
       // default profile
@@ -31,6 +35,7 @@
         role: 1,
         login: 'admin',
         password: 'admin',
+        email:'',
         name: 'Administrator',
         lang:'en',
         color:'#dddddd',
@@ -47,6 +52,7 @@
         role: 3,
         login: 'local',
         password: 'local',
+        email:'',
         name: 'Local User',
         lang:'en',
         color:'#dddddd',
