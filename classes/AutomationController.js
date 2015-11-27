@@ -174,25 +174,7 @@ AutomationController.prototype.start = function () {
 
 AutomationController.prototype.stop = function () {
     var self = this,
-        zwaveInstanceId;
-
-    // Clean modules
-    console.log("Stopping modules...");
-    self.instances.forEach(function (instance) {
-        if (instance.moduleId !== 'ZWave') {
-            self.removeInstance(instance.id);
-        } else {
-            zwaveInstanceId = instance.id;
-        }
-    });
-
-    // stop ZWave at least
-    if (zwaveInstanceId) {
-        console.log("Stopping ZWave...");
-        self.removeInstance(zwaveInstanceId);
-    }
-
-    this._loadedSingletons = [];
+        modWithoutDep = [];
 
     // Remove API webserver
     console.log("Stopping automation...");
@@ -201,6 +183,32 @@ AutomationController.prototype.stop = function () {
     ws.revokeExternalAccess("ZAutomation");
     ws.revokeExternalAccess("ZAutomation.api");
     ws.revokeExternalAccess("ZAutomation.storage");
+
+    // Clean instances
+    console.log("Stopping instances with dependencies ...");
+    self.instances.forEach(function (instance) {
+
+        // first stop instances with dependencies
+        if (self.modules[instance.moduleId]) {
+            if ((instance.active === true || instance.active === 'true') &&
+                    _.isArray(self.modules[instance.moduleId].meta.dependencies) && 
+                        self.modules[instance.moduleId].meta.dependencies.length > 0) {
+                self.removeInstance(instance.id);
+            } else if ((instance.active === true || instance.active === 'true')){
+                modWithoutDep.push(instance.id)
+            }
+        }
+    });
+
+    // stop instances without dependencies at least
+    if (modWithoutDep.length > 0) {
+        console.log("Stopping all remaining instances ...");
+        modWithoutDep.forEach(function(instanceId) {
+            self.removeInstance(instanceId);
+        })
+    }
+
+    this._loadedSingletons = [];
 
     // Notify core
     this.emit("core.stop");
