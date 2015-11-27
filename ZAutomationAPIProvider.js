@@ -97,6 +97,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.post("/modules/reset/:module_id", this.ROLE.ADMIN, this.resetModule);
         this.router.del("/modules/delete/:module_id", this.ROLE.ADMIN, this.deleteModule);
+        
+        // reinitialize apps from /modules or /userModules directory
+        this.router.get("/modules/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
+        
         this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
         this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
@@ -112,9 +116,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
-
-        // reinitialize apps from /modules or /userModules directory
-        this.router.get("/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
     },
 
     // !!! Do we need it?
@@ -1618,19 +1619,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // save Z-Way and EnOcean objects
             if (!!global.ZWave) {
-                backupJSON["__ZWay"] = [];
+                backupJSON["__ZWay"] = {};
                 global.ZWave.list().forEach(function(zwayName) {
                     var bcp = "",
-                        data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup()),
-                        obj = {};
+                        data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
                     
                     for(var i = 0; i < data.length; i++) {
                         bcp += String.fromCharCode(data[i]);
                     }
 
-                    obj[zwayName] = bcp;
-
-                    backupJSON["__ZWay"].push(obj);
+                    backupJSON["__ZWay"][zwayName] = bcp;
                 });
             }
             /* TODO
@@ -1672,9 +1670,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.restart();
             
             // restore Z-Wave and EnOcean
-            !!reqObj["__ZWay"] && reqObj["__ZWay"].forEach(function(zwayName) {
-                _zwayName = _.keys(zwayName)[0];
-                global.ZWave[_zwayName] && global.ZWave[_zwayName].zway.controller.Restore(zwayName[_zwayName], false);
+            !!reqObj["__ZWay"] && Object.keys(reqObj["__ZWay"]).forEach(function(zwayName) {
+                var zwayData = reqObj["__ZWay"][zwayName];
+                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO
             !!reqObj["__EnOcean"] && reqObj["__EnOcean"].forEach(function(zenoName) {

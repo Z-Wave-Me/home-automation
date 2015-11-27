@@ -106,4 +106,12 @@
 	"postInterview": [
 		"preventDeviceCreation(0,48, {'10':[]});"
 	]
+}, {
+	"id": "33",
+	"p_id": "340.4.3",
+	"product": "POPP Smokesensor 2",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});"
+	]
 }]
