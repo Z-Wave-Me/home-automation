@@ -169,6 +169,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 id: profile.id,
                 role: profile.role,
                 name: profile.name,
+                email: profile.email,
                 lang: profile.lang,
                 color: profile.color,
                 dashboard: profile.dashboard,
