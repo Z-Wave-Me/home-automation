@@ -1454,18 +1454,136 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         moduleMeta = moduleMeta || null;
 
     // loop through object
-    function replaceNspcFilters (moduleMeta, obj, key) {
+    function replaceNspcFilters (moduleMeta, obj, keys) {
         var objects = [];
 
         for (var i in obj) {
             if (obj && !obj[i]){
                 continue;
             }
-            if (typeof obj[i] === 'object') {
-                objects = objects.concat(replaceNspcFilters(moduleMeta, obj[i], key));
-            } else if (i == key && !_.isArray(obj[key])) {
+            if ((i === 'properties' || i === 'fields') && typeof obj[i] === 'object' && obj[i]['room'] && obj[i]['devicesByRoom']) {
+                var k = _.keys(obj[i])
+                    newObj = {};
                 // overwrite old key with new namespaces array
-                obj[key] = getNspcFromFilters(moduleMeta, obj[key]);
+                if (i === 'properties') {
+                    console.log('do special stuff for properties ...');
+
+                    var dSRoom = _.extend({
+                            "type":"",
+                            "field":"",
+                            "datasource":"",
+                            "enum":"",
+                            "title":""
+                        }, obj[i]['room']),
+                        dSDevByRoom = _.extend({
+                            "type":"",
+                            "datasource":"",
+                            "enum":"",
+                            "title":"",
+                            "dependencies":""
+                        }, obj[i]['devicesByRoom']);
+
+                    if (dSRoom['enum'] && !_.isArray(dSRoom['enum'])){
+                        dSRoom['enum'] = getNspcFromFilters(moduleMeta, dSRoom['enum']);
+
+                        obj[i]['room'] = dSRoom;
+                    }
+
+                    if (dSDevByRoom['enum'] && !_.isArray(dSDevByRoom['enum']) && _.isArray(dSRoom['enum'])){
+                        var path = dSDevByRoom['enum'].substring(21).replace(/:/gi, '.');
+                        if(k.length > 0) {
+                            k.forEach(function(key) {
+                                if(key === 'devicesByRoom') {
+                                    dSRoom['enum'].forEach(function(roomId, index) {
+                                        var cnt = index + 1,
+                                            nspc;
+
+                                        location = self.getLocation(self.locations, roomId);
+
+                                        if (location && location.namespaces) {
+                                            nspc = self.getListNamespaces(path, location.namespaces);
+                                        }
+
+                                        dSDevByRoom['enum'] = nspc? nspc: dSDevByRoom['enum'];
+                                        dSDevByRoom['dependencies'] = "room";
+
+                                        newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
+                                        newObj['devicesByRoom_' + cnt]['title'] = newObj['devicesByRoom_' + cnt]['title'] + ' ' + cnt;
+                                    });
+                                } else {
+                                    newObj[key] = obj[i][key];
+                                }
+                            });
+                        }
+
+                        obj[i] = newObj;
+                    }
+                } else {
+                    console.log('do special stuff for fields ...');
+
+                    var dSRoom = _.extend({
+                            "type":"",
+                            "field":"",
+                            "optionLabels":""
+                        },obj[i]['room']),
+                        dSDevByRoom = _.extend({
+                            "dependencies": {},
+                            "type":"",
+                            "field":"",
+                            "optionLabels":""
+                        },obj[i]['devicesByRoom']);
+
+                    if (dSRoom['optionLabels'] && !_.isArray(dSRoom['optionLabels'])){
+                        dSRoom['optionLabels'] = getNspcFromFilters(moduleMeta, dSRoom['optionLabels']);
+
+                        obj[i]['room'] = dSRoom;
+                    }
+
+                    if (dSDevByRoom['optionLabels'] && !_.isArray(dSDevByRoom['optionLabels']) && _.isArray(dSRoom['optionLabels'])){
+                        var path = dSDevByRoom['optionLabels'].substring(21).replace(/:/gi, '.');
+                        if(k.length > 0) {
+                            k.forEach(function(key) {
+                                if(key === 'devicesByRoom') {
+                                    dSRoom['optionLabels'].forEach(function(roomName, index) {
+
+                                
+                                        var cnt = index + 1,
+                                            nspc;
+
+                                        location = self.locations.filter(function(location){ return location.title === roomName });
+
+                                        if (location[0] && location[0].namespaces) {
+                                            nspc = self.getListNamespaces(path, location[0].namespaces);
+                                        }
+                                        
+                                        dSDevByRoom['optionLabels'] = nspc? nspc: dSDevByRoom['optionLabels'];
+                                        dSDevByRoom['dependencies'] = { "room" : location[0].id };
+
+                                        newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
+                                    });
+                                } else {
+                                    newObj[key] = obj[i][key];
+                                }
+                            });
+                        }
+
+                        obj[i] = newObj;
+                    }
+                }
+                
+                // try to replace the other stuff
+                for (var key in obj[i]) {
+                    _.each(obj[i][key], function(p, index){
+                        if (~keys.indexOf(index) && !_.isArray(p)) {
+                            obj[i][key][index] = getNspcFromFilters(moduleMeta, obj[i][key][index]);
+                        }
+                    });
+                }
+            } else if (typeof obj[i] === 'object') {
+                objects = objects.concat(replaceNspcFilters(moduleMeta, obj[i], keys));
+            } else if (keys.indexOf(i) > -1 && !_.isArray(obj[i])) {
+                // overwrite old key with new namespaces array
+                obj[i] = getNspcFromFilters(moduleMeta, obj[i]);
             }
         }
 
@@ -1507,14 +1625,15 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
 
                 // load function from file
                 } else if (id[0] === 'loadFunction') {
-                    var jsFile = fs.stat(moduleMeta.location + '/htdocs/' + id[1]);
+                    var filePath = moduleMeta.location + '/htdocs/js/' + id[1],
+                        jsFile = fs.stat(filePath);
                     
                     if (id[1] && jsFile && jsFile.type === 'file') {
-                        jsFile = fs.load(moduleMeta.location + '/htdocs/' + id[1]);
+                        jsFile = fs.load(filePath);
 
                         if (!!jsFile) {
                            //compress string 
-                           namespaces = jsFile.replace(/(^\s+|\s+$|\n|\r|\t)/g,'');
+                           namespaces = jsFile.replace(/\s\s+|\t/g,' ');
                         }
                     }
                 
@@ -1540,15 +1659,16 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         try {
             var params = {
                     schema: ['enum'],
-                    options: ['optionLabels', 'onFieldChange']
+                    options: ['optionLabels', 'onFieldChange', 'click'],
+                    postRender : ''
                 };
             
             // transform filters
-            for (property in params) {
-                if (moduleMeta[property]) {
-                    params[property].forEach(function(key) {                            
-                        moduleMeta[property] = replaceNspcFilters(moduleMeta, moduleMeta[property], key);
-                    });                   
+            for (var property in params) {
+                if (property === 'postRender' && moduleMeta[property] && !_.isArray(moduleMeta[property])) {                           
+                    moduleMeta[property] = getNspcFromFilters(moduleMeta, moduleMeta[property]);
+                } else if (moduleMeta[property]) {                           
+                    moduleMeta[property] = replaceNspcFilters(moduleMeta, moduleMeta[property], params[property]);
                 }
             }
      
@@ -1639,9 +1759,12 @@ AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
 };
 
 AutomationController.prototype.loadImage = function(fileName) {
-    var data,
+    var data = null,
         img = loadObject(fileName);
-        data = Base64.decode(img);
+
+        if (!!img) {
+            data = Base64.decode(img);
+        }       
         
         return data;
 };
