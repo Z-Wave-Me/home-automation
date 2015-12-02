@@ -65,8 +65,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
         this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
-        this.router.post("/upload/image", this.ROLE.ADMIN, this.uploadImage);
-        this.router.post("/alpaca/fileupload", this.ROLE.ADMIN, this.alpacaUploadFile);
+        this.router.post("/upload/file", this.ROLE.ADMIN, this.uploadFile);
 
         // patterned routes, right now we are going to just send in the wrapper
         // function. We will let the handler consumer handle the application of
@@ -1534,41 +1533,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return reply;
         }
     },
-    uploadImage: function() {
-        var reply = {
-                error: null,
-                data: null,
-                code: 200
-            },
-            file;
-
-        if (this.req.method === "POST" && this.req.body.file_upload) {
-            
-            file = this.req.body.file_upload;
-            
-            if (file instanceof Array) {
-                file = file[0];
-            }
-            
-            if (file.name && file.content && file.length > 0) {
-
-                // Create Base64 Object
-                saveObject(file.name, Base64.encode(file.content));
-
-                reply.code = 200;
-                reply.data = file.name;
-
-            } else {
-                reply.code = 500;
-                reply.error = "Failed to upload file" ;
-            }
-        } else {
-            reply.code = 400;
-            reply.error = "Invalid request" ;
-        }
-        return reply;
-    },
-    alpacaUploadFile: function() {
+    uploadFile: function() {
         var reply = {
                 error: null,
                 data: null,
