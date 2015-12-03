@@ -61,6 +61,7 @@ if (!config) {
     //--- Load 3d-party dependencies
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore.js");
+    executeFile(config.libPath + "/papaparse.min.js");
 
     //--- Load Automation subsystem classes
     executeFile(config.classesPath + "/VirtualDevice.js");

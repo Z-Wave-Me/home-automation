@@ -1541,18 +1541,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             file;
 
-        if (this.req.method === "POST" && this.req.body.files_files) {
+        if (this.req.method === "POST" && this.req.body) {
             
-            file = this.req.body.files_files;
+            for (prop in this.req.body){
+                if(this.req.body[prop]['content']) {
+                    file = this.req.body[prop];
+                }
+            }
             
-            if (file instanceof Array) {
+            if (_.isArray(file)) {
                 file = file[0];
             }
             
-            if (file.name && file.content && file.length > 0) {
+            if (file && file.name && file.content || (_.isArray(file) && file.length > 0)) {
 
-                // Create Base64 Object
-                saveObject(file.name, Base64.encode(file.content));
+                if(~file.name.indexOf('.csv') && typeof Papa === 'object'){
+                    var csv = null;
+                    
+                    Papa.parse(file.content, {
+                        header: true,
+                        dynamicTyping: true,
+                        complete: function(results) {
+                            csv = results;
+                        }
+                    });
+
+                    if(!!csv) {
+                        saveObject(file.name, csv);
+                    }
+                } else {
+                    // Create Base64 Object
+                    saveObject(file.name, Base64.encode(file.content));
+                }
 
                 reply.code = 200;
                 reply.data = file.name;
