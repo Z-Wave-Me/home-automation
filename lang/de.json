@@ -11,5 +11,6 @@
 	"ac_err_stop_mod":"Das folgende Modul kann nicht gestoppt werden: ",
 	"profile_name": "Administrator",
 	"profile_descr": "Dies ist das Administratorprofil. Dieses wird automatisch angelegt.",
-	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: "
+	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: ",
+	"no_devices_found":"Keine Geräte gefunden"
 }

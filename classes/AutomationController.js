@@ -1451,7 +1451,8 @@ AutomationController.prototype.getModuleData = function (moduleName) {
 
 AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
     var self = this,
-        moduleMeta = moduleMeta || null;
+        moduleMeta = moduleMeta || null,
+        langFile = this.loadMainLang();
 
     // loop through object
     function replaceNspcFilters (moduleMeta, obj, keys) {
@@ -1504,11 +1505,13 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                                             nspc = self.getListNamespaces(path, location.namespaces);
                                         }
 
-                                        dSDevByRoom['enum'] = nspc? nspc: dSDevByRoom['enum'];
+                                        dSDevByRoom['enum'] = nspc? nspc: [langFile.no_devices_found];
                                         dSDevByRoom['dependencies'] = "room";
 
                                         newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
-                                        newObj['devicesByRoom_' + cnt]['title'] = newObj['devicesByRoom_' + cnt]['title'] + ' ' + cnt;
+                                        if (newObj['devicesByRoom_' + cnt]['title']) {
+                                            newObj['devicesByRoom_' + cnt]['title'] = newObj['devicesByRoom_' + cnt]['title'] + '_' + cnt;
+                                        }
                                     });
                                 } else {
                                     newObj[key] = obj[i][key];
@@ -1556,10 +1559,14 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                                             nspc = self.getListNamespaces(path, location[0].namespaces);
                                         }
                                         
-                                        dSDevByRoom['optionLabels'] = nspc? nspc: dSDevByRoom['optionLabels'];
+                                        dSDevByRoom['optionLabels'] = nspc? nspc: [langFile.no_devices_found];
                                         dSDevByRoom['dependencies'] = { "room" : location[0].id };
 
                                         newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
+
+                                        if (newObj['devicesByRoom_' + cnt]['label']) {
+                                            newObj['devicesByRoom_' + cnt]['label'] = newObj['devicesByRoom_' + cnt]['label'] + '_' + cnt;
+                                        }
                                     });
                                 } else {
                                     newObj[key] = obj[i][key];
