@@ -71,7 +71,7 @@ CustomUserCodeZWay.prototype.init = function (config) {
         //}
     };
 
-    if (global.ZWave[this.config.zway]) {
+    if (global.ZWave && global.ZWave[this.config.zway]) {
         this.bindZWay(this.config.zway);
     }
     global.controller.on("ZWave.register", this.bindZWay);
