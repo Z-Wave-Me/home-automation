@@ -74,6 +74,10 @@ Object.defineProperty(ZWave, "list", {
 });
 ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
 
+ZWave.prototype.updateList = function() {
+        this.controller.setNamespace("zways", ZWave.list().map(function(name) { return {zwayName: name}; }));
+};
+
 ZWave.prototype.init = function (config) {
 	ZWave.super_.prototype.init.call(this, config);
 
@@ -140,6 +144,7 @@ ZWave.prototype.startBinding = function () {
 		"port": this.config.port,
 		"fastAccess": this.fastAccess
 	};
+	this.updateList();
 
 	this.stopped = false;
 	
@@ -202,6 +207,7 @@ ZWave.prototype.stopBinding = function () {
 	}
 	if (global.ZWave) {
 		delete global.ZWave[this.config.name];
+		this.updateList();
 	}
 
 	this.stopped = true;
