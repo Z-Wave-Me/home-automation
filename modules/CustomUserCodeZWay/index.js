@@ -36,12 +36,12 @@ CustomUserCodeZWay.prototype.init = function (config) {
     this.loaded = false;
 
     this.bindZWay = function (zwayName) {
-    	if (zwayName !== self.config.zway) {
-       	    return;
-	}
+        if (zwayName !== self.config.zway) {
+           return;
+        }
 
-	self.loaded = true;
-	
+        self.loaded = true;
+    
         // TODO: executeJS errors are impossible to catch!
         //try {
             executeJS(self.config.customCodeOnLoad);
@@ -54,12 +54,12 @@ CustomUserCodeZWay.prototype.init = function (config) {
     };
 
     this.unbindZWay = function (zwayName) {
-    	if (zwayName !== self.config.zway) {
-       	    return;
-	}
+        if (zwayName !== self.config.zway) {
+            return;
+        }
 
-	self.loaded = false;
-	
+        self.loaded = false;
+    
         // TODO: executeJS errors are impossible to catch!
         //try {
             executeJS(self.config.customCodeOnUnload);
@@ -71,11 +71,15 @@ CustomUserCodeZWay.prototype.init = function (config) {
         //}
     };
 
+    if (global.ZWave[this.config.zway]) {
+        this.bindZWay(this.config.zway);
+    }
     global.controller.on("ZWave.register", this.bindZWay);
+    global.controller.on("ZWave.unregister", this.unbindZWay);
 };
 
 CustomUserCodeZWay.prototype.stop = function() {
-    if (self.loaded === true) {
+    if (this.loaded === true) {
         this.unbindZWay(this.config.zway);
     }
     

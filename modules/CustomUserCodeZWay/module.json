@@ -15,7 +15,7 @@
     "defaults": {
     	"title": "__m_title__",
     	"description": "__m_descr__",
-    	"zway": "zway",
+    	"zway": "",
     	"customCodeOnLoad": "",
     	"customCodeOnUnload": ""
     },
@@ -43,8 +43,6 @@
             "zway": {
                 "type": "select",
 		"label": "__l_choose_zway__",
-		"noneLabel": "__l_choose_zway_none__",
-                "removeDefaultNone": false,
                 "datasource": "namespaces",
                 "field": "optionLabels",
                 "optionLabels": "namespaces:zways:zwayName"
