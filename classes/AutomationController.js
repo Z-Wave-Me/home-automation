@@ -1233,8 +1233,6 @@ AutomationController.prototype.generateNamespaces = function (callback, location
         deviceSubTypes = [],
         devicesFilteredByType = [];
 
-    that.namespaces = [];
-    
     deviceTypes.forEach(function (type) {
         data = {};
 
