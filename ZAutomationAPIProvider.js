@@ -27,6 +27,9 @@ function ZAutomationAPIWebRequest (controller) {
         },
         body: null
     };
+    this.exclFromProfileRes = [
+        'password'
+    ];
 
     this.registerRoutes();
 };
@@ -38,6 +41,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
         this.router.get("/status", this.ROLE.USER, this.statusReport);
         this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
+        this.router.get("/logout", this.ROLE.USER, this.doLogout);
         this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
         this.router.get("/history", this.ROLE.USER, this.exposeHistory);
         this.router.get("/devices", this.ROLE.USER, this.listDevices);
@@ -85,7 +89,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
         this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
 
-        this.router.put("/auth/update/:profile_id", this.ROLE.USER, this.updateProfileAuth, [parseInt]);
+        this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
+        this.router.post("/auth/forgotten/:profile_id", this.ROLE.ANONYMOUS, this.restorePassword, [parseInt]);
+        this.router.put("/auth/update/:profile_id", this.ROLE.ANONYMOUS, this.updateProfileAuth, [parseInt]);
 
         this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
         this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
@@ -159,28 +165,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         });
 
         if (profile && reqObj.password === profile.password) {
-            var sid = crypto.guid();
+            var sid = crypto.guid(),
+                resProfile = {};
             this.controller.auth.checkIn(profile, sid);
 
+            resProfile = this.getProfileResponse(profile);
+            resProfile.sid = sid;
+
             reply.code = 200;
-            reply.data = {
-                sid: sid, // session ID
-                id: profile.id,
-                role: profile.role,
-                name: profile.name,
-                email: profile.email,
-                lang: profile.lang,
-                color: profile.color,
-                dashboard: profile.dashboard,
-                interval: profile.interval,
-                rooms: profile.rooms,
-                hide_all_device_events: profile.hide_all_device_events,
-                hide_system_events: profile.hide_system_events,
-                hide_single_device_events: profile.hide_single_device_events
-            };
-            if(profile.role === 1 || profile.role === 3){
-                reply.data.expert_view = profile.expert_view;
-            }
+            reply.data = resProfile;
+
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
             };
@@ -190,6 +184,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
             };
+        }
+        
+        return reply;
+    },
+    doLogout: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500,
+                headers: null
+            },
+            session;
+
+        if (this.req.headers.ZWAYSession) {
+            session = this.req.headers.ZWAYSession;
+
+            reply.headers = {
+                "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+            };
+
+            reply.code = 200;
+
+            if (this.controller.auth.sessions[session]) {
+                delete this.controller.auth.sessions[session];
+            }
+        } else {
+            reply.error = 'Internal server error.';
         }
         
         return reply;
@@ -1189,7 +1210,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             reqObj,
-            profile;
+            profile,
+            resProfile = {};
 
         try {
             reqObj = JSON.parse(this.req.body);
@@ -1205,6 +1227,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             _.defaults(reqObj, {
                 role: null,
                 name: 'User',
+                email:'',
                 lang: 'en',
                 color: '#dddddd',
                 dashboard: [],
@@ -1217,7 +1240,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             });
             profile = this.controller.createProfile(reqObj);
             if (profile !== undefined && profile.id !== undefined) {
-                reply.data = profile;
+                
+                
+                
+                reply.data = resProfile;
                 reply.code = 201;
             } else {
                 reply.code = 500;
@@ -1237,7 +1263,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             reqObj,
-            profile = this.controller.getProfile(profileId);
+            profile = this.controller.getProfile(profileId),
+            uniqueProfProps = [];
         
         if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
             reqObj = JSON.parse(this.req.body);
@@ -1246,32 +1273,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 403;
                 reply.error = "Revoking self Admin priviledge is not allowed.";
             } else {
-                // only Admin can change critical parameters
-                if (this.req.role === this.ROLE.ADMIN) {
-                    // id is never changeable
-                    // login is changed by updateProfileAuth()
-                    profile.role = reqObj.role;                    
-                    profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
-                    profile.expert_view = reqObj.expert_view;
-                }
-                // could be changed by user role
-                profile.name = reqObj.name; // profile name
-                profile.interval = reqObj.interval; // update interval from ui
-                profile.hide_system_events = reqObj.hide_system_events;
-                profile.hide_all_device_events = reqObj.hide_all_device_events;
-                profile.lang = reqObj.lang;
-                profile.color = reqObj.color;
-                profile.dashboard = reqObj.dashboard;
-                profile.hide_single_device_events = reqObj.hide_single_device_events;
-                
-                profile = this.controller.updateProfile(profile, profile.id);
-                
-                if (profile !== undefined && profile.id !== undefined) {
-                    reply.data = profile;
-                    reply.code = 200;
+                uniqueProfProps = _.filter(this.controller.profiles, function (p) {
+                    return ((p.email !== '' && p.email === reqObj.email) ||
+                                (p.login !== '' && p.login === reqObj.login)) && 
+                                    p.id !== profileId;
+                });
+
+                if (uniqueProfProps.length === 0) {
+                    // only Admin can change critical parameters
+                    if (this.req.role === this.ROLE.ADMIN) {
+                        // id is never changeable
+                        // login is changed by updateProfileAuth()
+                        profile.role = reqObj.role;                    
+                        profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                        profile.expert_view = reqObj.expert_view;
+                    }
+                    // could be changed by user role
+                    profile.name = reqObj.name; // profile name
+                    profile.interval = reqObj.interval; // update interval from ui
+                    profile.hide_system_events = reqObj.hide_system_events;
+                    profile.hide_all_device_events = reqObj.hide_all_device_events;
+                    profile.lang = reqObj.lang;
+                    profile.color = reqObj.color;
+                    profile.dashboard = reqObj.dashboard;
+                    profile.hide_single_device_events = reqObj.hide_single_device_events;
+                    profile.email = reqObj.email;
+                    
+                    profile = this.controller.updateProfile(profile, profile.id);
+                    
+                    if (profile !== undefined && profile.id !== undefined) {
+                        reply.data = this.getProfileResponse(profile);
+                        reply.code = 200;
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Profile was not created";
+                    }
                 } else {
-                    reply.code = 500;
-                    reply.error = "Profile was not created";
+                    reply.code = 409;
+                    reply.error = 'Login or e-mail already exists.';
                 }
             }
         } else {
@@ -1283,13 +1322,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // different pipe for updating authentication values
     updateProfileAuth: function (profileId) {
-        var reply = {
-            error: null,
-            data: null,
-            code: 500
-        },
-        reqObj,
-        profile = this.controller.getProfile(profileId);
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj,
+            profile = this.controller.getProfile(profileId),
+            uniqueLogin = [],
+            reqToken = this.req.reqObj.hasOwnProperty("token")? this.req.reqObj.token : null,
+            tokenObj = {};
         
         if (typeof this.req.body !== 'object') {
             reqObj = JSON.parse(this.req.body);
@@ -1301,18 +1344,130 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
-            profile = this.controller.updateProfileAuth(reqObj, profileId);
-            
-            if (profile !== undefined && profile.id !== undefined) {
-                reply.data = profile;
-                reply.code = 200;
+
+            uniqueLogin = _.filter(this.controller.profiles, function (p) {
+                if (self.req.role === self.ROLE.ADMIN && self.req.user !== reqObj.id) {
+                    return p.login !== '' && p.login === reqObj.login && p.id !== reqObj.id;
+                } else {
+                    return p.login !== '' && p.login === reqObj.login && p.id !== self.req.user;
+                }
+            });
+
+            if (uniqueLogin.length < 1) {
+                profile = this.controller.updateProfileAuth(reqObj, profileId);
+                
+                if (!!profile && profile.id !== undefined) {
+                    reply.data = this.getProfileResponse(profile);
+                    reply.code = 200;
+                } else {
+                    reply.code = 500;
+                    reply.error = "Was not able to update password.";
+                }
             } else {
-                reply.code = 500;
-                reply.error = "Was not able to update password.";
+                reply.code = 409;
+                reply.error = 'Login already exists.';
+            }
+        } else if (this.req.role === this.ROLE.ANONYMOUS && profileId && !!reqToken) {
+            tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
+                
+            if (tokenObj && !!tokenObj) {
+                profile = this.controller.updateProfileAuth(reqObj, profileId);
+
+                if (!!profile && profile.id !== undefined) {
+                    // remove forgotten token
+                    self.controller.auth.removeForgottenPwdEntry(reqToken);
+                    
+                    reply.code = 200;
+                } else {
+                    reply.code = 500;
+                    reply.error = "Was not able to update password.";
+                }
+            } else {
+                reply.code = 404;
+                reply.error = "Token not found.";
             }
         } else {
             reply.code = 403;
             reply.error = "Forbidden.";
+        }
+
+        return reply;
+    },
+    restorePassword: function (profileId) {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body !== 'object'? JSON.parse(this.req.body): this.req.body,
+            reqToken = this.req.query.hasOwnProperty("token")? this.req.query.token : null,
+            profile,
+            emailExists = [],
+            tokenObj;        
+
+        if (reqObj.email) {
+            emailExists = _.filter(self.controller.profiles, function (profile) {
+                return profile.email !== '' && profile.email === reqObj.email;
+            });
+        }
+
+        if (reqToken === null && emailExists.length > 0 && !profileId) {
+            
+            try {
+                var tkn = crypto.guid(),
+                    success = self.controller.auth.forgottenPwd(reqObj.email, tkn);
+                
+                if (success) {
+                    reply.data = { token: tkn };
+                    reply.code = 200;
+                } else {
+                    reply.error = "Token request for e-mail already exists.";
+                    reply.code = 409;
+                }                
+            
+            } catch (e) {
+                reply.code = 500;
+                reply.error = "Internal server error.";
+            }
+        } else if (!!reqToken && emailExists.length < 1 && !profileId){
+            try {
+                tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
+                
+                if (tokenObj && !!tokenObj) {
+
+                    profile = _.filter(self.controller.profiles,function(p) {
+                        return p.email === tokenObj.email; 
+                    });
+
+                    if(profile[0]) {
+                        reply.code = 200;
+                        reply.data = { userId: profile[0].id };
+                    } else {
+                        reply.code = 404;
+                        reply.error = "User not found.";
+                    }
+                } else {
+                    reply.code = 404;
+                    reply.error = "Token not found.";
+                }            
+            } catch (e) {
+                reply.code = 500;
+                reply.error = "Internal server error.";
+            }
+        } else if (!!reqToken && emailExists.length < 1 && profileId) {
+
+            profile = self.controller.updateProfileAuth(reqObj, profileId);
+            
+            if (!!profile && profile.id !== undefined) {
+                reply.code = 200;
+            } else {
+                reply.code = 500;
+                reply.error = "Wasn't able to update password.";
+            }
+        } else {
+            reply.code = 404;
+            reply.error = "Email not found.";
         }
 
         return reply;
@@ -1754,6 +1909,19 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
             return [];
         }
     }
+};
+
+ZAutomationAPIWebRequest.prototype.getProfileResponse = function (profileObj) {
+    var self = this,
+        resProfile = {};
+
+    Object.keys(profileObj).forEach(function(value){
+        if (!~self.exclFromProfileRes.indexOf(value)) {
+            resProfile[value] = profileObj[value];
+        }
+    });
+
+    return resProfile;
 };
 
 ZAutomationAPIWebRequest.prototype.Unauthorized = function () {

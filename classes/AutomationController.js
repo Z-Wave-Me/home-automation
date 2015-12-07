@@ -1186,22 +1186,22 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 
     if (profile) {
         index = this.profiles.indexOf(profile);
+
+        p = this.profiles[index];
         
-        if (object.hasOwnProperty('password')) {
-            this.profiles[index].password = object.password;
+        if (object.hasOwnProperty('password') && object.password !== '' && !!object.password) {
+            p.password = object.password;
         }
-        if (object.hasOwnProperty('login')) {
-            this.profiles[index].login = object.login;
+        if (object.hasOwnProperty('login') && object.login !== '' && !!object.login) {
+            p.login = object.login;
         }
+
+        this.saveConfig();
+        
+        return p;
+    } else {
+        return null;
     }
-
-    _.defaults(this.profiles[index], {
-        login: null,
-        password: null
-    });
-
-    this.saveConfig();
-    return this.profiles[index];
 };
 
 AutomationController.prototype.removeProfile = function (profileId) {
