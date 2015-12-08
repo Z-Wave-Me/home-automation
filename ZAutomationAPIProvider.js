@@ -40,6 +40,7 @@ inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
         this.router.get("/status", this.ROLE.USER, this.statusReport);
+        this.router.get("/session", this.ROLE.ANONYMOUS, this.verifySession);
         this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
         this.router.get("/logout", this.ROLE.USER, this.doLogout);
         this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
@@ -174,6 +175,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         }
     },
+
+    // Returns user session information for the smarthome UI
+    verifySession: function() {
+        var auth = controller.auth.resolve(this.req, 2);
+        
+        if (! auth) {
+            return this.denyLogin("No valid user session found");
+        }
+        
+        console.logJS(this.controller.profiles);
+        
+        var profile = _.find(this.controller.profiles, function (profile) {
+            return profile.id === auth.user;
+        });
+        
+        return this.setLogin(profile);
+    },
+    
     verifyLogin: function() {
         var reqObj;
 
