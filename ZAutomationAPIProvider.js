@@ -188,16 +188,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         
         return reply;
     },
+    
     doLogout: function() {
         var reply = {
                 error: null,
                 data: null,
-                code: 500,
+                code: 400,
                 headers: null
             },
             session;
+        
+        var sessionId = this.controller.auth.getSessionId(this.req);
 
-        if (this.req.headers.ZWAYSession) {
+        if (sessionId) {
             session = this.req.headers.ZWAYSession;
 
             reply.headers = {
@@ -210,7 +213,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 delete this.controller.auth.sessions[session];
             }
         } else {
-            reply.error = 'Internal server error.';
+            reply.error = 'Could not logout.';
         }
         
         return reply;
