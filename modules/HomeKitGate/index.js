@@ -180,10 +180,12 @@ HomeKitGate.prototype.init = function (config) {
 		var uniqueId = vDev.get("creatorId") || 1;
 		var manufacturer = "z-wave.me"; // todo
 		var deviceType = vDev.get("deviceType") || "virtualDevice";
+		var serviceName = vDev.get("metrics:title") || vDev.id;
+		var accessoryName = serviceName + " Accessory";
 		
 		var m = self.mapping[vDev.id] = {};
 		var accessory = m.$accessory = self.hk.accessories.addAccessory({
-			get: function() { return vDev.get("metrics:title") || vDev.id; }
+			get: function() { return accessoryName; }
 		}, manufacturer, deviceType, vDev.id, uniqueId);
 
 		// m field name is metric name on which characteristics depend
@@ -227,7 +229,7 @@ HomeKitGate.prototype.init = function (config) {
 				if (sensorTypeId === 1) {
 
 					// temperature
-					var service = accessory.addService(HomeKit.Services.TemperatureSensor, "Temperature");
+					var service = accessory.addService(HomeKit.Services.TemperatureSensor, serviceName);
 
 					var temperature = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float", {
 						get: function() { 
@@ -255,7 +257,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 3) {
 
 					// luminosity
-					var service = accessory.addService(HomeKit.Services.LightSensor, "Luminosity");
+					var service = accessory.addService(HomeKit.Services.LightSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentLightLevel, "float", {
 						get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
@@ -264,7 +266,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 5) {
 					
 					// humidity
-					var service = accessory.addService(HomeKit.Services.HumiditySensor, "Humidity");
+					var service = accessory.addService(HomeKit.Services.HumiditySensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.CurrentRelativeHumidity, "float", {
 						get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
@@ -273,7 +275,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 17) {
 
 					// CO2
-					var service = accessory.addService(HomeKit.Services.CarbonDioxideSensor, "CO2");
+					var service = accessory.addService(HomeKit.Services.CarbonDioxideSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.CarbonDioxideLevel, "float", {
 						get: function() { return parseFloat(vDev.get("metrics:level")) || 0.0; }
@@ -294,7 +296,7 @@ HomeKitGate.prototype.init = function (config) {
 				if (sensorTypeId === 2) {
 
 					// smoke
-					var service = accessory.addService(HomeKit.Services.SmokeSensor, "Smoke Sensor");
+					var service = accessory.addService(HomeKit.Services.SmokeSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.SmokeDetected, "bool", {
 						get: function() { return vDev.get("metrics:level") === "on"; }
@@ -303,7 +305,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 3) {
 					
 					// CO
-					var service = accessory.addService(HomeKit.Services.CarbonMonoxideSensor, "CO Sensor");
+					var service = accessory.addService(HomeKit.Services.CarbonMonoxideSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.CarbonMonoxideDetected, "bool", {
 						get: function() { return vDev.get("metrics:level") === "on"; }
@@ -312,7 +314,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 4) {
 
 					// CO2
-					var service = accessory.addService(HomeKit.Services.CarbonDioxideSensor, "CO2 Sensor");
+					var service = accessory.addService(HomeKit.Services.CarbonDioxideSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.CarbonDioxideDetected, "bool", {
 						get: function() { return vDev.get("metrics:level") === "on"; }
@@ -321,7 +323,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 6) {
 					
 					// flood
-					var service = accessory.addService(HomeKit.Services.LeakSensor, "Flood Sensor");
+					var service = accessory.addService(HomeKit.Services.LeakSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.LeakDetected, "bool", {
 						get: function() { return vDev.get("metrics:level") === "on"; }
@@ -330,7 +332,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 10) {
 
 					// door
-					var service = accessory.addService(HomeKit.Services.Door, "Door Sensor");
+					var service = accessory.addService(HomeKit.Services.Door, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.ObstructionDetected, "bool", {
 						get: function() { return vDev.get("metrics:level") === "on"; }
@@ -339,7 +341,7 @@ HomeKitGate.prototype.init = function (config) {
 				} else if (sensorTypeId === 12) {
 					
 					// motion
-					var service = accessory.addService(HomeKit.Services.MotionSensor, "Motion Sensor");
+					var service = accessory.addService(HomeKit.Services.MotionSensor, serviceName);
 					
 					m.level = service.addCharacteristic(HomeKit.Characteristics.MotionDetected, "bool", {
 						get: function() { return vDev.get("metrics:level") === "on"; }
@@ -353,7 +355,7 @@ HomeKitGate.prototype.init = function (config) {
 			}
 		}
 		else if (deviceType == "switchBinary") {
-			var service = accessory.addService(HomeKit.Services.Lightbulb, "Binary Switch");
+			var service = accessory.addService(HomeKit.Services.Lightbulb, serviceName);
 			
 			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
 				get: function() { return vDev.get("metrics:level") === "on"; },
@@ -361,7 +363,7 @@ HomeKitGate.prototype.init = function (config) {
 			});
 		}
 		else if (deviceType == "switchMultilevel") {
-			var service = accessory.addService(HomeKit.Services.Lightbulb, "Multilevel Switch");
+			var service = accessory.addService(HomeKit.Services.Lightbulb, serviceName);
 			
 			m.level = [ 
 				service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
@@ -376,7 +378,7 @@ HomeKitGate.prototype.init = function (config) {
 			];
 		}
 		else if (deviceType == "switchRGBW") {
-			var service = accessory.addService(HomeKit.Services.Lightbulb, "RGBW Switch");
+			var service = accessory.addService(HomeKit.Services.Lightbulb, serviceName);
 
 			m.level = service.addCharacteristic(HomeKit.Characteristics.PowerState, "bool", {
 				get: function() { return vDev.get("metrics:level") === "on"; },
@@ -431,7 +433,7 @@ HomeKitGate.prototype.init = function (config) {
 			];
 		}
 		else if (deviceType == "battery") {
-			var service = accessory.addService(HomeKit.Services.Battery, "Battery");
+			var service = accessory.addService(HomeKit.Services.Battery, serviceName);
 			
 			m.level = [
 				service.addCharacteristic(HomeKit.Characteristics.BatteryLevel, "int", {
