@@ -1,6 +1,6 @@
 /*** RemoteAccess Z-Way HA module *******************************************
 
-Version: 1.0.2
+Version: 1.0.3
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>

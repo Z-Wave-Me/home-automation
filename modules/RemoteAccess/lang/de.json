@@ -1,6 +1,6 @@
 {
 	"m_title":"Remote-Zugriff",
-	"m_descr":"Wird benötig, um über die SmartHome UI den Remote-Zugriff zu konfigurieren.",
+	"m_descr":"Diese App wird benötig, um über die SmartHome UI den Remote-Zugriff zu konfigurieren. </br></br><strong>Hinweis:</strong></br></br>Ein Entfernen oder Stoppen der App wird den Fernzugriff nicht beenden, wenn dieser nicht vorher explizit unter <strong>Einstellungen > Management > Verwaltung des Fernzugriffes</strong> deaktiviert wurde.",
 	"l_ra_path":"Absoluter Pfad auf dem Server zu ZBWConnect:",
 	"h_ra_path":"z.B. /etc/zbw oder ./zbw - wird auf dem Raspberry nicht benötigt",
 	"load_zbw_error":"ZBWConnect Modul konnte nicht initialisiert werden. Fehler: ",
