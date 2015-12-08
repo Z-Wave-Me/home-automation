@@ -35,10 +35,7 @@ AuthController.prototype.isAuthorized = function(myRole, requiredRole) {
     return myRole <= requiredRole;
 }
 
-AuthController.prototype.resolve = function(request, requestedRole) {
-    var role, session,
-        self = this;
-    
+AuthController.prototype.getSessionId = function(request) {
     // check if session id is specified in cookie or header
     var profileSID = request.headers['ZWAYSession'];
     if (!profileSID) {
@@ -51,8 +48,15 @@ AuthController.prototype.resolve = function(request, requestedRole) {
             }
         }
     }
+    
+    return profileSID;
+}
 
-    session = this.sessions[profileSID];
+AuthController.prototype.resolve = function(request, requestedRole) {
+    var role, session,
+        self = this;
+    
+    session = this.sessions[this.getSessionId(request)];
 
     if (!session) {
         // no session found or session expired
