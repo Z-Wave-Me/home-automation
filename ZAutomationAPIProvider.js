@@ -144,49 +144,59 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
+
+    setLogin: function(profile) {
+        var sid = crypto.guid(),
+            resProfile = {};
+        this.controller.auth.checkIn(profile, sid);
+
+        resProfile = this.getProfileResponse(profile);
+        resProfile.sid = sid;
+
+        return {
+            error: null,
+            data: resProfile,
+            code: 200,
+            headers: {
+                "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
+            }
+        };
+    },
+    
+    // Method to return a 401 to the user
+    denyLogin: function(error) {
+        return {
+            error: error,
+            data: null,
+            code: 401,
+            headers: {
+                "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+            }
+        }
+    },
     verifyLogin: function() {
-        var reply = {
-                    error: null,
-                    data: null,
-                    code: 500,
-                    headers: null
-                },
-            reqObj;
+        var reqObj;
 
         try {
             reqObj = JSON.parse(this.req.body);
         } catch (ex) {
-            reply.error = ex.message;
-            return reply;
+            return {
+                error: ex.message,
+                data: null,
+                code: 500,
+                headers: null
+            };
         }
 
-        profile = _.find(this.controller.profiles, function (profile) {
+        var profile = _.find(this.controller.profiles, function (profile) {
             return profile.login === reqObj.login;
         });
 
         if (profile && reqObj.password === profile.password) {
-            var sid = crypto.guid(),
-                resProfile = {};
-            this.controller.auth.checkIn(profile, sid);
-
-            resProfile = this.getProfileResponse(profile);
-            resProfile.sid = sid;
-
-            reply.code = 200;
-            reply.data = resProfile;
-
-            reply.headers = {
-                "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
-            };
+            return this.setLogin(profile);
         } else {
-            reply.code = 401;
-            reply.error = "User login/password is wrong.";
-            reply.headers = {
-                "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
-            };
+            return this.denyLogin();
         }
-        
-        return reply;
     },
     
     doLogout: function() {
