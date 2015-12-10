@@ -75,7 +75,7 @@ Object.defineProperty(ZWave, "list", {
 ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
 
 ZWave.prototype.updateList = function() {
-        this.controller.setNamespace("zways", ZWave.list().map(function(name) { return {zwayName: name}; }));
+        this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
 };
 
 ZWave.prototype.init = function (config) {
