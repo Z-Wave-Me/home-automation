@@ -22,5 +22,9 @@
 	"rl_updateOnAction": "Update value on action",
 	"h_updateOnAction": "On actions (on/off/dimming) update value accordingly before it is polled",
 	"rl_skipEventIfSameValue": "Don't send update event if value has not changed",
-	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called."
+	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called.",
+	"l_login":"Login",
+	"h_login":"If needed, set login",
+	"l_password":"Pasword",
+	"h_password":"If needed, set password"
 }
