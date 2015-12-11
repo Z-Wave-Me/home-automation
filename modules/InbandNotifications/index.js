@@ -56,6 +56,7 @@ InbandNotifications.prototype.init = function (config) {
         if(!Boolean(vDev.get('permanently_hidden'))){
             var devId = vDev.get('id'),
                 devType = vDev.get('deviceType'),
+                devProbeType = vDev.get('probeType'),
                 devName = vDev.get('metrics:title'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
@@ -119,13 +120,15 @@ InbandNotifications.prototype.init = function (config) {
                         case 'sensorMultilevel':
                         case 'sensorMultiline':
                         case 'thermostat':
-                            msg = {
-                                dev: devName,
-                                l: lvl + ' ' + scaleUnit
+                            if (!~devProbeType.indexOf('meterElectric_')){
+                                msg = {
+                                    dev: devName,
+                                    l: lvl + ' ' + scaleUnit
                                 };
-                            msgType = 'device-' + eventType();
+                                msgType = 'device-' + eventType();
 
-                            self.controller.addNotification('device-info', msg , msgType, devId);
+                                self.controller.addNotification('device-info', msg , msgType, devId);
+                            }
                             break;
                         case 'switchRGBW':
                             msg = {

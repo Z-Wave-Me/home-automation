@@ -1,6 +1,6 @@
 {
 	"m_title":"Remote Access",
-	"m_descr":"Is necessary to configure remote access in SmartHome UI.",
+	"m_descr":"This app is required to configure the remote access via the Smart Home UI.</br></br><strong>Note:</strong></br></br>Removing or stopping the app will not stop the remote access, if it has not been disabled explicitly under <strong>Settings > Management > Remote Access</strong> in advance.",
 	"l_ra_path":"Absolute path to ZBWConnect on server:",
 	"h_ra_path":"e.g. /etc/zbw or ./zbw - not necessary on raspberry",
 	"load_zbw_error":"Cannot initialize ZBWConnect module. Error: ",

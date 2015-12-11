@@ -340,7 +340,7 @@ _.extend(VirtualDevice.prototype, {
                 attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
                 Object.keys(attrs).forEach(function (key) {
                     if (!_.isEqual(current[key], attrs[key])) {
-                        changes.push(attrs[key]);
+                        changes.push(key);
                     }
                     if (!_.isEqual(prev[key], attrs[key])) {
                         that.changed[key] = attrs[key];

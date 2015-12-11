@@ -377,22 +377,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         // generate namespaces per location
         if (locations.length > 0) {
-            locations.forEach(function (location) {
-                var nspc = null;
-
-                this.controller.generateNamespaces(function (namespaces) {
-                        if (_.isArray(namespaces)) {
-                            nspc = namespaces;
-                        }
-                    }, location.id);
-
-                expLocations.push(_.extend(location, {
-                    namespaces: nspc
-                }));
-            });
-
-            locations = expLocations.length > 0? expLocations : locations;
-
             reply.code = 200;
             reply.data = locations;
         } else {
@@ -447,12 +431,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 getFilteredNspc = this.controller.getListNamespaces(namespaceId, _location.namespaces);
             }
 
-            if (getFilteredNspc) {
-               reply.data = getFilteredNspc;
-                reply.code = 200;
-            } else {
+            if (!getFilteredNspc || (_.isArray(getFilteredNspc) && getFilteredNspc.length < 1)) {
                 reply.code = 404;
                 reply.error = "Couldn't find namespaces entry with: '" + namespaceId + "'";
+            } else {
+                reply.data = getFilteredNspc;
+                reply.code = 200;
             }
         } else {
             reply.code = 404;
@@ -1503,16 +1487,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             error: null,
             data: null,
             code: 500
-        };
+        },
+        nspc;
 
-        this.controller.generateNamespaces(function (namespaces) {
-            if (_.isArray(namespaces)) {
-                reply.data = namespaces;
-                reply.code = 200;
-            } else {
-                reply.error = "Namespaces array is null";
-            }
-        });      
+        nspc = this.controller.namespaces;
+
+        if (_.isArray(nspc) && nspc.length > 0) {
+            reply.data = nspc;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces array is null";
+        }
 
         return reply;
     },
@@ -1524,14 +1510,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         },
         namespace;
 
-        this.controller.generateNamespaces();
         namespace = this.controller.getListNamespaces(namespaceId, this.controller.namespaces);
-        if (namespace) {
+        if (!namespace || (_.isArray(namespace) && namespace.length < 1)) {
+            reply.code = 404;
+            reply.error = "No namespaces found with this path: " + namespaceId;
+        } else {
             reply.data = namespace;
             reply.code = 200;
-        } else {
-            reply.code = 404;
-            reply.error = "Namespaces " + namespaceId + " doesn't exist";
         } 
 
         return reply;
