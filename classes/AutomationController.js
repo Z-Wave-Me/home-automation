@@ -88,7 +88,17 @@ AutomationController.prototype.init = function () {
             });
             pushNamespaces(device, false);
         });*/
+        
+        // update namespaces if device title has changed
+        self.devices.on('change:metrics:title', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.location_update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces(device, false);
+        });
 
+        // update only location namespaces if device location has changed
         self.devices.on('change:location', function (device) {
             ws.push({
                 type: "me.z-wave.devices.location_update",
@@ -97,6 +107,7 @@ AutomationController.prototype.init = function () {
             pushNamespaces(device, true);
         });
 
+        // update namespaces if structure of devices collection changed
         self.devices.on('created', function (device) {
             ws.push({
                 type: "me.z-wave.devices.add",
@@ -1233,6 +1244,11 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                     if (!!devStillExists && exists.length < 1){
                         // add entry
                         entryArr.push(devEntry);
+                    } else if (!!devStillExists && exists[0]) {
+                        // change existing deviceName
+                        if (!_.isEqual(exists[0]['deviceName'], devEntry['deviceName'])) {
+                            exists[0]['deviceName'] = devEntry['deviceName'];
+                        }
                     } else if (devStillExists === null) {
                         // remove entry
                         entryArr = _.filter(entryArr, function(entry) {
@@ -1242,9 +1258,20 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
 
                     return entryArr;
                 },
+                deleteEmptyProp = function (object, key) {
+                    // delete empty CC type entries
+                    if ((_.isArray(object[key]) && object[key].length < 1) || (!_.isArray(object[key]) && Object.keys(object[key]).length < 1)) {
+                        delete object[key];
+                    }
+                    return object;
+                },
                 cutType = [],
                 cutSubType = '',
                 paramEntry;
+            
+            if (vDev.id === 'ZWayVDev_zway_99-0-156-5-A') {
+                console.log('devEntry ZWayVDev_zway_99-0-156-5-A:', JSON.stringify(devEntry));
+            }
 
             // check for type entry
             typeEntryExists = _.filter(nspc, function(typeEntry){
@@ -1275,6 +1302,10 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
 
                     //check if entry is already there
                     paramEntry[cutType[0]][cutSubType] = addRemoveEntry(paramEntry[cutType[0]][cutSubType]);
+
+                    // delete empty suptype entries
+                    paramEntry[cutType[0]] = deleteEmptyProp(paramEntry[cutType[0]], cutSubType);
+                
                 // add CC type
                 } else {
                     if(!paramEntry[cutType[0]]){
@@ -1286,9 +1317,8 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 }
 
                 // remove CC if empty
-                if ((paramEntry[cutType[0]].size < 1) || (_.isArray(paramEntry[cutType[0]]) && paramEntry[cutType[0]].length < 1)) {
-                    delete paramEntry[cutType[0]];
-                }
+                paramEntry = deleteEmptyProp(paramEntry, cutType[0]);
+
             } else {
                 // add entries to type entries
                 paramEntry = paramEntry? paramEntry : [];
@@ -1297,6 +1327,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                     paramEntry = [];
 
                     paramEntry = addRemoveEntry(paramEntry);
+
                 } else if (_.isArray(paramEntry)){
                     paramEntry = addRemoveEntry(paramEntry);
                 }
@@ -1473,10 +1504,17 @@ AutomationController.prototype.setNamespace = function (id, namespacesArr, data)
         namespace = _.findWhere(namespacesArr, {id : id});
         if (!!namespace) {
             index = namespacesArr.indexOf(namespace);
-            namespacesArr[index].params = data;
-            result = namespacesArr[index];
+            
+            // remove entry if data is empty
+            if (~index && (_.isArray(data) && data.length < 1) || ((!_.isArray(data)) && Object.keys(data).length < 1)) {
+                namespacesArr = namespacesArr.splice(index, 1);
+                result = namespacesArr;
+            } else {
+                namespacesArr[index].params = data;
+                result = namespacesArr[index];
+            }
         }
-    } else {
+    } else if ((_.isArray(data) && data.length > 0) || ((!_.isArray(data)) && Object.keys(data).length > 0)) {
         namespacesArr.push({
             id: id,
             params: data
