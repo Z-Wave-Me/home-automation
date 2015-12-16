@@ -16,7 +16,7 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 
-		"deviceType": "",
+		"deviceType": "toggleButton",
 
 		"setterOn_toggleButton": "",
 
@@ -55,7 +55,6 @@
 			"deviceType": {
 				"type": "string",
 				"enum": ["toggleButton", "sensorBinary", "sensorMultilevel", "switchBinary", "switchMultilevel"],
-				"default": "toggleButton",
 				"required": true
 			},
 

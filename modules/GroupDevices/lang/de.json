@@ -5,5 +5,8 @@
 	"l_devices":"Gerätegruppe",
 	"rl_invert":"Umgekehrte Aktionen",
 	"l_scenesOn":"Liste von Szenen/Aktionen, die beim Auslösen aktiviert werden (On).",
-	"l_scenesOff":"Liste von Szenen/Aktionen, die beim Auslösen deaktiviert werden (Off)."
+	"l_scenesOff":"Liste von Szenen/Aktionen, die beim Auslösen deaktiviert werden (Off).",
+	"noAssociation":"The group value does not depend on the values of the devices in the group",
+	"oneOff-widgetOff":"The group value corresponds to the smallest value of the devices in the group",
+	"oneOn-widgetOn":"The group value corresponds to the highest value of the devices in the group"
 }

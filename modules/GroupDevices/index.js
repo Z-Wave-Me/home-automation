@@ -49,7 +49,7 @@ GroupDevices.prototype.init = function (config) {
                     if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
                         vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
                     } else if (command === "exact") {
-                        vDev.performCommand("exact", { level: dev.invert ? args.level : (99-args.level) });
+                        vDev.performCommand("exact", { level: dev.invert ? (99-args.level) : args.level });
                     }
                 }
             });
@@ -81,17 +81,54 @@ GroupDevices.prototype.init = function (config) {
     });
 
     this.handler = function() {
-        var res = false;
-        self.config.devices.forEach(function(xdev) {
-            res |= xdev.invert ^ self.controller.devices.get(xdev.device);
-        });
-        
-        self.vDev.set("metrics:level", res);
+        var associationType = self.config.associationType;
+        console.log(associationType);
+        switch(associationType) {
+            case "noAssociation":
+                // widget doesn't change
+                break;
+            case "oneOff-widgetOff":
+                // for dimmers show minimal value from group
+                // for switch show off
+                var res = 99; // max value
+                self.config.devices.forEach(function(xdev) {
+                    var devValue = self.controller.devices.get(xdev.device).get("metrics:level");
+                    if (devValue < res) {
+                        res = devValue;
+                    }
+                });
+                if (self.config.isDimmable) {
+                    self.vDev.set("metrics:level", res);
+                }
+                else {
+                    self.vDev.set("metrics:level", res > 0 ? "on" : "off");
+                }
+                
+                break;
+            case "oneOn-widgetOn":
+                // for dimmers show maximum value from group
+                // for switch show on
+                var res = 0; // min value
+                self.config.devices.forEach(function(xdev) {
+                    var devValue = self.controller.devices.get(xdev.device).get("metrics:level");
+                    if (devValue > res) {
+                        res = devValue;
+                    }
+                });
+                if (self.config.isDimmable) {
+                    self.vDev.set("metrics:level", res);
+                }
+                else {
+                    self.vDev.set("metrics:level", res > 0 ? "on" : "off");
+                }
+                break;
+        }
     };
     
     this.config.devices.forEach(function(dev) {
         this.controller.devices.on(dev.device, "change:metrics:level", self.handler);
     });
+
 };
 
 GroupDevices.prototype.stop = function () {
