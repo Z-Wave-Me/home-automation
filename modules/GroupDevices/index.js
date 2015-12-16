@@ -1,11 +1,14 @@
 /*** GroupDevices Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 2.0.0
+(c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
     Groups several devices together to make a new virtual device
+
+Changelog:
+16.12.2015 (aivs) - Added selector to set how group widget associated with devices in group: 1) not associated, 2) show biggest value, 3) show smaller value
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -82,7 +85,6 @@ GroupDevices.prototype.init = function (config) {
 
     this.handler = function() {
         var associationType = self.config.associationType;
-        console.log(associationType);
         switch(associationType) {
             case "noAssociation":
                 // widget doesn't change
@@ -93,8 +95,13 @@ GroupDevices.prototype.init = function (config) {
                 var res = 99; // max value
                 self.config.devices.forEach(function(xdev) {
                     var devValue = self.controller.devices.get(xdev.device).get("metrics:level");
+                    // check dimmer value
                     if (devValue < res) {
                         res = devValue;
+                    }
+                    // check switch value. If one of all switch turned off, show 0
+                    if (devValue === "off") {
+                        res = 0;
                     }
                 });
                 if (self.config.isDimmable) {
@@ -111,8 +118,13 @@ GroupDevices.prototype.init = function (config) {
                 var res = 0; // min value
                 self.config.devices.forEach(function(xdev) {
                     var devValue = self.controller.devices.get(xdev.device).get("metrics:level");
+                    // check dimmer value
                     if (devValue > res) {
                         res = devValue;
+                    }
+                    // check switch value. If all dimmers turned OFF and one of all switches turned on, show 1
+                    if (devValue === "on" && res === 0) {
+                        res = 1;
                     }
                 });
                 if (self.config.isDimmable) {
@@ -149,3 +161,4 @@ GroupDevices.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
