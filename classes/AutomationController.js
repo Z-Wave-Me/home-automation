@@ -1438,9 +1438,9 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
         // filter for type
         nspc = namespaces.filter(function (namespace) {
             return namespace.id === pathArr[0];
-        });
+        })[0];
 
-        nspc = nspc[0]? nspc[0] : nspc;
+        //nspc = nspc[0]? nspc[0] : nspc;
 
         // get object/array by path
         if (nspc && pathArr.length > 1) {
@@ -1740,8 +1740,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         var namespaces = [],
             filters = nspcfilters.split(','),
             apis = ['locations','namespaces','loadFunction'],
-            filteredDev = [],
-            nspc;
+            filteredDev = [];
 
         try {
 
