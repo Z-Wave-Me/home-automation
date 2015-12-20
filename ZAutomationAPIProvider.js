@@ -27,6 +27,9 @@ function ZAutomationAPIWebRequest (controller) {
         },
         body: null
     };
+    this.exclFromProfileRes = [
+        'password'
+    ];
 
     this.registerRoutes();
 };
@@ -38,6 +41,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
         this.router.get("/status", this.ROLE.USER, this.statusReport);
         this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
+        this.router.get("/logout", this.ROLE.USER, this.doLogout);
         this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
         this.router.get("/history", this.ROLE.USER, this.exposeHistory);
         this.router.get("/devices", this.ROLE.USER, this.listDevices);
@@ -52,20 +56,32 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations/update", this.ROLE.ADMIN, this.updateLocation);
         this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
         this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
+        
+        // module installation / update
         this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
+        this.router.post("/modules/update", this.ROLE.ADMIN, this.updateModule);
+
+        // module tokens
+        this.router.get("/modules/tokens", this.ROLE.ADMIN, this.getModuleTokens);
+        this.router.put("/modules/tokens", this.ROLE.ADMIN, this.storeModuleToken);
+        this.router.del("/modules/tokens", this.ROLE.ADMIN, this.deleteModuleToken);
+
         this.router.get("/instances", this.ROLE.ADMIN, this.listInstances);
         this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
-        this.router.post("/upload/image", this.ROLE.ADMIN, this.uploadImage);
+        this.router.post("/upload/file", this.ROLE.ADMIN, this.uploadFile);
 
         // patterned routes, right now we are going to just send in the wrapper
         // function. We will let the handler consumer handle the application of
         // the parameters.
         this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
 
+        this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
+        this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
+
         this.router.del("/locations/:location_id", this.ROLE.ADMIN, this.removeLocation, [parseInt]);
         this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
-        this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.listLocations, [parseInt]);
+        this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.getLocationFunc);
 
         this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 
@@ -73,7 +89,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
         this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
 
-        this.router.put("/auth/update/:profile_id", this.ROLE.USER, this.updateProfileAuth, [parseInt]);
+        this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
+        this.router.post("/auth/forgotten/:profile_id", this.ROLE.ANONYMOUS, this.restorePassword, [parseInt]);
+        this.router.put("/auth/update/:profile_id", this.ROLE.ANONYMOUS, this.updateProfileAuth, [parseInt]);
 
         this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
         this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
@@ -82,11 +100,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
         this.router.del("/instances/:instance_id", this.ROLE.ADMIN, this.deleteInstanceFunc, [parseInt]);
 
+        this.router.post("/modules/reset/:module_id", this.ROLE.ADMIN, this.resetModule);
+        this.router.del("/modules/delete/:module_id", this.ROLE.ADMIN, this.deleteModule);
+        
+        // reinitialize apps from /modules or /userModules directory
+        this.router.get("/modules/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
+        
         this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
         this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
 
-        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc, [parseInt]);
+        this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
         this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 
@@ -141,27 +165,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         });
 
         if (profile && reqObj.password === profile.password) {
-            var sid = crypto.guid();
+            var sid = crypto.guid(),
+                resProfile = {};
             this.controller.auth.checkIn(profile, sid);
 
+            resProfile = this.getProfileResponse(profile);
+            resProfile.sid = sid;
+
             reply.code = 200;
-            reply.data = {
-                sid: sid, // session ID
-                id: profile.id,
-                role: profile.role,
-                name: profile.name,
-                lang: profile.lang,
-                color: profile.color,
-                dashboard: profile.dashboard,
-                interval: profile.interval,
-                rooms: profile.rooms,
-                hide_all_device_events: profile.hide_all_device_events,
-                hide_system_events: profile.hide_system_events,
-                hide_single_device_events: profile.hide_single_device_events
-            };
-            if(profile.role === 1 || profile.role === 3){
-                reply.data.expert_view = profile.expert_view;
-            }
+            reply.data = resProfile;
+
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
             };
@@ -171,6 +184,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
             };
+        }
+        
+        return reply;
+    },
+    doLogout: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500,
+                headers: null
+            },
+            session;
+
+        if (this.req.headers.ZWAYSession) {
+            session = this.req.headers.ZWAYSession;
+
+            reply.headers = {
+                "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+            };
+
+            reply.code = 200;
+
+            if (this.controller.auth.sessions[session]) {
+                delete this.controller.auth.sessions[session];
+            }
+        } else {
+            reply.error = 'Internal server error.';
         }
         
         return reply;
@@ -327,37 +367,82 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     //locations
-    listLocations: function (locationId) {
+    listLocations: function () {
         var reply = {
                 data: null,
                 error: null
             },
-            locations = this.locationsByUser(this.req.user);
+            locations = this.locationsByUser(this.req.user),
+            expLocations = [];
 
-            locations = locations.filter(function(location){ return location.id !== 0 && location.title !== 'globalRoom'; });
-
-        if (locationId === undefined){
-            if (Boolean(this.req.query.pagination)) {
-                reply.data.total_count = reply.locations.length;
-                // !!! fix pagination
-                locations = locations.slice();
-            }
-
+        // generate namespaces per location
+        if (locations.length > 0) {
             reply.code = 200;
             reply.data = locations;
         } else {
-            var _location = locations.filter(function (location) {
-                return location.id === locationId;
-            });
-
-            if (_location.length > 0) {
-                reply.data = _location[0];
-                reply.code = 200;
-            } else {
-                reply.code = 404;
-                reply.error = "Location " + locationId + " not found";
-            }
+            reply.code = 500;
+            reply.error = 'Could not list Instances.';
         }
+
+        return reply;
+    },
+    // get location
+    getLocationFunc: function (locationId) {
+        var reply = {
+                data: null,
+                error: null
+            },
+            locations = this.locationsByUser(this.req.user),
+            _location = [],
+            locationId = !isNaN(locationId)? parseInt(locationId, 10) : locationId;
+
+        _location = this.controller.getLocation(locations, locationId);
+
+        // generate namespaces for location
+        if (_location) {
+            reply.data = _location;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Location " + locationId + " not found";
+        }
+
+        return reply;
+    },
+    //filter location namespaces
+    getLocationNamespacesFunc: function (locationId, namespaceId) {
+        var reply = {
+                data: null,
+                error: null
+            },
+            locations = this.locationsByUser(this.req.user),
+            _location = [],
+            locationId = !isNaN(locationId)? parseInt(locationId, 10) : locationId;
+
+        _location = this.controller.getLocation(locations, locationId);
+
+        // generate namespaces for location and get its namespaces
+        if (_location) {
+
+            // get namespaces by path (namespaceId)
+            if (!namespaceId) {
+                getFilteredNspc = _location.namespaces;
+            } else {
+                getFilteredNspc = this.controller.getListNamespaces(namespaceId, _location.namespaces);
+            }
+
+            if (!getFilteredNspc || (_.isArray(getFilteredNspc) && getFilteredNspc.length < 1)) {
+                reply.code = 404;
+                reply.error = "Couldn't find namespaces entry with: '" + namespaceId + "'";
+            } else {
+                reply.data = getFilteredNspc;
+                reply.code = 200;
+            }
+        } else {
+            reply.code = 404;
+            reply.error = "Location " + locationId === 0? 'globalRoom' : locationId + " not found";
+        }
+
         return reply;
     },
     addLocation: function () {
@@ -512,6 +597,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         Object.keys(this.controller.modules).sort().forEach(function (className) {
             module = this.controller.getModuleData(className);
             module.className = className;
+
+            if(module.location === ('userModules/' + className) && fs.list('modules/'+ className)) {
+                module.hasReset = true;
+            } else {
+                module.hasReset = false;
+            }
+
             if (module.singleton && _.any(this.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
                 module.created = true;
             } else {
@@ -527,14 +619,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: null
-            };
+            }, 
+            moduleData;
 
         if (!this.controller.modules.hasOwnProperty(moduleId)) {
             reply.code = 404;
             reply.error = 'Instance ' + moduleId + ' not found';
         } else {
+            // get module data
+            moduleData = this.controller.getModuleData(moduleId);
+
+            if(moduleData.location === ('userModules/' + moduleId) && fs.list('modules/'+ moduleId)) {
+                moduleData.hasReset = true;
+            } else {
+                moduleData.hasReset = false;
+            }
+
             reply.code = 200;
-            reply.data = this.controller.getModuleData(moduleId);
+            // replace namspace filters
+            reply.data = this.controller.replaceNamespaceFilters(moduleData);
         }
         
         return reply;
@@ -573,8 +676,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     // install module
     installModule: function () {
         var reply = {
-                error: null,
-                data: null,
+                error: {
+                    key: null,
+                    errorMsg: null
+                },
+                data: {
+                    key: null,
+                    appendix: null
+                },
                 code: 500
             },
             moduleUrl = this.req.body.moduleUrl;
@@ -608,23 +717,312 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if(loadSuccessfully){
                     reply.code = 201;
-                    reply.data = "app_installation_successful"; // send language key as response
+                    reply.data.key = "app_installation_successful"; // send language key as response
                 } else {
                     reply.code = 201;
-                    reply.data = "app_installation_successful_but_restart_necessary"; // send language key as response
+                    reply.data.key = "app_installation_successful_but_restart_necessary"; // send language key as response
                 }
 
             } else {
                 reply.code = 500;
-                reply.error = "Failed to install module " + moduleUrl;
+                reply.error.key = 'app_failed_to_install';
             }
         } else {
-            reply.code = 400;
-            reply.error = "The app from url '" + moduleUrl + "' already exists.";
+            reply.code = 409;
+            reply.error.key = 'app_from_url_already_exist';
         }
         return reply;
     },
+    updateModule: function () {
+        var reply = {
+                error: {
+                    key: null,
+                    errorMsg: null
+                },
+                data: {
+                    key: null,
+                    appendix: null
+                },
+                code: 500
+            },
+            moduleUrl = this.req.body.moduleUrl;
+            
+        var result = "in progress";
+        var moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
+        if (this.controller.modules[moduleId]) {
+            installer.install(
+                moduleUrl,
+                function() {
+                        result = "done";
+                },  function() {
+                        result = "failed";
+                }
+            );
+            
+            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+            
+            while ((new Date()).valueOf() < d &&  result === "in progress") {
+                    processPendingCallbacks();
+            }
+            
+            if (result === "in progress") {
+                    result = "failed";
+            }
+
+            if (result === "done") {
+
+                loadSuccessfully = this.controller.reinitializeModule(moduleId, 'userModules/');
+
+                if(loadSuccessfully){
+                    reply.code = 200;
+                    reply.data.key = "app_update_successful"; // send language key as response
+                } else {
+                    reply.code = 200;
+                    reply.data.key = "app_update_successful_but_restart_necessary"; // send language key as response
+                }
+
+            } else {
+                reply.code = 500;
+                reply.error.key = 'app_failed_to_update';
+            }
+        } else {
+            reply.code = 404;
+            reply.error.key = 'app_from_url_not_exist';
+        }
+        return reply;
+    },
+    deleteModule: function (moduleId) {
+        var reply = {
+                error: {
+                    key: null,
+                    errorMsg: null
+                },
+                data: {
+                    key: null,
+                    appendix: null
+                },
+                code: 500
+            }, 
+            unload;
+            
+        var result = "in progress";
+
+        if (this.controller.modules[moduleId]) {
+
+            unload = this.controller.unloadModule(moduleId);
+
+            if (unload === 'success') {
+                try {
+                    installer.remove(
+                        moduleId,
+                        function() {
+                                result = "done";
+                        },  function() {
+                                result = "failed";
+                        }
+                    );
+                    
+                    var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+                    
+                    while ((new Date()).valueOf() < d &&  result === "in progress") {
+                            processPendingCallbacks();
+                    }
+                    
+                    if (result === "in progress") {
+                            result = "failed";
+                    }
+
+                    if (result === "done") {
+                        
+                        reply.code = 200;
+                        reply.data.key = "app_delete_successful"; // send language key as response
+                    } else {
+                        reply.code = 500;
+                        reply.error.key = 'app_failed_to_delete';
+                    }
+                } catch (e) {
+                    reply.code = 500;
+                    reply.error.key = 'app_failed_to_delete';
+                    reply.error.errorMsg = e;
+                }
+            } else {
+                reply.code = 500;
+                reply.error.key = 'app_failed_to_delete';
+                reply.error.errorMsg = unload;
+            }       
+        } else {
+            reply.code = 404;
+            reply.error.key = 'app_not_exist';
+        }
+        return reply;
+    },
+    resetModule: function (moduleId) {
+        var reply = {
+                error: {},
+                data: {},
+                code: 500
+            }, 
+            unload;
+            
+        var result = "in progress";
+
+        if (this.controller.modules[moduleId]) {
+
+            if (this.controller.modules[moduleId].location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)){
+
+                unload = this.controller.unloadModule(moduleId);
+
+                if (unload === 'success') {
+                    try {
+                        installer.remove(
+                            moduleId,
+                            function() {
+                                    result = "done";
+                            },  function() {
+                                    result = "failed";
+                            }
+                        );
+                        
+                        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+                        
+                        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                                processPendingCallbacks();
+                        }
+                        
+                        if (result === "in progress") {
+                                result = "failed";
+                        }
+
+                        if (result === "done") {
+
+                            loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'modules/');
+                            
+                            if(loadSuccessfully) {
+                                reply.code = 200;
+                                reply.data.key = 'app_reset_successful_to_version';
+                                reply.data.appendix = this.controller.modules[moduleId].meta.version; 
+                            } else {
+                                reply.code = 200;
+                                reply.data.key = "app_reset_successful_but_restart_necessary"; // send language key as response
+                            }
+                        } else {
+                            reply.code = 500;
+                            reply.error.key = 'app_failed_to_remove_old';
+                        }
+                    } catch (e) {
+                        reply.code = 500;
+                        reply.error.key = 'app_failed_to_reset';
+                        reply.error.errMsg = e;
+                    }
+                } else {
+                    reply.code = 500;
+                    reply.error.key = 'app_failed_to_reset';
+                    reply.error.errMsg = unload;
+                }       
+            } else {
+                reply.code = 412;
+                reply.error.key = 'app_is_still_reseted';
+            }
+        } else {
+            reply.code = 404;
+            reply.error.key = 'app_not_exist';
+        }
+        return reply;
+    },
+    getModuleTokens: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                }, 
+                tokenObj = {
+                    tokens: []
+                },
+                getTokens = function () {
+                    return loadObject('moduleTokens.json');
+                };
+
+        if (getTokens() === null) {
+            saveObject('moduleTokens.json', tokenObj);
+        }
+            
+        if (!!getTokens()) {
+            reply.data = getTokens();
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_tokens';
+        }
+
+        return reply;
+    },
+    storeModuleToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('moduleTokens.json');
+
+        if (tokenObj === null) {
+            saveObject('moduleTokens.json', tokenObj);
+
+            // try to load it again
+            tokenObj = loadObject('moduleTokens.json');
+        }
+
+        if (reqObj && reqObj.token && !!tokenObj && tokenObj.tokens) {
+            if (tokenObj.tokens.indexOf(reqObj.token) < 0) {
+                // add new token id
+                tokenObj.tokens.push(reqObj.token);
+
+                // save tokens
+                saveObject('moduleTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 201;
+            } else {
+                reply.code = 409;
+                reply.error = 'token_not_unique';
+            }
+        } else {
+            reply.error = 'failed_to_load_tokens';
+        }
+
+        return reply;
+    },
+    deleteModuleToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('moduleTokens.json');
+
+        if (reqObj && reqObj.token && !!tokenObj && tokenObj.tokens) {
+            if (tokenObj.tokens.indexOf(reqObj.token) > -1) {
+                // add new token id
+                tokenObj.tokens = _.filter(tokenObj.tokens, function(token) {
+                    return token !== reqObj.token;
+                });
+
+                // save tokens
+                saveObject('moduleTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'not_existing_token';
+            }
+        } else {
+            reply.error = 'failed_to_load_tokens';
+        }
+
+        return reply;
+    },
     // instances
     listInstances: function () {
         var reply = {
@@ -796,7 +1194,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             reqObj,
-            profile;
+            profile,
+            resProfile = {};
 
         try {
             reqObj = JSON.parse(this.req.body);
@@ -812,6 +1211,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             _.defaults(reqObj, {
                 role: null,
                 name: 'User',
+                email:'',
                 lang: 'en',
                 color: '#dddddd',
                 dashboard: [],
@@ -824,7 +1224,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             });
             profile = this.controller.createProfile(reqObj);
             if (profile !== undefined && profile.id !== undefined) {
-                reply.data = profile;
+                
+                
+                
+                reply.data = resProfile;
                 reply.code = 201;
             } else {
                 reply.code = 500;
@@ -844,7 +1247,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             reqObj,
-            profile = this.controller.getProfile(profileId);
+            profile = this.controller.getProfile(profileId),
+            uniqueProfProps = [];
         
         if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
             reqObj = JSON.parse(this.req.body);
@@ -853,32 +1257,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 403;
                 reply.error = "Revoking self Admin priviledge is not allowed.";
             } else {
-                // only Admin can change critical parameters
-                if (this.req.role === this.ROLE.ADMIN) {
-                    // id is never changeable
-                    // login is changed by updateProfileAuth()
-                    profile.role = reqObj.role;                    
-                    profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
-                    profile.expert_view = reqObj.expert_view;
-                }
-                // could be changed by user role
-                profile.name = reqObj.name; // profile name
-                profile.interval = reqObj.interval; // update interval from ui
-                profile.hide_system_events = reqObj.hide_system_events;
-                profile.hide_all_device_events = reqObj.hide_all_device_events;
-                profile.lang = reqObj.lang;
-                profile.color = reqObj.color;
-                profile.dashboard = reqObj.dashboard;
-                profile.hide_single_device_events = reqObj.hide_single_device_events;
-                
-                profile = this.controller.updateProfile(profile, profile.id);
-                
-                if (profile !== undefined && profile.id !== undefined) {
-                    reply.data = profile;
-                    reply.code = 200;
+                uniqueProfProps = _.filter(this.controller.profiles, function (p) {
+                    return ((p.email !== '' && p.email === reqObj.email) ||
+                                (p.login !== '' && p.login === reqObj.login)) && 
+                                    p.id !== profileId;
+                });
+
+                if (uniqueProfProps.length === 0) {
+                    // only Admin can change critical parameters
+                    if (this.req.role === this.ROLE.ADMIN) {
+                        // id is never changeable
+                        // login is changed by updateProfileAuth()
+                        profile.role = reqObj.role;                    
+                        profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                        profile.expert_view = reqObj.expert_view;
+                    }
+                    // could be changed by user role
+                    profile.name = reqObj.name; // profile name
+                    profile.interval = reqObj.interval; // update interval from ui
+                    profile.hide_system_events = reqObj.hide_system_events;
+                    profile.hide_all_device_events = reqObj.hide_all_device_events;
+                    profile.lang = reqObj.lang;
+                    profile.color = reqObj.color;
+                    profile.dashboard = reqObj.dashboard;
+                    profile.hide_single_device_events = reqObj.hide_single_device_events;
+                    profile.email = reqObj.email;
+                    
+                    profile = this.controller.updateProfile(profile, profile.id);
+                    
+                    if (profile !== undefined && profile.id !== undefined) {
+                        reply.data = this.getProfileResponse(profile);
+                        reply.code = 200;
+                    } else {
+                        reply.code = 500;
+                        reply.error = "Profile was not created";
+                    }
                 } else {
-                    reply.code = 500;
-                    reply.error = "Profile was not created";
+                    reply.code = 409;
+                    reply.error = 'Login or e-mail already exists.';
                 }
             }
         } else {
@@ -890,13 +1306,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // different pipe for updating authentication values
     updateProfileAuth: function (profileId) {
-        var reply = {
-            error: null,
-            data: null,
-            code: 500
-        },
-        reqObj,
-        profile = this.controller.getProfile(profileId);
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj,
+            profile = this.controller.getProfile(profileId),
+            uniqueLogin = [],
+            reqToken = this.req.reqObj.hasOwnProperty("token")? this.req.reqObj.token : null,
+            tokenObj = {};
         
         if (typeof this.req.body !== 'object') {
             reqObj = JSON.parse(this.req.body);
@@ -908,18 +1328,130 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
-            profile = this.controller.updateProfileAuth(reqObj, profileId);
-            
-            if (profile !== undefined && profile.id !== undefined) {
-                reply.data = profile;
-                reply.code = 200;
+
+            uniqueLogin = _.filter(this.controller.profiles, function (p) {
+                if (self.req.role === self.ROLE.ADMIN && self.req.user !== reqObj.id) {
+                    return p.login !== '' && p.login === reqObj.login && p.id !== reqObj.id;
+                } else {
+                    return p.login !== '' && p.login === reqObj.login && p.id !== self.req.user;
+                }
+            });
+
+            if (uniqueLogin.length < 1) {
+                profile = this.controller.updateProfileAuth(reqObj, profileId);
+                
+                if (!!profile && profile.id !== undefined) {
+                    reply.data = this.getProfileResponse(profile);
+                    reply.code = 200;
+                } else {
+                    reply.code = 500;
+                    reply.error = "Was not able to update password.";
+                }
             } else {
-                reply.code = 500;
-                reply.error = "Was not able to update password.";
+                reply.code = 409;
+                reply.error = 'Login already exists.';
+            }
+        } else if (this.req.role === this.ROLE.ANONYMOUS && profileId && !!reqToken) {
+            tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
+                
+            if (tokenObj && !!tokenObj) {
+                profile = this.controller.updateProfileAuth(reqObj, profileId);
+
+                if (!!profile && profile.id !== undefined) {
+                    // remove forgotten token
+                    self.controller.auth.removeForgottenPwdEntry(reqToken);
+                    
+                    reply.code = 200;
+                } else {
+                    reply.code = 500;
+                    reply.error = "Was not able to update password.";
+                }
+            } else {
+                reply.code = 404;
+                reply.error = "Token not found.";
             }
         } else {
             reply.code = 403;
             reply.error = "Forbidden.";
+        }
+
+        return reply;
+    },
+    restorePassword: function (profileId) {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body !== 'object'? JSON.parse(this.req.body): this.req.body,
+            reqToken = this.req.query.hasOwnProperty("token")? this.req.query.token : null,
+            profile,
+            emailExists = [],
+            tokenObj;        
+
+        if (reqObj.email) {
+            emailExists = _.filter(self.controller.profiles, function (profile) {
+                return profile.email !== '' && profile.email === reqObj.email;
+            });
+        }
+
+        if (reqToken === null && emailExists.length > 0 && !profileId) {
+            
+            try {
+                var tkn = crypto.guid(),
+                    success = self.controller.auth.forgottenPwd(reqObj.email, tkn);
+                
+                if (success) {
+                    reply.data = { token: tkn };
+                    reply.code = 200;
+                } else {
+                    reply.error = "Token request for e-mail already exists.";
+                    reply.code = 409;
+                }                
+            
+            } catch (e) {
+                reply.code = 500;
+                reply.error = "Internal server error.";
+            }
+        } else if (!!reqToken && emailExists.length < 1 && !profileId){
+            try {
+                tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
+                
+                if (tokenObj && !!tokenObj) {
+
+                    profile = _.filter(self.controller.profiles,function(p) {
+                        return p.email === tokenObj.email; 
+                    });
+
+                    if(profile[0]) {
+                        reply.code = 200;
+                        reply.data = { userId: profile[0].id };
+                    } else {
+                        reply.code = 404;
+                        reply.error = "User not found.";
+                    }
+                } else {
+                    reply.code = 404;
+                    reply.error = "Token not found.";
+                }            
+            } catch (e) {
+                reply.code = 500;
+                reply.error = "Internal server error.";
+            }
+        } else if (!!reqToken && emailExists.length < 1 && profileId) {
+
+            profile = self.controller.updateProfileAuth(reqObj, profileId);
+            
+            if (!!profile && profile.id !== undefined) {
+                reply.code = 200;
+            } else {
+                reply.code = 500;
+                reply.error = "Wasn't able to update password.";
+            }
+        } else {
+            reply.code = 404;
+            reply.error = "Email not found.";
         }
 
         return reply;
@@ -955,16 +1487,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             error: null,
             data: null,
             code: 500
-        };
+        },
+        nspc;
 
-        this.controller.generateNamespaces(function (namespaces) {
-            if (_.isArray(namespaces)) {
-                reply.data = namespaces;
-                reply.code = 200;
-            } else {
-                reply.error = "Namespaces array is null";
-            }
-        });      
+        nspc = this.controller.namespaces;
+
+        if (_.isArray(nspc) && nspc.length > 0) {
+            reply.data = nspc;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces array is null";
+        }
 
         return reply;
     },
@@ -976,14 +1510,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         },
         namespace;
 
-        this.controller.generateNamespaces();
-        namespace = this.controller.getListNamespaces(namespaceId);
-        if (namespace) {
+        namespace = this.controller.getListNamespaces(namespaceId, this.controller.namespaces);
+        if (!namespace || (_.isArray(namespace) && namespace.length < 1)) {
+            reply.code = 404;
+            reply.error = "No namespaces found with this path: " + namespaceId;
+        } else {
             reply.data = namespace;
             reply.code = 200;
-        } else {
-            reply.code = 404;
-            reply.error = "Namespaces " + namespaceId + " doesn't exist";
         } 
 
         return reply;
@@ -1140,7 +1673,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return reply;
         }
     },
-    uploadImage: function() {
+    uploadFile: function() {
         var reply = {
                 error: null,
                 data: null,
@@ -1148,18 +1681,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             file;
 
-        if (this.req.method === "POST" && this.req.body.file_upload) {
+        if (this.req.method === "POST" && this.req.body) {
             
-            file = this.req.body.file_upload;
+            for (prop in this.req.body){
+                if(this.req.body[prop]['content']) {
+                    file = this.req.body[prop];
+                }
+            }
             
-            if (file instanceof Array) {
+            if (_.isArray(file)) {
                 file = file[0];
             }
             
-            if (file.name && file.content && file.length > 0) {
+            if (file && file.name && file.content || (_.isArray(file) && file.length > 0)) {
 
-                // Create Base64 Object
-                saveObject(file.name, Base64.encode(file.content));
+                if(~file.name.indexOf('.csv') && typeof Papa === 'object'){
+                    var csv = null;
+                    
+                    Papa.parse(file.content, {
+                        header: true,
+                        dynamicTyping: true,
+                        complete: function(results) {
+                            csv = results;
+                        }
+                    });
+
+                    if(!!csv) {
+                        saveObject(file.name, csv);
+                    }
+                } else {
+                    // Create Base64 Object
+                    saveObject(file.name, Base64.encode(file.content));
+                }
 
                 reply.code = 200;
                 reply.data = file.name;
@@ -1182,7 +1735,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             backupJSON = {};
 
-        var list = ["config.json"]; // TODO: loadObject("storageContentList");
+        var list = loadObject("__storageContent");
 
         try {        
             // save all objects in storage
@@ -1200,6 +1753,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     for(var i = 0; i < data.length; i++) {
                         bcp += String.fromCharCode(data[i]);
                     }
+
                     backupJSON["__ZWay"][zwayName] = bcp;
                 });
             }
@@ -1231,10 +1785,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         try {
             //this.reset();
             
-            reqObj = JSON.parse(this.req.body);
+            reqObj = JSON.parse(this.req.body.backupFile.content);
             
             for (var obj in reqObj) {
-                if (obj === "__ZWay" || obj === "__EnOcean") return;
+                if (obj === "__ZWay" || obj === "__EnOcean") break;
                 saveObject(obj, reqObj[obj]);
             }
 
@@ -1242,8 +1796,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.restart();
             
             // restore Z-Wave and EnOcean
-            !!reqObj["__ZWay"] && reqObj["__ZWay"].forEach(function(zwayName) {
-                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(reqObj["__ZWay"][zwayName], false);
+            !!reqObj["__ZWay"] && Object.keys(reqObj["__ZWay"]).forEach(function(zwayName) {
+                var zwayData = reqObj["__ZWay"][zwayName];
+                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO
             !!reqObj["__EnOcean"] && reqObj["__EnOcean"].forEach(function(zenoName) {
@@ -1255,6 +1810,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.code = 200;
         } catch (e) {
             reply.error = e.toString();
+        }
+        
+        return reply;
+    },
+    // reinitialize modules
+    reinitializeModule: function(moduleId) {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            location = fs.list('userModules/' + moduleId)? 'userModules/' : 'modules/';
+
+        if (fs.list(location)) {
+            try {
+                loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
+                
+                if(loadSuccessfully){
+                    reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
+                    reply.code = 200;
+                }
+            } catch (e) {
+                reply.error = e.toString();
+            }
+        } else {
+            reply.code = 404;
+            reply.error.key = "App not found.";
         }
         
         return reply;
@@ -1312,6 +1894,19 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
             return [];
         }
     }
+};
+
+ZAutomationAPIWebRequest.prototype.getProfileResponse = function (profileObj) {
+    var self = this,
+        resProfile = {};
+
+    Object.keys(profileObj).forEach(function(value){
+        if (!~self.exclFromProfileRes.indexOf(value)) {
+            resProfile[value] = profileObj[value];
+        }
+    });
+
+    return resProfile;
 };
 
 ZAutomationAPIWebRequest.prototype.Unauthorized = function () {

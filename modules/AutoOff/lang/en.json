@@ -2,5 +2,7 @@
 	"m_title":"Automated Switch Off",
 	"m_descr":"This app will automatically turn off a selected device (switch, dimmer, motor control) after a defined time. This may make sense for lights in the basements of other devices that shall not be turned on for too long. It is already possible to turn of the selected device within the timeout period. In this case nothing will happen.<br><br>Settings:<br><ul><li>Pick the device to be turned off</li><li>Pick the time out time</li></ul>",
 	"l_dev":"Device:",
-	"l_timeout":"Timeout in seconds:"
+	"l_timeout":"Timeout in seconds:",
+	"rl_ignoreUpdates": "Ignore status update",
+	"h_ignoreUpdates": "Do not restart the timer on device status update (on On value received)"
 }

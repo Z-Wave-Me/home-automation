@@ -22,6 +22,17 @@ executeFile("Utils.js");
 // do transition script to adopt old versions to new
 executeFile("updateBackendConfig.js");
 
+// overload saveObject to allow backup/restore of all JSON files in storage
+__saveObject = saveObject;
+__storageContent = loadObject("__storageContent") || [];
+saveObject = function(name, object) {
+    if (__storageContent.indexOf(name) === -1) {
+        __storageContent.push(name);
+        __saveObject("__storageContent", __storageContent);
+    }
+    __saveObject(name, object);
+};
+
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
@@ -50,6 +61,7 @@ if (!config) {
     //--- Load 3d-party dependencies
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore.js");
+    executeFile(config.libPath + "/papaparse.min.js");
 
     //--- Load Automation subsystem classes
     executeFile(config.classesPath + "/VirtualDevice.js");
@@ -121,6 +133,7 @@ if (!config) {
                     body: JSON.stringify(r)
             };
         } catch (e) {
+            console.log("Error handling request " + url + ": " + e.toString());
             return { status: 500, body: e.toString() };
         }
     };

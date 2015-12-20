@@ -1,6 +1,6 @@
 /*** MultilineSensor Z-Way HA module *******************************************
 
-Version: 1.0.1
+Version: 1.0.2
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -40,7 +40,8 @@ MultilineSensor.prototype.init = function (config) {
     this.updateAttributes = function(dev) {
         var sensors = [],
             sensor = [],
-            indx = null;
+            indx = null,
+            uT = 0;
         
         sensors = self.vDev.get('metrics:sensors');
 
@@ -49,8 +50,13 @@ MultilineSensor.prototype.init = function (config) {
         });
 
         if(sensor[0]){
+            uT = dev.get('updateTime');
             // update sensor metrics
             sensor[0].metrics = dev.get('metrics');
+            
+            if (uT > 0) {
+                sensor[0].updateTime = uT;
+            }            
 
             // get first sensor
             firstDevice = sensors[0];
@@ -60,6 +66,10 @@ MultilineSensor.prototype.init = function (config) {
         self.vDev.set('metrics:icon', self.getIcon(firstDevice));
         self.vDev.set('metrics:level', self.getLevel(firstDevice));
         self.vDev.set('metrics:scaleTitle', self.getScaleTitle(firstDevice));
+        
+        if (uT > 0) {
+            self.vDev.set('updateTime', uT);
+        }
     };
 
     this.createVDevIfSensorsAreCreated = function(dev){
@@ -94,6 +104,7 @@ MultilineSensor.prototype.init = function (config) {
             // listen to sensor changes
             self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
             self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+            self.controller.devices.on(dev.id, 'change:updateTime', self.updateAttributes);
         }
     };
 
@@ -121,6 +132,7 @@ MultilineSensor.prototype.init = function (config) {
         // listen to sensor changes
         self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
         self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+        self.controller.devices.on(dev.id, 'change:updateTime', self.updateAttributes);
     });
 
     this.vDev = this.controller.devices.create({
@@ -183,6 +195,7 @@ MultilineSensor.prototype.stop = function () {
 
         self.controller.devices.off(dev.id, 'change:metrics:level', self.updateAttributes);
         self.controller.devices.off(dev.id, 'change:[object Object]', self.updateAttributes);
+        self.controller.devices.off(dev.id, 'change:updateTime', self.updateAttributes);
         self.controller.devices.off('created', self.createVDevIfSensorsAreCreated);
     });
 

@@ -26,7 +26,7 @@ function AutomationController() {
         'ZWAYSession'
     ];
     this.config = config.controller || {};
-    this.availableLang = ['en', 'ru', 'de'];
+    this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se']; // will be updated by correct ISO language codes in future
     this.defaultLang = 'en';
     this.profiles = config.profiles;
     this.instances = config.instances;
@@ -68,32 +68,52 @@ AutomationController.prototype.init = function () {
     var self = this;
 
 
-    function pushNamespaces() {
+    function pushNamespaces(device, locationNspcOnly) {
         self.generateNamespaces(function (namespaces) {
             ws.push({
                 type: 'me.z-wave.namespaces.update',
                 data: JSON.stringify(namespaces)
             });
-        });
+        }, device, locationNspcOnly);
     }
 
     self.loadModules(function () {
         self.emit("core.init");
 
-        self.devices.on('change', function (device) {
+        // necessary?
+        /*self.devices.on('change', function (device) {
             ws.push({
-                type: "me.z-wave.devices.update",
+                type: "me.z-wave.devices.location_update",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces();
+            pushNamespaces(device, false);
+        });*/
+        
+        // update namespaces if device title has changed
+        self.devices.on('change:metrics:title', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.location_update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces(device, false);
         });
 
+        // update only location namespaces if device location has changed
+        self.devices.on('change:location', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.location_update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces(device, true);
+        });
+
+        // update namespaces if structure of devices collection changed
         self.devices.on('created', function (device) {
             ws.push({
                 type: "me.z-wave.devices.add",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces();
+            pushNamespaces(device);
         });
 
         self.devices.on('destroy', function (device) {
@@ -101,7 +121,11 @@ AutomationController.prototype.init = function () {
                 type: "me.z-wave.devices.destroy",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces();
+            pushNamespaces(device);
+        });
+
+        self.devices.on('removed', function (device) {
+            pushNamespaces(device);
         });
 
         self.on("notifications.push", function (notice) {
@@ -173,6 +197,9 @@ AutomationController.prototype.start = function () {
 };
 
 AutomationController.prototype.stop = function () {
+    var self = this,
+        modWithoutDep = [];
+
     // Remove API webserver
     console.log("Stopping automation...");
     ZAutomation = null;
@@ -181,13 +208,30 @@ AutomationController.prototype.stop = function () {
     ws.revokeExternalAccess("ZAutomation.api");
     ws.revokeExternalAccess("ZAutomation.storage");
 
-    var self = this;
+    // Clean instances
+    console.log("Stopping instances with dependencies ...");
+    self.instances.forEach(function (instance) {
 
-    // Clean modules
-    console.log("Stopping modules...");
-    Object.keys(this.instances).forEach(function (instanceId) {
-        self.removeInstance(instanceId);
+        // first stop instances with dependencies
+        if (self.modules[instance.moduleId]) {
+            if ((instance.active === true || instance.active === 'true') &&
+                    _.isArray(self.modules[instance.moduleId].meta.dependencies) && 
+                        self.modules[instance.moduleId].meta.dependencies.length > 0) {
+                self.removeInstance(instance.id);
+            } else if ((instance.active === true || instance.active === 'true')){
+                modWithoutDep.push(instance.id)
+            }
+        }
     });
+
+    // stop instances without dependencies at least
+    if (modWithoutDep.length > 0) {
+        console.log("Stopping all remaining instances ...");
+        modWithoutDep.forEach(function(instanceId) {
+            self.removeInstance(instanceId);
+        })
+    }
+
     this._loadedSingletons = [];
 
     // Notify core
@@ -280,6 +324,11 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
 
     if (!module) {
         self.addNotification("error", langFile.ac_err_init_module_not_found, "core", "AutomationController");
+    }
+
+    // add creation time
+    if (!instanceModel.creationTime) {
+        instanceModel.creationTime = Math.floor(new Date().getTime() / 1000);
     }
 
     if (Boolean(instanceModel.active)) {
@@ -407,6 +456,44 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
     return true;
 };
 
+AutomationController.prototype.unloadModule = function (moduleId) {
+    var self = this,
+        activeInstances = [],
+        result = 'failed';
+
+    try {
+        // filter for instances of moduleId
+        activeInstances = self.instances.filter(function (instance) {
+            return instance.moduleId === moduleId;
+        }).map(function (instance) {
+            return instance.id;
+        });
+
+        // remove all instances of moduleId
+        if (activeInstances.length > 0) {
+            activeInstances.forEach(function (instanceId) {
+                self.deleteInstance(instanceId);
+            });
+        }
+
+        //remove from loaded Modules
+        self.loadedModules = self.loadedModules.filter(function (module) {
+            return module.meta.id !== moduleId;
+        });
+
+        // remove from modules list
+        if (self.modules[moduleId]){
+            delete self.modules[moduleId];
+
+            result = 'success';
+        }
+    } catch (e) {
+        result = e;
+    }
+
+    return result;
+};
+
 AutomationController.prototype.loadInstalledModule = function (moduleId, rootDirectory) {
     var self = this,
         successful = false;
@@ -424,6 +511,53 @@ AutomationController.prototype.loadInstalledModule = function (moduleId, rootDir
         }
     } catch (e){
         console.log('Load app "' + moduleId + '" has failed. ERROR:', e);
+    }
+
+    return successful;
+};
+
+AutomationController.prototype.reinitializeModule = function (moduleId, rootDirectory) {
+    var self = this,
+        successful = false,
+        activeInstances = [];
+
+    // filter for active instances of moduleId
+    activeInstances = self.instances.filter(function (instance) {
+        return instance.moduleId === moduleId &&
+                (instance.active === true ||
+                    instance.active === 'true');
+    });
+
+    // stopp all active instances of moduleId
+    if (activeInstances.length > 0) {
+        activeInstances.forEach(function (instance) {
+            instance.active = false;
+            self.reconfigureInstance(instance.id, instance);
+        });
+    }
+
+    // try to reinitialize app
+    try{
+        if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
+            console.log('Load app "' + moduleId + '" from folder ...');
+            self.loadModuleFromFolder(moduleId, rootDirectory);
+
+            if(self.modules[moduleId]){
+                self.loadModule(self.modules[moduleId]);
+
+                successful = true;
+            }
+        }
+    } catch (e){
+        console.log('Load app "' + moduleId + '" has failed. ERROR:', e);
+    }
+
+    // start instances of moduleId again
+    if (activeInstances.length > 0) {
+        activeInstances.forEach(function (instance) {
+            instance.active = true;
+            self.reconfigureInstance(instance.id, instance);
+        });
     }
 
     return successful;
@@ -512,14 +646,34 @@ AutomationController.prototype.createInstance = function (reqObj) {
 };
 
 AutomationController.prototype.stopInstance = function (instance) {
-    var langFile = this.loadMainLang(),
+    var self = this,
+        langFile = this.loadMainLang(),
+        instId = instance.id,
         values;
 
     try {
         instance.stop();
-        delete this.registerInstances[instance.id];
+        delete this.registerInstances[instId];
+
+        // get all devices created by instance 
+        instDevices = _.map(this.devices.filter(function (dev) {
+            return dev.get('creatorId') === instId;
+        }), function (dev) {
+            return dev.id;
+        });
+
+        // cleanup devices 
+        if (instDevices.length > 0) {
+            instDevices.forEach(function (id) {
+                // check for device entry again
+                if (!!self.devices.get(id)) {
+                    self.devices.remove(id);
+                }
+            });
+        }
+
     } catch (e) {
-        values = ((instance && instance.id) ? instance.id : "<unknow id>") + ": " + e.toString();
+        values = ((instance && instId) ? instId : "<unknow id>") + ": " + e.toString();
 
         this.addNotification("error", langFile.ac_err_stop_mod + values, "core", "AutomationController");
         console.log(e.stack);
@@ -590,7 +744,8 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
 
 AutomationController.prototype.removeInstance = function (id) {
     var instance = this.registerInstances[id],
-        instanceClass = id;
+        instanceClass = id,
+        instDevices = [];
 
 
     if (!!instance) {
@@ -610,11 +765,32 @@ AutomationController.prototype.removeInstance = function (id) {
 };
 
 AutomationController.prototype.deleteInstance = function (id) {
+    var instDevices = [],
+        self = this;
+    
+    // get all devices created by instance 
+    instDevices = _.map(this.devices.filter(function (dev) {
+        return dev.get('creatorId') === id;
+    }), function (dev) {
+        return dev.id;
+    });
+    
     this.removeInstance(id);
 
     this.instances = this.instances.filter(function (model) {
         return id !== model.id;
-    })
+    });
+
+    // cleanup 
+    if (instDevices.length > 0) {
+        instDevices.forEach(function (id) {
+            // check for vDevInfo entry
+            if (self.vdevInfo[id]) {
+                self.devices.cleanup(id);
+            }
+        });
+    }
+
     this.saveConfig();
     this.emit('core.instanceDeleted', id);
 };
@@ -628,7 +804,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 };
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden");
+    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden", "creationTime");
     this.saveConfig();
     return this.vdevInfo[id];
 };
@@ -713,6 +889,22 @@ AutomationController.prototype.deleteNotifications = function (id, before, uid, 
     that.saveNotifications();
 };
 
+AutomationController.prototype.getLocation = function (locations, locationId) {
+    var location = [],
+        nspc = null;
+
+    location = locations.filter(function (location) {
+        if (locationId === 'globalRoom') {
+            return location.id === 0 &&
+                    location.title === locationId;
+        } else {
+            return location.id === locationId;
+        }
+    });
+
+    return location[0]? location[0] : null;
+}
+
 AutomationController.prototype.addLocation = function (locProps, callback) {
     var id = this.locations.length > 0 ? Math.max.apply(null, this.locations.map(function (location) { return location.id; })) + 1 : 1; // changed after adding global room with id=0 || old: this.locations.length ? this.locations[this.locations.length - 1].id + 1 : 1;
     var locations = this.locations.filter(function (location) {
@@ -779,19 +971,22 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
         return location.id === id;
     });
     if (locations.length > 0) {
-        this.locations[this.locations.indexOf(locations[0])].title = title;
+        location = this.locations[this.locations.indexOf(locations[0])];
+
+        location.title = title;
         if (typeof user_img === 'string' && user_img.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].user_img = user_img;
+            location.user_img = user_img;
         }
         if (typeof default_img === 'string' && default_img.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].default_img = default_img;
+            location.default_img = default_img;
         }
         if (typeof img_type === 'string' && img_type.length > 0) {
-            this.locations[this.locations.indexOf(locations[0])].img_type = img_type;
+            location.img_type = img_type;
         }
         if (typeof callback === 'function') {
-            callback(this.locations[this.locations.indexOf(locations[0])]);
+            callback(location);
         }
+
         this.saveConfig();
         this.emit('location.updated', id);
     } else {
@@ -906,7 +1101,7 @@ AutomationController.prototype.getDevHistory = function (dev, since, show) {
 
             averageEntries.push(metric);
             
-            l = 0,
+            l = 0;
             metric = {};
         }
 
@@ -988,22 +1183,22 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 
     if (profile) {
         index = this.profiles.indexOf(profile);
+
+        p = this.profiles[index];
         
-        if (object.hasOwnProperty('password')) {
-            this.profiles[index].password = object.password;
+        if (object.hasOwnProperty('password') && object.password !== '' && !!object.password) {
+            p.password = object.password;
         }
-        if (object.hasOwnProperty('login')) {
-            this.profiles[index].login = object.login;
+        if (object.hasOwnProperty('login') && object.login !== '' && !!object.login) {
+            p.login = object.login;
         }
+
+        this.saveConfig();
+        
+        return p;
+    } else {
+        return null;
     }
-
-    _.defaults(this.profiles[index], {
-        login: null,
-        password: null
-    });
-
-    this.saveConfig();
-    return this.profiles[index];
 };
 
 AutomationController.prototype.removeProfile = function (profileId) {
@@ -1016,116 +1211,280 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };
 
 // namespaces
-AutomationController.prototype.generateNamespaces = function (callback) {
+AutomationController.prototype.generateNamespaces = function (callback, device, locationNspcOnly) {
     var that = this,
-        alarmCategories = ['alarmSmoke','alarmCarbonOxide','alarmCarbonDiOxide','alarmHeat','alarmWater','alarmDoor','alarmBurglar','alarmPower','alarmSystem','alarmEmergency','alarmClock'],
-        sensorBinaryCategories = ['sensorBinaryMotion','sensorBinarySmoke','sensorBinaryCarbonOxide','sensorBinaryFlood','sensorBinaryCooling','sensorBinaryDoor'],
-        devices = that.devices.filter(function(device){
-            if(device.get('permanently_hidden') === false){
-                return device;
-            }
-        }),
-        deviceTypes = _.uniq(_.map(devices, function (device) {
-                return device.get('deviceType');
-        })),
-        filteredAlarmTypes = [],
-        filteredSensorBinaryTypes = [];
+        devStillExists = that.devices.get(device.id),
+        locationNspcOnly = locationNspcOnly? locationNspcOnly : false,
+        nspcArr = [],
+        locNspcArr = [],
+        devLocation = device.get('location'),
+        location = that.getLocation(that.locations, devLocation);
 
-    that.namespaces = [];
-    deviceTypes.forEach(function (type) {
-        that.setNamespace('devices_' + type, devices.filter(function (device) {
-                return device.get('deviceType') === type;
-        }).map(function (device) {            
-                return {deviceId: device.id, deviceName: device.get('metrics:title')};
-        }));
-    });
-
-    //check for ALARM TYPES
-    for (i = 1; i <= alarmCategories.length; i++){
-        filteredAlarmTypes = devices.filter(function (dev){
-            var cutDevId = dev.id.split('-'),
-                ccAlarm = cutDevId.indexOf('113'),
-                ccAlarmSensor = cutDevId.indexOf('156');    
-            
-            //return correct sensor type
-            return (ccAlarm !== -1 && parseInt(cutDevId[ccAlarm + 1]) === i ) || 
-                    (ccAlarmSensor !== -1 && parseInt(cutDevId[ccAlarmSensor + 1]) === i);
-        }).map(function (dev) {
-            return {deviceId: dev.id, deviceName: dev.get('metrics:title')};
-        });
-
-        //add alarm types
-        if (filteredAlarmTypes.length > 0){
-            that.setNamespace('devices_' + alarmCategories[i-1], filteredAlarmTypes);
+        if (!!location && !location.namespaces) {
+            location.namespaces = [];
         }
-    };
 
-    //check for SENSOR BINARY TYPES
-    for (i = 1; i <= sensorBinaryCategories.length; i++){
-        filteredSensorBinaryTypes = devices.filter(function (dev){
-            var cutDevId = dev.id.split('-'),
-                ccSensorBinary = cutDevId.indexOf('48');
+    if (device && device.get('permanently_hidden') === false) {
 
-            switch(i){
-                //motion
-                case 1:
-                    //array with sensor type id
-                    var sensorTypes = [2,3,4,6,7,10];
+        this.genNspc = function (nspc,vDev) {
+            var devTypeEntry = 'devices_' + vDev.get('deviceType'),
+                devProbeType = vDev.get('probeType'),
+                devEntry = {
+                    deviceId: vDev.id,
+                    deviceName: vDev.get('metrics:title')
+                },
+                addRemoveEntry = function (entryArr) {
+                    var exists = [];
                     
-                    //return sensor type 'motion'
-                    return (ccSensorBinary !== -1 && sensorTypes[parseInt(cutDevId[ccSensorBinary + 1])] === -1);
-                //smoke
-                case 2:
-                    //return sensor type 'smoke'
-                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 2);
-                //co
-                case 3:
-                    //return sensor type 'co'
-                    return (ccSensorBinary !== -1 && (parseInt(cutDevId[ccSensorBinary + 1]) === 3 || parseInt(cutDevId[ccSensorBinary + 1]) === 4));
-                //flood
-                case 4:
-                    //return sensor type 'flood'
-                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 6);
-                //cooling
-                case 5:
-                    //return sensor type 'cooling'
-                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 7);
-                //door
-                case 6:
-                    //return sensor type 'door'
-                    return (ccSensorBinary !== -1 && parseInt(cutDevId[ccSensorBinary + 1]) === 10);
+                    // check if entry already exists
+                    exists = _.filter(entryArr, function(entry) {
+                        return entry.deviceId === devEntry.deviceId;
+                    });
+
+                    if (!!devStillExists && exists.length < 1){
+                        // add entry
+                        entryArr.push(devEntry);
+                    } else if (!!devStillExists && exists[0]) {
+                        // change existing deviceName
+                        if (!_.isEqual(exists[0]['deviceName'], devEntry['deviceName'])) {
+                            exists[0]['deviceName'] = devEntry['deviceName'];
+                        }
+                    } else if (devStillExists === null) {
+                        // remove entry
+                        entryArr = _.filter(entryArr, function(entry) {
+                            return entry.deviceId !== devEntry.deviceId;
+                        });
+                    }
+
+                    return entryArr;
+                },
+                deleteEmptyProp = function (object, key) {
+                    // delete empty CC type entries
+                    if ((_.isArray(object[key]) && object[key].length < 1) || (!_.isArray(object[key]) && Object.keys(object[key]).length < 1)) {
+                        delete object[key];
+                    }
+                    return object;
+                },
+                cutType = [],
+                cutSubType = '',
+                paramEntry;
+
+            // check for type entry
+            typeEntryExists = _.filter(nspc, function(typeEntry){
+                return typeEntry.id === devTypeEntry;
+            });
+
+            if (typeEntryExists.length > 0) {
+                paramEntry = typeEntryExists[0] && typeEntryExists[0].params? typeEntryExists[0].params : paramEntry;
             }
-        }).map(function (dev) {
-            return {deviceId: dev.id, deviceName: dev.get('metrics:title')};
-        });
 
-        //add sensor binary types
-        if (filteredSensorBinaryTypes.length > 0){
-            that.setNamespace('devices_' + sensorBinaryCategories[i-1], filteredSensorBinaryTypes);
+            // generate probetype entries
+            if (devProbeType !== '') {
+                cutType = devProbeType === 'general_purpose'? devProbeType.split() : devProbeType.split('_'),
+                cutSubType = devProbeType.substr(cutType[0].length + 1);
+
+                paramEntry = paramEntry? paramEntry : {};
+
+                // check for CC sub type and add device namespaces
+                if(cutType.length > 1){
+
+                    if(!paramEntry[cutType[0]]){
+                        paramEntry[cutType[0]] = {};
+                    }
+
+                    if(!paramEntry[cutType[0]][cutSubType]){
+                        paramEntry[cutType[0]][cutSubType] = [];
+                    }
+
+                    //check if entry is already there
+                    paramEntry[cutType[0]][cutSubType] = addRemoveEntry(paramEntry[cutType[0]][cutSubType]);
+
+                    // delete empty suptype entries
+                    paramEntry[cutType[0]] = deleteEmptyProp(paramEntry[cutType[0]], cutSubType);
+                
+                // add CC type
+                } else {
+                    if(!paramEntry[cutType[0]]){
+                        paramEntry[cutType[0]] = [];
+                    }
+
+                    //check if entry is already there
+                    paramEntry[cutType[0]] = addRemoveEntry(paramEntry[cutType[0]]);
+                }
+
+                // remove CC if empty
+                paramEntry = deleteEmptyProp(paramEntry, cutType[0]);
+
+            } else {
+                // add entries to type entries
+                paramEntry = paramEntry? paramEntry : [];
+
+                if (!_.isArray(paramEntry) && Object.keys(paramEntry).length < 1){
+                    paramEntry = [];
+
+                    paramEntry = addRemoveEntry(paramEntry);
+
+                } else if (_.isArray(paramEntry)){
+                    paramEntry = addRemoveEntry(paramEntry);
+                }
+            }
+
+            // set namespaces
+            that.setNamespace(devTypeEntry, nspc, paramEntry);
+
+            // check for 'devices_all'
+            devicesAll = _.filter(nspc, function(entries) {
+                return entries.id === 'devices_all';
+            });
+
+            // add 'devices_all' with entries
+            if (devicesAll.length < 1) {
+                that.setNamespace('devices_all', nspc, [devEntry]);
+            } else if (devicesAll[0].params && _.isArray(devicesAll[0].params)) {
+                //check if entry is already there
+                devicesAll[0].params = addRemoveEntry(devicesAll[0].params);
+            }
+
+            return nspc;
+        };
+
+        // no location change
+        if (!!location && !locationNspcOnly) {
+            //locNspcArr = that.genNspc(location.namespaces, device);
+
+            // update locations namespaces
+            _.forEach(that.locations, function(l) {
+                if(l.id === devLocation) {
+                    // add to namespace
+                    l.namespaces = that.genNspc(location.namespaces, device);
+                }
+            });
+        // if location of device has changed
+        } else if (locationNspcOnly) {
+            _.forEach(that.locations, function(l) {
+                //set namespaces if necessary
+                if (!l.namespaces) {
+                    l.namespaces = [];
+                }
+
+                if(l.id === devLocation) {
+                    // add to namespace
+                    devStillExists = that.devices.get(device.id);
+                    l.namespaces = that.genNspc(l.namespaces, device);
+                } else {
+                    // remove from the other namespaces
+                    devStillExists = null;
+                    l.namespaces = that.genNspc(l.namespaces, device);
+                }
+            });
         }
-    };
+        // update namespace
+        if (!locationNspcOnly) {
+            nspcArr = that.genNspc(that.namespaces, device);
 
-    that.setNamespace('devices_all', devices.filter(function (device){
-            return device;
-    }).map(function (device) {
-            return {deviceId: device.id, deviceName: device.get('metrics:title')};
-    }));
+            if (typeof callback === 'function') {
+                callback(nspcArr);
+            }
+        } else {
+            if (typeof callback === 'function') {
+                callback(locNspcArr);
+            }
+        }
 
-    if (typeof callback === 'function') {
-        callback(that.namespaces);
+    } else {
+        if (typeof callback === 'function') {
+            callback(nspcArr);
+        }
     }
 };
 
-AutomationController.prototype.getListNamespaces = function (id) {
-    var result = null,
-        namespaces = this.namespaces;
+AutomationController.prototype.getListNamespaces = function (path, namespacesObj) {
+    var self = this,
+        result = [],
+        namespaces = namespacesObj,
+        path = path || null,
+        pathArr = [],
+        namespacesPath = '',
+        nspc;
 
-    id = id || null;
+    this.getNspcDevAll = function(nspcObj) {
+        var devicesAll = [],
+            obj = {};
 
-    if (!!id) {
-        result = namespaces.filter(function (namespace) {
-            return namespace.id === parseInt(id);
+        if (_.isArray(nspcObj)){
+            nspcObj.forEach(function(nspcEntry) {
+                if (!~devicesAll.indexOf(nspcEntry)){
+                    devicesAll.push(nspcEntry);
+                }
+            });
+        } else {
+            for ( var prop in nspcObj) {
+                devicesAll = devicesAll.concat(self.getNspcDevAll(nspcObj[prop]));
+            }
+        }
+
+        return devicesAll;
+    };
+
+    if (!!path && namespaces) {
+
+        pathArr = path.split('.');
+
+        // add 'params' to path array if neccessary
+        if (pathArr.length > 1 && pathArr.indexOf('params') === -1) {
+            pathArr.splice(1, 0, 'params');
+        }
+        
+        // filter for type
+        nspc = namespaces.filter(function (namespace) {
+            return namespace.id === pathArr[0];
         })[0];
+
+        //nspc = nspc[0]? nspc[0] : nspc;
+
+        // get object/array by path
+        if (nspc && pathArr.length > 1) {
+            var shift = 1;
+            for (var i = 0; i < pathArr.length; i++) {
+                var currPath = pathArr[i + shift],
+                    obj = {},
+                    lastPath = ['deviceId', 'deviceName'];
+                
+                if(nspc[currPath]) {
+                    nspc = nspc[currPath];
+                    result = nspc;
+                
+                } else if (!nspc[currPath] && ~lastPath.indexOf(currPath)) {
+                    result = self.getNspcDevAll(nspc);
+
+                    result = _.uniq(result.map(function(entry){
+                        return entry[currPath];
+                    }));
+                // add backward compatibility
+                } else if (~lastPath.indexOf(currPath)) {
+
+                    if (_.isArray(nspc)){
+                        // map all device id's or device names
+                        result = _.map(nspc, function(entry) { return entry[currPath] });
+                    }
+                } else if (!nspc[currPath] && nspc['devices_all'] && i < 1) {
+                    nspc = nspc['devices_all'];
+                    result = nspc;
+                    // change shift to get last path entry
+                    shift = 0;
+                } else if (currPath && !nspc[currPath] && i > 0) {
+                    nspc = [];
+                    result = nspc;
+
+                    break;
+                } else if (currPath) {
+                    result = nspc;
+                }
+            }
+        } else {
+            result = nspc && nspc['params']? nspc['params'] : nspc; // if not return undefined
+        }        
+        
     } else {
         result = namespaces;
     }
@@ -1133,24 +1492,29 @@ AutomationController.prototype.getListNamespaces = function (id) {
     return result;
 };
 
-AutomationController.prototype.setNamespace = function (id, data) {
+AutomationController.prototype.setNamespace = function (id, namespacesArr, data) {
     var result = null,
         namespace,
         index;
 
     id = id || null;
 
-    if (id && this.getListNamespaces(id)) {
-        namespace = _.find(this.namespaces, function (namespace) {
-            return namespace.id === id;
-        });
+    if (id && this.getListNamespaces(id, namespacesArr)) {
+        namespace = _.findWhere(namespacesArr, {id : id});
         if (!!namespace) {
-            index = this.namespaces.indexOf(namespace);
-            this.namespaces[index].params = data;
-            result = this.namespaces[index];
+            index = namespacesArr.indexOf(namespace);
+            
+            // remove entry if data is empty
+            if (~index && (_.isArray(data) && data.length < 1) || ((!_.isArray(data)) && Object.keys(data).length < 1)) {
+                namespacesArr = namespacesArr.splice(index, 1);
+                result = namespacesArr;
+            } else {
+                namespacesArr[index].params = data;
+                result = namespacesArr[index];
+            }
         }
-    } else {
-        this.namespaces.push({
+    } else if ((_.isArray(data) && data.length > 0) || ((!_.isArray(data)) && Object.keys(data).length > 0)) {
+        namespacesArr.push({
             id: id,
             params: data
         });
@@ -1178,15 +1542,16 @@ AutomationController.prototype.getListModulesCategories = function (id) {
 AutomationController.prototype.getModuleData = function (moduleName) {
     var self = this,
         defaultLang = self.defaultLang,
-        languageFile,
-        data;
+        moduleMeta = self.modules[moduleName] && self.modules[moduleName].meta || null,
+        languageFile = self.loadModuleLang(moduleName),
+        data = {};
     
     if (!self.modules[moduleName]) {
         return {}; // module not found (deleted from filesystem or broken?), return empty meta
     }
     
     try {
-        metaStringify = JSON.stringify(self.modules[moduleName].meta);
+        metaStringify = JSON.stringify(moduleMeta);
     } catch(e){
         try {
             metaStringify = JSON.stringify(fs.loadJSON('modules/' + moduleName + '/module.json'));
@@ -1198,8 +1563,6 @@ AutomationController.prototype.getModuleData = function (moduleName) {
             }
         }
     }
-
-    languageFile = self.loadModuleLang(moduleName);
 
     if (languageFile !== null) {
         Object.keys(languageFile).forEach(function (key) {
@@ -1214,6 +1577,254 @@ AutomationController.prototype.getModuleData = function (moduleName) {
     }
 
     return data;
+};
+
+AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
+    var self = this,
+        moduleMeta = moduleMeta || null,
+        langFile = this.loadMainLang();
+
+    // loop through object
+    function replaceNspcFilters (moduleMeta, obj, keys) {
+        var objects = [];
+
+        for (var i in obj) {
+            if (obj && !obj[i]){
+                continue;
+            }
+            if ((i === 'properties' || i === 'fields') && typeof obj[i] === 'object' && obj[i]['room'] && obj[i]['devicesByRoom']) {
+                var k = _.keys(obj[i])
+                    newObj = {};
+
+                try {
+                    // overwrite old key with new namespaces array
+                    if (i === 'properties') {
+                        console.log("Room - Device relation found, try to preparate JSON's schema structure ...");
+
+                        var dSRoom = _.extend({
+                                "type":"",
+                                "field":"",
+                                "datasource":"",
+                                "enum":"",
+                                "title":""
+                            }, obj[i]['room']),
+                            dSDevByRoom = _.extend({
+                                "type":"",
+                                "datasource":"",
+                                "enum":"",
+                                "title":"",
+                                "dependencies":""
+                            }, obj[i]['devicesByRoom']);
+
+                        if (dSRoom['enum'] && !_.isArray(dSRoom['enum'])){
+                            dSRoom['enum'] = getNspcFromFilters(moduleMeta, dSRoom['enum']);
+
+                            obj[i]['room'] = dSRoom;
+                        }
+
+                        if (dSDevByRoom['enum'] && !_.isArray(dSDevByRoom['enum']) && _.isArray(dSRoom['enum'])){
+                            var path = dSDevByRoom['enum'].substring(21).replace(/:/gi, '.');
+                            if(k.length > 0) {
+                                k.forEach(function(key) {
+                                    if(key === 'devicesByRoom') {
+                                        dSRoom['enum'].forEach(function(roomId, index) {
+                                            var cnt = index + 1,
+                                                locNspc = [],
+                                                nspc =[];
+
+                                            location = self.getLocation(self.locations, roomId);
+
+                                            if (!!location) {
+                                                nspc = self.getListNamespaces(path, location.namespaces);
+                                            }
+
+                                            dSDevByRoom['enum'] = nspc && nspc.length > 0? nspc: [langFile.no_devices_found];
+                                            dSDevByRoom['dependencies'] = "room";
+
+                                            newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
+                                            if (newObj['devicesByRoom_' + cnt]['title']) {
+                                                newObj['devicesByRoom_' + cnt]['title'] = newObj['devicesByRoom_' + cnt]['title'] + '_' + cnt;
+                                            }
+                                        });
+                                    } else {
+                                        newObj[key] = obj[i][key];
+                                    }
+                                });
+                            }
+
+                            obj[i] = newObj;
+                        }
+                    } else {
+                        console.log("Room - Device relation found, try to preparate JSON's options structure ...");
+
+                        var dSRoom = _.extend({
+                                "type":"",
+                                "field":"",
+                                "optionLabels":""
+                            },obj[i]['room']),
+                            dSDevByRoom = _.extend({
+                                "dependencies": {},
+                                "type":"",
+                                "field":"",
+                                "optionLabels":""
+                            },obj[i]['devicesByRoom']);
+
+                        if (dSRoom['optionLabels'] && !_.isArray(dSRoom['optionLabels'])){
+                            dSRoom['optionLabels'] = getNspcFromFilters(moduleMeta, dSRoom['optionLabels']);
+
+                            obj[i]['room'] = dSRoom;
+                        }
+
+                        if (dSDevByRoom['optionLabels'] && !_.isArray(dSDevByRoom['optionLabels']) && _.isArray(dSRoom['optionLabels'])){
+                            var path = dSDevByRoom['optionLabels'].substring(21).replace(/:/gi, '.');
+                            if(k.length > 0) {
+                                k.forEach(function(key) {
+                                    if(key === 'devicesByRoom') {
+                                        dSRoom['optionLabels'].forEach(function(roomName, index) {
+                                    
+                                            var cnt = index + 1,
+                                                locNspc = [],
+                                                nspc = [];
+
+                                            location = self.locations.filter(function(location){ return location.title === roomName });
+
+                                            if (location[0]) {
+                                                nspc = self.getListNamespaces(path, location[0].namespaces);
+                                            }
+                                            
+                                            dSDevByRoom['optionLabels'] = nspc && nspc.length > 0? nspc: [langFile.no_devices_found];
+                                            dSDevByRoom['dependencies'] = { "room" : location[0].id };
+
+                                            newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
+
+                                            if (newObj['devicesByRoom_' + cnt]['label']) {
+                                                newObj['devicesByRoom_' + cnt]['label'] = newObj['devicesByRoom_' + cnt]['label'] + '_' + cnt;
+                                            }
+                                        });
+                                    } else {
+                                        newObj[key] = obj[i][key];
+                                    }
+                                });
+                            }
+
+                            obj[i] = newObj;
+                        }
+                    }
+
+                } catch (e) {
+                    console.log('Cannot prepare Room-Device related JSON structure. ERROR: ' + e);
+                    self.addNotification('warning', langFile.err_preparing_room_dev_structure, 'module', moduleMeta.id);
+                }
+                
+                // try to replace the other stuff
+                for (var key in obj[i]) {
+                    _.each(obj[i][key], function(p, index){
+                        if (~keys.indexOf(index) && !_.isArray(p)) {
+                            obj[i][key][index] = getNspcFromFilters(moduleMeta, obj[i][key][index]);
+                        }
+                    });
+                }
+            } else if (typeof obj[i] === 'object') {
+                objects = objects.concat(replaceNspcFilters(moduleMeta, obj[i], keys));
+            } else if (keys.indexOf(i) > -1 && !_.isArray(obj[i])) {
+                // overwrite old key with new namespaces array
+                obj[i] = getNspcFromFilters(moduleMeta, obj[i]);
+            }
+        }
+
+        return obj;
+    };
+
+    // generate namespace arry from filter string 
+    function getNspcFromFilters (moduleMeta, nspcfilters) {
+        var namespaces = [],
+            filters = nspcfilters.split(','),
+            apis = ['locations','namespaces','loadFunction'],
+            filteredDev = [];
+
+        try {
+
+            if (!_.isArray(filters)) {
+                return false;
+            }
+
+            // do it for each filter
+            _.forEach(filters, function (flr,i){
+                var id = flr.split(':'),
+                    path;
+
+                if(apis.indexOf(id[0]) > -1){
+                    
+                    // get location ids or titles - except location 0/globalRoom - 'locations:id' or 'locations:title'
+                    // should allow dynamic filtering per location
+                    if (id[0] === 'locations' && (id[1] === 'id' || id[1] === 'title')) {
+                        namespaces = _.filter(self.locations, function(location) {
+                            return location[id[1]] !== 0 && location[id[1]] !== 'globalRoom';
+                        }).map(function(location) { 
+                                return location[id[1]];
+                        });
+                    
+                    // get namespaces of devices per location - 'locations:locationId:filterPath'                   
+                    } else if (id[0] === 'locations' && id[1] === 'locationId'){
+                        // don't replace set filters instead
+                        namespaces = nspcfilters;
+
+                    // load function from file
+                    } else if (id[0] === 'loadFunction') {
+                        var filePath = moduleMeta.location + '/htdocs/js/' + id[1],
+                            jsFile = fs.stat(filePath);
+                        
+                        if (id[1] && jsFile && jsFile.type === 'file') {
+                            jsFile = fs.load(filePath);
+
+                            if (!!jsFile) {
+                               //compress string 
+                               namespaces = jsFile.replace(/\s\s+|\t/g,' ');
+                            }
+                        }
+                    
+                    // get namespaces of devices ignoring locations
+                    } else {
+                        // cut path
+                        path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
+
+                        // get namespaces
+                        //self.generateNamespaces();
+                        nspc = self.getListNamespaces(path, self.namespaces);
+                        if (nspc) {
+                            namespaces = namespaces.concat(nspc);
+                        }
+                    }
+                }
+            });
+            return namespaces;
+
+        } catch (e) {
+            console.log('Cannot parse filters > ' + nspcfilters + ' < from namespaces. ERROR: ' + e);
+            self.addNotification('warning', langFile.err_parsing_npc_filters, 'module', moduleMeta.id);
+            
+            return namespaces;
+        }
+    };
+
+    if (!!moduleMeta) {
+        var params = {
+                schema: ['enum'],
+                options: ['optionLabels', 'onFieldChange', 'click'],
+                postRender : ''
+            };
+        
+        // transform filters
+        for (var property in params) {
+            if (property === 'postRender' && moduleMeta[property] && !_.isArray(moduleMeta[property])) {                           
+                moduleMeta[property] = getNspcFromFilters(moduleMeta, moduleMeta[property]);
+            } else if (moduleMeta[property]) {                           
+                moduleMeta[property] = replaceNspcFilters(moduleMeta, moduleMeta[property], params[property]);
+            }
+        }
+    }
+
+    return moduleMeta;
 };
 
 // load module lang folder
@@ -1295,9 +1906,12 @@ AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
 };
 
 AutomationController.prototype.loadImage = function(fileName) {
-    var data,
+    var data = null,
         img = loadObject(fileName);
-        data = Base64.decode(img);
+
+        if (!!img) {
+            data = Base64.decode(img);
+        }       
         
         return data;
 };

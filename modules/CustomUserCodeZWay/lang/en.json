@@ -1,0 +1,8 @@
+{
+	"m_title":"Load custom JavaScript code for Z-Wave application",
+	"m_descr":"The use of this app requires solid knowledge of JavaScript programming. The code provided in this app will be executed when Z-Wave module is loaded. There is no way to create an element but its possible to access the Network data holders. This app is for JavaScript professionals only.",
+	"err_load":"Failed to load custom user code: ",
+	"l_choose_zway":"Z-Way instance for which execute your code:",
+	"l_customCodeOnLoad":"Your JavaScript code on Z-Way load:",
+	"l_customCodeOnUnload":"Your JavaScript code on Z-Way unload (for clear restart of Z-Wave application or on UZB plug/unplug):"
+}

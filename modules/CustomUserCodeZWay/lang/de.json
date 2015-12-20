@@ -1,0 +1,8 @@
+{
+	"m_title":"Benutzer JavaScript Code für Z-Wave Applikation",
+	"m_descr":"Die Anwendung dieser App erfordert solide Kenntnisse in der JavaScript Programmierung. Der in dieser App zur Verfügung gestellte Code wird ausgeführt, wenn die App geladen wird. Ein Element kann nicht erstellt werden, jedoch ist es möglich, auf die Inhaber der Netzwerkdaten zuzugreifen. Diese App richtet sich ausschließlich an JavaScript Experten.",
+	"err_load":"Das Skript konnte nicht geladen werden: "
+	"l_choose_zway":"Z-Way instance for which execute your code:",
+	"l_customCodeOnLoad":"Ihr JavaScript code on Z-Way load:",
+	"l_customCodeOnUnload":"Ihr JavaScript code on Z-Way unload (for clear restart of Z-Wave application or on UZB plug/unplug):"
+}

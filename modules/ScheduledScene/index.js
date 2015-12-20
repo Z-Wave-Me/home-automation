@@ -1,11 +1,11 @@
 /*** ScheduledScene Z-Way HA module *******************************************
 
-Version: 2.0.0
+Version: 2.1.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>
 Description:
-    This executes executes scene by cron
+    This executes scene by cron
 
 ******************************************************************************/
 
@@ -32,10 +32,30 @@ ScheduledScene.prototype.init = function (config) {
     var self = this;
 
     this.runScene = function() {
-        var vDev = self.controller.devices.get(self.config.scene);
-        if (vDev) {
-            vDev.performCommand("on");
-        }
+        self.config.switches.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                vDev.performCommand(devState.status);
+            }
+        });
+        self.config.thermostats.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                vDev.performCommand("exact", { level: devState.status });
+            }
+        });
+        self.config.dimmers.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                vDev.performCommand("exact", { level: devState.status });
+            }
+        });
+        self.config.scenes.forEach(function(scene) {
+            var vDev = self.controller.devices.get(scene);
+            if (vDev) {
+                vDev.performCommand("on");
+            }
+        });
     };
 
     // set up cron handler
@@ -44,7 +64,7 @@ ScheduledScene.prototype.init = function (config) {
     // add cron schedule
     var wds = this.config.weekdays.map(function(x) { return parseInt(x, 10); });
     
-    if (wds.lenth == 7) {
+    if (wds.length == 7) {
         wds = [null]; // same as all - hack to add single cron record. NB! changes type of wd elements from integer to null
     }
     

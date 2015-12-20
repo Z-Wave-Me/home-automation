@@ -78,15 +78,14 @@ AutomationModule.prototype.saveConfig = function (config) {
     this.controller.saveConfig();
 };
 
+AutomationModule.prototype.getName = function() {
+    return /(\w+)\(/.exec(this.constructor.toString())[1];
+};
+
 // This method returns JSON representation
 AutomationModule.prototype.toJSON = function () {
-    function getClassName(obj) {
-        if (typeof obj != "object" || obj === null) return false;
-        return /(\w+)\(/.exec(obj.constructor.toString())[1];
-    }
-
     return {
-        module: getClassName(this),
+        module: this.getName(),
         id: this.id,
         config: this.config
     };

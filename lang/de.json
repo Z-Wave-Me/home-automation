@@ -11,5 +11,8 @@
 	"ac_err_stop_mod":"Das folgende Modul kann nicht gestoppt werden: ",
 	"profile_name": "Administrator",
 	"profile_descr": "Dies ist das Administratorprofil. Dieses wird automatisch angelegt.",
-	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: "
+	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: ",
+	"no_devices_found":"Keine Geräte gefunden",
+	"err_preparing_room_dev_structure":"Die Raum-Geräte Beziehung konnte nicht erzeugt werden",
+	"err_parsing_npc_filters":"Die Namespaces-Filter konnten nicht gefunden/gelesen werden."
 }

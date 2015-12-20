@@ -1,11 +1,14 @@
 /*** GroupDevices Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 2.0.0
+(c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
     Groups several devices together to make a new virtual device
+
+Changelog:
+16.12.2015 (aivs) - Added selector to set how group widget associated with devices in group: 1) not associated, 2) show biggest value, 3) show smaller value
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -49,7 +52,7 @@ GroupDevices.prototype.init = function (config) {
                     if (command === "on" || command === "off" || (command === "exact" && vDev.get("deviceType") === "switchBinary")) {
                         vDev.performCommand((dev.invert ^ (command === "on" || (command === "exact" && args.level > 0)))? "on" : "off");
                     } else if (command === "exact") {
-                        vDev.performCommand("exact", { level: dev.invert ? args.level : (99-args.level) });
+                        vDev.performCommand("exact", { level: dev.invert ? (99-args.level) : args.level });
                     }
                 }
             });
@@ -81,17 +84,63 @@ GroupDevices.prototype.init = function (config) {
     });
 
     this.handler = function() {
-        var res = false;
-        self.config.devices.forEach(function(xdev) {
-            res |= xdev.invert ^ self.controller.devices.get(xdev.device);
-        });
-        
-        self.vDev.set("metrics:level", res);
+        var associationType = self.config.associationType;
+        switch(associationType) {
+            case "noAssociation":
+                // widget doesn't change
+                break;
+            case "oneOff-widgetOff":
+                // for dimmers show minimal value from group
+                // for switch show off
+                var res = 99; // max value
+                self.config.devices.forEach(function(xdev) {
+                    var devValue = self.controller.devices.get(xdev.device).get("metrics:level");
+                    // check dimmer value
+                    if (devValue < res) {
+                        res = devValue;
+                    }
+                    // check switch value. If one of all switch turned off, show 0
+                    if (devValue === "off") {
+                        res = 0;
+                    }
+                });
+                if (self.config.isDimmable) {
+                    self.vDev.set("metrics:level", res);
+                }
+                else {
+                    self.vDev.set("metrics:level", res > 0 ? "on" : "off");
+                }
+                
+                break;
+            case "oneOn-widgetOn":
+                // for dimmers show maximum value from group
+                // for switch show on
+                var res = 0; // min value
+                self.config.devices.forEach(function(xdev) {
+                    var devValue = self.controller.devices.get(xdev.device).get("metrics:level");
+                    // check dimmer value
+                    if (devValue > res) {
+                        res = devValue;
+                    }
+                    // check switch value. If all dimmers turned OFF and one of all switches turned on, show 1
+                    if (devValue === "on" && res === 0) {
+                        res = 1;
+                    }
+                });
+                if (self.config.isDimmable) {
+                    self.vDev.set("metrics:level", res);
+                }
+                else {
+                    self.vDev.set("metrics:level", res > 0 ? "on" : "off");
+                }
+                break;
+        }
     };
     
     this.config.devices.forEach(function(dev) {
         this.controller.devices.on(dev.device, "change:metrics:level", self.handler);
     });
+
 };
 
 GroupDevices.prototype.stop = function () {
@@ -112,3 +161,4 @@ GroupDevices.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+

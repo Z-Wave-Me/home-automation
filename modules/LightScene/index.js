@@ -1,6 +1,6 @@
 /*** LightScene Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.2
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -46,6 +46,12 @@ LightScene.prototype.init = function (config) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
                     vDev.performCommand(devState.status);
+                }
+            });
+            self.config.thermostats.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    vDev.performCommand("exact", { level: devState.status });
                 }
             });
             self.config.dimmers.forEach(function(devState) {

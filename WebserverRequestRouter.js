@@ -236,7 +236,7 @@ ZAutomationWebRequest.prototype.handleRequest = function (url, request) {
     this.req.body = request.body || request.data;
     this.req.headers = request.headers || {};
     this.req.peer = request.peer;
-    var contentType = request.headers['content-type'] || request.headers['Content-Type'] || request.headers['Content-type'];
+    var contentType = request.headers['Content-Type'] || "";
 
     // set defaultLang
     if (self.req.query.hasOwnProperty('lang') || self.req.headers['Accept-Language']) {

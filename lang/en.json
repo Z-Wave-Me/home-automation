@@ -11,5 +11,8 @@
 	"ac_err_stop_mod":"Cannot stop module ",
 	"profile_name": "Administrator",
 	"profile_descr": "This is the admin profile. Admin profile created automatically.", 
-	"vd_err_virtual_dev":"Error during perform command execution: "
+	"vd_err_virtual_dev":"Error during perform command execution: ",
+	"no_devices_found":"No devices found",
+	"err_preparing_room_dev_structure":"Cannot prepare Room-Device relation.",
+	"err_parsing_npc_filters":"Cannot parse filters from namespaces."
 }

@@ -5,5 +5,8 @@
 	"l_devices":"Group devices",
 	"rl_invert":"Invert action",
 	"l_scenesOn":"List of scenes to activate on On action",
-	"l_scenesOff":"List of scenes to activate on Off action"
+	"l_scenesOff":"List of scenes to activate on Off action",
+	"noAssociation":"The group value does not depend on the values of the devices in the group",
+	"oneOff-widgetOff":"The group value corresponds to the smallest value of the devices in the group",
+	"oneOn-widgetOn":"The group value corresponds to the highest value of the devices in the group"
 }

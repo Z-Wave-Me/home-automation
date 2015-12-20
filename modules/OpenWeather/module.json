@@ -34,6 +34,10 @@
                 "type": "select",
 		"enum": ["celsius", "fahrenheit"],
                 "required": true
+            },
+             "api": {
+                "type": "string",
+                "required": true
             }
         },
         "required": true
@@ -51,6 +55,10 @@
             "units": {
                 "label": "__l_units__",
                 "optionLabels": ["°C", "°F"]
+            },
+            "api": {
+                "label": "API-Key",
+                "placeholder": "API-Key"
             }
         }
     }

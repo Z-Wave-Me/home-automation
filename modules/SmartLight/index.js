@@ -137,7 +137,7 @@ SmartLight.prototype.init = function (config) {
     this.controller.devices.on(this.config.MotionSensor, 'change:metrics:level', this.sensorTriggered);
     this.controller.devices.on(this.config.Dimmer, 'change:metrics:level', this.dimmerLevelChanged);
     // Check if Dimmer Button exist
-    if (typeof this.config.DimmerButton !== 'undefined') {
+    if (this.config.DimmerButton) {
         this.controller.devices.on(this.config.DimmerButton, 'change:metrics:level', this.dimmerButtonPressed);
     }
 };
@@ -157,7 +157,7 @@ SmartLight.prototype.stop = function () {
     this.controller.devices.off(this.config.Dimmer, 'change:metrics:level', this.dimmerLevelChanged);
 
     // Check if Dimmer Button exist
-    if (typeof this.config.DimmerButton !== 'undefined') {
+    if (this.config.DimmerButton) {
         this.controller.devices.off(this.config.DimmerButton, 'change:metrics:level', this.dimmerButtonPressed);
     }
 };

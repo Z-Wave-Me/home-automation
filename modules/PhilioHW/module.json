@@ -1,0 +1,23 @@
+{
+	"dependencies": [],
+	"singleton": true,
+	"category": "support_external_dev",
+	"author": "Z-Wave.Me",
+	"homepage": "http://www.z-wave.me",
+	"icon": "icon.png",
+        "moduleName":"PhilioHW",
+	"version": "1.0.1",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__"
+	},
+	"schema": {
+	},
+	"options": {
+	}
+}

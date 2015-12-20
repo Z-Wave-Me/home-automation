@@ -1,6 +1,6 @@
 /*** DummyDevice Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Ray Glendenning <ray.glendenning@gmail.com>
@@ -35,7 +35,7 @@ DummyDevice.prototype.init = function (config) {
         defaults: {
             metrics: {
                 level: 'off',
-                title: 'Dummy ' + this.id
+                title: self.getInstanceTitle(this.id)
             }
         },
         overlay: {
@@ -75,3 +75,11 @@ DummyDevice.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+DummyDevice.prototype.getInstanceTitle = function (instanceId) {
+    var instanceTitle = this.controller.instances.filter(function (instance){
+        return instance.id === instanceId;
+    });
+
+    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : 'Dummy ' + this.id;
+};

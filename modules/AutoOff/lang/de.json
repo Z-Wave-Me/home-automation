@@ -2,5 +2,7 @@
 	"m_title":"Automatisiertes Ausschalten",
 	"m_descr":"Diese App schaltet ein ausgewähltes Gerät (Schalter, Dimmer, Motorsteuerung) automatisch nach einer bestimmten Zeit ab. Das macht insbesondere bei Geräten Sinn, wie der Beleuchtung im Flur, die nicht zu lang eingeschalten bleiben sollen. Ist es bereits möglich, das Gerät innerhalb der „Timeout-Zeit“ abzuschalten, wird in diesem Fall nichts geschehen. <br><br>Einstellungen:<br><ul><li>Wählen Sie das Gerät, welches ausgeschalten werden soll.</li><li>Wählen Sie die Zeit zum Abschalten.</li></ul>",
 	"l_dev":"Gerät:",
-	"l_timeout":"Timeout in Sekunden:"
+	"l_timeout":"Timeout in Sekunden:",
+	"rl_ignoreUpdates": "Ignore status update",
+	"h_ignoreUpdates": "Do not restart the timer on device status update (on On value received)"
 }
