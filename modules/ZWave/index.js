@@ -54,7 +54,8 @@ function ZWave (id, controller) {
 		"DoorLock": 0x62,
 		"CentralScene": 0x5b,
 		"Battery": 0x80,
-		"DeviceResetLocally": 0x5a
+		"DeviceResetLocally": 0x5a,
+		"BarrierOperator": 0x66
 	};
 }
 
@@ -1946,6 +1947,36 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function() {
 					try {
 						vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+					} catch (e) {}
+				}, "value");
+			}
+		} else if (this.CC["BarrierOperator"] === commandClassId && !self.controller.devices.get(vDevId)) {
+			defaults = {
+				deviceType: 'doorlock',
+				metrics: {
+					level: '',
+					icon: 'door',
+					title: compileTitle('Garage Door', vDevIdNI)
+				}
+			};
+
+			var vDev = self.controller.devices.create({
+				deviceId: vDevId,
+				defaults: defaults,
+				overlay: {},
+				handler: function(command) {
+					if ("open" === command) {
+						cc.Set(255);
+					} else if ("close" === command) {
+						cc.Set(0);
+					}
+				},
+				moduleId: self.id
+			});
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "state", function() {
+					try {
+						vDev.set("metrics:level", this.value === 255 ? "open" : "close");
 					} catch (e) {}
 				}, "value");
 			}
