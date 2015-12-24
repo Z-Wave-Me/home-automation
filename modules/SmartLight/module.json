@@ -25,6 +25,7 @@
 			"DayTimeStart": "07:00",
 			"DayTimeEnd": "23:59"
 		},
+		"MotionEventToStartTimer":"on",
 		"timeout": 0,
 		"DimmerButton": null	
 	},
@@ -72,6 +73,11 @@
 						"required": true
 					}
 				}
+			},
+			"MotionEventToStartTimer": {
+				"type": "string",
+				"enum": ["on", "off"],
+				"required": true
 			},
 			"timeout": {
                 "type": "number",
@@ -131,6 +137,10 @@
 						"timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
 					}
 				}
+			},
+			"MotionEventToStartTimer": {
+				"label": "__l_MotionEventToStartTimer__",
+				"type": "select"
 			},
 			"timeout": {
                 "label": "__l_timeout__",
