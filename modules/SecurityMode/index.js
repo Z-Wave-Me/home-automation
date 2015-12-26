@@ -61,6 +61,14 @@ SecurityMode.prototype.init = function (config) {
             overlay: {},
             handler: function(command, args) {
                 this.set("metrics:level", command);
+                // Reset timer if Security Mode on
+                if (command === "on") {
+                    if (this.timer) {
+                        clearTimeout(this.timer);
+                    }
+                    // Enable Sensors react 
+                    self.isSensorsCanReact = 1;
+                };
             },
             moduleId: this.id
         });
@@ -192,6 +200,9 @@ SecurityMode.prototype.testRule = function (tree) {
                 }
             });
         }
+
+        // Send Notification
+        self.controller.addNotification("warning", self.message, "module", "SecurityMode");
 
         tree.action.switches && tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);

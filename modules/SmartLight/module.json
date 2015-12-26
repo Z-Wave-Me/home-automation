@@ -25,6 +25,7 @@
 			"DayTimeStart": "07:00",
 			"DayTimeEnd": "23:59"
 		},
+		"timeout": 0,
 		"DimmerButton": null	
 	},
 	"schema": {
@@ -72,10 +73,14 @@
 					}
 				}
 			},
+			"timeout": {
+                "type": "number",
+                "required": false
+            },
 			"DimmerButton": {
 				"field": "enum",
 				"datasource": "namespaces",
-				"enum": "namespaces:devices_switchControl:deviceId",
+				"enum": "namespaces:devices_switchControl:deviceId, namespaces:devices_toggleButton:deviceId",
 				"required": false
 			}
 		},
@@ -127,12 +132,17 @@
 					}
 				}
 			},
+			"timeout": {
+                "label": "__l_timeout__",
+                "helper":"__h_timeout__"
+
+            },
 			"DimmerButton": {
 				"label": "__l_DimmerButton__",
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
-                "optionLabels": "namespaces:devices_switchControl:deviceName",
+                "optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName",
                 "helper":"__h_DimmerButton__"
 			}
 		}

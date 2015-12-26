@@ -1,6 +1,6 @@
 /*** MultilineSensor Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.2
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -32,37 +32,47 @@ MultilineSensor.prototype.init = function (config) {
     	devices = [],
     	deviceMetrics = [],
     	item = {},
-        firstDevice = {};
+        firstDevice = {},
+        allSensors = [];
 
     this.vDev = null;
 
     this.updateAttributes = function(dev) {
         var sensors = [],
-            indx = null;
+            sensor = [],
+            indx = null,
+            uT = 0;
         
         sensors = self.vDev.get('metrics:sensors');
 
-        indx = sensors.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
+        sensor = sensors.filter(function(sensor){
+            return sensor.id === dev.get('id');
+        });
 
-        if(indx !== -1){
-            sensors[indx].set('title', dev.get('metrics:title'));
-            sensors[indx].set('metrics', dev.get('metrics'));
-        }
+        if(sensor[0]){
+            uT = dev.get('updateTime');
+            // update sensor metrics
+            sensor[0].metrics = dev.get('metrics');
+            
+            if (uT > 0) {
+                sensor[0].updateTime = uT;
+            }            
 
-        if(sensors.length > 0){
+            // get first sensor
             firstDevice = sensors[0];
         }
 
-        var icon = firstDevice && firstDevice.metrics.icon? firstDevice.metrics.icon : '',
-            level = firstDevice && firstDevice.metrics.level? firstDevice.metrics.level : '',
-            scaleTitle = firstDevice && firstDevice.metrics.scaleTitle? firstDevice.metrics.scaleTitle : '';
-
-        self.vDev.set('metrics:icon', icon);
-        self.vDev.set('metrics:level', level);
-        self.vDev.set('metrics:scaleTitle', scaleTitle);
+        // update vDev metrics with values of first sensor
+        self.vDev.set('metrics:icon', self.getIcon(firstDevice));
+        self.vDev.set('metrics:level', self.getLevel(firstDevice));
+        self.vDev.set('metrics:scaleTitle', self.getScaleTitle(firstDevice));
+        
+        if (uT > 0) {
+            self.vDev.set('updateTime', uT);
+        }
     };
 
-    this.createVirtualDevice = function(dev){
+    this.createVDevIfSensorsAreCreated = function(dev){
         var indx = self.config.devices.map(function(e) { return e.selectedDevice; }).indexOf(dev.id);
         
         if(indx > -1 && deviceMetrics.map(function(e) { return e.selectedDevice; }).indexOf(dev.id) === -1){
@@ -86,17 +96,15 @@ MultilineSensor.prototype.init = function (config) {
                 firstDevice = deviceMetrics[0];
             }
 
-            //var icon = firstDevice && firstDevice.metrics.icon? firstDevice.metrics.icon : '',
-            var level = firstDevice && firstDevice.metrics.level? firstDevice.metrics.level : '',
-                scaleTitle = firstDevice && firstDevice.metrics.scaleTitle? firstDevice.metrics.scaleTitle : '';
+            // update vDev metrics 
+            self.vDev.set('metrics:icon', self.getIcon(firstDevice));
+            self.vDev.set('metrics:level', self.getLevel(firstDevice));
+            self.vDev.set('metrics:scaleTitle', self.getScaleTitle(firstDevice));
 
-            self.vDev.set('metrics:sensors', deviceMetrics);
-            //self.vDev.set('metrics:icon', icon);
-            self.vDev.set('metrics:level', level);
-            self.vDev.set('metrics:scaleTitle', scaleTitle);
-
+            // listen to sensor changes
             self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
             self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+            self.controller.devices.on(dev.id, 'change:updateTime', self.updateAttributes);
         }
     };
 
@@ -121,24 +129,31 @@ MultilineSensor.prototype.init = function (config) {
             dev.set({'visibility': true});
         }
 
+        // listen to sensor changes
         self.controller.devices.on(dev.id, 'change:metrics:level', self.updateAttributes);
         self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+        self.controller.devices.on(dev.id, 'change:updateTime', self.updateAttributes);
     });
 
     this.vDev = this.controller.devices.create({
         deviceId: "Multiline_" + this.id,
         defaults: {
             metrics: {
-                title: 'Multiline Sensor ' + this.id,
-                icon: ''
+                multilineType: 'multilineSensor',
+                title: self.getInstanceTitle(this.id),
+                icon: self.getIcon(deviceMetrics[0]),
+                level: self.getLevel(deviceMetrics[0]),
+                scaleTitle: self.getScaleTitle(deviceMetrics[0])
             }
         },
         overlay: {
             deviceType: 'sensorMultiline',
             metrics: {
-                title: 'Multiline Sensor ' + this.id,
+                title: self.getInstanceTitle(this.id),
                 sensors: deviceMetrics,
-                icon: ''
+                icon: self.getIcon(deviceMetrics[0]),
+                level: self.getLevel(deviceMetrics[0]),
+                scaleTitle: self.getScaleTitle(deviceMetrics[0])
             }
         },
         handler: function(command){
@@ -157,8 +172,9 @@ MultilineSensor.prototype.init = function (config) {
         },
         moduleId: this.id
     });
-
-    self.controller.devices.on('created', self.createVirtualDevice);
+    
+    // refresh/create virtual device if sensors are created (after restart)
+    self.controller.devices.on('created', self.createVDevIfSensorsAreCreated);
 };
 
 MultilineSensor.prototype.stop = function () {
@@ -179,6 +195,8 @@ MultilineSensor.prototype.stop = function () {
 
         self.controller.devices.off(dev.id, 'change:metrics:level', self.updateAttributes);
         self.controller.devices.off(dev.id, 'change:[object Object]', self.updateAttributes);
+        self.controller.devices.off(dev.id, 'change:updateTime', self.updateAttributes);
+        self.controller.devices.off('created', self.createVDevIfSensorsAreCreated);
     });
 
     MultilineSensor.super_.prototype.stop.call(this);
@@ -187,3 +205,27 @@ MultilineSensor.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+MultilineSensor.prototype.getIcon = function (device) {
+    return device && device.metrics.icon? device.metrics.icon : '';
+};
+
+MultilineSensor.prototype.getScaleTitle = function (device) {
+    return device && device.metrics.scaleTitle? device.metrics.scaleTitle : '';
+};
+
+MultilineSensor.prototype.getLevel = function (device) {
+    return device && device.metrics.level? device.metrics.level : '';
+};
+
+MultilineSensor.prototype.getInstanceTitle = function (instanceId) {
+    var instanceTitle = this.controller.instances.filter(function (instance){
+        return instance.id === instanceId;
+    });
+
+    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : 'Multiline Sensor ' + this.id;
+};
+
+MultilineSensor.prototype.getTitle = function (device) {
+    return device && device.metrics.title? device.metrics.title : '';
+};

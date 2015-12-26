@@ -35,7 +35,7 @@ describe('Core.Base', function () {
         ChildClass.off('change:value');
 
         // prop should be equal 100
-        expect(ChildClass.trigger('change:value', 22)).to.be.undefined();
+        expect(ChildClass.trigger('change:value', 22)).to.not.exist;
         expect(ChildClass).to.have.property('prop', 100);
 
         done();

@@ -42,12 +42,19 @@ AutoOff.prototype.init = function (config) {
     this.handler = function (vDev) {
         var value = vDev.get("metrics:level");
         
-        if (self.timer) {
-            // Timer is set, so we destroy it
-            clearTimeout(self.timer);
-        }
         if ("on" === value || (parseInt(value) && value > 0)) {
             // Device reported "on", set (or reset) timer to new timeout
+            
+            if (self.timer && self.config.ignoreUpdates) {
+                // We ignore updates and do not restart the timer, keeping the old one running
+                return;
+            }
+
+            if (self.timer) {
+                // Timer is set, so we destroy it
+                clearTimeout(self.timer);
+                self.timer = null;
+            }
             // Notice: self.config.timeout set in seconds
             self.timer = setTimeout(function () {
                 // Timeout fired, so we send "off" command to the virtual device
@@ -56,6 +63,13 @@ AutoOff.prototype.init = function (config) {
                 // And clearing out this.timer variable
                 self.timer = null;
             }, self.config.timeout*1000);
+        } else {
+            // Turned off
+            if (self.timer) {
+                // Timer is set, so we destroy it
+                clearTimeout(self.timer);
+                self.timer = null;
+            }
         }
     };
 
@@ -66,8 +80,9 @@ AutoOff.prototype.init = function (config) {
 AutoOff.prototype.stop = function () {
     AutoOff.super_.prototype.stop.call(this);
 
-    if (this.timer)
-        clearInterval(this.timer);
+    if (this.timer){
+        clearTimeout(this.timer);
+    }
     
     this.controller.devices.off(this.config.device, 'change:metrics:level', this.handler);
 };

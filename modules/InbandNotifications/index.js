@@ -1,12 +1,14 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.0.2
+Version: 1.0.6
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Description:
     Creates a module that listens to the status of every device in the background. 
     It sends notifications automatically if it has changed.
+    Notifications are stored hourly to storage and checked once a day if they are older than one week. 
+    The older ones will eb deleted
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -54,6 +56,7 @@ InbandNotifications.prototype.init = function (config) {
         if(!Boolean(vDev.get('permanently_hidden'))){
             var devId = vDev.get('id'),
                 devType = vDev.get('deviceType'),
+                devProbeType = vDev.get('probeType'),
                 devName = vDev.get('metrics:title'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
@@ -117,13 +120,15 @@ InbandNotifications.prototype.init = function (config) {
                         case 'sensorMultilevel':
                         case 'sensorMultiline':
                         case 'thermostat':
-                            msg = {
-                                dev: devName,
-                                l: lvl + ' ' + scaleUnit
+                            if (!~devProbeType.indexOf('meterElectric_')){
+                                msg = {
+                                    dev: devName,
+                                    l: lvl + ' ' + scaleUnit
                                 };
-                            msgType = 'device-' + eventType();
+                                msgType = 'device-' + eventType();
 
-                            self.controller.addNotification('device-info', msg , msgType, devId);
+                                self.controller.addNotification('device-info', msg , msgType, devId);
+                            }
                             break;
                         case 'switchRGBW':
                             msg = {
@@ -177,8 +182,8 @@ InbandNotifications.prototype.init = function (config) {
     self.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
     self.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 
-    //this.onPollDeleteNotifications();
-    //this.onPollSaveNotifications();
+    // initial saving of notifications
+    self.controller.saveNotifications();
 };
 
 InbandNotifications.prototype.stop = function () {

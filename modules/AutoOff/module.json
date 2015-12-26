@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName": "AutoOff",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "maturity": "stable",
     "repository": {
         "type": "git",
@@ -16,6 +16,7 @@
         "title": "__m_title__",
         "description": "__m_descr__",
         "timeout": 5,
+	"ignoreUpdates": false,
         "device": ""
     },
     "schema": {
@@ -30,6 +31,9 @@
             "timeout": {
                 "type": "number",
                 "required": true
+            },
+            "ignoreUpdates": {
+                "type": "boolean"
             }
         },
         "required": false
@@ -44,6 +48,11 @@
             },
             "timeout": {
                 "label": "__l_timeout__"
+            },
+            "ignoreUpdates": {
+                "type": "checkbox",
+                "rightLabel": "__rl_ignoreUpdates__",
+                "helper": "__h_ignoreUpdates__"
             }
         }
     }

@@ -1,7 +1,7 @@
 {
     "dependencies": ["Cron"],
     "autoload": false,
-    "singleton": true,
+    "singleton": false,
     "userView": true,
     "icon": "icon.png",
     "moduleName": "SensorsPollingLogging",

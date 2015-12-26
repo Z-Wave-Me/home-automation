@@ -1,0 +1,15 @@
+{	
+	"ac_warn_restart":"Automationskontrollern är omstartad.",
+	"ac_err_init_module_not_found":"Cannot instantiate module: module not found in the list of all modules.",
+	"ac_err_init_module":"Cannot instantiate module: ",
+	"ac_err_dep_not_found":"Beroenden kan inte hittas för modul: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_loaded":"Kan inte ladda modulen då beroendet inte var laddad: [DEP]::[MODUL] = ",
+	"ac_err_dep_not_init":"Failed to load module because dependency was not instanciated: [DEP]::[MODUL] = ",
+	"ac_err_file_load":"Kan inte ladda ",
+	"ac_err_invalid_module":"Felaktig modul ",
+	"ac_err_load_mod_json":"Kan inte ladda modules.json från ",
+	"ac_err_stop_mod":"Kan inte stoppa modul ",
+	"profile_name": "Administratör",
+	"profile_descr": "Detta är adminprofilen. Adminprofilen skapades automatiskt.", 
+	"vd_err_virtual_dev":"Error during perform command execution: "
+}

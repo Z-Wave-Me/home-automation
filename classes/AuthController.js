@@ -20,9 +20,19 @@ function AuthController (controller) {
     // TODO: replace with tokens
     // list of saved sessions
     this.sessions = [];
+    this.forgottenPwdCollector = {};
     
     // link to controller to get profiles
     this.controller = controller;
+}
+
+AuthController.prototype.isAuthorized = function(myRole, requiredRole) {
+    if (!requiredRole) {
+        // no role required, allow access
+        return true;
+    }
+
+    return myRole <= requiredRole;
 }
 
 AuthController.prototype.resolve = function(request, requestedRole) {
@@ -41,12 +51,32 @@ AuthController.prototype.resolve = function(request, requestedRole) {
             }
         }
     }
+
     session = this.sessions[profileSID];
 
     if (!session) {
         // no session found or session expired
 
-        if (requestedRole === this.ROLE.USER) {
+        // try Basic auth
+        var authHeader = request.headers['Authorization'];
+        if (authHeader && authHeader.substring(0, 6) === "Basic ") {
+            authHeader = Base64.decode(authHeader.substring(6));
+            if (authHeader) {
+                var authInfo = authHeader.split(':');
+                if (authInfo.length === 2 && authInfo[0].length > 0) {
+                    var profile = _.find(this.controller.profiles, function (profile) {
+                        return profile.login === authInfo[0];
+                    });
+                
+                    if (profile && profile.password === authInfo[1]) {
+                        // auth successful, use selected profile
+                        session = profile;
+                    }
+                }
+            }
+        }
+
+        if (!session && requestedRole === this.ROLE.USER) {
             // try to find Local user account
             if (request.peer.address === "127.0.0.1") {
                 // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
@@ -94,4 +124,59 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 
 AuthController.prototype.checkIn = function(profile, sid) {
   this.sessions[sid] = profile;
+};
+
+AuthController.prototype.forgottenPwd = function(email, token) {
+    var self = this,
+        success;
+
+    if ( Object.keys(this.forgottenPwdCollector).length > 0) {
+        Object.keys(this.forgottenPwdCollector).forEach(function(t){
+            if (self.forgottenPwdCollector[t].email === email) {
+                console.log('Tokenrequest already exists for e-mail:', email);
+                success = false;
+            }
+        });
+    } else {
+        this.forgottenPwdCollector[token] = {
+            email: email,
+            expTime: Math.floor(new Date().getTime() / 1000) + 3600
+        };
+
+        success = true;
+    }
+
+    if (!self.expireTokens) {
+        this.expireTokens = setInterval(function() {
+            var expirationTime = Math.floor(new Date().getTime() / 1000);
+            
+            Object.keys(self.forgottenPwdCollector).forEach(function(tkn, i) {
+                if (tkn.expTime < expirationTime) {
+                    self.removeForgottenPwdEntry(i);
+                }
+            });
+            
+            if (self.forgottenPwdCollector.size === 0 && self.expireTokens) {
+                clearInterval(self.expireTokens);
+            }
+        }, 600 * 1000);
+    }
+
+    return success;
+};
+
+AuthController.prototype.removeForgottenPwdEntry = function(token) {
+    if (this.forgottenPwdCollector[token]){
+        delete this.forgottenPwdCollector[token];
+    }
+};
+
+AuthController.prototype.getForgottenPwdToken = function(token) {
+    var result = null;
+
+    if (this.forgottenPwdCollector[token]){
+        result = this.forgottenPwdCollector[token];
+    }
+
+    return result;
 };

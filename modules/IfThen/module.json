@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName": "IfThen",
-	"version": "1.0.0",
+	"version": "2.0.4",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -24,17 +24,90 @@
 			"sourceDevice": {
 				"type": "object",
 				"properties": {
-					"device": {
-						"field": "enum",
-						"datasource": "namespaces",
-						"enum": "namespaces:devices_buttonControl:deviceId,namespaces:devices_switchControl:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_sensorBinary:deviceId",
+					"filterIf": {
+						"type":"string",
+						"enum": ["scene","switchControl","switchBinary","switchMultilevel","sensorBinary"],
 						"required": true
 					},
-					"status": {
-						"type": "integer",
-						"enum": ["off", "on"],
-						"required": true,
-						"dependencies": "device"
+					"switchBinary": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_switchBinary:deviceId",
+								"required": true
+							},
+							"status": {
+								"type": "integer",
+								"enum": ["off", "on"],
+								"required": true
+							}
+						}
+					},
+					"scene": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_toggleButton:deviceId",
+								"required": true
+							}
+						}
+					},
+					"switchControl": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_switchControl:deviceId",
+								"required": true
+							},
+							"status": {
+								"type": "integer",
+								"enum": ["off", "on"],
+								"required": true
+							}
+						}
+					},
+					"switchMultilevel": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_switchMultilevel:deviceId",
+								"required": true
+							},
+							"status": {
+								"type": "integer",
+								"enum": ["off", "on"],
+								"required": true
+							}
+						}
+					},
+					"sensorBinary": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_sensorBinary:deviceId",
+								"required": true
+							},
+							"status": {
+								"type": "integer",
+								"enum": ["off", "on"],
+								"required": true
+							}
+						}
 					}
 				}
 			},
@@ -43,15 +116,14 @@
 				"items": {
 					"type": "object",
 					"properties": {
-						"filter": {
+						"filterThen": {
 							"type":"string",
 							"enum": ["switchBinary","switchMultilevel","doorlock","scene"],
-							"default": "switchBinary",
 							"required": true
 						},
 						"switchBinary": {
 							"type": "object",
-							"dependencies":"filter",
+							"dependencies":"filterThen",
 							"properties": {
 								"target": {
 									"type":"string",
@@ -68,7 +140,7 @@
 						},
 						"switchMultilevel":{
 							"type": "object",
-							"dependencies":"filter",
+							"dependencies":"filterThen",
 							"properties": {
 								"target": {
 									"type":"string",
@@ -86,7 +158,7 @@
 						},
 						"doorlock":{
 							"type": "object",
-							"dependencies":"filter",
+							"dependencies":"filterThen",
 							"properties": {
 								"target": {
 									"type":"string",
@@ -103,7 +175,7 @@
 						},
 						"scene":{
 							"type": "object",
-							"dependencies":"filter",
+							"dependencies":"filterThen",
 							"properties": {				
 								"target":{
 									"type":"string",
@@ -116,24 +188,106 @@
 					}
 				}
 			}
-		},
-		"required": false
+		}
 	},
 	"options": {
 		"fields": {
 			"sourceDevice": {
 				"label": "__l_event_sources__",
 				"fields": {
-					"device": {
+					"filterIf": {
 						"type": "select",
-						"datasource": "namespaces",
-						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_buttonControl:deviceName,namespaces:devices_switchControl:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_sensorBinary:deviceName"
+						"removeDefaultNone": false,
+						"noneLabel": "__l_choose__",
+						"label":"__l_filter__",
+						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__"]
 					},
-					"status": {
-						"optionLabels": ["__off__", "__on__"],
+					"switchBinary": {
 						"dependencies": {
-							"device" : ["namespaces:devices_switchControl:deviceId","namespaces:devices_switchBinary:deviceId","namespaces:devices_switchMultilevel:deviceId","namespaces:devices_sensorBinary:deviceId"]
+							"filterIf": "switchBinary"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName"
+							},
+							"status": {
+								"optionLabels": ["__off__", "__on__"]
+							}
+						}
+					},
+					"scene": {
+						"dependencies": {
+							"filterIf": "scene"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"helper": "__h_statusOn__",
+								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+							}
+						}
+					},
+					"switchControl": {
+						"dependencies": {
+							"filterIf": "switchControl"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchControl:deviceName"
+							},
+							"status": {
+								"optionLabels": ["__off__", "__on__"]
+							}
+						}
+					},
+					"switchMultilevel": {
+						"dependencies": {
+							"filterIf": "switchMultilevel"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+							},
+							"status": {
+								"optionLabels": ["__off__", "__on__"]
+							}
+						}
+					},
+					"sensorBinary": {
+						"dependencies": {
+							"filterIf": "sensorBinary"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_sensorBinary:deviceName"
+							},
+							"status": {
+								"optionLabels": ["__off__", "__on__"]
+							}
 						}
 					}
 				}
@@ -143,18 +297,22 @@
 				"fields": {
 					"item": {
 						"fields": {
-							"filter": {
+							"filterThen": {
 								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose__",
 								"label":"__l_filter__",
 								"optionLabels": ["__switchBinary__","__switchMultilevel__","__doorlock__","__l_scene__"]
 							},
 							"switchBinary": {
 								"dependencies": {
-									"filter": "switchBinary"
+									"filterThen": "switchBinary"
 								},
 								"fields":{
 									"target" :{
 										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
 										"label": "__l_target_device__",
 										"datasource": "namespaces",
 										"field": "optionLabels",
@@ -168,11 +326,13 @@
 							},
 							"switchMultilevel": {
 								"dependencies": {
-									"filter": "switchMultilevel"
+									"filterThen": "switchMultilevel"
 								},
 								"fields":{
 									"target" :{
 										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
 										"label": "__l_target_device__",
 										"datasource": "namespaces",
 										"field": "optionLabels",
@@ -185,11 +345,13 @@
 							},
 							"doorlock": {
 								"dependencies": {
-									"filter": "doorlock"
+									"filterThen": "doorlock"
 								},
 								"fields":{
 									"target" :{
 										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
 										"label": "__l_target_device__",
 										"datasource": "namespaces",
 										"field": "optionLabels",
@@ -203,18 +365,18 @@
 							},
 							"scene": {
 								"dependencies": {
-									"filter": "scene"
+									"filterThen": "scene"
 								},
 								"fields":{
 									"target" :{
 										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
 										"label": "__l_scene__",
+										"helper": "__h_statusOn__",
 										"datasource": "namespaces",
 										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_toggleButton:deviceName"								},
-									"status": {
-										"label": "__l_action__",
-										"optionLabels": ["__off__", "__on__"]
+										"optionLabels": "namespaces:devices_toggleButton:deviceName"
 									}
 								}
 							}

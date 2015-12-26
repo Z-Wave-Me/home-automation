@@ -35,10 +35,10 @@ ThermostatDevice.prototype.init = function (config) {
         defaults: {
             deviceType: "thermostat",
             metrics: {
-		scaleTitle:  '°C',
-                level: 18,
-                min: 5,
-                max: 40,
+                scaleTitle:  this.config.scale === 'C' ? '°C' : '°F',
+                level: this.config.scale === 'C' ? 18 : 65,
+                min: this.config.scale === 'C' ? 5 : 41,
+                max: this.config.scale === 'C' ? 40 : 104,
                 icon: '',
                 title: 'Thermostat Device ' + this.id
             }
@@ -52,7 +52,7 @@ ThermostatDevice.prototype.init = function (config) {
     });
     
     this.controller.devices.on(this.config.sensor, 'change:metrics:level', function() {
-    	self.checkTemp();
+        self.checkTemp();
     });
 };
 
@@ -60,7 +60,7 @@ ThermostatDevice.prototype.stop = function () {
     var self = this;
 
     this.controller.devices.off(this.config.sensor, 'change:metrics:level', function() {
-    	self.checkTemp();
+        self.checkTemp();
     });
 
     if (this.vDev) {

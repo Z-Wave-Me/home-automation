@@ -1,6 +1,6 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.0.0
+Version: 2.1.3
 -------------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>
 Copyright: (c) Z-Wave.Me, 2014
@@ -52,7 +52,9 @@ function ZWave (id, controller) {
 		"ThermostatSetPoint": 0x43,
 		"ThermostatFanMode": 0x44,
 		"DoorLock": 0x62,
-		"Battery": 0x80
+		"CentralScene": 0x5b,
+		"Battery": 0x80,
+		"DeviceResetLocally": 0x5a
 	};
 }
 
@@ -71,6 +73,10 @@ Object.defineProperty(ZWave, "list", {
 	configurable: false 
 });
 ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
+
+ZWave.prototype.updateList = function() {
+        this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
+};
 
 ZWave.prototype.init = function (config) {
 	ZWave.super_.prototype.init.call(this, config);
@@ -100,9 +106,7 @@ ZWave.prototype.init = function (config) {
 };
 
 ZWave.prototype.startBinding = function () {
-	var self = this,
-		moduleName = "ZWave",
-		langFile = self.controller.loadModuleLang(moduleName);
+	var self = this;
 
 	try {
 		this.zway = new ZWaveBinding(this.config.name, this.config.port, {
@@ -121,6 +125,9 @@ ZWave.prototype.startBinding = function () {
 			throw e1;
 		}
 	} catch(e) {
+		var moduleName = this.getName(),
+		    langFile = self.controller.loadModuleLang(moduleName);
+		
 		this.controller.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave", moduleName);
 		this.zway = null;
 		return;
@@ -137,6 +144,7 @@ ZWave.prototype.startBinding = function () {
 		"port": this.config.port,
 		"fastAccess": this.fastAccess
 	};
+	this.updateList();
 
 	this.stopped = false;
 	
@@ -199,6 +207,7 @@ ZWave.prototype.stopBinding = function () {
 	}
 	if (global.ZWave) {
 		delete global.ZWave[this.config.name];
+		this.updateList();
 	}
 
 	this.stopped = true;
@@ -219,10 +228,10 @@ ZWave.prototype.terminating = function () {
 
 		var self = this;
 		setTimeout(function() {
-			// retry open after 5 seconds
+			// retry open after 10 seconds
 			console.log("Restarting Z-Wave binding");
 			self.startBinding();
-		}, 5000);
+		}, 10000);
 	}
 };
 
@@ -245,6 +254,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".Blacklist", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -263,6 +274,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
 	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
+	ws.revokeExternalAccess(_name + ".Blacklist");
+	ws.revokeExternalAccess(_name + ".Postfix");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -828,7 +841,7 @@ ZWave.prototype.defineHandlers = function () {
 					result = "failed";
 				}
 			});
-    
+
 			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
 			
 			while ((new Date()).valueOf() < d &&  result === "in progress") {
@@ -841,6 +854,56 @@ ZWave.prototype.defineHandlers = function () {
 			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
+		}
+	};
+
+	this.ZWaveAPI.Blacklist = function() {
+		var blacklist = fs.loadJSON('modules/ZWave/blacklist.json');
+
+		if (!!blacklist) {
+			return {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "keep-alive"
+				},
+				body: blacklist
+			};
+		} else {
+			return {
+				status: 500,
+				body: 'Cannot load blacklist.'
+			};
+
+		}
+	};
+
+	this.ZWaveAPI.Postfix = function(url, request) {
+		var postfix = fs.loadJSON('modules/ZWave/postfix.json'),
+			show = request.query && request.query.full? request.query.full : 'false';
+
+		if (!!postfix) {
+
+			if (show === 'false') {
+				postfix = postfix.map(function (fix) { 
+						return { p_id: fix.p_id, product: fix.product }
+					});
+			}
+		
+			return {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "keep-alive"
+				},
+				body: postfix
+			};
+		} else {
+			return {
+				status: 500,
+				body: 'Cannot load postfix.'
+			};
+
 		}
 	};
 
@@ -951,15 +1014,24 @@ ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId,
 		}
 	}
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
-	// two prototypes:
+	// three prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
-	//  (dataBindings, zway, nodeId,			     path, func)
+	//  (dataBindings, zway, nodeId,                             path, func)
+	//  (dataBindings, zway,                                     path, func) // bind to controller data
 
 	var pathArr = [],
 		data = null,
+		ctrlBind = is_function(instanceId),
 		devBind = is_function(commandClassId);
 
-	if (devBind) {
+	if (ctrlBind) {
+		path = nodeId;
+		func = instanceId;
+		nodeId = undefined;
+		instanceId = undefined;
+		commandClassId = undefined;
+		data = zway.controller.data;
+	} else if (devBind) {
 		path = instanceId;
 		func = commandClassId;
 		instanceId = undefined;
@@ -986,7 +1058,13 @@ ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, comm
 	}
 
 	if (data) {
-		if (devBind) {
+		if (ctrlBind) {
+			dataBindings.push({
+				"zway": zway,
+				"path": path,
+				"func": data.bind(func, false)
+			});
+		} else if (devBind) {
 			dataBindings.push({
 				"zway": zway,
 				"nodeId": nodeId,
@@ -1013,10 +1091,11 @@ ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, comm
 
 ZWave.prototype.dataUnbind = function(dataBindings) {
 	dataBindings.forEach(function (item) {
-		var devBind = ! ("instanceId" in item);
+		var ctrlBind = ! ("nodeId" in item),
+		    devBind = ! ("instanceId" in item);
 
-		if (item.zway && item.zway.isRunning() && item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))) {
-			var data = devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data,
+		if (item.zway && item.zway.isRunning() && (ctrlBind || (item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))))) {
+			var data = ctrlBind ? item.zway.controller.data : (devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data),
 				pathArr = item.path ? item.path.split(".") : [];
 
 			while (pathArr.length) {
@@ -1086,8 +1165,8 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-	moduleName = "ZWave",
-	langFile = this.controller.loadModuleLang(moduleName);
+	    moduleName = this.getName(),
+	    langFile = this.controller.loadModuleLang(moduleName);
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
@@ -1121,74 +1200,129 @@ ZWave.prototype.gateDevicesStart = function () {
 				if (this.value === true && type !== self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
 
 					var create = true,
+						preventCreation = {},
 						deviceData = zway.devices[nodeId].data,
 						deviceInstances = zway.devices[nodeId].instances,
+						deviceCC = deviceInstances[instanceId].commandClasses[commandClassId],
 						c = zway.controller,
 						mId = deviceData.manufacturerId.value? deviceData.manufacturerId.value : null,
 						mPT = deviceData.manufacturerProductType.value? deviceData.manufacturerProductType.value : null,
 						mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
 						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
 						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
-						devId,postFix;					
+						devId,
+						postFix;					
 					
 					// try to get fix by manufacturerProductId and application Version
-					if(!!mId && !!mPT && !!mPId && !!self.postfix) {
+					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
 
 						devId = mId + '.' + mPT + '.' + mPId,
 						appMajorId = devId + '.' + appMajor,
 						appMinorId = devId + '.' + appMinor,
-						postFix = self.postfix.filter(function(device){
-							return 	device.id === devId || 		//search by manufacturerProductId
-									device.id === appMajorId || //search by applicationMajor
-									device.id === appMinorId; 	//search by applicationMinor
+						postFix = self.postfix.filter(function(fix) {
+							return 	fix.p_id === devId || 		//search by manufacturerProductId
+									fix.p_id === appMajorId || //search by applicationMajor
+									fix.p_id === appMinorId; 	//search by applicationMinor
 						});
 					}
 
-					if(postFix) {
-						if(postFix.length > 0){
+					// ----------------------------------------------------------------------------
+					// --- postfix functions
+					// ----------------------------------------------------------------------------
+					// 
+					function supportSwitchController (instId, commandClass, maxBtnNr, type) {
+						var trapArray = [],
+							commandClass = commandClass || null;
+						
+						trapArray = self.controller.instances.filter(function (instance) {
+								return instance.moduleId === 'SwitchControlGenerator';
+							});
+						if (instId === instanceId && commandClassId === commandClass && deviceCC && c.data.lastIncludedDevice.value === nodeId) {
+							maxBtnNr = (deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr? deviceCC.data.maxScenes.value : maxBtnNr) || 0
+							
+							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
+								for (i = 1; i <= maxBtnNr; i++) {
+									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
+									console.log('#####------Switch-Control-Element-Created:-ZWayVDev_' + self.config.name + '_Remote_' + nodeId + '-' + instanceId + '-0-' + i + '-' + type + '------#####');
+								}
+							}
+						}
+					}
+
+					function preventDeviceCreation (instId, commandClass, subClassesEventTypeObject) {
+						var commandClass = commandClass || null;
+
+						if (instId === instanceId && commandClassId === commandClass) {
+							
+							preventCreation = subClassesEventTypeObject? subClassesEventTypeObject : {};
+							 
+							create = false; 
+						}
+					}
+
+					function setConfig (instId, parameter, value, size) {
+						var parameter = parseInt(parameter) || null,
+							value = parseInt(value) || null,
+							size = parseInt(size) || null;
+
+						if(instId === instanceId && !!parameter && !!value && !!size){
+							// set config after inclusion only
+							if(commandClassId === 112 && deviceCC && c.data.lastIncludedDevice.value === nodeId){ 
+								deviceCC.Set(parameter, value, size);
+								console.log('##-------------CHANGED-VALUE-' + devId + '.112---SET-PARAM-' + parameter + '-VALUE-' + value + '-SIZE-' + size + '---------##');
+							}
+						}
+					}
+
+					// ----------------------------------------------------------------------------
+					// --- END
+					// ----------------------------------------------------------------------------
+
+					if (postFix) {
+						if (postFix.length > 0) {
 							try {
 								// works of course only during inclusion - after restart hidden elements are visible again
-								if(!!nodeId && c.data.lastIncludedDevice.value === nodeId){
-									var intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
-								    	intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
+								if (!!nodeId && c.data.lastIncludedDevice.value === nodeId) {
+									var intDone = deviceCC.data.interviewDone.value;
+									    intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
 
 									// wait till interview is done
 									while ((new Date()).valueOf() < intDelay &&  intDone === false) {
-										intDone = deviceInstances[instanceId].commandClasses[commandClassId].data.interviewDone.value;
+										intDone = deviceCC.data.interviewDone.value;
 									}
 									
 									if (intDone === false) {
 										try {
 											// call preInteview functions from postfix.json
 											postFix.forEach(function(fix){
-												if(!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0){
+												if (!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0) {
 													fix.preInterview.forEach(function(func){
 														eval(func);
 													});
 												}
 											});
-										}catch(e){
+										} catch(e) {
 											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
 										}
 									}
 								}
 																
 								// call postInterview functions from postfix.json
-								postFix.forEach(function(fix){
-									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0){
-										fix.postInterview.forEach(function(func){
+								postFix.forEach(function(fix) {
+									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0) {
+										fix.postInterview.forEach(function(func) {
 											eval(func);
 										});
 									}
 								});
-							}catch(e){
+							} catch(e) {
 								console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
 							}
 						}
 					}
 
-					if(create){
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false);
+					if (create || _.size(preventCreation) > 0) {
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, preventCreation);
 					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
@@ -1198,6 +1332,16 @@ ZWave.prototype.gateDevicesStart = function () {
 			self.parseDelCommandClass(nodeId, instanceId, commandClassId);
 		}
 	}, this.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["CommandRemoved"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+	
+	self.dataBind(self.gateDataBinding, self.zway, "lastExcludedDevice", function(type) {
+		var _id = this.value,
+		    _toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0; }).map(function(el) { return el.id; });
+
+		_toRemove.forEach(function (name) {
+			self.controller.devices.remove(name);
+			self.controller.devices.cleanup(name);
+		});
+	}, "");	
 };
 
 ZWave.prototype.gateDevicesStop = function () {
@@ -1226,7 +1370,7 @@ ZWave.prototype.gateDevicesStop = function () {
 	}
 };
 
-ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded) {
+ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded, preventCreation) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
@@ -1264,14 +1408,40 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		function compileTitle() {
-			var args = new Array();
+			var args = [],
+				sortArgs = [],
+				last = 0;
+
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
 			}
+
+			last = args.length - 1
+
+			// add vendorName on first position
 			if (vendorName) {
-				args.push(vendorName);
+				sortArgs.push(vendorName);
 			}
-			return args.join(' ');
+
+			// add probeType on second position if available
+			if(last > 1 && args[1]) {
+				sortArgs.push(args[1]);
+			}
+
+			// add CC type if array is still empty
+			if (sortArgs.length < 1) {
+				sortArgs.push(args[0]);
+			}
+
+			// add CC type
+			if (sortArgs.indexOf(args[0]) < 0 && args[0] !== 'Sensor') {
+				sortArgs.push(args[0]);
+			}
+
+			// add id
+			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
+			
+			return sortArgs.join(' ');
 		}
 
 		if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
@@ -1384,11 +1554,6 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type, arg) {
-				        if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"]) && this.updateTime > this.invalidateTime) {
-				                setTimeout(function () {
-				                        self.zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].Get();
-                                                }, 1000);
-				        }
 					try {
 						vDev.set("metrics:level", this.value);
 					} catch (e) {}
@@ -1451,88 +1616,90 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			Object.keys(cc.data).forEach(function (colorId) {
-				colorId = parseInt(colorId, 10);
-				if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
-					var vDev = self.controller.devices.create({
-						deviceId: vDevId + separ + colorId,
-						defaults: {
-							deviceType: "switchMultilevel",
-							metrics: {
-								icon: 'multilevel',
-								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
-								level: 'off'
-							}
-						},
-						overlay: {},
-						handler: function(command, args) {
-							var newVal;
-							// up, down for Blinds
-							if ("on" === command || "up" === command) {
-								newVal = 255;
-							} else if ("off" === command || "down" === command) {
-								newVal = 0;
-							} else if ("min" === command) {
-								newVal = 10;
-							} else if ("max" === command || "upMax" === command) {
-								newVal = 99;
-							} else if ("increase" === command) {
-								newVal = this.metrics.level + 10;
-								if (0 !== newVal % 10) {
-									newVal = Math.round(newVal / 10) * 10;
+				if (!preventCreation[colorId]) {
+					colorId = parseInt(colorId, 10);
+					if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
+						var vDev = self.controller.devices.create({
+							deviceId: vDevId + separ + colorId,
+							defaults: {
+								deviceType: "switchMultilevel",
+								metrics: {
+									icon: 'multilevel',
+									title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
+									level: 'off'
 								}
-								if (newVal > 99) {
-									newVal = 99;
-								}
-
-							} else if ("decrease" === command) {
-								newVal = this.metrics.level - 10;
-								if (newVal < 0) {
-									newVal = 0;
-								}
-								if (0 !== newVal % 10) {
-									newVal = Math.round(newVal / 10) * 10;
-								}
-							} else if ("exact" === command || "exactSmooth" === command) {
-								newVal = parseInt(args.level, 10);
-								if (newVal < 0) {
-									newVal = 0;
-								} else if (newVal === 255) {
+							},
+							overlay: {},
+							handler: function(command, args) {
+								var newVal;
+								// up, down for Blinds
+								if ("on" === command || "up" === command) {
 									newVal = 255;
-								} else if (newVal > 99) {
-									if (newVal === 100) {
-										newVal = 99;
-									} else {
-										newVal = null;
+								} else if ("off" === command || "down" === command) {
+									newVal = 0;
+								} else if ("min" === command) {
+									newVal = 10;
+								} else if ("max" === command || "upMax" === command) {
+									newVal = 99;
+								} else if ("increase" === command) {
+									newVal = this.metrics.level + 10;
+									if (0 !== newVal % 10) {
+										newVal = Math.round(newVal / 10) * 10;
 									}
+									if (newVal > 99) {
+										newVal = 99;
+									}
+
+								} else if ("decrease" === command) {
+									newVal = this.metrics.level - 10;
+									if (newVal < 0) {
+										newVal = 0;
+									}
+									if (0 !== newVal % 10) {
+										newVal = Math.round(newVal / 10) * 10;
+									}
+								} else if ("exact" === command || "exactSmooth" === command) {
+									newVal = parseInt(args.level, 10);
+									if (newVal < 0) {
+										newVal = 0;
+									} else if (newVal === 255) {
+										newVal = 255;
+									} else if (newVal > 99) {
+										if (newVal === 100) {
+											newVal = 99;
+										} else {
+											newVal = null;
+										}
+									}
+								} else if ("stop" === command) { // Commands for Blinds
+									cc.StopLevelChange(colorId);
+								} else if ("startUp" === command) {
+									cc.StartLevelChange(colorId, 0);
+								} else if ("startDown" === command) {
+									cc.StartLevelChange(colorId, 1);
 								}
-							} else if ("stop" === command) { // Commands for Blinds
-								cc.StopLevelChange(colorId);
-							} else if ("startUp" === command) {
-								cc.StartLevelChange(colorId, 0);
-							} else if ("startDown" === command) {
-								cc.StartLevelChange(colorId, 1);
-							}
 
-							if (0 === newVal || !!newVal) {
-								if ("exactSmooth" === command)
-									cc.Set(colorId, newVal, args.duration);
-								else
-									cc.Set(colorId, newVal);
-							}
-						},
-						moduleId: self.id
-					});
+								if (0 === newVal || !!newVal) {
+									if ("exactSmooth" === command)
+										cc.Set(colorId, newVal, args.duration);
+									else
+										cc.Set(colorId, newVal);
+								}
+							},
+							moduleId: self.id
+						});
 
-					if (vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, colorId + ".level", function(type) {
-							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-								self.controller.devices.remove(vDevId + separ + colorId);
-							} else {
-								try {
-									vDev.set("metrics:level", this.value);
-								} catch (e) {}
-							}
-						}, "value");
+						if (vDev) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, colorId + ".level", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									self.controller.devices.remove(vDevId + separ + colorId);
+								} else {
+									try {
+										vDev.set("metrics:level", this.value);
+									} catch (e) {}
+								}
+							}, "value");
+						}
 					}
 				}
 			});
@@ -1548,56 +1715,59 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
-				sensorTypeId = parseInt(sensorTypeId, 10);
-				if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
-					defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-					defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
-					// aivs // Motion icon for Sensor Binary by default
-					defaults.metrics.icon = "motion";
+				if (!preventCreation[sensorTypeId]) {
+					sensorTypeId = parseInt(sensorTypeId, 10);
+					if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
+						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
+						defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						// aivs // Motion icon for Sensor Binary by default
+						defaults.metrics.icon = "motion";
 
-					if (sensorTypeId === 2) {
-							defaults.metrics.icon = "smoke";
-					} else if (sensorTypeId === 3 || sensorTypeId === 4) {
-							defaults.metrics.icon = "co";
-					} else if (sensorTypeId === 6) {
-							defaults.metrics.icon = "flood";
-					} else if (sensorTypeId === 7) {
-							defaults.metrics.icon = "cooling";
-					} else if (sensorTypeId === 10) {
-							defaults.metrics.icon = "door";
-					} else if (sensorTypeId === 12) {
-							defaults.metrics.icon = "motion";
-					}
+						if (sensorTypeId === 2) {
+								defaults.metrics.icon = "smoke";
+						} else if (sensorTypeId === 3 || sensorTypeId === 4) {
+								defaults.metrics.icon = "co";
+						} else if (sensorTypeId === 6) {
+								defaults.metrics.icon = "flood";
+						} else if (sensorTypeId === 7) {
+								defaults.metrics.icon = "cooling";
+						} else if (sensorTypeId === 10) {
+								defaults.metrics.icon = "door";
+						} else if (sensorTypeId === 12) {
+								defaults.metrics.icon = "motion";
+						}
 
-					var vDev = self.controller.devices.create({
-						deviceId: vDevId + separ + sensorTypeId,
-						defaults: defaults,
-						overlay: {},
-						handler: function(command) {
-							if (command === "update") {
-								cc.Get(sensorTypeId);
-							}
-						},
-						moduleId: self.id
-					});
+						var vDev = self.controller.devices.create({
+							deviceId: vDevId + separ + sensorTypeId,
+							defaults: defaults,
+							overlay: {},
+							handler: function(command) {
+								if (command === "update") {
+									cc.Get(sensorTypeId);
+								}
+							},
+							moduleId: self.id
+						});
 
-					if (vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function(type) {
-							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-								self.controller.devices.remove(vDevId + separ + sensorTypeId);
-							} else {
-								try {
-									vDev.set("metrics:level", this.value ? "on" : "off");
-								} catch (e) {};
-							}
-						}, "value");
+						if (vDev) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									self.controller.devices.remove(vDevId + separ + sensorTypeId);
+								} else {
+									try {
+										vDev.set("metrics:level", this.value ? "on" : "off");
+									} catch (e) {};
+								}
+							}, "value");
+						}
 					}
 				}
+				
 			});
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
 					}
 				}, "child");
 			}
@@ -1613,50 +1783,56 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
-				sensorTypeId = parseInt(sensorTypeId, 10);
-				if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
-					defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-					defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-					defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
-					if (sensorTypeId === 1) {
-							defaults.metrics.icon = "temperature";
-					} else if (sensorTypeId === 3) {
-							defaults.metrics.icon = "luminosity";
-					} else if (sensorTypeId === 4 || sensorTypeId === 15 || sensorTypeId === 16) {
-							defaults.metrics.icon = "energy";
-					} else if (sensorTypeId === 5) {
-							defaults.metrics.icon = "humidity";
-					}
+				if (!preventCreation[sensorTypeId]) {
+					sensorTypeId = parseInt(sensorTypeId, 10);
+					if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
+						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
+						defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
+						defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						if (sensorTypeId === 1) {
+								defaults.metrics.icon = "temperature";
+						} else if (sensorTypeId === 3) {
+								defaults.metrics.icon = "luminosity";
+						} else if (sensorTypeId === 4 || sensorTypeId === 15 || sensorTypeId === 16) {
+								defaults.metrics.icon = "energy";
+						} else if (sensorTypeId === 5) {
+								defaults.metrics.icon = "humidity";
+						} else if (sensorTypeId === 9) {
+								defaults.metrics.icon = "barometer";
+						} else if (sensorTypeId === 27) {
+								defaults.metrics.icon = "ultraviolet";
+						}
 
-					var vDev = self.controller.devices.create({
-						deviceId: vDevId + separ + sensorTypeId,
-						defaults: defaults,
-						overlay: {},
-						handler: function(command) {
-							if (command === "update") {
-								cc.Get(sensorTypeId);
-							}
-						},
-						moduleId: self.id
-					});
+						var vDev = self.controller.devices.create({
+							deviceId: vDevId + separ + sensorTypeId,
+							defaults: defaults,
+							overlay: {},
+							handler: function(command) {
+								if (command === "update") {
+									cc.Get(sensorTypeId);
+								}
+							},
+							moduleId: self.id
+						});
 
-					if (vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function(type) {
-							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-								self.controller.devices.remove(vDevId + separ + sensorTypeId);
-							} else {
-								try {
-									vDev.set("metrics:level", this.value);
-								} catch (e) {}
-							}
-						}, "value");
+						if (vDev) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									self.controller.devices.remove(vDevId + separ + sensorTypeId);
+								} else {
+									try {
+										vDev.set("metrics:level", this.value);
+									} catch (e) {}
+								}
+							}, "value");
+						}
 					}
 				}
 			});
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
 					}
 				}, "child");
 			}
@@ -1672,41 +1848,43 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 			};
 			Object.keys(cc.data).forEach(function (scaleId) {
-				scaleId = parseInt(scaleId, 10);
-				if (!isNaN(scaleId) && !self.controller.devices.get(vDevId + separ + scaleId)) {
-					defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
-					defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-					defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
+				if (!preventCreation[scaleId]) {
+					scaleId = parseInt(scaleId, 10);
+					if (!isNaN(scaleId) && !self.controller.devices.get(vDevId + separ + scaleId)) {
+						defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
+						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
+						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
 
-					var vDev = self.controller.devices.create({
-						deviceId: vDevId + separ + scaleId,
-						defaults: defaults,
-						overlay: {},
-						handler: function(command) {
-							if (command === "update") {
-								cc.Get(scaleId);
-							}
-						},
-						moduleId: self.id
-					});
+						var vDev = self.controller.devices.create({
+							deviceId: vDevId + separ + scaleId,
+							defaults: defaults,
+							overlay: {},
+							handler: function(command) {
+								if (command === "update") {
+									cc.Get(scaleId);
+								}
+							},
+							moduleId: self.id
+						});
 
-					if (vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function(type) {
-							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-								self.controller.devices.remove(vDevId + separ + scaleId);
-							} else {
-								try {
-									vDev.set("metrics:level", this.value);
-								} catch (e) {}
-							}
-						}, "value");
+						if (vDev) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									self.controller.devices.remove(vDevId + separ + scaleId);
+								} else {
+									try {
+										vDev.set("metrics:level", this.value);
+									} catch (e) {}
+								}
+							}, "value");
+						}
 					}
 				}
 			});
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
 					}
 				}, "child");
 			}
@@ -1803,12 +1981,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						overlay: {},
 						handler: function (command) {
 							if ("on" === command) {
-							        var lastMode = withModeHeat ? MODE_HEAT : MODE_COOL;
-							        
-							        // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
-							        if (withModeHeat && withModeCool && instance.ThermostatSetPoint && instance.ThermostatSetPoint.data[MODE_HEAT] && instance.ThermostatSetPoint.data[MODE_COOL]) {
-							                lastMode = instance.ThermostatSetPoint.data[MODE_HEAT].setVal.updateTime > instance.ThermostatSetPoint.data[MODE_COOL].setVal.updateTime ? MODE_HEAT : MODE_COOL;
-                                                                }
+								var lastMode = withModeHeat ? MODE_HEAT : MODE_COOL;
+								
+								// modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
+								if (withModeHeat && withModeCool && instance.ThermostatSetPoint && instance.ThermostatSetPoint.data[MODE_HEAT] && instance.ThermostatSetPoint.data[MODE_COOL]) {
+									lastMode = instance.ThermostatSetPoint.data[MODE_HEAT].setVal.updateTime > instance.ThermostatSetPoint.data[MODE_COOL].setVal.updateTime ? MODE_HEAT : MODE_COOL;
+								}
 								instance.ThermostatMode.Set(lastMode);
 							} else if ("off" === command) {
 								instance.ThermostatMode.Set(MODE_OFF);
@@ -1831,50 +2009,50 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL],
 					modes = [];
-                                
+				
 				withTempHeat && modes.push(MODE_HEAT);
 				withTempCool && modes.push(MODE_COOL);
 				
 				var t_vDev = [];
 				modes.forEach(function(mode) {
 					var DH = instance.ThermostatSetPoint.data[mode],
-                                                _vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode;
+						_vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode;
 					
 					if (!self.controller.devices.get(_vDevId)) {
-                                                t_vDev[mode] = self.controller.devices.create({
-                                                        deviceId: _vDevId,
-                                                        defaults: {
-                                                                deviceType: "thermostat",
-                                                                metrics: {
-                                                                        scaleTitle: instance.ThermostatSetPoint.data[mode].scaleString.value,
-                                                                        level: DH.val.value,
-                                                                        min: 5,
-                                                                        max: 40,
-                                                                        icon: 'thermostat',
-                                                                        title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
-                                                                }
-                                                        },
-                                                        overlay: {},
-                                                        handler: function (command, args) {
-                                                                instance.ThermostatSetPoint.Set(mode, args.level);
-                                                                instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
-                                                        },
-                                                        moduleId: self.id
-                                                });
+						t_vDev[mode] = self.controller.devices.create({
+							deviceId: _vDevId,
+							defaults: {
+								deviceType: "thermostat",
+								metrics: {
+									scaleTitle: DH.scaleString.value,
+									level: DH.val.value,
+									min: DH.min ? DH.min.value : (DH.scale == 0 ? 5 : 41),
+									max: DH.max ? DH.max.value : (DH.scale == 0 ? 40 : 104),
+									icon: 'thermostat',
+									title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
+								}
+							},
+							overlay: {},
+							handler: function (command, args) {
+								instance.ThermostatSetPoint.Set(mode, args.level);
+								instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
+							},
+							moduleId: self.id
+						});
 
-                                                if (t_vDev[mode]) {
-                                                        self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
-                                                                if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                                                                        delete t_vDev[mode];
-                                                                        self.controller.devices.remove(_vDevId);
-                                                                } else {
-                                                                        try {
-                                                                                t_vDev[mode].set("metrics:level", this.value);
-                                                                        } catch (e) {}
-                                                                }
-                                                        });
-                                                }
-                                        }
+						if (t_vDev[mode]) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									delete t_vDev[mode];
+									self.controller.devices.remove(_vDevId);
+								} else {
+									try {
+										t_vDev[mode].set("metrics:level", this.value);
+									} catch (e) {}
+								}
+							});
+						}
+					}
 				});
 			}
 		} else if (this.CC["AlarmSensor"] === commandClassId) {
@@ -1886,73 +2064,45 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					title: ''
 				}
 			};
-			/*d_defaults = {
-				deviceType: 'toggleButton',
-				metrics: {
-					icon: 'alarm',
-					level: 'off',
-					title: ''
-				}
-			};*/
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
-				sensorTypeId = parseInt(sensorTypeId, 10);
+				if (!preventCreation[sensorTypeId]) {
+					sensorTypeId = parseInt(sensorTypeId, 10);
 
-				var a_id = vDevId + separ + sensorTypeId + separ + "A";
-				    //d_id = vDevId + separ + sensorTypeId + separ + "D";
+					var a_id = vDevId + separ + sensorTypeId + separ + "A";
 
-				if (!isNaN(sensorTypeId) && !self.controller.devices.get(a_id)) { // && !self.controller.devices.get(d_id)
-					a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
-					//d_defaults.metrics.title = compileTitle('Disarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+					if (!isNaN(sensorTypeId) && !self.controller.devices.get(a_id)) {
+						a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
 
-					var a_vDev = self.controller.devices.create({
-						deviceId: a_id,
-						defaults: a_defaults,
-						overlay: {},
-						handler: function(command) {
-							if (command === "update") {
-								cc.Get(sensorTypeId);
-							}
-						},
-						moduleId: self.id
-					});
+						var a_vDev = self.controller.devices.create({
+							deviceId: a_id,
+							defaults: a_defaults,
+							overlay: {},
+							handler: function(command) {
+								if (command === "update") {
+									cc.Get(sensorTypeId);
+								}
+							},
+							moduleId: self.id
+						});
 
-					/*
-					var d_vDev = self.controller.devices.create({
-						deviceId: d_id,
-						defaults: d_defaults,
-						overlay: {},
-						handler: function(command) {
-							if (command === "on") {
-								var vDev = this.controller.devices.get(a_id);
-								if (vDev) {
+						if (a_vDev) {
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
+								} else {
 									try {
-										vDev.set("metrics:level", "off");
+										a_vDev.set("metrics:level", this.value ? "on" : "off");
 									} catch (e) {}
 								}
-								this.set("metrics:level", "on"); // update on ourself to allow catch this event
-							}
-						},
-						moduleId: self.id
-					});
-					*/
-					if (a_vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
-							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-								self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
-								//self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "D");
-							} else {
-								try {
-									a_vDev.set("metrics:level", this.value ? "on" : "off");
-								} catch (e) {}
-							}
-						}, "value");
+							}, "value");
+						}
 					}
 				}
 			});
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true,preventCreation);
 					}
 				}, "child");
 			}
@@ -1967,178 +2117,201 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					title: ''
 				}
 			};
-			/*d_defaults = {
-				deviceType: 'toggleButton',
-				metrics: {
-					icon: 'alarm',
-					level: 'off',
-					title: ''
-				}
-			};*/
-			Object.keys(cc.data).forEach(function (notificationTypeId) {
-				notificationTypeId = parseInt(notificationTypeId, 10);
+			Object.keys(cc.data).forEach(function (notificationTypeId) {				
+				if ((preventCreation[notificationTypeId] && preventCreation[notificationTypeId].length > 0) || !preventCreation[notificationTypeId]) {
+					notificationTypeId = parseInt(notificationTypeId, 10);
 
-				if (!isNaN(notificationTypeId)) {
-				        var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
-					if (notificationTypeId === 0x06 && (cc.data[notificationTypeId].eventMask.value & ((1 << DOOR_OPEN) | (1 << DOOR_CLOSE)))) { // Very special case of Door
-                                                a_defaults.metrics.icon = 'door';
-                                                
-                                                var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
+					preventCreatingEventTypes = preventCreation[notificationTypeId] || null;
 
-                                                if (!self.controller.devices.get(a_id)) {
-                                                        a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+					if (!isNaN(notificationTypeId)) {
+						var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
+						if (notificationTypeId === 0x06 && (cc.data[notificationTypeId].eventMask.value & ((1 << DOOR_OPEN) | (1 << DOOR_CLOSE)))) { // Very special case of Door
+							a_defaults.metrics.icon = 'door';
+							
+							var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
-                                                        var a_vDev = self.controller.devices.create({
-                                                                deviceId: a_id,
-                                                                defaults: a_defaults,
-                                                                overlay: {},
-                                                                handler: function(command) {
-                                                                        if (command === "update") {
-                                                                                cc.Get(0, notificationTypeId, DOOR_OPEN);
-                                                                                cc.Get(0, notificationTypeId, DOOR_CLOSE);
-                                                                        }
-                                                                },
-                                                                moduleId: self.id
-                                                        });
+							if (!self.controller.devices.get(a_id)) {
+								a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 
-                                                        if (a_vDev) {
-                                                                self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-                                                                        if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-                                                                                self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
-                                                                        } else {
-                                                                                if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) {
-                                                                                        try {
-                                                                                                a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
-                                                                                        } catch (e) {}
-                                                                                }
-                                                                        }
-                                                                }, "value");
-                                                        }
-                                                }
-                                        }
-                                        
-					// we handle only few Notification Types
-					switch (notificationTypeId) {
-						case 0x01: // Smoke
-							a_defaults.metrics.icon = 'smoke';
-							break;
-						case 0x02: // CO
-							a_defaults.metrics.icon = 'co';
-							break;
-						case 0x03: // CO2
-							a_defaults.metrics.icon = 'co';
-							break;
-						case 0x04: // Heat
-							a_defaults.metrics.icon = 'alarm';
-							break;
-						case 0x05: // Water
-							a_defaults.metrics.icon = 'flood';
-							break;
-						case 0x07: // Home Security (Burglar)
-							a_defaults.metrics.icon = 'smoke';
-							break;
-						case 0x08: // Power
-							a_defaults.metrics.icon = 'alarm';
-							break;
-						case 0x09: // System
-							a_defaults.metrics.icon = 'alarm';
-							break;
-						case 0x0a: // Emergency
-							a_defaults.metrics.icon = 'alarm';
-							break;
-						case 0x0b: // Clock
-							a_defaults.metrics.icon = 'alarm';
-							break;
-						default:
-							return; // skip this type
+								var a_vDev = self.controller.devices.create({
+									deviceId: a_id,
+									defaults: a_defaults,
+									overlay: {},
+									handler: function(command) {
+										if (command === "update") {
+											cc.Get(0, notificationTypeId, DOOR_OPEN);
+											cc.Get(0, notificationTypeId, DOOR_CLOSE);
+										}
+									},
+									moduleId: self.id
+								});
+
+								if (a_vDev) {
+									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+											self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
+										} else {
+											if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) {
+												try {
+													a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
+												} catch (e) {}
+											}
+										}
+									}, "value");
+								}
+							}
+						}
+						
+						// we handle only few Notification Types
+						switch (notificationTypeId) {
+							case 0x01: // Smoke
+								a_defaults.metrics.icon = 'smoke';
+								break;
+							case 0x02: // CO
+								a_defaults.metrics.icon = 'co';
+								break;
+							case 0x03: // CO2
+								a_defaults.metrics.icon = 'co';
+								break;
+							case 0x04: // Heat
+								a_defaults.metrics.icon = 'alarm';
+								break;
+							case 0x05: // Water
+								a_defaults.metrics.icon = 'flood';
+								break;
+							case 0x07: // Home Security (Burglar)
+								a_defaults.metrics.icon = 'smoke';
+								break;
+							case 0x08: // Power
+								a_defaults.metrics.icon = 'alarm';
+								break;
+							case 0x09: // System
+								a_defaults.metrics.icon = 'alarm';
+								break;
+							case 0x0a: // Emergency
+								a_defaults.metrics.icon = 'alarm';
+								break;
+							case 0x0b: // Clock
+								a_defaults.metrics.icon = 'alarm';
+								break;
+							default:
+								return; // skip this type
+						}
+						
+						maskToTypes = function(bitmask) {
+							var types = [], n = 0;
+							
+							while (bitmask) {
+								if (bitmask & 0x01) {
+									types.push(n);
+								}
+								n++;
+								bitmask >>= 1;
+							}
+							
+							return types;
+						};
+						
+						// handle 0xFE unknown
+						// special case by Sigma for Unknown event - not listed in eventMask
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + ".event", function(type) {
+							var eventTypeId = parseInt(this.value, 10);
+							if (eventTypeId === 0xFE) {
+								var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
+
+								if (!self.controller.devices.get(a_id)) {
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+
+									var a_vDev = self.controller.devices.create({
+										deviceId: a_id,
+										defaults: a_defaults,
+										overlay: {},
+										handler: function(command) {
+											if (command === "update") {
+												cc.Get(0, notificationTypeId, eventTypeId);
+											}
+										},
+										moduleId: self.id
+									});
+
+									if (a_vDev) {
+										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
+											} else {
+												if (this.event.value === eventTypeId || this.event.value === 0) {
+													try {
+														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+													} catch (e) {}
+												}
+											}
+										}, "value");
+									}
+								}
+							}
+						});
+						
+						maskToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
+							if(preventCreatingEventTypes === null || preventCreatingEventTypes.indexOf(eventTypeId) === -1) {
+								eventTypeId = parseInt(eventTypeId, 10);
+
+								var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
+
+								if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+
+									var a_vDev = self.controller.devices.create({
+										deviceId: a_id,
+										defaults: a_defaults,
+										overlay: {},
+										handler: function(command) {
+											if (command === "update") {
+												cc.Get(0, notificationTypeId, eventTypeId);
+											}
+										},
+										moduleId: self.id
+									});
+
+									if (a_vDev) {
+										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
+											} else {
+												if (this.event.value === eventTypeId || this.event.value === 0) {
+													try {
+														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+													} catch (e) {}
+												}
+											}
+										}, "value");
+									}
+								}
+							}
+						});
 					}
-					//d_defaults.metrics.icon = a_defaults.metrics.icon;
-					
-					maskToTypes = function(bitmask) {
-						var types = [], n = 0;
-						
-						while (bitmask) {
-							if (bitmask & 0x01) {
-								types.push(n);
-							}
-							n++;
-							bitmask >>= 1;
-						}
-						
-						return types;
-					};
-					
-					maskToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
-						eventTypeId = parseInt(eventTypeId, 10);
-
-						var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
-						    //d_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "D";
-
-						if (!isNaN(eventTypeId)  && !self.controller.devices.get(a_id)) { // && !self.controller.devices.get(d_id)
-							a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
-							//d_defaults.metrics.title = compileTitle('Disarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
-
-							var a_vDev = self.controller.devices.create({
-								deviceId: a_id,
-								defaults: a_defaults,
-								overlay: {},
-								handler: function(command) {
-									if (command === "update") {
-										cc.Get(0, notificationTypeId, eventTypeId);
-									}
-								},
-								moduleId: self.id
-							});
-
-							/*
-							var d_vDev = self.controller.devices.create({
-								deviceId: d_id,
-								defaults: d_defaults,
-								overlay: {},
-								handler: function(command) {
-									if (command === "on") {
-										var vDev = this.controller.devices.get(a_id);
-										if (vDev) {
-											try {
-												vDev.set("metrics:level", "off");
-											} catch (e) {}
-										}
-										this.set("metrics:level", "on"); // update on ourself to allow catch this event
-									}
-								},
-								moduleId: self.id
-							});
-							*/
-							if (a_vDev) {
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-										self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
-										//self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "D");
-									} else {
-										if (this.event.value === eventTypeId || this.event.value === 0) {
-											try {
-												a_vDev.set("metrics:level", (this.event.value && this.status.value) ? "on" : "off");
-											} catch (e) {}
-										}
-									}
-								}, "value");
-							}
-						}
-					});
 				}
 			});
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
 					}
 				}, "child");
 			}
+		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
+			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
+				if (this.value) {
+					var moduleName = self.getName(),
+					    langFile = self.controller.loadModuleLang(moduleName);
+					
+					self.controller.addNotification("error", langFile.err_reset + nodeId, "connection", moduleName);
+				}
+			});
 		}
 	} catch (e) {
-		var moduleName = "ZWave",
-		langFile = this.controller.loadModuleLang(moduleName),
-	   	values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
+		var moduleName = this.getName(),
+		    langFile = this.controller.loadModuleLang(moduleName),
+		    values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
 		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
 		console.log(e.stack);

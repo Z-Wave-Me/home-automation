@@ -1,6 +1,6 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 2.0.4
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -28,24 +28,26 @@ _module = IfThen;
 IfThen.prototype.init = function (config) {
     IfThen.super_.prototype.init.call(this, config);
 
-    var self = this;
+    var self = this,
+        ifElement = self.config.sourceDevice[self.config.sourceDevice.filterIf];
 
     this.handlerLevel = function (sDev) {
         var that = self,
             value = sDev.get("metrics:level");
 
-        if(value === self.config.sourceDevice.status || sDev.get("deviceType") === "buttonControl"){
+        if(value === ifElement.status || sDev.get('deviceType') === 'toggleButton'){
             self.config.targets.forEach(function(el) {
-                var id = el[el.filter].target,
-                    lvl = el[el.filter].status,
+                var type = el.filterThen,
+                    id = el[type].target,
+                    lvl = el[type].status,
                     vDev = that.controller.devices.get(id);
                 
                 if (vDev) {
-                    if (vDev.get("deviceType") === el.filter && el.filter === "switchMultilevel") {
+                    if (vDev.get("deviceType") === type && type === "switchMultilevel") {
                         vDev.performCommand("exact", { level: lvl });
-                    } else if (vDev.get("deviceType") === "toggleButton" && el.filter === "scene") {
+                    } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
                         vDev.performCommand("on");
-                    } else if (vDev.get("deviceType") === el.filter) {
+                    } else if (vDev.get("deviceType") === type) {
                         vDev.performCommand(lvl);
                     }
                 }
@@ -54,15 +56,16 @@ IfThen.prototype.init = function (config) {
     };
 
     // Setup metric update event listener
-    self.controller.devices.on(self.config.sourceDevice.device, 'change:metrics:level', self.handlerLevel);
-
+    if(ifElement && ifElement.device){
+        self.controller.devices.on(ifElement.device, 'change:metrics:level', self.handlerLevel);
+    }
 };
 
 IfThen.prototype.stop = function () {
     var self = this;
     
     // remove event listener
-    self.controller.devices.off(self.config.sourceDevice.device, 'change:metrics:level', self.handlerLevel);
+    self.controller.devices.off(self.config.sourceDevice[self.config.sourceDevice.filterIf],'change:metrics:level', self.handlerLevel);
 
     IfThen.super_.prototype.stop.call(this);
 };

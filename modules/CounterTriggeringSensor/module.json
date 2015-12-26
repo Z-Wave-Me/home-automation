@@ -1,0 +1,78 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "automation_basic",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+    "moduleName":"CounterTriggeringSensor",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"binarySensor": null,
+		"eventSensor": "on",
+		"initialValue":"0.0",
+		"valueToAdd": "1.0",
+		"scaleTitle": "L"
+	}, 
+	"schema": {
+		"type": "object",
+		"properties": {
+			"binarySensor": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_sensorBinary:deviceId, namespaces:devices_switchBinary:deviceId",
+				"required": true
+			},
+			"eventSensor": {
+				"type": "integer",
+				"required": true,
+				"enum": ["on", "off"]
+			},
+			"initialValue": {
+				"type": "number",
+				"required": true
+			},
+			"valueToAdd": {
+				"type": "number",
+				"required": true
+			},
+			"scaleTitle": {
+				"type": "string",
+				"required": true
+			}
+
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"binarySensor": {
+				"label": "__l_BinarySensor__",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+                "optionLabels": "namespaces:devices_sensorBinary:deviceName, namespaces:devices_switchBinary:deviceName"
+			},
+			"eventSensor": {
+				"label": "__l_EventSensor__",
+				"optionLabels": ["__on__", "__off__"]
+			},
+			"initialValue": {
+				"label": "__l_InitialValue__"
+			},
+			"valueToAdd": {
+				"label": "__l_ValueToAdd__"
+			},
+			"scaleTitle": {
+				"label": "__l_ScaleTitle__"
+			}
+		}
+	}
+}

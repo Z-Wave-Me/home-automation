@@ -5,7 +5,7 @@
 	"l_name":"Interner Name",
 	"h_name":"Dies sollte ein valider JS key String sein. Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
 	"rl_enableAPI":"Enable Z-Wave API",
-	"h_enableAPI":"Handler HTTP requests to /ZWaveAPI/* and /ZWave/<internal zway name>/*",
+	"h_enableAPI":"Handler HTTP requests to /ZWaveAPI/* and /ZWave/&lt;internal zway name&gt;/*",
 	"rl_publicAPI":"Allow public access to Z-Wave API",
 	"h_publicAPI":"Do not ask for authentication to access Z-Wave API",
 	"rl_createVDev":"Create virtual devices in Home Automation engine",
@@ -16,6 +16,7 @@
 	"h_change_sth":"Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
 	"err_binding_start":"Fehler beim Starten der Z-Wave Bindung: ",
 	"err_connct":"Verbindung verloren zur Z-Wave Geräte-ID: ",
+	"err_reset": "Benutzer zurückgesetzt Z-Wave-Gerät ID: ",
 	"dev_btl":"Z-Wave Geräte-ID ist wieder verbunden: ",
 	"err_dev_create":"vDev konnte mit den folgenden Daten nicht erstellt werden: "
 }

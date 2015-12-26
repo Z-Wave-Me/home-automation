@@ -1,6 +1,6 @@
 {
-	"m_title":"Scheduled Scene",
-	"m_descr":"This app triggers a defined scene once per day on selected weekdays on a given time.<br><br>Settings:<br><ul><li>Pick the time of day</li><li>Pick the week days the scene shall be executed</li><li>Pick a predefined scene. Such a scene need to be defined using the app “Scene”</li></ul>",
+	"m_title":"Schedule",
+	"m_descr":"This app allow to control relays, dimmers, thermostats and scenes on a schedule.<br><br>Settings:<br><ul><li>Pick the time of day</li><li>Pick the week days the scene shall be executed</li><li>Pick a predefined scene. Such a scene need to be defined using the app “Scene”</li></ul>",
 	"monday":"Monday",
 	"tuesday":"Tuesday",
 	"wednesday":"Wednesday",
@@ -9,5 +9,12 @@
 	"saturday":"Saturday",
 	"sunday":"Sunday",
 	"timeFormat":"hh:mm",
-	"l_scene":"Activate scene"
+	"l_switches":"List of switches:",
+	"on":"On",
+	"off":"Off",
+	"l_dimmers":"List of dimmers:",
+	"l_level":"Level",
+	"l_scenes":"List of scenes to activate:",
+	"l_thermostats":"List of thermostats",
+	"l_temperature":"Temperature"
 }

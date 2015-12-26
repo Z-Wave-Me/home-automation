@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
         "moduleName": "ImportRemoteHA",
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -17,7 +17,9 @@
 		"description": "__m_descr__",
 
 		"url": "",
-		"dT": 500,
+		"login":"admin",
+		"password":"admin",
+		"dT": 1000,
 		"skipDevices": [],
 		"renderDevices": []
 	},
@@ -25,6 +27,14 @@
 		"type": "object",
 		"properties": {
 			"url": {
+				"type": "string",
+				"required": true
+			},
+			"login": {
+				"type": "string",
+				"required": true
+			},
+			"password": {
 				"type": "string",
 				"required": true
 			},
@@ -66,6 +76,13 @@
 			"url": {
 				"label": "__l_url__",
 				"placeholder": "http://192.168.0.100:8083"
+			},
+			"login": {
+				"label": "__l_login__"
+			},
+			"password": {
+				"type": "password",
+				"label": "__l_password__"
 			},
 			"dT": {
 				"label": "__l_dT__"

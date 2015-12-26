@@ -53,7 +53,12 @@ InfoWidget.prototype.init = function (config) {
                             }          
                         },
                         overlay: {
-                            deviceType: "text"
+                            deviceType: "text",
+                            metrics: {
+                                title: widget.headline,
+                                text: widget.text,
+                                icon: widget.imgURI
+                            } 
                         },
                         moduleId: self.id
                     });
@@ -80,7 +85,12 @@ InfoWidget.prototype.init = function (config) {
                                 }          
                             },
                             overlay: {
-                                deviceType: "text"
+                                deviceType: "text",
+                                metrics: {
+                                    title: widget.headline,
+                                    text: widget.text,
+                                    icon: widget.imgURI
+                                } 
                             },
                             moduleId: self.id
                         });

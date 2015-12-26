@@ -1,6 +1,6 @@
 /*** DummyDevice Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Ray Glendenning <ray.glendenning@gmail.com>
@@ -35,27 +35,32 @@ DummyDevice.prototype.init = function (config) {
         defaults: {
             metrics: {
                 level: 'off',
-                title: 'Dummy ' + this.id
+                title: self.getInstanceTitle(this.id)
             }
         },
         overlay: {
             deviceType: this.config.deviceType
         },
         handler: function(command, args) {
-            var level = command;
-            if (this.get('deviceType') === "switchMultilevel") {
-                if (command === "on") {
-                    level = 99;
-                } else if (command === "off") {
-                    level = 0;
-                } else {
-                    level = args.level;
+            
+            if (command != 'update') {
+                var level = command;
+                
+                if (this.get('deviceType') === "switchMultilevel") {
+                    if (command === "on") {
+                        level = 99;
+                    } else if (command === "off") {
+                        level = 0;
+                    } else {
+                        level = args.level;
+                    }
                 }
+
+                this.set("metrics:level", level);
             }
-            this.set("metrics:level", level);
         },
         moduleId: this.id
-    })
+    });
 };
 
 DummyDevice.prototype.stop = function () {
@@ -70,3 +75,11 @@ DummyDevice.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+DummyDevice.prototype.getInstanceTitle = function (instanceId) {
+    var instanceTitle = this.controller.instances.filter(function (instance){
+        return instance.id === instanceId;
+    });
+
+    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : 'Dummy ' + this.id;
+};

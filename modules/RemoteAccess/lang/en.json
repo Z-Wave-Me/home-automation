@@ -1,10 +1,11 @@
 {
 	"m_title":"Remote Access",
-	"m_descr":"Is necessary to configure remote access in SmartHome UI.",
+	"m_descr":"This app is required to configure the remote access via the Smart Home UI.</br></br><strong>Note:</strong></br></br>Removing or stopping the app will not stop the remote access, if it has not been disabled explicitly under <strong>Settings > Management > Remote Access</strong> in advance.",
 	"l_ra_path":"Absolute path to ZBWConnect on server:",
 	"h_ra_path":"e.g. /etc/zbw or ./zbw - not necessary on raspberry",
 	"load_zbw_error":"Cannot initialize ZBWConnect module. Error: ",
 	"setup_config_zbw_error":"Remote Access is not initialized yet, you probably need to connect to the internet and restart the service in 'Apps > Active > Remote Access'",
 	"config_changed_successful":"Configuration of remote access has changed successfully.",
-	"config_changed_error":"Configuration error: "
+	"config_changed_error":"Configuration error: ",
+	"zbw_service_timeout":"The connection to the ZBW Service has timed out. Please restart the App 'Remote Access' and try it again."
 }
