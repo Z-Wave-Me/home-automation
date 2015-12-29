@@ -2057,8 +2057,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								metrics: {
 									scaleTitle: DH.scaleString.value,
 									level: DH.val.value,
-									min: DH.min ? DH.min.value : (DH.scale == 0 ? 5 : 41),
-									max: DH.max ? DH.max.value : (DH.scale == 0 ? 40 : 104),
+									min: DH.min ? DH.min.value : (DH.scale.value === 0 ? 5 : 41),
+									max: DH.max ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
 									icon: 'thermostat',
 									title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
 								}
