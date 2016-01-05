@@ -79,15 +79,6 @@ AutomationController.prototype.init = function () {
 
     self.loadModules(function () {
         self.emit("core.init");
-
-        // necessary?
-        /*self.devices.on('change', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.location_update",
-                data: JSON.stringify(device.toJSON())
-            });
-            pushNamespaces(device, false);
-        });*/
         
         // update namespaces if device title has changed
         self.devices.on('change:metrics:title', function (device) {
@@ -149,10 +140,22 @@ AutomationController.prototype.setDefaultLang = function (lang) {
 };
 
 AutomationController.prototype.saveConfig = function () {
+
+    // do clean up of location namespaces 
+    cleanupLocations = function (locations) {
+        var newLoc = [];
+
+        locations.forEach(function(loc){
+            newLoc.push(_.omit(loc, 'namespaces'));
+        });
+
+        return newLoc;
+    };
+
     var cfgObject = {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
-        "locations": this.locations,
+        "locations": cleanupLocations(this.locations),
         "profiles": this.profiles,
         "instances": this.instances,
         "modules_categories": this.modules_categories
@@ -1285,6 +1288,13 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
 
                 paramEntry = paramEntry? paramEntry : {};
 
+                // create 'none' entry to get an object with array of 'none probetype' entries
+                if (_.isArray(paramEntry)){
+                    paramEntry = {
+                        none: paramEntry
+                    };
+                }
+
                 // check for CC sub type and add device namespaces
                 if(cutType.length > 1){
 
@@ -1319,14 +1329,21 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 // add entries to type entries
                 paramEntry = paramEntry? paramEntry : [];
 
-                if (!_.isArray(paramEntry) && Object.keys(paramEntry).length < 1){
-                    paramEntry = [];
-
-                    paramEntry = addRemoveEntry(paramEntry);
-
-                } else if (_.isArray(paramEntry)){
-                    paramEntry = addRemoveEntry(paramEntry);
+                // create 'none' entry to get an object with array of 'none probetype' entries
+                if (_.isArray(paramEntry)){
+                    paramEntry = {
+                        none: paramEntry
+                    };
+                } else if(!_.isArray(paramEntry) && !paramEntry['none']){
+                    paramEntry['none'] = paramEntry;
                 }
+
+                paramEntry.none = addRemoveEntry(paramEntry.none);
+            }
+
+            // delete 'none' entry if it exists as a single entry
+            if (!_.isArray(paramEntry) && Object.keys(paramEntry).length === 1 && paramEntry['none']) {
+                paramEntry = paramEntry['none'];
             }
 
             // set namespaces
@@ -1628,8 +1645,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                                 k.forEach(function(key) {
                                     if(key === 'devicesByRoom') {
                                         dSRoom['enum'].forEach(function(roomId, index) {
-                                            var cnt = index + 1,
-                                                locNspc = [],
+                                            var locNspc = [],
                                                 nspc =[];
 
                                             location = self.getLocation(self.locations, roomId);
@@ -1641,9 +1657,9 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                                             dSDevByRoom['enum'] = nspc && nspc.length > 0? nspc: [langFile.no_devices_found];
                                             dSDevByRoom['dependencies'] = "room";
 
-                                            newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
-                                            if (newObj['devicesByRoom_' + cnt]['title']) {
-                                                newObj['devicesByRoom_' + cnt]['title'] = newObj['devicesByRoom_' + cnt]['title'] + '_' + cnt;
+                                            newObj['devicesByRoom_' + roomId] = _.clone(dSDevByRoom);
+                                            if (newObj['devicesByRoom_' + roomId]['title']) {
+                                                newObj['devicesByRoom_' + roomId]['title'] = newObj['devicesByRoom_' + roomId]['title'] + '_' + roomId;
                                             }
                                         });
                                     } else {
@@ -1682,23 +1698,24 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                                     if(key === 'devicesByRoom') {
                                         dSRoom['optionLabels'].forEach(function(roomName, index) {
                                     
-                                            var cnt = index + 1,
-                                                locNspc = [],
-                                                nspc = [];
+                                            var locNspc = [],
+                                                nspc = [],
+                                                locationId;
 
                                             location = self.locations.filter(function(location){ return location.title === roomName });
+                                            locationId = location[0]? location[0].id : location.id;
 
                                             if (location[0]) {
                                                 nspc = self.getListNamespaces(path, location[0].namespaces);
                                             }
                                             
                                             dSDevByRoom['optionLabels'] = nspc && nspc.length > 0? nspc: [langFile.no_devices_found];
-                                            dSDevByRoom['dependencies'] = { "room" : location[0].id };
+                                            dSDevByRoom['dependencies'] = { "room" : locationId };
 
-                                            newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
+                                            newObj['devicesByRoom_' + locationId] = _.clone(dSDevByRoom);
 
-                                            if (newObj['devicesByRoom_' + cnt]['label']) {
-                                                newObj['devicesByRoom_' + cnt]['label'] = newObj['devicesByRoom_' + cnt]['label'] + '_' + cnt;
+                                            if (newObj['devicesByRoom_' + locationId]['label']) {
+                                                newObj['devicesByRoom_' + locationId]['label'] = newObj['devicesByRoom_' + locationId]['label'] + '_' + locationId;
                                             }
                                         });
                                     } else {
@@ -1789,7 +1806,6 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                         path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
 
                         // get namespaces
-                        //self.generateNamespaces();
                         nspc = self.getListNamespaces(path, self.namespaces);
                         if (nspc) {
                             namespaces = namespaces.concat(nspc);
