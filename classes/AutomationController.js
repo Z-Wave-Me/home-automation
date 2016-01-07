@@ -1334,8 +1334,8 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                     paramEntry = {
                         none: paramEntry
                     };
-                } else if(!_.isArray(paramEntry) && !paramEntry['none']){
-                    paramEntry['none'] = paramEntry;
+                } else if(!_.isArray(paramEntry) && devProbeType === ''){
+                    paramEntry['none'] = paramEntry['none']? paramEntry['none'] : [];
                 }
 
                 paramEntry.none = addRemoveEntry(paramEntry.none);
