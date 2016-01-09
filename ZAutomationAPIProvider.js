@@ -1783,6 +1783,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
 
         try {
+            function utf8Decode(bytes) {
+              var chars = [], offset = 0, length = bytes.length, c, c2, c3;
+
+              while (offset < length) {
+                c = bytes.charCodeAt(offset);
+                c2 = bytes.charCodeAt(offset + 1);
+                c3 = bytes.charCodeAt(offset + 2);
+
+                if (128 > c) {
+                  chars.push(String.fromCharCode(c));
+                  offset += 1;
+                } else if (191 < c && c < 224) {
+                  chars.push(String.fromCharCode(((c & 31) << 6) | (c2 & 63)));
+                  offset += 2;
+                } else {
+                  chars.push(String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)));
+                  offset += 3;
+                }
+              }
+
+              return chars.join('');
+            }
+
             //this.reset();
             
             reqObj = JSON.parse(this.req.body.backupFile.content);
@@ -1797,7 +1820,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // restore Z-Wave and EnOcean
             !!reqObj["__ZWay"] && Object.keys(reqObj["__ZWay"]).forEach(function(zwayName) {
-                var zwayData = reqObj["__ZWay"][zwayName];
+                var zwayData = utf8Decode(reqObj["__ZWay"][zwayName]);
                 global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO
