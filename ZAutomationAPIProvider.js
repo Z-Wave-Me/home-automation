@@ -1195,7 +1195,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             reqObj,
             profile,
-            resProfile = {};
+            resProfile = {},
+            uniqueEmail = [],
+            uniqueLogin = [];
 
         try {
             reqObj = JSON.parse(this.req.body);
@@ -1203,11 +1205,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.error = ex.message;
         }
 
-        nameAllreadyExists = Boolean(_.find(this.controller.profiles, function (profile) {
-                                        return profile.login === reqObj.login;
-                                    }));
+        uniqueEmail = _.filter(this.controller.profiles, function (p) {
+            return p.email !== '' && p.email === reqObj.email;
+        });
 
-        if (nameAllreadyExists === false) {
+        uniqueLogin = _.filter(this.controller.profiles, function (p) {
+            return p.login !== '' && p.login === reqObj.login;
+        });
+
+        if (uniqueEmail.length > 0) {
+            reply.code = 409;
+            reply.error = 'nonunique_email';
+        } else if (uniqueLogin.length > 0) {
+            reply.code = 409;
+            reply.error = 'nonunique_user';
+        } else {
             _.defaults(reqObj, {
                 role: null,
                 name: 'User',
@@ -1233,9 +1245,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 500;
                 reply.error = "Profile creation error";
             }
-        } else {
-            reply.code = 400;
-            reply.error = "Argument name is required or already exists.";
         }
         
         return reply;
@@ -1258,8 +1267,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = "Revoking self Admin priviledge is not allowed.";
             } else {
                 uniqueProfProps = _.filter(this.controller.profiles, function (p) {
-                    return ((p.email !== '' && p.email === reqObj.email) ||
-                                (p.login !== '' && p.login === reqObj.login)) && 
+                    return (p.email !== '' && p.email === reqObj.email) && 
                                     p.id !== profileId;
                 });
 
@@ -1294,7 +1302,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     }
                 } else {
                     reply.code = 409;
-                    reply.error = 'Login or e-mail already exists.';
+                    reply.error = 'nonunique_email';
                 }
             }
         } else {
@@ -1349,7 +1357,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 409;
-                reply.error = 'Login already exists.';
+                reply.error = 'nonunique_user';
             }
         } else if (this.req.role === this.ROLE.ANONYMOUS && profileId && !!reqToken) {
             tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
