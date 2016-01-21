@@ -83,7 +83,7 @@ AutomationController.prototype.init = function () {
         // update namespaces if device title has changed
         self.devices.on('change:metrics:title', function (device) {
             ws.push({
-                type: "me.z-wave.devices.location_update",
+                type: "me.z-wave.devices.title_update",
                 data: JSON.stringify(device.toJSON())
             });
             pushNamespaces(device, false);
@@ -96,6 +96,15 @@ AutomationController.prototype.init = function () {
                 data: JSON.stringify(device.toJSON())
             });
             pushNamespaces(device, true);
+        });
+
+        // update namespaces if device permanently_hidden status has changed
+        self.devices.on('change:permanently_hidden', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.visibility_update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces(device, false);
         });
 
         // update namespaces if structure of devices collection changed
@@ -1221,13 +1230,14 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
         nspcArr = [],
         locNspcArr = [],
         devLocation = device.get('location'),
-        location = that.getLocation(that.locations, devLocation);
+        location = that.getLocation(that.locations, devLocation),
+        devHidden = device.get('permanently_hidden');
 
         if (!!location && !location.namespaces) {
             location.namespaces = [];
         }
 
-    if (device && device.get('permanently_hidden') === false) {
+    if (device) {
 
         this.genNspc = function (nspc,vDev) {
             var devTypeEntry = 'devices_' + vDev.get('deviceType'),
@@ -1244,15 +1254,15 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                         return entry.deviceId === devEntry.deviceId;
                     });
 
-                    if (!!devStillExists && exists.length < 1){
+                    if (!!devStillExists && exists.length < 1 && !devHidden){
                         // add entry
                         entryArr.push(devEntry);
-                    } else if (!!devStillExists && exists[0]) {
+                    } else if (!!devStillExists && exists[0] && !devHidden) {
                         // change existing deviceName
                         if (!_.isEqual(exists[0]['deviceName'], devEntry['deviceName'])) {
                             exists[0]['deviceName'] = devEntry['deviceName'];
                         }
-                    } else if (devStillExists === null) {
+                    } else if (devStillExists === null || devHidden) {
                         // remove entry
                         entryArr = _.filter(entryArr, function(entry) {
                             return entry.deviceId !== devEntry.deviceId;
