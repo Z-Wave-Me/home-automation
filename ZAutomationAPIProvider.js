@@ -149,6 +149,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     setLogin: function(profile) {
         var sid = crypto.guid(),
             resProfile = {};
+        
         this.controller.auth.checkIn(profile, sid);
 
         resProfile = this.getProfileResponse(profile);
@@ -162,8 +163,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 "Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
             }
         };
-    },
-    
+    },    
     // Method to return a 401 to the user
     denyLogin: function(error) {
         return {
@@ -175,7 +175,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         }
     },
-
     // Returns user session information for the smarthome UI
     verifySession: function() {
         var auth = controller.auth.resolve(this.req, 2);
@@ -184,15 +183,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return this.denyLogin("No valid user session found");
         }
         
-        console.logJS(this.controller.profiles);
-        
         var profile = _.find(this.controller.profiles, function (profile) {
             return profile.id === auth.user;
         });
         
         return this.setLogin(profile);
     },
-    
+    // Check if login exists and password is correct 
     verifyLogin: function() {
         var reqObj;
 
