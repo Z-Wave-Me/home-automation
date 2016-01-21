@@ -189,6 +189,9 @@
       if (!config.vdevInfo[id].hasOwnProperty('visibility')) {
         config.vdevInfo[id].visibility = true;
       }
+      if (config.vdevInfo[id].location == null) {
+        config.vdevInfo[id].location = 0;
+      }
     });
 
     // Change IDs to new notation

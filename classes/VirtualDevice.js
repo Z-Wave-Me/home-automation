@@ -340,7 +340,18 @@ _.extend(VirtualDevice.prototype, {
                 attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
                 Object.keys(attrs).forEach(function (key) {
                     if (!_.isEqual(current[key], attrs[key])) {
-                        changes.push(attrs[key]);
+                        // if metrics has changed go deeper and add change identifier of changed metrics entry
+                        if (key === 'metrics') {
+                            Object.keys(current[key]).forEach(function (metricsKey) {
+                                if (!_.isEqual(current[key][metricsKey], attrs[key][metricsKey])) {
+                                    changes.push('metrics:' + metricsKey);
+                                }
+                            });
+                            // push also 'metrics' identifier
+                            changes.push(key);
+                        } else {
+                            changes.push(key);
+                        }
                     }
                     if (!_.isEqual(prev[key], attrs[key])) {
                         that.changed[key] = attrs[key];

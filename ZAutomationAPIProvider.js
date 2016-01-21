@@ -409,22 +409,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         // generate namespaces per location
         if (locations.length > 0) {
-            locations.forEach(function (location) {
-                var nspc = null;
-
-                this.controller.generateNamespaces(function (namespaces) {
-                        if (_.isArray(namespaces)) {
-                            nspc = namespaces;
-                        }
-                    }, location.id);
-
-                expLocations.push(_.extend(location, {
-                    namespaces: nspc
-                }));
-            });
-
-            locations = expLocations.length > 0? expLocations : locations;
-
             reply.code = 200;
             reply.data = locations;
         } else {
@@ -479,12 +463,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 getFilteredNspc = this.controller.getListNamespaces(namespaceId, _location.namespaces);
             }
 
-            if (getFilteredNspc) {
-               reply.data = getFilteredNspc;
-                reply.code = 200;
-            } else {
+            if (!getFilteredNspc || (_.isArray(getFilteredNspc) && getFilteredNspc.length < 1)) {
                 reply.code = 404;
                 reply.error = "Couldn't find namespaces entry with: '" + namespaceId + "'";
+            } else {
+                reply.data = getFilteredNspc;
+                reply.code = 200;
             }
         } else {
             reply.code = 404;
@@ -1243,7 +1227,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             reqObj,
             profile,
-            resProfile = {};
+            resProfile = {},
+            uniqueEmail = [],
+            uniqueLogin = [];
 
         try {
             reqObj = JSON.parse(this.req.body);
@@ -1251,11 +1237,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.error = ex.message;
         }
 
-        nameAllreadyExists = Boolean(_.find(this.controller.profiles, function (profile) {
-                                        return profile.login === reqObj.login;
-                                    }));
+        uniqueEmail = _.filter(this.controller.profiles, function (p) {
+            return p.email !== '' && p.email === reqObj.email;
+        });
 
-        if (nameAllreadyExists === false) {
+        uniqueLogin = _.filter(this.controller.profiles, function (p) {
+            return p.login !== '' && p.login === reqObj.login;
+        });
+
+        if (uniqueEmail.length > 0) {
+            reply.code = 409;
+            reply.error = 'nonunique_email';
+        } else if (uniqueLogin.length > 0) {
+            reply.code = 409;
+            reply.error = 'nonunique_user';
+        } else {
             _.defaults(reqObj, {
                 role: null,
                 name: 'User',
@@ -1281,9 +1277,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.code = 500;
                 reply.error = "Profile creation error";
             }
-        } else {
-            reply.code = 400;
-            reply.error = "Argument name is required or already exists.";
         }
         
         return reply;
@@ -1306,8 +1299,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = "Revoking self Admin priviledge is not allowed.";
             } else {
                 uniqueProfProps = _.filter(this.controller.profiles, function (p) {
-                    return ((p.email !== '' && p.email === reqObj.email) ||
-                                (p.login !== '' && p.login === reqObj.login)) && 
+                    return (p.email !== '' && p.email === reqObj.email) && 
                                     p.id !== profileId;
                 });
 
@@ -1342,7 +1334,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     }
                 } else {
                     reply.code = 409;
-                    reply.error = 'Login or e-mail already exists.';
+                    reply.error = 'nonunique_email';
                 }
             }
         } else {
@@ -1397,7 +1389,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 409;
-                reply.error = 'Login already exists.';
+                reply.error = 'nonunique_user';
             }
         } else if (this.req.role === this.ROLE.ANONYMOUS && profileId && !!reqToken) {
             tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
@@ -1535,16 +1527,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             error: null,
             data: null,
             code: 500
-        };
+        },
+        nspc;
 
-        this.controller.generateNamespaces(function (namespaces) {
-            if (_.isArray(namespaces)) {
-                reply.data = namespaces;
-                reply.code = 200;
-            } else {
-                reply.error = "Namespaces array is null";
-            }
-        });      
+        nspc = this.controller.namespaces;
+
+        if (_.isArray(nspc) && nspc.length > 0) {
+            reply.data = nspc;
+            reply.code = 200;
+        } else {
+            reply.code = 404;
+            reply.error = "Namespaces array is null";
+        }
 
         return reply;
     },
@@ -1556,14 +1550,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         },
         namespace;
 
-        this.controller.generateNamespaces();
         namespace = this.controller.getListNamespaces(namespaceId, this.controller.namespaces);
-        if (namespace) {
+        if (!namespace || (_.isArray(namespace) && namespace.length < 1)) {
+            reply.code = 404;
+            reply.error = "No namespaces found with this path: " + namespaceId;
+        } else {
             reply.data = namespace;
             reply.code = 200;
-        } else {
-            reply.code = 404;
-            reply.error = "Namespaces " + namespaceId + " doesn't exist";
         } 
 
         return reply;
@@ -1782,6 +1775,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             backupJSON = {};
 
+        var now = new Date();
+
+        // create a timestamp in format yyyy-MM-dd-HH-mm
+        var ts = now.getFullYear() + "-";
+        ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
+        ts += ("0" + now.getDate()).slice(-2) + "-";
+        ts += ("0" + now.getHours()).slice(-2) + "-";
+        ts += ("0" + now.getMinutes()).slice(-2);
+
         var list = loadObject("__storageContent");
 
         try {        
@@ -1812,6 +1814,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 });
             }
             */
+            reply.headers= {
+                    "Content-Type": "application/x-download",
+                    "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
+                    "Connection": "keep-alive"
+            }
             reply.code = 200;
             reply.data = backupJSON;
         } catch(e) {
@@ -1830,6 +1837,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
 
         try {
+            function utf8Decode(bytes) {
+              var chars = [], offset = 0, length = bytes.length, c, c2, c3;
+
+              while (offset < length) {
+                c = bytes.charCodeAt(offset);
+                c2 = bytes.charCodeAt(offset + 1);
+                c3 = bytes.charCodeAt(offset + 2);
+
+                if (128 > c) {
+                  chars.push(String.fromCharCode(c));
+                  offset += 1;
+                } else if (191 < c && c < 224) {
+                  chars.push(String.fromCharCode(((c & 31) << 6) | (c2 & 63)));
+                  offset += 2;
+                } else {
+                  chars.push(String.fromCharCode(((c & 15) << 12) | ((c2 & 63) << 6) | (c3 & 63)));
+                  offset += 3;
+                }
+              }
+
+              return chars.join('');
+            }
+
             //this.reset();
             
             reqObj = JSON.parse(this.req.body.backupFile.content);
@@ -1844,7 +1874,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // restore Z-Wave and EnOcean
             !!reqObj["__ZWay"] && Object.keys(reqObj["__ZWay"]).forEach(function(zwayName) {
-                var zwayData = reqObj["__ZWay"][zwayName];
+                var zwayData = utf8Decode(reqObj["__ZWay"][zwayName]);
                 global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO

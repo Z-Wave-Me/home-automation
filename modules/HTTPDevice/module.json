@@ -16,7 +16,7 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 
-		"deviceType": "",
+		"deviceType": "toggleButton",
 
 		"setterOn_toggleButton": "",
 
@@ -44,7 +44,10 @@
 
 		"updateOnAction": false,
 
-		"skipEventIfSameValue": false
+		"skipEventIfSameValue": false,
+
+		"login":"",
+		"password":""
 	},
 	"schema": {
 		"type": "object",
@@ -52,7 +55,6 @@
 			"deviceType": {
 				"type": "string",
 				"enum": ["toggleButton", "sensorBinary", "sensorMultilevel", "switchBinary", "switchMultilevel"],
-				"default": "toggleButton",
 				"required": true
 			},
 
@@ -161,6 +163,14 @@
 			"skipEventIfSameValue": {
 				"type": "boolean",
 				"required": true
+			},
+			"login": {
+				"type": "string",
+				"required": false
+			},
+			"password": {
+				"type": "string",
+				"required": false
 			}
 		}
 	},
@@ -312,6 +322,15 @@
 				"type": "checkbox",
 				"rightLabel": "__rl_skipEventIfSameValue__",
 				"helper": "__h_skipEventIfSameValue__"
+			},
+
+			"login": {
+				"label": "__l_login__",
+				"helper": "__h_login__"
+			},
+			"password": {
+				"label": "__l_password__",
+				"helper": "__h_password__"
 			}
 		}
 	}

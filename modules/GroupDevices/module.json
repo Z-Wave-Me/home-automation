@@ -16,6 +16,7 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 		"isDimmable": false,
+		"associationType": "noAssociation",
 		"devices": [],
 		"scenesOn": [],
 		"scenesOff": []
@@ -25,6 +26,11 @@
 		"properties": {
 			"isDimmable": {
 				"type": "boolean"
+			},
+			"associationType": {
+				"type": "string",
+				"required": true,
+				"enum": ["noAssociation", "oneOff-widgetOff", "oneOn-widgetOn"]
 			},
 			"devices": {
 				"type": "array",
@@ -70,6 +76,10 @@
 			"isDimmable": {
 				"label": "",
 				"rightLabel": "__rl_options__"
+			},
+			"associationType": {
+				"type": "select",
+				"optionLabels": ["__noAssociation__", "__oneOff-widgetOff__", "__oneOn-widgetOn__"]
 			},
 			"devices": {
 				"label": "__l_devices__",

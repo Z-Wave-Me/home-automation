@@ -68,32 +68,52 @@ AutomationController.prototype.init = function () {
     var self = this;
 
 
-    function pushNamespaces() {
+    function pushNamespaces(device, locationNspcOnly) {
         self.generateNamespaces(function (namespaces) {
             ws.push({
                 type: 'me.z-wave.namespaces.update',
                 data: JSON.stringify(namespaces)
             });
-        });
+        }, device, locationNspcOnly);
     }
 
     self.loadModules(function () {
         self.emit("core.init");
-
-        self.devices.on('change', function (device) {
+        
+        // update namespaces if device title has changed
+        self.devices.on('change:metrics:title', function (device) {
             ws.push({
-                type: "me.z-wave.devices.update",
+                type: "me.z-wave.devices.title_update",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces();
+            pushNamespaces(device, false);
         });
 
+        // update only location namespaces if device location has changed
+        self.devices.on('change:location', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.location_update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces(device, true);
+        });
+
+        // update namespaces if device permanently_hidden status has changed
+        self.devices.on('change:permanently_hidden', function (device) {
+            ws.push({
+                type: "me.z-wave.devices.visibility_update",
+                data: JSON.stringify(device.toJSON())
+            });
+            pushNamespaces(device, false);
+        });
+
+        // update namespaces if structure of devices collection changed
         self.devices.on('created', function (device) {
             ws.push({
                 type: "me.z-wave.devices.add",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces();
+            pushNamespaces(device);
         });
 
         self.devices.on('destroy', function (device) {
@@ -101,7 +121,11 @@ AutomationController.prototype.init = function () {
                 type: "me.z-wave.devices.destroy",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces();
+            pushNamespaces(device);
+        });
+
+        self.devices.on('removed', function (device) {
+            pushNamespaces(device);
         });
 
         self.on("notifications.push", function (notice) {
@@ -125,10 +149,22 @@ AutomationController.prototype.setDefaultLang = function (lang) {
 };
 
 AutomationController.prototype.saveConfig = function () {
+
+    // do clean up of location namespaces 
+    cleanupLocations = function (locations) {
+        var newLoc = [];
+
+        locations.forEach(function(loc){
+            newLoc.push(_.omit(loc, 'namespaces'));
+        });
+
+        return newLoc;
+    };
+
     var cfgObject = {
         "controller": this.config,
         "vdevInfo": this.vdevInfo,
-        "locations": this.removeNamespacesFromLocations(this.locations),
+        "locations": cleanupLocations(this.locations),
         "profiles": this.profiles,
         "instances": this.instances,
         "modules_categories": this.modules_categories
@@ -878,21 +914,7 @@ AutomationController.prototype.getLocation = function (locations, locationId) {
         }
     });
 
-    // generate namespaces for location
-    if (location.length > 0) {
-
-        this.generateNamespaces(function (namespaces) {
-                if (_.isArray(namespaces)) {
-                    nspc = namespaces;
-                }
-            }, location[0].id);
-
-        location = _.extend(location[0], {
-            namespaces: nspc
-        });
-    }
-
-    return location;
+    return location[0]? location[0] : null;
 }
 
 AutomationController.prototype.addLocation = function (locProps, callback) {
@@ -985,19 +1007,6 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
         }
         this.emit('core.error', new Error("Cannot update location " + id + " - doesn't exist"));
     }
-};
-
-AutomationController.prototype.removeNamespacesFromLocations = function (locations) {
-    if (_.isArray(locations) && locations.length > 0) {
-        locations.forEach(function (location) {
-            // avoid storing namespaces 
-            if (location['namespaces']) {
-                delete location['namespaces'];
-            }
-        });
-    }
-
-    return locations;
 };
 
 AutomationController.prototype.listNotifications = function (since, to) {
@@ -1214,113 +1223,237 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };
 
 // namespaces
-AutomationController.prototype.generateNamespaces = function (callback, locationId) {
+AutomationController.prototype.generateNamespaces = function (callback, device, locationNspcOnly) {
     var that = this,
-        devices = that.devices.filter(function(device){
-            // filter by location id
-            if(locationId){
-                return device.get('permanently_hidden') === false && 
-                        device.get('location') === parseInt(locationId, 10);
-            } else {
-                return device.get('permanently_hidden') === false;
+        devStillExists = that.devices.get(device.id),
+        locationNspcOnly = locationNspcOnly? locationNspcOnly : false,
+        nspcArr = [],
+        locNspcArr = [],
+        devLocation = device.get('location'),
+        location = that.getLocation(that.locations, devLocation),
+        devHidden = device.get('permanently_hidden');
+
+        if (!!location && !location.namespaces) {
+            location.namespaces = [];
+        }
+
+    if (device) {
+
+        this.genNspc = function (nspc,vDev) {
+            var devTypeEntry = 'devices_' + vDev.get('deviceType'),
+                devProbeType = vDev.get('probeType'),
+                devEntry = {
+                    deviceId: vDev.id,
+                    deviceName: vDev.get('metrics:title')
+                },
+                addRemoveEntry = function (entryArr) {
+                    var exists = [];
+                    
+                    // check if entry already exists
+                    exists = _.filter(entryArr, function(entry) {
+                        return entry.deviceId === devEntry.deviceId;
+                    });
+
+                    if (!!devStillExists && exists.length < 1 && !devHidden){
+                        // add entry
+                        entryArr.push(devEntry);
+                    } else if (!!devStillExists && exists[0] && !devHidden) {
+                        // change existing deviceName
+                        if (!_.isEqual(exists[0]['deviceName'], devEntry['deviceName'])) {
+                            exists[0]['deviceName'] = devEntry['deviceName'];
+                        }
+                    } else if (devStillExists === null || devHidden) {
+                        // remove entry
+                        entryArr = _.filter(entryArr, function(entry) {
+                            return entry.deviceId !== devEntry.deviceId;
+                        });
+                    }
+
+                    return entryArr;
+                },
+                deleteEmptyProp = function (object, key) {
+                    // delete empty CC type entries
+                    if ((_.isArray(object[key]) && object[key].length < 1) || (!_.isArray(object[key]) && Object.keys(object[key]).length < 1)) {
+                        delete object[key];
+                    }
+                    return object;
+                },
+                cutType = [],
+                cutSubType = '',
+                paramEntry;
+
+            // check for type entry
+            typeEntryExists = _.filter(nspc, function(typeEntry){
+                return typeEntry.id === devTypeEntry;
+            });
+
+            if (typeEntryExists.length > 0) {
+                paramEntry = typeEntryExists[0] && typeEntryExists[0].params? typeEntryExists[0].params : paramEntry;
             }
-        }),
-        // map all device types
-        deviceTypes = _.uniq(_.map(devices, function (device) {
-            return device.get('deviceType');
-        })),
-        data = {},
-        deviceSubTypes = [],
-        devicesFilteredByType = [];
 
-    deviceTypes.forEach(function (type) {
-        data = {};
+            // generate probetype entries
+            if (devProbeType !== '') {
+                cutType = devProbeType === 'general_purpose'? devProbeType.split() : devProbeType.split('_'),
+                cutSubType = devProbeType.substr(cutType[0].length + 1);
 
-        // filter devices by device type
-        devicesFilteredByType = devices.filter(function (device) {
-            return device.get('deviceType') === type;
-        });
+                paramEntry = paramEntry? paramEntry : {};
 
-        // filter devices of device type by probeType
-        deviceFilteredBySubTypes = _.filter(devicesFilteredByType, function (device) {
-            return device.get('probeType') !== '';
-        });
-
-        // add probeType namespaces 
-        if (deviceFilteredBySubTypes.length > 0) {
-            // map probeTypes
-            deviceSubTypes = _.uniq(_.map(deviceFilteredBySubTypes, function (device) {
-                    return device.get('probeType');
-            }));
-            
-            // adding probeTypes and their sub types
-            deviceSubTypes.forEach(function (subType) {
-                    // get command class (CC) type
-                var cutType = subType === 'general_purpose'? subType.split() : subType.split('_'),
-                    // get CC sub type
-                    cutSubType = subType.substr(cutType[0].length + 1),
-                    // map device namespaces
-                    devNamespaces = devices.filter(function (device) {
-                                    return device.get('deviceType') === type && 
-                                            device.get('probeType') === subType;
-                                }).map(function (device) {            
-                                    return { deviceId: device.id, deviceName: device.get('metrics:title') };
-                                });
-                
-                // check for CC type
-                if(!data[cutType[0]]){
-                    data[cutType[0]] = {};
+                // create 'none' entry to get an object with array of 'none probetype' entries
+                if (_.isArray(paramEntry)){
+                    paramEntry = {
+                        none: paramEntry
+                    };
                 }
 
                 // check for CC sub type and add device namespaces
                 if(cutType.length > 1){
-                    data[cutType[0]][cutSubType] = devNamespaces;
+
+                    if(!paramEntry[cutType[0]]){
+                        paramEntry[cutType[0]] = {};
+                    }
+
+                    if(!paramEntry[cutType[0]][cutSubType]){
+                        paramEntry[cutType[0]][cutSubType] = [];
+                    }
+
+                    //check if entry is already there
+                    paramEntry[cutType[0]][cutSubType] = addRemoveEntry(paramEntry[cutType[0]][cutSubType]);
+
+                    // delete empty suptype entries
+                    paramEntry[cutType[0]] = deleteEmptyProp(paramEntry[cutType[0]], cutSubType);
+                
+                // add CC type
                 } else {
-                    data[cutType[0]] = devNamespaces;
+                    if(!paramEntry[cutType[0]]){
+                        paramEntry[cutType[0]] = [];
+                    }
+
+                    //check if entry is already there
+                    paramEntry[cutType[0]] = addRemoveEntry(paramEntry[cutType[0]]);
                 }
 
-                // check for 'devices_all'
-                if(!data[cutType[0]].devices_all){
-                    data[cutType[0]].devices_all = [];
+                // remove CC if empty
+                paramEntry = deleteEmptyProp(paramEntry, cutType[0]);
+
+            } else {
+                // add entries to type entries
+                paramEntry = paramEntry? paramEntry : [];
+
+                // create 'none' entry to get an object with array of 'none probetype' entries
+                if (_.isArray(paramEntry)){
+                    paramEntry = {
+                        none: paramEntry
+                    };
+                } else if(!_.isArray(paramEntry) && devProbeType === ''){
+                    paramEntry['none'] = paramEntry['none']? paramEntry['none'] : [];
                 }
-                
-                // add 'devices_all' to CC type
-                devNamespaces.forEach(function(namespace){
-                    if(data[cutType[0]].devices_all.indexOf(namespace) === -1){
-                        data[cutType[0]].devices_all.push(namespace);
-                    }
-                })
+
+                paramEntry.none = addRemoveEntry(paramEntry.none);
+            }
+
+            // delete 'none' entry if it exists as a single entry
+            if (!_.isArray(paramEntry) && Object.keys(paramEntry).length === 1 && paramEntry['none']) {
+                paramEntry = paramEntry['none'];
+            }
+
+            // set namespaces
+            that.setNamespace(devTypeEntry, nspc, paramEntry);
+
+            // check for 'devices_all'
+            devicesAll = _.filter(nspc, function(entries) {
+                return entries.id === 'devices_all';
+            });
+
+            // add 'devices_all' with entries
+            if (devicesAll.length < 1) {
+                that.setNamespace('devices_all', nspc, [devEntry]);
+            } else if (devicesAll[0].params && _.isArray(devicesAll[0].params)) {
+                //check if entry is already there
+                devicesAll[0].params = addRemoveEntry(devicesAll[0].params);
+            }
+
+            return nspc;
+        };
+
+        // no location change
+        if (!!location && !locationNspcOnly) {
+            //locNspcArr = that.genNspc(location.namespaces, device);
+
+            // update locations namespaces
+            _.forEach(that.locations, function(l) {
+                if(l.id === devLocation) {
+                    // add to namespace
+                    l.namespaces = that.genNspc(location.namespaces, device);
+                }
+            });
+        // if location of device has changed
+        } else if (locationNspcOnly) {
+            _.forEach(that.locations, function(l) {
+                //set namespaces if necessary
+                if (!l.namespaces) {
+                    l.namespaces = [];
+                }
+
+                if(l.id === devLocation) {
+                    // add to namespace
+                    devStillExists = that.devices.get(device.id);
+                    l.namespaces = that.genNspc(l.namespaces, device);
+                } else {
+                    // remove from the other namespaces
+                    devStillExists = null;
+                    l.namespaces = that.genNspc(l.namespaces, device);
+                }
             });
         }
+        // update namespace
+        if (!locationNspcOnly) {
+            nspcArr = that.genNspc(that.namespaces, device);
 
-        // add 'devices_all' to device type category
-        data.devices_all = _.map(devicesFilteredByType, function (device) {
-            return { deviceId: device.id, deviceName: device.get('metrics:title') };
-        });
+            if (typeof callback === 'function') {
+                callback(nspcArr);
+            }
+        } else {
+            if (typeof callback === 'function') {
+                callback(locNspcArr);
+            }
+        }
 
-        that.setNamespace('devices_' + type, data);
-    });
-    
-    // add category 'devices_all'
-    that.setNamespace('devices_all', devices.filter(function (device){
-            return device;
-    }).map(function (device) {
-            return {deviceId: device.id, deviceName: device.get('metrics:title')};
-    }));
-
-    if (typeof callback === 'function') {
-        callback(that.namespaces);
+    } else {
+        if (typeof callback === 'function') {
+            callback(nspcArr);
+        }
     }
 };
 
 AutomationController.prototype.getListNamespaces = function (path, namespacesObj) {
-    var result = null,
+    var self = this,
+        result = [],
         namespaces = namespacesObj,
         path = path || null,
         pathArr = [],
-        namespacesPath = '';
+        namespacesPath = '',
+        nspc;
 
-    if (!!path) {
+    this.getNspcDevAll = function(nspcObj) {
+        var devicesAll = [],
+            obj = {};
+
+        if (_.isArray(nspcObj)){
+            nspcObj.forEach(function(nspcEntry) {
+                if (!~devicesAll.indexOf(nspcEntry)){
+                    devicesAll.push(nspcEntry);
+                }
+            });
+        } else {
+            for ( var prop in nspcObj) {
+                devicesAll = devicesAll.concat(self.getNspcDevAll(nspcObj[prop]));
+            }
+        }
+
+        return devicesAll;
+    };
+
+    if (!!path && namespaces) {
 
         pathArr = path.split('.');
 
@@ -1334,30 +1467,49 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
             return namespace.id === pathArr[0];
         })[0];
 
+        //nspc = nspc[0]? nspc[0] : nspc;
+
         // get object/array by path
         if (nspc && pathArr.length > 1) {
             var shift = 1;
             for (var i = 0; i < pathArr.length; i++) {
-                var currPath = pathArr[i + shift];
+                var currPath = pathArr[i + shift],
+                    obj = {},
+                    lastPath = ['deviceId', 'deviceName'];
                 
                 if(nspc[currPath]) {
                     nspc = nspc[currPath];
                     result = nspc;
+                
+                } else if (!nspc[currPath] && ~lastPath.indexOf(currPath)) {
+                    result = self.getNspcDevAll(nspc);
+
+                    result = _.uniq(result.map(function(entry){
+                        return entry[currPath];
+                    }));
                 // add backward compatibility
-                } else if (!nspc[currPath] && nspc['devices_all']) {
+                } else if (~lastPath.indexOf(currPath)) {
+
+                    if (_.isArray(nspc)){
+                        // map all device id's or device names
+                        result = _.map(nspc, function(entry) { return entry[currPath] });
+                    }
+                } else if (!nspc[currPath] && nspc['devices_all'] && i < 1) {
                     nspc = nspc['devices_all'];
                     result = nspc;
                     // change shift to get last path entry
                     shift = 0;
-                }else if (currPath === 'deviceId' || currPath === 'deviceName' && _.isArray(nspc)) {
-                    // map all device id's or device names
-                    result = _.map(nspc, function(entry) { return entry[currPath] });
+                } else if (currPath && !nspc[currPath] && i > 0) {
+                    nspc = [];
+                    result = nspc;
+
+                    break;
                 } else if (currPath) {
                     result = nspc;
                 }
             }
         } else {
-            result = nspc && nspc['params'] && nspc['params']['devices_all']? nspc['params']['devices_all'] : nspc;
+            result = nspc && nspc['params']? nspc['params'] : nspc; // if not return undefined
         }        
         
     } else {
@@ -1367,22 +1519,29 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
     return result;
 };
 
-AutomationController.prototype.setNamespace = function (id, data) {
+AutomationController.prototype.setNamespace = function (id, namespacesArr, data) {
     var result = null,
         namespace,
         index;
 
     id = id || null;
 
-    if (id && this.getListNamespaces(id, this.namespaces)) {
-        namespace = _.findWhere(this.namespaces, {id : id});
+    if (id && this.getListNamespaces(id, namespacesArr)) {
+        namespace = _.findWhere(namespacesArr, {id : id});
         if (!!namespace) {
-            index = this.namespaces.indexOf(namespace);
-            this.namespaces[index].params = data;
-            result = this.namespaces[index];
+            index = namespacesArr.indexOf(namespace);
+            
+            // remove entry if data is empty
+            if (~index && (_.isArray(data) && data.length < 1) || ((!_.isArray(data)) && Object.keys(data).length < 1)) {
+                namespacesArr = namespacesArr.splice(index, 1);
+                result = namespacesArr;
+            } else {
+                namespacesArr[index].params = data;
+                result = namespacesArr[index];
+            }
         }
-    } else {
-        this.namespaces.push({
+    } else if ((_.isArray(data) && data.length > 0) || ((!_.isArray(data)) && Object.keys(data).length > 0)) {
+        namespacesArr.push({
             id: id,
             params: data
         });
@@ -1463,117 +1622,125 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
             if ((i === 'properties' || i === 'fields') && typeof obj[i] === 'object' && obj[i]['room'] && obj[i]['devicesByRoom']) {
                 var k = _.keys(obj[i])
                     newObj = {};
-                // overwrite old key with new namespaces array
-                if (i === 'properties') {
-                    console.log('do special stuff for properties ...');
 
-                    var dSRoom = _.extend({
-                            "type":"",
-                            "field":"",
-                            "datasource":"",
-                            "enum":"",
-                            "title":""
-                        }, obj[i]['room']),
-                        dSDevByRoom = _.extend({
-                            "type":"",
-                            "datasource":"",
-                            "enum":"",
-                            "title":"",
-                            "dependencies":""
-                        }, obj[i]['devicesByRoom']);
+                try {
+                    // overwrite old key with new namespaces array
+                    if (i === 'properties') {
+                        console.log("Room - Device relation found, try to preparate JSON's schema structure ...");
 
-                    if (dSRoom['enum'] && !_.isArray(dSRoom['enum'])){
-                        dSRoom['enum'] = getNspcFromFilters(moduleMeta, dSRoom['enum']);
+                        var dSRoom = _.extend({
+                                "type":"",
+                                "field":"",
+                                "datasource":"",
+                                "enum":"",
+                                "title":""
+                            }, obj[i]['room']),
+                            dSDevByRoom = _.extend({
+                                "type":"",
+                                "datasource":"",
+                                "enum":"",
+                                "title":"",
+                                "dependencies":""
+                            }, obj[i]['devicesByRoom']);
 
-                        obj[i]['room'] = dSRoom;
-                    }
+                        if (dSRoom['enum'] && !_.isArray(dSRoom['enum'])){
+                            dSRoom['enum'] = getNspcFromFilters(moduleMeta, dSRoom['enum']);
 
-                    if (dSDevByRoom['enum'] && !_.isArray(dSDevByRoom['enum']) && _.isArray(dSRoom['enum'])){
-                        var path = dSDevByRoom['enum'].substring(21).replace(/:/gi, '.');
-                        if(k.length > 0) {
-                            k.forEach(function(key) {
-                                if(key === 'devicesByRoom') {
-                                    dSRoom['enum'].forEach(function(roomId, index) {
-                                        var cnt = index + 1,
-                                            nspc;
-
-                                        location = self.getLocation(self.locations, roomId);
-
-                                        if (location && location.namespaces) {
-                                            nspc = self.getListNamespaces(path, location.namespaces);
-                                        }
-
-                                        dSDevByRoom['enum'] = nspc? nspc: [langFile.no_devices_found];
-                                        dSDevByRoom['dependencies'] = "room";
-
-                                        newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
-                                        if (newObj['devicesByRoom_' + cnt]['title']) {
-                                            newObj['devicesByRoom_' + cnt]['title'] = newObj['devicesByRoom_' + cnt]['title'] + '_' + cnt;
-                                        }
-                                    });
-                                } else {
-                                    newObj[key] = obj[i][key];
-                                }
-                            });
+                            obj[i]['room'] = dSRoom;
                         }
 
-                        obj[i] = newObj;
-                    }
-                } else {
-                    console.log('do special stuff for fields ...');
+                        if (dSDevByRoom['enum'] && !_.isArray(dSDevByRoom['enum']) && _.isArray(dSRoom['enum'])){
+                            var path = dSDevByRoom['enum'].substring(21).replace(/:/gi, '.');
+                            if(k.length > 0) {
+                                k.forEach(function(key) {
+                                    if(key === 'devicesByRoom') {
+                                        dSRoom['enum'].forEach(function(roomId, index) {
+                                            var locNspc = [],
+                                                nspc =[];
 
-                    var dSRoom = _.extend({
-                            "type":"",
-                            "field":"",
-                            "optionLabels":""
-                        },obj[i]['room']),
-                        dSDevByRoom = _.extend({
-                            "dependencies": {},
-                            "type":"",
-                            "field":"",
-                            "optionLabels":""
-                        },obj[i]['devicesByRoom']);
+                                            location = self.getLocation(self.locations, roomId);
 
-                    if (dSRoom['optionLabels'] && !_.isArray(dSRoom['optionLabels'])){
-                        dSRoom['optionLabels'] = getNspcFromFilters(moduleMeta, dSRoom['optionLabels']);
+                                            if (!!location) {
+                                                nspc = self.getListNamespaces(path, location.namespaces);
+                                            }
 
-                        obj[i]['room'] = dSRoom;
-                    }
+                                            dSDevByRoom['enum'] = nspc && nspc.length > 0? nspc: [langFile.no_devices_found];
+                                            dSDevByRoom['dependencies'] = "room";
 
-                    if (dSDevByRoom['optionLabels'] && !_.isArray(dSDevByRoom['optionLabels']) && _.isArray(dSRoom['optionLabels'])){
-                        var path = dSDevByRoom['optionLabels'].substring(21).replace(/:/gi, '.');
-                        if(k.length > 0) {
-                            k.forEach(function(key) {
-                                if(key === 'devicesByRoom') {
-                                    dSRoom['optionLabels'].forEach(function(roomName, index) {
+                                            newObj['devicesByRoom_' + roomId] = _.clone(dSDevByRoom);
+                                            if (newObj['devicesByRoom_' + roomId]['title']) {
+                                                newObj['devicesByRoom_' + roomId]['title'] = newObj['devicesByRoom_' + roomId]['title'] + '_' + roomId;
+                                            }
+                                        });
+                                    } else {
+                                        newObj[key] = obj[i][key];
+                                    }
+                                });
+                            }
 
-                                
-                                        var cnt = index + 1,
-                                            nspc;
+                            obj[i] = newObj;
+                        }
+                    } else {
+                        console.log("Room - Device relation found, try to preparate JSON's options structure ...");
 
-                                        location = self.locations.filter(function(location){ return location.title === roomName });
+                        var dSRoom = _.extend({
+                                "type":"",
+                                "field":"",
+                                "optionLabels":""
+                            },obj[i]['room']),
+                            dSDevByRoom = _.extend({
+                                "dependencies": {},
+                                "type":"",
+                                "field":"",
+                                "optionLabels":""
+                            },obj[i]['devicesByRoom']);
 
-                                        if (location[0] && location[0].namespaces) {
-                                            nspc = self.getListNamespaces(path, location[0].namespaces);
-                                        }
-                                        
-                                        dSDevByRoom['optionLabels'] = nspc? nspc: [langFile.no_devices_found];
-                                        dSDevByRoom['dependencies'] = { "room" : location[0].id };
+                        if (dSRoom['optionLabels'] && !_.isArray(dSRoom['optionLabels'])){
+                            dSRoom['optionLabels'] = getNspcFromFilters(moduleMeta, dSRoom['optionLabels']);
 
-                                        newObj['devicesByRoom_' + cnt] = _.clone(dSDevByRoom);
-
-                                        if (newObj['devicesByRoom_' + cnt]['label']) {
-                                            newObj['devicesByRoom_' + cnt]['label'] = newObj['devicesByRoom_' + cnt]['label'] + '_' + cnt;
-                                        }
-                                    });
-                                } else {
-                                    newObj[key] = obj[i][key];
-                                }
-                            });
+                            obj[i]['room'] = dSRoom;
                         }
 
-                        obj[i] = newObj;
+                        if (dSDevByRoom['optionLabels'] && !_.isArray(dSDevByRoom['optionLabels']) && _.isArray(dSRoom['optionLabels'])){
+                            var path = dSDevByRoom['optionLabels'].substring(21).replace(/:/gi, '.');
+                            if(k.length > 0) {
+                                k.forEach(function(key) {
+                                    if(key === 'devicesByRoom') {
+                                        dSRoom['optionLabels'].forEach(function(roomName, index) {
+                                    
+                                            var locNspc = [],
+                                                nspc = [],
+                                                locationId;
+
+                                            location = self.locations.filter(function(location){ return location.title === roomName });
+                                            locationId = location[0]? location[0].id : location.id;
+
+                                            if (location[0]) {
+                                                nspc = self.getListNamespaces(path, location[0].namespaces);
+                                            }
+                                            
+                                            dSDevByRoom['optionLabels'] = nspc && nspc.length > 0? nspc: [langFile.no_devices_found];
+                                            dSDevByRoom['dependencies'] = { "room" : locationId };
+
+                                            newObj['devicesByRoom_' + locationId] = _.clone(dSDevByRoom);
+
+                                            if (newObj['devicesByRoom_' + locationId]['label']) {
+                                                newObj['devicesByRoom_' + locationId]['label'] = newObj['devicesByRoom_' + locationId]['label'] + '_' + locationId;
+                                            }
+                                        });
+                                    } else {
+                                        newObj[key] = obj[i][key];
+                                    }
+                                });
+                            }
+
+                            obj[i] = newObj;
+                        }
                     }
+
+                } catch (e) {
+                    console.log('Cannot prepare Room-Device related JSON structure. ERROR: ' + e);
+                    self.addNotification('warning', langFile.err_preparing_room_dev_structure, 'module', moduleMeta.id);
                 }
                 
                 // try to replace the other stuff
@@ -1600,85 +1767,86 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
         var namespaces = [],
             filters = nspcfilters.split(','),
             apis = ['locations','namespaces','loadFunction'],
-            filteredDev = []
-            nspc;
-        
-        if (!_.isArray(filters)) {
-            return false;
-        }
+            filteredDev = [];
 
-        // do it for each filter
-        _.forEach(filters, function (flr,i){
-            var id = flr.split(':'),
-                path;
+        try {
 
-            if(apis.indexOf(id[0]) > -1){
-                
-                // get location ids or titles - except location 0/globalRoom - 'locations:id' or 'locations:title'
-                // should allow dynamic filtering per location
-                if (id[0] === 'locations' && (id[1] === 'id' || id[1] === 'title')) {
-                    namespaces = _.filter(self.locations, function(location) {
-                        return location[id[1]] !== 0 && location[id[1]] !== 'globalRoom';
-                    }).map(function(location) { 
-                            return location[id[1]];
-                    });
-                
-                // get namespaces of devices per location - 'locations:locationId:filterPath'                   
-                } else if (id[0] === 'locations' && id[1] === 'locationId'){
-                    // don't replace set filters instead
-                    namespaces = nspcfilters;
+            if (!_.isArray(filters)) {
+                return false;
+            }
 
-                // load function from file
-                } else if (id[0] === 'loadFunction') {
-                    var filePath = moduleMeta.location + '/htdocs/js/' + id[1],
-                        jsFile = fs.stat(filePath);
+            // do it for each filter
+            _.forEach(filters, function (flr,i){
+                var id = flr.split(':'),
+                    path;
+
+                if(apis.indexOf(id[0]) > -1){
                     
-                    if (id[1] && jsFile && jsFile.type === 'file') {
-                        jsFile = fs.load(filePath);
+                    // get location ids or titles - except location 0/globalRoom - 'locations:id' or 'locations:title'
+                    // should allow dynamic filtering per location
+                    if (id[0] === 'locations' && (id[1] === 'id' || id[1] === 'title')) {
+                        namespaces = _.filter(self.locations, function(location) {
+                            return location[id[1]] !== 0 && location[id[1]] !== 'globalRoom';
+                        }).map(function(location) { 
+                                return location[id[1]];
+                        });
+                    
+                    // get namespaces of devices per location - 'locations:locationId:filterPath'                   
+                    } else if (id[0] === 'locations' && id[1] === 'locationId'){
+                        // don't replace set filters instead
+                        namespaces = nspcfilters;
 
-                        if (!!jsFile) {
-                           //compress string 
-                           namespaces = jsFile.replace(/\s\s+|\t/g,' ');
+                    // load function from file
+                    } else if (id[0] === 'loadFunction') {
+                        var filePath = moduleMeta.location + '/htdocs/js/' + id[1],
+                            jsFile = fs.stat(filePath);
+                        
+                        if (id[1] && jsFile && jsFile.type === 'file') {
+                            jsFile = fs.load(filePath);
+
+                            if (!!jsFile) {
+                               //compress string 
+                               namespaces = jsFile.replace(/\s\s+|\t/g,' ');
+                            }
+                        }
+                    
+                    // get namespaces of devices ignoring locations
+                    } else {
+                        // cut path
+                        path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
+
+                        // get namespaces
+                        nspc = self.getListNamespaces(path, self.namespaces);
+                        if (nspc) {
+                            namespaces = namespaces.concat(nspc);
                         }
                     }
-                
-                // get namespaces of devices ignoring locations
-                } else {
-                    // cut path
-                    path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
-
-                    // get namespaces
-                    self.generateNamespaces();
-                    nspc = self.getListNamespaces(path, self.namespaces);
-                    if (nspc) {
-                        namespaces = namespaces.concat(nspc);
-                    }
                 }
-            }
-        });
+            });
+            return namespaces;
 
-        return namespaces;
+        } catch (e) {
+            console.log('Cannot parse filters > ' + nspcfilters + ' < from namespaces. ERROR: ' + e);
+            self.addNotification('warning', langFile.err_parsing_npc_filters, 'module', moduleMeta.id);
+            
+            return namespaces;
+        }
     };
 
     if (!!moduleMeta) {
-        try {
-            var params = {
-                    schema: ['enum'],
-                    options: ['optionLabels', 'onFieldChange', 'click'],
-                    postRender : ''
-                };
-            
-            // transform filters
-            for (var property in params) {
-                if (property === 'postRender' && moduleMeta[property] && !_.isArray(moduleMeta[property])) {                           
-                    moduleMeta[property] = getNspcFromFilters(moduleMeta, moduleMeta[property]);
-                } else if (moduleMeta[property]) {                           
-                    moduleMeta[property] = replaceNspcFilters(moduleMeta, moduleMeta[property], params[property]);
-                }
+        var params = {
+                schema: ['enum'],
+                options: ['optionLabels', 'onFieldChange', 'click'],
+                postRender : ''
+            };
+        
+        // transform filters
+        for (var property in params) {
+            if (property === 'postRender' && moduleMeta[property] && !_.isArray(moduleMeta[property])) {                           
+                moduleMeta[property] = getNspcFromFilters(moduleMeta, moduleMeta[property]);
+            } else if (moduleMeta[property]) {                           
+                moduleMeta[property] = replaceNspcFilters(moduleMeta, moduleMeta[property], params[property]);
             }
-     
-        } catch (e) {
-            console.log('Cannot transform filters from module ' + moduleMeta.id + '. ERROR: ' + e);
         }
     }
 

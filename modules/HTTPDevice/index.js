@@ -121,7 +121,7 @@ HTTPDevice.prototype.update = function (vDev) {
         parser = this.config["getterParser_" + deviceType];
     
     if (url) {
-        http.request({
+        var req = {
             url: url,
             method: this.config.method,
             async: true,
@@ -155,7 +155,15 @@ HTTPDevice.prototype.update = function (vDev) {
             error: function(response) {
                 console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
             } 
-        });
+        };
+        // With authorization
+        if (self.config.login && self.config.password) {
+            req.auth = {
+                    login: self.config.login,
+                    password: self.config.password
+            };
+        }
+        http.request(req);
     }
 };
 
@@ -170,14 +178,22 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
     	if (subst) {
     		url = url.replace(/\$\$/g, subst);
     	}
-        http.request({
+        var req = {
             url: url,
             method: this.config.method,
             async: true,
             error: function(response) {
                 self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
             }
-        });
+        };
+        // With authorization
+        if (self.config.login && self.config.password) {
+            req.auth = {
+                    login: self.config.login,
+                    password: self.config.password
+            };
+        }
+        http.request(req);
     }
     
     if ((!url || this.config.updateOnAction === true) && selfValue !== null) {

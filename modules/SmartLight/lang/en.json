@@ -11,6 +11,7 @@
 	"l_DayTimeStart":"Start",
 	"l_DayTimeEnd":"End",
 	"l_DimmerButton":"Dimmer Button",
+	"l_MotionEventToStartTimer":"What event from the motion sensor to start the timer",
 	"l_timeout":"Timeout autooff in seconds",
 	"h_timeout":"To disable autoff set 0 or leave the field empty",
 	"h_DimmerButton":"To generate dimmer button activate module SwitchControlGenerator and then press dimmer button"
