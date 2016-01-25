@@ -39,7 +39,6 @@ inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
 _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
-        this.router.get("/status", this.ROLE.USER, this.statusReport);
         this.router.get("/session", this.ROLE.ANONYMOUS, this.verifySession);
         this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
         this.router.get("/logout", this.ROLE.USER, this.doLogout);
@@ -123,28 +122,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
         this.router.get("/time/get", this.ROLE.ANONYMOUS, this.getTime);
-    },
-
-    // !!! Do we need it?
-    statusReport: function () {
-        var currentDateTime = new Date();
-
-        if (Boolean(this.error)) {
-            var reply = {
-                error: "Internal server error. Please fill in bug report with request_id='" + this.error + "'",
-                data: null,
-                code: 503,
-                message: "Service Unavailable"
-            };
-        } else {
-            var reply = {
-                error: null,
-                data: 'OK',
-                code: 200
-            };
-        }
-
-        return reply;
+        this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
     },
 
     setLogin: function(profile) {
@@ -1916,7 +1894,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         
         return reply;
     },
-    getTime: function() {
+    getTime: function () {
         var reply = {
                 error: null,
                 data: null,
@@ -1933,6 +1911,48 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         } else {
             reply.error = 'Cannot get current date and time.';
+        }
+
+        return reply;
+    },
+    getRemoteId: function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            checkIfTypeError = true;
+
+        if (typeof ZBWConnect === 'function') {
+            try {
+                zbw = new ZBWConnect(); // find zbw by path or use (raspberry) location /etc/zbw as default
+
+                if(!!zbw) {
+                    checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
+                }
+
+            } catch (e) {
+                try {
+                    zbw = new ZBWConnect('./zbw');
+
+                    checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
+
+                } catch (er) {
+                    console.log('Something went wrong. Reading remote id has failed. Error:' + er.message);
+                }
+            }
+
+            if(checkIfTypeError) {
+                reply.error = 'Something went wrong. Reading remote id has failed.';
+            } else {
+                reply.code = 200;
+                reply.data = {
+                    remote_id: zbw.getUserId()
+                };
+            }
+        } else {
+            reply.code = 503;
+            reply.error = 'Reading remote id has failed. Service is not available.';
         }
 
         return reply;

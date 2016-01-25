@@ -1,9 +1,9 @@
 /*** ScheduledScene Z-Way HA module *******************************************
 
-Version: 2.1.0
+Version: 2.1.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Serguei Poltorak <ps@z-wave.me>
+Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
     This executes scene by cron
 

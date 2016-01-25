@@ -1,10 +1,10 @@
 /*** SmartLight Z-Way Home Automation module *************************************
 
- Version: 1.1.0
+ Version: 1.1.1
  (c) Z-Wave.Me, 2014
 
  -----------------------------------------------------------------------------
- Author: Yurkin Vitaliy <aivs@z-wave.me>
+ Author: Yurkin Vitaliy <aivs@z-wave.me>, Niels Roche <nir@zwave.eu>
  Description: In the daytime the light turns on for 100%, at night the light turns on for 20%.
 ******************************************************************************/
 
