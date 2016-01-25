@@ -122,6 +122,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
+        this.router.get("/time/get", this.ROLE.ANONYMOUS, this.getTime);
     },
 
     // !!! Do we need it?
@@ -1052,6 +1053,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
+    // reinitialize modules
+    reinitializeModule: function(moduleId) {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            location = fs.list('userModules/' + moduleId)? 'userModules/' : 'modules/';
+
+        if (fs.list(location)) {
+            try {
+                loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
+                
+                if(loadSuccessfully){
+                    reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
+                    reply.code = 200;
+                }
+            } catch (e) {
+                reply.error = e.toString();
+            }
+        } else {
+            reply.code = 404;
+            reply.error.key = "App not found.";
+        }
+        
+        return reply;
+    },
     // instances
     listInstances: function () {
         var reply = {
@@ -1888,31 +1916,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         
         return reply;
     },
-    // reinitialize modules
-    reinitializeModule: function(moduleId) {
+    getTime: function() {
         var reply = {
                 error: null,
                 data: null,
                 code: 500
             },
-            location = fs.list('userModules/' + moduleId)? 'userModules/' : 'modules/';
+            now = new Date();
 
-        if (fs.list(location)) {
-            try {
-                loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
-                
-                if(loadSuccessfully){
-                    reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
-                    reply.code = 200;
-                }
-            } catch (e) {
-                reply.error = e.toString();
-            }
+        if (now) {
+            reply.code = 200;
+            reply.data = {
+                localTimeUT: Math.round(now.getTime() / 1000),
+                localTimeString: now.toLocaleString(),
+                localTimeZoneOffset: now.getTimezoneOffset() /60
+            };
         } else {
-            reply.code = 404;
-            reply.error.key = "App not found.";
+            reply.error = 'Cannot get current date and time.';
         }
-        
+
         return reply;
     }
 });
