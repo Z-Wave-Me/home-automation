@@ -1,6 +1,6 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.0.4
+Version: 2.0.5
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -65,7 +65,7 @@ IfThen.prototype.stop = function () {
     var self = this;
     
     // remove event listener
-    self.controller.devices.off(self.config.sourceDevice[self.config.sourceDevice.filterIf],'change:metrics:level', self.handlerLevel);
+    self.controller.devices.off(self.config.sourceDevice[self.config.sourceDevice.filterIf].device,'change:metrics:level', self.handlerLevel);
 
     IfThen.super_.prototype.stop.call(this);
 };

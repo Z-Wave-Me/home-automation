@@ -21,7 +21,8 @@
 	"preInterview": [],
 	"postInterview": [
 		"preventDeviceCreation(0,113, {});",
-		"setConfig(0,7,22,1);"
+		"setConfig(0,7,22,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.12.112---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }, {
 	"id": "5",
@@ -30,7 +31,8 @@
 	"preInterview": [],
 	"postInterview": [
 		"preventDeviceCreation(0,113, {});",
-		"setConfig(0,7,22,1);"
+		"setConfig(0,7,22,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.12.112---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }, {
 	"id": "6",
@@ -114,8 +116,27 @@
 	"postInterview": [
 		"preventDeviceCreation(0,113, {});"
 	]
-},{
+}, {
 	"id": "34",
+	"p_id": "134.2.89",
+	"product": "Recessed Door Sensor Gen 5",
+	"preInterview": [],
+	"postInterview": [
+		"setConfig(121,16,4);"
+	]
+}, {
+	"id": "35",
+	"p_id": "264.2.13",
+	"product": "D Link Batterie Motion Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113,{});",
+		"preventDeviceCreation(0,48,{'8':[]});",
+		"setConfig(0,7,30,1);",
+		"setConfig(0,8,1,1);"
+	]
+}, {
+	"id": "36",
 	"p_id": "340.256.259",
 	"product": "POPP Key Fob",
 	"preInterview": [],
