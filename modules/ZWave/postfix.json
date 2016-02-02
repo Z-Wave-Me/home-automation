@@ -22,7 +22,7 @@
 	"postInterview": [
 		"preventDeviceCreation(0,113, {});",
 		"setConfig(0,7,22,1);",
-		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.12.112---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.12.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }, {
 	"id": "5",
@@ -32,7 +32,7 @@
 	"postInterview": [
 		"preventDeviceCreation(0,113, {});",
 		"setConfig(0,7,22,1);",
-		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.12.112---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.2.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }, {
 	"id": "6",
@@ -133,7 +133,8 @@
 		"preventDeviceCreation(0,113,{});",
 		"preventDeviceCreation(0,48,{'8':[]});",
 		"setConfig(0,7,30,1);",
-		"setConfig(0,8,1,1);"
+		"setConfig(0,8,1,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-264.2.13.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }, {
 	"id": "36",

@@ -39,6 +39,7 @@ inherits(ZAutomationAPIWebRequest, ZAutomationWebRequest);
 
 _.extend(ZAutomationAPIWebRequest.prototype, {
     registerRoutes: function() {
+        this.router.get("/status", this.ROLE.USER, this.statusReport);
         this.router.get("/session", this.ROLE.ANONYMOUS, this.verifySession);
         this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
         this.router.get("/logout", this.ROLE.USER, this.doLogout);
@@ -121,8 +122,32 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
+        
         this.router.get("/time/get", this.ROLE.ANONYMOUS, this.getTime);
+        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
+        this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
+    },
+
+    // Used by the android app to request server status
+   statusReport: function () {
+        var currentDateTime = new Date();
+
+        if (Boolean(this.error)) {
+            var reply = {
+                error: "Internal server error. Please fill in bug report with request_id='" + this.error + "'",
+                data: null,
+                code: 503,
+                message: "Service Unavailable"
+            };        } else {
+            var reply = {
+                error: null,
+                data: 'OK',
+                code: 200
+            };
+        }
+
+        return reply;
     },
 
     setLogin: function(profile) {
@@ -1953,6 +1978,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.code = 503;
             reply.error = 'Reading remote id has failed. Service is not available.';
+        }
+
+        return reply;
+    },
+    // set a timout for accessing firmware update tab of 8084
+    setWebifAccessTimout: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            allowAcc = 0,
+            timeout = 450; // in s ~ 15 min
+
+        allowAcc = this.req.query.hasOwnProperty("allow_access") ? parseInt(this.req.query.allow_access, 10) : 0;
+        timeout = this.req.query.hasOwnProperty("timeout") ? parseInt(this.req.query.timeout, 10) : timeout;
+
+        if (allowAcc === 1 && timeout > 0 && timeout <= 1200) {
+            saveObject('8084AccessTimeout', timeout);
+            reply.code = 200;
+            reply.data = {
+                timeout: timeout
+            };
+        } else if (allowAcc === 0) {
+            saveObject('8084AccessTimeout', null);
+            reply.code = 200;
+            reply.data = {
+                timeout: null
+            };
+        } else {
+            reply.code = 400;
+            reply.error = 'Invalid Request';
         }
 
         return reply;
