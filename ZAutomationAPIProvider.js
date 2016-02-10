@@ -50,7 +50,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/locations", this.ROLE.USER, this.listLocations);
         this.router.get("/profiles", this.ROLE.USER, this.listProfiles);
         this.router.get("/namespaces", this.ROLE.ADMIN, this.listNamespaces);
-        this.router.post("/profiles", this.ROLE.USER, this.createProfile);
+        this.router.post("/profiles", this.ROLE.ADMIN, this.createProfile);
         this.router.get("/locations/add", this.ROLE.ADMIN, this.addLocation);
         this.router.post("/locations", this.ROLE.ADMIN, this.addLocation);
         this.router.get("/locations/remove", this.ROLE.ADMIN, this.removeLocation);
@@ -123,29 +123,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
         
-        this.router.get("/time/get", this.ROLE.ANONYMOUS, this.getTime);
-        
-        this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
+        this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork);
+        this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork);
+
+        this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
+        this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
+        this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
     },
 
     // Used by the android app to request server status
    statusReport: function () {
-        var currentDateTime = new Date();
-
-        if (Boolean(this.error)) {
-            var reply = {
-                error: "Internal server error. Please fill in bug report with request_id='" + this.error + "'",
-                data: null,
-                code: 503,
-                message: "Service Unavailable"
-            };        } else {
-            var reply = {
+        var currentDateTime = new Date(),
+            reply = {
                 error: null,
                 data: 'OK',
                 code: 200
             };
-        }
+
+        if (Boolean(this.error)) {
+            reply.error = "Internal server error. Please fill in bug report with request_id='" + this.error + "'";
+            reply.data = null;
+            reply.code = 503;
+            reply.message = "Service Unavailable";
+        } 
 
         return reply;
     },
@@ -158,6 +159,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         resProfile = this.getProfileResponse(profile);
         resProfile.sid = sid;
+
+        if (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
+            this.controller.config.firstaccess = false;
+        }
 
         return {
             error: null,
@@ -183,7 +188,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     verifySession: function() {
         var auth = controller.auth.resolve(this.req, 2);
         
-        if (! auth) {
+        if (!auth) {
             return this.denyLogin("No valid user session found");
         }
         
@@ -1296,9 +1301,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             });
             profile = this.controller.createProfile(reqObj);
             if (profile !== undefined && profile.id !== undefined) {
-                
-                
-                
                 reply.data = resProfile;
                 reply.code = 201;
             } else {
@@ -1398,8 +1400,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
 
             uniqueLogin = _.filter(this.controller.profiles, function (p) {
-                if (self.req.role === self.ROLE.ADMIN && self.req.user !== reqObj.id) {
-                    return p.login !== '' && p.login === reqObj.login && p.id !== reqObj.id;
+                if (self.req.role === self.ROLE.ADMIN && self.req.user !== parseInt(reqObj.id, 10)) {
+                    return p.login !== '' && p.login === reqObj.login && p.id !== parseInt(reqObj.id, 10);
                 } else {
                     return p.login !== '' && p.login === reqObj.login && p.id !== self.req.user;
                 }
@@ -2010,6 +2012,78 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.code = 400;
             reply.error = 'Invalid Request';
+        }
+
+        return reply;
+    },
+    getFirstLoginInfo: function() {
+        var reply = {
+                error: null,
+                data: {},
+                code: 500
+            },
+            defaultProfile = [],
+            setLogin = {};
+        try {
+            defaultProfile = _.filter(this.controller.profiles, function (profile) {
+                return profile.login === 'admin' && profile.password === 'admin';
+            });
+
+            if (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) {
+                setLogin = this.setLogin(defaultProfile[0]);
+                
+                reply.data.defaultProfile = setLogin.data;
+                reply.data.firstaccess = true;
+                reply.code = 200;
+            } else {
+                reply.data = { firstaccess: false };
+                reply.code = 200;
+            }
+        } catch (e){
+            reply.data = null;
+            reply.error = e.message;
+        }
+
+        return reply;
+    },
+    getTrustMyNetwork: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            tMN;
+
+        try {            
+            tMN = this.controller.config.trustMyNetwork? this.controller.config.trustMyNetwork : 'false';
+
+            reply.data = { trustMyNetwork: tMN };
+            reply.code = 200;
+        } catch (e) {
+            reply.error = 'Something went wrong: ' + e.message;
+        }
+
+        return reply;
+    },
+    setTrustMyNetwork: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body !== 'object'? JSON.parse(this.req.body): this.req.body;
+
+        try {
+            if (reqObj && typeof reqObj.trustMyNetwork !== 'undefined' && typeof reqObj.trustMyNetwork === 'boolean') {
+                this.controller.config.trustMyNetwork = reqObj.trustMyNetwork;
+                reply.code = 200;
+                reply.data = { trustMyNetwork: this.controller.config.trustMyNetwork };
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad request.';
+            }
+        } catch (e) {
+            reply.error = 'Something went wrong: ' + e.message;
         }
 
         return reply;

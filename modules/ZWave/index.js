@@ -255,7 +255,6 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-	ws.allowExternalAccess(_name + ".Blacklist", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
@@ -275,7 +274,6 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
 	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
-	ws.revokeExternalAccess(_name + ".Blacklist");
 	ws.revokeExternalAccess(_name + ".Postfix");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
@@ -855,27 +853,6 @@ ZWave.prototype.defineHandlers = function () {
 			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
 		} catch (e) {
 			return { status: 500, body: e.toString() };
-		}
-	};
-
-	this.ZWaveAPI.Blacklist = function() {
-		var blacklist = fs.loadJSON('modules/ZWave/blacklist.json');
-
-		if (!!blacklist) {
-			return {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json",
-					"Connection": "keep-alive"
-				},
-				body: blacklist
-			};
-		} else {
-			return {
-				status: 500,
-				body: 'Cannot load blacklist.'
-			};
-
 		}
 	};
 

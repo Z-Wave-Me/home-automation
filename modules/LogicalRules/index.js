@@ -1,6 +1,6 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.1.1
+Version: 1.2.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>

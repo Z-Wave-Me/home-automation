@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName":"LogicalRules",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -324,6 +324,8 @@
 			},
 			"logicalOperator": {
 				"label": "__l_logicalOperator__",
+				"optionLabels":["__and__", "__or__"],
+				"helper":"__h_logicalOperator__",
 				"type": "select"
 			},
 			"tests": {
@@ -333,10 +335,11 @@
 						"fields": {
 							"testType": {
 								"type": "select",
+								"label":"__l_testType__",
+								"optionLabels":["__l_testBinary__","__l_testMultilevel__","__l_testRemote__","__l_testTime__","__l_testNested__"],
 								"default": ""
 							},
 							"testBinary": {
-								"label": "__l_testBinary__",
 								"dependencies": {
 									"testType": "binary"
 								},
@@ -347,11 +350,13 @@
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+									}, 
+									"testValue": {
+										"optionLabels": ["__off__", "__on__"]
 									}
 								}
 							},
 							"testMultilevel": {
-								"label": "__l_testMultilevel__",
 								"dependencies": {
 									"testType": "multilevel"
 								},
@@ -370,7 +375,6 @@
 								}
 							},
 							"testRemote": {
-								"label": "__l_testRemote__",
 								"dependencies": {
 									"testType": "remote"
 								},
@@ -381,11 +385,13 @@
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName"
+									},
+									"testValue": {
+										"optionLabels": ["__off__", "__on__", "__upstart__", "__upstop__", "__downstart__", "__downstop__"]
 									}
 								}
 							},
 							"testTime": {
-								"label": "__l_testTime__",
 								"dependencies": {
 									"testType": "time"
 								},
@@ -402,13 +408,15 @@
 								}
 							},
 							"testNested": {
-								"label": "__l_testNested__",
 								"dependencies": {
 									"testType": "nested"
 								},
+								"helper":"__h_testNested__",
 								"fields": {
 									"logicalOperator": {
 										"label": "__l_logicalOperator__",
+										"optionLabels":["__and__", "__or__"],
+										"helper":"__h_logicalOperator__",
 										"type": "select"
 									},
 									"tests": {
@@ -416,12 +424,12 @@
 											"item": {
 												"fields": {
 													"testType": {
-														"label": "__l_logicalOperator__",
+														"label":"__l_testType__",
+														"optionLabels":["__l_testBinary__","__l_testMultilevel__","__l_testRemote__","__l_testTime__","__l_testNested__"],
 														"type": "select",
 														"default": ""
 													},
 													"testBinary": {
-														"label": "__l_testBinary__",
 														"dependencies": {
 															"testType": "binary"
 														},
@@ -432,11 +440,13 @@
 																"datasource": "namespaces",
 																"field": "optionLabels",
 																"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+															}, 
+															"testValue": {
+																"optionLabels": ["__off__", "__on__"]
 															}
 														}
 													},
 													"testMultilevel": {
-														"label": "__l_testMultilevel__",
 														"dependencies": {
 															"testType": "multilevel"
 														},
@@ -455,7 +465,6 @@
 														}
 													},
 													"testRemote": {
-														"label": "__l_testRemote__",
 														"dependencies": {
 															"testType": "remote"
 														},
@@ -466,11 +475,13 @@
 																"datasource": "namespaces",
 																"field": "optionLabels",
 																"optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName"
+															},
+															"testValue": {
+																"optionLabels": ["__off__", "__on__", "__upstart__", "__upstop__", "__downstart__", "__downstop__"]
 															}
 														}
 													},
 													"testTime": {
-														"label": "__l_testTime__",
 														"dependencies": {
 															"testType": "time"
 														},
