@@ -160,7 +160,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         resProfile = this.getProfileResponse(profile);
         resProfile.sid = sid;
 
-        if (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
+        if (profile.password !== 'admin' && typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
             this.controller.config.firstaccess = false;
         }
 
