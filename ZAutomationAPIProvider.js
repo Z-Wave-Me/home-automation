@@ -2055,7 +2055,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             tMN;
 
         try {            
-            tMN = this.controller.config.trustMyNetwork? this.controller.config.trustMyNetwork : 'false';
+            tMN = this.controller.config.trustMyNetwork? this.controller.config.trustMyNetwork : false;
 
             reply.data = { trustMyNetwork: tMN };
             reply.code = 200;
