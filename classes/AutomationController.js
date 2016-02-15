@@ -181,7 +181,16 @@ AutomationController.prototype.saveFiles = function () {
     saveObject("files.json", this.files);
 };
 
-AutomationController.prototype.start = function () {
+AutomationController.prototype.start = function (restore) {
+    var restore = restore || false;
+
+    // if restore flag is true, overwrite config values first
+    if (restore){
+        console.log("Restore config...");
+        // Restore config
+        this.restoreConfig();
+    }
+
     // Restore persistent data
     this.loadNotifications();
 
@@ -206,6 +215,18 @@ AutomationController.prototype.start = function () {
 
     // Notify core
     this.emit("core.start");
+};
+
+AutomationController.prototype.restoreConfig = function () {    
+    var restoredConfig = loadObject("config.json");
+
+    // overwrite variables with restored data
+    this.config = restoredConfig.controller || config.controller;
+    this.profiles = restoredConfig.profiles || config.profiles;
+    this.instances = restoredConfig.instances || config.instances;
+    this.locations = restoredConfig.locations || config.locations;
+    this.vdevInfo = restoredConfig.vdevInfo || config.vdevInfo;
+    this.modules_categories = restoredConfig.modules_categories || config.modules_categories;
 };
 
 AutomationController.prototype.stop = function () {

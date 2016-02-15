@@ -1886,7 +1886,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                   offset += 3;
                 }
               }
-
+              
               return chars.join('');
             }
 
@@ -1894,22 +1894,28 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             reqObj = JSON.parse(this.req.body.backupFile.content);
             
-            for (var obj in reqObj) {
-                if (obj === "__ZWay" || obj === "__EnOcean") break;
-                saveObject(obj, reqObj[obj]);
+            // stop the controller
+            this.controller.stop();
+
+            for (var obj in reqObj.data) {
+                var dontSave = ["__ZWay","__EnOcean","data","error","code","message"]; // objects that should be ignored 
+                
+                if (dontSave.indexOf(obj) > -1) break;
+                
+                saveObject(obj, reqObj.data[obj]);
             }
 
-            // restart controller to apply config.json and other modules configs
-            this.controller.restart();
+            // start controller with restore flag to apply config.json and other modules configs
+            this.controller.start(true);
             
             // restore Z-Wave and EnOcean
-            !!reqObj["__ZWay"] && Object.keys(reqObj["__ZWay"]).forEach(function(zwayName) {
-                var zwayData = utf8Decode(reqObj["__ZWay"][zwayName]);
+            !!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
+                var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
                 global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO
-            !!reqObj["__EnOcean"] && reqObj["__EnOcean"].forEach(function(zenoName) {
-                // global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj["__EnOcean"][zenoName]);
+            !!reqObj.data["__EnOcean"] && reqObj.data["__EnOcean"].forEach(function(zenoName) {
+                // global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj.data["__EnOcean"][zenoName]);
             });
             */
             
