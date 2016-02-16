@@ -1898,7 +1898,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean","data","error","code","message"]; // objects that should be ignored 
+                var dontSave = ["__ZWay","__EnOcean"]; // objects that should be ignored 
                 
                 if (dontSave.indexOf(obj) > -1) break;
                 
