@@ -166,10 +166,9 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         }
     }, "");
 
-    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.battery", function(type) {
+    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
         if (type == self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
-            var level = (this.value - 88)*20+20; // gives 100-20 with steps of 20
-            global.controller.addNotification("notification", langFile.remaining_battery_level + " " + level + "%", "controller", moduleName);
+            global.controller.addNotification("notification", langFile.remaining_battery_level + " " + (this.value * 10) + "%", "controller", moduleName);
         }
     }, "");
 
@@ -184,9 +183,15 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
             if (!self.batteryTimer) {
                 self.batteryTimer = setInterval(function() {
-                        global.ZWave[zwayName].zway.ZMEPHIGetBattery();
+                        global.ZWave[zwayName].zway.ZMEPHIGetPower();
                 }, 60*1000);
             }
+        }
+    }, "");
+
+    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryFail", function(type) {
+        if (this.value) {
+            global.controller.addNotification("critical", langFile.battery_falure, "controller", moduleName);
         }
     }, "");
 };
