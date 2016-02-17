@@ -1898,7 +1898,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // restore Z-Wave and EnOcean
             !!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
                 var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
-                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, true);
+                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO
             !!reqObj.data["__EnOcean"] && reqObj.data["__EnOcean"].forEach(function(zenoName) {
