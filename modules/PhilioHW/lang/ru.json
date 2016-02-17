@@ -1,4 +1,6 @@
 {
-	"m_title":"Philio hardware support",
-	"m_descr":"Support for Philio hardware buttons, LEDs, power and battery management"
+	"m_title":"Поддержка контроллера Philio",
+	"m_descr":"Поддержка оборудования Philio: кнопок, светодиода, детекции питания и управления аккумулятором"
+	"power_failure":"Пропало питание",
+	"power_recovery":"Питание восстановлено"
 }
