@@ -54,7 +54,7 @@ PhilioHW.prototype.init = function (config) {
             return;
         }
 
-	self.bindings[zwayName] = [];
+        self.bindings[zwayName] = [];
 
         if (zway.controller.data.philiohw) {
             self.registerButtons(zwayName);
@@ -112,7 +112,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         moduleName = this.getName(),
         langFile = this.controller.loadModuleLang(moduleName);
 
-    global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // breathing LED
+    global.ZWave[zwayName].zway.ZMEPHIGetPower(); // get current power state
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.tamper.state", function(type) {
         switch (this.value) {
@@ -166,11 +166,27 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         }
     }, "");
 
+    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.battery", function(type) {
+        if (type == self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+            var level = (this.value - 88)*20+20; // gives 100-20 with steps of 20
+            global.controller.addNotification("notification", langFile.remaining_battery_level + " " + level + "%", "controller", moduleName);
+        }
+    }, "");
+
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
         if (this.value) {
-		global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
+            global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // breathing LED
+            clearInterval(self.batteryTimer);
+            self.batteryTimer = null;
         } else {
-		global.controller.addNotification("critical", langFile.power_falure, "controller", moduleName);
+            global.controller.addNotification("critical", langFile.power_falure, "controller", moduleName);
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
+            if (!self.batteryTimer) {
+                self.batteryTimer = setInterval(function() {
+                        global.ZWave[zwayName].zway.ZMEPHIGetBattery();
+                }, 60*1000);
+            }
         }
     }, "");
 };
