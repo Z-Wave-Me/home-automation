@@ -129,6 +129,14 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }
     
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.tamper.state", function(type) {
+        switch (this.value) {
+            case 0:
+                global.controller.addNotification("critical", langFile.tamper_triggered, "controller", moduleName);
+                break;
+            case 2:
+                global.controller.addNotification("notification", langFile.tamper_idle, "controller", moduleName);
+                break;
+        }                
     	roundLED();
     }, "");
 
@@ -172,7 +180,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
-        if (type == self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+        if (type === self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
             global.controller.addNotification("notification", langFile.remaining_battery_level + " " + (this.value * 10) + "%", "controller", moduleName);
         }
     }, "");
@@ -183,7 +191,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             clearInterval(self.batteryTimer);
             self.batteryTimer = null;
         } else {
-            global.controller.addNotification("critical", langFile.power_falure, "controller", moduleName);
+            global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
             if (!self.batteryTimer) {
                 self.batteryTimer = setInterval(function() {
                         global.ZWave[zwayName].zway.ZMEPHIGetPower();
