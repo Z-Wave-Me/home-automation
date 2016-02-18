@@ -129,14 +129,16 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }
     
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.tamper.state", function(type) {
-        switch (this.value) {
-            case 0:
-                global.controller.addNotification("critical", langFile.tamper_triggered, "controller", moduleName);
-                break;
-            case 2:
-                global.controller.addNotification("notification", langFile.tamper_idle, "controller", moduleName);
-                break;
-        }                
+        if (type === self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+            switch (this.value) {
+                case 0:
+                    global.controller.addNotification("critical", langFile.tamper_triggered, "controller", moduleName);
+                    break;
+                case 2:
+                    global.controller.addNotification("notification", langFile.tamper_idle, "controller", moduleName);
+                    break;
+            }
+        }
     	roundLED();
     }, "");
 
@@ -186,16 +188,18 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
-        if (this.value) {
-            global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
-            clearInterval(self.batteryTimer);
-            self.batteryTimer = null;
-        } else {
-            global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
-            if (!self.batteryTimer) {
-                self.batteryTimer = setInterval(function() {
-                        global.ZWave[zwayName].zway.ZMEPHIGetPower();
-                }, 60*1000);
+        if (type === self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+            if (this.value) {
+                global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
+                if (!self.batteryTimer) {
+                    self.batteryTimer = setInterval(function() {
+                            global.ZWave[zwayName].zway.ZMEPHIGetPower();
+                    }, 60*1000);
+                }
+            } else {
+                global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
+                clearInterval(self.batteryTimer);
+                self.batteryTimer = null;
             }
         }
         roundLED();
