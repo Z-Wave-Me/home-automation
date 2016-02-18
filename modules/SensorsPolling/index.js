@@ -1,6 +1,6 @@
 /*** SensorsPolling Z-Way HA module *******************************************
 
-Version: 1.0.1
+Version: 1.2.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
@@ -51,16 +51,30 @@ SensorsPolling.prototype.init = function (config) {
 
         var currentPoll = Math.floor(new Date().getTime() / 1000),
             devicesToUpdate = [],
+            batteries = [],
             devJSON;
+
+        // if betty devices should not be polled, find their node ids and add them to batteries list
+        if(!self.config.pollDevsWithBatteries) {
+            batteries = self.controller.devices.filter(function(dev) {
+                return dev.get('deviceType') === 'battery' && dev.id.split('_').length > 2;
+            }).map(function(dev){
+                return self.getDevNodeId(dev.id);
+            });
+        }
 
         //update only binary and multilevel sensors that has no change during the update interval
         devicesToUpdate = self.controller.devices.filter(function (dev) {
             devJSON = dev.toJSON();
 
-            return _.unique(self.config.devices).indexOf(dev.id) === -1 && 
-                        devJSON.updateTime <= lastPoll && 
-                            (dev.get('deviceType') === 'sensorBinary' || 
-                                dev.get('deviceType') === 'sensorMultilevel');
+            // check if battery devices should be polled first
+            if (batteries.indexOf(self.getDevNodeId(dev.id)) === -1) {
+                return  _.unique(self.config.devices).indexOf(dev.id) === -1 && 
+                            _.unique(self.config.devicesWithBattery).indexOf(dev.id) === -1 &&
+                                devJSON.updateTime <= lastPoll && 
+                                    (dev.get('deviceType') === 'sensorBinary' || 
+                                        dev.get('deviceType') === 'sensorMultilevel');
+            }
         });
 
         if (devicesToUpdate.length > 0) {
@@ -86,3 +100,19 @@ SensorsPolling.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+SensorsPolling.prototype.getDevNodeId = function (vDevId) {
+    var match = vDevId.split('_'),
+        nodeId = null;
+        
+        // should work for all ZWay /-Remote and Enocean devices
+        for (var i = 0; i < match.length; i++) {
+            nodeId = parseInt(match[i]);
+            
+            if (!_.isNaN(nodeId)) {
+                return nodeId;
+            }
+        }
+
+    return nodeId;
+};

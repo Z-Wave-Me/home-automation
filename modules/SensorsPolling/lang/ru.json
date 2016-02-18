@@ -15,5 +15,8 @@
 	"six_h":"6 часов", 
 	"half_d":"12 часов", 
 	"daily":"1 раз в день", 
-	"weekly":"1 раз в неделю"
+	"weekly":"1 раз в неделю",
+	"rl_pollBatteries":"Poll battery powered Sensors",
+	"h_pollBatteries":"Be careful! Depending on the configured interval regularly polling of battery powered devices could reduce there battery lifetime a lot. Be also clear about that some devices with multiple sensors will be woken up multiple times a poll time is triggered - e.g. battery powered device with 4 Sensors will wake up (default is 20s) four times, so this device will about 80s awake during poll time is triggered.",
+	"l_batteryDevs":"Do not poll this battery powered Sensors:"
 }

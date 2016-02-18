@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName":"SensorsPolling",
-    "version": "1.0.1",
+    "version": "1.2.0",
     "maturity": "stable",
     "repository": {
             "type": "git",
@@ -15,46 +15,104 @@
     "defaults": {
         "title": "__m_title__",
         "description": "__m_descr__",
+        "pollDevsWithBatteries": false,
         "devices": [],
+        "devicesWithBattery": [],
         "period": 60
     },
     "schema": {
         "type": "object",
         "properties": {
-            "devices": {
-                    "type": "array",
-                    "items": {
-                            "field": "enum",
-                            "datasource": "namespaces",
-                            "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId",
-                            "required": false
-                    }
+            "pollDevsWithBatteries":{
+                "type":"boolean",
+                "required" : false
             },
             "period": {
                 "type": "select",
                 "required": true,
-        "enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
+                "enum": [1, 2, 5, 10, 20, 30, 60, 120, 240, 360, 720, 1440, 10080]
+            },
+            "devices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_battery:deviceId",
+                    "required": false
+                }
+            },
+            "devicesWithBattery": {
+                "dependencies":"pollDevsWithBatteries",
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_battery:deviceId",
+                    "required": false
+                }
             }
         },
         "required": false
     },
     "options": {
         "fields": {
-            "devices": {
-                    "label": "__l_devices__",
-                    "fields": {
-                        "item": {
-                            "type": "select",
-                            "datasource": "namespaces",
-                            "field": "optionLabels",
-                            "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
-                        }
-                    }
+            "pollDevsWithBatteries":{
+                "type":"checkbox",
+                "rightLabel": "__rl_pollBatteries__",
+                "helper":"__h_pollBatteries__"
             },
             "period": {
                 "label": "__l_period__",
                 "optionLabels": ["__one_m__", "__two_m__", "__five_m__", "__ten_m__", "__twenty_m__", "__thirty_m__", "__one_h__", "__two_h__", "__four_h__", "__six_h__", "__half_d__", "__daily__", "__weekly__"]
+            },
+            "devices": {
+                "label": "__l_devices__",
+                "fieldClass": "nonBatteryDevices",
+                "actionbar": {
+                    "actions": [{
+                        "action": "up",
+                        "enabled": false
+                    },
+                    {
+                        "action": "down",
+                        "enabled": false
+                    }]
+                },
+                "fields": {
+                    "item": {
+                        "type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
+                    }
+                }
+            },
+            "devicesWithBattery": {
+                "label": "__l_batteryDevs__",
+                "dependencies": {
+                    "pollDevsWithBatteries": true
+                },
+                "fieldClass": "batteryDevices",
+                "actionbar": {
+                    "actions": [{
+                        "action": "up",
+                        "enabled": false
+                    },
+                    {
+                        "action": "down",
+                        "enabled": false
+                    }]
+                },
+                "fields": {
+                    "item": {
+                        "type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_sensorMultilevel:deviceName"
+                    }
+                }
             }
         }
-    }
+    },
+    "postRender": "loadFunction:postRender.js"
 }

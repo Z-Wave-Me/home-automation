@@ -1876,13 +1876,11 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
 
 // load module lang folder
 AutomationController.prototype.loadModuleLang = function (moduleId) {
-    var self = this,
-        languageFile;
+    var moduleMeta = this.modules[moduleId] && this.modules[moduleId].meta || null,
+        languageFile = null;
 
-        languageFile = self.loadMainLang('modules/' + moduleId + '/');
-
-        if(languageFile === null){
-            languageFile = self.loadMainLang('userModules/' + moduleId + '/');
+        if(!!moduleMeta){
+            languageFile = this.loadMainLang(moduleMeta.location + '/');
         }
 
     return languageFile;
@@ -1891,7 +1889,7 @@ AutomationController.prototype.loadModuleLang = function (moduleId) {
 // load lang folder with given prefix
 AutomationController.prototype.loadMainLang = function (pathPrefix) {
     var self = this,
-        languageFile,
+        languageFile = null,
         prefix;
 
     if(pathPrefix === undefined || pathPrefix === null) {

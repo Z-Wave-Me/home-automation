@@ -1898,7 +1898,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // restore Z-Wave and EnOcean
             !!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
                 var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
-                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, true);
+                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
             /* TODO
             !!reqObj.data["__EnOcean"] && reqObj.data["__EnOcean"].forEach(function(zenoName) {
@@ -2024,8 +2024,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
-                
-                reply.data.defaultProfile = setLogin.data;
+                reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
+                reply.data.defaultProfile = setLogin.data; // set login data of default profile
                 reply.data.firstaccess = true;
                 reply.code = 200;
             } else {
