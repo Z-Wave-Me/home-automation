@@ -129,7 +129,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }
     
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.tamper.state", function(type) {
-        if (type === self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+        if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
             switch (this.value) {
                 case 0:
                     global.controller.addNotification("critical", langFile.tamper_triggered, "controller", moduleName);
@@ -182,13 +182,13 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
-        if (type === self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+        if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
             global.controller.addNotification("notification", langFile.remaining_battery_level + " " + (this.value * 10) + "%", "controller", moduleName);
         }
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
-        if (type === self.ZWAY_DATA_CHANGE_TYPE["Update"]) {
+        if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
             if (this.value) {
                 global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
                 if (!self.batteryTimer) {
