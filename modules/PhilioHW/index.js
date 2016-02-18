@@ -112,19 +112,24 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         moduleName = this.getName(),
         langFile = this.controller.loadModuleLang(moduleName);
 
-    global.ZWave[zwayName].zway.ZMEPHIGetPower(); // get current power state
+    // get current power state and buttons states
+    global.ZWave[zwayName].zway.ZMEPHIGetPower();
+    global.ZWave[zwayName].zway.ZMEPHIGetButton(0);
+    global.ZWave[zwayName].zway.ZMEPHIGetButton(1);
+    global.ZWave[zwayName].zway.ZMEPHIGetButton(2);
 
+    function roundLED() {
+    	if (global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
+    	    global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
+    	} else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
+    	    global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
+    	} else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 2) {
+    	    global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
+    	}
+    }
+    
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.tamper.state", function(type) {
-        switch (this.value) {
-            case 0:
-                self.controller.addNotification("warning", "Controller removed from wall", "module", "PhilioHW");
-                global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10);
-                break;
-            case 2:
-                self.controller.addNotification("warning", "Controller returned to normal position", "module", "PhilioHW");
-                global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20);
-                break;
-        }
+    	roundLED();
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.funcA.state", function(type) {
@@ -175,18 +180,17 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
         if (this.value) {
             global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
-            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // breathing LED
             clearInterval(self.batteryTimer);
             self.batteryTimer = null;
         } else {
             global.controller.addNotification("critical", langFile.power_falure, "controller", moduleName);
-            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
             if (!self.batteryTimer) {
                 self.batteryTimer = setInterval(function() {
                         global.ZWave[zwayName].zway.ZMEPHIGetPower();
                 }, 60*1000);
             }
         }
+        roundLED();
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryFail", function(type) {
