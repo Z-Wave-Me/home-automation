@@ -1,6 +1,10 @@
 {
 	"m_title":"Philio hardware support",
 	"m_descr":"Support for Philio hardware buttons, LEDs, power and battery management",
+	"tamper_triggered":"Controller opened or removed from wall",
+	"tamper_idle":"Controller returned to normal position",
+	"remaining_battery_level":"Remaining controller battery level is ",
+	"battery_failure":"Backup battery failure!",
 	"power_failure":"AC power lost",
 	"power_recovery":"AC power recover"
 }
