@@ -1985,7 +1985,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             allowAcc = 0,
-            timeout = 450; // in s ~ 15 min
+            timeout = 900; // in s ~ 15 min
 
         allowAcc = this.req.query.hasOwnProperty("allow_access") ? parseInt(this.req.query.allow_access, 10) : 0;
         timeout = this.req.query.hasOwnProperty("timeout") ? parseInt(this.req.query.timeout, 10) : timeout;
