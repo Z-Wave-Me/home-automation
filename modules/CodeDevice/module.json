@@ -21,7 +21,7 @@
 		"setterOn_toggleButton": "",
 
 		"getter_sensorBinary": "",
-		"getterPollInterval_sensortBinary": 0,
+		"getterPollInterval_sensorBinary": 0,
 
 		"getter_sensorMultilevel": "",
 		"getterPollInterval_sensorMultilevel": 0,
@@ -30,11 +30,11 @@
 		"setterOn_switchBinary": "",
 		"setterOff_switchBinary": "",
 		"getter_switchBinary": "",
-		"getterPollInterval_switchtBinary": 0,
+		"getterPollInterval_switchBinary": 0,
 
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
-		"getterPollInterval_switchtMultilevel": 0,
+		"getterPollInterval_switchMultilevel": 0,
 
 		"updateOnAction": false,
 
