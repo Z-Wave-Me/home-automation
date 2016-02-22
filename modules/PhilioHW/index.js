@@ -183,7 +183,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
         if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
-            global.controller.addNotification("notification", langFile.remaining_battery_level + " " + (this.value * 10) + "%", "controller", moduleName);
+            global.controller.addNotification("notification", langFile.remaining_battery_level + (this.value * 10) + "%", "controller", moduleName);
         }
     }, "");
 
