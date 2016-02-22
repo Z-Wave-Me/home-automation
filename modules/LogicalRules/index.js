@@ -173,19 +173,25 @@ LogicalRules.prototype.testRule = function (tree) {
         tree.action.switches && tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                vDev.performCommand(devState.status);
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                    vDev.performCommand(devState.status);
+                }
             }
         });
         tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                vDev.performCommand("exact", { level: devState.status });
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                    vDev.performCommand("exact", { level: devState.status });
+                }
             }
         });
         tree.action.locks && tree.action.locks.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                vDev.performCommand(devState.status);
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                    vDev.performCommand(devState.status);
+                }
             }
         });
         tree.action.scenes && tree.action.scenes.forEach(function(scene) {

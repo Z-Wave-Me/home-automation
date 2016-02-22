@@ -246,6 +246,11 @@
 									"required": true,
 									"enum": ["off", "on"],
 									"default" : "on"
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						}
@@ -265,6 +270,11 @@
 									"required": true,
 									"minimum": 0,
 									"maximum": 99
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						}
@@ -285,6 +295,11 @@
 									"required": true,
 									"enum": ["close", "open"],
 									"default" : "open"
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						}
@@ -525,6 +540,11 @@
 									"status": {
 										"label": "",
 										"optionLabels": ["__off__", "__on__"]
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							}
@@ -545,6 +565,11 @@
 									"status": {
 										"label": "__l_status__",
 										"type": "integer"
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							}
@@ -565,6 +590,11 @@
 									"status": {
 										"label": "",
 										"optionLabels": ["__close__", "__open__"]
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							}

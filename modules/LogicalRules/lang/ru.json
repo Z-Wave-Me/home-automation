@@ -28,6 +28,8 @@
 	"l_scenes":"Список сцен",
 	"or": "OR",
 	"and": "AND",
-	"l_testType": "Type of condition:",
-	"h_testNested": "Add a new nested condition - like in logical notation: A AND B AND (C OR D). The additional nested condition is (C OR D). An action is only triggered if the conditions A and B and either the condition C or D are met together. Example: If outside the light sensor A > 80% and the temperature sensor B > 26°C and (time < 12:00 am or time > 02:00 pm) then the jalousie in the living room is set to 50%."
+	"l_testType": "Тип условия:",
+	"h_testNested": "Add a new nested condition - like in logical notation: A AND B AND (C OR D). The additional nested condition is (C OR D). An action is only triggered if the conditions A and B and either the condition C or D are met together. Example: If outside the light sensor A > 80% and the temperature sensor B > 26°C and (time < 12:00 am or time > 02:00 pm) then the jalousie in the living room is set to 50%.",
+	"l_sendAction":"Не отправлять команду ВКЛ, если устройство уже включено, аналогично для ВЫКЛ",
+	"h_sendAction":"Нужно чтобы не забивать сеть."
 }

@@ -29,5 +29,7 @@
 	"or": "OR",
 	"and": "AND",
 	"l_testType": "Typ der Bedingung:",
-	"h_testNested": "Erzeugt weitere verschachtelte Bedingungen - logische Schreibweise: A AND B AND (C OR D). Die zusätzliche verschachtelte Bedingung ist (C OR D). Eine Aktion wird also nur dann ausgelöst, wenn die Bedingungen A und B sowie entweder die Bedingung C oder D gemeinsam erfüllt sind. Beispiel: Wenn außen der Lichtsensor A > 80% und der Temperatursensor B > 26°C und (Zeit < 12:00 Uhr oder Zeit > 14:00 Uhr) dann wird die Jalousie im Wohnzimmer auf 50% gesetzt."
+	"h_testNested": "Erzeugt weitere verschachtelte Bedingungen - logische Schreibweise: A AND B AND (C OR D). Die zusätzliche verschachtelte Bedingung ist (C OR D). Eine Aktion wird also nur dann ausgelöst, wenn die Bedingungen A und B sowie entweder die Bedingung C oder D gemeinsam erfüllt sind. Beispiel: Wenn außen der Lichtsensor A > 80% und der Temperatursensor B > 26°C und (Zeit < 12:00 Uhr oder Zeit > 14:00 Uhr) dann wird die Jalousie im Wohnzimmer auf 50% gesetzt.",
+	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
+	"h_sendAction":"Need to avoid flooding the network."
 }
