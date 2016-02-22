@@ -98,8 +98,8 @@
 	"product": "Danfoss Temperature Room Sensor",
 	"preInterview": [],
 	"postInterview": [
-		"supportSwitchController(0,91,1,'S');"
-	]
+		"supportSwitchController(0,91,1,'S'); if (commandClassId==0x72 && self.zway.devices[nodeId].ThermostatSetPoint.data.version!=2) { self.zway.devices[nodeId].ThermostatSetPoint.data.version = 2; self.zway.devices[nodeId].ThermostatSetPoint.Interview(); }"
+]
 }, {
 	"id": "32",
 	"p_id": "316.2.14",
