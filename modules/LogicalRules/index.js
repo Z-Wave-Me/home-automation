@@ -186,6 +186,14 @@ LogicalRules.prototype.testRule = function (tree) {
                 }
             }
         });
+        tree.action.thermostats && tree.action.thermostats.forEach(function(devState) {
+            var vDev = self.controller.devices.get(devState.device);
+            if (vDev) {
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                    vDev.performCommand("exact", { level: devState.status });
+                }
+            }
+        });
         tree.action.locks && tree.action.locks.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
