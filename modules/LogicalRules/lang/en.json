@@ -14,6 +14,7 @@
 	"l_testNested":"Nested conditions",
 	"l_action":"Actions",
 	"l_switches":"List of switches:",
+	"l_thermostats":"Thermostats",
 	"off":"Off",
 	"on":"On",
 	"upstart":"Up start",

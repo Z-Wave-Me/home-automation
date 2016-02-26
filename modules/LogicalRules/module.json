@@ -279,6 +279,30 @@
 							}
 						}
 					},
+					"thermostats": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_thermostat:deviceId",
+									"required": true
+								},
+								"status": {
+									"required": true,
+									"minimum": 0,
+									"maximum": 99
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
+								}
+							}
+						}
+					},
 					"locks": {
 						"type": "array",
 						"items": {
@@ -561,6 +585,31 @@
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+									},
+									"status": {
+										"label": "__l_status__",
+										"type": "integer"
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
+									}
+								}
+							}
+						}
+					},
+					"thermostats": {
+						"label": "__l_thermostats__",
+						"fields": {
+							"item": {
+								"fields": {
+									"device": {
+										"label": "",
+										"type": "select",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_thermostat:deviceName"
 									},
 									"status": {
 										"label": "__l_status__",
