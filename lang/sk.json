@@ -9,7 +9,10 @@
 	"ac_err_invalid_module":"Neplatný modul ",
 	"ac_err_load_mod_json":"Nedá sa načítať modules.json z ",
 	"ac_err_stop_mod":"Nedá sa zastaviť modul ",
+	"ac_err_uninstall_mod":"Unable to uninstall or reset app.",
 	"profile_name": "Administrátor",
 	"profile_descr": "Toto je profil admina. Profil admina je vytvorený automaticky.", 
-	"vd_err_virtual_dev":"Chyba, počas vykonávania príkazu: "
+	"vd_err_virtual_dev":"Chyba, počas vykonávania príkazu: ",
+	"zaap_err_uninstall_mod":"Unable to uninstall app.",
+	"zaap_err_unload_mod":"Unable to unload app."
 }

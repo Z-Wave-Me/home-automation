@@ -9,7 +9,10 @@
 	"ac_err_invalid_module":"Felaktig modul ",
 	"ac_err_load_mod_json":"Kan inte ladda modules.json från ",
 	"ac_err_stop_mod":"Kan inte stoppa modul ",
+	"ac_err_uninstall_mod":"Unable to uninstall or reset app.",
 	"profile_name": "Administratör",
 	"profile_descr": "Detta är adminprofilen. Adminprofilen skapades automatiskt.", 
-	"vd_err_virtual_dev":"Error during perform command execution: "
+	"vd_err_virtual_dev":"Error during perform command execution: ",
+	"zaap_err_uninstall_mod":"Unable to uninstall app.",
+	"zaap_err_unload_mod":"Unable to unload app."
 }

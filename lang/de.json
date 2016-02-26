@@ -9,10 +9,13 @@
 	"ac_err_invalid_module":"Nicht valides Modul: ",
 	"ac_err_load_mod_json":"modules.json kann nicht geladen werden. Modul: ",
 	"ac_err_stop_mod":"Das folgende Modul kann nicht gestoppt werden: ",
+	"ac_err_uninstall_mod":"Die App konnte nicht deinstalliert oder wiederhergestellt werden.",
 	"profile_name": "Administrator",
 	"profile_descr": "Dies ist das Administratorprofil. Dieses wird automatisch angelegt.",
 	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: ",
 	"no_devices_found":"Keine Geräte gefunden",
 	"err_preparing_room_dev_structure":"Die Raum-Geräte Beziehung konnte nicht erzeugt werden",
-	"err_parsing_npc_filters":"Die Namespaces-Filter konnten nicht gefunden/gelesen werden."
+	"err_parsing_npc_filters":"Die Namespaces-Filter konnten nicht gefunden/gelesen werden.",
+	"zaap_err_uninstall_mod":"Die App konnte nicht deinstalliert werden.",
+	"zaap_err_unload_mod":"Die App konnte nicht gelöscht werden."
 }

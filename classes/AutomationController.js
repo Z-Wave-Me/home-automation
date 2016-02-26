@@ -181,14 +181,14 @@ AutomationController.prototype.saveFiles = function () {
     saveObject("files.json", this.files);
 };
 
-AutomationController.prototype.start = function (restore) {
+AutomationController.prototype.start = function (reload) {
     var restore = restore || false;
 
-    // if restore flag is true, overwrite config values first
-    if (restore){
-        console.log("Restore config...");
-        // Restore config
-        this.restoreConfig();
+    // if reload flag is true, overwrite config values first
+    if (reload){
+        console.log("Reload config...");
+        // Reload config
+        this.reloadConfig();
     }
 
     // Restore persistent data
@@ -217,16 +217,16 @@ AutomationController.prototype.start = function (restore) {
     this.emit("core.start");
 };
 
-AutomationController.prototype.restoreConfig = function () {    
-    var restoredConfig = loadObject("config.json");
+AutomationController.prototype.reloadConfig = function () {    
+    var reloadedConfig = loadObject("config.json");
 
     // overwrite variables with restored data
-    this.config = restoredConfig.controller || config.controller;
-    this.profiles = restoredConfig.profiles || config.profiles;
-    this.instances = restoredConfig.instances || config.instances;
-    this.locations = restoredConfig.locations || config.locations;
-    this.vdevInfo = restoredConfig.vdevInfo || config.vdevInfo;
-    this.modules_categories = restoredConfig.modules_categories || config.modules_categories;
+    this.config = reloadedConfig.controller || config.controller;
+    this.profiles = reloadedConfig.profiles || config.profiles;
+    this.instances = reloadedConfig.instances || config.instances;
+    this.locations = reloadedConfig.locations || config.locations;
+    this.vdevInfo = reloadedConfig.vdevInfo || config.vdevInfo;
+    this.modules_categories = reloadedConfig.modules_categories || config.modules_categories;
 };
 
 AutomationController.prototype.stop = function () {
@@ -525,6 +525,54 @@ AutomationController.prototype.unloadModule = function (moduleId) {
     }
 
     return result;
+};
+
+AutomationController.prototype.uninstallModule = function(moduleId, reset) {
+    var langFile = this.loadMainLang(),
+        uninstall = false,
+        reset = reset? reset : false,
+        unload = this.unloadModule(moduleId),
+        result = "in progress";
+
+    if (unload === 'success') {
+        try {
+            installer.remove(
+                moduleId,
+                function() {
+                        result = "done";
+                },  function() {
+                        result = "failed";
+                }
+            );
+            
+            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+            
+            while ((new Date()).valueOf() < d &&  result === "in progress") {
+                    processPendingCallbacks();
+            }
+            
+            if (result === "in progress") {
+                    result = "failed";
+            }
+
+            if (result === "done") {
+
+                if(reset) {
+                    loadSuccessfully = this.loadInstalledModule(moduleId, 'modules/');
+
+                    uninstall = loadSuccessfully;
+                } else {
+                    uninstall = true;
+                }                
+                
+            }
+        } catch (e) {
+            console.log('Uninstalling or reseting of app "' + moduleId + '" has failed. ERROR:', e);
+            this.addNotification("error", langFile.ac_err_uninstall_mod + ': ' + moduleId, "core", "AutomationController");
+        }
+    }
+
+    return uninstall;
 };
 
 AutomationController.prototype.loadInstalledModule = function (moduleId, rootDirectory) {

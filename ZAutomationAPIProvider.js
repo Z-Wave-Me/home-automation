@@ -121,7 +121,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
-        this.router.post("/reset", this.ROLE.ADMIN, this.reset);
+        this.router.get("/resetToFactoryDefault", this.ROLE.ADMIN, this.resetToFactoryDefault);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork);
@@ -833,8 +833,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     deleteModule: function (moduleId) {
         var reply = {
                 error: {
-                    key: null,
-                    errorMsg: null
+                    key: null
                 },
                 data: {
                     key: null,
@@ -842,52 +841,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 code: 500
             }, 
-            unload;
-            
-        var result = "in progress";
+            uninstall = false;
 
         if (this.controller.modules[moduleId]) {
 
-            unload = this.controller.unloadModule(moduleId);
+            uninstall = this.controller.uninstallModule(moduleId);
 
-            if (unload === 'success') {
-                try {
-                    installer.remove(
-                        moduleId,
-                        function() {
-                                result = "done";
-                        },  function() {
-                                result = "failed";
-                        }
-                    );
-                    
-                    var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-                    
-                    while ((new Date()).valueOf() < d &&  result === "in progress") {
-                            processPendingCallbacks();
-                    }
-                    
-                    if (result === "in progress") {
-                            result = "failed";
-                    }
-
-                    if (result === "done") {
-                        
-                        reply.code = 200;
-                        reply.data.key = "app_delete_successful"; // send language key as response
-                    } else {
-                        reply.code = 500;
-                        reply.error.key = 'app_failed_to_delete';
-                    }
-                } catch (e) {
-                    reply.code = 500;
-                    reply.error.key = 'app_failed_to_delete';
-                    reply.error.errorMsg = e;
-                }
+            if (uninstall) {
+                reply.code = 200;
+                reply.data.key = "app_delete_successful"; // send language key as response
             } else {
                 reply.code = 500;
                 reply.error.key = 'app_failed_to_delete';
-                reply.error.errorMsg = unload;
             }       
         } else {
             reply.code = 404;
@@ -909,54 +874,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (this.controller.modules[moduleId].location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)){
 
-                unload = this.controller.unloadModule(moduleId);
+                uninstall = this.controller.uninstallModule(moduleId, true);
 
-                if (unload === 'success') {
-                    try {
-                        installer.remove(
-                            moduleId,
-                            function() {
-                                    result = "done";
-                            },  function() {
-                                    result = "failed";
-                            }
-                        );
-                        
-                        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-                        
-                        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                                processPendingCallbacks();
-                        }
-                        
-                        if (result === "in progress") {
-                                result = "failed";
-                        }
-
-                        if (result === "done") {
-
-                            loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'modules/');
-                            
-                            if(loadSuccessfully) {
-                                reply.code = 200;
-                                reply.data.key = 'app_reset_successful_to_version';
-                                reply.data.appendix = this.controller.modules[moduleId].meta.version; 
-                            } else {
-                                reply.code = 200;
-                                reply.data.key = "app_reset_successful_but_restart_necessary"; // send language key as response
-                            }
-                        } else {
-                            reply.code = 500;
-                            reply.error.key = 'app_failed_to_remove_old';
-                        }
-                    } catch (e) {
-                        reply.code = 500;
-                        reply.error.key = 'app_failed_to_reset';
-                        reply.error.errMsg = e;
-                    }
+                if (uninstall) {
+                    reply.code = 200;
+                    reply.data.key = 'app_reset_successful_to_version';
+                    reply.data.appendix = this.controller.modules[moduleId].meta.version; 
                 } else {
                     reply.code = 500;
-                    reply.error.key = 'app_failed_to_reset';
-                    reply.error.errMsg = unload;
+                    reply.error = 'There was an error during resetting the app ' + moduleId + '. Maybe a server restart could solve this problem.';
                 }       
             } else {
                 reply.code = 412;
@@ -1892,7 +1818,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 saveObject(obj, reqObj.data[obj]);
             }
 
-            // start controller with restore flag to apply config.json and other modules configs
+            // start controller with reload flag to apply config.json
             this.controller.start(true);
             
             // restore Z-Wave and EnOcean
@@ -1912,6 +1838,119 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.error = e.toString();
         }
         
+        return reply;
+    },
+    resetToFactoryDefault: function() {
+        var self = this,
+            langFile = this.controller.loadMainLang();
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            sCGInstances = [],
+            overwriteBackupCfg = this.req.query.hasOwnProperty("overwriteBackupCfg") && (this.req.query.overwriteBackupCfg === "true" || this.req.query.overwriteBackupCfg)? true : false,
+            resetZway = this.req.query.hasOwnProperty("resetZway") ? this.req.query.resetZway : false,
+            useDefaultCfg = this.req.query.hasOwnProperty("useDefaultConfig") ? this.req.query.useDefaultConfig : null,
+            backupCfg = loadObject("backupConfig"),
+            storageContentList = loadObject("__storageContent"),
+            defaultConfigFolder = fs.list('defaultConfigs') || [],
+            defaultConfig = {}; // rpi with RAZ 
+
+        try{
+            defaultConfigFolder.forEach(function (defaultCfg){
+                var getCfgIdentifier = defaultCfg.substr(12);
+                console.log('getCfgIdentifier:', getCfgIdentifier);
+                console.log('config.json_:', defaultCfg.indexOf('config.json_'));
+                if (defaultCfg.indexOf('config.json_') > -1 && getCfgIdentifier === useDefaultCfg && useDefaultCfg !== '') {
+                    defaultConfig = fs.loadJSON('defaultConfigs/' + defaultCfg);
+                }
+            });
+
+            if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
+
+                if (overwriteBackupCfg || backupCfg === null) {
+                    console.log('Backup config ...');
+                    // make backup of current config.json
+                    saveObject('backupConfig', loadObject('config.json')); 
+                }
+
+                // remove instances of SwitchControlGenerator first
+                // filter for instances of SwitchControlGenerator
+                sCGInstances = this.controller.instances.filter(function (instance) {
+                    return instance.moduleId === 'SwitchControlGenerator';
+                }).map(function (instance) {
+                    return instance.id;
+                });
+
+                // remove all instances of SwitchControlGenerator
+                if (sCGInstances.length > 0) {
+                    sCGInstances.forEach(function (instanceId) {
+                        console.log('Remove SCG intstance: ' + instanceId);
+                        self.controller.deleteInstance(instanceId);
+                    });
+                }
+
+                // reset z-way controller
+                if (zway && resetZway) {
+                    console.log('Reset Controller ...');
+                    zway.controller.SetDefault();
+                }
+
+                console.log('Remove and unload userModules apps ...');
+                // unload and remove modules
+                Object.keys(this.controller.modules).forEach( function(className) {
+                    var meta = self.controller.modules[className],
+                        unload = '',
+                        locPath = meta.location.split('/'),
+                        success = false;
+
+                    if (locPath[0] === 'userModules'){
+                        console.log(className + ' remove it ...');
+                        
+                        success = self.controller.uninstallModule(className);
+
+                        if (success) {
+                            console.log(className + ' has been successfully removed.');
+                        } else {
+                            console.log('Cannot remove app: ' + className);
+                            self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+                        }
+                    }
+
+                });
+
+                // stop the controller
+                this.controller.stop();
+                
+                // clean up storage
+                for (var ind in storageContentList) {
+                    if(ind !== 'backupConfig'){
+                        saveObject(storageContentList[ind], null);
+                    }
+                }
+
+                // clean up storageContent
+                if (__storageContent.length > 0) {
+                    __saveObject("__storageContent", []);
+                    __storageContent = [];
+                }
+
+                // set back to default config
+                saveObject('config.json', defaultConfig);
+
+                // start controller with reload flag to apply config.json
+                this.controller.start(true);
+
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'No default configuration file found.';
+            }
+        } catch (e) {
+            reply.error = 'Something went wrong. Error: ' + e.message;
+        }
+
         return reply;
     },
     getTime: function () {

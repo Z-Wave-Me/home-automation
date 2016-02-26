@@ -9,10 +9,13 @@
 	"ac_err_invalid_module":"Invalid module ",
 	"ac_err_load_mod_json":"Cannot load modules.json from ",
 	"ac_err_stop_mod":"Cannot stop module ",
+	"ac_err_uninstall_mod":"Unable to uninstall or reset app.",
 	"profile_name": "Administrator",
 	"profile_descr": "This is the admin profile. Admin profile created automatically.", 
 	"vd_err_virtual_dev":"Error during perform command execution: ",
 	"no_devices_found":"No devices found",
 	"err_preparing_room_dev_structure":"Cannot prepare Room-Device relation.",
-	"err_parsing_npc_filters":"Cannot parse filters from namespaces."
+	"err_parsing_npc_filters":"Cannot parse filters from namespaces.",
+	"zaap_err_uninstall_mod":"Unable to uninstall app.",
+	"zaap_err_unload_mod":"Unable to unload app."
 }
