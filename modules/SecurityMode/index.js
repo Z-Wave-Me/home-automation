@@ -1,6 +1,6 @@
 /*** SecurityMode Z-Way HA module *******************************************
 
-Version: 1.2.0
+Version: 1.2.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Authors: Poltorak Serguei <ps@z-wave.me>
