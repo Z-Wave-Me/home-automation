@@ -9,6 +9,11 @@
 	"ac_err_invalid_module":"Felaktig modul ",
 	"ac_err_load_mod_json":"Kan inte ladda modules.json från ",
 	"ac_err_stop_mod":"Kan inte stoppa modul ",
+	"ac_err_instance_already_exists":"Can't register duplicate module instance: ",
+	"ac_err_instance_empty":"Can't register empty module instance: ",
+	"ac_err_create_instance":"Cannot create instance. [APP] :: [INSTANCE ID] = ",
+	"ac_err_refonfigure_instance":"Cannot reconfigure instance with id: ",
+	"ac_err_location_not_found":"Location doesn't exist.",
 	"profile_name": "Administratör",
 	"profile_descr": "Detta är adminprofilen. Adminprofilen skapades automatiskt.", 
 	"vd_err_virtual_dev":"Error during perform command execution: "

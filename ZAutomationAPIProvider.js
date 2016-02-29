@@ -1117,7 +1117,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (this.controller.modules.hasOwnProperty(reqObj.moduleId)) {
             instance = this.controller.createInstance(reqObj);
-            if (instance) {
+            if (!!instance && instance) {
                 reply.code = 201;
                 reply.data = instance;
             } else {
@@ -2195,7 +2195,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                         }
                     }
                 } else {
-                    handlerFunc = matched.handler;
+                    handlerFunc = matched.handler? matched.handler : handlerFunc;
                 }
 
                 // --- Proceed to checkout =)
@@ -2206,6 +2206,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 return this.Forbidden;
 
             }
+        } else {
+            return handlerFunc;
         }
     }
 };
