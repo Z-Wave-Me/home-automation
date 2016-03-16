@@ -1215,7 +1215,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             } else {
                 getProfile = this.controller.getProfile(this.req.user);
                 if (getProfile && this.req.user === getProfile.id) {
-                    profiles = [profile];
+                    profiles = [getProfile];
                 }
             }
             if (!Array.isArray(profiles)) {
@@ -1845,7 +1845,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
             */
             reply.headers= {
-                    "Content-Type": "application/x-download",
+                    "Content-Type": "application/x-download; charset=utf-16",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
                     "Connection": "keep-alive"
             }

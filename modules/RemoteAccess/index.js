@@ -1,6 +1,6 @@
 /*** RemoteAccess Z-Way HA module *******************************************
 
-Version: 1.0.3
+Version: 1.0.5
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -32,12 +32,10 @@ RemoteAccess.prototype.init = function (config) {
         langFile = self.controller.loadModuleLang("RemoteAccess");
 
     this.path = self.config.path;
-    this.serviceDelay = 0;
-    this.serviceIntervalTime = 0;
-    this.zbwDelay = 0;
-    this.zbwIntervalTime = 0;
     this.zbw = null;
     this.checkIfTypeError = true;
+    this.zbwTimerCount = 0;
+    this.serviceTimerCount = 0;
 
     this.setZBWService = function() {
         // look if ZBW Service is available 
@@ -61,19 +59,20 @@ RemoteAccess.prototype.init = function (config) {
                 if (!self.zbwTimer) {
                     // set interval (5 sec) to check for service again - max. 5 min
                     self.zbwTimer = setInterval(function() {
-                        self.zbwIntervalTime =  Math.floor(new Date().getTime() /1000);
-                        // set initialization time
-                        self.zbwDelay =  self.zbwDelay === 0? Math.floor(new Date().getTime() /1000) + 300 : self.zbwDelay;
-                        console.log('self.serviceTimer ... intervaltime:',  self.zbwIntervalTime, '|| delay:', self.zbwDelay);
+                        self.zbwTimerCount ++;
+                        console.log('zbwTimerCount:'+ self.zbwTimerCount);
                         self.setZBWService();
                     }, 5000);
 
-                } else if (self.zbwTimer && self.zbwIntervalTime > self.zbwDelay) {
+                } else if (self.zbwTimer && self.zbwTimerCount > 60) {
                     console.log('Clear self.zbwTimer after 5 min');
                     // clear interval after 5 min
                     clearInterval(self.zbwTimer);
+                    self.zbwTimer = undefined;
+                    
                     self.controller.addNotification("warning", langFile.zbw_service_timeout, "module", "RemoteAccess");
                     self.controller.addNotification("error", langFile.load_zbw_error, "module", "RemoteAccess");
+                    
                     console.log(langFile.load_zbw_error,'Error:', e.message);
                 }
             }
@@ -87,29 +86,32 @@ RemoteAccess.prototype.init = function (config) {
                 if (self.zbwTimer) {
                     console.log('Clear self.zbwTimer ... ');
                     clearInterval(self.zbwTimer);
+                    self.zbwTimer = undefined;
                 }
 
                 if (self.serviceTimer) {
                     console.log('Clear self.serviceTimer ... ');
                     clearInterval(self.serviceTimer);
+                    self.serviceTimer = undefined;
                 }
             }
 
         } else if (!self.serviceTimer) {
             // set interval (5 sec) to check for service again - max. 5 min
             self.serviceTimer = setInterval(function() {
-                self.serviceIntervalTime =  Math.floor(new Date().getTime() /1000);
-                // set initialization time
-                self.serviceDelay =  self.serviceDelay === 0? Math.floor(new Date().getTime() /1000) + 300 : self.serviceDelay;
-
-                console.log('self.serviceTimer ... intervaltime:',  self.serviceIntervalTime, '|| delay:', self.serviceDelay);
+                self.serviceTimerCount ++;
+                
+                console.log('serviceTimerCount:', self.serviceTimerCount);
                 self.setZBWService();
             }, 5000);
 
-        } else if (self.serviceTimer && self.serviceIntervalTime > self.serviceDelay) {
+        } else if (self.serviceTimer && self.serviceTimerCount > 60) {
             // clear interval after 5 min
             console.log('Clear self.serviceTimer after 5 min');
+            
             clearInterval(self.serviceTimer);
+            self.serviceTimer = undefined;
+
             self.controller.addNotification("warning", langFile.zbw_service_timeout, "module", "RemoteAccess");
         }
     };
@@ -122,10 +124,12 @@ RemoteAccess.prototype.stop = function () {
 
     if (this.serviceTimer) {
         clearInterval(this.serviceTimer);
+        this.serviceTimer = undefined;
     }
 
     if (this.zbwTimer) {
         clearInterval(this.zbwTimer);
+        this.zbwTimer = undefined;
     }
 
     RemoteAccess.super_.prototype.stop.call(this);
@@ -196,11 +200,19 @@ RemoteAccess.prototype.startRemoteAccess = function (config, zbw, langFile) {
             self.controller.addNotification("error", langFile.config_changed_error + e.message, "module", "RemoteAccess");
         } 
     };
+
+    // do initial restart of zbw service 
+    if (zbw.getStatus()) {
+        console.log('--- Initial stopping ZBW Connect Service to do restart');
+        zbw.setStatus(false); // stop zbw
+    }   
     
     // run first time to get the values from zbw module
-    if(self.config.userId === '' || self.config.actStatus === '' || self.config.sshStatus === '' || self.config.zbwStatus === '') {
-        this.updateRemoteData();
-    } else {
-        this.setRemoteConfigurations();
-    }    
+    setTimeout(function() {
+        if(self.config.userId === '' || self.config.actStatus === '' || self.config.sshStatus === '' || self.config.zbwStatus === '') {
+            self.updateRemoteData();
+        } else {
+            self.setRemoteConfigurations();
+        }
+    }, 7000);
 };
