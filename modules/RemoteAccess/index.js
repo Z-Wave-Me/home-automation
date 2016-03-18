@@ -1,6 +1,6 @@
 /*** RemoteAccess Z-Way HA module *******************************************
 
-Version: 1.0.5
+Version: 1.0.6
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -199,20 +199,12 @@ RemoteAccess.prototype.startRemoteAccess = function (config, zbw, langFile) {
         } catch(e) {
             self.controller.addNotification("error", langFile.config_changed_error + e.message, "module", "RemoteAccess");
         } 
-    };
-
-    // do initial restart of zbw service 
-    if (zbw.getStatus()) {
-        console.log('--- Initial stopping ZBW Connect Service to do restart');
-        zbw.setStatus(false); // stop zbw
-    }   
+    };  
     
     // run first time to get the values from zbw module
-    setTimeout(function() {
-        if(self.config.userId === '' || self.config.actStatus === '' || self.config.sshStatus === '' || self.config.zbwStatus === '') {
-            self.updateRemoteData();
-        } else {
-            self.setRemoteConfigurations();
-        }
-    }, 7000);
+    if(self.config.userId === '' || self.config.actStatus === '' || self.config.sshStatus === '' || self.config.zbwStatus === '') {
+        self.updateRemoteData();
+    } else {
+        self.setRemoteConfigurations();
+    }
 };
