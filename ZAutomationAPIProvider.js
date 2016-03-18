@@ -45,6 +45,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/logout", this.ROLE.USER, this.doLogout);
         this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
         this.router.get("/history", this.ROLE.USER, this.exposeHistory);
+        this.router.del("/history", this.ROLE.USER, this.exposeHistory);
         this.router.get("/devices", this.ROLE.USER, this.listDevices);
         this.router.get("/restart", this.ROLE.ADMIN, this.restartController);
         this.router.get("/locations", this.ROLE.USER, this.listLocations);
@@ -114,6 +115,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
         this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
+        this.router.del("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 
         this.router.get("/load/modulemedia/:module_name/:file_name", this.ROLE.ANONYMOUS, this.loadModuleMedia);
         
@@ -133,7 +135,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
 
     // Used by the android app to request server status
-   statusReport: function () {
+    statusReport: function () {
         var currentDateTime = new Date(),
             reply = {
                 error: null,
@@ -1043,7 +1045,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (this.controller.modules.hasOwnProperty(reqObj.moduleId)) {
             instance = this.controller.createInstance(reqObj);
-            if (instance) {
+            if (!!instance && instance) {
                 reply.code = 201;
                 reply.data = instance;
             } else {
@@ -1141,7 +1143,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             } else {
                 getProfile = this.controller.getProfile(this.req.user);
                 if (getProfile && this.req.user === getProfile.id) {
-                    profiles = [profile];
+                    profiles = [getProfile];
                 }
             }
             if (!Array.isArray(profiles)) {
@@ -1521,6 +1523,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     exposeHistory: function () {
         var history,
             reply = {
+                code: 500,
                 error: null,
                 data: null
             };
@@ -1528,12 +1531,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         history = this.controller.listHistories();
 
         if(history){
-            reply.data = {
-                updateTime: Math.floor(new Date().getTime() / 1000),
-                history: history
-            };
-            reply.code = 200;
-            
+            if (this.req.method === "GET") {
+                reply.data = {
+                    updateTime: Math.floor(new Date().getTime() / 1000),
+                    history: history
+                };
+                reply.code = 200;
+
+            } else if (this.req.method === "DELETE") {
+                success = this.controller.deleteDevHistory();
+
+                if (success) {
+                    reply.code = 204;
+                } else {
+                    reply.error = "Something went wrong."
+                }
+            } else {
+                reply.code = 400;
+                reply.error = "Bad request."; 
+            }
         } else {
             reply.code = 404;
             reply.error = "No device histories found.";
@@ -1541,12 +1557,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
         return reply;
     },
+    // get or delete histories of devices
     getDevHist: function (vDevId) {
         var history,
             dev,
             reply = {
+                code: 500,
                 error: null,
-                data: null
+                    data: null
             },
             since,
             show,
@@ -1554,29 +1572,46 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             view = [288,96,48,24,12,6];
 
         if (this.deviceByUser(vDevId, this.req.user) !== null) {
-            show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
-            since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
-            history = this.controller.listHistories();
-            hash = this.controller.hashCode(vDevId);
 
+            history = this.controller.listHistories();
+            
             if (history) {
+
+                hash = this.controller.hashCode(vDevId);
                 dev = history.filter(function(x) {
-                    return x.h === hash;
+                    return x.h === hash || x.id === vDevId;
                 });
-                
+
                 if (dev.length > 0) {
-                    sinceDevHist = this.controller.getDevHistory(dev, since, show);            
-                    
-                    if (dev && sinceDevHist) {
-                        reply.code = 200;
-                        reply.data = {
+                    if (this.req.method === "GET") {
+                        show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
+                        since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;                        
+                        
+                        sinceDevHist = this.controller.getDevHistory(dev, since, show);            
+                        
+                        if (dev && sinceDevHist) {
+                            reply.code = 200;
+                            reply.data = {
                                 id: vDevId,
                                 since: since,
                                 deviceHistory: sinceDevHist
-                        };
+                            };
+                        } else {
+                            reply.code = 200;
+                            reply.data = dev;
+                        }
+
+                    } else if (this.req.method === "DELETE") {
+                        success = this.controller.deleteDevHistory(vDevId);
+
+                        if (success) {
+                            reply.code = 204;
+                        } else {
+                            reply.error = "Something went wrong."
+                        }
                     } else {
-                        reply.code = 200;
-                        reply.data = dev;
+                        reply.code = 400;
+                        reply.error = "Bad request."; 
                     }
                 } else {
                     reply.code = 404;
@@ -1584,7 +1619,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "No device histories found.";
+                reply.error = "No device histories found. Please check if app '24 Hours Device History' is active.";
             }
         } else {
             reply.code = 404;
@@ -1771,7 +1806,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
             */
             reply.headers= {
-                    "Content-Type": "application/x-download",
+                    "Content-Type": "application/x-download; charset=utf-16",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
                     "Connection": "keep-alive"
             }
@@ -2234,7 +2269,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                         }
                     }
                 } else {
-                    handlerFunc = matched.handler;
+                    handlerFunc = matched.handler? matched.handler : handlerFunc;
                 }
 
                 // --- Proceed to checkout =)
@@ -2245,6 +2280,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
                 return this.Forbidden;
 
             }
+        } else {
+            return handlerFunc;
         }
     }
 };

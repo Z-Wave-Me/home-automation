@@ -1,6 +1,6 @@
 /*** SecurityMode Z-Way HA module *******************************************
 
-Version: 1.2.0
+Version: 1.2.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Authors: Poltorak Serguei <ps@z-wave.me>
@@ -203,6 +203,7 @@ SecurityMode.prototype.testRule = function (tree) {
 
         // Send Notification
         self.controller.addNotification("warning", self.message, "module", "SecurityMode");
+        self.controller.emit('SecurityMode.alert', self);
 
         tree.action.switches && tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);

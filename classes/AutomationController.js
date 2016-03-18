@@ -389,6 +389,16 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         try {
             instance.init(instanceModel.params);
         } catch (e) {
+
+            // remove singleton entry of broken instance
+            if (module.meta.singleton) {
+                var index = self._loadedSingletons.indexOf(module.meta.id);
+                
+                if(index > -1) {
+                    self._loadedSingletons.splice(index, 1);
+                }
+            }
+
             values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
 
             self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
@@ -600,22 +610,17 @@ AutomationController.prototype.loadInstalledModule = function (moduleId, rootDir
 AutomationController.prototype.reinitializeModule = function (moduleId, rootDirectory) {
     var self = this,
         successful = false,
-        activeInstances = [];
+        existingInstances = [];
 
     // filter for active instances of moduleId
-    activeInstances = self.instances.filter(function (instance) {
-        return instance.moduleId === moduleId &&
-                (instance.active === true ||
-                    instance.active === 'true');
+    existingInstances = self.instances.filter(function (instance) {
+        return instance.moduleId === moduleId;
     });
 
-    // stopp all active instances of moduleId
-    if (activeInstances.length > 0) {
-        activeInstances.forEach(function (instance) {
-            instance.active = false;
-            self.reconfigureInstance(instance.id, instance);
-        });
-    }
+    // remove all active instances of moduleId
+    existingInstances.forEach(function (instance) {
+        self.deleteInstance(instance.id);
+    });
 
     // try to reinitialize app
     try{
@@ -624,21 +629,19 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
             self.loadModuleFromFolder(moduleId, rootDirectory);
 
             if(self.modules[moduleId]){
+
                 self.loadModule(self.modules[moduleId]);
+
+                // add and start instances of moduleId again
+                existingInstances.forEach(function (instance) {
+                    self.createInstance(instance);
+                });
 
                 successful = true;
             }
         }
     } catch (e){
         console.log('Load app "' + moduleId + '" has failed. ERROR:', e);
-    }
-
-    // start instances of moduleId again
-    if (activeInstances.length > 0) {
-        activeInstances.forEach(function (instance) {
-            instance.active = true;
-            self.reconfigureInstance(instance.id, instance);
-        });
     }
 
     return successful;
@@ -660,7 +663,8 @@ AutomationController.prototype.moduleInstance = function (instanceId) {
 };
 
 AutomationController.prototype.registerInstance = function (instance) {
-    var self = this;
+    var self = this,
+        langFile = this.loadMainLang();
 
     if (!!instance) {
         var instanceId = instance.id,
@@ -670,10 +674,10 @@ AutomationController.prototype.registerInstance = function (instance) {
             self.registerInstances[instanceId] = instance;
             self.emit('core.instanceRegistered', instanceId);
         } else {
-            self.emit('core.error', new Error("Can't register duplicate module instance " + instanceId));
+            self.emit('core.error', new Error(langFile.ac_err_instance_already_exists + instanceId));
         }
     } else {
-        self.emit('core.error', new Error("Can't register empty module instance " + instance.id));
+        self.emit('core.error', new Error(langFile.ac_err_instance_empty + instance.id));
     }
 };
 
@@ -701,25 +705,42 @@ AutomationController.prototype.listInstances = function (){
 AutomationController.prototype.createInstance = function (reqObj) {
     //var instance = this.instantiateModule(id, className, config),
     var self = this,
+        langFile = this.loadMainLang(),
         id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
         instance = null,
         module = _.find(self.modules, function (module) {
             return module.meta.id === reqObj.moduleId;
         }),
-        result;
+        result,
+        alreadyExisting = [];
 
     if (!!module) {
+
+        if (reqObj.id) {
+            alreadyExisting = _.filter(this.instances, function(inst){
+                return inst.id === reqObj.id
+            });
+        }
+
         instance = _.extend(reqObj, { 
-            id: id
+            id: alreadyExisting[0]? alreadyExisting[0].id : id
         });
 
         self.instances.push(instance);
         self.saveConfig();
         self.emit('core.instanceCreated', id);
-        self.instantiateModule(instance);
-        result = instance;
+        result = self.instantiateModule(instance);
+
+        // remove instance from list if broken
+        if (result === null) {
+            var currIndex = self.instances.length ? self.instances.length - 1 : 0;
+            
+            self.instances.splice(currIndex, 1);
+            self.saveConfig();
+            self.emit('core.instanceDeleted', id);
+        }        
     } else {
-        self.emit('core.error', new Error("Cannot create module " + reqObj.moduleId + " instance with id " + id));
+        self.emit('core.error', new Error(langFile.ac_err_create_instance + reqObj.moduleId + " :: " + id));
         result = false;
     }
 
@@ -769,7 +790,8 @@ AutomationController.prototype.stopInstance = function (instance) {
 };
 
 AutomationController.prototype.reconfigureInstance = function (id, instanceObject) {
-    var register_instance = this.registerInstances[id],
+    var langFile = this.loadMainLang(),
+        register_instance = this.registerInstances[id],
         instance = _.find(this.instances, function (model) {
             return model.id === id;
         }),
@@ -816,7 +838,7 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
         this.emit('core.instanceReconfigured', id)
     } else {
         result = null;
-        this.emit('core.error', new Error("Cannot reconfigure instance with id " + id));
+        this.emit('core.error', new Error(langFile.ac_err_refonfigure_instance + id));
     }
 
     this.saveConfig();
@@ -831,15 +853,6 @@ AutomationController.prototype.removeInstance = function (id) {
 
     if (!!instance) {
         this.stopInstance(instance);
-
-        if (instance.meta.singleton) {
-            var pos = this._loadedSingletons.indexOf(instanceClass);
-            if (pos >= 0) {
-                this._loadedSingletons.splice(pos, 1);
-            }
-        }
-
-        delete this.registerInstances[id];
         this.emit('core.instanceStopped', id);
         this.saveConfig();
     }
@@ -1018,8 +1031,9 @@ AutomationController.prototype.addLocation = function (locProps, callback) {
 };
 
 AutomationController.prototype.removeLocation = function (id, callback) {
-    var self = this;
-    var locations = this.locations.filter(function (location) {
+    var self = this,
+        langFile = this.loadMainLang(),
+        locations = this.locations.filter(function (location) {
         return location.id === id;
     });
     if (locations.length > 0) {
@@ -1043,14 +1057,16 @@ AutomationController.prototype.removeLocation = function (id, callback) {
         if (typeof callback === 'function') {
             callback(false);
         }
-        this.emit('core.error', new Error("Cannot remove location " + id + " - doesn't exist"));
+        this.emit('core.error', new Error(langFile.ac_err_location_not_found));
     }
 };
 
 AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type, callback) {
-    var locations = this.locations.filter(function (location) {
-        return location.id === id;
-    });
+    var langFile = this.loadMainLang(),
+        locations = this.locations.filter(function (location) {
+            return location.id === id;
+        });
+
     if (locations.length > 0) {
         location = this.locations[this.locations.indexOf(locations[0])];
 
@@ -1074,7 +1090,7 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
         if (typeof callback === 'function') {
             callback(false);
         }
-        this.emit('core.error', new Error("Cannot update location " + id + " - doesn't exist"));
+        this.emit('core.error', new Error(langFile.ac_err_location_not_found));
     }
 };
 
@@ -1122,6 +1138,41 @@ AutomationController.prototype.listHistories = function () {
     return self.history;
 };
 
+AutomationController.prototype.deleteDevHistory = function (vDevId) {
+    var self = this,
+        vDevId = vDevId || null;
+        success = false;
+        
+        if (!!vDevId) {
+            //clear entries of single vDev
+            index = _.findIndex(self.history, { id: vDevId });
+
+            if (index > -1) {
+                self.history[index].mH = [];
+
+                success = true;
+
+                console.log('History of ' + vDevId + ' successful deleted ...');
+            }
+        } else {
+            //clear all entries
+            self.history.forEach(function (devHist) {
+                devHist.mH = [];
+            });
+
+            success = true;
+
+            console.log('All histories successful deleted ...');
+        }
+
+        //save history
+        if (success) {
+            saveObject('history', self.history);
+        }
+
+    return success;
+};
+
 AutomationController.prototype.getDevHistory = function (dev, since, show) {
     var filteredEntries = [],
         averageEntries = [],
@@ -1161,6 +1212,7 @@ AutomationController.prototype.getDevHistory = function (dev, since, show) {
                     case 'sensorBinary':
                     case 'switchBinary':
                     case 'doorlock':
+                    case 'toggleButton':
                         l = 0 < (l/cnt) && (l/cnt) < 1? 0.5 : (l/cnt); // set 0, 0.5 or 1 if status is binary
                         break;
                     default:

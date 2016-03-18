@@ -327,7 +327,8 @@ _.extend(VirtualDevice.prototype, {
 
         if (_.isString(keyName) && typeof(val) != "undefined" && keyName.split(':').length === 1) {
             findObj = findX(this.attributes, keyName);
-            if (findObj[keyName] === val) {
+            if (findObj[keyName] !== val) {
+                that.attributes[keyName] = val;
                 changes.push(keyName);
                 that.changed[keyName] = val;
             }

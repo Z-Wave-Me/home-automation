@@ -14,5 +14,10 @@
 	"profile_descr": "Toto je profil admina. Profil admina je vytvořen automaticky.",
 	"vd_err_virtual_dev": "Chyba, během provádění příkazu:",
 	"zaap_err_uninstall_mod":"Unable to uninstall app.",
-	"zaap_err_unload_mod":"Unable to unload app."
+	"zaap_err_unload_mod":"Unable to unload app.",
+	"ac_err_instance_already_exists":"Can't register duplicate module instance: ",
+	"ac_err_instance_empty":"Can't register empty module instance: ",
+	"ac_err_create_instance":"Cannot create instance. [APP] :: [INSTANCE ID] = ",
+	"ac_err_refonfigure_instance":"Cannot reconfigure instance with id: ",
+	"ac_err_location_not_found":"Location doesn't exist."
 }

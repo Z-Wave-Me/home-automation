@@ -1,0 +1,6 @@
+v1.2.0
+- special handling of type toggleButton added - is 0 by default and 1 if triggerd - so if toggle was triggered during history interval it wil set a point on 0.5
+- refactoring
+- hash entries removed
+- language keys added
+- set maturity to stable
