@@ -1090,6 +1090,41 @@ AutomationController.prototype.listHistories = function () {
     return self.history;
 };
 
+AutomationController.prototype.deleteDevHistory = function (vDevId) {
+    var self = this,
+        vDevId = vDevId || null;
+        success = false;
+        
+        if (!!vDevId) {
+            //clear entries of single vDev
+            index = _.findIndex(self.history, { id: vDevId });
+
+            if (index > -1) {
+                self.history[index].mH = [];
+
+                success = true;
+
+                console.log('History of ' + vDevId + ' successful deleted ...');
+            }
+        } else {
+            //clear all entries
+            self.history.forEach(function (devHist) {
+                devHist.mH = [];
+            });
+
+            success = true;
+
+            console.log('All histories successful deleted ...');
+        }
+
+        //save history
+        if (success) {
+            saveObject('history', self.history);
+        }
+
+    return success;
+};
+
 AutomationController.prototype.getDevHistory = function (dev, since, show) {
     var filteredEntries = [],
         averageEntries = [],
@@ -1129,6 +1164,7 @@ AutomationController.prototype.getDevHistory = function (dev, since, show) {
                     case 'sensorBinary':
                     case 'switchBinary':
                     case 'doorlock':
+                    case 'toggleButton':
                         l = 0 < (l/cnt) && (l/cnt) < 1? 0.5 : (l/cnt); // set 0, 0.5 or 1 if status is binary
                         break;
                     default:
