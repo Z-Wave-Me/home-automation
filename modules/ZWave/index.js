@@ -1455,12 +1455,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
-			var isBlind = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], this.zway.devices[nodeId].data.specificType.value);
+			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], this.zway.devices[nodeId].data.specificType.value);
 			defaults = {
 				deviceType: "switchMultilevel",
+				deviceSubType: isMotor ? 'motor':'multilevel',
 				metrics: {
-					icon: isBlind ? 'blinds' : 'multilevel',
-					title: compileTitle(isBlind ? 'Blind' : 'Dimmer', vDevIdNI)
+					icon: isMotor ? 'blinds' : 'multilevel',
+					title: compileTitle(isMotor ? 'Blind' : 'Dimmer', vDevIdNI)
 				}
 			};
 
@@ -1714,6 +1715,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 12) {
 								defaults.metrics.icon = "motion";
 						}
+						defaults.metrics.deviceSubType = defaults.metrics.icon;
 
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + sensorTypeId,
@@ -1780,6 +1782,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 27) {
 								defaults.metrics.icon = "ultraviolet";
 						}
+						defaults.metrics.deviceSubType = defaults.metrics.icon;
 
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + sensorTypeId,
@@ -1977,6 +1980,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				if (withModeOff && (withModeHeat || withModeCool)) {
 					defaults = {
 						deviceType: "switchBinary",
+						deviceSubType: "thermostatMode",
 						metrics: {
 							icon: 'thermostat',
 							title: compileTitle("Thermostat operation", vDevIdNI)
@@ -2066,6 +2070,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		} else if (this.CC["AlarmSensor"] === commandClassId) {
 			a_defaults = {
 				deviceType: 'sensorBinary',
+				deviceSubType: "alarm",
 				metrics: {
 					icon: 'alarm',
 					level: 'off',
@@ -2119,6 +2124,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			
 			a_defaults = {
 				deviceType: 'sensorBinary',
+				deviceSubType: "alarm",
 				metrics: {
 					icon: 'alarm',
 					level: 'off',
@@ -2205,6 +2211,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							default:
 								return; // skip this type
 						}
+						a_defaults.metrics.deviceSubType = a_defaults.metrics.icon;
 						
 						maskToTypes = function(bitmask) {
 							var types = [], n = 0;
