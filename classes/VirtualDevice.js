@@ -8,6 +8,9 @@ Copyright: (c) ZWave.Me, 2013-2014
 ******************************************************************************/
 
 VirtualDevice = function (options) {
+
+    var probeType = options.defaults.probeType? options.defaults.probeType : (options.overlay.probeType? options.overlay.probeType : '');
+    
     _.extend(this, options, {
         id: options.deviceId,
         accessAttrs: [
@@ -22,7 +25,8 @@ VirtualDevice = function (options) {
             'h',
             'hasHistory',
             'visibility',
-            'creationTime'
+            'creationTime',
+            'probeType'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -33,7 +37,7 @@ VirtualDevice = function (options) {
         h: options.controller.hashCode(options.deviceId),
         hasHistory: false,
         visibility: true,
-        probeType: getProbeType(options),
+        probeType: probeType,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -43,8 +47,8 @@ VirtualDevice = function (options) {
             h: options.controller.hashCode(options.deviceId),
             hasHistory: false,
             visibility: true,
-            probeType: getProbeType(options),
-            creationTime: 0
+            creationTime: 0,
+            probeType: probeType,
         },
         changed: {},
         overlay: options.overlay || {},
@@ -68,145 +72,6 @@ VirtualDevice = function (options) {
 
     this.initialize.apply(this, arguments);
     return this;
-};
-
-function getProbeType(options) {
-    //ZWayVDev_zway_3-0-156-0-A
-    //ZWayVDev_zway_Remote_23-0-0-1
-    //ZEnoVDev_zeno_3_1
-    
-    this.CC = {
-        "SwitchMultilevel": 0x26,
-        'SensorBinary': 0x30,
-        'SensorMultilevel': 0x31,
-        'Meter': 0x32,
-        'SwitchColor': 0x33,
-        'Alarm': 0x71,
-        'AlarmSensor': 0x9c
-    };
-
-    var probeType = '',
-        cutUndscre = options.deviceId.split('_'),
-        cutNbrs = [];
-
-    // looking for probetypes only at Z-Way devices
-    if(cutUndscre[0] === 'ZWayVDev') {
-        cutNbrs = cutUndscre[cutUndscre.length -1].split('-');
-
-        /*
-         * cutNbrs[0] ... nodeId
-         * cutNbrs[1] ... instanceId
-         * cutNbrs[2] ... commandClassId
-         * cutNbrs[3] ... subClassId - necessary for probeType
-        */
-       
-        var nodeId = parseInt(cutNbrs[0], 10),
-            ccId = parseInt(cutNbrs[2], 10),
-            subCCId = parseInt(cutNbrs[3], 10);
-        
-        //check for switch multilevel (CC 38) subtypes
-        if(ccId === this.CC['SwitchMultilevel']){
-            var isBlind = zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], zway.devices[nodeId].data.specificType.value);
-
-            probeType = isBlind? 'blind' : 'dimmer';
-        }
-
-        //check for binary sensor (CC 48) subtypes
-        if(ccId === this.CC['SensorBinary']){
-            var currType = 'general_purpose'; // general_purpose as default
-
-            switch (subCCId) {
-                case 2:
-                    currType = 'smoke';
-                    break;
-                case 3:
-                    currType = 'co';
-                    break;
-                case 6:
-                    currType = 'flood';
-                    break;
-                case 7:
-                    currType = 'cooling';
-                    break;
-                case 10:
-                    currType = 'door';
-                    break;
-            }
-            
-            probeType = currType;
-        }
-
-        //check for multilevel sensor (CC 49) subtypes
-        if(ccId === this.CC['SensorMultilevel']){
-            var currType = '',
-                typesObj = {
-                    '1': 'temperature',
-                    '3': 'luminosity',
-                    '4': 'energy',
-                    '5': 'humidity',
-                    '9': 'barometer',
-                    '15': 'energy',
-                    '16': 'energy',
-                    '27': 'ultraviolet'
-                };
-
-            currType = typesObj[String(subCCId)]? typesObj[String(subCCId)] : '';
-            
-            probeType = currType !== ''? currType : probeType;
-        }
-
-        //check for meter (CC 50) subtypes
-        if(ccId === this.CC['Meter']){
-            var types = [
-                    'kilowatt_per_hour',
-                    '',
-                    'watt',
-                    'pulse_count',
-                    'voltage',
-                    'ampere',
-                    'power_factor'
-                ];
-            
-            probeType = types[subCCId] !== ''? 'meterElectric_' + types[subCCId] : probeType;
-        }
-
-        //check for switch color (CC 51) subtypes
-        if(ccId === this.CC['SwitchColor']){
-            var types = [
-                    'soft_white',
-                    'cold_white',
-                    'red',
-                    'green',
-                    'blue'
-                ];            
-            
-            probeType = types[subCCId] !== ''? 'switchColor_' + types[subCCId] : probeType;
-        }
-
-        // check for alarm (CC 113) and alarm sensor (CC 156) subtypes
-        if (ccId === this.CC['Alarm'] || ccId === this.CC['AlarmSensor']) {
-
-            var prefSensor = ccId === this.CC['AlarmSensor']? 'Sensor' : '',
-                types = [
-                    'general_purpose',
-                    'smoke',
-                    'co',
-                    'coo',
-                    'heat',
-                    'flood',
-                    'door',
-                    'burglar',
-                    'power',
-                    'system',
-                    'emergency',
-                    'clock'
-                ];
-                
-            probeType = 'alarm' + prefSensor + '_' + types[subCCId];
-        }
-    }
-    
-    return probeType;
 };
 
 function inObj(obj, arr) {
