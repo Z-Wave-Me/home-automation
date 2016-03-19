@@ -2222,42 +2222,51 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						
 						// handle 0xFE unknown
 						// special case by Sigma for Unknown event - not listed in eventMask
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + ".event", function(type) {
-							var eventTypeId = parseInt(this.value, 10);
-							if (eventTypeId === 0xFE) {
-								var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
-
-								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
-
-									var a_vDev = self.controller.devices.create({
-										deviceId: a_id,
-										defaults: a_defaults,
-										overlay: {},
-										handler: function(command) {
-											if (command === "update") {
-												cc.Get(0, notificationTypeId, eventTypeId);
-											}
-										},
-										moduleId: self.id
-									});
-
-									if (a_vDev) {
-										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
-											} else {
-												if (this.event.value === eventTypeId || this.event.value === 0) {
-													try {
-														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
-													} catch (e) {}
-												}
-											}
-										}, "value");
-									}
-								}
+						// the vDev for this event will be created on the fly
+						{
+							if (!self.ccAlarmUnknownEventBinded) {
+								self.ccAlarmUnknownEventBinded = [];
 							}
-						});
+							var a_id = vDevId + separ + notificationTypeId + separ + 0xFE + separ + "A";
+							if (!self.ccAlarmUnknownEventBinded[a_id]) {
+								self.ccAlarmUnknownEventBinded[a_id] = true;
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + ".event", function(type) {
+									var eventTypeId = parseInt(this.value, 10);
+									if (eventTypeId === 0xFE) {
+										
+										if (!self.controller.devices.get(a_id)) {
+											a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+
+											var a_vDev = self.controller.devices.create({
+												deviceId: a_id,
+												defaults: a_defaults,
+												overlay: {},
+												handler: function(command) {
+													if (command === "update") {
+														cc.Get(0, notificationTypeId, eventTypeId);
+													}
+												},
+												moduleId: self.id
+											});
+
+											if (a_vDev) {
+												self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+													if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+														self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
+													} else {
+														if (this.event.value === eventTypeId || this.event.value === 0) {
+															try {
+																a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+															} catch (e) {}
+														}
+													}
+												}, "value");
+											}
+										}
+									}
+								});
+							}
+						}
 						
 						maskToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
 							if(preventCreatingEventTypes === null || preventCreatingEventTypes.indexOf(eventTypeId) === -1) {
