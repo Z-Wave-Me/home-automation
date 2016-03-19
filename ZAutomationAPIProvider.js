@@ -124,8 +124,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/reset", this.ROLE.ADMIN, this.reset);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
-        this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork);
-        this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork);
+        this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
+        this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
 
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);

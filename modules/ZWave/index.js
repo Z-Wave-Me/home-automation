@@ -1284,7 +1284,7 @@ ZWave.prototype.gateDevicesStart = function () {
 										}
 									}
 								}
-																
+								
 								// call postInterview functions from postfix.json
 								postFix.forEach(function(fix) {
 									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0) {
@@ -2110,12 +2110,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true,preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
 					}
 				}, "child");
 			}
 		} else if (this.CC["Alarm"] === commandClassId) {
-			if (cc.data.version < 3) return; // We skip old Alarm CC implementations handling only v3 (Notification)
+			if (cc.data.version.value < 3) return; // We skip old Alarm CC implementations handling only v3 (Notification)
 			
 			a_defaults = {
 				deviceType: 'sensorBinary',
@@ -2125,7 +2125,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					title: ''
 				}
 			};
-			Object.keys(cc.data).forEach(function (notificationTypeId) {				
+			Object.keys(cc.data).forEach(function (notificationTypeId) {
 				if ((preventCreation[notificationTypeId] && preventCreation[notificationTypeId].length > 0) || !preventCreation[notificationTypeId]) {
 					notificationTypeId = parseInt(notificationTypeId, 10);
 
