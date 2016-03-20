@@ -45,6 +45,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/logout", this.ROLE.USER, this.doLogout);
         this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
         this.router.get("/history", this.ROLE.USER, this.exposeHistory);
+        this.router.del("/history", this.ROLE.USER, this.exposeHistory);
         this.router.get("/devices", this.ROLE.USER, this.listDevices);
         this.router.get("/restart", this.ROLE.ADMIN, this.restartController);
         this.router.get("/locations", this.ROLE.USER, this.listLocations);
@@ -114,6 +115,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
         this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
+        this.router.del("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 
         this.router.get("/load/modulemedia/:module_name/:file_name", this.ROLE.ANONYMOUS, this.loadModuleMedia);
         
@@ -121,7 +123,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
-        this.router.post("/reset", this.ROLE.ADMIN, this.reset);
+        this.router.get("/resetToFactoryDefault", this.ROLE.ADMIN, this.resetToFactoryDefault);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -133,7 +135,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
 
     // Used by the android app to request server status
-   statusReport: function () {
+    statusReport: function () {
         var currentDateTime = new Date(),
             reply = {
                 error: null,
@@ -833,8 +835,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     deleteModule: function (moduleId) {
         var reply = {
                 error: {
-                    key: null,
-                    errorMsg: null
+                    key: null
                 },
                 data: {
                     key: null,
@@ -842,52 +843,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 code: 500
             }, 
-            unload;
-            
-        var result = "in progress";
+            uninstall = false;
 
         if (this.controller.modules[moduleId]) {
 
-            unload = this.controller.unloadModule(moduleId);
+            uninstall = this.controller.uninstallModule(moduleId);
 
-            if (unload === 'success') {
-                try {
-                    installer.remove(
-                        moduleId,
-                        function() {
-                                result = "done";
-                        },  function() {
-                                result = "failed";
-                        }
-                    );
-                    
-                    var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-                    
-                    while ((new Date()).valueOf() < d &&  result === "in progress") {
-                            processPendingCallbacks();
-                    }
-                    
-                    if (result === "in progress") {
-                            result = "failed";
-                    }
-
-                    if (result === "done") {
-                        
-                        reply.code = 200;
-                        reply.data.key = "app_delete_successful"; // send language key as response
-                    } else {
-                        reply.code = 500;
-                        reply.error.key = 'app_failed_to_delete';
-                    }
-                } catch (e) {
-                    reply.code = 500;
-                    reply.error.key = 'app_failed_to_delete';
-                    reply.error.errorMsg = e;
-                }
+            if (uninstall) {
+                reply.code = 200;
+                reply.data.key = "app_delete_successful"; // send language key as response
             } else {
                 reply.code = 500;
                 reply.error.key = 'app_failed_to_delete';
-                reply.error.errorMsg = unload;
             }       
         } else {
             reply.code = 404;
@@ -909,54 +876,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (this.controller.modules[moduleId].location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)){
 
-                unload = this.controller.unloadModule(moduleId);
+                uninstall = this.controller.uninstallModule(moduleId, true);
 
-                if (unload === 'success') {
-                    try {
-                        installer.remove(
-                            moduleId,
-                            function() {
-                                    result = "done";
-                            },  function() {
-                                    result = "failed";
-                            }
-                        );
-                        
-                        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-                        
-                        while ((new Date()).valueOf() < d &&  result === "in progress") {
-                                processPendingCallbacks();
-                        }
-                        
-                        if (result === "in progress") {
-                                result = "failed";
-                        }
-
-                        if (result === "done") {
-
-                            loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'modules/');
-                            
-                            if(loadSuccessfully) {
-                                reply.code = 200;
-                                reply.data.key = 'app_reset_successful_to_version';
-                                reply.data.appendix = this.controller.modules[moduleId].meta.version; 
-                            } else {
-                                reply.code = 200;
-                                reply.data.key = "app_reset_successful_but_restart_necessary"; // send language key as response
-                            }
-                        } else {
-                            reply.code = 500;
-                            reply.error.key = 'app_failed_to_remove_old';
-                        }
-                    } catch (e) {
-                        reply.code = 500;
-                        reply.error.key = 'app_failed_to_reset';
-                        reply.error.errMsg = e;
-                    }
+                if (uninstall) {
+                    reply.code = 200;
+                    reply.data.key = 'app_reset_successful_to_version';
+                    reply.data.appendix = this.controller.modules[moduleId].meta.version; 
                 } else {
                     reply.code = 500;
-                    reply.error.key = 'app_failed_to_reset';
-                    reply.error.errMsg = unload;
+                    reply.error = 'There was an error during resetting the app ' + moduleId + '. Maybe a server restart could solve this problem.';
                 }       
             } else {
                 reply.code = 412;
@@ -1215,7 +1143,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             } else {
                 getProfile = this.controller.getProfile(this.req.user);
                 if (getProfile && this.req.user === getProfile.id) {
-                    profiles = [profile];
+                    profiles = [getProfile];
                 }
             }
             if (!Array.isArray(profiles)) {
@@ -1595,6 +1523,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     exposeHistory: function () {
         var history,
             reply = {
+                code: 500,
                 error: null,
                 data: null
             };
@@ -1602,12 +1531,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         history = this.controller.listHistories();
 
         if(history){
-            reply.data = {
-                updateTime: Math.floor(new Date().getTime() / 1000),
-                history: history
-            };
-            reply.code = 200;
-            
+            if (this.req.method === "GET") {
+                reply.data = {
+                    updateTime: Math.floor(new Date().getTime() / 1000),
+                    history: history
+                };
+                reply.code = 200;
+
+            } else if (this.req.method === "DELETE") {
+                success = this.controller.deleteDevHistory();
+
+                if (success) {
+                    reply.code = 204;
+                } else {
+                    reply.error = "Something went wrong."
+                }
+            } else {
+                reply.code = 400;
+                reply.error = "Bad request."; 
+            }
         } else {
             reply.code = 404;
             reply.error = "No device histories found.";
@@ -1615,12 +1557,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
         return reply;
     },
+    // get or delete histories of devices
     getDevHist: function (vDevId) {
         var history,
             dev,
             reply = {
+                code: 500,
                 error: null,
-                data: null
+                    data: null
             },
             since,
             show,
@@ -1628,29 +1572,46 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             view = [288,96,48,24,12,6];
 
         if (this.deviceByUser(vDevId, this.req.user) !== null) {
-            show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
-            since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
-            history = this.controller.listHistories();
-            hash = this.controller.hashCode(vDevId);
 
+            history = this.controller.listHistories();
+            
             if (history) {
+
+                hash = this.controller.hashCode(vDevId);
                 dev = history.filter(function(x) {
-                    return x.h === hash;
+                    return x.h === hash || x.id === vDevId;
                 });
-                
+
                 if (dev.length > 0) {
-                    sinceDevHist = this.controller.getDevHistory(dev, since, show);            
-                    
-                    if (dev && sinceDevHist) {
-                        reply.code = 200;
-                        reply.data = {
+                    if (this.req.method === "GET") {
+                        show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
+                        since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;                        
+                        
+                        sinceDevHist = this.controller.getDevHistory(dev, since, show);            
+                        
+                        if (dev && sinceDevHist) {
+                            reply.code = 200;
+                            reply.data = {
                                 id: vDevId,
                                 since: since,
                                 deviceHistory: sinceDevHist
-                        };
+                            };
+                        } else {
+                            reply.code = 200;
+                            reply.data = dev;
+                        }
+
+                    } else if (this.req.method === "DELETE") {
+                        success = this.controller.deleteDevHistory(vDevId);
+
+                        if (success) {
+                            reply.code = 204;
+                        } else {
+                            reply.error = "Something went wrong."
+                        }
                     } else {
-                        reply.code = 200;
-                        reply.data = dev;
+                        reply.code = 400;
+                        reply.error = "Bad request."; 
                     }
                 } else {
                     reply.code = 404;
@@ -1658,7 +1619,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             } else {
                 reply.code = 404;
-                reply.error = "No device histories found.";
+                reply.error = "No device histories found. Please check if app '24 Hours Device History' is active.";
             }
         } else {
             reply.code = 404;
@@ -1845,7 +1806,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
             */
             reply.headers= {
-                    "Content-Type": "application/x-download",
+                    "Content-Type": "application/x-download; charset=utf-16",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
                     "Connection": "keep-alive"
             }
@@ -1892,7 +1853,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 saveObject(obj, reqObj.data[obj]);
             }
 
-            // start controller with restore flag to apply config.json and other modules configs
+            // start controller with reload flag to apply config.json
             this.controller.start(true);
             
             // restore Z-Wave and EnOcean
@@ -1912,6 +1873,119 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.error = e.toString();
         }
         
+        return reply;
+    },
+    resetToFactoryDefault: function() {
+        var self = this,
+            langFile = this.controller.loadMainLang();
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            sCGInstances = [],
+            overwriteBackupCfg = this.req.query.hasOwnProperty("overwriteBackupCfg") && (this.req.query.overwriteBackupCfg === "true" || this.req.query.overwriteBackupCfg)? true : false,
+            resetZway = this.req.query.hasOwnProperty("resetZway") ? this.req.query.resetZway : false,
+            useDefaultCfg = this.req.query.hasOwnProperty("useDefaultConfig") ? this.req.query.useDefaultConfig : null,
+            backupCfg = loadObject("backupConfig"),
+            storageContentList = loadObject("__storageContent"),
+            defaultConfigFolder = fs.list('defaultConfigs') || [],
+            defaultConfig = {}; // rpi with RAZ 
+
+        try{
+            defaultConfigFolder.forEach(function (defaultCfg){
+                var getCfgIdentifier = defaultCfg.substr(12);
+                console.log('getCfgIdentifier:', getCfgIdentifier);
+                console.log('config.json_:', defaultCfg.indexOf('config.json_'));
+                if (defaultCfg.indexOf('config.json_') > -1 && getCfgIdentifier === useDefaultCfg && useDefaultCfg !== '') {
+                    defaultConfig = fs.loadJSON('defaultConfigs/' + defaultCfg);
+                }
+            });
+
+            if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
+
+                if (overwriteBackupCfg || backupCfg === null) {
+                    console.log('Backup config ...');
+                    // make backup of current config.json
+                    saveObject('backupConfig', loadObject('config.json')); 
+                }
+
+                // remove instances of SwitchControlGenerator first
+                // filter for instances of SwitchControlGenerator
+                sCGInstances = this.controller.instances.filter(function (instance) {
+                    return instance.moduleId === 'SwitchControlGenerator';
+                }).map(function (instance) {
+                    return instance.id;
+                });
+
+                // remove all instances of SwitchControlGenerator
+                if (sCGInstances.length > 0) {
+                    sCGInstances.forEach(function (instanceId) {
+                        console.log('Remove SCG intstance: ' + instanceId);
+                        self.controller.deleteInstance(instanceId);
+                    });
+                }
+
+                // reset z-way controller
+                if (zway && resetZway) {
+                    console.log('Reset Controller ...');
+                    zway.controller.SetDefault();
+                }
+
+                console.log('Remove and unload userModules apps ...');
+                // unload and remove modules
+                Object.keys(this.controller.modules).forEach( function(className) {
+                    var meta = self.controller.modules[className],
+                        unload = '',
+                        locPath = meta.location.split('/'),
+                        success = false;
+
+                    if (locPath[0] === 'userModules'){
+                        console.log(className + ' remove it ...');
+                        
+                        success = self.controller.uninstallModule(className);
+
+                        if (success) {
+                            console.log(className + ' has been successfully removed.');
+                        } else {
+                            console.log('Cannot remove app: ' + className);
+                            self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+                        }
+                    }
+
+                });
+
+                // stop the controller
+                this.controller.stop();
+                
+                // clean up storage
+                for (var ind in storageContentList) {
+                    if(ind !== 'backupConfig'){
+                        saveObject(storageContentList[ind], null);
+                    }
+                }
+
+                // clean up storageContent
+                if (__storageContent.length > 0) {
+                    __saveObject("__storageContent", []);
+                    __storageContent = [];
+                }
+
+                // set back to default config
+                saveObject('config.json', defaultConfig);
+
+                // start controller with reload flag to apply config.json
+                this.controller.start(true);
+
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'No default configuration file found.';
+            }
+        } catch (e) {
+            reply.error = 'Something went wrong. Error: ' + e.message;
+        }
+
         return reply;
     },
     getTime: function () {
