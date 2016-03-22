@@ -37,7 +37,7 @@
 }, {
 	"id": "6",
 	"p_id": "271.3074.4098",
-	"product": "Fibaro Smoke Sensor",
+	"product": "Fibaro Smoke Sensor FGSD-002",
 	"preInterview": [],
 	"postInterview": [
 		"preventDeviceCreation(0,156, {});",
@@ -46,19 +46,11 @@
 }, {
 	"id": "23",
 	"p_id": "271.2816.4097",
-	"product": "Fibaro Flood Sensor",
+	"product": "Fibaro Flood Sensor FGFS-101",
 	"preInterview": [],
 	"postInterview": [
 		"preventDeviceCreation(0, 156, { '0':[]});",
 		"preventDeviceCreation(1, 48, { '1':[]});"
-	]
-}, {
-	"id": "24",
-	"p_id": "277.4.3",
-	"product": "Popp",
-	"preInterview": [],
-	"postInterview": [
-		"preventDeviceCreation(0,113, {});"
 	]
 }, {
 	"id": "25",
@@ -99,7 +91,7 @@
 	"preInterview": [],
 	"postInterview": [
 		"supportSwitchController(0,91,1,'S'); if (commandClassId==0x72 && self.zway.devices[nodeId].ThermostatSetPoint.data.version!=2) { self.zway.devices[nodeId].ThermostatSetPoint.data.version = 2; self.zway.devices[nodeId].ThermostatSetPoint.Interview(); }"
-]
+	]
 }, {
 	"id": "32",
 	"p_id": "316.2.14",
@@ -107,14 +99,6 @@
 	"preInterview": [],
 	"postInterview": [
 		"preventDeviceCreation(0,48, {'10':[]});"
-	]
-}, {
-	"id": "33",
-	"p_id": "340.4.3",
-	"product": "POPP Smokesensor 2",
-	"preInterview": [],
-	"postInterview": [
-		"preventDeviceCreation(0,113, {});"
 	]
 }, {
 	"id": "34",
@@ -151,5 +135,51 @@
 	"preInterview": [],
 	"postInterview": [
 		"supportSwitchController(0,91,8,'S');"
+	]
+}, {
+	"id": "40",
+	"p_id": "340.4.2",
+	"product": "Popp 10 year smoke detector ",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});"
+	]
+}, {
+	"id": "41",
+	"p_id": "271.2049.4097",
+	"product": "Fibaro MotionSensor ZW5",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});",
+		"preventDeviceCreation(0,49, {'25'[], '52'[], '53'[],'54'[]});",
+		"preventDeviceCreation(0,48, {'1'[]});"
+	]
+}, {
+	"id": "42",
+	"p_id": "619.4.3",
+	"product": "Popp CO Detector",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});"
+	]
+}, {
+	"id": "43",
+	"p_id": "134.2.74",
+	"product": "AEON MULTISENSOR Gen 5",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {'7'[]});",
+		"setConfig(3,10,1);",
+		"setConfig(4,1,1);",
+		"setConfig(5,2,1);"
+	]
+}, {
+	"id": "44",
+	"p_id": "271.2817.4098",
+	"product": "Fibaro Flood Sensor FGFS-101",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0, 156, { '5':[]});",
+		"preventDeviceCreation(0, 113, { '5':[0], '7':[0]});"
 	]
 }]
