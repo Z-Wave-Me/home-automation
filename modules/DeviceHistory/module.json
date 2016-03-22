@@ -6,7 +6,7 @@
 	"homepage" : "http://razberry.z-wave.me",
 	"icon" : "icon.png",
 	"moduleName":"DeviceHistory",
-	"version" : "1.2.0",
+	"version" : "1.2.1",
 	"maturity" : "stable",
 	"repository" : {
 		"type" : "git",

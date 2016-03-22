@@ -1,6 +1,6 @@
 /*** DeviceHistory Z-Way HA module *******************************************
 
-Version: 1.2.0
+Version: 1.2.1
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -80,23 +80,13 @@ _.extend(DeviceHistory.prototype, {
                 devType = vDev.get('deviceType'),
                 pushed = false;
             
-            if(self.allDevices.length > 0) {
-                if (_.findIndex(self.allDevices, function(dev, index, array) {
-                           return dev.id === id;
-                        }) < 0) {
-                    
-                    if(vDev.get("hasHistory") === false){
-                        vDev.set("hasHistory", true, { silent: true });
-                    }
-
-                    self.allDevices.push(vDev);
-                    pushed = true;
-
-                }
-            } else if (vDev.get('permanently_hidden') === false &&          // only none permanently_hidden devices
-                        _.unique(config.devices).indexOf(id) === -1 &&     //in module excluded devices
-                            exclDevTypes.indexOf(devType) === -1 &&       //excluded device types
-                                self.exclSensors.indexOf(id) === -1) {
+            if ((vDev.get('permanently_hidden') === false &&        // only none permanently_hidden devices
+                _.unique(config.devices).indexOf(id) === -1 &&      //in module excluded devices
+                    exclDevTypes.indexOf(devType) === -1 &&         //excluded device types
+                        self.exclSensors.indexOf(id) === -1) &&     //excluded sensors
+                            _.findIndex(self.allDevices, function(dev, index, array) {
+                               return dev.id === id;
+                            }) < 0) {
                 
                 if(vDev.get("hasHistory") === false){
                     vDev.set("hasHistory", true, { silent: true });
@@ -104,11 +94,13 @@ _.extend(DeviceHistory.prototype, {
 
                 self.allDevices.push(vDev);
                 pushed = true;
-            }
+            }            
 
+            // add listener to binary device types
             if(pushed) {
                 switch(devType){
                     case 'switchBinary':
+                    case 'switchControl':
                     case 'sensorBinary':
                     case 'toggleButton':
                     case 'doorlock':
@@ -137,6 +129,7 @@ _.extend(DeviceHistory.prototype, {
                     
                 switch(devType){
                     case 'switchBinary':
+                    case 'switchControl':
                     case 'sensorBinary':
                     case 'toggleButton':
                     case 'doorlock':
@@ -193,6 +186,7 @@ _.extend(DeviceHistory.prototype, {
                         self.storeData(dev, lvl);
                         break;
                     case 'switchBinary':
+                    case 'switchControl':
                     case 'sensorBinary':
                     case 'toggleButton':
                     case 'doorlock':                        
@@ -378,6 +372,7 @@ _.extend(DeviceHistory.prototype, {
                 
             switch(devType){
                 case 'switchBinary':
+                case 'switchControl':
                 case 'sensorBinary':
                 case 'toggleButton':
                 case 'doorlock':
