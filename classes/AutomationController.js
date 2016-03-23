@@ -300,7 +300,8 @@ AutomationController.prototype.loadModules = function (callback) {
 AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder) {
     var self = this,
         langFile = self.loadMainLang(),
-        values;
+        values, 
+        addModule = false;
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
         _st;
@@ -338,11 +339,41 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
     moduleMeta.id = moduleClassName;
     moduleMeta.location = folder + moduleClassName;
 
-    // Grab _module and clear it out
-    self.modules[moduleClassName] = {
-        meta: moduleMeta,
-        location: folder + moduleClassName
-    };
+    // check version before overwriting the already existing module
+    if (self.modules[moduleClassName] && 
+            self.modules[moduleClassName].meta && 
+                self.modules[moduleClassName].meta.version && 
+                    moduleMeta.version) {
+        
+        var existingVersion = self.modules[moduleClassName].meta.version.split('.'),
+            currentVersion = moduleMeta.version.split('.');
+
+        if (self.modules[moduleClassName].meta.version.localeCompare(moduleMeta.version) === 0) {
+            addModule = true
+        } else {
+
+            for (var i = 0; i < existingVersion.length; i++) {
+                if ((parseInt(existingVersion[i], 10) < parseInt(currentVersion[i], 10)) || ((parseInt(existingVersion[i], 10) <= parseInt(currentVersion[i], 10)) && (!existingVersion[i+1] && currentVersion[i+1] && parseInt(currentVersion[i+1], 10) > 0))) {
+
+                    addModule = true;
+                    break;
+                }
+            }
+        }
+
+    } else {
+        addModule = true;
+    }
+
+    if (addModule) {
+        // Grab _module and clear it out
+        self.modules[moduleClassName] = {
+            meta: moduleMeta,
+            location: folder + moduleClassName
+        };
+    }
+
+    return addModule;
 };
 
 
@@ -592,9 +623,9 @@ AutomationController.prototype.loadInstalledModule = function (moduleId, rootDir
     try{
         if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
             console.log('Load app "' + moduleId + '" from folder ...');
-            self.loadModuleFromFolder(moduleId, rootDirectory);
+            successful = self.loadModuleFromFolder(moduleId, rootDirectory);
 
-            if(self.modules[moduleId]){
+            if(successful && self.modules[moduleId]){
                 self.loadModule(self.modules[moduleId]);
 
                 successful = true;
@@ -626,9 +657,9 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
     try{
         if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
             console.log('Load app "' + moduleId + '" from folder ...');
-            self.loadModuleFromFolder(moduleId, rootDirectory);
+            successful = self.loadModuleFromFolder(moduleId, rootDirectory);
 
-            if(self.modules[moduleId]){
+            if(successful && self.modules[moduleId]){
 
                 self.loadModule(self.modules[moduleId]);
 

@@ -996,14 +996,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            location = fs.list('userModules/' + moduleId)? 'userModules/' : 'modules/';
+            location = [],
+            loadSuccessfully = 0;
 
-        if (fs.list(location)) {
+        if(fs.list('modules/' + moduleId)) {
+            location.push('modules/');
+        }
+
+        if(fs.list('userModules/' + moduleId)) {
+            location.push('userModules/');
+        }
+
+        if (location.length > 0) {
             try {
-                loadSuccessfully = this.controller.reinitializeModule(moduleId, location);
+
+                _.forEach(location, function(loc) {
+                    loadSuccessfully += this.controller.reinitializeModule(moduleId, loc);
+                });
                 
-                if(loadSuccessfully){
-                    reply.data = 'Reinitialization of app "' + moduleId + '" successfull.',
+                if(loadSuccessfully > 0){
+                    reply.data = 'Reinitialization of app "' + moduleId + '" successfull.';
                     reply.code = 200;
                 }
             } catch (e) {

@@ -1,0 +1,6 @@
+v1.0.6
+- remove initial restart
+
+v1.0.5
+- add initial restart to fix zbw service problems
+- interval added to check if ZBW service is available - check max. 5 minutes

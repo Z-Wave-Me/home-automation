@@ -1,0 +1,4 @@
+v1.2.0 - feature:
+- devide between batterie and non batterie powered devices
+- by default battery powered sensors were not polled
+- descriptions overworked

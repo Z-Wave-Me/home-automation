@@ -1,0 +1,2 @@
+v2.1.1
+- format of time input field changed (HH:mm 24h)
