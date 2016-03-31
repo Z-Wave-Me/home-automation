@@ -51,3 +51,20 @@ function get_values (obj) {
 
     return res;
 }
+
+function has_higher_version (newVersion, currVersion) {
+    var isHigher = false,
+        newVersion = newVersion? newVersion.split('.') : null,
+        currVersion = currVersion? currVersion.split('.') : null;
+
+        if (!!newVersion && !!currVersion) {
+            for (var i = 0; i < currVersion.length; i++) {
+                if ((parseInt(currVersion[i], 10) < parseInt(newVersion[i], 10)) || ((parseInt(currVersion[i], 10) <= parseInt(newVersion[i], 10)) && (!currVersion[i+1] && newVersion[i+1] && parseInt(newVersion[i+1], 10) > 0))) {
+                    isHigher = true;
+                    break;
+                }
+            }
+        }
+
+    return isHigher;
+}

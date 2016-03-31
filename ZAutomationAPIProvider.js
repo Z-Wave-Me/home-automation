@@ -726,34 +726,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 code: 500
             },
-            moduleUrl = this.req.body.moduleUrl;
-            
-        var result = "in progress";
-        var moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
+            moduleUrl = typeof this.req.body === 'string'? JSON.parse(this.req.body).moduleUrl : this.req.body.moduleUrl,
+            result = "",
+            moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
         if (!this.controller.modules[moduleId]) {
-            installer.install(
-                moduleUrl,
-                function() {
-                        result = "done";
-                },  function() {
-                        result = "failed";
-                }
-            );
             
-            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-            
-            while ((new Date()).valueOf() < d &&  result === "in progress") {
-                    processPendingCallbacks();
-            }
-            
-            if (result === "in progress") {
-                    result = "failed";
-            }
+            // download and install the module
+            result = this.controller.installModule(moduleUrl, moduleId);
 
             if (result === "done") {
                 
-                loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'userModules/');
+                loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'userModules/', false);
 
                 if(loadSuccessfully){
                     reply.code = 201;
@@ -785,30 +769,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 code: 500
             },
-            moduleUrl = this.req.body.moduleUrl;
-            
-        var result = "in progress";
-        var moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
+            moduleUrl = typeof this.req.body === 'string'? JSON.parse(this.req.body).moduleUrl : this.req.body.moduleUrl,
+            result = "",
+            moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
         if (this.controller.modules[moduleId]) {
-            installer.install(
-                moduleUrl,
-                function() {
-                        result = "done";
-                },  function() {
-                        result = "failed";
-                }
-            );
-            
-            var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-            
-            while ((new Date()).valueOf() < d &&  result === "in progress") {
-                    processPendingCallbacks();
-            }
-            
-            if (result === "in progress") {
-                    result = "failed";
-            }
+
+            // download and install/overwrite the module
+            result = this.controller.installModule(moduleUrl, moduleId);
 
             if (result === "done") {
 
@@ -1771,12 +1739,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     backup: function () {
-        var reply = {
+        var self = this,
+            reply = {
                 error: null,
                 data: null,
                 code: 500
             },
-            backupJSON = {};
+            backupJSON = {}, 
+            userModules = [];
 
         var now = new Date();
 
@@ -1793,6 +1763,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // save all objects in storage
             for (var ind in list) {
                 backupJSON[list[ind]] = loadObject(list[ind]);
+            }
+
+            // add list of current userModules
+            _.forEach(fs.list('userModules')|| [], function(moduleName) {
+                if (fs.stat('userModules/' + moduleName).type === 'dir' && !_.findWhere(userModules, {name: moduleName})) {
+                    userModules.push({
+                        name: moduleName,
+                        version: self.controller.modules[moduleName]? self.controller.modules[moduleName].meta.version : ''
+                    });
+                }
+            });
+
+            if (userModules.length > 0) {
+                backupJSON['__userModules'] = userModules;
             }
             
             // save Z-Way and EnOcean objects
@@ -1818,7 +1802,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
             */
             reply.headers= {
-                    "Content-Type": "application/x-download; charset=utf-16",
+                    "Content-Type": "application/x-download; charset=utf-8",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
                     "Connection": "keep-alive"
             }
@@ -1832,12 +1816,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     restore: function () {
-        var reqObj,
+        var self = this,
+            reqObj,
             reply = {
                 error: null,
                 data: null,
                 code: 500
-            };
+            },
+            result = "",
+            langfile = this.controller.loadMainLang();
 
         try {
             function utf8Decode(bytes) {
@@ -1852,17 +1839,108 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             //this.reset();
             
-            reqObj = JSON.parse(this.req.body.backupFile.content);
+            reqObj = typeof this.req.body.backupFile.content === 'string'? JSON.parse(this.req.body.backupFile.content) : this.req.body.backupFile.content;
             
             // stop the controller
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean"]; // objects that should be ignored 
+                var dontSave = ["__ZWay","__EnOcean","__userModules"]; // objects that should be ignored 
                 
                 if (dontSave.indexOf(obj) > -1) break;
                 
                 saveObject(obj, reqObj.data[obj]);
+            }
+
+            // install userModules
+            if (reqObj.data["__userModules"]) {
+                var installedModules = [];
+
+                _.forEach(reqObj.data["__userModules"], function(entry) {
+
+                    http.request({
+                        url:'https://developer.z-wave.me/?uri=api-module-archive/'+ entry.name,
+                        method:'GET',
+                        async: true,
+                        success: function(res){
+                            var archiv = [],
+                                item = {
+                                    name: entry.name
+                                };
+
+                            if (res.data.data && res.data.data.length > 0) {
+                                archiv = _.filter(res.data.data, function (appEntry){
+                                    return appEntry.version === entry.version;
+                                })
+
+                                if (archiv.length > 0) {
+
+                                    console.log('Restore userModule', archiv[0].modulename, 'v'+archiv[0].version);
+                                    result = self.controller.installModule('https://developer.z-wave.me/archiv/'+ archiv[0].archiv, archiv[0].modulename);
+
+                                    item.status = result;
+                                    if (result === "done") {
+                                        loadSuccessfully = self.controller.loadInstalledModule(entry.name, 'userModules/', true);
+
+                                        if(!loadSuccessfully){
+                                            self.controller.addNotification("warning", langfile.zaap_war_restart_necessary + ' :: ' + entry.name + ' ' + 'v'+archiv[0].version, "core", "AppInstaller");
+                                        }
+                                    } else {
+                                        self.controller.addNotification("warning", langfile.zaap_err_app_install + ' :: ' + entry.name + ' ' + 'v'+archiv[0].version, "core", "AppInstaller");
+                                    }
+                                } else {
+                                    if (self.controller.modules[entry.name] && self.controller.modules[entry.name].meta && has_higher_version(entry.version, self.controller.modules[entry.name].meta.version)) {
+                                        
+                                        console.log(entry.name+':','No archive with this version found. Install latest ...');
+                                        result = self.controller.installModule('https://developer.z-wave.me/modules/'+ entry.name +'.tar.gz', entry.name);
+
+                                        item.status = result;
+
+                                        if (result === "done") {
+                                            self.controller.loadInstalledModule(entry.name, 'userModules/', false);
+                                            self.controller.addNotification("warning", langfile.zaap_war_app_installed_corrupt_instance + ' :: ' + entry.name, "core", "AppInstaller");
+                                        } else {
+                                            self.controller.addNotification("error", langfile.zaap_err_app_install + ' :: ' + entry.name, "core", "AppInstaller");
+                                        }
+                                    } else {
+                                        self.controller.addNotification("warning", langfile.zaap_war_core_app_is_newer + ' :: ' + entry.name, "core", "AppInstaller");
+                                        item.status = 'failed';
+                                    }
+                                } 
+                            } else {
+                                self.controller.addNotification("error", langfile.zaap_err_no_archives + ' :: ' + entry.name, "core", "AppInstaller");
+                                item.status = 'failed';
+                            }
+
+                            installedModules.push(item);
+                        },
+                        error: function(res){
+                            self.controller.addNotification("error", langfile.zaap_err_server + ' :: ' + entry.name + '::' + res.statusText, "core", "AppInstaller");
+                            installedModules.push({
+                                name: entry.name,
+                                status: 'failed'
+                            });
+                        }                        
+                    });
+                });
+    
+                var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+                while ((new Date()).valueOf() < d && installedModules.length <= reqObj.data["__userModules"].length) {
+                        
+                        if (installedModules.length === reqObj.data["__userModules"].length) {
+                            break;   
+                        }
+                        
+                        processPendingCallbacks();
+                }
+
+                if (installedModules.length === reqObj.data["__userModules"].length) {
+                    // success
+                    console.log("Error: 500 - Something went wrong ...");
+                    reply.code = 200;
+                }
+
             }
 
             // start controller with reload flag to apply config.json
@@ -1881,6 +1959,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             
             // success
             reply.code = 200;
+           
         } catch (e) {
             reply.error = e.toString();
         }
@@ -1896,100 +1975,101 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             sCGInstances = [],
-            overwriteBackupCfg = this.req.query.hasOwnProperty("overwriteBackupCfg") && (this.req.query.overwriteBackupCfg === "true" || this.req.query.overwriteBackupCfg)? true : false,
-            resetZway = this.req.query.hasOwnProperty("resetZway") ? this.req.query.resetZway : false,
-            useDefaultCfg = this.req.query.hasOwnProperty("useDefaultConfig") ? this.req.query.useDefaultConfig : null,
+            // overwriteBackupCfg = this.req.query.hasOwnProperty("overwriteBackupCfg") && (this.req.query.overwriteBackupCfg === "true" || this.req.query.overwriteBackupCfg)? true : false,
+            // resetZway = this.req.query.hasOwnProperty("resetZway") ? this.req.query.resetZway : false,
             backupCfg = loadObject("backupConfig"),
             storageContentList = loadObject("__storageContent"),
-            defaultConfigFolder = fs.list('defaultConfigs') || [],
-            defaultConfig = {}; // rpi with RAZ 
+            defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
+            defaultConfig = {};
 
         try{
-            defaultConfigFolder.forEach(function (defaultCfg){
-                var getCfgIdentifier = defaultCfg.substr(12);
-                console.log('getCfgIdentifier:', getCfgIdentifier);
-                console.log('config.json_:', defaultCfg.indexOf('config.json_'));
-                if (defaultCfg.indexOf('config.json_') > -1 && getCfgIdentifier === useDefaultCfg && useDefaultCfg !== '') {
-                    defaultConfig = fs.loadJSON('defaultConfigs/' + defaultCfg);
-                }
-            });
+
+            if (defaultConfigExists && defaultConfigExists.type !== 'dir' && defaultConfigExists.size > 0){
+                defaultConfig = fs.loadJSON('defaultConfigs/config.json');
+            }
 
             if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
 
-                if (overwriteBackupCfg || backupCfg === null) {
+                if (zway) {
+                    //if (backupCfg === null) {
                     console.log('Backup config ...');
                     // make backup of current config.json
                     saveObject('backupConfig', loadObject('config.json')); 
-                }
+                    //}
 
-                // remove instances of SwitchControlGenerator first
-                // filter for instances of SwitchControlGenerator
-                sCGInstances = this.controller.instances.filter(function (instance) {
-                    return instance.moduleId === 'SwitchControlGenerator';
-                }).map(function (instance) {
-                    return instance.id;
-                });
-
-                // remove all instances of SwitchControlGenerator
-                if (sCGInstances.length > 0) {
-                    sCGInstances.forEach(function (instanceId) {
-                        console.log('Remove SCG intstance: ' + instanceId);
-                        self.controller.deleteInstance(instanceId);
+                    // remove instances of SwitchControlGenerator first
+                    // filter for instances of SwitchControlGenerator
+                    sCGInstances = this.controller.instances.filter(function (instance) {
+                        return instance.moduleId === 'SwitchControlGenerator';
+                    }).map(function (instance) {
+                        return instance.id;
                     });
-                }
 
-                // reset z-way controller
-                if (zway && resetZway) {
+                    // remove all instances of SwitchControlGenerator
+                    if (sCGInstances.length > 0) {
+                        sCGInstances.forEach(function (instanceId) {
+                            console.log('Remove SCG intstance: ' + instanceId);
+                            self.controller.deleteInstance(instanceId);
+                        });
+                    }
+
+                    // reset z-way controller
+                    //if (zway) {
                     console.log('Reset Controller ...');
                     zway.controller.SetDefault();
-                }
+                    //}
 
-                console.log('Remove and unload userModules apps ...');
-                // unload and remove modules
-                Object.keys(this.controller.modules).forEach( function(className) {
-                    var meta = self.controller.modules[className],
-                        unload = '',
-                        locPath = meta.location.split('/'),
-                        success = false;
+                    console.log('Remove and unload userModules apps ...');
+                    // unload and remove modules
+                    Object.keys(this.controller.modules).forEach( function(className) {
+                        var meta = self.controller.modules[className],
+                            unload = '',
+                            locPath = meta.location.split('/'),
+                            success = false;
 
-                    if (locPath[0] === 'userModules'){
-                        console.log(className + ' remove it ...');
-                        
-                        success = self.controller.uninstallModule(className);
+                        if (locPath[0] === 'userModules'){
+                            console.log(className + ' remove it ...');
+                            
+                            success = self.controller.uninstallModule(className);
 
-                        if (success) {
-                            console.log(className + ' has been successfully removed.');
-                        } else {
-                            console.log('Cannot remove app: ' + className);
-                            self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+                            if (success) {
+                                console.log(className + ' has been successfully removed.');
+                            } else {
+                                console.log('Cannot remove app: ' + className);
+                                self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+                            }
+                        }
+
+                    });
+
+                    // stop the controller
+                    this.controller.stop();
+                    
+                    // clean up storage
+                    for (var ind in storageContentList) {
+                        if(ind !== 'backupConfig'){
+                            saveObject(storageContentList[ind], null);
                         }
                     }
 
-                });
-
-                // stop the controller
-                this.controller.stop();
-                
-                // clean up storage
-                for (var ind in storageContentList) {
-                    if(ind !== 'backupConfig'){
-                        saveObject(storageContentList[ind], null);
+                    // clean up storageContent
+                    if (__storageContent.length > 0) {
+                        __saveObject("__storageContent", []);
+                        __storageContent = [];
                     }
+
+                    // set back to default config
+                    saveObject('config.json', defaultConfig);
+
+                    // start controller with reload flag to apply config.json
+                    this.controller.start(true);
+
+                    reply.code = 200;
+                } else {
+                    reply.code = 404;
+                    reply.error = 'Unable to reset controller. Z-Way not found.';
                 }
-
-                // clean up storageContent
-                if (__storageContent.length > 0) {
-                    __saveObject("__storageContent", []);
-                    __storageContent = [];
-                }
-
-                // set back to default config
-                saveObject('config.json', defaultConfig);
-
-                // start controller with reload flag to apply config.json
-                this.controller.start(true);
-
-                reply.code = 200;
+                
             } else {
                 reply.code = 404;
                 reply.error = 'No default configuration file found.';
@@ -2124,7 +2204,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         return reply;
-    },
+    }/*,
     getTrustMyNetwork: function() {
         var reply = {
                 error: null,
@@ -2166,7 +2246,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         return reply;
-    }
+    }*/
 });
 
 ZAutomationAPIWebRequest.prototype.profileByUser = function(userId) {

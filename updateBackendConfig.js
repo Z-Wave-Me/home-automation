@@ -161,6 +161,11 @@
         }
       }
     }
+
+    // Remove modules_categories from config
+    if (config.hasOwnProperty('modules_categories')) {
+      delete config.modules_categories;
+    }
       
     // Add permanently_hidden, h, visibility, hasHistory properties
     Object.keys(config.vdevInfo).forEach(function(id) {

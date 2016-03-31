@@ -4,7 +4,16 @@
     "singleton": false,
     "userView": true,
     "icon": "icon.png",
+    "category": "logging",
     "moduleName": "SensorsPollingLogging",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "version":"1.0.0",
+    "maturity": "stable",
+    "repository": {
+        "type": "git",
+        "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
     "defaults": {
         "title": "Poll sensors and log values periodically",
         "description": "This app just combines the Sensor Polling service with the Sensor Value Logging Service. Please refer to the description of the two apps for more information",

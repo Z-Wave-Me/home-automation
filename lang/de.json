@@ -22,5 +22,11 @@
 	"err_preparing_room_dev_structure":"Die Raum-Geräte Beziehung konnte nicht erzeugt werden",
 	"err_parsing_npc_filters":"Die Namespaces-Filter konnten nicht gefunden/gelesen werden.",
 	"zaap_err_uninstall_mod":"Die App konnte nicht deinstalliert werden.",
-	"zaap_err_unload_mod":"Die App konnte nicht gelöscht werden."
+	"zaap_err_unload_mod":"Die App konnte nicht gelöscht werden.",
+	"zaap_war_restart_necessary":"The app was downloaded successfully but the initialization has failed. Please restart the server to finalize the initialization.",
+	"zaap_err_app_install":"An error has occurred during the app installation. The installation was cancelled.",
+	"zaap_war_app_installed_corrupt_instance":"There was no app with this version in the archive available. The lastest version was installed instead. It could be that already existing instances of this app do not work anymore. Please remove them from Apps > Active and add new ones under Apps > Local.",
+	"zaap_war_core_app_is_newer":"This app is already installed with a newer version. The installation was cancelled. It could be that already existing instances of this app do not work anymore. Please remove them from Apps > Active and add new ones under Apps > Local.",
+	"zaap_err_no_archives":"This app has no archive. The installation was cancelled.",
+	"zaap_err_server":"The download server is not reachable or responses with an error"
 }

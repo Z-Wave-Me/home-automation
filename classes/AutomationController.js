@@ -32,7 +32,7 @@ function AutomationController() {
     this.instances = config.instances;
     this.locations = config.locations || [];
     this.vdevInfo = config.vdevInfo || {};
-    this.modules_categories = config.modules_categories || [];
+    this.modules_categories = fs.loadJSON('modulesCategories.json') || [];
     this.namespaces = namespaces || [];
     this.registerInstances = {};
     this.files = files || {};
@@ -166,8 +166,7 @@ AutomationController.prototype.saveConfig = function () {
         "vdevInfo": this.vdevInfo,
         "locations": cleanupLocations(this.locations),
         "profiles": this.profiles,
-        "instances": this.instances,
-        "modules_categories": this.modules_categories
+        "instances": this.instances
     };
 
     try {
@@ -297,11 +296,12 @@ AutomationController.prototype.loadModules = function (callback) {
     }
 };
 
-AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder) {
+AutomationController.prototype.loadModuleFromFolder = function (moduleClassName, folder, ignoreVersion) {
     var self = this,
         langFile = self.loadMainLang(),
         values, 
-        addModule = false;
+        addModule = false,
+        ignoreVersion = ignoreVersion? ignoreVersion : false;
 
     var moduleMetaFilename = folder + moduleClassName + "/module.json",
         _st;
@@ -345,20 +345,14 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
                 self.modules[moduleClassName].meta.version && 
                     moduleMeta.version) {
         
-        var existingVersion = self.modules[moduleClassName].meta.version.split('.'),
-            currentVersion = moduleMeta.version.split('.');
+        var existingVersion = self.modules[moduleClassName].meta.version,
+            currentVersion = moduleMeta.version;
 
-        if (self.modules[moduleClassName].meta.version.localeCompare(moduleMeta.version) === 0) {
+        if (existingVersion.localeCompare(currentVersion) === 0 || ignoreVersion) {
             addModule = true
         } else {
 
-            for (var i = 0; i < existingVersion.length; i++) {
-                if ((parseInt(existingVersion[i], 10) < parseInt(currentVersion[i], 10)) || ((parseInt(existingVersion[i], 10) <= parseInt(currentVersion[i], 10)) && (!existingVersion[i+1] && currentVersion[i+1] && parseInt(currentVersion[i+1], 10) > 0))) {
-
-                    addModule = true;
-                    break;
-                }
-            }
+            addModule = has_higher_version(currentVersion, existingVersion);
         }
 
     } else {
@@ -371,6 +365,8 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
             meta: moduleMeta,
             location: folder + moduleClassName
         };
+    } else {
+        console.log('Lower version detected, ignoring ...');
     }
 
     return addModule;
@@ -568,6 +564,36 @@ AutomationController.prototype.unloadModule = function (moduleId) {
     return result;
 };
 
+AutomationController.prototype.installModule = function(moduleUrl, moduleName) {
+    var result = "in progress";
+
+    console.log('Installing app', moduleName, '...');
+
+    if (moduleUrl) {
+        installer.install(
+            moduleUrl,
+            moduleName,
+            function() {
+                    result = "done";
+            },  function() {
+                    result = "failed";
+            }
+        );
+        
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+                result = "failed";
+        }
+    }
+
+    return result;
+};
+
 AutomationController.prototype.uninstallModule = function(moduleId, reset) {
     var langFile = this.loadMainLang(),
         uninstall = false,
@@ -599,7 +625,7 @@ AutomationController.prototype.uninstallModule = function(moduleId, reset) {
             if (result === "done") {
 
                 if(reset) {
-                    loadSuccessfully = this.loadInstalledModule(moduleId, 'modules/');
+                    loadSuccessfully = this.loadInstalledModule(moduleId, 'modules/', true);
 
                     uninstall = loadSuccessfully;
                 } else {
@@ -616,14 +642,15 @@ AutomationController.prototype.uninstallModule = function(moduleId, reset) {
     return uninstall;
 };
 
-AutomationController.prototype.loadInstalledModule = function (moduleId, rootDirectory) {
+AutomationController.prototype.loadInstalledModule = function (moduleId, rootDirectory, ignoreVersion) {
     var self = this,
-        successful = false;
+        successful = false,
+        ignoreVersion = ignoreVersion? ignoreVersion : false;
 
     try{
         if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
             console.log('Load app "' + moduleId + '" from folder ...');
-            successful = self.loadModuleFromFolder(moduleId, rootDirectory);
+            successful = self.loadModuleFromFolder(moduleId, rootDirectory, ignoreVersion);
 
             if(successful && self.modules[moduleId]){
                 self.loadModule(self.modules[moduleId]);
@@ -657,7 +684,7 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
     try{
         if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
             console.log('Load app "' + moduleId + '" from folder ...');
-            successful = self.loadModuleFromFolder(moduleId, rootDirectory);
+            successful = self.loadModuleFromFolder(moduleId, rootDirectory, false);
 
             if(successful && self.modules[moduleId]){
 
