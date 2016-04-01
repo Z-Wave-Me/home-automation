@@ -665,10 +665,11 @@ AutomationController.prototype.loadInstalledModule = function (moduleId, rootDir
     return successful;
 };
 
-AutomationController.prototype.reinitializeModule = function (moduleId, rootDirectory) {
+AutomationController.prototype.reinitializeModule = function (moduleId, rootDirectory, ignoreVersion) {
     var self = this,
         successful = false,
-        existingInstances = [];
+        existingInstances = [],
+        ignoreVersion = ignoreVersion? ignoreVersion : false;
 
     // filter for active instances of moduleId
     existingInstances = self.instances.filter(function (instance) {
@@ -684,7 +685,7 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
     try{
         if(fs.list(rootDirectory + moduleId) && fs.list(rootDirectory + moduleId).indexOf('index.js') !== -1){
             console.log('Load app "' + moduleId + '" from folder ...');
-            successful = self.loadModuleFromFolder(moduleId, rootDirectory, false);
+            successful = self.loadModuleFromFolder(moduleId, rootDirectory, ignoreVersion);
 
             if(successful && self.modules[moduleId]){
 
@@ -707,12 +708,56 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
 
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
-        module;
+        modules = Object.getOwnPropertyNames(this.modules),
+        requiredBaseModules = ["ZWave"],
+        requiredWithDep = [];
 
     this.loadedModules = [];
 
+    modules.splice(modules.indexOf('ZWave'), 1);
+
+    // get all required modules from dependencies
     Object.getOwnPropertyNames(this.modules).forEach(function (m) {
-        this.loadModule(this.modules[m]);
+        if (this.modules[m].meta && 
+                this.modules[m].meta.dependencies &&
+                    _.isArray(this.modules[m].meta.dependencies) && 
+                        this.modules[m].meta.dependencies.length > 0) {
+
+            requiredBaseModules = _.uniq(requiredBaseModules.concat(this.modules[m].meta.dependencies));
+
+            // remove all required base modules from modules list
+            this.modules[m].meta.dependencies.forEach(function(mod){
+                if (modules.indexOf(mod) > -1) {
+                    modules.splice(modules.indexOf(mod), 1);
+                }
+            });
+        }
+    }, this);
+
+    // first instantiate all required modules without dependencies
+    requiredBaseModules.forEach(function(mod) {
+        if (this.modules[mod].meta && 
+                this.modules[mod].meta.dependencies &&
+                    _.isArray(this.modules[mod].meta.dependencies) && 
+                        this.modules[mod].meta.dependencies.length > 0) {
+            
+            // cache required modules with dependencies
+            if (requiredWithDep.indexOf(mod) < 0){
+                requiredWithDep.push(mod);
+            }
+        } else {
+            this.loadModule(this.modules[mod]);
+        }
+    }, this);
+
+    // instantiate all required with dependencies
+    requiredWithDep.forEach(function(mod) {
+        this.loadModule(this.modules[mod]);
+    }, this);
+
+    // load all remaining modules
+    modules.forEach(function(mod) {
+        this.loadModule(this.modules[mod]);
     }, this);
 };
 

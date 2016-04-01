@@ -54,8 +54,8 @@ function get_values (obj) {
 
 function has_higher_version (newVersion, currVersion) {
     var isHigher = false,
-        newVersion = newVersion? newVersion.split('.') : null,
-        currVersion = currVersion? currVersion.split('.') : null;
+        newVersion = newVersion && newVersion.toString()? newVersion.toString().split('.') : null,
+        currVersion = currVersion && currVersion.toString()? currVersion.toString().split('.') : null;
 
         if (!!newVersion && !!currVersion) {
             for (var i = 0; i < currVersion.length; i++) {
