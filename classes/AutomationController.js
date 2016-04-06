@@ -225,7 +225,6 @@ AutomationController.prototype.reloadConfig = function () {
     this.instances = reloadedConfig.instances || config.instances;
     this.locations = reloadedConfig.locations || config.locations;
     this.vdevInfo = reloadedConfig.vdevInfo || config.vdevInfo;
-    this.modules_categories = reloadedConfig.modules_categories || config.modules_categories;
 };
 
 AutomationController.prototype.stop = function () {
@@ -1379,8 +1378,14 @@ AutomationController.prototype.getProfile = function (id) {
 };
 
 AutomationController.prototype.createProfile = function (profile) {
-    var id = this.profiles.length ? this.profiles[this.profiles.length - 1].id + 1 : 1,
-        globalRoom = [0];
+    var id = 0,
+        globalRoom = [0],
+        profileIds = _.map(this.profiles, function(pro){
+                        return parseInt(pro.id);
+                    });
+
+    // create latest id
+    id = profileIds.length > 0? Math.max.apply(null, profileIds) + 1 : 1;
     
     profile.id = id;
     profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);

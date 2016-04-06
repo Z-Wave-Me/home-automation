@@ -358,6 +358,11 @@
         if(!profile.expert_view && (profile.role === 1 || profile.role === 3)){
           profile.expert_view = false;
         }
+
+        // delete profile.passwordConfirm 
+        if(profile.passwordConfirm){
+            delete profile.passwordConfirm;
+        }
       });
   
       // add local user if he not exists

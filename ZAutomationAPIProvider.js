@@ -1207,6 +1207,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 hide_system_events: false,
                 hide_single_device_events: []
             });
+
+            reqObj = _.omit(reqObj, 'passwordConfirm');
+            
             profile = this.controller.createProfile(reqObj);
             if (profile !== undefined && profile.id !== undefined) {
                 reply.data = resProfile;
@@ -1762,7 +1765,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         try {        
             // save all objects in storage
             for (var ind in list) {
-                if (ind !== "notifications") {
+                if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
                     backupJSON[list[ind]] = loadObject(list[ind]);
                 }
             }
@@ -1847,7 +1850,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications"]; // objects that should be ignored 
+                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout"]; // objects that should be ignored 
                 
                 if (dontSave.indexOf(obj) > -1) break;
                 
@@ -1990,7 +1993,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             backupCfg = loadObject("backupConfig"),
             storageContentList = loadObject("__storageContent"),
             defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
-            defaultConfig = {};
+            defaultConfig = {},
+            now = new Date();
 
         try{
 
@@ -2001,9 +2005,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
 
                 if (zway) {
+                    var ts = now.getFullYear() + "-";
+                    ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
+                    ts += ("0" + now.getDate()).slice(-2) + "-";
+                    ts += ("0" + now.getHours()).slice(-2) + "-";
+                    ts += ("0" + now.getMinutes()).slice(-2);
+
                     console.log('Backup config ...');
                     // make backup of current config.json
-                    saveObject('backupConfig', loadObject('config.json'));
+                    saveObject('backupConfig' + ts, loadObject('config.json'));
 
                     // remove all active instances of moduleId
                     this.controller.instances.forEach(function (instance) {
