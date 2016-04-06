@@ -1852,9 +1852,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             for (var obj in reqObj.data) {
                 var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout"]; // objects that should be ignored 
                 
-                if (dontSave.indexOf(obj) > -1) break;
-                
-                saveObject(obj, reqObj.data[obj]);
+                if (dontSave.indexOf(obj) === -1) {
+                    saveObject(obj, reqObj.data[obj]);
+                }
             }
 
             // start controller with reload flag to apply config.json

@@ -344,13 +344,12 @@ AutomationController.prototype.loadModuleFromFolder = function (moduleClassName,
                 self.modules[moduleClassName].meta.version && 
                     moduleMeta.version) {
         
-        var existingVersion = self.modules[moduleClassName].meta.version,
-            currentVersion = moduleMeta.version;
+        var existingVersion = self.modules[moduleClassName].meta.version.toString(),
+            currentVersion = moduleMeta.version.toString();
 
         if (existingVersion.localeCompare(currentVersion) === 0 || ignoreVersion) {
-            addModule = true
+            addModule = true;
         } else {
-
             addModule = has_higher_version(currentVersion, existingVersion);
         }
 
