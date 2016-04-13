@@ -139,5 +139,3 @@ if (!config) {
     };
     ws.allowExternalAccess("JS.Run", controller.auth.ROLE.ADMIN);
 }
-
-executeFile("O7-sock.js");
