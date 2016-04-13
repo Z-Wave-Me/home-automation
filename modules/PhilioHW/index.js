@@ -137,9 +137,9 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     var tamperDev = this.controller.devices.create({
         deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_Tamper",
         defaults: {
+            deviceType: "sensorBinary",
+            probeType: "alarm_burglar",
             metrics: {
-                deviceType: "sensorBinary",
-                probeType: "alarm_burglar",
                 icon: "alarm",
                 level: "off",
                 title: 'Controller Tamper ' + this.id
@@ -153,9 +153,9 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     var powerFailureDev = this.controller.devices.create({
         deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_PowerFailure",
         defaults: {
+            deviceType: "sensorBinary",
+            probeType: "alarm_power",
             metrics: {
-                deviceType: "sensorBinary",
-                probeType: "alarm_power",
                 icon: "alarm",
                 level: "off",
                 title: 'Controller Power Failure ' + this.id
@@ -169,9 +169,9 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     var batteryLevelDev = this.controller.devices.create({
         deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_BatteryLevel",
         defaults: {
+            deviceType: "sensorMultilevel",
+            probeType: "battery",
             metrics: {
-                deviceType: "sensorMultilevel",
-                probeType: "battery",
                 scaleTitle: '%',
                 icon: "battery",
                 level: (global.ZWave[zwayName].zway.controller.data.philiohw.batteryLevel || 0) * 10,
