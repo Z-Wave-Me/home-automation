@@ -2288,11 +2288,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						switch (notificationTypeId) {
 							case 0x01: // Smoke
 								a_defaults.metrics.icon = 'smoke';
-								a_defaults.probeType = a_defaults.metrics.icon;
+								a_defaults.probeType = 'alarm_smoke';
 								break;
 							case 0x02: // CO
 								a_defaults.metrics.icon = 'co';
-								a_defaults.probeType = a_defaults.metrics.icon;
+								a_defaults.probeType = 'alarm_co';
 								break;
 							case 0x03: // CO2
 								a_defaults.metrics.icon = 'co';
@@ -2304,7 +2304,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								break;
 							case 0x05: // Water
 								a_defaults.metrics.icon = 'flood';
-								a_defaults.probeType = a_defaults.metrics.icon;
+								a_defaults.probeType = 'alarm_flood';
 								break;
 							case 0x07: // Home Security (Burglar)
 								a_defaults.metrics.icon = 'smoke';

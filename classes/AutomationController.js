@@ -1522,6 +1522,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
             // generate probetype entries
             if (devProbeType !== '') {
                 cutType = devProbeType === 'general_purpose'? devProbeType.split() : devProbeType.split('_'),
+                // sub type includes whole probeType after first '_'
                 cutSubType = devProbeType.substr(cutType[0].length + 1);
 
                 paramEntry = paramEntry? paramEntry : {};
@@ -1536,10 +1537,12 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 // check for CC sub type and add device namespaces
                 if(cutType.length > 1){
 
+                    // add CC type
                     if(!paramEntry[cutType[0]]){
                         paramEntry[cutType[0]] = {};
                     }
 
+                    // add subtype
                     if(!paramEntry[cutType[0]][cutSubType]){
                         paramEntry[cutType[0]][cutSubType] = [];
                     }
@@ -1575,7 +1578,6 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 } else if(!_.isArray(paramEntry) && devProbeType === ''){
                     paramEntry['none'] = paramEntry['none']? paramEntry['none'] : [];
                 }
-
                 paramEntry.none = addRemoveEntry(paramEntry.none);
             }
 
@@ -1596,34 +1598,48 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
             if (devicesAll.length < 1) {
                 that.setNamespace('devices_all', nspc, [devEntry]);
             } else if (devicesAll[0].params && _.isArray(devicesAll[0].params)) {
-                //check if entry is already there
+                // check if entry is already there
+                // add/remove entry to/from devices_all
                 devicesAll[0].params = addRemoveEntry(devicesAll[0].params);
             }
 
             return nspc;
         };
 
-        // no location change
-        if (!!location && !locationNspcOnly) {
-            //locNspcArr = that.genNspc(location.namespaces, device);
+        // only triggered if there is no explicite location change - 
+        // on device: created, removed, destroy, change:metrics:title, change:permanently_hidden
+        // usual update of global namespaces
+        // first setup of location namespace 
+        if (!locationNspcOnly) {
 
-            // update locations namespaces
-            _.forEach(that.locations, function(l) {
-                if(l.id === devLocation) {
-                    // add to namespace
-                    l.namespaces = that.genNspc(location.namespaces, device);
-                }
-            });
+            // add to location namespaces
+            if(!!location){
+                _.forEach(that.locations, function(l) {
+                    if (l.id === devLocation) {
+                        // add to namespace
+                        l.namespaces = that.genNspc(location.namespaces, device);
+                    }
+                });
+            }
+
+            // update global namespaces
+            nspcArr = that.genNspc(that.namespaces, device);
+
+            if (typeof callback === 'function') {
+                callback(nspcArr);
+            }
+
         // if location of device has changed
-        } else if (locationNspcOnly) {
+        // on device: change:location
+        // update namespaces for location if necessary
+        } else {
             _.forEach(that.locations, function(l) {
-                //set namespaces if necessary
                 if (!l.namespaces) {
                     l.namespaces = [];
                 }
 
                 if(l.id === devLocation) {
-                    // add to namespace
+                    // if device is assigned to location add to namespace
                     devStillExists = that.devices.get(device.id);
                     l.namespaces = that.genNspc(l.namespaces, device);
                 } else {
@@ -1632,15 +1648,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                     l.namespaces = that.genNspc(l.namespaces, device);
                 }
             });
-        }
-        // update namespace
-        if (!locationNspcOnly) {
-            nspcArr = that.genNspc(that.namespaces, device);
 
-            if (typeof callback === 'function') {
-                callback(nspcArr);
-            }
-        } else {
             if (typeof callback === 'function') {
                 callback(locNspcArr);
             }
