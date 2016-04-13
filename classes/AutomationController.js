@@ -734,18 +734,26 @@ AutomationController.prototype.instantiateModules = function () {
 
     // first instantiate all required modules without dependencies
     requiredBaseModules.forEach(function(mod) {
-        if (this.modules[mod].meta && 
-                this.modules[mod].meta.dependencies &&
-                    _.isArray(this.modules[mod].meta.dependencies) && 
-                        this.modules[mod].meta.dependencies.length > 0) {
-            
-            // cache required modules with dependencies
-            if (requiredWithDep.indexOf(mod) < 0){
-                requiredWithDep.push(mod);
+        if (this.modules[mod]) {
+
+            // prepare base modules with dependencies
+            if (this.modules[mod].meta && 
+                    this.modules[mod].meta.dependencies &&
+                        _.isArray(this.modules[mod].meta.dependencies) && 
+                            this.modules[mod].meta.dependencies.length > 0) {
+                
+                // cache required modules with dependencies
+                if (requiredWithDep.indexOf(mod) < 0){
+                    requiredWithDep.push(mod);
+                }
+            } else {
+                // load base modules without dependencies first
+                this.loadModule(this.modules[mod]);
             }
         } else {
-            this.loadModule(this.modules[mod]);
+            this.addNotification("error", langFile.ac_err_init_module_not_found + " : " + mod, "core", "AutomationController");
         }
+        
     }, this);
 
     // instantiate all required with dependencies
