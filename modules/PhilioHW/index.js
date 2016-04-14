@@ -252,16 +252,17 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             if (this.value) {
                 global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
                 powerFailureDev.set("metrics:level", "on");
-                if (!self.batteryTimer) {
-                    self.batteryTimer = setInterval(function() {
-                            global.ZWave[zwayName].zway.ZMEPHIGetPower();
-                    }, 60*1000);
-                }
+                if (self.batteryTimer) clearInterval(self.batteryTimer);
+                self.batteryTimer = setInterval(function() {
+                        global.ZWave[zwayName].zway.ZMEPHIGetPower();
+                }, 60*1000);
             } else {
                 global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
                 powerFailureDev.set("metrics:level", "off");
-                clearInterval(self.batteryTimer);
-                self.batteryTimer = null;
+                if (self.batteryTimer) clearInterval(self.batteryTimer);
+                self.batteryTimer = setInterval(function() {
+                        global.ZWave[zwayName].zway.ZMEPHIGetPower();
+                }, 3600*1000);
             }
         }
         roundLED();
