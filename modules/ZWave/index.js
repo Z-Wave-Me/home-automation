@@ -1742,9 +1742,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 7) {
 								defaults.metrics.icon = "cooling";
 								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 8) {
+								defaults.metrics.icon = "tamper";
+								defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 10) {
 								defaults.metrics.icon = "door";
-								defaults.probeType = defaults.metrics.icon;
+								defaults.probeType = "door-window";
 						} else if (sensorTypeId === 12) {
 								defaults.metrics.icon = "motion";
 								defaults.probeType = defaults.metrics.icon;
