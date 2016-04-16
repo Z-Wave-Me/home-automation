@@ -141,8 +141,8 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             probeType: "alarm_burglar",
             metrics: {
                 icon: "alarm",
-                level: "off",
-                title: 'Controller Tamper ' + this.id
+                level: global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value !== 2 ? "on" : "off",
+                title: 'Controller Tamper'
             }
         },
         overlay: {},
@@ -157,8 +157,8 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             probeType: "alarm_power",
             metrics: {
                 icon: "alarm",
-                level: "off",
-                title: 'Controller Power Failure ' + this.id
+                level: global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value ? "on" : "off",
+                title: 'Controller Power Failure'
             }
         },
         overlay: {},
@@ -174,8 +174,8 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             metrics: {
                 scaleTitle: '%',
                 icon: "battery",
-                level: (global.ZWave[zwayName].zway.controller.data.philiohw.batteryLevel || 0) * 10,
-                title: 'Controller Power Failure ' + this.id
+                level: (global.ZWave[zwayName].zway.controller.data.philiohw.batteryLevel.value || 0) * 10,
+                title: 'Controller Backup Battery'
             }
         },
         overlay: {},
