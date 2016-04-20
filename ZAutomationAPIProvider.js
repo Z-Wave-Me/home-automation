@@ -132,6 +132,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
+        this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
     },
 
     // Used by the android app to request server status
@@ -2225,6 +2226,34 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.data = { firstaccess: false };
                 reply.code = 200;
             }
+        } catch (e){
+            reply.data = null;
+            reply.error = e.message;
+        }
+
+        return reply;
+    }, getSystemInfo: function() {
+        var reply = {
+                error: null,
+                data: {},
+                code: 500
+            },
+            versionArr = [];
+        
+        try {
+                console.log('blub:',zway.controller.data.softwareRevisionVersion.value.substring(1));
+                versionArr = zway.controller.data.softwareRevisionVersion.value.substring(1).split('-');
+                version = versionArr[0]? versionArr[0] : null;
+                majurity = versionArr[1]? versionArr[1] : null;
+
+                reply.data = { 
+                    first_start_up: this.controller.config.first_start_up, 
+                    count_of_reconnects: this.controller.config.count_of_reconnects,
+                    current_firmware: version,
+                    current_firmware_majurity: majurity
+                };
+
+                reply.code = 200;
         } catch (e){
             reply.data = null;
             reply.error = e.message;

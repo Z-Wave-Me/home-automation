@@ -78,10 +78,15 @@ if (!config) {
 
     var api = null,
         storage = null,
-        controller = new AutomationController(config);
+        controller = new AutomationController(config),
+        now = new Date();
 
     controller.on('core.init', function () {
         console.log('Starting ZWay Automation webserver');
+        // first start up
+        config.controller.first_start_up = !config.controller.first_start_up? now : config.controller.first_start_up;
+        // count server restarts
+        config.controller.count_of_reconnects = config.controller.count_of_reconnects? parseInt(config.controller.count_of_reconnects, 10) + 1 : 1;
     });
 
     controller.on('core.start', function () {
