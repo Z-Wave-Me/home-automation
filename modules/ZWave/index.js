@@ -1252,6 +1252,31 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
+					// change CC entries by entering:
+					// instId ... instance ID
+					// commandClass ... Command Class ID
+					// dataType ... data type object that should be changed -e.g. security, version, interviewDone
+					// key ... of this data type object
+					// value ... new value
+					function setCommandClassData (instId, commandClass, dataType, key, value) {
+						var commandClass = parseInt(commandClass, 10);
+
+						if (commandClassId === commandClass && 
+								deviceInstances[instId].commandClasses[commandClass] 
+									&& c.data.lastIncludedDevice.value === nodeId){ 
+													
+							// set value
+							if (typeof value !== 'undefined' &&
+									deviceInstances[instId].commandClasses[commandClass].data[dataType] &&
+										deviceInstances[instId].commandClasses[commandClass].data[dataType][key]) {
+								
+								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] = value;
+
+								console.log('##--------------CC-ENTRY-OF-' + devId + '-CC-' + commandClass + '-CHANGED--------------##');
+							}
+						}
+					}
+
 					// ----------------------------------------------------------------------------
 					// --- END
 					// ----------------------------------------------------------------------------
