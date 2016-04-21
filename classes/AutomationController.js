@@ -436,7 +436,7 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
     }
 };
 
-AutomationController.prototype.loadModule = function (module, rootModule) {
+AutomationController.prototype.loadModule = function (module, rootModule, instancesCount) {
     var langFile = this.loadMainLang(),
         values;
 
@@ -519,8 +519,9 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
         }
     }, this);
 
-    if (count)
+    if (count || instancesCount) {
         this.loadedModules.push(module);
+    }
     return true;
 };
 
@@ -675,9 +676,11 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
     });
 
     // remove all active instances of moduleId
-    existingInstances.forEach(function (instance) {
+    /*existingInstances.forEach(function (instance) {
         self.deleteInstance(instance.id);
-    });
+    });*/
+
+    this.unloadModule(moduleId);
 
     // try to reinitialize app
     try{
@@ -687,7 +690,7 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
 
             if(successful && self.modules[moduleId]){
 
-                self.loadModule(self.modules[moduleId]);
+                self.loadModule(self.modules[moduleId], undefined, existingInstances.length);
 
                 // add and start instances of moduleId again
                 existingInstances.forEach(function (instance) {
@@ -706,6 +709,7 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
 
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
+        langFile = this.loadMainLang(),
         modules = Object.getOwnPropertyNames(this.modules),
         requiredBaseModules = ["ZWave"],
         requiredWithDep = [];
