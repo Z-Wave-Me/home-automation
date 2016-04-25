@@ -1,0 +1,137 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "complex_applications",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "LightMotionRockerAutocontrol",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"lights": [],
+		"rockers": [],
+		"rockerRelaxTime": 60,
+		"motions": [],
+		"motionOffTimeout": 300,
+		"luminance": null,
+		"luminanceThreshold": 0,
+		"rescueOffTimeout": 3600
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"lights": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
+					"required": true
+				}
+			},
+			"rockers": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_toggleButton:deviceId,namespaces:devices_switchControl:deviceId",
+					"required": true
+				}
+			},
+			"rockerRelaxTime": {
+				"type": "number",
+				"required": true
+			},
+			"motions": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_sensorBinary:deviceId",
+					"required": true
+				}
+			},
+			"motionOffTimeout": {
+				"type": "number",
+				"required": true
+			},
+			"luminance": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_sensorMultilevel:deviceId",
+				"required": false
+			},
+			"luminanceThreshold": {
+				"type": "number",
+				"required": true
+			},
+			"rescueOffTimeout": {
+				"type": "number",
+				"required": true
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"lights": {
+				"label": "__l_lights__",
+				"fields": {
+					"item": {
+						"label": "",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
+					}
+				}
+			},
+			"rockers": {
+				"label": "__l_rockers__",
+				"fields": {
+					"item": {
+						"label": "",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_toggleButton:deviceName,namespaces:devices_switchControl:deviceName"
+					}
+				}
+			},
+			"rockerRelaxTime": {
+				"label": "__l_rockerRelaxTime__"
+			},
+			"motions": {
+				"label": "__l_motions__",
+				"fields": {
+					"item": {
+						"label": "",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_sensorBinary:deviceName"
+					}
+				}
+			},
+			"motionOffTimeout": {
+				"label": "__l_motionOffTimeout__"
+			},
+			"luminance": {
+				"label": "__l_luminance__",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_sensorMultilevel:deviceName"
+			},
+			"luminanceThreshold": {
+				"label": "__l_luminanceThreshold__"
+			},
+			"rescueOffTimeout": {
+				"label": "__l_rescueOffTimeout__"
+			}
+		}
+	}
+}

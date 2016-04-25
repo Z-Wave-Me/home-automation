@@ -1,0 +1,12 @@
+{
+	"m_title": "Light control by motion sensors and rockers",
+	"m_descr": "Controls ligth switches via one or many motion sensors and any number of rockers. If rocker operation happened, motion does not turn on for a short time (rocker relax time). Once all motion sensors reported no motion, wait for a defined time (motion off period) and turn off light. Motion events are ignored if luminance is lower than a defined threshold. After some long time after last motion event or rocket on event turn off light (in case of low battery in one of the motion sensors).",
+	"l_lights": "Light switch to turn on/off",
+	"l_rockers": "Rockers and paddles for manual opration",
+	"l_rockerRelaxTime": "Rocker relax time",
+	"l_motions": "Motion sensors to track",
+	"l_motionOffTimeout": "Time to wait before turning light off after all motion sensors are off",
+	"l_luminance": "Light sensor",
+	"l_luminanceThreshold": "Light threshold (in same units as light sensor reports)",
+	"l_rescueOffTimeout": "Timeout to turn light off in case of low battery in one of motion sensors"
+}
