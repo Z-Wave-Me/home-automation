@@ -71,7 +71,7 @@ Resource for checking the Platform availability.
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": ["string", "null"],
                         "required": true
                     },
@@ -82,7 +82,7 @@ Resource for checking the Platform availability.
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
             
@@ -112,7 +112,7 @@ Resource for checking the Platform availability.
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": ["string", "null"],
                         "required": true
                     },
@@ -123,7 +123,7 @@ Resource for checking the Platform availability.
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
 
@@ -167,7 +167,7 @@ Platform Restart
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": ["string", "null"],
                         "required": true
                     },
@@ -178,7 +178,7 @@ Platform Restart
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
 
@@ -187,20 +187,22 @@ Platform Restart
 <a id="available" ></a>
 
 Namespaces is a collection of internal registered names and ids - e.g. for zway or virtual devices. 
-This API is mostly used in apps to create custom filters for virtual device selection. The data is build during z-way controller start up. Virtual devices namespaces are influenced by the following listener emits:
+This API is mostly used in apps to create custom filters for virtual device selection. The data is build during z-way controller start up. Virtual device namespaces are influenced by the following listener emits:
 * **created** ... added to devices collection
 * **removed** ... removed from devices collection
 * **change:metrics:title** ... change name of virtual dev
-* **change:permanently_hide** ... deactivate virtual device - not hidden and usable 
+* **change:permanently_hide** ... deactivate virtual device - not hidden and usable
+
+The namespace structure of virtual devices depends on their device types an probe types. Please check chapter **[Devices](anchor-devices)** for more information.
 
 ###Methods
 - **/v1/namespaces** - read all namespaces.
 - **/v1/namespaces/zways** - zway namespaces.
-- **/v1/namespaces/{:devices_DEVICETYPE}** - read namespaces of specific device type and show their probe type children.
 - **/v1/namespaces/devices_all** - array of all registered virtual devices that includes deviceId and deviceName.
-- **/v1/namespaces/{:devices_DEVICETYPE.PATH}** - use path to read namespaces of child probe types  from a specific device type.
-- **/v1/namespaces/{:devices_DEVICETYPE[.PATH]}.deviceId** - get an array of all deviceId's that lies under path endpoint.
-- **/v1/namespaces/{:devices_DEVICETYPE[.PATH]}.deviceName** - get an array of all deviceNames's lies under path endpoint.
+- **/v1/namespaces/{devices_DEVICETYPE}** - read namespaces of specific **device type** and show their **probe type** children.
+- **/v1/namespaces/{devices_DEVICETYPE}.{PATH}** - use path to read namespaces of child probe types  from a specific device type.
+- **/v1/namespaces/{devices_DEVICETYPE}.{PATH}.deviceId** - get an array of all deviceId's that lies under path endpoint.
+- **/v1/namespaces/{devices_DEVICETYPE}.{PATH}.deviceName** - get an array of all deviceNames's lies under path endpoint.
 
 
 ## Namespaces Collection [/v1/namespaces]
@@ -369,8 +371,8 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
-                        "type": ["array"],
+                    "data": {
+                        "type": "array",
                         "required": true
                     },
                     "code": {
@@ -380,7 +382,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
             
@@ -409,7 +411,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": ["string", "null"],
                         "required": true
                     },
@@ -420,11 +422,11 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string"],
                         "required": true
-                    },
+                    }
                 }
             }
 
-## Z-Way Namespaces Collection [/v1/namespaces/zway]
+## Z-Way Namespaces Collection [/v1/namespaces/zways]
 ### List all Z-Way Namespaces [GET]
 
 + Response 200 (application/json)
@@ -454,8 +456,8 @@ This API is mostly used in apps to create custom filters for virtual device sele
                 "type": "object",
                 "required": true,
                 "properties": {
-                    "data"
-                        "type": ["array"],
+                    "data": {
+                        "type": "array",
                         "required": true
                     },
                     "code": {
@@ -463,18 +465,118 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "required": true
                     },
                     "message": {
-                        "type": ["string"],
+                        "type": "string",
                         "required": true
                     },
                     "error": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
 
-## Device type namespace [/v1/namespaces/{:devices_DEVICETYPE}]
-### Get device type namespaces of: foobar [GET]
+## Virtual Device Namespace Model  [/v1/namespaces/{devices_DEVICETYPE}.{PATH}.{deviceId,deviceName}]
+### List specific namespaces [GET]
+            
++ Parameters
+    + `devices_DEVICETYPE` (optional, string, `devices_sensorBinary`) ... get namespaces of all devices `devices_all` or by device type - e.g. `devices_switchBinary`, `devices_sensorBinary`, `devices_switchControl` ...
+    + PATH (optional, string, `alarm.smoke`) ... get namespaces of devices depending on their probe type - e.g. `smoke`, `alarm`, `alarm.smoke`
+    + deviceId (optional, string, `deviceId`) ... get an array with device ID's of all virtual child devices.
+    + deviceName (optional, string, `deviceName`) ... get an array with device names's of all virtual child devices.
+    
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                data: {
+                    smoke: [
+                        {
+                            deviceId: "ZWayVDev_zway_7-0-48-2",
+                            deviceName: "Smoke Sensor"
+                        }
+                    ],
+                    tamper: [
+                        {
+                            deviceId: "ZWayVDev_zway_7-0-48-8",
+                            deviceName: "Smoke Tamper Sensor"
+                        }
+                    ],
+                    alarm: {
+                        smoke: [
+                            {
+                                deviceId: "ZWayVDev_zway_7-0-113-1-2-A",
+                                deviceName: "Smoke Alarm"
+                            }
+                        ],
+                        burglar: [
+                            {
+                                deviceId: "ZWayVDev_zway_7-0-113-7-3-A",
+                                deviceName: "Smoke Burglar Alarm"
+                            }
+                        ],
+                        system: [
+                            {
+                                deviceId: "ZWayVDev_zway_7-0-113-9-1-A",
+                                deviceName: "Smoke System Alarm"
+                            }
+                        ]
+                    }
+                },
+                code: 200,
+                message: "200 OK",
+                error: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                        "smoke": {
+                            "type": "array",
+                            "required": true
+                        },
+                        "tamper"
+                            "type": "array",
+                            "required": true
+                        },
+                        "alarm": {
+                            "type": "object",
+                            "properties": {
+                            "smoke": {
+                                "type": "array",
+                                "required": true
+                            },
+                            "burglar"
+                                "type": "array",
+                                "required": true
+                            },
+                            "system": {
+                                "type": "integer",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
             
 + Response 404
 
@@ -501,7 +603,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": ["string", "null"],
                         "required": true
                     },
@@ -512,155 +614,63 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string"],
                         "required": true
-                    },
-                }
-            }
-            
-### Get device type namespaces of: devices_switchBinary [GET]
-
-+ Response 200 (application/json)
-    
-    + Body 
-
-            {
-                data: [
-                    {
-                        deviceId: "DummyDevice_12",
-                        deviceName: "Switch All On"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-37",
-                        deviceName: "Smoke Sirene Switch"
-                    },
-                    {
-                        deviceId: "Sonos_Device_Play_192.168.10.205_21",
-                        deviceName: "Sonos Play Wohnzimmer"
                     }
-                ],
-                code: 200,
-                message: "200 OK",
-                error: null
-            }
-            
-    + Schema
-
-            {
-                "type": "object",
-                "required": true,
-                "properties": {
-                    "error": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
-                    "data"
-                        "type": ["array"],
-                        "required": true
-                    },
-                    "code": {
-                        "type": "integer",
-                        "required": true
-                    },
-                    "message": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
                 }
             }
             
-### Get device type namespaces of: devices_all [GET]
-
-+ Response 200 (application/json)
-    
-    + Body 
-
-            {
-                data: [
-                    {
-                        deviceId: "DummyDevice_12",
-                        deviceName: "Switch All On"
-                    },
-                    {
-                        deviceId: "DummyDevice_13",
-                        deviceName: "Tischlampe"
-                    },
-                    {
-                        deviceId: "DummyDevice_18",
-                        deviceName: "Deckenlampe"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-37",
-                        deviceName: "Smoke Sirene Switch"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-48-2",
-                        deviceName: "Smoke Sensor"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-48-8",
-                        deviceName: "Smoke Tamper Sensor"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-113-1-2-A",
-                        deviceName: "Smoke Alarm"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-113-7-3-A",
-                        deviceName: "Smoke Burglar Alarm"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-113-9-1-A",
-                        deviceName: "Smoke System Alarm"
-                    },
-                    {
-                        deviceId: "ZWayVDev_zway_7-0-128",
-                        deviceName: "Fibar Group Battery (7.0)"
-                    },
-                    {
-                        deviceId: "Sonos_Device_Play_192.168.10.205_21",
-                        deviceName: "Sonos Play Wohnzimmer"
-                    },
-                    {
-                        deviceId: "Sonos_Device_Volume_192.168.10.205_21",
-                        deviceName: "Sonos Volume Wohnzimmer"
-                    }
-                ],
-                code: 200,
-                message: "200 OK",
-                error: null
-            }
-            
-    + Schema
-
-            {
-                "type": "object",
-                "required": true,
-                "properties": {
-                    "error": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
-                    "data"
-                        "type": ["array"],
-                        "required": true
-                    },
-                    "code": {
-                        "type": "integer",
-                        "required": true
-                    },
-                    "message": {
-                        "type": ["string", "null"],
-                        "required": true
-                    },
-                }
-            }
-
-
-# Group Instances and Modules
+# Group Modules and Instances
 <a id="available" ></a>
 
-###Methods
-- **/v1/modules** - read modules.
-- **/v1/instances** create/read/update/delete instances.
+This API prepares the whole meta data of all registered modules and their instances. 
+
+###Methods for:
+#### Module Meta Data
+- **/v1/modules** - read all module meta data.
+- **/v1/modules/{module-id}** - get meta data of specific module
+
+#### Module Handling
+- **/v1/modules/install** - download and install module (.tar.gz/ .zip) from the given address.
+- **/v1/modules/update** - download and overwrite module (.tar.gz/ .zip) from the given address. Reload JS and meta data of updated module.
+- **/v1/modules/reset/{module-id}** - resets an updated module back to its preinstalled version. Module needs to be preinstalled by on current firmware.
+- **/v1/modules/delete/{module-id}** - deletes a **non preinstalled** module and removes all its instances. Cannot be undone without doing backup before.
+- **/v1/modules/reinitialize/{module-id}** - stops all instances of module, reloads JS and meta data and starts instances again - useful for module development.
+
+#### Instances
+- **/v1/instances** - get all instances.
+- **/v1/instances/{module-name}** - get an array of all instances of one module.
+- **/v1/instances/{module-id}** - create/read/update/delete instances.
+
+#### Module Categories
+- **/v1/modules/categories** - show all module categories
+- **/v1/modules/categories/{category-id}** - list modules by category
+
+#### Access to Online Store Groups 
+- **/v1/modules/tokens** - create/read/update/delete tokens for online store group access.
+
+## Module attributes
+
+This is a list of all module attributes hand out by the api. Some of them are predefined by module.json and the rest is added by the controller after initialisation.
+
+* ``id``            _immutable (string, uniq)_  - class name as unique identifier
+* ``location``      _immutable (string)_        - path to file directory: /modules or /userModules
+* ``className``     _immutable (string)_        - reference to class name from index.js
+* ``hasReset``      _(boolean, false)_          - indicator if module could be reseted
+* ``created``       _(boolean, false)_          - indicator if an instance of a singleton module already exists
+* ``dependencies``  _(array, [])_               - id's of modules that are necessary to initiate this module
+* ``singleton``     _(boolean, false)_          - indicates if a module could have only one (singleton) or more running instances 
+* ``category``      _(string)_                  - assign module to special category
+* ``author``        _(string)_                  - name of author
+* ``homepage``      _(string, uri)_             - homepage (of author)
+* ``icon``          _(string, uri)_             - custom icon field: looks in folder _/LOCATION/MODULENAME/htdocs/ICON-NAME.png_
+* ``version``       _(string or number)_        - current version of module, format MAJOR.FEATURES.PATCHES ``0.0.0``
+* ``maturity``      _(string)_                  - shows maturity of a modules: _alpha, beta, gamma, ... or stable_
+* ``repository``    _(object)_                  - information about the repository where to find the module e.g. ``{"type": "git","source": "https://github.com/Z-Wave-Me/home-automation"}``
+* ``defaults``      _(object)_                  - defines default attributes (basic skeleton) of the module, also includes module title and description e.g. ``{"title": "AutoLock","description": "Electronic Doors typically move the dead bold of the door. [...]"``
+}
+* ``schema``        _(object)_                  - defines formatting schema for UI transformation with Alpaca Forms
+* ``options``       _(object)_                  - defines view attributes of objects for UI transformation with Alpaca Forms
+
+More information about 'How to build a module?' you will find [here in this tutorial on developer.z-wave.me](http://developer.z-wave.me/?uri=help). Please check out [http://www.alpacajs.org/](http://www.alpacajs.org/) to learn more about Alpaca Forms and how you could use it to make your own modules for home automation.
 
 ## Modules Collection [/v1/modules]
 ### List all Modules [GET]
@@ -673,7 +683,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                 error: null,
                 data: [
                     {
-                        id: 'modulesId',
+                        id: 'module-id',
                         
                     }
                 ],
@@ -691,7 +701,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": ["array"],
                         "required": true
                     },
@@ -702,10 +712,1019 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
-         
+            
+## Module Model [/v1/modules/{module-id}]
+### List Module Meta Data [GET]
+
++ Parameters
+    + module-id (required, string, `BatteryPolling`) ... class name of module from which meta data should be requested
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                    "singleton": true,
+                    "dependencies": [
+                        "Cron"
+                    ],
+                    "category": "basic_gateway_modules",
+                    "author": "Z-Wave.Me",
+                    "homepage": "http://razberry.z-wave.me",
+                    "icon": "icon.png",
+                    "moduleName": "BatteryPolling",
+                    "version": "2.0.1",
+                    "maturity": "stable",
+                    "repository": {
+                        "type": "git",
+                        "source": "https://github.com/Z-Wave-Me/home-automation"
+                    },
+                    "defaults": {
+                        "title": "Battery Polling",
+                        "description": "The battery polling will update the battery status by asking all battery-operated device once a week for a battery status update.. You can pick the day of the week and a warning level, when this module will send you a warning note.",
+                        "launchWeekDay": 0,
+                        "warningLevel": 20
+                    },
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "launchWeekDay": {
+                                "type": "number",
+                                "required": true,
+                                "enum": [
+                                    -1,
+                                    1,
+                                    2,
+                                    3,
+                                    4,
+                                    5,
+                                    6,
+                                    0
+                                ]
+                            },
+                            "warningLevel": {
+                                "type": "select",
+                                "required": true,
+                                "enum": [
+                                    5,
+                                    10,
+                                    15,
+                                    20
+                                ]
+                            }
+                        },
+                        "required": false
+                    },
+                    "options": {
+                        "fields": {
+                            "launchWeekDay": {
+                                "label": "Do battery polling on",
+                                "optionLabels": [
+                                    "Every Day",
+                                    "Monday",
+                                    "Tuesday",
+                                    "Wednesday",
+                                    "Thursday",
+                                    "Friday",
+                                    "Saturday",
+                                    "Sunday"
+                                ]
+                            },
+                            "warningLevel": {
+                                "label": "Warning Level",
+                                "helper": "Warn if device's battery is below this level",
+                                "optionLabels": [
+                                    "5%",
+                                    "10%",
+                                    "15%",
+                                    "20%"
+                                ]
+                            }
+                        }
+                    },
+                    "id": "BatteryPolling",
+                    "location": "modules/BatteryPolling",
+                    "hasReset": false
+                    },
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["array"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not Found",
+                error: "Instance 'module-id' not found"
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
+## Install Module [/v1/modules/install{?moduleUrl}]
+### INSTALL [POST]
+
++ Parameters
+    + moduleUrl (required, string, `http://developer.z-wave.me/modules/ScheduledScene.tar.gz`) ... target download url
+
++ Request (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                        moduleUrl: "http://developer.z-wave.me/modules/ScheduledScene.tar.gz"
+                },
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "moduleUrl": {
+                                "type": "string",
+                                "required": true
+                            },
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+
+
++ Response 201 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                    key: "The app was successfully installed.",
+                    appendix: null
+                },
+                code: 201,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data"; {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "appendix"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 409
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 409,
+                message: "409 conflict",
+                error: {
+                    key: "The app is already installed.",
+                    errorMsg: null
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: {
+                    key: "Failed to install the app.",
+                    errorMsg: null
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+
+## Update Module [/v1/modules/update{?moduleUrl}]
+### UPDATE [POST]
+
++ Parameters
+    + moduleUrl (required, string, `http://developer.z-wave.me/modules/ScheduledScene.tar.gz`) ... target download url
+    
++ Request (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                        moduleUrl: "http://developer.z-wave.me/modules/ScheduledScene.tar.gz"
+                },
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "moduleUrl": {
+                                "type": "string",
+                                "required": true
+                            },
+                        }
+                    },
+                    "code": {
+                        "type": ["integer", "null"],
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                    key: "The app was successfully updated.",
+                    appendix: null
+                },
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["array"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not Found",
+                error: "Cannot find the app."
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: {
+                    key: "Failed to update the app.",
+                    errorMsg: null
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
+## Reset Module [/v1/modules/reset/{module-id}]
+### RESET - works only if module was preinstalled by default [POST]
+
++ Parameters
+    + module-id (required, string, `ScheduledScene`) ... class name of module that should be reseted
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                    key: "The app was successfully reseted.",
+                    appendix: "current_version"
+                        
+                },
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "appendix"
+                                "type": "string",
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not Found",
+                error: {
+                    key: "App not found.",
+                    errorMsg: null
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 412
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 412,
+                message: "412 Precondition Failed",
+                error: {
+                    key: "App is already reset.",
+                    errorMsg: null
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: {
+                    key: "There was an error during resetting the app 'module-id'. Maybe a server restart could solve this problem.",
+                    errorMsg: null
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
+## Delete Module [/v1/delete/{module-id}]
+### DELETE - works only with non preinstalled modules [DELETE]
+
++ Parameters
+    + module-id (required, string, `MultiButton`) ... class name of module that should deleted
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                    key: "The app was successfully deleted",
+                    appendix: null
+                        
+                },
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "appendix"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not Found",
+                error: {
+                    key: "App not found."
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: {
+                    key: "Failed to delete the app."
+                }
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "object",
+                        "required": true,
+                        "properties": {
+                            "key": {
+                                "type": "string",
+                                "required": true
+                            },
+                            "errorMsg"
+                                "type": ["string", "null"],
+                                "required": true
+                            }
+                        }
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
+## Reinitialize Module [/v1/reinitialize/{module-id}]   
+### REINITIALIZE [GET]
+
++ Parameters
+    + module-id (required, string, `BatteryPolling`) ... class name of module that should be reinitialized
+
++ Response 200 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: "Reinitialization of app 'module-id' successfull.",
+                code: 200,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not Found",
+                error:  "App not found."
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string"],
+                        "required": true
+                    }
+                }
+            }
+            
 ## Instances Collection [/v1/instances]   
 ### List all Instances [GET]
 
@@ -714,15 +1733,43 @@ This API is mostly used in apps to create custom filters for virtual device sele
     + Body 
 
             {
-                error: null,
                 data: [
                     {
-                        moduleId: 'moduleId',
-                        
+                        id: 2,
+                        moduleId: "Cron",
+                        params: {},
+                        active: true,
+                        title: "System Clock (CRON)",
+                        description: "Scheduler used by other modules.",
+                        creationTime: 1459769281,
+                        state: null,
+                        module: "System Clock (CRON)"
+                    }, {
+                        id: 3,
+                        moduleId: "InbandNotifications",
+                        params: {},
+                        active: true,
+                        title: "Inband Notifier",
+                        description: "Creates and records the presentation of events in the event list (Eventlog).",
+                        creationTime: 1459769281,
+                        state: null,
+                        module: "Inband Notifier"
+                    }, {
+                        id: 7,
+                        moduleId: "BatteryPolling",
+                        active: "true",
+                        title: "Battery Polling",
+                        description: "Set up an interval that regularly polls the battery status of a battery devices.",
+                        params: {
+                            launchWeekDay: 0,
+                            warningLevel: "20"
+                        },
+                        creationTime: 1459769281
                     }
                 ],
                 code: 200,
-                message: null
+                message: "200 OK",
+                error: null
             }
             
     + Schema
@@ -746,7 +1793,47 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string", "null"],
                         "required": true
+                    }
+                }
+            }
+            
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: "Could not list Instances."
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
                     },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
                 }
             }
 
@@ -758,14 +1845,13 @@ This API is mostly used in apps to create custom filters for virtual device sele
 
             {
                 error: null,
-                data: [
-                    {
-                        moduleId: 'moduleId',
-                        params: {
-                            status: "enable"
-                        }
+                data: {
+                    moduleId: "BatteryPolling",
+                    params: {
+                        launchWeekDay: 0,
+                        warningLevel: "20"
                     }
-                ],
+                },
                 code: 200,
                 message: null
             }
@@ -780,7 +1866,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": "object",
                         "required": true,
                         "properties": {
@@ -801,7 +1887,7 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
 
@@ -859,8 +1945,92 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     },
                 }
             }
+            
++ Response 404
 
-## Instance Model [/v1/instances/{:instanceId}]
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not found",
+                error: "Module 'module-id' doesn't exist."
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
+                }
+            }
+
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: "Cannot instantiate module 'module-id'"
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
+                }
+            }
+
+## Instance Model [/v1/instances/{instance-id}]
+
++ Parameters
+    + instance-id (required, string, `7`) ... id (number) of target instance
+
 ### READ [GET]
 
 + Response 200 (application/json)
@@ -868,13 +2038,107 @@ This API is mostly used in apps to create custom filters for virtual device sele
     + Body 
 
             {
-                error: null,
                 data: [
                     {
-                        moduleId: 'moduleId',
-                        
+                        id: 7,
+                        moduleId: "BatteryPolling",
+                        active: "true",
+                        title: "Battery Polling",
+                        description: "Set up an interval that regularly polls the battery status of a battery devices.",
+                        params: {
+                            launchWeekDay: 0,
+                            warningLevel: "20"
+                        },
+                        creationTime: 1459769281
                     }
                 ],
+                code: 200,
+                message: "200 OK",
+                error: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data": {
+                        "type": "array",
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not found",
+                error: "Instance 'instance-id' is not found"
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
+                }
+            }
+            
+            
+### UPDATE [PUT]
+
++ Request (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: {
+                    moduleId: "BatteryPolling",
+                    title: "New name for BatteryPolling",
+                    params: {
+                        launchWeekDay: 5,
+                        warningLevel: "15"
+                    }
+                },
                 code: 200,
                 message: null
             }
@@ -889,14 +2153,10 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
+                    "data": {
                         "type": "object",
                         "required": true,
                         "properties": {
-                            "id": {
-                                "type": "integer",
-                                "required": true
-                            },
                             "moduleId": {
                                 "type": "string",
                                 "required": true
@@ -914,12 +2174,9 @@ This API is mostly used in apps to create custom filters for virtual device sele
                     "message": {
                         "type": ["string", "null"],
                         "required": true
-                    },
+                    }
                 }
             }
-            
-            
-### UPDATE [PUT]
 
 + Response 200 (application/json)
     
@@ -929,11 +2186,16 @@ This API is mostly used in apps to create custom filters for virtual device sele
                 error: null,
                 data: [
                     {
-                        id: 1
-                        moduleId: 'moduleId',
+                        id: 7,
+                        moduleId: "BatteryPolling",
+                        active: "true",
+                        title: "New name for BatteryPolling",
+                        description: "Set up an interval that regularly polls the battery status of a battery devices.",
                         params: {
-                            status: "enable"
-                        }
+                            launchWeekDay: 5,
+                            warningLevel: "15"
+                        },
+                        creationTime: 1459769281
                     }
                 ],
                 code: 200,
@@ -950,26 +2212,12 @@ This API is mostly used in apps to create custom filters for virtual device sele
                         "type": ["string", "null"],
                         "required": true
                     },
-                    "data"
-                        "type": "object",
-                        "required": true,
-                        "properties": {
-                            "id": {
-                                "type": "integer",
-                                "required": false
-                            },
-                            "moduleId": {
-                                "type": "string",
-                                "required": false
-                            },
-                            "params": {
-                                "type": "object",
-                                "required": true
-                            }
-                        }
+                    "data" :{
+                        "type": "array",
+                        "required": true
                     },
                     "code": {
-                        "type": ["integer", "null"],
+                        "type": "integer",
                         "required": true
                     },
                     "message": {
@@ -979,9 +2227,163 @@ This API is mostly used in apps to create custom filters for virtual device sele
                 }
             }
             
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not found",
+                error: "Instance 'instance-id' is not found"
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
+                }
+            }
+            
++ Response 500
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 500,
+                message: "500 Internal server error",
+                error: "Cannot reconfigure module 'instance-id' config."
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
+                }
+            }
+            
 ### DELETE [DELETE]
 
-+ Response 204
++ Response 204 (application/json)
+    
+    + Body 
+
+            {
+                error: null,
+                data: null,
+                code: 204,
+                message: null
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "data" :{
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                }
+            }
+            
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+        
+    + Body 
+    
+            {
+                data: null,
+                code: 404,
+                message: "404 Not found",
+                error: "Instance 'instance-id' is not found"
+            }
+            
+    + Schema
+
+            {
+                "type": "object",
+                "required": true,
+                "properties": {
+                    "error": {
+                        "type": "string",
+                        "required": true
+                    },
+                    "data": {
+                        "type": ["string", "null"],
+                        "required": true
+                    },
+                    "code": {
+                        "type": "integer",
+                        "required": true
+                    },
+                    "message": {
+                        "type": "string",
+                        "required": true
+                    }
+                }
+            }
 
 # Group Devices
 Devices related resources of the **Devices API**
