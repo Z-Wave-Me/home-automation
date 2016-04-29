@@ -121,7 +121,6 @@ AutomationController.prototype.init = function () {
                 type: "me.z-wave.devices.destroy",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces(device);
         });
 
         self.devices.on('removed', function (device) {
