@@ -430,6 +430,11 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
             return null; // not loaded
         }
 
+        // add module to loaded modules if at least one instance exists
+        if (this.loadedModules.indexOf(module) < 0) {
+            this.loadedModules.push(module);
+        }
+
         self.registerInstance(instance);
         return instance;
     }
@@ -456,13 +461,13 @@ AutomationController.prototype.loadModule = function (module, rootModule, instan
 
             var depModule = this.modules[dep];
             if (!depModule) {
-                this.addNotification("error", langFile.ac_err_dep_not_found + values, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_found + values, "dependency", module.meta.id);
                 module.failed = true;
                 return false;
             }
 
             if (!this.loadModule(depModule, rootModule)) {
-                this.addNotification("error", langFile.ac_err_dep_not_loaded + values, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_loaded + values, "dependency", module.meta.id);
                 module.failed = true;
                 return false;
             }
@@ -471,7 +476,7 @@ AutomationController.prototype.loadModule = function (module, rootModule, instan
                     return x.meta.id === dep;
                 })) {
                 
-                this.addNotification("error", langFile.ac_err_dep_not_init + values, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_init + values, "dependency", module.meta.id);
                 module.failed = true;
                 return false;
             }
@@ -724,7 +729,10 @@ AutomationController.prototype.instantiateModules = function () {
                     _.isArray(this.modules[m].meta.dependencies) && 
                         this.modules[m].meta.dependencies.length > 0) {
 
-            requiredBaseModules = _.uniq(requiredBaseModules.concat(this.modules[m].meta.dependencies));
+            // load if it exists in modules list
+            requiredBaseModules = _.uniq(requiredBaseModules.concat(_.filter(this.modules[m].meta.dependencies, function(dep){
+                return self.modules[dep];
+            })));
 
             // remove all required base modules from modules list
             this.modules[m].meta.dependencies.forEach(function(mod){
@@ -737,26 +745,21 @@ AutomationController.prototype.instantiateModules = function () {
 
     // first instantiate all required modules without dependencies
     requiredBaseModules.forEach(function(mod) {
-        if (this.modules[mod]) {
 
-            // prepare base modules with dependencies
-            if (this.modules[mod].meta && 
-                    this.modules[mod].meta.dependencies &&
-                        _.isArray(this.modules[mod].meta.dependencies) && 
-                            this.modules[mod].meta.dependencies.length > 0) {
-                
-                // cache required modules with dependencies
-                if (requiredWithDep.indexOf(mod) < 0){
-                    requiredWithDep.push(mod);
-                }
-            } else {
-                // load base modules without dependencies first
-                this.loadModule(this.modules[mod]);
+        // prepare base modules with dependencies
+        if (this.modules[mod].meta && 
+                this.modules[mod].meta.dependencies &&
+                    _.isArray(this.modules[mod].meta.dependencies) && 
+                        this.modules[mod].meta.dependencies.length > 0) {
+            
+            // cache required modules with dependencies
+            if (requiredWithDep.indexOf(mod) < 0){
+                requiredWithDep.push(mod);
             }
         } else {
-            this.addNotification("error", langFile.ac_err_init_module_not_found + " : " + mod, "core", "AutomationController");
-        }
-        
+            // load base modules without dependencies first
+            this.loadModule(this.modules[mod]);
+        }   
     }, this);
 
     // instantiate all required with dependencies
