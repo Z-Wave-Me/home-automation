@@ -16,5 +16,10 @@
 	"l_level":"Level",
 	"l_scenes":"List of scenes to activate:",
 	"l_thermostats":"List of thermostats",
-	"l_temperature":"Temperature"
+	"l_temperature":"Temperature",
+	"l_locks":"List of locks:",
+	"close":"Close",
+	"open":"Open",
+	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
+	"h_sendAction":"Need to avoid flooding the network."
 }
