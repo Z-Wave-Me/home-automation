@@ -123,7 +123,7 @@ LightMotionRockerAutocontrol.prototype.stop = function () {
 	});
 	
 	this.config.motions.forEach(function(motion) {
-		self.controller.devices.off(rocker, "change:metrics:level", self.motionHandler);
+		self.controller.devices.off(motion, "change:metrics:level", self.motionHandler);
 	});
 	
 	if (this.config.luminance) {
