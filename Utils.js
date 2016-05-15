@@ -68,3 +68,26 @@ function has_higher_version (newVersion, currVersion) {
 
     return isHigher;
 }
+
+/*
+ * Iterate trough object, find the key and change its value
+ * will change all keys that are equal to key
+ */
+function changeObjectValue(obj, key, value) {
+    var objects = [];
+    
+    for (var i in obj) {
+        
+        if (!obj.hasOwnProperty(i)) {
+            continue;
+        }
+        
+        // arrays and objects are treated as objects  
+        if (!!obj[i] && typeof obj[i] === 'object') {
+            objects = objects.concat(changeObjectValue(obj[i], key));
+        } else if (i === key) {
+            obj[i] = value;
+        }
+    }
+    return obj;
+}

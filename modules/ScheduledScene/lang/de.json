@@ -16,5 +16,10 @@
 	"l_level":"Level",
 	"l_scenes":"Aktionen/Szenen die aktiviert werden sollen:",
 	"l_thermostats":"Thermostate",
-	"l_temperature":"Temperatur"
+	"l_temperature":"Temperatur",
+	"l_locks":"Türschlösser",
+	"close":"Verriegelt",
+	"open":"Entriegelt",
+	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
+	"h_sendAction":"Need to avoid flooding the network."
 }

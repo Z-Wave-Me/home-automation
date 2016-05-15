@@ -121,7 +121,6 @@ AutomationController.prototype.init = function () {
                 type: "me.z-wave.devices.destroy",
                 data: JSON.stringify(device.toJSON())
             });
-            pushNamespaces(device);
         });
 
         self.devices.on('removed', function (device) {
@@ -431,12 +430,17 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
             return null; // not loaded
         }
 
+        // add module to loaded modules if at least one instance exists
+        if (this.loadedModules.indexOf(module) < 0) {
+            this.loadedModules.push(module);
+        }
+
         self.registerInstance(instance);
         return instance;
     }
 };
 
-AutomationController.prototype.loadModule = function (module, rootModule) {
+AutomationController.prototype.loadModule = function (module, rootModule, instancesCount) {
     var langFile = this.loadMainLang(),
         values;
 
@@ -457,13 +461,13 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
 
             var depModule = this.modules[dep];
             if (!depModule) {
-                this.addNotification("error", langFile.ac_err_dep_not_found + values, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_found + values, "dependency", module.meta.id);
                 module.failed = true;
                 return false;
             }
 
             if (!this.loadModule(depModule, rootModule)) {
-                this.addNotification("error", langFile.ac_err_dep_not_loaded + values, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_loaded + values, "dependency", module.meta.id);
                 module.failed = true;
                 return false;
             }
@@ -472,7 +476,7 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
                     return x.meta.id === dep;
                 })) {
                 
-                this.addNotification("error", langFile.ac_err_dep_not_init + values, "core", "AutomationController");
+                this.addNotification("error", langFile.ac_err_dep_not_init + values, "dependency", module.meta.id);
                 module.failed = true;
                 return false;
             }
@@ -519,8 +523,9 @@ AutomationController.prototype.loadModule = function (module, rootModule) {
         }
     }, this);
 
-    if (count)
+    if (count || instancesCount) {
         this.loadedModules.push(module);
+    }
     return true;
 };
 
@@ -675,9 +680,11 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
     });
 
     // remove all active instances of moduleId
-    existingInstances.forEach(function (instance) {
+    /*existingInstances.forEach(function (instance) {
         self.deleteInstance(instance.id);
-    });
+    });*/
+
+    this.unloadModule(moduleId);
 
     // try to reinitialize app
     try{
@@ -687,7 +694,7 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
 
             if(successful && self.modules[moduleId]){
 
-                self.loadModule(self.modules[moduleId]);
+                self.loadModule(self.modules[moduleId], undefined, existingInstances.length);
 
                 // add and start instances of moduleId again
                 existingInstances.forEach(function (instance) {
@@ -706,6 +713,7 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
 
 AutomationController.prototype.instantiateModules = function () {
     var self = this,
+        langFile = this.loadMainLang(),
         modules = Object.getOwnPropertyNames(this.modules),
         requiredBaseModules = ["ZWave"],
         requiredWithDep = [];
@@ -721,7 +729,10 @@ AutomationController.prototype.instantiateModules = function () {
                     _.isArray(this.modules[m].meta.dependencies) && 
                         this.modules[m].meta.dependencies.length > 0) {
 
-            requiredBaseModules = _.uniq(requiredBaseModules.concat(this.modules[m].meta.dependencies));
+            // load if it exists in modules list
+            requiredBaseModules = _.uniq(requiredBaseModules.concat(_.filter(this.modules[m].meta.dependencies, function(dep){
+                return self.modules[dep];
+            })));
 
             // remove all required base modules from modules list
             this.modules[m].meta.dependencies.forEach(function(mod){
@@ -734,6 +745,8 @@ AutomationController.prototype.instantiateModules = function () {
 
     // first instantiate all required modules without dependencies
     requiredBaseModules.forEach(function(mod) {
+
+        // prepare base modules with dependencies
         if (this.modules[mod].meta && 
                 this.modules[mod].meta.dependencies &&
                     _.isArray(this.modules[mod].meta.dependencies) && 
@@ -744,8 +757,9 @@ AutomationController.prototype.instantiateModules = function () {
                 requiredWithDep.push(mod);
             }
         } else {
+            // load base modules without dependencies first
             this.loadModule(this.modules[mod]);
-        }
+        }   
     }, this);
 
     // instantiate all required with dependencies
@@ -1522,6 +1536,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
             // generate probetype entries
             if (devProbeType !== '') {
                 cutType = devProbeType === 'general_purpose'? devProbeType.split() : devProbeType.split('_'),
+                // sub type includes whole probeType after first '_'
                 cutSubType = devProbeType.substr(cutType[0].length + 1);
 
                 paramEntry = paramEntry? paramEntry : {};
@@ -1536,10 +1551,12 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 // check for CC sub type and add device namespaces
                 if(cutType.length > 1){
 
+                    // add CC type
                     if(!paramEntry[cutType[0]]){
                         paramEntry[cutType[0]] = {};
                     }
 
+                    // add subtype
                     if(!paramEntry[cutType[0]][cutSubType]){
                         paramEntry[cutType[0]][cutSubType] = [];
                     }
@@ -1575,7 +1592,6 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 } else if(!_.isArray(paramEntry) && devProbeType === ''){
                     paramEntry['none'] = paramEntry['none']? paramEntry['none'] : [];
                 }
-
                 paramEntry.none = addRemoveEntry(paramEntry.none);
             }
 
@@ -1596,34 +1612,48 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
             if (devicesAll.length < 1) {
                 that.setNamespace('devices_all', nspc, [devEntry]);
             } else if (devicesAll[0].params && _.isArray(devicesAll[0].params)) {
-                //check if entry is already there
+                // check if entry is already there
+                // add/remove entry to/from devices_all
                 devicesAll[0].params = addRemoveEntry(devicesAll[0].params);
             }
 
             return nspc;
         };
 
-        // no location change
-        if (!!location && !locationNspcOnly) {
-            //locNspcArr = that.genNspc(location.namespaces, device);
+        // only triggered if there is no explicite location change - 
+        // on device: created, removed, destroy, change:metrics:title, change:permanently_hidden
+        // usual update of global namespaces
+        // first setup of location namespace 
+        if (!locationNspcOnly) {
 
-            // update locations namespaces
-            _.forEach(that.locations, function(l) {
-                if(l.id === devLocation) {
-                    // add to namespace
-                    l.namespaces = that.genNspc(location.namespaces, device);
-                }
-            });
+            // add to location namespaces
+            if(!!location){
+                _.forEach(that.locations, function(l) {
+                    if (l.id === devLocation) {
+                        // add to namespace
+                        l.namespaces = that.genNspc(location.namespaces, device);
+                    }
+                });
+            }
+
+            // update global namespaces
+            nspcArr = that.genNspc(that.namespaces, device);
+
+            if (typeof callback === 'function') {
+                callback(nspcArr);
+            }
+
         // if location of device has changed
-        } else if (locationNspcOnly) {
+        // on device: change:location
+        // update namespaces for location if necessary
+        } else {
             _.forEach(that.locations, function(l) {
-                //set namespaces if necessary
                 if (!l.namespaces) {
                     l.namespaces = [];
                 }
 
                 if(l.id === devLocation) {
-                    // add to namespace
+                    // if device is assigned to location add to namespace
                     devStillExists = that.devices.get(device.id);
                     l.namespaces = that.genNspc(l.namespaces, device);
                 } else {
@@ -1632,15 +1662,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                     l.namespaces = that.genNspc(l.namespaces, device);
                 }
             });
-        }
-        // update namespace
-        if (!locationNspcOnly) {
-            nspcArr = that.genNspc(that.namespaces, device);
 
-            if (typeof callback === 'function') {
-                callback(nspcArr);
-            }
-        } else {
             if (typeof callback === 'function') {
                 callback(locNspcArr);
             }

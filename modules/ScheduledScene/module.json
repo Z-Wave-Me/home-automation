@@ -5,7 +5,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName":"ScheduledScene",
-    "version": "2.1.1",
+    "version": "2.1.2",
     "maturity": "stable",
     "repository": {
             "type": "git",
@@ -49,6 +49,11 @@
                             "type": "integer",
                             "required": true,
                             "enum": ["off", "on"]
+                        },
+                        "sendAction": {
+                            "type": "boolean",
+                            "required": true,
+                            "default" : false
                         }
                     }
                 }
@@ -69,6 +74,11 @@
                             "minimum": 0,
                             "maximum": 99,
                             "required": true
+                        },
+                        "sendAction": {
+                            "type": "boolean",
+                            "required": true,
+                            "default" : false
                         }
                     }
                 }
@@ -89,6 +99,36 @@
                             "minimum": 0,
                             "maximum": 99,
                             "required": true
+                        },
+                        "sendAction": {
+                            "type": "boolean",
+                            "required": true,
+                            "default" : false
+                        }
+                    }
+                }
+            },
+            "locks": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "device": {
+                            "field": "enum",
+                            "datasource": "namespaces",
+                            "enum": "namespaces:devices_doorlock:deviceId",
+                            "required": true
+                        },
+                        "status": {
+                            "type": "string",
+                            "required": true,
+                            "enum": ["close", "open"],
+                            "default" : "open"
+                        },
+                        "sendAction": {
+                            "type": "boolean",
+                            "required": true,
+                            "default" : false
                         }
                     }
                 }
@@ -131,6 +171,11 @@
                             "status": {
                                 "label": "",
                                 "optionLabels": ["__off__", "__on__"]
+                            },
+                            "sendAction": {
+                                "type": "checkbox",
+                                "rightLabel": "__l_sendAction__",
+                                "helper": "__h_sendAction__"
                             }
                         }
                     }
@@ -150,6 +195,11 @@
                             },
                             "status": {
                                 "label": "__l_level__"
+                            },
+                            "sendAction": {
+                                "type": "checkbox",
+                                "rightLabel": "__l_sendAction__",
+                                "helper": "__h_sendAction__"
                             }
                         }
                     }
@@ -169,6 +219,36 @@
                             },
                             "status": {
                                 "label": "__l_temperature__"
+                            },
+                            "sendAction": {
+                                "type": "checkbox",
+                                "rightLabel": "__l_sendAction__",
+                                "helper": "__h_sendAction__"
+                            }
+                        }
+                    }
+                }
+            },
+            "locks": {
+                "label": "__l_locks__",
+                "fields": {
+                    "item": {
+                        "fields": {
+                            "device": {
+                                "label": "",
+                                "type": "select",
+                                "datasource": "namespaces",
+                                "field": "optionLabels",
+                                "optionLabels": "namespaces:devices_doorlock:deviceName"
+                            },
+                            "status": {
+                                "label": "",
+                                "optionLabels": ["__close__", "__open__"]
+                            },
+                            "sendAction": {
+                                "type": "checkbox",
+                                "rightLabel": "__l_sendAction__",
+                                "helper": "__h_sendAction__"
                             }
                         }
                     }

@@ -1252,6 +1252,31 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
+					// change CC entries by entering:
+					// instId ... instance ID
+					// commandClass ... Command Class ID
+					// dataType ... data type object that should be changed -e.g. security, version, interviewDone
+					// key ... of this data type object
+					// value ... new value
+					function setCommandClassData (instId, commandClass, dataType, key, value) {
+						var commandClass = parseInt(commandClass, 10);
+
+						if (commandClassId === commandClass && 
+								deviceInstances[instId].commandClasses[commandClass] 
+									&& c.data.lastIncludedDevice.value === nodeId){ 
+													
+							// set value
+							if (typeof value !== 'undefined' &&
+									deviceInstances[instId].commandClasses[commandClass].data[dataType] &&
+										deviceInstances[instId].commandClasses[commandClass].data[dataType][key]) {
+								
+								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] = value;
+
+								console.log('##--------------CC-ENTRY-OF-' + devId + '-CC-' + commandClass + '-CHANGED--------------##');
+							}
+						}
+					}
+
 					// ----------------------------------------------------------------------------
 					// --- END
 					// ----------------------------------------------------------------------------
@@ -1742,9 +1767,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 7) {
 								defaults.metrics.icon = "cooling";
 								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 8) {
+								defaults.metrics.icon = "tamper";
+								defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 10) {
 								defaults.metrics.icon = "door";
-								defaults.probeType = defaults.metrics.icon;
+								defaults.probeType = "door-window";
 						} else if (sensorTypeId === 12) {
 								defaults.metrics.icon = "motion";
 								defaults.probeType = defaults.metrics.icon;
@@ -2288,11 +2316,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						switch (notificationTypeId) {
 							case 0x01: // Smoke
 								a_defaults.metrics.icon = 'smoke';
-								a_defaults.probeType = a_defaults.metrics.icon;
+								a_defaults.probeType = 'alarm_smoke';
 								break;
 							case 0x02: // CO
 								a_defaults.metrics.icon = 'co';
-								a_defaults.probeType = a_defaults.metrics.icon;
+								a_defaults.probeType = 'alarm_co';
 								break;
 							case 0x03: // CO2
 								a_defaults.metrics.icon = 'co';
@@ -2304,7 +2332,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								break;
 							case 0x05: // Water
 								a_defaults.metrics.icon = 'flood';
-								a_defaults.probeType = a_defaults.metrics.icon;
+								a_defaults.probeType = 'alarm_flood';
 								break;
 							case 0x07: // Home Security (Burglar)
 								a_defaults.metrics.icon = 'smoke';
