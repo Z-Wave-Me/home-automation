@@ -106,7 +106,7 @@
         "id": 6,
         "moduleId": "BatteryPolling",
         "active": "true",
-        "title": "Battery Polling Cooler Name",
+        "title": "Battery Polling",
         "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
         "params": {
             "launchWeekDay": 0,

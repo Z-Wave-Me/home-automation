@@ -100,7 +100,7 @@
         "id": 6,
         "moduleId": "BatteryPolling",
         "active": "true",
-        "title": "Battery Polling Cooler Name",
+        "title": "Battery Polling",
         "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
         "params": {
             "launchWeekDay": 0,
@@ -121,19 +121,19 @@
         "id": 8,
         "moduleId": "InfoWidget",
         "active": "true",
-        "title": "Licence Upgrade",
+        "title": "Info: Licence Upgrade",
         "description": "Please follow the steps for licence upgrade.",
         "params": {
             "widgets": [],
             "internationalize": true,
             "widgetsInt": [{
                 "lang": "en",
-                "headline": "Licence Upgrade",
+                "headline": "Info: Licence Upgrade",
                 "text": "Please enter the licence key to activate all of your WD SmartHome center’s functions. You can find the key on the keycard provided with your Smart Home Stick. <br><br>Go to the SmartHomeUI and select <strong>Menu > Management > Licence Upgrade</strong> and enter the licence key.",
                 "imgURI": "app/img/logo-z-wave-z-only.png"
             }, {
                 "lang": "de",
-                "headline": "Lizenzerweiterung ",
+                "headline": "Info: Lizenzerweiterung ",
                 "text": "Um alle Funktionen Ihrer WD SmartHome Zentrale nutzen zu können, geben Sie bitte den Lizenzcode ein. Dieser liegt dem Smart Home Stick als Code-Karte bei. <br><br>Wählen Sie in der SmartHomeUI <strong>Menü > Management > Lizenzerweiterung</strong> und geben Sie den Lizenzcode ein.",
                 "imgURI": "app/img/logo-z-wave-z-only.png"
             }]

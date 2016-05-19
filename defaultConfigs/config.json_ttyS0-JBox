@@ -121,7 +121,7 @@
         "id": 7,
         "moduleId": "BatteryPolling",
         "active": "true",
-        "title": "Battery Polling Cooler Name",
+        "title": "Battery Polling",
         "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
         "params": {
             "launchWeekDay": 0,
@@ -138,12 +138,5 @@
             "banned": [],
             "generated": []
         }
-    },
-    {
-    	"id": 9,
-    	"moduleId": "PhilioHW",
-    	"active": "true",
-    	"title": "Philio hardware support","description":"Support for Philio hardware buttons, LEDs, power and battery management",
-    	"params": {}
     }]
 }
