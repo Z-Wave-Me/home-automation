@@ -138,5 +138,13 @@
             "banned": [],
             "generated": []
         }
+    },
+    {
+        "id": 9,
+        "moduleId": "PhilioHW",
+        "active": "true",
+        "title": "Philio hardware support",
+        "description":"Support for Philio hardware buttons, LEDs, power and battery management",
+        "params": {}
     }]
 }

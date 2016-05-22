@@ -274,4 +274,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             batteryLevelDev.set("metrics:level", 0);
         }
     }, "");
+    
+    // sync round LED with actual box status on start
+    roundLED();
 };
