@@ -48,7 +48,7 @@
             "enableAPI": true,
             "publicAPI": false,
             "createVDev": true,
-            "config": "config",
+            "config": "configs/config",
             "translations": "translations",
             "ZDDX": "ZDDX"
         },
