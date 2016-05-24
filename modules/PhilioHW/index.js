@@ -1,7 +1,7 @@
 /*** PhilioHW Z-Way HA module *******************************************
 
-Version: 1.0.1
-(c) Z-Wave.Me, 2015
+Version: 1.0.2
+(c) Z-Wave.Me, 2016
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
@@ -71,8 +71,10 @@ PhilioHW.prototype.init = function (config) {
     
     this.zwayUnreg = function(zwayName) {
         self.controller.devices.remove("PhilioHW_" + self.id + "_" + zwayName + "_Tamper");
-        self.controller.devices.remove("PhilioHW_" + self.id + "_" + zwayName + "_PowerFailure");
-        self.controller.devices.remove("PhilioHW_" + self.id + "_" + zwayName + "_BatteryLevel");
+        if (!self.config.no_battery) {
+            self.controller.devices.remove("PhilioHW_" + self.id + "_" + zwayName + "_PowerFailure");
+            self.controller.devices.remove("PhilioHW_" + self.id + "_" + zwayName + "_BatteryLevel");
+        }
 
         // detach handlers
         if (self.bindings[zwayName]) {
@@ -117,13 +119,19 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         langFile = this.controller.loadModuleLang(moduleName);
 
     // get current power state and buttons states
-    global.ZWave[zwayName].zway.ZMEPHIGetPower();
+    if (!self.config.no_battery) {
+        global.ZWave[zwayName].zway.ZMEPHIGetPower();
+    } else {
+        global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value = false;
+        global.ZWave[zwayName].zway.controller.data.philiohw.batteryFail.value = false;
+        global.ZWave[zwayName].zway.controller.data.philiohw.batteryLevel.value = 0;
+    }
     global.ZWave[zwayName].zway.ZMEPHIGetButton(0);
     global.ZWave[zwayName].zway.ZMEPHIGetButton(1);
     global.ZWave[zwayName].zway.ZMEPHIGetButton(2);
 
     function roundLED() {
-        if (global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
+        if (!self.config.no_battery && global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
         } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
@@ -150,39 +158,41 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         moduleId: this.id
     });
 
-    var powerFailureDev = this.controller.devices.create({
-        deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_PowerFailure",
-        defaults: {
-            deviceType: "sensorBinary",
-            probeType: "alarm_power",
-            metrics: {
-                icon: "alarm",
-                level: global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value ? "on" : "off",
-                title: 'Controller Power Failure'
-            }
-        },
-        overlay: {},
-        handler: function(command, args) {},
-        moduleId: this.id
-    });
+    if (!self.config.no_battery) {
+        var powerFailureDev = this.controller.devices.create({
+            deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_PowerFailure",
+            defaults: {
+                deviceType: "sensorBinary",
+                probeType: "alarm_power",
+                metrics: {
+                    icon: "alarm",
+                    level: global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value ? "on" : "off",
+                    title: 'Controller Power Failure'
+                }
+            },
+            overlay: {},
+            handler: function(command, args) {},
+            moduleId: this.id
+        });
 
-    var batteryLevelDev = this.controller.devices.create({
-        deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_BatteryLevel",
-        defaults: {
-            deviceType: "sensorMultilevel",
-            probeType: "battery",
-            metrics: {
-                scaleTitle: '%',
-                icon: "battery",
-                level: (global.ZWave[zwayName].zway.controller.data.philiohw.batteryLevel.value || 0) * 10,
-                title: 'Controller Backup Battery'
-            }
-        },
-        overlay: {},
-        handler: function(command, args) {},
-        moduleId: this.id
-    });
-    
+        var batteryLevelDev = this.controller.devices.create({
+            deviceId: "PhilioHW_" + this.id + "_" + zwayName + "_BatteryLevel",
+            defaults: {
+                deviceType: "sensorMultilevel",
+                probeType: "battery",
+                metrics: {
+                    scaleTitle: '%',
+                    icon: "battery",
+                    level: (global.ZWave[zwayName].zway.controller.data.philiohw.batteryLevel.value || 0) * 10,
+                    title: 'Controller Backup Battery'
+                }
+            },
+            overlay: {},
+            handler: function(command, args) {},
+            moduleId: this.id
+        });
+    }
+        
     // Trap events
     
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.tamper.state", function(type) {
@@ -240,40 +250,42 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         }
     }, "");
 
-    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
-        if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
-            global.controller.addNotification("notification", langFile.remaining_battery_level + (this.value * 10) + "%", "controller", moduleName);
-            batteryLevelDev.set("metrics:level", (this.value * 10));
-        }
-    }, "");
-
-    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
-        if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
-            if (this.value) {
-                global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
-                powerFailureDev.set("metrics:level", "on");
-                if (self.batteryTimer) clearInterval(self.batteryTimer);
-                self.batteryTimer = setInterval(function() {
-                        global.ZWave[zwayName].zway.ZMEPHIGetPower();
-                }, 60*1000);
-            } else {
-                global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
-                powerFailureDev.set("metrics:level", "off");
-                if (self.batteryTimer) clearInterval(self.batteryTimer);
-                self.batteryTimer = setInterval(function() {
-                        global.ZWave[zwayName].zway.ZMEPHIGetPower();
-                }, 3600*1000);
+    if (!self.config.no_battery) {
+        this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
+            if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
+                global.controller.addNotification("notification", langFile.remaining_battery_level + (this.value * 10) + "%", "controller", moduleName);
+                batteryLevelDev.set("metrics:level", (this.value * 10));
             }
-        }
-        roundLED();
-    }, "");
+        }, "");
 
-    this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryFail", function(type) {
-        if (this.value) {
-            global.controller.addNotification("critical", langFile.battery_falure, "controller", moduleName);
-            batteryLevelDev.set("metrics:level", 0);
-        }
-    }, "");
+        this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
+            if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
+                if (this.value) {
+                    global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
+                    powerFailureDev.set("metrics:level", "on");
+                    if (self.batteryTimer) clearInterval(self.batteryTimer);
+                    self.batteryTimer = setInterval(function() {
+                            global.ZWave[zwayName].zway.ZMEPHIGetPower();
+                    }, 60*1000);
+                } else {
+                    global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
+                    powerFailureDev.set("metrics:level", "off");
+                    if (self.batteryTimer) clearInterval(self.batteryTimer);
+                    self.batteryTimer = setInterval(function() {
+                            global.ZWave[zwayName].zway.ZMEPHIGetPower();
+                    }, 3600*1000);
+                }
+            }
+            roundLED();
+        }, "");
+
+        this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryFail", function(type) {
+            if (this.value) {
+                global.controller.addNotification("critical", langFile.battery_falure, "controller", moduleName);
+                batteryLevelDev.set("metrics:level", 0);
+            }
+        }, "");
+    }
     
     // sync round LED with actual box status on start
     roundLED();

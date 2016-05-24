@@ -17,7 +17,22 @@
 		"description": "__m_descr__"
 	},
 	"schema": {
+		"type": "object",
+		"properties": {
+			"no_battery": {
+				"type": "boolean",
+				"default": false
+			}
+		}
 	},
 	"options": {
+		"fields": {
+			"no_battery": {
+				"hidden": true,
+				"type": "checkbox",
+				"label": "__l_no_battery__",
+				"helper": "__h_no_battery__"
+			}
+		}
 	}
 }

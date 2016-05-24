@@ -6,5 +6,7 @@
 	"remaining_battery_level":"Remaining controller battery level is ",
 	"battery_failure":"Backup battery failure!",
 	"power_failure":"AC power lost",
-	"power_recovery":"AC power recover"
+	"power_recovery":"AC power recover",
+	"l_no_battery": "No battery installed",
+	"h_no_battery": "Check if controller have no battery installed to hide battery and power status widgets"
 }
