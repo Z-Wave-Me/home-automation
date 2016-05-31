@@ -381,6 +381,12 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
 
     if (!module) {
         self.addNotification("error", langFile.ac_err_init_module_not_found, "core", "AutomationController");
+        return null; // not loaded
+    }
+
+    if (module.failed) {
+        self.addNotification("error", langFile.ac_err_load_failure + (module.meta && module.meta.id? ': ' + module.meta.id : ''), "core", "AutomationController");
+        return null; // not loaded
     }
 
     // add creation time
@@ -679,11 +685,6 @@ AutomationController.prototype.reinitializeModule = function (moduleId, rootDire
         return instance.moduleId === moduleId;
     });
 
-    // remove all active instances of moduleId
-    /*existingInstances.forEach(function (instance) {
-        self.deleteInstance(instance.id);
-    });*/
-
     this.unloadModule(moduleId);
 
     // try to reinitialize app
@@ -896,12 +897,6 @@ AutomationController.prototype.stopInstance = function (instance) {
         console.log(e.stack);
         return;
     }
-    if (instance.meta.singleton) {
-        var index = this._loadedSingletons.indexOf(instance.meta.id);
-        if (index > -1) {
-            this._loadedSingletons.splice(index, 1);
-        }
-    }
 };
 
 AutomationController.prototype.reconfigureInstance = function (id, instanceObject) {
@@ -962,14 +957,26 @@ AutomationController.prototype.reconfigureInstance = function (id, instanceObjec
 
 AutomationController.prototype.removeInstance = function (id) {
     var instance = this.registerInstances[id],
-        instanceClass = id,
-        instDevices = [];
+        getInstFromList = [];
 
+        getInstFromList = this.instances.filter(function (model) {
+            return id === model.id;
+        });
 
     if (!!instance) {
         this.stopInstance(instance);
+
         this.emit('core.instanceStopped', id);
         this.saveConfig();
+    }
+
+    // remove from loaded singleton list if singleton
+    if (getInstFromList.length > 0 && getInstFromList[0]) {
+        var moduleId = getInstFromList[0].moduleId;
+        var index = this._loadedSingletons.indexOf(moduleId);
+        if (index > -1) {
+            this._loadedSingletons.splice(index, 1);
+        }
     }
 };
 

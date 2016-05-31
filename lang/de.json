@@ -15,6 +15,7 @@
 	"ac_err_create_instance":"Es konnte keine neue Instanz von der App erzeugt werden. [APP] :: [INSTANZ ID] = ",
 	"ac_err_refonfigure_instance":"Folgende Instanz konnte nicht geupdatet werden: ",
 	"ac_err_location_not_found":"Der Raum existiert nicht.",
+	"ac_err_load_failure":"Es trat ein Fehler während der Initialisierung der App auf. Bitte installieren oder laden sie die folgende App erneut",
 	"profile_name": "Administrator",
 	"profile_descr": "Dies ist das Administratorprofil. Dieses wird automatisch angelegt.",
 	"vd_err_virtual_dev":"Fehler beim Ausführen des Befehls: ",

@@ -15,6 +15,7 @@
 	"ac_err_create_instance":"Cannot create instance. [APP] :: [INSTANCE ID] = ",
 	"ac_err_refonfigure_instance":"Cannot reconfigure instance with id: ",
 	"ac_err_location_not_found":"Location doesn't exist.",
+	"ac_err_load_failure":"An error has occurred while the app was instantiated. Please reload or reinstall the app",
 	"profile_name": "Administrator",
 	"profile_descr": "This is the admin profile. Admin profile created automatically.", 
 	"vd_err_virtual_dev":"Error during perform command execution: ",
