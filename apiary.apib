@@ -618,7 +618,7 @@ The namespace structure of virtual devices depends on their device types an prob
                 }
             }
             
-# Group Modules and Instances
+# Group Modules
 <a id="available" ></a>
 
 This API prepares the whole meta data of all registered modules and their instances. 
@@ -1725,6 +1725,19 @@ More information about 'How to build a module?' you will find [here in this tuto
                 }
             }
             
+# Group Instances
+
+An instance is an object that is derived from a modules class. The module itself is a predefined mask and allows to create custom or different instances of it. For example using the module **If > Then**:
+
+1. If ``Switch A`` is ``ON`` > Set ``Dimmer A`` to level ``99``, ``Radio`` to level ``12``, switch ``Plug Media````ON``
+2. If ``Switch A`` is ``OFF`` > Set ``Dimmer A`` to level ``0``, switch ``Radio````OFF``, switch ``Plug Media````ON``
+
+Both instances are derived objects from the _IfThen()_ class of **If > Then** module. They have the same origin but different attributes and usage. This also means that one module could usually have one or more registered instances.
+
+#### Singleton Instances:
+
+If a module has the the attribute ``"singleton": true`` then it could only have one registered instance - called singleton. Singletons are useful to avoid unnecessary instantiations of one class, so for example the module **Z-Wave Network Access** is configured as singleton. This module is the interface between the z-way controller and the Smart Home UI. It makes no sence to add another instance of that module because the interface already exists. Also another instance could interfere with the existing one because their class isn't concipated to handle more than one.
+
 ## Instances Collection [/v1/instances]   
 ### List all Instances [GET]
 
@@ -2386,46 +2399,264 @@ More information about 'How to build a module?' you will find [here in this tuto
             }
 
 # Group Devices
-Devices related resources of the **Devices API**
+The **Devices API** handles all actions of virtual devices in the gateway related to their origin or node (included device). To recognize all this API could be fetched immediately. Also sending commands to change levels etc. is is done by this API.
 
 ## Devices Collection [/v1/devices{?since}]
 ### List all Devices  [GET]
 
+* ``data.structureChanged`` (boolean)      - indicates of structure of list has changed (virtual devices has been added or removed)
+* ``data.updateTime`` (integer)            - timestamp of last change
+
 + Parameters
-    + since (optional, integer, `1387881635`) ... `updateTime` of the Devices.
+    + since (optional, integer, `1459939093`) ... `updateTime` of the devices list.
 
 + Response 200 (application/json)
 
-    + Body 
-
-            {
-                "error":null,
-                "data":{
-                "structureChanged":true,
-                "updateTime":1387881635,
-                "devices":[
-                    {"id":"ZWayVDev_3:0:38","deviceType":"switchMultilevel","metrics":{"level":37,"title":"Dimmer","iconBase":"multilevel"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_4:0:37","deviceType":"switchBinary","metrics":{"level":255,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_4:0:50:0","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"kWh","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_4:0:50:2","deviceType":"probe","metrics":{"probeTitle":"Electric ","scaleTitle":"W","level":0,"title":"Electric  Probe","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881629},
-                    {"id":"ZWayVDev_5:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":false,"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1384795592,"invalidateTime":1384795544},"hasSetPoint":{"name":"interviewDone","type":"bool","value":false,"updateTime":1386347818,"invalidateTime":1384795544},"modes":[{"id":0,"title":"Off","target":null},{"id":1,"title":"Heat","target":30},{"id":2,"title":"Cool","target":12},{"id":3,"title":"Auto","target":null},{"id":5,"title":"Resume","target":null},{"id":6,"title":"Fan Only","target":null},{"id":8,"title":"Dry Air","target":null}],"currentMode":1,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_5:0:68","deviceType":"fan","metrics":{"modes":{"0":{"id":0,"title":"Auto Low"},"1":{"id":1,"title":"On Low"},"2":{"id":2,"title":"Auto High"},"3":{"id":3,"title":"On High"}},"currentMode":1,"state":true,"title":"Fan","iconBase":"fan"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_5:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":89,"title":"Battery (5)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_6:1:49:2","deviceType":"probe","metrics":{"probeTitle":"Generic","scaleTitle":"","level":20,"title":"Generic Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_6:2:49:3","deviceType":"probe","metrics":{"probeTitle":"Luminiscence","scaleTitle":"%","level":32,"title":"Luminiscence Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_6:3:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":20.399999618530273,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_11:0:Thermostat","deviceType":"thermostat","metrics":{"hasSensor":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550842,"invalidateTime":1385550823},"hasMode":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"hasSetPoint":{"name":"interviewDone","type":"bool","value":true,"updateTime":1385550843,"invalidateTime":1385550823},"modes":[{"id":1,"title":"Heat","target":-1408.0999755859375},{"id":2,"title":"Cool","target":2585.5}],"currentMode":1,"scaleTitle":"°C","level":23.200000762939453,"title":"Thermostat","iconBase":"thermostat"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_11:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":23.200000762939453,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_11:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":59,"title":"Battery (11)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_12:1:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_12:2:37","deviceType":"switchBinary","metrics":{"level":0,"title":"Switch","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_16:0:128","deviceType":"battery","metrics":{"probeTitle":"Battery","scaleTitle":"%","level":0,"title":"Battery (16)","iconBase":"battery"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_18:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":13.100000381469727,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_19:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":6.400000095367432,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509},
-                    {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387881509}
-                    ]
-                }
-            }
+    + Body
+        {
+            data: {
+                structureChanged: true,
+                updateTime: 1464761666,
+                devices: [{
+                    creationTime: 1459939093,
+                    creatorId: 7,
+                    deviceType: "battery",
+                    h: -592588978,
+                    hasHistory: false,
+                    id: "BatteryPolling_7",
+                    location: 0,
+                    metrics: {
+                        probeTitle: "Battery",
+                        scaleTitle: "%",
+                        title: "Battery digest 7",
+                        level: 47,
+                        modificationTime: 1464684791,
+                        lastLevel: 47
+                    },
+                    permanently_hidden: false,
+                    probeType: "",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684791
+                }, {
+                    creationTime: 1459947936,
+                    creatorId: 29,
+                    deviceType: "sensorBinary",
+                    h: 1303282175,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_2-0-48-1",
+                    location: 2,
+                    metrics: {
+                        probeTitle: "General purpose",
+                        scaleTitle: "",
+                        icon: "motion",
+                        level: "on",
+                        title: "Motion - Living Room",
+                        modificationTime: 1463116944,
+                        lastLevel: "on"
+                    },
+                    permanently_hidden: false,
+                    probeType: "general_purpose",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684789
+                }, {
+                    creationTime: 1461244852,
+                    creatorId: 29,
+                    deviceType: "sensorMultilevel",
+                    h: 1303283136,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_2-0-49-1",
+                    location: 2,
+                    metrics: {
+                        probeTitle: "Temperature",
+                        scaleTitle: "°C",
+                        level: 24,
+                        icon: "temperature",
+                        title: "Temperature Door - Living Room",
+                        modificationTime: 1463128674,
+                        lastLevel: 24
+                    },
+                    permanently_hidden: false,
+                    probeType: "temperature",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684789
+                }, {
+                    creationTime: 1461244853,
+                    creatorId: 29,
+                    deviceType: "sensorMultilevel",
+                    h: 1303283138,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_2-0-49-3",
+                    location: 2,
+                    metrics: {
+                        probeTitle: "Luminiscence",
+                        scaleTitle: "Lux",
+                        level: 130,
+                        icon: "luminosity",
+                        title: "Luminiscence - Living Room",
+                        modificationTime: 1463128674,
+                        lastLevel: 130
+                    },
+                    permanently_hidden: false,
+                    probeType: "luminosity",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684790
+                }, {
+                    creationTime: 1459947935,
+                    creatorId: 29,
+                    deviceType: "battery",
+                    h: -927793024,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_2-0-128",
+                    location: 0,
+                    metrics: {
+                        probeTitle: "Battery",
+                        scaleTitle: "%",
+                        level: 100,
+                        icon: "battery",
+                        title: "Multisensor Battery - Living Room",
+                        modificationTime: 1463128674,
+                        lastLevel: 100
+                    },
+                    permanently_hidden: false,
+                    probeType: "",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684790
+                }, {
+                    creationTime: 1461244852,
+                    creatorId: 29,
+                    deviceType: "sensorBinary",
+                    h: 1129728498,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_2-0-156-0-A",
+                    location: 2,
+                    metrics: {
+                        icon: "alarm",
+                        level: "on",
+                        title: "Motion Alarm - Living Room",
+                        modificationTime: 1462367037,
+                        lastLevel: "on"
+                    },
+                    permanently_hidden: false,
+                    probeType: "alarmSensor_general_purpose",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684790
+                }, {
+                    creationTime: 1463037018,
+                    creatorId: 29,
+                    deviceType: "sensorMultilevel",
+                    h: -1332622515,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_18-0-49-1",
+                    location: 2,
+                    metrics: {
+                        probeTitle: "Temperature",
+                        scaleTitle: "°C",
+                        level: 25,
+                        icon: "temperature",
+                        title: "Temperature - Living Room",
+                        modificationTime: 1463116879,
+                        lastLevel: 25
+                    },
+                    permanently_hidden: false,
+                    probeType: "temperature",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684791
+                }, {
+                    creationTime: 1463037018,
+                    creatorId: 29,
+                    deviceType: "switchBinary",
+                    h: -1503060958,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_18-0-64",
+                    location: 2,
+                    metrics: {
+                        icon: "thermostat",
+                        title: "Thermostat operation - Living Room",
+                        level: "on",
+                        modificationTime: 1463037070,
+                        lastLevel: "on"
+                    },
+                    permanently_hidden: false,
+                    probeType: "thermostat_mode",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684791
+                }, {
+                    creationTime: 1463037019,
+                    creatorId: 29,
+                    deviceType: "thermostat",
+                    h: -1332564855,
+                    hasHistory: false,
+                    id: "ZWayVDev_zway_18-0-67-1",
+                    location: 2,
+                    metrics: {
+                        scaleTitle: "°C",
+                        level: 23.5,
+                        min: 5,
+                        max: 40,
+                        icon: "thermostat",
+                        title: "Thermostat - Living Room",
+                        modificationTime: 1463037973,
+                        lastLevel: 23.5
+                    },
+                    permanently_hidden: false,
+                    probeType: "thermostat_set_point",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464684791
+                }, {
+                    creationTime: 1460715630,
+                    creatorId: 21,
+                    deviceType: "switchBinary",
+                    h: 1606285100,
+                    hasHistory: false,
+                    id: "Sonos_Device_Play_192.168.10.205_21",
+                    location: 2,
+                    metrics: {
+                        title: "Sonos Play - Living Room",
+                        icon: "",
+                        level: "off",
+                        modificationTime: 1464619055,
+                        lastLevel: "off"
+                    },
+                    permanently_hidden: false,
+                    probeType: "",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464760397
+                }, {
+                    creationTime: 1460715630,
+                    creatorId: 21,
+                    deviceType: "switchMultilevel",
+                    h: 1810681234,
+                    hasHistory: false,
+                    id: "Sonos_Device_Volume_192.168.10.205_21",
+                    location: 2,
+                    metrics: {
+                        title: "Sonos Volume - Living Room",
+                        icon: "",
+                        level: 9,
+                        modificationTime: 1463640278,
+                        lastLevel: 9
+                    },
+                    permanently_hidden: false,
+                    probeType: "",
+                    tags: [],
+                    visibility: true,
+                    updateTime: 1464760397
+                }]
+            },
+            code: 200,
+            message: "200 OK",
+            error: null
+        }
             
     + Schema
 
@@ -2471,32 +2702,59 @@ A single Device object with all its details
 
 ## Device attributes
 
-* ``id`` _immutable_ (string, uniq) - unique identifier
-* ``deviceType`` _immutable_ (string) - device type
-* ``updateTime`` _immutable_ (integer) - lastupdate timestamp
-* ``metrics`` (object) - device parameters
-* ``metrics.probeTitle``    - title of probe, example: _Battery_
-* ``metrics.scaleTitle``    - title of scale, example: _%_
-* ``metrics.level``         - level, example: _integer, on/off, string_
-* ``metrics.icon``          - custom icon field _uri, string_
-* ``metrics.title``         - current title _string_
-* ``metrics.mode``          - current mode _string or integer_ (only for fan, thermostat, doorlock devices)
-* ``metrics.modes``         - avalaible modes _array or objects_ (only for fan, thermostat, doorlock devices)
-
+* ``id``                _immutable_ (string, uniq)  - unique identifier
+* ``deviceType``        _immutable_ (string)        - device type
+* ``updateTime``        _immutable_ (integer)       - lastupdate timestamp
+* ``metrics``           (object)                    - device parameters
+* ``metrics.probeTitle``(string)                    - title of probe, example: _Battery_
+* ``metrics.scaleTitle``(string)                    - title of scale, example: _%_
+* ``metrics.level``     (string or integer)         - level, example: _integer, on/off, string_
+* ``metrics.icon``      (string)                    - custom icon field, example: _uri, icon type_
+* ``metrics.title``     (string)                    - current title, example: _Temperature Door - Living Room_
+* ``creationTime``      (integer)                   - creation time timestamp
+* ``creatorId``         (integer)                   - id of instance that has created the virtual device (Z-Way devices usually will be created from ZWave instance)
+* ``hasHistory``        (boolean)                   - virtual device has a history
+* ``permanently_hidden``(boolean)                   - virtual device is pemanently hidden (inactive) - not usable in apps etc.
+* ``probeType``         _immutable_ (string)        - type of probe for deeper categorization, example: _temperature_
+* ``visibility``        (boolean)                   - hide virtual device in view (e.g. elements view)
+* ``tags``              (array)                     - list of tags assigned to virtual device
 
 ## Device Types
 
-| deviceType                        | Metrics                   | Commands| Examples                                                                                                                            |
-|-----------------------------------|---------------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------|
+| deviceType                        |Metrics                   | Commands                                                                                      | Examples                                                                                                                            |
+|-----------------------------------|----------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------|
 | battery                           | probeTitle,scaleTitle, level, icon, title | -                                                                             |-                                              |
-| doorlock                          | level, icon, title, mode, modes |**_open_** or **_close_**                                                                |apiURL/devices/:deviceId/command/open          |
-| thermostat                        | level, icon, title, mode, modes |**_setMode_** with get-params **_mode_** and/or **_setTemp_** with get-params **_temp_** |apiURL/devices/:deviceId/command/setMode?mode=1|
+| doorlock                          | level, icon, title |**_open_** or **_close_**                                                                             |apiURL/devices/:deviceId/command/open          |
+| thermostat                        | scaleTitle, min, max, level, icon, title |**_exact_** with get-param **_level_**                                          |apiURL/devices/:deviceId/command/exact?level=22.5|
+| switchBinary (Thermostat)         | level, icon, title | **_on_**, **_off_** or **_update_**                                                                  |apiURL/devices/:deviceId/command/on            |
 | switchBinary                      | level, icon, title | **_on_**, **_off_** or **_update_**                                                                  |apiURL/devices/:deviceId/command/on            |
-| switchMultilevel                  | level, icon, title | **_on_**, **_off_**, **_min_**, **_max_**, **_update_**, **_exact_** + get params **_level_**        |apiURL/devices/:deviceId/command/exact?level=40|
-| switchMultilevel (Blinds)         | level, icon, title | **_up_** Set(255), **_down_** Set(0), **_upMax_** Set(99), **_startUp_** StartLevelChange(0), **_startDown_** StartLevelChange(1), **_stop_** StopLevelChange(), **_update_**, **_exact_** + get params **_level_**                              |apiURL/devices/:deviceId/command/stop|
+| switchMultilevel                  | level, icon, title | **_on_** Set(255), **_off_** Set(0), **_min_** Set(10), **_max_** Set(99), **_increase_** Set(l+10), **_decrease_** Set(l-10), **_update_**, **_exact_** + get params **_level_**        |apiURL/devices/:deviceId/command/exact?level=40|
+| switchMultilevel (Blinds)         | level, icon, title | **_up_** Set(255), **_down_** Set(0), **_upMax_** Set(99), **_increase_** Set(l+10), **_decrease_** Set(l-10), **_startUp_** StartLevelChange(0), **_startDown_** StartLevelChange(1), **_stop_** StopLevelChange(), **_update_**, **_excactSmooth_** + get params **_level_**   |apiURL/devices/:deviceId/command/stop|
 | sensorBinary                      | probeTitle, level, icon, title | **_update_**                                                                             |apiURL/devices/:deviceId/command/update        |
 | sensorMultilevel                  | probeTitle, scaleTitle, level, icon, title | **_update_**                                                                 |apiURL/devices/:deviceId/command/update        |
-| switchToggle                      | level, icon, title | **_on_**                                                                                             |apiURL/devices/:deviceId/command/on            |
+| toggleButton                      | level, icon, title | **_on_**                                                                                             |apiURL/devices/:deviceId/command/on            |
+| camera                            | icon, title        | depends on installed camera - could be: **_zoomIn_**, **_zoomOut_**, **_up_**, **_down_**, **_left_**, **_right_**, **_close_**, **_open_** | apiURL/devices/:deviceId/zoomIn |
+| switchControl                     | level, icon, title, change | **_on_**, **_off_**, **_upstart_**, **_upstop_**, **_downstart_**, **_downstop_**, **_exact_** with get-param **_level_**    | apiURL/devices/:deviceId/command/on |
+| text                              | title, text, icon | - | - |
+| sensorMultiline                   | multilineType, title, icon, level, (scaleTitle, ...) | depends on apps | apiURL/devices/:deviceId/command/:cmd |
+| switchRGB                         | icon, title, color: {r:255,g:255,b:255}, level  | **_on_**, **_off_**, **_exact_** with get-params: **_red_**, **_green_** and **_blue_** | apiURL/devices/:deviceId/command/exact?red=20&green=240&blue=0 | 
+
+## Probe Types (Z-Way)
+
+| Command Class                     |Probe Types                | Sensor ID | Parent deviceType         |
+|-----------------------------------|---------------------------|-----------|---------------------------|
+| ThermostatSetPoint                | `thermostat_set_point`    | -         | thermostat                |
+| ThermostatMode                    | `thermostat_mode`         | -         | switchBinary              |
+| SwitchMultilevel                  | `multiLevel` <br> `motor` | default <br> 3,5,6,7 | switchMultilevel |
+| SwitchColor (virtual device with RGB panel) | `switchColor_rgb` | - | switchRGB |
+| SwitchColor                       | `switchColor_soft_white` <br> `switchColor_cold_white` <br> `switchColor_red` <br> `switchColor_green` <br> `switchColor_blue` | 0 <br> 1 <br> 2 <br> 3 <br> 4 | switchMultilevel |
+| SensorBinary                      | `general_purpose` <br> `smoke` <br> `co` <br> `flood` <br> `cooling` <br> `tamper` <br> `door-window` <br> `motion` | default <br> 2 <br> 3,4 <br> 6 <br> 7 <br> 8 <br> 10 <br> 12 | sensorBinary |
+| SensorMultilevel                  | `temperature` <br> `luminosity` <br> `energy` <br> `humidity` <br> `barometer` <br> `ultraviolet`| 1 <br> 3  <br> 4,15,16 <br> 5 <br> 9 <br> 27 | sensorMultilevel |
+| Meter                             | `meterElectric_kilowatt_per_hour` <br> `meterElectric_watt` <br> `meterElectric_pulse_count` <br> `meterElectric_voltage` <br> `meterElectric_ampere` <br> `meterElectric_power_factor` | 0 <br> 2 <br> 3 <br> 4 <br> 5 <br> 6 | sensorMultilevel |
+| Alarm                             | `alarm_general_purpose` <br> `alarm_smoke` <br> `alarm_co` <br> `alarm_coo` <br> `alarm_heat` <br> `alarm_flood` <br> `alarm_door` <br> `alarm_burglar` <br> `alarm_power` <br> `alarm_system` <br> `alarm_emergency` <br> `alarm_clock` | 0 <br> 1 <br> 2 <br> 3 <br> 4 <br> 5 <br> 6 <br> 7 <br> 8 <br> 9 <br> 10 <br> 11 | sensorBinary |
+| AlarmSensor                       | `alarmSensor_general_purpose` <br> `alarmSensor_smoke` <br> `alarmSensor_co` <br> `alarmSensor_coo` <br> `alarmSensor_heat` <br> `alarmSensor_flood` <br> `alarmSensor_door` <br> `alarmSensor_burglar` <br> `alarmSensor_power` <br> `alarmSensor_system` <br> `alarmSensor_emergency` <br> `alarmSensor_clock` | 0 <br> 1 <br> 2 <br> 3 <br> 4 <br> 5 <br> 6 <br> 7 <br> 8 <br> 9 <br> 10 <br> 11 | sensorBinary |
+
+Probe Types are used to allow deeper categorizations in the Namespaces API. If a virtual device has no probeType then the parameter will be empty `''`. You can also use probeType in your apps to differentiate between your virtual devices generated by them.     
 
 ## Icon Types
 
@@ -2504,15 +2762,17 @@ A single Device object with all its details
 
 * ``''``                                            - none
 * ``url(uri)``                                      - URL, example: http://image.com/image.png .
+* ``relative url string``                           - use home automation api to show pictures from app htdocs folder, example: `apiURL/modulemedia/:module_name/:file_name`
 * ``switch``                                        - for **switchBinary** deviceType.
-* ``multilevel``                                    - for **switchMultilevel** deviceType.
-* ``[smoke, co, cooling, door, motion, flood]``     - for **sensorBinary** deviceType.
-* ``[temperature, luminosity, energy, humidity]``   - for **sensorMultilevel** deviceType.
+* ``[multilevel, blinds]``                          - for **switchMultilevel** deviceType.
+* ``[smoke, co, cooling, door, motion, flood, alarm, window]``     - for **sensorBinary** deviceType.
+* ``[temperature, luminosity, energy, humidity, ultraviolet, barometer]``   - for **sensorMultilevel** deviceType.
 * ``battery``                                       - for **battery** deviceType.
 * ``thermostat``                                    - for **thermostat** deviceType.
-* ``fan``                                           - for **fan** deviceType.
 * ``meter``                                         - for **meter** deviceType.
 * ``door``                                          - for **doorlock** deviceType.
+* ``doorlockcontrol``                               - for **doorlock** deviceType.
+* ``camera``                                        - for **camera** deviceType.
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
@@ -2525,9 +2785,36 @@ Retrieve a Device
 
     + Body
 
-            {"error":null,"data":{"meta":{"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}}}
+        {
+            "data": {
+                "creationTime": 1464779507,
+                "creatorId": 34,
+                "deviceType": "sensorMultilevel",
+                "h": 1303283138,
+                "hasHistory": false,
+                "id": "ZWayVDev_zway_2-0-49-3",
+                "location": 0,
+                "metrics": {
+                    "probeTitle": "Luminiscence",
+                    "scaleTitle": "Lux",
+                    "level": 130,
+                    "icon": "luminosity",
+                    "title": "Luminiscence - Living Room",
+                    "modificationTime": 1464779507,
+                    "lastLevel": 130
+                },
+                "permanently_hidden": false,
+                "probeType": "luminosity",
+                "tags": [],
+                "visibility": true,
+                "updateTime": 1464779507
+            },
+            "code": 200,
+            "message": "200 OK",
+            "error": null
+        }
 
-    + Schema
+   + Schema
 
             {
                 "type": "object",
@@ -2541,20 +2828,52 @@ Retrieve a Device
                         "type": "object",
                         "required": true,
                         "properties": {
-                            "id": {
+                            "creationTime": {
                                 "type": "integer",
-                                "required": false
+                                "required": true
+                            },
+                            "creatorId": {
+                                "type": "integer",
+                                "required": true
                             },
                             "deviceType": {
                                 "type": "string",
+                                "required": true
+                            },
+                            "hasHistory": {
+                                "type": "bolean"
                                 "required": false
+                            },
+                            "id": {
+                                "type": "integer",
+                                "required": true
+                            },
+                            "location": {
+                                "type": "integer",
+                                "required": true
                             },
                             "metrics": {
                                 "type": "object",
                                 "required": true
                             },
+                            "permanently_hidden": {
+                                "type": "boolean"
+                                "required": true
+                            },
+                            "probeType": {
+                                "type": "integer",
+                                "required": false
+                            },
+                            "tags": {
+                                "type": "array",
+                                "required": false
+                            },
+                            "visibility": {
+                                "type": "boolean"
+                                "required": true
+                            },
                             "updateTime": {
-                                "type": "interger"
+                                "type": "integer"
                                 "required": true
                             }
                         }
@@ -2581,23 +2900,86 @@ Update a Device
 
     + Body
 
-            {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}
-
+            {
+                "creationTime": 1464779507,
+                "creatorId": 34,
+                "deviceType": "sensorMultilevel",
+                "h": 1303283138,
+                "hasHistory": false,
+                "id": "ZWayVDev_zway_2-0-49-3",
+                "location": 0,
+                "metrics": {
+                    "probeTitle": "Luminiscence",
+                    "scaleTitle": "Lux",
+                    "level": 130,
+                    "icon": "luminosity",
+                    "title": "Luminiscence - Living Room",
+                    "modificationTime": 1464779507,
+                    "lastLevel": 130
+                },
+                "permanently_hidden": false,
+                "probeType": "luminosity",
+                "tags": [],
+                "visibility": true,
+                "updateTime": 1464779507
+            }
+            
 + Response 200 (application/json)
 
     + Body
 
-            {"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}
+            {
+            "data": {
+                "creationTime": 1464779507,
+                "creatorId": 34,
+                "deviceType": "sensorMultilevel",
+                "h": 1303283138,
+                "hasHistory": false,
+                "id": "ZWayVDev_zway_2-0-49-3",
+                "location": 0,
+                "metrics": {
+                    "probeTitle": "Luminiscence",
+                    "scaleTitle": "Lux",
+                    "level": 130,
+                    "icon": "luminosity",
+                    "title": "Luminiscence - Living Room",
+                    "modificationTime": 1464779507,
+                    "lastLevel": 130
+                },
+                "permanently_hidden": false,
+                "probeType": "luminosity",
+                "tags": [],
+                "visibility": true,
+                "updateTime": 1464779507
+            },
+            "code": 200,
+            "message": "200 OK",
+            "error": null
+        }
+        
++ Response 404 (application/json)
 
+    + Body
+    
+        {
+            data: null,
+            code: 404,
+            message: "404 Not found",
+            error: "Device :id doesn't exist"
+        }
 
-## Device [/v1/devices/{id}/command/{command}{?params}]
+## Device Commands [/v1/devices/{id}/command/{command}{?params}]
 ### Command to Device [GET]
 + Response 200 (application/json)
 
     + Body
 
-            {"error":null,"data":{"meta":{"id":"ZWayVDev_20:0:49:1","deviceType":"probe","metrics":{"probeTitle":"Temperature","scaleTitle":"°C","level":7.599999904632568,"title":"Temperature Sensor","iconBase":"zwave"},"tags":[],"location":null,"updateTime":1387882443}}}
-
+            {
+                "data": null,
+                "code": 200,
+                "message": "200 OK",
+                "error": null
+            }
 
 # Group Locations
 Locations related resources of the **Locations API**
