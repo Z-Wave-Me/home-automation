@@ -1499,7 +1499,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				defaults: defaults,
 				overlay: {},
 				handler: function(command, args) {
-					var newVal;
+					var newVal = this.get('metrics:level');
 					// up, down for Blinds
 					if ("on" === command || "up" === command) {
 						newVal = 255;
@@ -1510,7 +1510,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					} else if ("max" === command || "upMax" === command) {
 						newVal = 99;
 					} else if ("increase" === command) {
-						newVal = this.metrics.level + 10;
+						newVal = newVal + 10;
 						if (0 !== newVal % 10) {
 							newVal = Math.round(newVal / 10) * 10;
 						}
@@ -1519,7 +1519,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						}
 
 					} else if ("decrease" === command) {
-						newVal = this.metrics.level - 10;
+						newVal = newVal - 10;
 						if (newVal < 0) {
 							newVal = 0;
 						}
