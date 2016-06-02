@@ -150,8 +150,8 @@
 	"preInterview": [],
 	"postInterview": [
 		"preventDeviceCreation(0,113, {});",
-		"preventDeviceCreation(0,49, {'25'[], '52'[], '53'[],'54'[]});",
-		"preventDeviceCreation(0,48, {'1'[]});"
+		"preventDeviceCreation(0,49, {'25':[], '52':[], '53':[],'54':[]});",
+		"preventDeviceCreation(0,48, {'1':[]});"
 	]
 }, {
 	"id": "42",
@@ -167,7 +167,7 @@
 	"product": "AEON MULTISENSOR Gen 5",
 	"preInterview": [],
 	"postInterview": [
-		"preventDeviceCreation(0,113, {'7'[]});",
+		"preventDeviceCreation(0,113, {'7':[]});",
 		"setConfig(3,10,1);",
 		"setConfig(4,1,1);",
 		"setConfig(5,2,1);"
