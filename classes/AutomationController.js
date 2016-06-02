@@ -806,8 +806,9 @@ AutomationController.prototype.listInstances = function (){
             var moduleJSON = self.getModuleData(instance.moduleId);
 
             expInstances.push(_.extend(instance, {
-                state : moduleJSON.state || null,
-                module : moduleJSON.defaults && moduleJSON.defaults.title || null,
+                // seems to be not in use anymore ...
+                // state : moduleJSON.state || null,
+                // module : moduleJSON.defaults && moduleJSON.defaults.title || null,
                 title : (!instance.title || instance.title === '') ? ((moduleJSON.defaults && moduleJSON.defaults.title) ? moduleJSON.defaults.title : "?") : instance.title
             }));
         });
