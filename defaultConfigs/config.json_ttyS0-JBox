@@ -146,5 +146,15 @@
         "title": "Philio hardware support",
         "description":"Support for Philio hardware buttons, LEDs, power and battery management",
         "params": {}
+    },
+    {
+        "id": "10",
+        "moduleId": "ZMEOpenWRT",
+        "active": "true",
+        "title": "Time zone and access from WAN",
+        "params": {
+            "timezone": "UTC",
+            "wan_port_access": false
+        }
     }]
 }
