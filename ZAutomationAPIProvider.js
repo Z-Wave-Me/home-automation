@@ -108,9 +108,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         // reinitialize apps from /modules or /userModules directory
         this.router.get("/modules/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
         
-        this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
-
         this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
+        
+        this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
         this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
@@ -126,8 +126,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/resetToFactoryDefault", this.ROLE.ADMIN, this.resetToFactoryDefault);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
-        this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
-        this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
+        //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
+        //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
+        this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
@@ -2257,6 +2258,23 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } catch (e){
             reply.data = null;
             reply.error = e.message;
+        }
+
+        return reply;
+    },
+    rebootBox: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+        
+        try {
+            system("reboot"); // reboot the box
+            reply.code = 204;
+            reply.message = "System is rebooting ...";
+        } catch (e){
+            reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
         }
 
         return reply;
