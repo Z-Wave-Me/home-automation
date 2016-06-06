@@ -635,11 +635,6 @@ This API prepares the whole meta data of all registered modules and their instan
 - **/v1/modules/delete/{module-id}** - deletes a **non preinstalled** module and removes all its instances. Cannot be undone without doing backup before.
 - **/v1/modules/reinitialize/{module-id}** - stops all instances of module, reloads JS and meta data and starts instances again - useful for module development.
 
-#### Instances
-- **/v1/instances** - get all instances.
-- **/v1/instances/{module-name}** - get an array of all instances of one module.
-- **/v1/instances/{module-id}** - create/read/update/delete instances.
-
 #### Module Categories
 - **/v1/modules/categories** - show all module categories
 - **/v1/modules/categories/{category-id}** - list modules by category
@@ -651,24 +646,26 @@ This API prepares the whole meta data of all registered modules and their instan
 
 This is a list of all module attributes hand out by the api. Some of them are predefined by module.json and the rest is added by the controller after initialisation.
 
-* ``id``            _immutable (string, uniq)_  - class name as unique identifier
-* ``location``      _immutable (string)_        - path to file directory: /modules or /userModules
-* ``className``     _immutable (string)_        - reference to class name from index.js
-* ``hasReset``      _(boolean, false)_          - indicator if module could be reseted
-* ``created``       _(boolean, false)_          - indicator if an instance of a singleton module already exists
-* ``dependencies``  _(array, [])_               - id's of modules that are necessary to initiate this module
-* ``singleton``     _(boolean, false)_          - indicates if a module could have only one (singleton) or more running instances 
-* ``category``      _(string)_                  - assign module to special category
-* ``author``        _(string)_                  - name of author
-* ``homepage``      _(string, uri)_             - homepage (of author)
-* ``icon``          _(string, uri)_             - custom icon field: looks in folder _/LOCATION/MODULENAME/htdocs/ICON-NAME.png_
-* ``version``       _(string or number)_        - current version of module, format MAJOR.FEATURES.PATCHES ``0.0.0``
-* ``maturity``      _(string)_                  - shows maturity of a modules: _alpha, beta, gamma, ... or stable_
-* ``repository``    _(object)_                  - information about the repository where to find the module e.g. ``{"type": "git","source": "https://github.com/Z-Wave-Me/home-automation"}``
-* ``defaults``      _(object)_                  - defines default attributes (basic skeleton) of the module, also includes module title and description e.g. ``{"title": "AutoLock","description": "Electronic Doors typically move the dead bold of the door. [...]"``
-}
-* ``schema``        _(object)_                  - defines formatting schema for UI transformation with Alpaca Forms
-* ``options``       _(object)_                  - defines view attributes of objects for UI transformation with Alpaca Forms
+| Module Attributes| Type                     | Comment                                            |
+|---------------|-----------------------------|----------------------------------------------------|
+| `id`          | _immutable_ (string, uniq)  | class name as unique identifier |
+| `location`    | _immutable_ (string)        | path to file directory: /modules or /userModules |
+| `className`   | _immutable_ (string)        | reference to class name from index.js |
+| `hasReset`    | (boolean, false)            | indicator if module could be reseted |
+| `created`     | (boolean, false)            | indicator if an instance of a singleton module already exists |
+| `dependencies`| (array, [])                 | id's of modules that are necessary to initiate this module |
+| `singleton`   | (boolean, false)            | indicates if a module could have only one (singleton) or more running instances  |
+| `category`    | (string)                    | assign module to special category |
+| `author`      | (string)                    | name of author |
+| `homepage`    | (string, uri)               | homepage (of author) |
+| `icon`        | (string, uri)               | custom icon field: looks in folder _/LOCATION/MODULENAME/htdocs/ICON-NAME.png_ |
+| `version`     | (string or number)          | current version of module, format MAJOR.FEATURES.PATCHES ``0.0.0`` |
+| `maturity`    | (string)                    | shows maturity of a modules: _alpha, beta, gamma, ... or stable_ |
+| `repository`  | (object)                    | information about the repository where to find the module e.g. ``{"type": "git","source": "https://github.com/Z-Wave-Me/home-automation"}`` |
+| `defaults`    | (object)                    | defines default attributes (basic skeleton) of the module, also includes module title and description e.g. ``{"title": "AutoLock","description": "Electronic Doors typically move the dead bold of the door. [...]"``
+} |
+| `schema`      | (object)                    | defines formatting schema for UI transformation with Alpaca Forms |
+| `options`     | (object)                    | defines view attributes of objects for UI transformation with Alpaca Forms |
 
 More information about 'How to build a module?' you will find [here in this tutorial on developer.z-wave.me](http://developer.z-wave.me/?uri=help). Please check out [http://www.alpacajs.org/](http://www.alpacajs.org/) to learn more about Alpaca Forms and how you could use it to make your own modules for home automation.
 
@@ -1725,6 +1722,15 @@ More information about 'How to build a module?' you will find [here in this tuto
                 }
             }
             
+## Module Categories [/v1/modules/categories]
+- **/v1/modules/categories** - show all module categories
+
+## Module Categories [/v1/modules/categories/{category-id}]
+- **/v1/modules/categories/{category-id}** - list modules by category
+
+## Access to Online Store Groups [/v1/modules/tokens]
+- **/v1/modules/tokens** - create/read/update/delete tokens for online store group access.
+            
 # Group Instances
 
 An instance is an object that is derived from a modules class. The module itself is a predefined mask and allows to create custom or different instances of it. For example using the module **If > Then**:
@@ -1737,6 +1743,11 @@ Both instances are derived objects from the _IfThen()_ class of **If > Then** mo
 #### Singleton Instances:
 
 If a module has the the attribute ``"singleton": true`` then it could only have one registered instance - called singleton. Singletons are useful to avoid unnecessary instantiations of one class, so for example the module **Z-Wave Network Access** is configured as singleton. This module is the interface between the z-way controller and the Smart Home UI. It makes no sence to add another instance of that module because the interface already exists. Also another instance could interfere with the existing one because their class isn't concipated to handle more than one.
+
+#### Instances
+- **/v1/instances** - get all instances or create new instance (POST).
+- **/v1/instances/{module-name}** - get an array of all instances of one module.
+- **/v1/instances/{instance-id}** - read/update/delete instances.
 
 ## Instances Collection [/v1/instances]   
 ### List all Instances [GET]
@@ -2038,8 +2049,116 @@ If a module has the the attribute ``"singleton": true`` then it could only have 
                     }
                 }
             }
+            
+## Instance Collection by module id [/v1/instances/{module-id}]
+
+List all instances that has the same module as origin.
+
++ Parameters
+    + module-id (required, string, `IfThen`) ... module id (class name) of parent module
+
+### READ [GET]
+
++ Response 200 (application/json)
+    
+    + Body 
+
+        {
+            "data": [
+                {
+                    "instanceId": "0",
+                    "moduleId": "IfThen",
+                    "active": "true",
+                    "title": "All On",
+                    "params": {
+                        "sourceDevice": {
+                            "filterIf": "scene",
+                            "scene": {
+                                "device": "ZWayVDev_zway_Remote_39-0-0-1-S"
+                            }
+                        },
+                        "targets": [
+                            {
+                                "filterThen": "switchBinary",
+                                "switchBinary": {
+                                    "target": "ZWayVDev_zway_13-0-37",
+                                    "status": "on"
+                                }
+                            },
+                            {
+                                "filterThen": "switchBinary",
+                                "switchBinary": {
+                                    "target": "Sonos_Device_Play_192.168.10.205_21",
+                                    "status": "on"
+                                }
+                            }
+                        ]
+                    },
+                    "id": 24,
+                    "creationTime": 1461152581
+                },
+                {
+                    "instanceId": "0",
+                    "moduleId": "IfThen",
+                    "active": true,
+                    "title": "All Off",
+                    "params": {
+                        "sourceDevice": {
+                            "filterIf": "scene",
+                            "scene": {
+                                "device": "ZWayVDev_zway_Remote_39-0-0-2-S"
+                            }
+                        },
+                        "targets": [
+                            {
+                                "filterThen": "switchBinary",
+                                "switchBinary": {
+                                    "target": "Sonos_Device_Play_192.168.10.205_21",
+                                    "status": "off"
+                                }
+                            }, {
+                                "filterThen": "switchBinary",
+                                "switchBinary": {
+                                    "target": "DummyDevice_12",
+                                    "status": "off"
+                                }
+                            }
+                        ]
+                    },
+                    "id": 25,
+                    "creationTime": 1461152774
+                }
+            ],
+            "code": 200,
+            "message": "200 OK",
+            "error": null
+        }
+        
++ Response 404
+
+    + Headers
+    
+            Content-Type: application/json
+
+    + Body
+    
+        {
+            "data": null,
+            "code": 404,
+            "message": "404 Not Found",
+            "error": "Instance foobar is not found"
+        }
 
 ## Instance Model [/v1/instances/{instance-id}]
+
+| Instance Attributes| Type                     | Comment                                            |
+|---------------|-----------------------------|----------------------------------------------------|
+| `id`          | _immutable_ (string, uniq)  | id of instance |
+| `moduleId`    | _immutable_ (string)        | id of referenced module (classname) |
+| `active`      | (boolean, true)             | marks instance as in-/active |
+| `title`       | (string)                    | title of instance |
+| `params`      | (object, {})                | depends on module, includes all last configured parameters that could be entered through the module form |
+| `creationTime`| (integer)                   | timestamp of creation time |
 
 + Parameters
     + instance-id (required, string, `7`) ... id (number) of target instance
@@ -2402,10 +2521,13 @@ If a module has the the attribute ``"singleton": true`` then it could only have 
 The **Devices API** handles all actions of virtual devices in the gateway related to their origin or node (included device). To recognize all this API could be fetched immediately. Also sending commands to change levels etc. is is done by this API.
 
 ## Devices Collection [/v1/devices{?since}]
-### List all Devices  [GET]
 
-* ``data.structureChanged`` (boolean)      - indicates of structure of list has changed (virtual devices has been added or removed)
-* ``data.updateTime`` (integer)            - timestamp of last change
+| Devices Data Attribute | Type     | Comment                  |
+|-------------------|---------------|--------------------------|
+| `structureChanged`| (boolean)     | indicates of structure of list has changed (virtual devices has been added or removed) |
+| `updateTime`      | (integer)     | timestamp of last change |
+
+### List all Devices  [GET]
 
 + Parameters
     + since (optional, integer, `1459939093`) ... `updateTime` of the devices list.
@@ -2697,29 +2819,31 @@ The **Devices API** handles all actions of virtual devices in the gateway relate
                 }
             }
         
-## Device [/v1/devices/{id}]
-A single Device object with all its details
+## Virtual Device [/v1/devices/{id}]
+A single virtual device object with all its details.
 
-## Device attributes
+## Virtual Device Attributes
 
-* ``id``                _immutable_ (string, uniq)  - unique identifier
-* ``deviceType``        _immutable_ (string)        - device type
-* ``updateTime``        _immutable_ (integer)       - lastupdate timestamp
-* ``metrics``           (object)                    - device parameters
-* ``metrics.probeTitle``(string)                    - title of probe, example: _Battery_
-* ``metrics.scaleTitle``(string)                    - title of scale, example: _%_
-* ``metrics.level``     (string or integer)         - level, example: _integer, on/off, string_
-* ``metrics.icon``      (string)                    - custom icon field, example: _uri, icon type_
-* ``metrics.title``     (string)                    - current title, example: _Temperature Door - Living Room_
-* ``creationTime``      (integer)                   - creation time timestamp
-* ``creatorId``         (integer)                   - id of instance that has created the virtual device (Z-Way devices usually will be created from ZWave instance)
-* ``hasHistory``        (boolean)                   - virtual device has a history
-* ``permanently_hidden``(boolean)                   - virtual device is pemanently hidden (inactive) - not usable in apps etc.
-* ``probeType``         _immutable_ (string)        - type of probe for deeper categorization, example: _temperature_
-* ``visibility``        (boolean)                   - hide virtual device in view (e.g. elements view)
-* ``tags``              (array)                     - list of tags assigned to virtual device
+| Virtual Device Attribute      | Type                        | Comment                                      |      
+|-----------------------|-----------------------------|----------------------------------------------|
+| `id`                  | _immutable_ (string, uniq)  | unique identifier |
+| `deviceType`          | _immutable_ (string)        | major categorization of virtual device types, example _switchBinary_, _thermostat_, _sensorMultilevel_ etc.|
+| `updateTime`          | _immutable_ (integer)       | timestamp of last update|
+| `metrics`             | (object)                    | device parameters |
+| `metrics.probeTitle`  | (string)                    | title of probe, example: _Temperature_ |
+| `metrics.scaleTitle`  | (string)                    | title of scale, example: _%_, _LUX_, _°C_ etc. |
+| `metrics.level`       | (string or integer)         | level, example: _5_, _21.4_, _on/off_, _ALARM_ etc. |
+| `metrics.icon`        | (string)                    | custom icon field, example: _uri, icon type_ |
+| `metrics.title`       | (string)                    | current title, example: _Temperature Door - Living Room_ |
+| `creationTime`        | (integer)                   | creation time timestamp |
+| `creatorId`           | (integer)                   | id of instance that has created the virtual device (Z-Way devices usually will be created from ZWave instance) |
+| `hasHistory`          | (boolean)                   | virtual device has a history |
+| `permanently_hidden`  | (boolean)                   | virtual device is pemanently hidden (inactive) - not usable in apps etc. |
+| `probeType`           | _immutable_ (string)        | type of probe for deeper categorization, example: _temperature_ |
+| `visibility`          | (boolean)                   | hide virtual device in view (e.g. elements view) |
+| `tags`                | (array)                     | list of tags assigned to virtual device |
 
-## Device Types
+## Virtual Device Types
 
 | deviceType                        |Metrics                   | Commands                                                                                      | Examples                                                                                                                            |
 |-----------------------------------|----------------------|-----------------------------------------------------------------------------------------------|-----------------------------------------------|
@@ -2760,26 +2884,28 @@ Probe Types are used to allow deeper categorizations in the Namespaces API. If a
 
 **icon** attribute of **metrics** object may be:
 
-* ``''``                                            - none
-* ``url(uri)``                                      - URL, example: http://image.com/image.png .
-* ``relative url string``                           - use home automation api to show pictures from app htdocs folder, example: `apiURL/modulemedia/:module_name/:file_name`
-* ``switch``                                        - for **switchBinary** deviceType.
-* ``[multilevel, blinds]``                          - for **switchMultilevel** deviceType.
-* ``[smoke, co, cooling, door, motion, flood, alarm, window]``     - for **sensorBinary** deviceType.
-* ``[temperature, luminosity, energy, humidity, ultraviolet, barometer]``   - for **sensorMultilevel** deviceType.
-* ``battery``                                       - for **battery** deviceType.
-* ``thermostat``                                    - for **thermostat** deviceType.
-* ``meter``                                         - for **meter** deviceType.
-* ``door``                                          - for **doorlock** deviceType.
-* ``doorlockcontrol``                               - for **doorlock** deviceType.
-* ``camera``                                        - for **camera** deviceType.
+| Icon Attribute                                   |Comment
+|--------------------------------------------------|--------------------------------------------|
+| `''`                                             | none|
+| `url(uri)`                                       | URL, example: http://image.com/image.png .|
+| `relative url string`                            | use home automation api to show pictures from app htdocs folder, example: `apiURL/modulemedia/:module_name/:file_name`|
+| `switch`                                         | for **switchBinary** deviceType.|
+| `multilevel`, `blinds`                           | for **switchMultilevel** deviceType.|
+| `smoke`, `co`, `cooling`, `door`, `motion`, `flood`, `alarm`, `window`     | for **sensorBinary** deviceType.|
+| `temperature`, `luminosity`, `energy`, `humidity`, `ultraviolet`, `barometer`   | for **sensorMultilevel** deviceType.|
+| `battery`                                        | for **battery** deviceType.|
+| `thermostat`                                     | for **thermostat** deviceType.|
+| `meter`                                          | for **meter** deviceType.|
+| `door`                                           | for **doorlock** deviceType.|
+| `doorlockcontrol`                                | for **doorlock** deviceType.|
+| `camera`                                         | for **camera** deviceType.|
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
 
 ### READ [GET]
 
-Retrieve a Device
+Retrieve a virtual device
 
 + Response 200 (application/json)
 
@@ -2891,7 +3017,7 @@ Retrieve a Device
 
 ### UPDATE [PUT]
 
-Update a Device
+Update a virtual device
 
 + Parameters
     + id (required, integer, `1`) ... Numeric `id` of the Device to perform action with.
@@ -2968,8 +3094,8 @@ Update a Device
             error: "Device :id doesn't exist"
         }
 
-## Device Commands [/v1/devices/{id}/command/{command}{?params}]
-### Command to Device [GET]
+## Devices Commands [/v1/devices/{id}/command/{command}{?params}]
+### Send Command to Device [GET]
 + Response 200 (application/json)
 
     + Body

@@ -377,7 +377,8 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
         }),
         instance = null,
         langFile = self.loadMainLang(),
-        values;
+        values,
+        cntExistInst = [];
 
     if (!module) {
         self.addNotification("error", langFile.ac_err_init_module_not_found, "core", "AutomationController");
@@ -407,8 +408,12 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
 
         console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
 
+        cntExistInst = _.filter(self.instances, function(inst) {
+           return  module.meta.id === inst.moduleId;
+        });
+
         if (module.meta.singleton) {
-            if (in_array(self._loadedSingletons, module.meta.id)) {
+            if (in_array(self._loadedSingletons, module.meta.id) && cntExistInst.length > 1) {
                 console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
                 return null; // not loaded
             }
@@ -443,6 +448,8 @@ AutomationController.prototype.instantiateModule = function (instanceModel) {
 
         self.registerInstance(instance);
         return instance;
+    } else {
+        return null; // not loaded
     }
 };
 
@@ -840,7 +847,8 @@ AutomationController.prototype.createInstance = function (reqObj) {
         }
 
         instance = _.extend(reqObj, { 
-            id: alreadyExisting[0]? alreadyExisting[0].id : id
+            id: alreadyExisting[0]? alreadyExisting[0].id : id,
+            active: reqObj.active === 'true' || reqObj.active? true : false
         });
 
         self.instances.push(instance);
