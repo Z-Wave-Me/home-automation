@@ -2120,7 +2120,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if (now) {
             reply.code = 200;
             reply.data = {
-                localTimeUT: Math.round(now.getTime() / 1000),
+                localTimeUT: Math.round((now.getTime() + (now.getTimezoneOffset() * -60000)) / 1000), // generate timestamp with correct timezone offset
                 localTimeString: now.toLocaleString(),
                 localTimeZoneOffset: now.getTimezoneOffset() /60
             };
