@@ -1750,9 +1750,9 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
                 } else if (!nspc[currPath] && ~lastPath.indexOf(currPath)) {
                     result = self.getNspcDevAll(nspc);
 
-                    result = _.uniq(result.map(function(entry){
+                    result = result.map(function(entry){
                         return entry[currPath];
-                    }));
+                    });
                 // add backward compatibility
                 } else if (~lastPath.indexOf(currPath)) {
 
