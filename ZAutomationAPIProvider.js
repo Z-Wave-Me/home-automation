@@ -2242,19 +2242,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             versionArr = [];
         
         try {
-                console.log('blub:',zway.controller.data.softwareRevisionVersion.value.substring(1));
-                versionArr = zway.controller.data.softwareRevisionVersion.value.substring(1).split('-');
-                version = versionArr[0]? versionArr[0] : null;
-                majurity = versionArr[1]? versionArr[1] : null;
+            versionArr = zway.controller.data.softwareRevisionVersion.value.substring(1).split('-');
+            version = versionArr[0]? versionArr[0] : null;
+            majurity = versionArr[1]? versionArr[1] : null;
 
-                reply.data = { 
-                    first_start_up: this.controller.config.first_start_up, 
-                    count_of_reconnects: this.controller.config.count_of_reconnects,
-                    current_firmware: version,
-                    current_firmware_majurity: majurity
-                };
+            reply.data = { 
+                first_start_up: this.controller.config.first_start_up, 
+                count_of_reconnects: this.controller.config.count_of_reconnects,
+                current_firmware: version,
+                current_firmware_majurity: majurity
+            };
 
-                reply.code = 200;
+            reply.code = 200;
         } catch (e){
             reply.data = null;
             reply.error = e.message;
@@ -2263,15 +2262,23 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     rebootBox: function() {
-        var reply = {
+        var self = this,
+            reply = {
                 error: null,
                 data: null,
                 code: 500
             };
         
         try {
-            system("reboot"); // reboot the box
-            reply.code = 204;
+            // reboot after 5 seconds
+            this.rebootTimer = setTimeout(function() {
+                if(self.rebootTimer) {
+                    clearTimeout(self.rebootTimer);
+                }
+                system("reboot"); // reboot the box
+            }, 5000);
+
+            reply.code = 200;
             reply.message = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
