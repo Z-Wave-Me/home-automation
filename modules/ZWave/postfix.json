@@ -95,10 +95,12 @@
 }, {
 	"id": "32",
 	"p_id": "316.2.14",
-	"product": "Philio Vision 1C",
+	"product": "Philio Vision 1C (PST02-5C Door Sensor)",
 	"preInterview": [],
 	"postInterview": [
-		"preventDeviceCreation(0,48, {'10':[]});"
+		"preventDeviceCreation(0,113, {});",
+		"setConfig(0,7,16,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.12.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }, {
 	"id": "34",
@@ -189,5 +191,35 @@
 	"postInterview": [
 		"supportSwitchController(0,91,4,'S');",
 		"setCommandClassData(0,91,'security','value',false);"
+	]
+}, {
+	"id": "46",
+	"p_id": "316.2.13",
+	"product": "Philio PST02-5B Motion Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});",
+		"setConfig(0,7,22,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.2.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
+	]
+},{
+	"id": "47",
+	"p_id": "316.2.33",
+	"product": "Philio PAT02-5C Flood Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});",
+		"setConfig(0,7,16,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.2.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
+	]
+},{
+	"id": "48",
+	"p_id": "316.2.30",
+	"product": "Philio PSG01 Smoke Sensor",
+	"preInterview": [],
+	"postInterview": [
+		"preventDeviceCreation(0,113, {});",
+		"setConfig(0,7,16,1);",
+		"if(commandClassId === 132 && deviceInstances[instanceId].commandClasses[132] && c.data.lastIncludedDevice.value === nodeId){ deviceInstances[instanceId].commandClasses[132].data.security.value = false; console.log('##-------------CHANGED-VALUE-316.2.2.132---SET-WAKEUP-SECURITY-TO-FALSE---------##');}"
 	]
 }]
