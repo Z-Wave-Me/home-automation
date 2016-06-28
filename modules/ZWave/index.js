@@ -84,7 +84,13 @@ ZWave.prototype.init = function (config) {
 
 	var self = this;
 
+	// select the latest updated postfix.json
 	this.postfix = this.loadModuleJSON("postfix.json");
+	updatedPostfix = loadObject("postfix.json");
+
+	if (!!updatedPostfix && updatedPostfix.last_update && this.postfix.last_update && updatedPostfix.last_update > this.postfix.last_update) {
+		this.postfix = updatedPostfix; 
+	}
 	
 	this.startBinding();
 	if (!this.zway) {
@@ -255,6 +261,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
@@ -274,12 +281,14 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
 	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
+	ws.revokeExternalAccess(_name + ".PostfixUpdate");
 	ws.revokeExternalAccess(_name + ".Postfix");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
 ZWave.prototype.defineHandlers = function () {
 	var zway = this.zway;
+	var postfix = this.postfix;
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -856,13 +865,15 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
-	this.ZWaveAPI.Postfix = function(url, request) {
-		var postfix = fs.loadJSON('modules/ZWave/postfix.json'),
-			show = request.query && request.query.full? request.query.full : 'false';
+	this.ZWaveAPI.Postfix = function(url, request) {		
+		
+		var show = request.query && request.query.full? request.query.full : 'false';
 
 		if (!!postfix) {
 
 			if (show === 'false') {
+				postfix = postfix.fixes? postfix.fixes : postfix;
+
 				postfix = postfix.map(function (fix) { 
 						return { p_id: fix.p_id, product: fix.product }
 					});
@@ -883,6 +894,57 @@ ZWave.prototype.defineHandlers = function () {
 			};
 
 		}
+	};
+
+	this.ZWaveAPI.PostfixUpdate = function(url, request) {
+		var self = this,
+			success,
+			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+
+		// update postfix JSON
+		http.request({
+	        url: "http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
+	        async: true,
+	        success: function(res) {
+	        	if (res.data && res.data.fixes && res.data.fixes.length > 0 && res.data.last_update && res.data.last_update > postfix.last_update) {
+	        		saveObject('postfix.json', res.data);
+
+	        		success = 1;
+	        	} else {
+	        		success = 2;
+	        	}
+	        },
+	        error: function() {
+	        	console.log('Error has occured during updating the fixes list');
+	        	success = 0;
+	        }
+	    });
+        
+        while (!success && (new Date()).valueOf() < delay) {
+        	processPendingCallbacks();                    
+		}
+
+		switch(success) {
+		       	case 1:
+		       		setTimeout(function () {
+		        		self.controller.reinitializeModule('ZWave', 'modules/');
+		        	}, 3000);
+			    	
+			    	return {
+						status: 200,
+						body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
+					};
+				case 2: 
+					return {
+						status: 200,
+						body: 'List of fixes is already up to date ... '
+					};
+				default:
+					return {
+						status: 500,
+						body: 'Something went wrong ... '
+					};
+		    }
 	};
 
 	/*
@@ -1189,7 +1251,8 @@ ZWave.prototype.gateDevicesStart = function () {
 						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
 						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
 						devId,
-						postFix;					
+						postFix,
+						fixes = self.postfix.fixes? self.postfix.fixes : self.postfix;					
 					
 					// try to get fix by manufacturerProductId and application Version
 					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
@@ -1197,7 +1260,7 @@ ZWave.prototype.gateDevicesStart = function () {
 						devId = mId + '.' + mPT + '.' + mPId,
 						appMajorId = devId + '.' + appMajor,
 						appMinorId = devId + '.' + appMinor,
-						postFix = self.postfix.filter(function(fix) {
+						postFix = fixes.filter(function(fix) {
 							return 	fix.p_id === devId || 		//search by manufacturerProductId
 									fix.p_id === appMajorId || //search by applicationMajor
 									fix.p_id === appMinorId; 	//search by applicationMinor
