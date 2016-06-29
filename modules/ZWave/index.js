@@ -871,10 +871,10 @@ ZWave.prototype.defineHandlers = function () {
 
 		if (!!postfix) {
 
-			if (show === 'false') {
-				postfix = postfix.fixes? postfix.fixes : postfix;
+			pfix = postfix.fixes? postfix.fixes : postfix;
 
-				postfix = postfix.map(function (fix) { 
+			if (show === 'false') {
+				pfix = pfix.map(function (fix) { 
 						return { p_id: fix.p_id, product: fix.product }
 					});
 			}
@@ -885,7 +885,7 @@ ZWave.prototype.defineHandlers = function () {
 					"Content-Type": "application/json",
 					"Connection": "keep-alive"
 				},
-				body: postfix
+				body: pfix
 			};
 		} else {
 			return {
