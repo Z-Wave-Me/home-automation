@@ -871,9 +871,11 @@ ZWave.prototype.defineHandlers = function () {
 
 		if (!!postfix) {
 
-			pfix = postfix.fixes? postfix.fixes : postfix;
+			pfix = postfix;
 
 			if (show === 'false') {
+				pfix = postfix.fixes? postfix.fixes : postfix;
+
 				pfix = pfix.map(function (fix) { 
 						return { p_id: fix.p_id, product: fix.product }
 					});
