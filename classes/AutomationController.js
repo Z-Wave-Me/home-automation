@@ -46,6 +46,7 @@ function AutomationController() {
     this._loadedSingletons = [];
     
     this.auth = new AuthController(this);
+    this.skins = loadObject('userSkins.json') || [];
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -1018,6 +1019,108 @@ AutomationController.prototype.deleteInstance = function (id) {
 
     this.saveConfig();
     this.emit('core.instanceDeleted', id);
+};
+
+AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
+    var result = "in progress";
+
+    console.log('Installing skin', skinName, '...');
+
+    if (reqObj.file_path) {
+        skininstaller.install(
+            reqObj.file_path,
+            skinName,
+            function() {
+                    result = "done";
+            },  function() {
+                    result = "failed";
+            }
+        );
+        
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+                result = "failed";
+        }
+
+        if (result === 'done') {
+            if (index < 0){
+                // add new skin
+                newSkin = {
+                    name: '',
+                    title: '',
+                    description: '',
+                    version: '',
+                    icon: false,
+                    author: '',
+                    homepage: ''
+                };
+
+                for (var property in reqObj) {
+                    if (reqObj.hasOwnProperty(property) && newSkin.hasOwnProperty(property)) {
+                        newSkin[property] = reqObj[property];
+                    }
+                }
+
+                this.skins.push(newSkin);
+            } else {
+                // update entries
+                for (var property in reqObj) {
+                    if (reqObj.hasOwnProperty(property) && this.skins[index].hasOwnProperty(property)) {
+                        this.skins[index][property] = reqObj[property];
+                    }
+                }
+            }
+
+            saveObject("userSkins.json", this.skins);
+        }
+    }
+
+    return result;
+};
+
+AutomationController.prototype.uninstallSkin = function(skinName) {
+    var langFile = this.loadMainLang(),
+        result = "in progress";
+
+    try {
+        skininstaller.remove(
+            skinName,
+            function() {
+                    result = "done";
+            },  function() {
+                    result = "failed";
+            }
+        );
+        
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+        
+        if (result === "in progress") {
+            result = "failed";
+        }
+
+        if (result === "done") {
+            this.skins = _.filter(this.skins, function (skin) {
+                return skin.name !== skinName;
+            });
+
+            saveObject("userSkins.json", this.skins);
+        }
+
+    } catch (e) {
+        console.log('Uninstalling or reseting of skin "' + skinName + '" has failed. ERROR:', e);
+        this.addNotification("error", langFile.ac_err_uninstall_skin + ': ' + skinName, "core", "AutomationController");
+    }
+
+    return result;
 };
 
 AutomationController.prototype.deviceExists = function (vDevId) {

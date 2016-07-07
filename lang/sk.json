@@ -10,6 +10,7 @@
 	"ac_err_load_mod_json":"Nedá sa načítať modules.json z ",
 	"ac_err_stop_mod":"Nedá sa zastaviť modul ",
 	"ac_err_uninstall_mod":"Unable to uninstall or reset app.",
+	"ac_err_uninstall_skin":"Unable to uninstall skin.",
 	"ac_err_instance_already_exists":"Can't register duplicate module instance: ",
 	"ac_err_instance_empty":"Can't register empty module instance: ",
 	"ac_err_create_instance":"Cannot create instance. [APP] :: [INSTANCE ID] = ",

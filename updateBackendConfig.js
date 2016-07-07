@@ -1,8 +1,9 @@
 // This script transforms old formats to new
 
 (function () {
-  var config = loadObject("config.json");
-      oldConfigJSON = JSON.stringify(config);
+  var config = loadObject("config.json"),
+      oldConfigJSON = JSON.stringify(config),
+      skins = loadObject("userSkins.json");
 
   if (config) {
     // Change profiles data
@@ -27,6 +28,11 @@
         if (!profile.email) {
           profile.email = '';
         }
+
+        // add default skin entry
+        if (!profile.skin) {
+          profile.skin = 'default';
+        }
       });
     } else {
       // default profile
@@ -45,7 +51,8 @@
         expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
-        hide_single_device_events: []
+        hide_single_device_events: [],
+        skin: 'default'
       },
       {
         id: 2,
@@ -62,7 +69,8 @@
         expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
-        hide_single_device_events: []
+        hide_single_device_events: [],
+        skin: 'default'
       }];
     }
     
@@ -394,6 +402,24 @@
           console.log("Error: can not write back config.json to storage: ", e);
         }
       }
+    }
+  }
+
+  if (skins === null) {
+    try {
+      skins = [{
+            name: "default",
+            title: "Default",
+            description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+            version: "1.0.3",
+            icon: true,
+            author: "Martin Vach",
+            homepage: "http://www.zwave.eu"
+      }];
+
+      saveObject("userSkins.json", skins);
+    } catch (e) {
+      console.log("Error: can not write userSkins.json to storage: ", e);
     }
   }
 })();
