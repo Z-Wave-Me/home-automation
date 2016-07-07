@@ -1112,6 +1112,19 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
                 return skin.name !== skinName;
             });
 
+            this.profiles.forEach(function(prof) {
+                if (prof.skin === skinName) {
+                    prof.skin = 'default';
+                }
+            });
+
+            /*Object.keys(this.devices).forEach(function (vdevId) {
+                var vdev = self.devices[vdevId];
+                if (vdev.location === id) {
+                    vdev.location = 0;
+                }
+            });*/
+
             saveObject("userSkins.json", this.skins);
         }
 
