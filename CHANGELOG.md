@@ -1,3 +1,33 @@
+#08.07.2016 v2.2.3
+
+Changes:
+* language keys updated
+* dependency / instance handling:
+ ** fetch undefined and failed instances to avoid error when they were adressed to global variable
+ ** rework loaded singleton handling - in-/activate instance will not influence that list 
+ ** add new installed and added apps also to loadedModules list, to avoid there reinitialization
+ ** flags of dependency error messages changed
+ ** filtering in instantiateModules() changed
+* remove pushNamespaces() for emit 'destroy'
+* CHANGELOG, README, api doc updated
+
+New features:
+* Scene support for fibaro swipe added (4 scenes)
+* Support fixes added for Philio devices: PST02-5C Door Sensor, PST02-5B Motion Sensor, PAT02-5C Flood Sensor, PSG01 Smoke Sensor
+* /system/info api added
+* LightMotionRockerAutocontrol module added
+
+Fixes:
+* bugfix non working increase / decrease command in device api
+* bugfix non loaded modules - double load
+* bugfix 'cannot read property meta of undefined' in module initialization 
+* minor refactoring of namespace generator
+
+Modules:
+* ScheduledScene: added locks support and send Action function
+* PhilioHW: vDev added, batery charge timer
+* ZWave: alarm probeTypes changed, tamper probe type added, renamed 'door' probe type into 'door-window'
+
 #11.04.2016 v2.2.2
 
 New features:
