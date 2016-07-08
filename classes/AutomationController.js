@@ -46,7 +46,15 @@ function AutomationController() {
     this._loadedSingletons = [];
     
     this.auth = new AuthController(this);
-    this.skins = loadObject('userSkins.json') || [];
+    this.skins = loadObject('userSkins.json') || [{
+                    name: "default",
+                    title: "Default",
+                    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                    version: "1.0.3",
+                    icon: true,
+                    author: "Martin Vach",
+                    homepage: "http://www.zwave.eu"
+              }];
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -188,6 +196,15 @@ AutomationController.prototype.start = function (reload) {
         console.log("Reload config...");
         // Reload config
         this.reloadConfig();
+        this.skins = loadObject('userSkins.json') || [{
+                    name: "default",
+                    title: "Default",
+                    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                    version: "1.0.3",
+                    icon: true,
+                    author: "Martin Vach",
+                    homepage: "http://www.zwave.eu"
+              }];
     }
 
     // Restore persistent data
@@ -1117,13 +1134,6 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
                     prof.skin = 'default';
                 }
             });
-
-            /*Object.keys(this.devices).forEach(function (vdevId) {
-                var vdev = self.devices[vdevId];
-                if (vdev.location === id) {
-                    vdev.location = 0;
-                }
-            });*/
 
             saveObject("userSkins.json", this.skins);
         }

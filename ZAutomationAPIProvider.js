@@ -2085,6 +2085,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             storageContentList = loadObject("__storageContent"),
             defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
             defaultConfig = {},
+            defaultSkins = [{
+                name: "default",
+                title: "Default",
+                description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                version: "1.0.3",
+                icon: true,
+                author: "Martin Vach",
+                homepage: "http://www.zwave.eu"
+            }],
             now = new Date();
 
         try{
@@ -2156,6 +2165,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     });
 
+                    // remove skins
+                    _.forEach(this.controller.skins, function(skin) {
+                        self.controller.uninstallSkin(skin.name); 
+                    });
+
                     // stop the controller
                     this.controller.stop();
                     
@@ -2174,6 +2188,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // set back to default config
                     saveObject('config.json', defaultConfig);
+                    saveObject('userSkins.json', defaultSkins);
 
                     // start controller with reload flag to apply config.json
                     this.controller.start(true);

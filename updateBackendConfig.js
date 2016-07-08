@@ -309,6 +309,7 @@
             profile.hide_all_device_events = false;
             profile.hide_system_events = false;
             profile.hide_single_device_events = [];
+            profile.skin = "default";
 
             delete profile.description;
             delete profile.widgets;
@@ -389,7 +390,8 @@
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
-                hide_single_device_events: []
+                hide_single_device_events: [],
+                skin: 'default'
             });
       }
     
