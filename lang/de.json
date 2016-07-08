@@ -10,7 +10,6 @@
 	"ac_err_load_mod_json":"modules.json kann nicht geladen werden. Modul: ",
 	"ac_err_stop_mod":"Das folgende Modul kann nicht gestoppt werden: ",
 	"ac_err_uninstall_mod":"Die App konnte nicht deinstalliert oder wiederhergestellt werden.",
-	"ac_err_uninstall_skin":"Das Skin konnte nicht deinstalliert werden.",
 	"ac_err_instance_already_exists":"Instanzierung fehlgeschlagen. Folgende Instanz Id wird bereits verwendet: ",
 	"ac_err_instance_empty":"Leere Instanzen können nicht instanziert werden: ",
 	"ac_err_create_instance":"Es konnte keine neue Instanz von der App erzeugt werden. [APP] :: [INSTANZ ID] = ",

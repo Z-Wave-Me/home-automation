@@ -124,17 +124,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.get("/resetToFactoryDefault", this.ROLE.ADMIN, this.resetToFactoryDefault);
-
-        // skins tokens
-        this.router.get("/skins/tokens", this.ROLE.ADMIN, this.getSkinTokens);
-        this.router.put("/skins/tokens", this.ROLE.ADMIN, this.storeSkinToken);
-        this.router.del("/skins/tokens", this.ROLE.ADMIN, this.deleteSkinToken);
-
-        this.router.get("/skins", this.ROLE.ADMIN, this.getSkins);
-        this.router.post("/skins", this.ROLE.ADMIN, this.addOrUpdateSkin);
-        this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
-        this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
-        this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -1218,8 +1207,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
-                hide_single_device_events: [],
-                skin: ''
+                hide_single_device_events: []
             });
 
             reqObj = _.omit(reqObj, 'passwordConfirm');
@@ -1277,7 +1265,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     profile.dashboard = reqObj.dashboard;
                     profile.hide_single_device_events = reqObj.hide_single_device_events;
                     profile.email = reqObj.email;
-                    profile.skin = reqObj.skin;
                     
                     profile = this.controller.updateProfile(profile, profile.id);
                     
@@ -1764,8 +1751,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             backupJSON = {}, 
-            userModules = [],
-            skins = [];
+            userModules = [];
 
         var now = new Date();
 
@@ -1798,20 +1784,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (userModules.length > 0) {
                 backupJSON['__userModules'] = userModules;
-            }
-
-            // add list of current skins
-            _.forEach(this.controller.skins, function(skin) {
-                if (skins.indexOf(skin) === -1) {
-                    skins.push({
-                        name: skin.name,
-                        version: skin.version
-                    });
-                }
-            });
-
-            if (skins.length > 0) {
-                backupJSON['__userSkins'] = skins;
             }
             
             // save Z-Way and EnOcean objects
@@ -1880,7 +1852,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout","__userSkins"]; // objects that should be ignored 
+                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout"]; // objects that should be ignored 
                 
                 if (dontSave.indexOf(obj) === -1) {
                     saveObject(obj, reqObj.data[obj]);
@@ -2133,223 +2105,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } catch (e) {
             reply.error = 'Something went wrong. Error: ' + e.message;
-        }
-
-        return reply;
-    },
-    getSkins: function () {
-        var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                };
-            
-        if (this.controller.skins) {
-            reply.data = this.controller.skins;
-            reply.code = 200;
-        } else {
-            reply.error = 'failed_to_load_skins';
-        }
-
-        return reply;
-    },
-    getSkin: function (skinName) {
-        var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                };
-            
-        if (this.controller.skins) {
-            index = _.findIndex(this.controller.skins, function(skin) { 
-                return skin.name === skinName; 
-            });
-
-            if (index > -1) {
-                reply.data = this.controller.skins[index];
-                reply.code = 200;
-            } else {
-                reply.code = 404;
-                reply.error = 'skin_not_exists';
-            }
-        } else {
-            reply.error = 'failed_to_load_skins';
-        }
-
-        return reply;
-    },
-    addOrUpdateSkin: function (skinName) {
-        var reply = {
-                error: 'skin_failed_to_install',
-                data: null,
-                code: 500
-            },
-            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
-            result = "",
-            skName = skinName || reqObj.name;
-
-        if (skName !== 'default') {
-
-            index = _.findIndex(this.controller.skins, function(skin) { 
-                return skin.name === skName; 
-            });
-
-            if ((index < 0 && this.req.method === 'POST') || 
-                    (index > -1 && this.req.method === 'PUT' && skinName)) {
-                
-                // download and install the skin
-                result = this.controller.installSkin(reqObj, skName, index);
-
-                if (result === "done") {
-
-                    reply.code = 200;
-                    reply.data = this.req.method === 'POST'? "skin_installation_successful" : "skin_update_successful"; // send language key as response
-                    reply.error = null;
-                }
-            } else if (this.req.method === 'POST' && !skinName) {
-                reply.code = 409;
-                reply.error = 'skin_from_url_already_exists';
-            } else if (this.req.method === 'PUT' && skinName) {
-                reply.code = 404;
-                reply.error = 'skin_not_exists';
-            }
-        } else {
-            reply.code = 403;
-            reply.error = 'No Permission';
-        }
-        
-        return reply;
-    },
-    deleteSkin: function (skinName) {
-        var reply = {
-                error: 'skin_failed_to_delete',
-                data: null,
-                code: 500
-            },
-            uninstall = false;
-
-        if (skinName !== 'default') {
-            index = _.findIndex(this.controller.skins, function(skin) { 
-                return skin.name === skinName; 
-            });
-
-            if (index > -1) {
-
-                uninstall = this.controller.uninstallSkin(skinName);
-
-                if (uninstall) {
-
-                    reply.code = 200;
-                    reply.data = "skin_delete_successful"; // send language key as response
-                    reply.error = null;
-                }       
-            } else {
-                reply.code = 404;
-                reply.error = 'skin_not_exists';
-            }
-        } else {
-            reply.code = 403;
-            reply.error = 'No Permission';
-        }
-        
-        return reply;
-    },
-    getSkinTokens: function () {
-        var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                }, 
-                tokenObj = loadObject('skinTokens.json');
-
-        if (tokenObj === null) {
-
-            tokenObj = {
-                    skinTokens: []
-            };
-
-            saveObject('skinTokens.json', tokenObj);
-        }
-            
-        if (!!tokenObj) {
-            reply.data = tokenObj;
-            reply.code = 200;
-        } else {
-            reply.error = 'failed_to_load_skin_tokens';
-        }
-
-        return reply;
-    },
-    storeSkinToken: function () {
-        var reply = {
-                    error: 'failed_to_load_skin_tokens',
-                    data: null,
-                    code: 500
-                },
-                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
-                tokenObj = loadObject('skinTokens.json');
-
-        if (reqObj && reqObj.token) {
-
-            if (tokenObj === null) {
-
-                tokenObj = {
-                    skinTokens: [reqObj.token]
-                }
-
-                // save tokens
-                saveObject('skinTokens.json', tokenObj);
-
-                reply.data = tokenObj;
-                reply.code = 201;
-
-            } else if (!!tokenObj && tokenObj.skinTokens) {
-
-                if (tokenObj.skinTokens.indexOf(reqObj.token) < 0) {
-                    // add new token id
-                    tokenObj.skinTokens.push(reqObj.token);
-
-                    // save tokens
-                    saveObject('skinTokens.json', tokenObj);
-
-                    reply.data = tokenObj;
-                    reply.code = 201;
-                } else {
-                    reply.code = 409;
-                    reply.error = 'skin_token_not_unique';
-                }
-            }
-        }
-
-        return reply;
-    },
-    deleteSkinToken: function () {
-        var reply = {
-                    error: null,
-                    data: null,
-                    code: 500
-                },
-                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
-                tokenObj = loadObject('skinTokens.json');
-
-        if (reqObj && reqObj.token && !!tokenObj && tokenObj.skinTokens) {
-            if (tokenObj.skinTokens.indexOf(reqObj.token) > -1) {
-                // add new token id
-                tokenObj.skinTokens = _.filter(tokenObj.skinTokens, function(token) {
-                    return token !== reqObj.token;
-                });
-
-                // save tokens
-                saveObject('skinTokens.json', tokenObj);
-
-                reply.data = tokenObj;
-                reply.code = 200;
-            } else {
-                reply.code = 404;
-                reply.error = 'not_existing_skin_token';
-            }
-        } else {
-            reply.error = 'failed_to_load_skin_tokens';
         }
 
         return reply;
