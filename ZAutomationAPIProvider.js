@@ -130,11 +130,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/skins/tokens", this.ROLE.ADMIN, this.storeSkinToken);
         this.router.del("/skins/tokens", this.ROLE.ADMIN, this.deleteSkinToken);
 
-        this.router.get("/skins", this.ROLE.ADMIN, this.getSkins);
+        this.router.get("/skins", this.ROLE.USER, this.getSkins);
         this.router.post("/skins", this.ROLE.ADMIN, this.addOrUpdateSkin);
-        this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
+        this.router.get("/skins/:skin_id", this.ROLE.USER, this.getSkin);
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
+        this.router.get("/skins/setToDefault", this.ROLE.USER, this.setDefaultSkin);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -2328,6 +2329,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.error = 'No Permission';
         }
         
+        return reply;
+    },
+    setDefaultSkin: function () {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            profile = this.controller.getProfile(this.req.user);
+        
+        if (profile) {
+
+            // could be changed by user role
+            profile.skin = 'default';
+            
+            profile = this.controller.updateProfile(profile, profile.id);
+            
+            if (profile !== undefined && profile.id !== undefined) {
+                reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
+                reply.code = 200;
+                // do logout
+                setTimeout(function(){
+                    self.doLogout();
+                }, 3000);
+            } else {
+                reply.error = "Something went wrong.";
+            }
+        } else {
+            reply.code = 404;
+            reply.error = "Profile not found.";
+        }
+
         return reply;
     },
     getSkinTokens: function () {
