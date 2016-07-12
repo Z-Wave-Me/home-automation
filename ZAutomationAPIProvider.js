@@ -2093,7 +2093,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 version: "1.0.3",
                 icon: true,
                 author: "Martin Vach",
-                homepage: "http://www.zwave.eu"
+                homepage: "http://www.zwave.eu",
+                active: true
             }],
             now = new Date();
 

@@ -53,7 +53,8 @@ function AutomationController() {
                     version: "1.0.3",
                     icon: true,
                     author: "Martin Vach",
-                    homepage: "http://www.zwave.eu"
+                    homepage: "http://www.zwave.eu",
+                    active: true
               }];
 }
 
@@ -203,7 +204,8 @@ AutomationController.prototype.start = function (reload) {
                     version: "1.0.3",
                     icon: true,
                     author: "Martin Vach",
-                    homepage: "http://www.zwave.eu"
+                    homepage: "http://www.zwave.eu",
+                    active: true
               }];
     }
 
