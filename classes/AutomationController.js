@@ -1041,9 +1041,10 @@ AutomationController.prototype.deleteInstance = function (id) {
 AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
     var result = "in progress";
 
-    console.log('Installing skin', skinName, '...');
-
     if (reqObj.file_path) {
+        
+        console.log('Installing skin', skinName, '...');
+
         skininstaller.install(
             reqObj.file_path,
             skinName,
@@ -1074,7 +1075,8 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
                     version: '',
                     icon: false,
                     author: '',
-                    homepage: ''
+                    homepage: '',
+                    active: false
                 };
 
                 for (var property in reqObj) {
@@ -1091,6 +1093,8 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
                         this.skins[index][property] = reqObj[property];
                     }
                 }
+
+                this.skins[index].active = false;
             }
 
             saveObject("userSkins.json", this.skins);
@@ -1144,6 +1148,30 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
     }
 
     return result;
+};
+
+AutomationController.prototype.setSkinState = function(skinName, reqObj) {
+
+    var res = null;
+
+    if (reqObj.hasOwnProperty('active')) {
+
+        _.forEach(this.skins, function (skin) {
+            if (reqObj.active === true || reqObj.active === 'true') {
+                // activate target skin and deactivate all others
+                skin.active = skin.name === skinName? true : false;
+                res = skin.name === skinName? skin : res;
+            } else {
+                // deactivate all skins and set default skin to active: true
+                skin.active = skin.name === 'default'? true : false;
+                res = skin.name === 'default'? skin : res;
+            }
+        })
+
+        saveObject("userSkins.json", this.skins);
+    }
+
+    return res;
 };
 
 AutomationController.prototype.deviceExists = function (vDevId) {

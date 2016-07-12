@@ -30,8 +30,8 @@
         }
 
         // add default skin entry
-        if (!profile.skin) {
-          profile.skin = 'default';
+        if (profile.skin) {
+          delete profile.skin;
         }
       });
     } else {
@@ -51,8 +51,7 @@
         expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
-        hide_single_device_events: [],
-        skin: 'default'
+        hide_single_device_events: []
       },
       {
         id: 2,
@@ -69,8 +68,7 @@
         expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
-        hide_single_device_events: [],
-        skin: 'default'
+        hide_single_device_events: []
       }];
     }
     
@@ -309,7 +307,6 @@
             profile.hide_all_device_events = false;
             profile.hide_system_events = false;
             profile.hide_single_device_events = [];
-            profile.skin = "default";
 
             delete profile.description;
             delete profile.widgets;
@@ -390,8 +387,7 @@
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
-                hide_single_device_events: [],
-                skin: 'default'
+                hide_single_device_events: []
             });
       }
     
@@ -407,17 +403,29 @@
     }
   }
 
-  if (skins === null) {
+  if (skins) {
     try {
-      skins = [{
-            name: "default",
-            title: "Default",
-            description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
-            version: "1.0.3",
-            icon: true,
-            author: "Martin Vach",
-            homepage: "http://www.zwave.eu"
-      }];
+
+      if (skins === null) {
+        skins = [{
+              name: "default",
+              title: "Default",
+              description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+              version: "1.0.3",
+              icon: true,
+              author: "Martin Vach",
+              homepage: "http://www.zwave.eu",
+              active: true
+        }];
+      } else {
+        skins.forEach(function(skin) {
+          if (skin.name === 'default' && !skin.hasOwnProperty('active')) {
+            skin.active = true;
+          } else if (!skin.hasOwnProperty('active')) {
+            skin.active = false;
+          }
+        });
+      }
 
       saveObject("userSkins.json", skins);
     } catch (e) {

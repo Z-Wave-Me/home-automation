@@ -130,12 +130,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/skins/tokens", this.ROLE.ADMIN, this.storeSkinToken);
         this.router.del("/skins/tokens", this.ROLE.ADMIN, this.deleteSkinToken);
 
-        this.router.get("/skins", this.ROLE.USER, this.getSkins);
-        this.router.post("/skins", this.ROLE.ADMIN, this.addOrUpdateSkin);
-        this.router.get("/skins/:skin_id", this.ROLE.USER, this.getSkin);
-        this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.get("/skins", this.ROLE.ADMIN, this.getSkins);
+        this.router.post("/skins/install", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.put("/skins/update/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.get("/skins/setToDefault", this.ROLE.ADMIN, this.setDefaultSkin);
+        this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
+        this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
-        this.router.get("/skins/setToDefault", this.ROLE.USER, this.setDefaultSkin);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -1278,7 +1279,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     profile.dashboard = reqObj.dashboard;
                     profile.hide_single_device_events = reqObj.hide_single_device_events;
                     profile.email = reqObj.email;
-                    profile.skin = reqObj.skin;
                     
                     profile = this.controller.updateProfile(profile, profile.id);
                     
@@ -2255,6 +2255,32 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
+    activateOrDeactivateSkin: function (skinName) {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            skin = null;
+
+        skin = this.controller.setSkinState(skinName, reqObj);
+
+        try {
+            if (!!skin) {
+                reply.data = skin;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } catch (e) {
+            reply.error = 'failed_to_load_skins';
+            reply.message = e.message;
+        }
+
+        return reply;
+    },
     addOrUpdateSkin: function (skinName) {
         var reply = {
                 error: 'skin_failed_to_install',
@@ -2332,34 +2358,32 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     setDefaultSkin: function () {
-        var reply = {
+        var self = this,
+            reply = {
                 error: null,
                 data: null,
                 code: 500
-            },
-            profile = this.controller.getProfile(this.req.user);
-        
-        if (profile) {
+            };
+            
+            try {
 
-            // could be changed by user role
-            profile.skin = 'default';
-            
-            profile = this.controller.updateProfile(profile, profile.id);
-            
-            if (profile !== undefined && profile.id !== undefined) {
+                // deactivate all skins and set default skin to active: true
+                _.forEach(this.controller.skins, function (skin) {
+                    skin.active = skin.name === 'default'? true : false;
+                })
+
+                saveObject("userSkins.json", this.controller.skins);
+
                 reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
                 reply.code = 200;
                 // do logout
                 setTimeout(function(){
                     self.doLogout();
                 }, 3000);
-            } else {
+            } catch (e) {
                 reply.error = "Something went wrong.";
+                reply.message = e.message;
             }
-        } else {
-            reply.code = 404;
-            reply.error = "Profile not found.";
-        }
 
         return reply;
     },
