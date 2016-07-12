@@ -134,6 +134,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/skins/install", this.ROLE.ADMIN, this.addOrUpdateSkin);
         this.router.put("/skins/update/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
         this.router.get("/skins/setToDefault", this.ROLE.ADMIN, this.setDefaultSkin);
+        this.router.get("/skins/active", this.ROLE.USER, this.getActiveSkin);
         this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
@@ -2241,6 +2242,31 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if (this.controller.skins) {
             index = _.findIndex(this.controller.skins, function(skin) { 
                 return skin.name === skinName; 
+            });
+
+            if (index > -1) {
+                reply.data = this.controller.skins[index];
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    getActiveSkin: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.active === true; 
             });
 
             if (index > -1) {
