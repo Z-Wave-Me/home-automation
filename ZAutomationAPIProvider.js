@@ -134,7 +134,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/skins/install", this.ROLE.ADMIN, this.addOrUpdateSkin);
         this.router.put("/skins/update/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
         this.router.get("/skins/setToDefault", this.ROLE.ADMIN, this.setDefaultSkin);
-        this.router.get("/skins/active", this.ROLE.USER, this.getActiveSkin);
+        this.router.get("/skins/active", this.ROLE.ANONYMOUS, this.getActiveSkin);
         this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
