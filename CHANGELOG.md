@@ -1,4 +1,4 @@
-#08.07.2016 v2.2.3
+#12.07.2016 v2.2.3
 
 Changes:
 * language keys updated
