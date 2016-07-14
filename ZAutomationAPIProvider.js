@@ -2442,7 +2442,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     storeSkinToken: function () {
         var reply = {
-                    error: 'failed_to_load_skin_tokens',
+                    error: null,
                     data: null,
                     code: 500
                 },
@@ -2479,6 +2479,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.error = 'skin_token_not_unique';
                 }
             }
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
         }
 
         return reply;
