@@ -667,6 +667,14 @@ ZWave.prototype.defineHandlers = function () {
 		};
 	})(this);
 
+	// attach packetlog handler. on Z-Way binding stop it will be released itself, no need to write stop code
+	zway.controller.data.incomingPacket.bind(function() {
+		ws.push({
+			type: 'me.z-wave.namespaces.z-wave.packetLog',
+			data: this.value
+		});
+	});
+
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
 			var deviceId = parseInt(url.substring(1), 10);
