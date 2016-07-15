@@ -1243,6 +1243,7 @@ ZWave.prototype.gateDevicesStart = function () {
 
 					var create = true,
 						preventCreation = {},
+						renameDevices = {},
 						deviceData = zway.devices[nodeId].data,
 						deviceInstances = zway.devices[nodeId].instances,
 						deviceCC = deviceInstances[instanceId].commandClasses[commandClassId],
@@ -1272,7 +1273,12 @@ ZWave.prototype.gateDevicesStart = function () {
 					// ----------------------------------------------------------------------------
 					// --- postfix functions
 					// ----------------------------------------------------------------------------
-					// 
+					
+					// add SwitchController support by entering (runs once after inclusion):
+					// instId ... instance ID
+					// commandClass ... Command Class ID
+					// maxBtnNr ... maximum number of widgets that should / could be rendered
+					// type ... 'S' for 'scene' and 'B' for 'button' or 'switchControl'
 					function supportSwitchController (instId, commandClass, maxBtnNr, type) {
 						var trapArray = [],
 							commandClass = commandClass || null;
@@ -1292,6 +1298,12 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
+					// prevent the creation of widgets by entering (runs on every z-way startup):
+					// instId ... instance ID
+					// commandClass ... Command Class ID
+					// subClassesEventTypeObject ... empty {} will prevent creation of all class widgets, 
+					// 								 {'1':[] (,'2':[], ...)} will prevent creation of all subClass widgets related to subClass 1,
+					// 								 {'1':[1 (,2,...)] (,'2':[], ...)} will prevent creation of all event types 1 (,2, ...) from subClass 1 
 					function preventDeviceCreation (instId, commandClass, subClassesEventTypeObject) {
 						var commandClass = commandClass || null;
 
@@ -1303,6 +1315,11 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
+					// set device config by entering (runs once after inclusion):
+					// instId ... instance ID
+					// parameter ... id of the parameter that should be changed
+					// value ... new value
+					// size ... 0 for auto or 1, 2, 4 (Byte)
 					function setConfig (instId, parameter, value, size) {
 						var parameter = parseInt(parameter) || null,
 							value = parseInt(value) || null,
@@ -1317,7 +1334,7 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
-					// change CC entries by entering:
+					// change CC entries by entering (runs once after inclusion):
 					// instId ... instance ID
 					// commandClass ... Command Class ID
 					// dataType ... data type object that should be changed -e.g. security, version, interviewDone
@@ -1339,6 +1356,21 @@ ZWave.prototype.gateDevicesStart = function () {
 
 								console.log('##--------------CC-ENTRY-OF-' + devId + '-CC-' + commandClass + '-CHANGED--------------##');
 							}
+						}
+					}
+
+					// rename virtual devices after inclusion (runs once after inclusion):
+					// instId ... instance ID
+					// commandClass ... Command Class ID
+					// subClassesEventTypeObject ... empty {} will prevent creation of all class widgets, 
+					// 								 {'1':[] (,'2':[], ...)} will prevent creation of all subClass widgets related to subClass 1,
+					// 								 {'1':[1 (,2,...)] (,'2':[], ...)} will prevent creation of all event types 1 (,2, ...) from subClass 1
+					function renameVirtualDevice (instId, commandClass, subClassesEventTypeObject) {
+						var commandClass = commandClass || null;
+
+						if (instId === instanceId && commandClassId === commandClass && c.data.lastIncludedDevice.value === nodeId) {
+							
+							renameDevices = subClassesEventTypeObject? subClassesEventTypeObject : {};
 						}
 					}
 
@@ -1390,7 +1422,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					}
 
 					if (create || _.size(preventCreation) > 0) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, preventCreation, renameDevices);
 					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
@@ -1438,7 +1470,7 @@ ZWave.prototype.gateDevicesStop = function () {
 	}
 };
 
-ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded, preventCreation) {
+ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded, preventCreation, renameDevices) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
@@ -1480,7 +1512,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		function compileTitle() {
 			var args = [],
 				sortArgs = [],
-				last = 0;
+				last = 0,
+				addVendor = true;
 
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
@@ -1488,8 +1521,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			last = args.length - 1
 
+			if (args[last] === false) {
+				addVendor = false;
+				// move by one position to id
+				last = args.length - 2;
+			}
+
 			// add vendorName on first position
-			if (vendorName) {
+			if (vendorName && addVendor) {
 				sortArgs.push(vendorName);
 			}
 
@@ -1515,12 +1554,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
-
+			
 			defaults = {
 				deviceType: "switchBinary",
 				metrics: {
 					icon: 'switch',
-					title: compileTitle('Switch', vDevIdNI)
+					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Switch', vDevIdNI)
 				}
 			};
 
@@ -1549,12 +1588,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
 			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], this.zway.devices[nodeId].data.specificType.value);
+
 			defaults = {
 				deviceType: "switchMultilevel",
 				probeType: isMotor ? 'motor' : 'multilevel',
 				metrics: {
 					icon: isMotor ? 'blinds' : 'multilevel',
-					title: compileTitle(isMotor ? 'Blind' : 'Dimmer', vDevIdNI)
+					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false): compileTitle(isMotor ? 'Blind' : 'Dimmer', vDevIdNI)
 				}
 			};
 
@@ -1642,6 +1682,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var haveRGB = cc.data && cc.data[COLOR_RED] && cc.data[COLOR_GREEN] && cc.data[COLOR_BLUE] && true;
 			
 			if (haveRGB && !self.controller.devices.get(vDevId + separ + "rgb")) {
+
 				var vDev_rgb = this.controller.devices.create({
 					deviceId: vDevId + separ + "rgb",
 					defaults: {
@@ -1649,7 +1690,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						probeType: 'switchColor_rgb',
 						metrics: {
 							icon: 'multilevel',
-							title: compileTitle('Color', vDevIdNI + separ + vDevIdC),
+							title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI + separ + vDevIdC, false): compileTitle('Color', vDevIdNI + separ + vDevIdC),
 							color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 							level: 'off'
 						}
@@ -1692,13 +1733,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				if (!preventCreation[colorId]) {
 					colorId = parseInt(colorId, 10);
 					if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
-             
+             			var devName = renameDevices[colorId] && renameDevices[colorId]['name']? renameDevices[colorId]['name'] : cc.data[colorId].capabilityString.value;
+             			
              			defaults = {
 							deviceType: "switchMultilevel",
 							probeType: '',
 							metrics: {
 								icon: 'multilevel',
-								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
+								title: compileTitle(devName, vDevIdNI + separ + vDevIdC + separ + colorId, false),
 								level: 'off'
 							}
 						}
@@ -1815,7 +1857,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					sensorTypeId = parseInt(sensorTypeId, 10);
 					if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-						defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = renameDevices[sensorTypeId] && renameDevices[sensorTypeId]['name']? compileTitle(renameDevices[sensorTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + sensorTypeId, false) : compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
 						// aivs // Motion icon for Sensor Binary by default
 						defaults.metrics.icon = "motion";
 						defaults.probeType = "general_purpose";
@@ -1873,7 +1915,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
 					}
 				}, "child");
 			}
@@ -1895,7 +1937,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-						defaults.metrics.title =  compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = renameDevices[sensorTypeId] && renameDevices[sensorTypeId]['name']? compileTitle(renameDevices[sensorTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + sensorTypeId, false) : compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
 						if (sensorTypeId === 1) {
 								defaults.metrics.icon = "temperature";
 								defaults.probeType = defaults.metrics.icon;
@@ -1945,7 +1987,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
 					}
 				}, "child");
 			}
@@ -1968,7 +2010,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!isNaN(scaleId) && !self.controller.devices.get(vDevId + separ + scaleId)) {
 						defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
+						defaults.metrics.title = renameDevices[scaleId] && renameDevices[scaleId]['name']? compileTitle(renameDevices[scaleId]['name'], vDevIdNI + separ + vDevIdC + separ + scaleId, false) : compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
 
 						switch (scaleId) {
 							case 0:
@@ -2022,11 +2064,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
 					}
 				}, "child");
 			}
 		} else if (this.CC["Battery"] === commandClassId && !self.controller.devices.get(vDevId)) {
+
 			defaults = {
 				deviceType: 'battery',
 				metrics: {
@@ -2034,7 +2077,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					scaleTitle: '%',
 					level: '',
 					icon: 'battery',
-					title: compileTitle('Battery', vDevIdNI)
+					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Battery', vDevIdNI)
 				}
 			};
 
@@ -2058,12 +2101,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["DoorLock"] === commandClassId && !self.controller.devices.get(vDevId)) {
+
 			defaults = {
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
 					icon: 'door',
-					title: compileTitle('Door Lock', vDevIdNI)
+					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Door Lock', vDevIdNI)
 				}
 			};
 
@@ -2088,12 +2132,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["BarrierOperator"] === commandClassId && !self.controller.devices.get(vDevId)) {
+
 			defaults = {
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
 					icon: 'door',
-					title: compileTitle('Garage Door', vDevIdNI)
+					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Garage Door', vDevIdNI)
 				}
 			};
 
@@ -2135,12 +2180,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					withModeCool = !!instance.ThermostatMode.data[MODE_COOL];
 
 				if (withModeOff && (withModeHeat || withModeCool)) {
+
 					defaults = {
 						deviceType: "switchBinary",
 						probeType:'thermostat_mode',
 						metrics: {
 							icon: 'thermostat',
-							title: compileTitle("Thermostat operation", vDevIdNI)
+							title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle("Thermostat operation", vDevIdNI, false)
 						}
 					};
 
@@ -2199,7 +2245,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									min: DH.min ? DH.min.value : (DH.scale.value === 0 ? 5 : 41),
 									max: DH.max ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
 									icon: 'thermostat',
-									title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
+									title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
 								}
 							},
 							overlay: {},
@@ -2243,7 +2289,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					var a_id = vDevId + separ + sensorTypeId + separ + "A";
 
 					if (!isNaN(sensorTypeId) && !self.controller.devices.get(a_id)) {
-						a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						a_defaults.metrics.title = renameDevices[sensorTypeId] && renameDevices[sensorTypeId]['name']? compileTitle(renameDevices[sensorTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + sensorTypeId, false): compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
 
 						switch(sensorTypeId) {
 							case 0:
@@ -2315,7 +2361,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
 					}
 				}, "child");
 			}
@@ -2345,7 +2391,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-								a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+								a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId]['name']? compileTitle(renameDevices[notificationTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door', false): compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 								a_defaults.probeType = 'alarm_door';
 
 								var a_vDev = self.controller.devices.create({
@@ -2452,7 +2498,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									if (eventTypeId === 0xFE) {
 										
 										if (!self.controller.devices.get(a_id)) {
-											a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+											a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId][eventTypeId] && renameDevices[notificationTypeId][eventTypeId]['name']? compileTitle(renameDevices[notificationTypeId][eventTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId, false): compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
 
 											var a_vDev = self.controller.devices.create({
 												deviceId: a_id,
@@ -2492,7 +2538,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
 
 								if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+									a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId][eventTypeId] && renameDevices[notificationTypeId][eventTypeId]['name']? compileTitle(renameDevices[notificationTypeId][eventTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId, false): compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
@@ -2528,7 +2574,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
 					}
 				}, "child");
 			}
