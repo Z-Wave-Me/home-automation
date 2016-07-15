@@ -76,7 +76,7 @@ Object.defineProperty(ZWave, "list", {
 ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
 
 ZWave.prototype.updateList = function() {
-        this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
+	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
 };
 
 ZWave.prototype.init = function (config) {
@@ -913,48 +913,47 @@ ZWave.prototype.defineHandlers = function () {
 
 		// update postfix JSON
 		http.request({
-	        url: "http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
-	        async: true,
-	        success: function(res) {
-	        	if (res.data && res.data.fixes && res.data.fixes.length > 0 && res.data.last_update && res.data.last_update > postfix.last_update) {
-	        		saveObject('postfix.json', res.data);
-
-	        		success = 1;
-	        	} else {
-	        		success = 2;
-	        	}
-	        },
-	        error: function() {
-	        	console.log('Error has occured during updating the fixes list');
-	        	success = 0;
-	        }
-	    });
-        
-        while (!success && (new Date()).valueOf() < delay) {
-        	processPendingCallbacks();                    
+			url: "http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
+		   	async: true,
+			success: function(res) {
+				if (res.data && res.data.fixes && res.data.fixes.length > 0 && res.data.last_update && res.data.last_update > postfix.last_update) {
+					saveObject('postfix.json', res.data);
+					success = 1;
+				} else {
+					success = 2;
+				}
+			},
+			error: function() {
+				console.log('Error has occured during updating the fixes list');
+				success = 0;
+			}
+		});
+		
+		while (!success && (new Date()).valueOf() < delay) {
+			processPendingCallbacks();
 		}
 
 		switch(success) {
-		       	case 1:
-		       		setTimeout(function () {
-		        		self.controller.reinitializeModule('ZWave', 'modules/');
-		        	}, 3000);
-			    	
-			    	return {
-						status: 200,
-						body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
-					};
-				case 2: 
-					return {
-						status: 200,
-						body: 'List of fixes is already up to date ... '
-					};
-				default:
-					return {
-						status: 500,
-						body: 'Something went wrong ... '
-					};
-		    }
+		   	case 1:
+			   	setTimeout(function () {
+					self.controller.reinitializeModule('ZWave', 'modules/');
+				}, 3000);
+					
+				return {
+					status: 200,
+					body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
+				};
+			case 2: 
+				return {
+					status: 200,
+					body: 'List of fixes is already up to date ... '
+				};
+			default:
+				return {
+					status: 500,
+					body: 'Something went wrong ... '
+				};
+		}
 	};
 
 	/*
@@ -1700,8 +1699,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				if (!preventCreation[colorId]) {
 					colorId = parseInt(colorId, 10);
 					if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
-             
-             			defaults = {
+			 			defaults = {
 							deviceType: "switchMultilevel",
 							probeType: '',
 							metrics: {
