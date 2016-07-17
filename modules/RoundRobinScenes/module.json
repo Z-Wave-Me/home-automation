@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
         "moduleName":"RoundRobinScenes",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -15,7 +15,8 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-		"scenes": []
+		"scenes": [],
+		"trackCurrent": false
 	},
 	"schema": {
 		"type": "object",
@@ -28,6 +29,9 @@
 					"enum": "namespaces:devices_toggleButton:deviceId",
 					"required": true
 				}
+			},
+			"trackCurrent": {
+				"type": "boolean"
 			}
 		},
 		"required": true
@@ -44,6 +48,10 @@
 						"optionLabels": "namespaces:devices_toggleButton:deviceName"
 					}
 				}
+			},
+			"trackCurrent": {
+				"label": "",
+				"rightLabel": "__rl_track_current__"
 			}
 		}
 	}
