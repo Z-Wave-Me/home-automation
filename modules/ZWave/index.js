@@ -1253,6 +1253,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					var create = true,
 						preventCreation = {},
 						renameDevices = {},
+						changeIcons = {},
 						deviceData = zway.devices[nodeId].data,
 						deviceInstances = zway.devices[nodeId].instances,
 						deviceCC = deviceInstances[instanceId].commandClasses[commandClassId],
@@ -1371,15 +1372,32 @@ ZWave.prototype.gateDevicesStart = function () {
 					// rename virtual devices after inclusion (runs once after inclusion):
 					// instId ... instance ID
 					// commandClass ... Command Class ID
-					// subClassesEventTypeObject ... empty {} will prevent creation of all class widgets, 
-					// 								 {'1':[] (,'2':[], ...)} will prevent creation of all subClass widgets related to subClass 1,
-					// 								 {'1':[1 (,2,...)] (,'2':[], ...)} will prevent creation of all event types 1 (,2, ...) from subClass 1
+					// subClassesEventTypeObject ... the entry 'name': 'NEW NAME' will rename a widget in each level,
+					// 								 {'1':{'name': 'NEW NAME'} (,'2':{'name': 'NEW NAME'}, ...)} will change name of subClass widget  INST-CC-1,
+					// 								 {'1':{'1': {'name': 'NEW NAME'} (,'2':{...},...)} (,'2':{...}, ...)} will change name of event type widget INST-CC-sCC-1 (,2, ...) from subClass 1
 					function renameVirtualDevice (instId, commandClass, subClassesEventTypeObject) {
 						var commandClass = commandClass || null;
 
 						if (instId === instanceId && commandClassId === commandClass && c.data.lastIncludedDevice.value === nodeId) {
 							
 							renameDevices = subClassesEventTypeObject? subClassesEventTypeObject : {};
+						}
+					}
+
+					// change icon entry of devices after inclusion (runs once after inclusion):
+					// instId ... instance ID
+					// commandClass ... Command Class ID
+					// subClassesEventTypeObject ... the entry 'icon': 'NEW ICON' will change icon of a widget in each level,
+					// 								 {'1':{'icon': 'NEW ICON'} (,'2':{'icon': 'NEW ICON'}, ...)} will change icon of subClass widget  INST-CC-1,
+					// 								 {'1':{'1': {'icon': 'NEW ICON'} (,'2':{...},...)} (,'2':{...}, ...)} will change icon of event type widget INST-CC-sCC-1 (,2, ...) from subClass 1
+					function changeIcon(instId, commandClass, subClassesEventTypeObject) {
+						var commandClass = commandClass || null;
+
+						if (instId === instanceId && commandClassId === commandClass && c.data.lastIncludedDevice.value === nodeId) {
+
+							// do something
+							changeIcons = subClassesEventTypeObject? subClassesEventTypeObject : {};
+							console.log('Change an icon of CC:' + commandClass + ' with ' + JSON.stringify(changeIcons));
 						}
 					}
 
@@ -1431,7 +1449,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					}
 
 					if (create || _.size(preventCreation) > 0) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, preventCreation, renameDevices);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, preventCreation, renameDevices, changeIcons);
 					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
@@ -1479,7 +1497,7 @@ ZWave.prototype.gateDevicesStop = function () {
 	}
 };
 
-ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded, preventCreation, renameDevices) {
+ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded, preventCreation, renameDevices, changeIcons) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
@@ -1567,7 +1585,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			defaults = {
 				deviceType: "switchBinary",
 				metrics: {
-					icon: 'switch',
+					icon: changeIcons['icon']? changeIcons['icon'] : 'switch',
 					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Switch', vDevIdNI)
 				}
 			};
@@ -1602,7 +1620,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceType: "switchMultilevel",
 				probeType: isMotor ? 'motor' : 'multilevel',
 				metrics: {
-					icon: isMotor ? 'blinds' : 'multilevel',
+					icon: changeIcons['icon']? changeIcons['icon'] : (isMotor ? 'blinds' : 'multilevel'),
 					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false): compileTitle(isMotor ? 'Blind' : 'Dimmer', vDevIdNI)
 				}
 			};
@@ -1698,7 +1716,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						deviceType: "switchRGBW",
 						probeType: 'switchColor_rgb',
 						metrics: {
-							icon: 'multilevel',
+							icon: changeIcons['icon']? changeIcons['icon'] : 'multilevel',
 							title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI + separ + vDevIdC, false): compileTitle('Color', vDevIdNI + separ + vDevIdC),
 							color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 							level: 'off'
@@ -1742,14 +1760,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				if (!preventCreation[colorId]) {
 					colorId = parseInt(colorId, 10);
 					if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
-             			var devName = renameDevices[colorId] && renameDevices[colorId]['name']? renameDevices[colorId]['name'] : cc.data[colorId].capabilityString.value;
              			
              			defaults = {
 							deviceType: "switchMultilevel",
 							probeType: '',
 							metrics: {
-								icon: 'multilevel',
-								title: compileTitle(devName, vDevIdNI + separ + vDevIdC + separ + colorId, false),
+								icon: changeIcons[colorId] && changeIcons[colorId]['icon']? changeIcons[colorId]['icon']: 'multilevel',
+								title: renameDevices[colorId] && renameDevices[colorId]['name']? compileTitle(renameDevices[colorId]['name'], vDevIdNI + separ + vDevIdC + separ + colorId, false) : compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
 								level: 'off'
 							}
 						}
@@ -1894,6 +1911,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								defaults.probeType = defaults.metrics.icon;
 						}
 
+						// change icon name
+						defaults.metrics.icon = changeIcons[sensorTypeId] && changeIcons[sensorTypeId]['icon']? changeIcons[sensorTypeId]['icon']: defaults.metrics.icon;
+
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + sensorTypeId,
 							defaults: defaults,
@@ -1924,7 +1944,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices, changeIcons);
 					}
 				}, "child");
 			}
@@ -1979,6 +1999,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								defaults.probeType = defaults.metrics.icon;
 						}
 
+						// change icon name
+						defaults.metrics.icon = changeIcons[sensorTypeId] && changeIcons[sensorTypeId]['icon']? changeIcons[sensorTypeId]['icon']: defaults.metrics.icon;
+
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + sensorTypeId,
 							defaults: defaults,
@@ -2008,7 +2031,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices, changeIcons);
 					}
 				}, "child");
 			}
@@ -2056,6 +2079,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								break;
 						}
 
+						// change icon name
+						defaults.metrics.icon = changeIcons[scaleId] && changeIcons[scaleId]['icon']? changeIcons[scaleId]['icon']: defaults.metrics.icon;
+
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + scaleId,
 							defaults: defaults,
@@ -2085,7 +2111,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices, changeIcons);
 					}
 				}, "child");
 			}
@@ -2097,7 +2123,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					probeTitle: 'Battery',
 					scaleTitle: '%',
 					level: '',
-					icon: 'battery',
+					icon: changeIcons['icon']? changeIcons['icon']: 'battery',
 					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Battery', vDevIdNI)
 				}
 			};
@@ -2127,7 +2153,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
-					icon: 'door',
+					icon: changeIcons['icon']? changeIcons['icon']: 'door',
 					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Door Lock', vDevIdNI)
 				}
 			};
@@ -2158,7 +2184,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
-					icon: 'door',
+					icon: changeIcons['icon']? changeIcons['icon']: 'door',
 					title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle('Garage Door', vDevIdNI)
 				}
 			};
@@ -2206,7 +2232,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						deviceType: "switchBinary",
 						probeType:'thermostat_mode',
 						metrics: {
-							icon: 'thermostat',
+							icon: changeIcons['icon']? changeIcons['icon']: 'thermostat',
 							title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle("Thermostat operation", vDevIdNI, false)
 						}
 					};
@@ -2265,7 +2291,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									level: DH.val.value,
 									min: DH.min ? DH.min.value : (DH.scale.value === 0 ? 5 : 41),
 									max: DH.max ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
-									icon: 'thermostat',
+									icon: changeIcons[mode] && changeIcons[mode]['icon']? changeIcons[mode]['icon'] : 'thermostat',
 									title: renameDevices['name']? compileTitle(renameDevices['name'], vDevIdNI, false) : compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
 								}
 							},
@@ -2353,6 +2379,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								break;
 						}
 
+						// change icon name
+						a_defaults.metrics.icon = changeIcons[sensorTypeId] && changeIcons[sensorTypeId]['icon']? changeIcons[sensorTypeId]['icon']: a_defaults.metrics.icon;
+
 						var a_vDev = self.controller.devices.create({
 							deviceId: a_id,
 							defaults: a_defaults,
@@ -2382,7 +2411,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices, changeIcons);
 					}
 				}, "child");
 			}
@@ -2414,6 +2443,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if (!self.controller.devices.get(a_id)) {
 								a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId]['name']? compileTitle(renameDevices[notificationTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door', false): compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 								a_defaults.probeType = 'alarm_door';
+								a_defaults.metrics.icon = changeIcons[notificationTypeId]&& changeIcons[notificationTypeId]['icon']? changeIcons[notificationTypeId]['icon'] : a_defaults.metrics.icon;
 
 								var a_vDev = self.controller.devices.create({
 									deviceId: a_id,
@@ -2520,6 +2550,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										
 										if (!self.controller.devices.get(a_id)) {
 											a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId][eventTypeId] && renameDevices[notificationTypeId][eventTypeId]['name']? compileTitle(renameDevices[notificationTypeId][eventTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId, false): compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+											a_defaults.metrics.icon = changeIcons[notificationTypeId] && changeIcons[notificationTypeId][eventTypeId] && changeIcons[notificationTypeId][eventTypeId]['icon']? changeIcons[notificationTypeId][eventTypeId]['icon'] : a_defaults.metrics.icon;
 
 											var a_vDev = self.controller.devices.create({
 												deviceId: a_id,
@@ -2560,6 +2591,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 								if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
 									a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId][eventTypeId] && renameDevices[notificationTypeId][eventTypeId]['name']? compileTitle(renameDevices[notificationTypeId][eventTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId, false): compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+									a_defaults.metrics.icon = changeIcons[notificationTypeId] && changeIcons[notificationTypeId][eventTypeId] && changeIcons[notificationTypeId][eventTypeId]['icon']? changeIcons[notificationTypeId][eventTypeId]['icon'] : a_defaults.metrics.icon;
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
@@ -2595,7 +2627,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (!scaleAdded) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "", function(type) {
 					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, preventCreation, renameDevices, changeIcons);
 					}
 				}, "child");
 			}
