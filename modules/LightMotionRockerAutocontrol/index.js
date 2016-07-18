@@ -157,8 +157,8 @@ LightMotionRockerAutocontrol.prototype.checkMotions = function() {
 	
 	if (oneMotionIsOn && this.luminanceState) {
 		this.turnLightsOn();
-		self.rescueTimerStart();
-		self.motionTimerStop();
+		this.rescueTimerStart();
+		this.motionTimerStop();
 	}
 
 	if (!oneMotionIsOn || !this.luminanceState) {

@@ -54,7 +54,7 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_sensorBinary:deviceId",
+					"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchControl:deviceId",
 					"required": true
 				}
 			},
@@ -113,7 +113,7 @@
 						"label": "",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_sensorBinary:deviceName"
+						"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchControl:deviceName"
 					}
 				}
 			},

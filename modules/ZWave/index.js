@@ -76,7 +76,7 @@ Object.defineProperty(ZWave, "list", {
 ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
 
 ZWave.prototype.updateList = function() {
-        this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
+	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
 };
 
 ZWave.prototype.init = function (config) {
@@ -667,6 +667,14 @@ ZWave.prototype.defineHandlers = function () {
 		};
 	})(this);
 
+	// attach packetlog handler. on Z-Way binding stop it will be released itself, no need to write stop code
+	zway.controller.data.incomingPacket.bind(function() {
+		ws.push({
+			type: 'me.z-wave.namespaces.z-wave.packetLog',
+			data: this.value
+		});
+	});
+
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
 			var deviceId = parseInt(url.substring(1), 10);
@@ -905,48 +913,47 @@ ZWave.prototype.defineHandlers = function () {
 
 		// update postfix JSON
 		http.request({
-	        url: "http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
-	        async: true,
-	        success: function(res) {
-	        	if (res.data && res.data.fixes && res.data.fixes.length > 0 && res.data.last_update && res.data.last_update > postfix.last_update) {
-	        		saveObject('postfix.json', res.data);
-
-	        		success = 1;
-	        	} else {
-	        		success = 2;
-	        	}
-	        },
-	        error: function() {
-	        	console.log('Error has occured during updating the fixes list');
-	        	success = 0;
-	        }
-	    });
-        
-        while (!success && (new Date()).valueOf() < delay) {
-        	processPendingCallbacks();                    
+			url: "http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
+		   	async: true,
+			success: function(res) {
+				if (res.data && res.data.fixes && res.data.fixes.length > 0 && res.data.last_update && res.data.last_update > postfix.last_update) {
+					saveObject('postfix.json', res.data);
+					success = 1;
+				} else {
+					success = 2;
+				}
+			},
+			error: function() {
+				console.log('Error has occured during updating the fixes list');
+				success = 0;
+			}
+		});
+		
+		while (!success && (new Date()).valueOf() < delay) {
+			processPendingCallbacks();
 		}
 
 		switch(success) {
-		       	case 1:
-		       		setTimeout(function () {
-		        		self.controller.reinitializeModule('ZWave', 'modules/');
-		        	}, 3000);
-			    	
-			    	return {
-						status: 200,
-						body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
-					};
-				case 2: 
-					return {
-						status: 200,
-						body: 'List of fixes is already up to date ... '
-					};
-				default:
-					return {
-						status: 500,
-						body: 'Something went wrong ... '
-					};
-		    }
+		   	case 1:
+			   	setTimeout(function () {
+					self.controller.reinitializeModule('ZWave', 'modules/');
+				}, 3000);
+					
+				return {
+					status: 200,
+					body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
+				};
+			case 2: 
+				return {
+					status: 200,
+					body: 'List of fixes is already up to date ... '
+				};
+			default:
+				return {
+					status: 500,
+					body: 'Something went wrong ... '
+				};
+		}
 	};
 
 	/*
@@ -1953,8 +1960,20 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 9) {
 								defaults.metrics.icon = "barometer";
 								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 25) {
+								defaults.metrics.icon = "seismic";
+								defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 27) {
 								defaults.metrics.icon = "ultraviolet";
+								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 52) {
+								defaults.metrics.icon = "acceleration_x";
+								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 53) {
+								defaults.metrics.icon = "acceleration_y";
+								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 54) {
+								defaults.metrics.icon = "acceleration_z";
 								defaults.probeType = defaults.metrics.icon;
 						}
 
