@@ -1401,6 +1401,18 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
+					// change the node name (runs once after inclusion):
+					function renameNode(nodeName) {
+						var commandClass = commandClass || null;
+
+						if (c.data.lastIncludedDevice.value === nodeId) {
+
+							// do something
+							deviceData.givenName = nodeName && nodeName !== '' && !!nodeName? nodeName : deviceData.givenName;
+							console.log('Change node name to: ' + nodeName);
+						}
+					}
+
 					// ----------------------------------------------------------------------------
 					// --- END
 					// ----------------------------------------------------------------------------
