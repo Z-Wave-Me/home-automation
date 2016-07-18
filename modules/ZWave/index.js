@@ -1917,8 +1917,20 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 9) {
 								defaults.metrics.icon = "barometer";
 								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 25) {
+								defaults.metrics.icon = "seismic";
+								defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 27) {
 								defaults.metrics.icon = "ultraviolet";
+								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 52) {
+								defaults.metrics.icon = "acceleration_x";
+								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 53) {
+								defaults.metrics.icon = "acceleration_y";
+								defaults.probeType = defaults.metrics.icon;
+						} else if (sensorTypeId === 54) {
+								defaults.metrics.icon = "acceleration_z";
 								defaults.probeType = defaults.metrics.icon;
 						}
 

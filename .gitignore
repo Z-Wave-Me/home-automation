@@ -10,3 +10,5 @@ node_modules
 blub
 .gitignore
 userModules/
+.idea
+*.iml
