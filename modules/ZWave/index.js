@@ -1423,7 +1423,12 @@ ZWave.prototype.gateDevicesStart = function () {
 												}
 											});
 										} catch(e) {
-											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
+											// console output
+											console.log('##############', 'INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED:', '#' + nodeId,'#######################');
+											console.log('###');
+											console.log('###', 'ERROR:', e.message);
+											console.log('###');
+											console.log('######################################################################################################');
 										}
 									}
 								}
@@ -1480,7 +1485,12 @@ ZWave.prototype.gateDevicesStart = function () {
 									}
 								});
 							} catch(e) {
-								console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
+								// console output
+								console.log('#######################', 'PRE-OR-POSTFIX-ERROR:', '#' + nodeId,'################################');
+								console.log('###');
+								console.log('###', 'ERROR:', e.message);
+								console.log('###');
+								console.log('#################################################################################################');
 							}
 						}
 					}
