@@ -1377,10 +1377,10 @@ ZWave.prototype.gateDevicesStart = function () {
 
 					var create = true,
 						changeVDev = {},
-						deviceData = zway.devices[nodeId].data,
-						deviceInstances = zway.devices[nodeId].instances,
+						deviceData = self.zway.devices[nodeId].data,
+						deviceInstances = self.zway.devices[nodeId].instances,
 						deviceCC = deviceInstances[instanceId].commandClasses[commandClassId],
-						c = zway.controller,
+						c = self.zway.controller,
 						mId = deviceData.manufacturerId.value? deviceData.manufacturerId.value : null,
 						mPT = deviceData.manufacturerProductType.value? deviceData.manufacturerProductType.value : null,
 						mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
@@ -1547,7 +1547,12 @@ ZWave.prototype.gateDevicesStart = function () {
 												}
 											});
 										} catch(e) {
-											console.log("##---INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED---##", e);
+											// console output
+											console.log('##############', 'INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED:', '#' + nodeId,'#######################');
+											console.log('###');
+											console.log('###', 'ERROR:', e.message);
+											console.log('###');
+											console.log('######################################################################################################');
 										}
 									}
 								}
@@ -1604,7 +1609,12 @@ ZWave.prototype.gateDevicesStart = function () {
 									}
 								});
 							} catch(e) {
-								console.log("#### --- PRE-OR-POSTFIX-ERROR:", e);
+								// console output
+								console.log('#######################', 'PRE-OR-POSTFIX-ERROR:', '#' + nodeId,'################################');
+								console.log('###');
+								console.log('###', 'ERROR:', e.message);
+								console.log('###');
+								console.log('#################################################################################################');
 							}
 						}
 					}

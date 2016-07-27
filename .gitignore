@@ -8,7 +8,7 @@ storage/*
 .idea
 node_modules
 blub
-.gitignore
+*.gitignore
 userModules/
 .idea
 *.iml
