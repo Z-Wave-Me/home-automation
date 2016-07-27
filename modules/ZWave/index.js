@@ -91,7 +91,16 @@ ZWave.prototype.init = function (config) {
 	if (!!updatedPostfix && updatedPostfix.last_update && this.postfix.last_update && updatedPostfix.last_update > this.postfix.last_update) {
 		this.postfix = updatedPostfix; 
 	}
-	
+
+	// select custompostfix.json
+	custom_postfix = loadObject("custompostfix.json");
+
+	if(custom_postfix) {
+		this.custom_postfix = custom_postfix;
+	} else {
+		this.custom_postfix = {};
+	}
+
 	this.startBinding();
 	if (!this.zway) {
 		return;
@@ -263,6 +272,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZMEBootloaderUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PostfixUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixAdd", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -283,12 +294,16 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZMEBootloaderUpgrade");
 	ws.revokeExternalAccess(_name + ".PostfixUpdate");
 	ws.revokeExternalAccess(_name + ".Postfix");
+	ws.revokeExternalAccess(_name + ".PostfixAdd");
+    ws.revokeExternalAccess(_name + ".PostfixGet");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
 ZWave.prototype.defineHandlers = function () {
 	var zway = this.zway;
 	var postfix = this.postfix;
+	var custom_postfix = this.custom_postfix;
+	var self = this;
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -957,6 +972,115 @@ ZWave.prototype.defineHandlers = function () {
 				};
 		}
 	};
+
+
+	// TODO
+	this.ZWaveAPI.PostfixGet = function(url, request) {
+        if(request.method === "POST" && request.body) {
+
+			var fixes = custom_postfix.fixes, // postfix.fixes
+				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+
+            var fix = fixes.filter(function(fix) {
+                return 	fix.p_id === reqObj.p_id;
+            });
+
+			if(!_.isEmpty(fix)) {
+				return {
+					status: 200,
+					headers: {
+						"Content-Type": "application/json",
+						"Connection": "keep-alive"
+					},
+					body: fix[0]
+				};
+			} else {
+				return { status: 404, body: "Postfix with p_id: " + reqObj.p_id + " not found"};
+			}
+        }
+        return { status: 400, body: "Invalid request" };
+    };
+
+	// TODO
+	this.ZWaveAPI.PostfixAdd = function(url, request) {
+
+		if(request.method === "POST" && request.body) {
+
+			var date = new Date(),
+				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+
+
+			if(_.isEmpty(custom_postfix)) {
+
+				reqObj.id = 1;
+
+				custom_postfix = {
+					"last_update" : Math.floor(date.getTime()/1000),
+					"fixes" : [reqObj]
+				};
+				console.log(JSON.stringify(custom_postfix));
+
+			} else {
+				console.log(JSON.stringify(custom_postfix));
+				var fixes = custom_postfix.fixes,
+					fix = fixes.filter(function(fix) {
+						return fix.p_id === reqObj.p_id;
+					});
+
+				if(_.isEmpty(fix)) {
+					var id = Math.max.apply(Math, custom_postfix.fixes.map(function(fix) {
+						return fix.id;
+					}));
+					reqObj.id = id+1;
+
+					custom_postfix.fixes.push(reqObj);
+
+				} else {
+
+					var tempFixes = fixes;
+
+					for(var p in tempFixes) {
+						if(tempFixes[p].p_id === reqObj.p_id) {
+							tempFixes[p] = _.assign(tempFixes[p], reqObj);
+						}
+					}
+
+					console.log("assign: "+JSON.stringify(tempFixes));
+
+					custom_postfix.fixes = tempFixes;
+				}
+
+				custom_postfix.last_update = Math.floor(date.getTime()/1000);
+
+			}
+
+			console.log("custom: "+JSON.stringify(custom_postfix));
+
+
+			saveObject("custompostfix.json", custom_postfix);
+
+			return {
+				status: 200,
+				body: 'custom_postfix saved'
+			};
+
+
+			/*
+			setTimeout(function () {
+				self.controller.reinitializeModule('ZWave', 'modules/');
+			}, 3000);
+
+			return {
+				status: 200,
+				body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
+			};*/
+
+
+		}
+		return { status: 400, body: "Invalid request" };
+	};
+
+
 
 	/*
 	// -- not used -- //
