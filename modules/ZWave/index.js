@@ -1253,10 +1253,10 @@ ZWave.prototype.gateDevicesStart = function () {
 
 					var create = true,
 						changeVDev = {},
-						deviceData = zway.devices[nodeId].data,
-						deviceInstances = zway.devices[nodeId].instances,
+						deviceData = self.zway.devices[nodeId].data,
+						deviceInstances = self.zway.devices[nodeId].instances,
 						deviceCC = deviceInstances[instanceId].commandClasses[commandClassId],
-						c = zway.controller,
+						c = self.zway.controller,
 						mId = deviceData.manufacturerId.value? deviceData.manufacturerId.value : null,
 						mPT = deviceData.manufacturerProductType.value? deviceData.manufacturerProductType.value : null,
 						mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
