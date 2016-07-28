@@ -1,5 +1,6 @@
 {
 	"m_title":"Round Robin Scene Switcher",
 	"m_descr":"This application creates a simple UI element allowing the switching a series of selected scenes in round robin (one after each other). In case there are only two scenes defined this element will toggle between these two scenes. This setup is particularly useful if there are multiple scenes for one room or zone that are typically executed in a defined order (Example: Three scenes in sleeping room: 1 enter the room –> light up the room, 2 move to bed -> dim the light but still keep it up, 3 sleep -> everything is off, 4 - > wakeup in the morning -> only dim the light)<br><br>Settings:<br><ul><li>List of scenes to be activates in round robin</li></ul>",
-	"l_options":"List of scenes to activate"
+	"l_options":"List of scenes to activate",
+	"rl_track_current":"Change index of the next scene to be executed according to explicit manually activated scene"
 }

@@ -221,7 +221,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reqObj;
 
         try {
-            reqObj = JSON.parse(this.req.body);
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body): this.req.body;
         } catch (ex) {
             return {
                 error: ex.message,
@@ -372,16 +372,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     ((notification.level !== 'device-info' && devices.indexOf(notification.source) === -1) || (notification.level === 'device-info' && devices.indexOf(notification.source) > -1));// filter by user device
         });
 
-        if (Boolean(this.req.query.pagination)) {
-            reply.data.total_count = notifications.length;
-            // !!! fix pagination
-            notifications = notifications.slice();
-        }
-
         reply.data = {
             updateTime: timestamp,
             notifications: notifications
         };
+
+        if (Boolean(this.req.query.pagination)) {
+            reply.data.total_count= notifications.length;
+            // !!! fix pagination
+            notifications = notifications.slice();
+        }
 
         return reply;
     },

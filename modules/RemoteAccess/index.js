@@ -161,6 +161,9 @@ RemoteAccess.prototype.startRemoteAccess = function (config, zbw, langFile) {
                 password = self.config.pass? self.config.pass : '',
                 currDate = new Date();
 
+            // update userId (after restoring backup userId in the config might not be equal userId in ZBW service)
+            self.config.userId = zbw.getUserId();
+
             // stop and start zbw connect if necessary       
             if(raStatus !== false && raStatus === self.config.zbwStatus && (raSshStatus !== self.config.sshStatus || password)){
                 zbw.setStatus(false); // stop zbw
@@ -195,7 +198,6 @@ RemoteAccess.prototype.startRemoteAccess = function (config, zbw, langFile) {
             if(raSshStatus !== self.config.sshStatus || raStatus !== self.config.zbwStatus || password) {
                 self.controller.addNotification("notification", langFile.config_changed_successful, "module", "RemoteAccess");
             }
-
         } catch(e) {
             self.controller.addNotification("error", langFile.config_changed_error + e.message, "module", "RemoteAccess");
         } 

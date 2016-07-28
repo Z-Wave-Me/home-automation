@@ -32,44 +32,54 @@ ScheduledScene.prototype.init = function (config) {
     var self = this;
 
     this.runScene = function() {
-        self.config.switches.forEach(function(devState) {
-            var vDev = self.controller.devices.get(devState.device);
-            if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                    vDev.performCommand(devState.status);
+        if (_.isArray(self.config.switches)) {
+            self.config.switches.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                        vDev.performCommand(devState.status);
+                    }
                 }
-            }
-        });
-        self.config.thermostats.forEach(function(devState) {
-            var vDev = self.controller.devices.get(devState.device);
-            if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                    vDev.performCommand("exact", { level: devState.status });
+            });
+        }
+        if (_.isArray(self.config.thermostats)) {
+            self.config.thermostats.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                        vDev.performCommand("exact", { level: devState.status });
+                    }
                 }
-            }
-        });
-        self.config.dimmers.forEach(function(devState) {
-            var vDev = self.controller.devices.get(devState.device);
-            if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                    vDev.performCommand("exact", { level: devState.status });
+            });
+        }
+        if (_.isArray(self.config.dimmers)) {
+            self.config.dimmers.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                        vDev.performCommand("exact", { level: devState.status });
+                    }
                 }
-            }
-        });
-        self.config.locks.forEach(function(devState) {
-            var vDev = self.controller.devices.get(devState.device);
-            if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                    vDev.performCommand(devState.status);
+            });
+        }
+        if (_.isArray(self.config.locks)) {
+            self.config.locks.forEach(function(devState) {
+                var vDev = self.controller.devices.get(devState.device);
+                if (vDev) {
+                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+                        vDev.performCommand(devState.status);
+                    }
                 }
-            }
-        });
-        self.config.scenes.forEach(function(scene) {
-            var vDev = self.controller.devices.get(scene);
-            if (vDev) {
-                vDev.performCommand("on");
-            }
-        });
+            });
+        }
+        if (_.isArray(self.config.scenes)) {
+            self.config.scenes.forEach(function(scene) {
+                var vDev = self.controller.devices.get(scene);
+                if (vDev) {
+                    vDev.performCommand("on");
+                }
+            });
+        }
     };
 
     // set up cron handler
