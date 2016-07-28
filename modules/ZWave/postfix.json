@@ -286,14 +286,6 @@
 			"last_update": "2016-07-21 16:22:21"
 		},
 		{
-			"id": "48",
-			"p_id": "2.277.40976",
-			"product": "Popp Thermostat",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-06-29 11:42:26"
-		},
-		{
 			"id": "49",
 			"p_id": "316.2.13",
 			"product": "Philio PST02-5B Motion Sensor",
@@ -348,22 +340,6 @@
 			"last_update": "2016-07-27 09:05:34"
 		},
 		{
-			"id": "53",
-			"p_id": "134.2.45",
-			"product": "Water Sensor",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-06 14:52:07"
-		},
-		{
-			"id": "54",
-			"p_id": "134.4.37",
-			"product": "Foxx Project Range Extender",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-06 15:33:32"
-		},
-		{
 			"id": "56",
 			"p_id": "134.3.99",
 			"product": "Aeotec SmartDimmer 6",
@@ -374,94 +350,6 @@
 				"renameNode,Aeotec SmartDimmer 6"
 			],
 			"last_update": "2016-07-27 09:08:26"
-		},
-		{
-			"id": "57",
-			"p_id": "134.3.75",
-			"product": "Foxx Project Smart Switch EU",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-07 16:33:52"
-		},
-		{
-			"id": "58",
-			"p_id": "134.2.29",
-			"product": "Foxx Project Door/Window SENSOR",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-12 09:26:13"
-		},
-		{
-			"id": "59",
-			"p_id": "329.4628.1284",
-			"product": "WiDom Universal Double Switch",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-13 17:18:44"
-		},
-		{
-			"id": "60",
-			"p_id": "134.1.38",
-			"product": "AEOTEC Panic Button NEW",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-15 15:37:50"
-		},
-		{
-			"id": "61",
-			"p_id": "351.2050.12546",
-			"product": "MCO HOME Thermostat (4-pipe)",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-19 11:30:17"
-		},
-		{
-			"id": "62",
-			"p_id": "351.2049.12546",
-			"product": "MCO HOME Fan Coil Thermostat (2-pipe)",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-19 11:30:58"
-		},
-		{
-			"id": "63",
-			"p_id": "351.1794.12546",
-			"product": "MCO HOME Water / Electrical Heating Thermostat",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-19 11:32:00"
-		},
-		{
-			"id": "64",
-			"p_id": "351.2309.513",
-			"product": "MCO HOME CO2 Monitor",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-19 12:42:36"
-		},
-		{
-			"id": "65",
-			"p_id": "277.272.1",
-			"product": "Z-Uno",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-20 10:27:15"
-		},
-		{
-			"id": "66",
-			"p_id": "351.2565.513",
-			"product": "MCO HOME PM2.5 Monitor",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-20 15:30:07"
-		},
-		{
-			"id": "67",
-			"p_id": "280.514.1553",
-			"product": "TKB Plug Dimmer French",
-			"preInterview": [],
-			"postInterview": [],
-			"last_update": "2016-07-21 13:05:37"
 		},
 		{
 			"id": "68",
