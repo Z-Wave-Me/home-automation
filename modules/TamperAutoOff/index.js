@@ -18,7 +18,7 @@ function TamperAutoOff (id, controller) {
     TamperAutoOff.super_.call(this, id, controller);
 
     // Create instance variables
-    this.timer = null;
+    this.vDevsWithTimers = {};
 };
 
 inherits(TamperAutoOff, AutomationModule);
@@ -35,32 +35,38 @@ TamperAutoOff.prototype.init = function (config) {
     var self = this;
 
     this.handler = function (vDev) {
-        console.log("------",vDev.get("id"), "=", vDev.get("metrics:level"));
+        console.log("------",vDev.id, "=", vDev.get("metrics:level"));
         var value = vDev.get("metrics:level");
-        
         if ("on" === value || (parseInt(value) && value > 0)) {
             // Device reported "on", set (or reset) timer to new timeout
-            if (self.timer) {
+            // If vDev exist
+            var timer = vDev.id;
+            if (self.vDevsWithTimers[timer]) {
                 // Timer is set, so we destroy it
-                clearTimeout(self.timer);
-                self.timer = null;
+                clearTimeout(self.vDevsWithTimers[timer]);
+                self.vDevsWithTimers[timer] = null;
             }
             // Notice: self.config.timeout set in seconds
-            self.timer = setTimeout(function () {
-                // Timeout fired, so we send "off" command to the virtual device
-                // (every switch device should handle it)
-                vDev.set("metrics:level", "off");
-                // And clearing out this.timer variable
-                self.timer = null;
-            }, self.config.timeout*1000);
+            (function(_vDev) {
+                var _timer = _vDev.id;
+                self.vDevsWithTimers[_timer] = setTimeout(function () {
+                    // Timeout fired, so we send "off" command to the virtual device
+                    // (every switch device should handle it)
+                    _vDev.set("metrics:level", "off");
+                    // And clearing out this.timer variable
+                    delete self.vDevsWithTimers[_timer];
+                }, self.config.timeout*1000);
+            })(vDev)
         } else {
             // Turned off
-            if (self.timer) {
+            if (self.vDevsWithTimers[timer]) {
                 // Timer is set, so we destroy it
-                clearTimeout(self.timer);
-                self.timer = null;
+                clearTimeout(self.vDevsWithTimers[timer]);
+                delete self.vDevsWithTimers[timer];
             }
         }
+
+        console.log("---------", JSON.stringify(self.vDevsWithTimers));
     };
 
     this.deviceCreated = function (vDev) {
@@ -88,9 +94,14 @@ TamperAutoOff.prototype.stop = function () {
 
     var self = this;
 
-    if (this.timer){
-        clearTimeout(this.timer);
+    console.log("---------", JSON.stringify(this.vDevsWithTimers));
+
+    // Clear all timers
+    for(var index in this.vDevsWithTimers) {
+        clearTimeout(this.vDevsWithTimers[index]);
     }
+
+    console.log("---------", JSON.stringify(this.vDevsWithTimers));
 
     // At stop unbind from all Tampers
     this.controller.devices.forEach(function(device, i, arr) {
