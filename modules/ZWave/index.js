@@ -1450,11 +1450,11 @@ ZWave.prototype.gateDevicesStart = function () {
 
 						devId = mId + '.' + mPT + '.' + mPId,
 						appMajorId = devId + '.' + appMajor,
-						appMinorId = devId + '.' + appMinor,
+						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor,
 						postFix = fixes.filter(function(fix) {
 							return 	fix.p_id === devId || 		//search by manufacturerProductId
 									fix.p_id === appMajorId || //search by applicationMajor
-									fix.p_id === appMinorId; 	//search by applicationMinor
+									fix.p_id === appMajorMinorId; 	//search by applicationMajor and applicationMinor
 						});
 					}
 
