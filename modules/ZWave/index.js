@@ -947,6 +947,7 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
+
 	this.ZWaveAPI.PostfixUpdate = function(url, request) {
 		var self = this,
 			success,
@@ -997,33 +998,26 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
-
-	this.ZWaveAPI.PostfixGet = function(url, request) {
-        if(request.method === "POST" && request.body) {
-
-			var fixes = postfix.fixes,
-				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
-
-            var fix = fixes.filter(function(fix) {
-                return 	fix.p_id === reqObj.p_id;
+	this.ZWaveAPI.PostfixGet = function(url) {
+        var p_id = url.substring(1),
+            fixes = postfix.fixes,
+            fix = fixes.filter(function (fix) {
+                return fix.p_id === p_id;
             });
 
-			if(!_.isEmpty(fix)) {
-				return {
-					status: 200,
-					headers: {
-						"Content-Type": "application/json",
-						"Connection": "keep-alive"
-					},
-					body: fix[0]
-				};
-			} else {
-				return { status: 404, body: "Postfix with p_id: " + reqObj.p_id + " not found"};
-			}
+        if (!_.isEmpty(fix)) {
+            return {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Connection": "keep-alive"
+                },
+                body: fix[0]
+            };
+        } else {
+            return {status: 404, body: "Postfix with p_id: " + p_id + " not found"};
         }
-        return { status: 400, body: "Invalid request" };
     };
-
 
 	this.ZWaveAPI.PostfixAdd = function(url, request) {
 
