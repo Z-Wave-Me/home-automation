@@ -158,5 +158,15 @@
             "timezone": "UTC",
             "wan_port_access": false
         }
+    },
+    {
+        "id": 11,
+        "moduleId": "TamperAutoOff",
+        "active": "true",
+        "title": "Tamper Auto Off",
+        "params": {
+            "devices": [],
+            "timeout": 30
+        }
     }]
 }
