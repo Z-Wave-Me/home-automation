@@ -62,6 +62,7 @@ if (!config) {
     executeFile(config.libPath + "/eventemitter2.js");
     executeFile(config.libPath + "/underscore.js");
     executeFile(config.libPath + "/papaparse.min.js");
+    executeFile(config.libPath + "/BAOS_API_2011_01_29_001.js“);
 
     //--- Load Automation subsystem classes
     executeFile(config.classesPath + "/VirtualDevice.js");
