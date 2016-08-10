@@ -57,6 +57,11 @@ function ZWave (id, controller) {
 		"DeviceResetLocally": 0x5a,
 		"BarrierOperator": 0x66
 	};
+
+	this.default_expert_config = {
+		'debug' : false
+	};
+
 }
 
 // Module inheritance and setup
@@ -92,9 +97,15 @@ ZWave.prototype.init = function (config) {
 		this.postfix = updatedPostfix; 
 	}
 
+	this.expert_config = loadObject("expertconfig.json");
+
+	if(!!!this.expert_config) {
+		this.expert_config = self.default_expert_config;
+		saveObject("expertconfig.json", this.expert_config);
+	}
+
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
-
 
     // add custom_postfix to postfix
 	if(!!custom_postfix) {
@@ -298,6 +309,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixAdd", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -321,13 +334,17 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixAdd");
     ws.revokeExternalAccess(_name + ".PostfixGet");
     ws.revokeExternalAccess(_name + ".PostfixRemove");
+	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
+	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
 ZWave.prototype.defineHandlers = function () {
 	var zway = this.zway;
 	var postfix = this.postfix;
+	var expert_config = this.expert_config;
 	var self = this;
+
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -1129,6 +1146,51 @@ ZWave.prototype.defineHandlers = function () {
         }
         return { status: 400, body: "Invalid request" };
     };
+
+    this.ZWaveAPI.ExpertConfigGet = function() {
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Connection": "close"
+			},
+			body: expert_config
+		};
+	};
+
+	this.ZWaveAPI.ExpertConfigUpdate = function(url, request) {
+		var self = this,
+			reqObj;
+
+		if (request.method === "POST" && request.body) {
+			reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+
+			if(Object.keys(reqObj).length = 1) {
+				var keys = Object.keys(reqObj);
+
+				if(expert_config.hasOwnProperty(keys[0])) {
+					_.assign(expert_config, reqObj);
+
+					saveObject("expertconfig.json", expert_config);
+					return {
+						status: 200,
+						body: "Done"
+					};
+
+				} else {
+					return { status: 404, body: "Property " + keys[0] + " not found" };
+				}
+			}
+			//TODO multiple property update
+			/*
+			 for( key in keys) {
+			 if(expert_config.hasOwnProperty(keys[key])) {
+			 expert_config[keys[key]] = reqObj[keys[key]];
+			 }
+			 }*/
+		}
+		return { status: 400, body: "Invalid request" };
+	};
 
 
 	/*
