@@ -9,7 +9,9 @@ Copyright: (c) ZWave.Me, 2013-2014
 
 VirtualDevice = function (options) {
 
-    var probeType = options.defaults.probeType? options.defaults.probeType : (options.overlay.probeType? options.overlay.probeType : '');
+    var probeType = options.defaults.probeType? options.defaults.probeType : (options.overlay.probeType? options.overlay.probeType : ''),
+        permHidden = options.defaults.hasOwnProperty('permanently_hidden')? options.defaults.permanently_hidden : false,
+        visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true;
     
     _.extend(this, options, {
         id: options.deviceId,
@@ -36,17 +38,17 @@ VirtualDevice = function (options) {
         updateTime: 0,
         h: options.controller.hashCode(options.deviceId),
         hasHistory: false,
-        visibility: true,
+        visibility: visibility,
         probeType: probeType,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
             tags: [],
-            permanently_hidden: false,
+            permanently_hidden: permHidden,
             location: 0,
             h: options.controller.hashCode(options.deviceId),
             hasHistory: false,
-            visibility: true,
+            visibility: visibility,
             creationTime: 0,
             probeType: probeType,
         },
