@@ -134,6 +134,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+
+        this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
     },
 
     // Used by the android app to request server status
@@ -1983,6 +1987,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
         
         return reply;
+    },
+    cloudbackup: function() {
+        /*var self = this,
+            reqObj,
+            reply = {
+                error: null,
+                data: {},
+                code: 200
+            };
+        var backupconfig = loadObject("backupconfig.json");
+
+        if(!!!backupconfig) {
+            backupconfig = {
+                'active': false,
+                'email_log': null
+            };
+        }
+
+        if(this.req.method === "GET") {
+
+        }
+
+        if(this.req.method === "POST" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+        }
+
+        if(this.req.method === "PUT" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+        }
+
+
+
+
+        this.controller.config.cloudbackup = true;
+        reply.data = JSON.stringify(this.controller.config);
+
+        return reply;*/
+
     },
     resetToFactoryDefault: function() {
         var self = this,
