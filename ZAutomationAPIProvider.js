@@ -1989,7 +1989,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     cloudbackup: function() {
-        /*var self = this,
+        var self = this,
             reqObj,
             reply = {
                 error: null,
@@ -1997,7 +1997,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 200
             };
         var backupconfig = loadObject("backupconfig.json");
-
+        //http://192.168.10.200/dev/cloudbackup/?uri=backupcreate
         if(!!!backupconfig) {
             backupconfig = {
                 'active': false,
@@ -2006,11 +2006,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if(this.req.method === "GET") {
-
+            reply.data = {
+                'active': '',
+                'remote_id': '',
+                'email': '',
+                'email_log': ''
+            };
         }
 
         if(this.req.method === "POST" && this.req.body) {
             reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('active')) {
+                backupconfig.active = reqObj.active
+                reply.data
+            }
+
         }
 
         if(this.req.method === "PUT" && this.req.body) {
@@ -2019,11 +2030,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 
 
+        saveObject("backupconfig.json", backupconfig);
 
-        this.controller.config.cloudbackup = true;
         reply.data = JSON.stringify(this.controller.config);
 
-        return reply;*/
+        return reply;
 
     },
     resetToFactoryDefault: function() {
