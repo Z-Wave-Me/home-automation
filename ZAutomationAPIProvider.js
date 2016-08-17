@@ -124,6 +124,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.get("/resetToFactoryDefault", this.ROLE.ADMIN, this.resetToFactoryDefault);
+
+        // skins tokens
+        this.router.get("/skins/tokens", this.ROLE.ADMIN, this.getSkinTokens);
+        this.router.put("/skins/tokens", this.ROLE.ADMIN, this.storeSkinToken);
+        this.router.del("/skins/tokens", this.ROLE.ADMIN, this.deleteSkinToken);
+
+        this.router.get("/skins", this.ROLE.ADMIN, this.getSkins);
+        this.router.post("/skins/install", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.put("/skins/update/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.get("/skins/setToDefault", this.ROLE.ADMIN, this.setDefaultSkin);
+        this.router.get("/skins/active", this.ROLE.ANONYMOUS, this.getActiveSkin);
+        this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
+        this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
+        this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -134,6 +148,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+
+        this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
     },
 
     // Used by the android app to request server status
@@ -1207,7 +1225,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
-                hide_single_device_events: []
+                hide_single_device_events: [],
+                skin: ''
             });
 
             reqObj = _.omit(reqObj, 'passwordConfirm');
@@ -1751,7 +1770,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             backupJSON = {}, 
-            userModules = [];
+            userModules = [],
+            skins = [];
 
         var now = new Date();
 
@@ -1784,6 +1804,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (userModules.length > 0) {
                 backupJSON['__userModules'] = userModules;
+            }
+
+            // add list of current skins excluding default skin
+            _.forEach(this.controller.skins, function(skin) {
+                if (skins.indexOf(skin) === -1 && skin.name !== 'default') {
+                    skins.push({
+                        name: skin.name,
+                        version: skin.version
+                    });
+                }
+            });
+
+            if (skins.length > 0) {
+                backupJSON['__userSkins'] = skins;
             }
             
             // save Z-Way and EnOcean objects
@@ -1831,7 +1865,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             result = "",
-            langfile = this.controller.loadMainLang();
+            langfile = this.controller.loadMainLang(),
+            waitForInstallation = function (allreadyInstalled, reqKey) {
+                var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
+        
+                while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
+                        
+                        if (allreadyInstalled.length === reqObj.data[reqKey].length) {
+                            break;   
+                        }
+                        
+                        processPendingCallbacks();
+                }
+
+                if (allreadyInstalled.length === reqObj.data[reqKey].length) {
+                    // success
+                    reply.code = 200;
+                }
+            };
 
         try {
             function utf8Decode(bytes) {
@@ -1852,7 +1903,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout"]; // objects that should be ignored 
+                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout","__userSkins"]; // objects that should be ignored 
                 
                 if (dontSave.indexOf(obj) === -1) {
                     saveObject(obj, reqObj.data[obj]);
@@ -1956,33 +2007,181 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         }                        
                     });
                 });
-    
-                var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-        
-                while ((new Date()).valueOf() < d && installedModules.length <= reqObj.data["__userModules"].length) {
-                        
-                        if (installedModules.length === reqObj.data["__userModules"].length) {
-                            break;   
-                        }
-                        
-                        processPendingCallbacks();
-                }
 
-                if (installedModules.length === reqObj.data["__userModules"].length) {
-                    // success
-                    reply.code = 200;
-                }
+                waitForInstallation(installedModules,"__userModules");
+
+            }
+
+            // install userSkins
+            if (reqObj.data["__userSkins"]) {
+                var installedSkins = [],
+                    remoteSkins = [];
+
+                http.request({
+                    // get online list of all existing modules first
+                    url:'http://hrix.net/developer-console/?uri=api-skins',
+                    method:'GET',
+                    async: true,
+                    success: function(res){
+                        if (res.data.data) {
+                            remoteSkins = res.data.data;
+
+                            // download all skins that are online available
+                            _.forEach(reqObj.data["__userSkins"], function(entry) {
+                                var item = {
+                                        name: entry.name,
+                                        status: 'failed'
+                                    },
+                                    // check if backed up skin is in online list
+                                    remSkinObj = _.filter(remoteSkins, function(skin) {
+                                        return skin.name === entry.name;
+                                    });
+
+                                if (remSkinObj[0]) {
+
+                                    index = _.findIndex(self.controller.skins, function(skin) { 
+                                        return skin.name === entry.name; 
+                                    });
+
+                                    try {
+                                        // install skin
+                                        result = self.controller.installSkin(remSkinObj[0], entry.name, index);
+                                        item.status = result;
+                                    } catch (e) {
+                                        self.controller.addNotification("error", langfile.zaap_err_no_archives + ' :: ' + entry.name, "core", "SkinInstaller");
+                                    }
+                                }                    
+
+                                installedSkins.push(item);
+
+                            });
+                        }                       
+                    },
+                    error: function(res){
+                        self.controller.addNotification("error", langfile.zaap_err_server + ' :: ' + res.statusText, "core", "SkinInstaller");
+                    }                        
+                });
+
+                waitForInstallation(installedSkins,"__userSkins");
 
             }
             
             // success
             reply.code = 200;
+            reply.data = {
+                userModules: installedModules,
+                userSkins: installedSkins
+            };
            
         } catch (e) {
             reply.error = e.toString();
         }
         
         return reply;
+    },
+    cloudbackup: function() {
+        var self = this,
+            reqObj,
+            reply = {
+                error: null,
+                data: {},
+                code: 200
+            };
+        var backupconfig = loadObject("backupconfig.json");
+
+        var  profile = _.filter(this.controller.profiles, function (p) {
+                if(p.login === "admin") {
+                    return p;
+                }
+            })[0];
+
+        if(!!!backupconfig) {
+            backupconfig = {
+                'active': false,
+                'email_log': 0
+            };
+        }
+
+        if(this.req.method === "GET") {
+            var remoteid = this.getRemoteId();
+            if(remoteid.data != null) {
+
+                reply.data = {
+                    'active': backupconfig.active,
+                    'remote_id': remoteid.data.remote_id,
+                    'email': profile.email,
+                    'email_log': backupconfig.email_log
+                };
+
+            } else {
+                console.log("GET: error");
+            }
+
+        }
+
+
+        if(this.req.method === "POST" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id')) {
+                backupconfig.active = reqObj.active
+
+                if(reqObj.active) {
+                    
+                        var data = {
+                            'remote_id': reqObj.remote_id,
+                            'email_report': backupconfig.email_log,
+                            'file': ''
+                        };
+                        console.log(JSON.stringify(data));
+                        //http://192.168.10.200/dev/cloudbackup/?uri=backupcreate
+                        req = {
+                            url:'http://192.168.10.200/dev/cloudbackup/?uri=backupcreate',
+                            method:'POST',
+                            async: true,
+                            data: data,
+                            success: function(response){
+                                    console.log(JSON.stringify(response));
+                            },
+                            error: function(response) {
+                                console.log(JSON.stringify(response));
+                            }
+                        };
+                        http.request(req);
+                }
+
+            }
+
+
+
+        }
+
+        if(this.req.method === "PUT" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('email_log') && reqObj.hasOwnProperty('email')) {
+                backupconfig.email_log = reqObj.email_log;
+
+                profile.email = reqObj.email;
+
+                profile = this.controller.updateProfile(profile, profile.id);
+                profresp = this.getProfileResponse(profile);
+                console.log(JSON.stringify(profresp));
+            } else {
+
+            }
+
+
+        }
+
+
+
+        saveObject("backupconfig.json", backupconfig);
+
+
+
+        return reply;
+
     },
     resetToFactoryDefault: function() {
         var self = this,
@@ -1996,6 +2195,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             storageContentList = loadObject("__storageContent"),
             defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
             defaultConfig = {},
+            defaultSkins = [{
+                name: "default",
+                title: "Default",
+                description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                version: "1.0.3",
+                icon: true,
+                author: "Martin Vach",
+                homepage: "http://www.zwave.eu",
+                active: true
+            }],
             now = new Date();
 
         try{
@@ -2067,6 +2276,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     });
 
+                    // remove skins
+                    _.forEach(this.controller.skins, function(skin) {
+                        self.controller.uninstallSkin(skin.name); 
+                    });
+
                     // stop the controller
                     this.controller.stop();
                     
@@ -2085,6 +2299,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // set back to default config
                     saveObject('config.json', defaultConfig);
+                    saveObject('userSkins.json', defaultSkins);
 
                     // start controller with reload flag to apply config.json
                     this.controller.start(true);
@@ -2105,6 +2320,306 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } catch (e) {
             reply.error = 'Something went wrong. Error: ' + e.message;
+        }
+
+        return reply;
+    },
+    getSkins: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            reply.data = this.controller.skins;
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    getSkin: function (skinName) {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.name === skinName; 
+            });
+
+            if (index > -1) {
+                reply.data = this.controller.skins[index];
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    getActiveSkin: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.active === true; 
+            });
+
+            if (index > -1) {
+                reply.data = this.controller.skins[index];
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    activateOrDeactivateSkin: function (skinName) {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            skin = null;
+
+        skin = this.controller.setSkinState(skinName, reqObj);
+
+        try {
+            if (!!skin) {
+                reply.data = skin;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } catch (e) {
+            reply.error = 'failed_to_load_skins';
+            reply.message = e.message;
+        }
+
+        return reply;
+    },
+    addOrUpdateSkin: function (skinName) {
+        var reply = {
+                error: 'skin_failed_to_install',
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            result = "",
+            skName = skinName || reqObj.name;
+
+        if (skName !== 'default') {
+
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.name === skName; 
+            });
+
+            if ((index < 0 && this.req.method === 'POST') || 
+                    (index > -1 && this.req.method === 'PUT' && skinName)) {
+                
+                // download and install the skin
+                result = this.controller.installSkin(reqObj, skName, index);
+
+                if (result === "done") {
+
+                    reply.code = 200;
+                    reply.data = this.req.method === 'POST'? "skin_installation_successful" : "skin_update_successful"; // send language key as response
+                    reply.error = null;
+                }
+            } else if (this.req.method === 'POST' && !skinName) {
+                reply.code = 409;
+                reply.error = 'skin_from_url_already_exists';
+            } else if (this.req.method === 'PUT' && skinName) {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.code = 403;
+            reply.error = 'No Permission';
+        }
+        
+        return reply;
+    },
+    deleteSkin: function (skinName) {
+        var reply = {
+                error: 'skin_failed_to_delete',
+                data: null,
+                code: 500
+            },
+            uninstall = false;
+
+        if (skinName !== 'default') {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.name === skinName; 
+            });
+
+            if (index > -1) {
+
+                uninstall = this.controller.uninstallSkin(skinName);
+
+                if (uninstall) {
+
+                    reply.code = 200;
+                    reply.data = "skin_delete_successful"; // send language key as response
+                    reply.error = null;
+                }       
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.code = 403;
+            reply.error = 'No Permission';
+        }
+        
+        return reply;
+    },
+    setDefaultSkin: function () {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+            
+            try {
+
+                // deactivate all skins and set default skin to active: true
+                _.forEach(this.controller.skins, function (skin) {
+                    skin.active = skin.name === 'default'? true : false;
+                })
+
+                saveObject("userSkins.json", this.controller.skins);
+
+                reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
+                reply.code = 200;
+                // do logout
+                setTimeout(function(){
+                    self.doLogout();
+                }, 3000);
+            } catch (e) {
+                reply.error = "Something went wrong.";
+                reply.message = e.message;
+            }
+
+        return reply;
+    },
+    getSkinTokens: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                }, 
+                tokenObj = loadObject('skinTokens.json');
+
+        if (tokenObj === null) {
+
+            tokenObj = {
+                    skinTokens: []
+            };
+
+            saveObject('skinTokens.json', tokenObj);
+        }
+            
+        if (!!tokenObj) {
+            reply.data = tokenObj;
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
+        }
+
+        return reply;
+    },
+    storeSkinToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('skinTokens.json');
+
+        if (reqObj && reqObj.token) {
+
+            if (tokenObj === null) {
+
+                tokenObj = {
+                    skinTokens: [reqObj.token]
+                }
+
+                // save tokens
+                saveObject('skinTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 201;
+
+            } else if (!!tokenObj && tokenObj.skinTokens) {
+
+                if (tokenObj.skinTokens.indexOf(reqObj.token) < 0) {
+                    // add new token id
+                    tokenObj.skinTokens.push(reqObj.token);
+
+                    // save tokens
+                    saveObject('skinTokens.json', tokenObj);
+
+                    reply.data = tokenObj;
+                    reply.code = 201;
+                } else {
+                    reply.code = 409;
+                    reply.error = 'skin_token_not_unique';
+                }
+            }
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
+        }
+
+        return reply;
+    },
+    deleteSkinToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('skinTokens.json');
+
+        if (reqObj && reqObj.token && !!tokenObj && tokenObj.skinTokens) {
+            if (tokenObj.skinTokens.indexOf(reqObj.token) > -1) {
+                // add new token id
+                tokenObj.skinTokens = _.filter(tokenObj.skinTokens, function(token) {
+                    return token !== reqObj.token;
+                });
+
+                // save tokens
+                saveObject('skinTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'not_existing_skin_token';
+            }
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
         }
 
         return reply;
