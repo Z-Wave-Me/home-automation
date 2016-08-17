@@ -1953,12 +1953,16 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						}
 					} else if ("stop" === command) { // Commands for Blinds
 						cc.StopLevelChange();
+						return;
 					} else if ("startUp" === command) {
 						cc.StartLevelChange(0);
+						return;
 					} else if ("startDown" === command) {
 						cc.StartLevelChange(1);
+						return;
 					} else if ("update" === command) {
 						cc.Get(vDevId);
+						return;
 					}
 
 					if (0 === newVal || !!newVal) {
