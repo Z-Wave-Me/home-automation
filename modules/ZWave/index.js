@@ -801,8 +801,6 @@ ZWave.prototype.defineHandlers = function () {
 
 		this.zw = zw;
 		this.zway = null;
-		this.zwayBinding = null;
-		this.devicesBindings = {};
 		this.communicationStatistics = {};
 
 		this.init(zw);
@@ -811,52 +809,34 @@ ZWave.prototype.defineHandlers = function () {
 	this.CommunicationStatistics.prototype.init = function(zw) {
 		var self = this;
 
-		if (!zw.zway || this.zwayBinding) {
+		if (!zw.zway) {
 			return;
 		}
 
 		this.zway = zw.zway;
-		this.zwayBinding = this.zway.bind(function(type, nodeId) {
-			if (type === zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
-				self.attach(nodeId);
-			}
-		}, zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | zw.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+		this.zway.controller.data.outgoingPacket.bind(this.handler, this, false);
 	};
 
-	this.CommunicationStatistics.prototype.attach = function(nodeId) {
-		if (!this.zway || !this.zwayBinding || !this.zway.devices[nodeId] || this.devicesBindings[nodeId]) {
-			return;
+	this.CommunicationStatistics.prototype.handler = function(type, self) {
+		if (type === self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		if (!self.communicationStatistics[this.nodeId.value]) {
+			self.communicationStatistics[this.nodeId.value] = [];
 		}
-
-		this.communicationStatistics[nodeId] = [];
-		this.devicesBindings[nodeId] = this.zway.devices[nodeId].data.lastPacketInfo.bind(this.handler, {self: this, nodeId: nodeId}, false);
-	};
-
-	this.CommunicationStatistics.prototype.handler = function(type, args, self) {
-		if (type === args.self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
-		args.self.communicationStatistics[args.nodeId].push({
+		self.communicationStatistics[this.nodeId.value].push({
 			"date": (new Date()).getTime(),
 			"delivered": this.delivered.value,
 			"packetLength": this.packetLength.value,
 			"deliveryTime": this.deliveryTime.value
 		});
-		args.self.communicationStatistics[args.nodeId].splice(0, Math.max(args.self.communicationStatistics[args.nodeId].length - args.self.MAX_ARRAY_LENGTH, 0));
+		self.communicationStatistics[this.nodeId.value].splice(0, Math.max(self.communicationStatistics[this.nodeId.value].length - self.MAX_ARRAY_LENGTH, 0));
 	};
 
 	this.CommunicationStatistics.prototype.stop = function() {
-		var self = this;
-
-		if (!this.zway || !this.zwayBinding) {
+		if (!this.zway) {
 			return;
 		}
 
-		this.zway.unbind(this.zwayBinding);
-		this.zwayBinding = null;
-
-		Object.keys(this.devicesBindings).forEach(function(nodeId) {
-			self.this.zway.devices[nodeId].data.lastPacketInfo.unbind(self.devicesBindings[nodeId]);
-		});
-		this.devicesBindings = {};
+		this.zway.controller.data.outgoingPacket.unbind(this.handler);
 
 		this.communicationStatistics = {};
 
