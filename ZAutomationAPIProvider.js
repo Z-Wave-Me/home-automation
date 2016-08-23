@@ -1774,7 +1774,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             skins = [];
 
         var now = new Date();
-
         // create a timestamp in format yyyy-MM-dd-HH-mm
         var ts = now.getFullYear() + "-";
         ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
@@ -1785,6 +1784,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var list = loadObject("__storageContent");
 
         try {        
+
             // save all objects in storage
             for (var ind in list) {
                 if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
@@ -1834,6 +1834,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     backupJSON["__ZWay"][zwayName] = bcp;
                 });
             }
+
             /* TODO
             if (!!global.EnOcean) {
                 backupJSON["__EnOcean"] = {};
@@ -1842,6 +1843,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 });
             }
             */
+           
             reply.headers= {
                     "Content-Type": "application/x-download; charset=utf-8",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
@@ -2084,12 +2086,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reqObj,
             reply = {
                 error: null,
-                data: {},
-                code: 200
+                data: null,
+                code: 500
             };
         var backupconfig = loadObject("backupconfig.json");
 
-        var  profile = _.filter(this.controller.profiles, function (p) {
+        var profile = _.filter(this.controller.profiles, function (p) {
                 if(p.login === "admin") {
                     return p;
                 }
@@ -2106,6 +2108,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             var remoteid = this.getRemoteId();
             if(remoteid.data != null) {
 
+                reply.code = 200;
                 reply.data = {
                     'active': backupconfig.active,
                     'remote_id': remoteid.data.remote_id,
@@ -2114,11 +2117,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 };
 
             } else {
-                console.log("GET: error");
+                reply.error = remoteid.error
             }
-
         }
-
 
         if(this.req.method === "POST" && this.req.body) {
             reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
@@ -2128,32 +2129,47 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if(reqObj.active) {
                     
-                        var data = {
-                            'remote_id': reqObj.remote_id,
-                            'email_report': backupconfig.email_log,
-                            'file': ''
-                        };
-                        console.log(JSON.stringify(data));
-                        //http://192.168.10.200/dev/cloudbackup/?uri=backupcreate
-                        req = {
-                            url:'http://192.168.10.200/dev/cloudbackup/?uri=backupcreate',
-                            method:'POST',
-                            async: true,
-                            data: data,
-                            success: function(response){
-                                    console.log(JSON.stringify(response));
+                    backup = this.backup();
+
+                    if(backup.data != null) {
+
+                        var keys = Object.keys(backup.headers);
+                        var index = backup.headers[keys[1]].indexOf('=');
+                        var filename = backup.headers[keys[1]].substring(index+1, backup.headers[keys[1]].length);
+
+                        var msg = '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
+                        msg += 'Content-Disposition: form-data; name="remote_id"\r\n\r\n';
+                        msg += reqObj.remote_id+'\r\n';
+                        msg += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
+                        msg += 'Content-Disposition: form-data; name="email_report"\r\n\r\n';
+                        msg += backupconfig.email_log+'\r\n';
+                        msg += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
+                        msg += 'Content-Disposition: form-data; name="file"; filename="'+filename+'"\r\n';
+                        msg += 'Content-Type: application/octet-stream\r\n\r\n';
+                        msg += JSON.stringify(backup);
+                        msg += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
+
+                        var response = http.request({
+                            url: "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate",
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
                             },
-                            error: function(response) {
-                                console.log(JSON.stringify(response));
-                            }
-                        };
-                        http.request(req);
+                            data: msg
+                        });
+                        
+                        console.log(JSON.stringify(response));
+                        
+                        reply.error = response.data.error;
+                        reply.code = response.data.status;
+                        reply.data = response.statusText;
+                        //console.log(JSON.stringify(response));
+
+                    } else {
+                        reply.error = backup.error;
+                    }
                 }
-
             }
-
-
-
         }
 
         if(this.req.method === "PUT" && this.req.body) {
@@ -2165,20 +2181,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 profile.email = reqObj.email;
 
                 profile = this.controller.updateProfile(profile, profile.id);
-                profresp = this.getProfileResponse(profile);
-                console.log(JSON.stringify(profresp));
+
+                reply.code = 200; 
             } else {
 
             }
-
-
         }
 
-
-
         saveObject("backupconfig.json", backupconfig);
-
-
 
         return reply;
 
@@ -2439,11 +2449,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 result = this.controller.installSkin(reqObj, skName, index);
 
                 if (result === "done") {
-
                     reply.code = 200;
                     reply.data = this.req.method === 'POST'? "skin_installation_successful" : "skin_update_successful"; // send language key as response
                     reply.error = null;
-                }
+                } 
+
             } else if (this.req.method === 'POST' && !skinName) {
                 reply.code = 409;
                 reply.error = 'skin_from_url_already_exists';
