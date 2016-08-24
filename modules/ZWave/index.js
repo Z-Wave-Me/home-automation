@@ -823,7 +823,7 @@ ZWave.prototype.defineHandlers = function () {
 			self.communicationStatistics[this.nodeId.value] = [];
 		}
 		self.communicationStatistics[this.nodeId.value].push({
-			"date": (new Date()).getTime(),
+			"date": (new Date()).getTime()/1000,
 			"delivered": this.delivered.value,
 			"packetLength": this.packetLength.value,
 			"deliveryTime": this.deliveryTime.value
