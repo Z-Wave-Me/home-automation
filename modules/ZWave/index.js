@@ -104,6 +104,20 @@ ZWave.prototype.init = function (config) {
 		saveObject("expertconfig.json", this.expert_config);
 	}
 
+	this.cmdClasses = this.loadModuleJSON("cmd_classes.json");
+
+	this.ipacket = loadObject("incomingPacket.json");
+
+	if(!this.ipacket) {
+		this.ipacket = [];
+	}
+
+	this.opacket = loadObject("outgoingPacket.json");
+
+	if(!this.opacket) {
+		this.opacket = [];
+	}
+
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
 
@@ -139,6 +153,8 @@ ZWave.prototype.init = function (config) {
 	if (!this.zway) {
 		return;
 	}
+	
+	this.CommunicationLogger();
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
 		if (zwayName === self.config.name && self.zway) {
@@ -285,6 +301,113 @@ ZWave.prototype.terminating = function () {
 	}
 };
 
+ZWave.prototype.CommunicationLogger = function() {
+
+	var self = this,
+		zway = this.zway,
+		ipacket = this.ipacket,
+		opacket = this.opacket;
+
+
+
+	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
+	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
+	uniq = function(arr) { return arr.filter(function(value, index, self) { return self.indexOf(value) === index; }); };
+	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
+
+	inH = function () {
+
+		console.log(JSON.stringify(this));
+
+		//if(ipacket.length > 4000) { ipacket = [];}
+
+		ipacket.push(this);
+
+		/*
+		inNodes = uniq(ipacket.map(function(x) { return x.value[3] }));
+
+		for (indx in inNodes) {
+			var id = inNodes[indx];
+			var rssis = data.filter(function(x) {
+				return x.value[3] == id && x.RSSI;
+			}).map(function(x) {
+				return x.RSSI.value;
+			});
+			console.log("homeid: "+id, "avg rssi: "+avg(rssis), stddev(rssis), "rssi length: "+rssis.length);
+		};*/
+
+		saveObject("incomingPacket.json", ipacket);
+	};
+
+	zway.controller.data.incomingPacket.bind(inH);
+
+	outH = function () {
+
+		console.log(JSON.stringify(this));
+
+		//if(opacket.length > 4000) { opacket = [];}
+
+		opacket.push(this);
+
+		/*
+		outNodes = uniq(opacket.filter(function(x) { return x.nodeId }).map(function(x) { return x.nodeId.value }));
+
+		console.log("id PER delivery time, RSSI, hops");
+		for (indx in outNodes) {
+			var id = outNodes[indx];
+
+			var delivered = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.delivered;
+			}).map(function(x) {
+				return x.delivered.value * 100;
+			});
+
+			var deliveryTime = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.delivered;
+			}).map(function(x) {
+				return x.deliveryTime.value;
+			});
+
+			var rssis = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.returnRSSI
+			}).map(function(x) {
+				return x.returnRSSI.value[0];
+			});
+
+			var hops = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.returnRSSI;
+			}).map(function(x) {
+				return x.hops.value.length;
+			});
+
+			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
+		};
+		*/
+
+
+		saveObject("outgoingPacket.json", opacket);
+	};
+
+	zway.controller.data.outgoingPacket.bind(outH);
+
+	setInterval(function() {
+		var data = loadObject("rssidata.json");
+
+		if(!data) data = [];
+		var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+		var d = {
+			"time": rssi.updateTime,
+			"channel1": rssi.channel1.value,
+			"channel2": rssi.channel2.value,
+			"channel3": rssi.channel3.value
+		};
+
+		data.push(d);
+		saveObject("rssidata.json", data);
+	}, 1000*60);
+};
+
 
 // --------------- Public HTTP API -------------------
 
@@ -300,6 +423,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".Restore", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CreateZDDX", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -325,6 +449,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".Restore");
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
+	ws.revokeExternalAccess(_name + ".CommunicationHistory");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
@@ -344,6 +469,11 @@ ZWave.prototype.defineHandlers = function () {
 	var postfix = this.postfix;
 	var expert_config = this.expert_config;
 	var self = this;
+
+	var ipacket = this.ipacket;
+	var opacket = this.opacket;
+
+	var cmdClasses = this.cmdClasses;
 
 
 	this.ZWaveAPI = function() {
@@ -731,7 +861,97 @@ ZWave.prototype.defineHandlers = function () {
 				data: this.value
 			});
 		});
-	}
+	};
+
+	this.ZWaveAPI.CommunicationHistory = function(url, request) {
+		self = this,
+			   cmdClass  = cmdClasses.zw_classes.cmd_class,
+			   packets = [],
+			   nodeid = zway.controller.data.nodeId.value;
+
+		ipacket.forEach(function(packet) {
+
+			packets.push(
+				{
+					type: 'incoming',
+					updateTime: packet.updateTime,
+					value: packet.value,
+					src: (_.isArray(packet.value)) ? packet.value[3] : "",
+					dest: nodeid,
+					data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+					application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+				}
+			);
+		});
+
+		opacket.forEach(function(packet) {
+
+			packets.push(
+				{
+					type: 'outgoing',
+					updateTime: packet.updateTime,
+					value: packet.value,
+					src: nodeid,
+					dest: (_.isArray(packet.value)) ? packet.value[3] : "",
+					data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+					application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+				}
+			);
+		});
+
+		function packetApplication(packet) {
+			var cmdClassKey = decToHex(packet[5], 2, '0x');
+
+			var cmdKey = decToHex(packet[6], 2, '0x')
+
+			var ret = {};
+
+			var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
+
+			if(!findCmdClass) {
+				return;
+			}
+
+			var _cmdClass = findCmdClass.pop();
+
+			if (_.isArray(_cmdClass.cmd)) {
+				ret = _.findWhere(_cmdClass.cmd, {_key: cmdKey});
+			} else {
+				ret = _cmdClass.cmd;
+			}
+			return ret;
+		}
+
+		function decToHex(decimal,chars,x) {
+			var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
+			return (x||'') + hex;
+		};
+
+		function setZnifferDataType(data) {
+			switch(data){
+				case 0:
+					return 'Singlecast';
+				case 255:
+					return 'Predicast';
+				default:
+					return 'Multicast';
+			}
+		}
+
+		_.sortBy(packets, function(a, b) {
+			return b.updateTime - a.updateTime;
+		});
+
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body: packets
+		};
+
+	};
 
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
@@ -2009,12 +2229,16 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						}
 					} else if ("stop" === command) { // Commands for Blinds
 						cc.StopLevelChange();
+						return;
 					} else if ("startUp" === command) {
 						cc.StartLevelChange(0);
+						return;
 					} else if ("startDown" === command) {
 						cc.StartLevelChange(1);
+						return;
 					} else if ("update" === command) {
 						cc.Get(vDevId);
+						return;
 					}
 
 					if (0 === newVal || !!newVal) {
