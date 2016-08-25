@@ -2088,97 +2088,42 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 200
             };
         var backupconfig = loadObject("backupconfig.json");
-
-        var  profile = _.filter(this.controller.profiles, function (p) {
-                if(p.login === "admin") {
-                    return p;
-                }
-            })[0];
-
+        //http://192.168.10.200/dev/cloudbackup/?uri=backupcreate
         if(!!!backupconfig) {
             backupconfig = {
                 'active': false,
-                'email_log': 0
+                'email_log': null
             };
         }
 
         if(this.req.method === "GET") {
-            var remoteid = this.getRemoteId();
-            if(remoteid.data != null) {
-
-                reply.data = {
-                    'active': backupconfig.active,
-                    'remote_id': remoteid.data.remote_id,
-                    'email': profile.email,
-                    'email_log': backupconfig.email_log
-                };
-
-            } else {
-                console.log("GET: error");
-            }
-
+            reply.data = {
+                'active': '',
+                'remote_id': '',
+                'email': '',
+                'email_log': ''
+            };
         }
-
 
         if(this.req.method === "POST" && this.req.body) {
             reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id')) {
+            if(reqObj.hasOwnProperty('active')) {
                 backupconfig.active = reqObj.active
-
-                if(reqObj.active) {
-                    
-                        var data = {
-                            'remote_id': reqObj.remote_id,
-                            'email_report': backupconfig.email_log,
-                            'file': ''
-                        };
-                        console.log(JSON.stringify(data));
-                        //http://192.168.10.200/dev/cloudbackup/?uri=backupcreate
-                        req = {
-                            url:'http://192.168.10.200/dev/cloudbackup/?uri=backupcreate',
-                            method:'POST',
-                            async: true,
-                            data: data,
-                            success: function(response){
-                                    console.log(JSON.stringify(response));
-                            },
-                            error: function(response) {
-                                console.log(JSON.stringify(response));
-                            }
-                        };
-                        http.request(req);
-                }
-
+                reply.data
             }
-
-
 
         }
 
         if(this.req.method === "PUT" && this.req.body) {
             reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
-
-            if(reqObj.hasOwnProperty('email_log') && reqObj.hasOwnProperty('email')) {
-                backupconfig.email_log = reqObj.email_log;
-
-                profile.email = reqObj.email;
-
-                profile = this.controller.updateProfile(profile, profile.id);
-                profresp = this.getProfileResponse(profile);
-                console.log(JSON.stringify(profresp));
-            } else {
-
-            }
-
-
         }
 
 
 
         saveObject("backupconfig.json", backupconfig);
 
-
+        reply.data = JSON.stringify(this.controller.config);
 
         return reply;
 
