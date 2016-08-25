@@ -869,7 +869,15 @@ ZWave.prototype.defineHandlers = function () {
 			   packets = [],
 			   nodeid = zway.controller.data.nodeId.value;
 
-		ipacket.forEach(function(packet) {
+		var timestamp = parseInt(url.substring(1), 10) || 0;
+
+		if (request.query) {
+			var filterObj = JSON.parse(request.query.filter);
+		}  else {
+			var filterObj = null;
+		}
+
+		ipacket.forEach(function (packet) {
 
 			packets.push(
 				{
@@ -884,7 +892,7 @@ ZWave.prototype.defineHandlers = function () {
 			);
 		});
 
-		opacket.forEach(function(packet) {
+		opacket.forEach(function (packet) {
 
 			packets.push(
 				{
@@ -908,7 +916,7 @@ ZWave.prototype.defineHandlers = function () {
 
 			var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
 
-			if(!findCmdClass) {
+			if (!findCmdClass) {
 				return;
 			}
 
@@ -922,13 +930,13 @@ ZWave.prototype.defineHandlers = function () {
 			return ret;
 		}
 
-		function decToHex(decimal,chars,x) {
+		function decToHex(decimal, chars, x) {
 			var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
-			return (x||'') + hex;
+			return (x || '') + hex;
 		};
 
 		function setZnifferDataType(data) {
-			switch(data){
+			switch (data) {
 				case 0:
 					return 'Singlecast';
 				case 255:
@@ -938,9 +946,51 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		}
 
-		_.sortBy(packets, function(a, b) {
+		_.sortBy(packets, function (a, b) {
 			return b.updateTime - a.updateTime;
 		});
+
+		if(timestamp > 0) {
+			packetsTime = packets.filter(function(p) {
+				return p.updateTime >= timestamp;
+			});
+
+			packets = packetsTime;
+		}
+
+		if(filterObj) {
+
+			if (filterObj.src.value != "") {
+				filter = packets.filter(function (p) {
+					if(filterObj.src.show) {
+						return p.src == filterObj.src.value;
+					} else {
+						return p.src != filterObj.src.value;
+					}
+
+				});
+				packets = filter;
+			}
+
+			if (filterObj.dest.value != "") {
+				filter = packets.filter(function (p) {
+					if(filterObj.dest.show) {
+						return p.dest == filterObj.dest.value;
+					} else {
+						return p.dest != filterObj.dest.value;
+					}
+
+				});
+				packets = filter;
+			}
+
+			if(filterObj.data.value != "") {
+				filter = packets.filter(function(p) {
+					return p.data == filterObj.data.value;
+				});
+				packets = filter;
+			}
+		}
 
 		return {
 			status: 200,
@@ -950,7 +1000,6 @@ ZWave.prototype.defineHandlers = function () {
 			},
 			body: packets
 		};
-
 	};
 
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
@@ -1153,7 +1202,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.Postfix = function(url, request) {		
 		
-		var show = request.query && request.query.full? request.query.full : 'false';
+		var show = request.query ? request.query : null;
 
 		if (!!postfix) {
 
