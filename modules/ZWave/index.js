@@ -308,8 +308,6 @@ ZWave.prototype.CommunicationLogger = function() {
 		ipacket = this.ipacket,
 		opacket = this.opacket;
 
-
-
 	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
 	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
 	uniq = function(arr) { return arr.filter(function(value, index, self) { return self.indexOf(value) === index; }); };
@@ -383,12 +381,31 @@ ZWave.prototype.CommunicationLogger = function() {
 			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
 		};
 		*/
-
-
 		saveObject("outgoingPacket.json", opacket);
 	};
 
 	zway.controller.data.outgoingPacket.bind(outH);
+
+	/*
+	rssiH = function() {
+		var data = loadObject("rssidata.json");
+
+		if(!data) data = [];
+		var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+		var d = {
+			"time": rssi.updateTime,
+			"channel1": rssi.channel1.value,
+			"channel2": rssi.channel2.value,
+			"channel3": rssi.channel3.value
+		};
+
+		data.push(d);
+		saveObject("rssidata.json", data);
+	}
+
+	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
+	*/
 
 	setInterval(function() {
 		var data = loadObject("rssidata.json");
@@ -865,9 +882,15 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.CommunicationHistory = function(url, request) {
 		self = this,
-			   cmdClass  = cmdClasses.zw_classes.cmd_class,
+			   cmdClass = cmdClasses.zw_classes.cmd_class,
 			   packets = [],
-			   nodeid = zway.controller.data.nodeId.value;
+			   nodeid = zway.controller.data.nodeId.value,
+			   body = {
+					"code": 200,
+					"message": "200 OK",
+				    "updateTime": null,
+					"data": []
+				}
 
 		var timestamp = parseInt(url.substring(1), 10) || 0;
 
@@ -878,33 +901,47 @@ ZWave.prototype.defineHandlers = function () {
 		}
 
 		ipacket.forEach(function (packet) {
-
-			packets.push(
-				{
-					type: 'incoming',
-					updateTime: packet.updateTime,
-					value: packet.value,
-					src: (_.isArray(packet.value)) ? packet.value[3] : "",
-					dest: nodeid,
-					data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
-					application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+			var exist = _.find(packets, function(p){
+				if(p.updateTime == packet.updateTime && p.type == 'incoming' && p.value.slice(5, -1) == packet.value.slice(5, -1)) {
+					return p;
 				}
-			);
+			});
+
+			if(!exist) {
+				packets.push(
+					{
+						type: 'incoming',
+						updateTime: packet.updateTime,
+						value: packet.value,
+						src: (_.isArray(packet.value)) ? packet.value[3] : "",
+						dest: nodeid,
+						data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+					}
+				);
+			}
 		});
 
 		opacket.forEach(function (packet) {
-
-			packets.push(
-				{
-					type: 'outgoing',
-					updateTime: packet.updateTime,
-					value: packet.value,
-					src: nodeid,
-					dest: (_.isArray(packet.value)) ? packet.value[3] : "",
-					data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
-					application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+			var exist = _.find(packets, function(p){
+				if(p.updateTime == packet.updateTime && p.type == 'outgoing' && p.value.slice(5, -1) == packet.value.slice(5, -1)) {
+					return p;
 				}
-			);
+			});
+
+			if(!exist) {
+				packets.push(
+					{
+						type: 'outgoing',
+						updateTime: packet.updateTime,
+						value: packet.value,
+						src: nodeid,
+						dest: (_.isArray(packet.value)) ? packet.value[3] : "",
+						data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+					}
+				);
+			}
 		});
 
 		function packetApplication(packet) {
@@ -927,7 +964,7 @@ ZWave.prototype.defineHandlers = function () {
 			} else {
 				ret = _cmdClass.cmd;
 			}
-			return ret;
+			return ret._help;
 		}
 
 		function decToHex(decimal, chars, x) {
@@ -946,17 +983,13 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		}
 
-		_.sortBy(packets, function (a, b) {
-			return b.updateTime - a.updateTime;
+		packets = packets.filter(function(p) {
+			return p.updateTime >= timestamp;
 		});
 
-		if(timestamp > 0) {
-			packetsTime = packets.filter(function(p) {
-				return p.updateTime >= timestamp;
-			});
-
-			packets = packetsTime;
-		}
+		packets = _.sortBy(packets, function (a, b) {
+			return b.updateTime - a.updateTime;
+		});
 
 		if(filterObj) {
 
@@ -986,11 +1019,22 @@ ZWave.prototype.defineHandlers = function () {
 
 			if(filterObj.data.value != "") {
 				filter = packets.filter(function(p) {
-					return p.data == filterObj.data.value;
+					if(filterObj.data.show) {
+						return p.data == filterObj.data.value;
+					} else {
+						return p.data != filterObj.data.value;
+					}
+
 				});
 				packets = filter;
 			}
 		}
+
+		body.updateTime = _.max(packets, function (v) {
+			return v.updateTime
+		}).updateTime;
+
+		body.data = packets;
 
 		return {
 			status: 200,
@@ -998,7 +1042,7 @@ ZWave.prototype.defineHandlers = function () {
 				"Content-Type": "application/json",
 				"Connection": "keep-alive"
 			},
-			body: packets
+			body: body
 		};
 	};
 
