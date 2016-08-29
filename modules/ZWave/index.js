@@ -242,6 +242,8 @@ ZWave.prototype.stop = function () {
 
 	this.stopBinding();
 
+	clearInterval(this.timer);
+
 	if (this._dataBind) {
 		this.controller.off("ZWave.dataBind", this._dataBind);
 	}
@@ -407,10 +409,12 @@ ZWave.prototype.CommunicationLogger = function() {
 	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
 	*/
 
-	setInterval(function() {
+	this.timer = setInterval(function() {
 		var data = loadObject("rssidata.json");
 
 		if(!data) data = [];
+		zway.GetBackgroundRSSI();
+
 		var rssi = zway.controller.data.statistics.backgroundRSSI;
 
 		var d = {
@@ -983,6 +987,10 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		}
 
+		body.updateTime = _.max(packets, function (v) {
+			return v.updateTime;
+		}).updateTime;
+
 		packets = packets.filter(function(p) {
 			return p.updateTime >= timestamp;
 		});
@@ -1030,9 +1038,7 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		}
 
-		body.updateTime = _.max(packets, function (v) {
-			return v.updateTime
-		}).updateTime;
+
 
 		body.data = packets;
 
