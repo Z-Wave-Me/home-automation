@@ -108,13 +108,13 @@ ZWave.prototype.init = function (config) {
 
 	this.ipacket = loadObject("incomingPacket.json");
 
-	if(!this.ipacket) {
+	if(!!!this.ipacket) {
 		this.ipacket = [];
 	}
 
 	this.opacket = loadObject("outgoingPacket.json");
 
-	if(!this.opacket) {
+	if(!!!this.opacket) {
 		this.opacket = [];
 	}
 
@@ -906,12 +906,16 @@ ZWave.prototype.defineHandlers = function () {
 
 		ipacket.forEach(function (packet) {
 			var exist = _.find(packets, function(p){
-				if(p.updateTime == packet.updateTime && p.type == 'incoming' && p.value.slice(5, -1) == packet.value.slice(5, -1)) {
-					return p;
+				if(p.updateTime === packet.updateTime && p.type === 'incoming') {
+					if(_.isArray(p.value) && _.isArray(packet.value)) {
+						if(_.isEqual(p.value, packet.value)) {
+							return p;
+						}
+					}
 				}
 			});
 
-			if(!exist) {
+			if(typeof exist === 'undefined') {
 				packets.push(
 					{
 						type: 'incoming',
@@ -928,12 +932,16 @@ ZWave.prototype.defineHandlers = function () {
 
 		opacket.forEach(function (packet) {
 			var exist = _.find(packets, function(p){
-				if(p.updateTime == packet.updateTime && p.type == 'outgoing' && p.value.slice(5, -1) == packet.value.slice(5, -1)) {
-					return p;
+				if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
+					if(_.isArray(p.value) && _.isArray(packet.value)) {
+						if(_.isEqual(p.value, packet.value)) {
+							return p;
+						}
+					}
 				}
 			});
 
-			if(!exist) {
+			if(typeof exist === 'undefined') {
 				packets.push(
 					{
 						type: 'outgoing',
@@ -968,7 +976,17 @@ ZWave.prototype.defineHandlers = function () {
 			} else {
 				ret = _cmdClass.cmd;
 			}
-			return ret._help;
+			if(typeof ret === "object") {
+				if(ret.hasOwnProperty('_help')) {
+					ret = ret._help;
+				} else {
+					ret = "";
+				}
+			} else {
+				ret = "";
+			}
+
+			return ret;
 		}
 
 		function decToHex(decimal, chars, x) {
@@ -985,7 +1003,7 @@ ZWave.prototype.defineHandlers = function () {
 				default:
 					return 'Multicast';
 			}
-		}
+		};
 
 		body.updateTime = _.max(packets, function (v) {
 			return v.updateTime;
@@ -999,7 +1017,7 @@ ZWave.prototype.defineHandlers = function () {
 			return b.updateTime - a.updateTime;
 		});
 
-		if(filterObj) {
+		if(!_.isNull(filterObj)) {
 
 			if (filterObj.src.value != "") {
 				filter = packets.filter(function (p) {
@@ -1037,8 +1055,6 @@ ZWave.prototype.defineHandlers = function () {
 				packets = filter;
 			}
 		}
-
-
 
 		body.data = packets;
 
@@ -1282,7 +1298,6 @@ ZWave.prototype.defineHandlers = function () {
 
 		}
 	};
-
 
 	this.ZWaveAPI.PostfixUpdate = function(url, request) {
 		var self = this,
