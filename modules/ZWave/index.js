@@ -904,7 +904,7 @@ ZWave.prototype.defineHandlers = function () {
 					"message": "200 OK",
 				    "updateTime": null,
 					"data": []
-				}
+			   }
 
 		var timestamp = parseInt(url.substring(1), 10) || 0;
 
@@ -926,6 +926,7 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			if(typeof exist === 'undefined') {
+				console.log("incomming:" +JSON.stringify(packets));
 				packets.push(
 					{
 						type: 'incoming',
@@ -937,6 +938,7 @@ ZWave.prototype.defineHandlers = function () {
 						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 					}
 				);
+				console.log("incomming:" +JSON.stringify(packets));
 			}
 		});
 
@@ -952,6 +954,7 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			if(typeof exist === 'undefined') {
+				console.log("outgoing:" +JSON.stringify(packets));
 				packets.push(
 					{
 						type: 'outgoing',
@@ -963,6 +966,7 @@ ZWave.prototype.defineHandlers = function () {
 						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 					}
 				);
+				console.log("outgoing:" +JSON.stringify(packets));
 			}
 		});
 
@@ -1022,10 +1026,11 @@ ZWave.prototype.defineHandlers = function () {
 		packets = packets.filter(function(p) {
 			return p.updateTime >= timestamp;
 		});
-
+		
+		/*
 		packets = _.sortBy(packets, function (a, b) {
 			return b.updateTime - a.updateTime;
-		});
+		});*/
 
 		if(!_.isNull(filterObj)) {
 
