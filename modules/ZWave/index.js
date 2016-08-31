@@ -1102,9 +1102,7 @@ ZWave.prototype.defineHandlers = function () {
 				}
 			}
 
-			packets = _.sortBy(packets, function(a,b) {
-				return b.updateTime - a.updateTime;
-			});
+			packets = _.sortBy(packets, function(o) {return o.updateTime});
 		}
 
 
