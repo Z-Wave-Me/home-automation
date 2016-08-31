@@ -505,7 +505,29 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.list = function() {
 		try {
-			return ZWave.list();
+			var zwayList = ZWave.list() || [];
+
+			/* TODO: search for remote IP adresses
+			if (this.config.publicAPI && zwayList.length > 0) {
+				_.forEach(zwayList, function(zwayName, index){
+					http.request({
+						method: "POST",
+						url: data.url,
+						contentType: "application/json",
+						async: true,
+						success: function (res) {
+							// do nothing
+						},
+						error: function (res) {
+							// remove from list
+							zwayList = zwayList.splice(index, 1);
+						}
+					});
+				});
+			}
+			console.log("zwayList:", JSON.stringify(zwayList));
+			*/
+			return zwayList;
 		} catch (e) {
 			return { status: 500, body: e.toString() };
 		}
