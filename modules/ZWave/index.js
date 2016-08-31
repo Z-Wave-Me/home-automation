@@ -106,17 +106,8 @@ ZWave.prototype.init = function (config) {
 
 	this.cmdClasses = this.loadModuleJSON("cmd_classes.json");
 
-	this.ipacket = loadObject("incomingPacket.json");
-
-	if(!!!this.ipacket) {
-		this.ipacket = [];
-	}
-
-	this.opacket = loadObject("outgoingPacket.json");
-
-	if(!!!this.opacket) {
-		this.opacket = [];
-	}
+	this.ipacket = [];
+	this.opacket = [];
 
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
@@ -317,11 +308,18 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	inH = function () {
 
+		var _ipacket = loadObject("incomingPacket.json");
+
+		if(_ipacket === null) {
+			_ipacket = [];
+		}
+
 		console.log(JSON.stringify(this));
 
-		//if(ipacket.length > 4000) { ipacket = [];}
+		if(ipacket.length > 4000) { ipacket = [];}
 
 		ipacket.push(this);
+		_ipacket.push(this);
 
 		/*
 		inNodes = uniq(ipacket.map(function(x) { return x.value[3] }));
@@ -336,18 +334,25 @@ ZWave.prototype.CommunicationLogger = function() {
 			console.log("homeid: "+id, "avg rssi: "+avg(rssis), stddev(rssis), "rssi length: "+rssis.length);
 		};*/
 
-		saveObject("incomingPacket.json", ipacket);
+		saveObject("incomingPacket.json", _ipacket);
 	};
 
 	zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
+		var _opacket = loadObject("outgoingPacket.json");
+
+		if(_opacket === null) {
+			_opacket = [];
+		}
+
 		console.log(JSON.stringify(this));
 
-		//if(opacket.length > 4000) { opacket = [];}
+		if(opacket.length > 4000) { opacket = [];}
 
 		opacket.push(this);
+		_opacket.push(this);
 
 		/*
 		outNodes = uniq(opacket.filter(function(x) { return x.nodeId }).map(function(x) { return x.nodeId.value }));
@@ -383,7 +388,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
 		};
 		*/
-		saveObject("outgoingPacket.json", opacket);
+		saveObject("outgoingPacket.json", _opacket);
 	};
 
 	zway.controller.data.outgoingPacket.bind(outH);
@@ -493,11 +498,7 @@ ZWave.prototype.defineHandlers = function () {
 	var expert_config = this.expert_config;
 	var self = this;
 
-	var ipacket = this.ipacket;
-	var opacket = this.opacket;
-
 	var cmdClasses = this.cmdClasses;
-
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -914,61 +915,71 @@ ZWave.prototype.defineHandlers = function () {
 			var filterObj = null;
 		}
 
-		ipacket.forEach(function (packet) {
-			var exist = _.find(packets, function(p){
-				if(p.updateTime === packet.updateTime && p.type === 'incoming') {
-					if(_.isArray(p.value) && _.isArray(packet.value)) {
-						if(_.isEqual(p.value, packet.value)) {
-							return p;
+		var ipacket = loadObject("incomingPacket.json");
+
+		if(!_.isNull(ipacket)) {
+			ipacket.forEach(function (packet) {
+				var exist = _.find(packets, function(p){
+					if(p.updateTime === packet.updateTime && p.type === 'incoming') {
+						if(_.isArray(p.value) && _.isArray(packet.value)) {
+							if(_.isEqual(p.value, packet.value)) {
+								return p;
+							}
 						}
 					}
+				});
+
+				if(typeof exist === 'undefined') {
+					console.log("incomming:" +JSON.stringify(packets));
+					packets.push(
+						{
+							type: 'incoming',
+							updateTime: packet.updateTime,
+							value: packet.value,
+							src: (_.isArray(packet.value)) ? packet.value[3] : "",
+							dest: nodeid,
+							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+							application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+						}
+					);
+					console.log("incomming:" +JSON.stringify(packets));
 				}
 			});
+		}
 
-			if(typeof exist === 'undefined') {
-				console.log("incomming:" +JSON.stringify(packets));
-				packets.push(
-					{
-						type: 'incoming',
-						updateTime: packet.updateTime,
-						value: packet.value,
-						src: (_.isArray(packet.value)) ? packet.value[3] : "",
-						dest: nodeid,
-						data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
-						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
-					}
-				);
-				console.log("incomming:" +JSON.stringify(packets));
-			}
-		});
 
-		opacket.forEach(function (packet) {
-			var exist = _.find(packets, function(p){
-				if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
-					if(_.isArray(p.value) && _.isArray(packet.value)) {
-						if(_.isEqual(p.value, packet.value)) {
-							return p;
+		var opacket = loadObject("outgoingPacket.json");
+
+		if(!_.isNull(opacket)) {
+			opacket.forEach(function (packet) {
+				var exist = _.find(packets, function(p){
+					if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
+						if(_.isArray(p.value) && _.isArray(packet.value)) {
+							if(_.isEqual(p.value, packet.value)) {
+								return p;
+							}
 						}
 					}
+				});
+
+				if(typeof exist === 'undefined') {
+					console.log("outgoing:" +JSON.stringify(packets));
+					packets.push(
+						{
+							type: 'outgoing',
+							updateTime: packet.updateTime,
+							value: packet.value,
+							src: nodeid,
+							dest: (_.isArray(packet.value)) ? packet.value[3] : "",
+							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+							application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+						}
+					);
+					console.log("outgoing:" +JSON.stringify(packets));
 				}
 			});
+		}
 
-			if(typeof exist === 'undefined') {
-				console.log("outgoing:" +JSON.stringify(packets));
-				packets.push(
-					{
-						type: 'outgoing',
-						updateTime: packet.updateTime,
-						value: packet.value,
-						src: nodeid,
-						dest: (_.isArray(packet.value)) ? packet.value[3] : "",
-						data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
-						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
-					}
-				);
-				console.log("outgoing:" +JSON.stringify(packets));
-			}
-		});
 
 		function packetApplication(packet) {
 			var cmdClassKey = decToHex(packet[5], 2, '0x');
@@ -984,6 +995,10 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 			var _cmdClass = findCmdClass.pop();
+
+			if(_.isEmpty(_cmdClass)) {
+				return;
+			}
 
 			if (_.isArray(_cmdClass.cmd)) {
 				ret = _.findWhere(_cmdClass.cmd, {_key: cmdKey});
@@ -1019,57 +1034,57 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		};
 
-		body.updateTime = _.max(packets, function (v) {
-			return v.updateTime;
-		}).updateTime;
 
-		packets = packets.filter(function(p) {
-			return p.updateTime >= timestamp;
-		});
-		
-		/*
-		packets = _.sortBy(packets, function (a, b) {
-			return b.updateTime - a.updateTime;
-		});*/
+		if(!_.isEmpty(packets)) {
 
-		if(!_.isNull(filterObj)) {
+			body.updateTime = _.max(packets, function (v) {
+				return v.updateTime;
+			}).updateTime;
 
-			if (filterObj.src.value != "") {
-				filter = packets.filter(function (p) {
-					if(filterObj.src.show) {
-						return p.src == filterObj.src.value;
-					} else {
-						return p.src != filterObj.src.value;
-					}
+			packets = packets.filter(function(p) {
+				return p.updateTime >= timestamp;
+			});
 
-				});
-				packets = filter;
-			}
+			if(!_.isNull(filterObj)) {
 
-			if (filterObj.dest.value != "") {
-				filter = packets.filter(function (p) {
-					if(filterObj.dest.show) {
-						return p.dest == filterObj.dest.value;
-					} else {
-						return p.dest != filterObj.dest.value;
-					}
+				if (filterObj.src.value != "") {
+					filter = packets.filter(function (p) {
+						if(filterObj.src.show) {
+							return p.src == filterObj.src.value;
+						} else {
+							return p.src != filterObj.src.value;
+						}
 
-				});
-				packets = filter;
-			}
+					});
+					packets = filter;
+				}
 
-			if(filterObj.data.value != "") {
-				filter = packets.filter(function(p) {
-					if(filterObj.data.show) {
-						return p.data == filterObj.data.value;
-					} else {
-						return p.data != filterObj.data.value;
-					}
+				if (filterObj.dest.value != "") {
+					filter = packets.filter(function (p) {
+						if(filterObj.dest.show) {
+							return p.dest == filterObj.dest.value;
+						} else {
+							return p.dest != filterObj.dest.value;
+						}
 
-				});
-				packets = filter;
+					});
+					packets = filter;
+				}
+
+				if(filterObj.data.value != "") {
+					filter = packets.filter(function(p) {
+						if(filterObj.data.show) {
+							return p.data == filterObj.data.value;
+						} else {
+							return p.data != filterObj.data.value;
+						}
+
+					});
+					packets = filter;
+				}
 			}
 		}
+
 
 		body.data = packets;
 
