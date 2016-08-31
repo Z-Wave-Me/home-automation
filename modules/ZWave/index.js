@@ -952,12 +952,14 @@ ZWave.prototype.defineHandlers = function () {
 				});
 
 				if(typeof exist === 'undefined') {
+
 					packets.push(
 						{
 							type: 'incoming',
 							updateTime: packet.updateTime,
 							value: packet.value,
 							src: (_.isArray(packet.value)) ? packet.value[3] : "",
+							rssi: packet.hasOwnProperty("RSSI") ? packet.RSSI.value : "",
 							dest: nodeid,
 							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
 							application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
@@ -966,7 +968,6 @@ ZWave.prototype.defineHandlers = function () {
 				}
 			});
 		}
-
 
 		var opacket = loadObject("outgoingPacket.json");
 
@@ -987,10 +988,14 @@ ZWave.prototype.defineHandlers = function () {
 						{
 							type: 'outgoing',
 							updateTime: packet.updateTime,
-							value: packet.value,
+							value: (_.isArray(packet.value)) ? packet.value.unshift(0) : "",  // prepend 1 byte
 							src: nodeid,
+							speed: packet.hasOwnProperty("speed") ? packet.speed.value : "",
+							rssi: packet.hasOwnProperty("returnRSSI") ? packet.returnRSSI.value : "",
+							hops: packet.hasOwnProperty("hops") ? packet.hops.value : "",
+							tries: packet.hasOwnProperty("tries") ? packet.tries.value : "",
 							dest: (_.isArray(packet.value)) ? packet.value[3] : "",
-							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[5]) : "",
 							application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 						}
 					);
@@ -1046,12 +1051,11 @@ ZWave.prototype.defineHandlers = function () {
 				case 0:
 					return 'Singlecast';
 				case 255:
-					return 'Predicast';
+					return 'Broadcast';
 				default:
 					return 'Multicast';
 			}
 		};
-
 
 		if(!_.isEmpty(packets)) {
 
