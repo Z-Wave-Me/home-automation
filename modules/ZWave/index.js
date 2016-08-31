@@ -1067,7 +1067,7 @@ ZWave.prototype.defineHandlers = function () {
 
 				if (filterObj.src.value != "") {
 					filter = packets.filter(function (p) {
-						if(filterObj.src.show === 1) {
+						if(parseInt(filterObj.src.show) === 1) {
 							return p.src == filterObj.src.value;
 						} else {
 							return p.src != filterObj.src.value;
@@ -1079,7 +1079,7 @@ ZWave.prototype.defineHandlers = function () {
 
 				if (filterObj.dest.value != "") {
 					filter = packets.filter(function (p) {
-						if(filterObj.dest.show === 1) {
+						if(parseInt(filterObj.dest.show) === 1) {
 							return p.dest == filterObj.dest.value;
 						} else {
 							return p.dest != filterObj.dest.value;
@@ -1091,7 +1091,7 @@ ZWave.prototype.defineHandlers = function () {
 
 				if(filterObj.data.value != "") {
 					filter = packets.filter(function(p) {
-						if(filterObj.data.show === 1) {
+						if(parseInt(filterObj.data.show) === 1) {
 							return p.data == filterObj.data.value;
 						} else {
 							return p.data != filterObj.data.value;
@@ -1101,6 +1101,10 @@ ZWave.prototype.defineHandlers = function () {
 					packets = filter;
 				}
 			}
+
+			packets = _.sortBy(packets, function(a,b) {
+				return b.updateTime - a.updateTime;
+			});
 		}
 
 
