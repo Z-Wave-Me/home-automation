@@ -969,7 +969,7 @@ ZWave.prototype.defineHandlers = function () {
                         updateTime: packet.updateTime,
                         value: (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
                         src: (_.isArray(packet.value)) ? packet.value[3] : "",
-                        rssi: packet.hasOwnProperty("RSSI") ? packet.RSSI.value : "",
+                        rssi: (packet.RSSI.value) ? packet.RSSI.value : "",
                         dest: nodeid,
                         application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
                     }
@@ -1001,10 +1001,10 @@ ZWave.prototype.defineHandlers = function () {
                             updateTime: packet.updateTime,
                             value:  (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
                             src: nodeid,
-                            speed: packet.hasOwnProperty("speed") ? packet.speed.value : "",
-                            rssi: packet.hasOwnProperty("returnRSSI") ? packet.returnRSSI.value : "",
-                            hops: packet.hasOwnProperty("hops") ? packet.hops.value : "",
-                            tries: packet.hasOwnProperty("tries") ? packet.tries.value : "",
+                            speed: (packet.speed.value) ? packet.speed.value : "",
+                            rssi: (packet.returnRSSI.value) ? packet.returnRSSI.value : "",
+                            hops: (packet.hops.value) ? packet.hops.value : "",
+                            tries: (packet.tries.value) ? packet.tries.value : "",
                             dest: (_.isArray(packet.value)) ? packet.value[3] : "",
                             application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
                         }
