@@ -308,18 +308,23 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	inH = function () {
 
-		var _ipacket = loadObject("incomingPacket.json");
+        console.log("log incoming");
+        var data = JSON.stringify(this);
+        ipacket.push(JSON.parse(data));
 
-		if(_ipacket === null) {
-			_ipacket = [];
-		}
+        if (Object.keys(ipacket).length >= 200) {
 
-		console.log(JSON.stringify(this));
+            var _ipacket = loadObject("incomingPacket.json");
 
-		if(ipacket.length > 4000) { ipacket = [];}
+            if (_ipacket === null) {
+                _ipacket = [];
+            }
 
-		ipacket.push(this);
-		_ipacket.push(this);
+            _.assing(_ipacket, ipacket);
+
+            saveObject("incomingPacket.json", _ipacket);
+        }
+
 
 		/*
 		inNodes = uniq(ipacket.map(function(x) { return x.value[3] }));
@@ -334,25 +339,27 @@ ZWave.prototype.CommunicationLogger = function() {
 			console.log("homeid: "+id, "avg rssi: "+avg(rssis), stddev(rssis), "rssi length: "+rssis.length);
 		};*/
 
-		saveObject("incomingPacket.json", _ipacket);
 	};
 
 	zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
-		var _opacket = loadObject("outgoingPacket.json");
+        var data = JSON.stringify(this);
+        opacket.push(JSON.parse(data));
+        console.log("log outgoing");
 
-		if(_opacket === null) {
-			_opacket = [];
-		}
+        if(Object.keys(opacket).length >= 200) {
+            var _opacket = loadObject("outgoingPacket.json");
 
-		console.log(JSON.stringify(this));
+            if(_opacket === null) {
+                _opacket = [];
+            }
 
-		if(opacket.length > 4000) { opacket = [];}
+           _.assing(_opacket, opacket);
 
-		opacket.push(this);
-		_opacket.push(this);
+            saveObject("outgoingPacket.json", _opacket);
+        }
 
 		/*
 		outNodes = uniq(opacket.filter(function(x) { return x.nodeId }).map(function(x) { return x.nodeId.value }));
@@ -388,7 +395,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
 		};
 		*/
-		saveObject("outgoingPacket.json", _opacket);
+
 	};
 
 	zway.controller.data.outgoingPacket.bind(outH);
@@ -451,6 +458,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CreateZDDX", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -478,6 +486,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".CommunicationHistory");
+    ws.revokeExternalAccess(_name + ".Zniffer");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
@@ -497,6 +506,9 @@ ZWave.prototype.defineHandlers = function () {
 	var postfix = this.postfix;
 	var expert_config = this.expert_config;
 	var self = this;
+
+    var ipacket = this.ipacket;
+    var opacket = this.opacket;
 
 	var cmdClasses = this.cmdClasses;
 
@@ -937,72 +949,70 @@ ZWave.prototype.defineHandlers = function () {
 			var filterObj = null;
 		}
 
-		var ipacket = loadObject("incomingPacket.json");
+		var _ipacket = loadObject("incomingPacket.json");
 
-		if(!_.isNull(ipacket)) {
-			ipacket.forEach(function (packet) {
-				var exist = _.find(packets, function(p){
-					if(p.updateTime === packet.updateTime && p.type === 'incoming') {
-						if(_.isArray(p.value) && _.isArray(packet.value)) {
-							if(_.isEqual(p.value, packet.value)) {
-								return p;
-							}
-						}
-					}
-				});
+        if(_.isNull(_ipacket)) {
+		    _ipacket = ipacket;
+        }
+
+        _ipacket.forEach(function (packet) {
+            var exist = _.find(packets, function(p){
+                return p.updateTime === packet.updateTime &&
+                    p.type === 'incoming'
+            });
+
+            if(exist === 'undefined') {
+                var bytes = packet.value;
+                packets.push(
+                    {
+                        type: 'incoming',
+                        updateTime: packet.updateTime,
+                        value: (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
+                        src: (_.isArray(packet.value)) ? packet.value[3] : "",
+                        rssi: packet.hasOwnProperty("RSSI") ? packet.RSSI.value : "",
+                        dest: nodeid,
+                        application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+                    }
+                );
+            }
+        });
+
+        var _opacket = loadObject("outgoingPacket.json");
+
+        if(_.isNull(_opacket)) {
+            _opacket = opacket;
+        }
+
+        if(!_.isNull(_opacket)) {
+
+			_opacket.forEach(function (packet) {
+
+                var exist = _.find(packets, function(p){
+                    return p.updateTime === packet.updateTime &&
+                        p.type === 'outgoing'
+                });
 
 				if(typeof exist === 'undefined') {
-
-					packets.push(
-						{
-							type: 'incoming',
-							updateTime: packet.updateTime,
-							value: packet.value,
-							src: (_.isArray(packet.value)) ? packet.value[3] : "",
-							rssi: packet.hasOwnProperty("RSSI") ? packet.RSSI.value : "",
-							dest: nodeid,
-							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
-							application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
-						}
-					);
+					(_.isArray(packet.value)) ? packet.value.unshift(0) : packet.value = "";	// prepend 1 byte
+                    var bytes = packet.value;
+                    packets.push(
+                        {
+                            type: 'outgoing',
+                            updateTime: packet.updateTime,
+                            value:  (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
+                            src: nodeid,
+                            speed: packet.hasOwnProperty("speed") ? packet.speed.value : "",
+                            rssi: packet.hasOwnProperty("returnRSSI") ? packet.returnRSSI.value : "",
+                            hops: packet.hasOwnProperty("hops") ? packet.hops.value : "",
+                            tries: packet.hasOwnProperty("tries") ? packet.tries.value : "",
+                            dest: (_.isArray(packet.value)) ? packet.value[3] : "",
+                            application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+                        }
+                    );
+                    packet.value = bytes.slice(1, bytes.length);
 				}
 			});
 		}
-
-		var opacket = loadObject("outgoingPacket.json");
-
-		if(!_.isNull(opacket)) {
-			opacket.forEach(function (packet) {
-				var exist = _.find(packets, function(p){
-					if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
-						if(_.isArray(p.value) && _.isArray(packet.value)) {
-							if(_.isEqual(p.value, packet.value)) {
-								return p;
-							}
-						}
-					}
-				});
-
-				if(typeof exist === 'undefined') {
-					packets.push(
-						{
-							type: 'outgoing',
-							updateTime: packet.updateTime,
-							value: (_.isArray(packet.value)) ? packet.value.unshift(0) : "",  // prepend 1 byte
-							src: nodeid,
-							speed: packet.hasOwnProperty("speed") ? packet.speed.value : "",
-							rssi: packet.hasOwnProperty("returnRSSI") ? packet.returnRSSI.value : "",
-							hops: packet.hasOwnProperty("hops") ? packet.hops.value : "",
-							tries: packet.hasOwnProperty("tries") ? packet.tries.value : "",
-							dest: (_.isArray(packet.value)) ? packet.value[3] : "",
-							data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[5]) : "",
-							application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
-						}
-					);
-				}
-			});
-		}
-
 
 		function packetApplication(packet) {
 			var cmdClassKey = decToHex(packet[5], 2, '0x');
@@ -1046,26 +1056,12 @@ ZWave.prototype.defineHandlers = function () {
 			return (x || '') + hex;
 		};
 
-		function setZnifferDataType(data) {
-			switch (data) {
-				case 0:
-					return 'Singlecast';
-				case 255:
-					return 'Broadcast';
-				default:
-					return 'Multicast';
-			}
-		};
-
 		if(!_.isEmpty(packets)) {
 
 			body.updateTime = _.max(packets, function (v) {
 				return v.updateTime;
 			}).updateTime;
 
-			packets = packets.filter(function(p) {
-				return p.updateTime >= timestamp;
-			});
 
 			if(!_.isNull(filterObj)) {
 
@@ -1092,23 +1088,9 @@ ZWave.prototype.defineHandlers = function () {
 					});
 					packets = filter;
 				}
-
-				if(filterObj.data.value != "") {
-					filter = packets.filter(function(p) {
-						if(parseInt(filterObj.data.show) === 1) {
-							return p.data == filterObj.data.value;
-						} else {
-							return p.data != filterObj.data.value;
-						}
-
-					});
-					packets = filter;
-				}
 			}
-
 			packets = _.sortBy(packets, function(o) {return o.updateTime});
 		}
-
 
 		body.data = packets;
 
@@ -1118,9 +1100,142 @@ ZWave.prototype.defineHandlers = function () {
 				"Content-Type": "application/json",
 				"Connection": "keep-alive"
 			},
-			body: body
+			body: packets
 		};
 	};
+
+    this.ZWaveAPI.Zniffer = function() {
+        self = this,
+            cmdClass = cmdClasses.zw_classes.cmd_class,
+            packets = [],
+            nodeid = zway.controller.data.nodeId.value,
+            body = {
+                "code": 200,
+                "message": "200 OK",
+                "updateTime": null,
+                "data": []
+            };
+
+        var lastipacket = _.max(ipacket, function (v) {
+            return v.updateTime;
+        }).updateTime;
+
+        _ipacket = _.where(ipacket, function (p) {
+                p.updateTime >= lastipacket
+        });
+
+        _ipacket.forEach(function(packet) {
+            var exist = _.find(packets, function(p){
+                return p.updateTime === packet.updateTime &&
+                    p.type === 'incoming'
+            });
+
+            packets.push(
+                {
+                    type: 'incoming',
+                    updateTime: packet.updateTime,
+                    value: (_.isArray(packet.value) && packet.value.length >= 5) ? packet.value.slice(5) : packet.value,
+                    src: (_.isArray(packet.value)) ? packet.value[3] : "",
+                    rssi: (packet.RSSI.value) ? packet.RSSI.value : "",
+                    dest: nodeid,
+                    application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+                }
+            );
+        });
+
+        var lastopacket = _.max(opacket, function (v) {
+            return v.updateTime;
+        }).updateTime;
+
+        _opacket = _.where(opacket, function (p) {
+            p.updateTime >= lastopacket
+        });
+
+        _opacket.forEach(function(packet) {
+            var exist = _.find(packets, function(p){
+                return p.updateTime === packet.updateTime &&
+                    p.type === 'incoming'
+            });
+
+            var bytes = packet.value;
+            console.log(JSON.stringify(packet));
+            (_.isArray(bytes)) ? bytes.unshift(0) :bytes = "";	// prepend 1 byte
+            packets.push(
+                {
+                    type: 'outgoing',
+                    updateTime: packet.updateTime,
+                    value: (_.isArray(bytes) && bytes.length >= 5) ? bytes.slice(5, -1) : bytes,
+                    src: nodeid,
+                    speed: (packet.speed.value) ? packet.speed.value : "",
+                    rssi: (packet.returnRSSI.value) ? packet.returnRSSI.value : "",
+                    hops: (packet.hops.value) ? packet.hops.value : "",
+                    tries: (packet.tries.value) ? packet.tries.value : "",
+                    dest: (_.isArray(bytes)) ? bytes[3] : "",
+                    application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+                }
+            );
+            packet.value = bytes.slice(1, bytes.length);
+        });
+
+        function packetApplication(packet) {
+            var cmdClassKey = decToHex(packet[5], 2, '0x');
+
+            var cmdKey = decToHex(packet[6], 2, '0x')
+
+            var ret = {};
+
+            var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
+
+            if (!findCmdClass) {
+                return;
+            }
+
+            var _cmdClass = findCmdClass.pop();
+
+            if(_.isEmpty(_cmdClass)) {
+                return;
+            }
+
+            if (_.isArray(_cmdClass.cmd)) {
+                ret = _.findWhere(_cmdClass.cmd, {_key: cmdKey});
+            } else {
+                ret = _cmdClass.cmd;
+            }
+            if(typeof ret === "object") {
+                if(ret.hasOwnProperty('_help')) {
+                    ret = ret._help;
+                } else {
+                    ret = "";
+                }
+            } else {
+                ret = "";
+            }
+
+            return ret;
+        }
+
+        function decToHex(decimal, chars, x) {
+            var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
+            return (x || '') + hex;
+        };
+
+        time = _.max(packets, function (v) {
+            return v.updateTime;
+        }).updateTime;
+
+        body.updateTime = _.isEmpty(time) ? time : null;
+
+        body.data = packets;
+
+        return {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Connection": "keep-alive"
+            },
+            body: body
+        };
+    }
 
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
