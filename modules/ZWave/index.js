@@ -320,7 +320,7 @@ ZWave.prototype.CommunicationLogger = function() {
                 _ipacket = [];
             }
 
-            _.assing(_ipacket, ipacket);
+            _.assign(_ipacket, ipacket);
 
             saveObject("incomingPacket.json", _ipacket);
         }
@@ -356,7 +356,7 @@ ZWave.prototype.CommunicationLogger = function() {
                 _opacket = [];
             }
 
-           _.assing(_opacket, opacket);
+           _.assign(_opacket, opacket);
 
             saveObject("outgoingPacket.json", _opacket);
         }
@@ -425,7 +425,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		var data = loadObject("rssidata.json");
 
 		if(!data) data = [];
-		zway.GetBackgroundRSSI();
+		//zway.GetBackgroundRSSI();
 
 		var rssi = zway.controller.data.statistics.backgroundRSSI;
 
@@ -931,15 +931,15 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.CommunicationHistory = function(url, request) {
 		self = this,
-			   cmdClass = cmdClasses.zw_classes.cmd_class,
-			   packets = [],
-			   nodeid = zway.controller.data.nodeId.value,
-			   body = {
-					"code": 200,
-					"message": "200 OK",
-				    "updateTime": null,
-					"data": []
-			   }
+	   	cmdClass = cmdClasses.zw_classes.cmd_class,
+	   	packets = [],
+	   	nodeid = zway.controller.data.nodeId.value,
+	   	body = {
+			"code": 200,
+			"message": "200 OK",
+			"updateTime": null,
+			"data": []
+	   }
 
 		var timestamp = parseInt(url.substring(1), 10) || 0;
 
@@ -953,7 +953,9 @@ ZWave.prototype.defineHandlers = function () {
 
         if(_.isNull(_ipacket)) {
 		    _ipacket = ipacket;
-        }
+        } else {
+			_.assign(_ipacket, ipacket);
+		}
 
         _ipacket.forEach(function (packet) {
             var exist = _.find(packets, function(p){
@@ -961,7 +963,7 @@ ZWave.prototype.defineHandlers = function () {
                     p.type === 'incoming'
             });
 
-            if(exist === 'undefined') {
+            if((exist && exist.length < 1) || !exist) {
                 var bytes = packet.value;
                 packets.push(
                     {
@@ -969,7 +971,7 @@ ZWave.prototype.defineHandlers = function () {
                         updateTime: packet.updateTime,
                         value: (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
                         src: (_.isArray(packet.value)) ? packet.value[3] : "",
-                        rssi: (packet.RSSI.value) ? packet.RSSI.value : "",
+                        rssi: packet.RSSI && packet.RSSI.value ? packet.RSSI.value : "",
                         dest: nodeid,
                         application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
                     }
@@ -981,7 +983,9 @@ ZWave.prototype.defineHandlers = function () {
 
         if(_.isNull(_opacket)) {
             _opacket = opacket;
-        }
+        }else {
+			_.assign(_opacket, opacket);
+		}
 
         if(!_.isNull(_opacket)) {
 
@@ -992,7 +996,7 @@ ZWave.prototype.defineHandlers = function () {
                         p.type === 'outgoing'
                 });
 
-				if(typeof exist === 'undefined') {
+				if((exist && exist.length < 1) || !exist) {
 					(_.isArray(packet.value)) ? packet.value.unshift(0) : packet.value = "";	// prepend 1 byte
                     var bytes = packet.value;
                     packets.push(
@@ -1001,10 +1005,10 @@ ZWave.prototype.defineHandlers = function () {
                             updateTime: packet.updateTime,
                             value:  (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
                             src: nodeid,
-                            speed: (packet.speed.value) ? packet.speed.value : "",
-                            rssi: (packet.returnRSSI.value) ? packet.returnRSSI.value : "",
-                            hops: (packet.hops.value) ? packet.hops.value : "",
-                            tries: (packet.tries.value) ? packet.tries.value : "",
+                            speed: packet.speed && packet.speed.value? packet.speed.value : "",
+                            rssi: packet.returnRSSI && packet.returnRSSI.value ? packet.returnRSSI.value : "",
+                            hops: packet.hops && packet.hops.value? packet.hops.value : "",
+                            tries: packet.tries && packet.tries.value? packet.tries.value : "",
                             dest: (_.isArray(packet.value)) ? packet.value[3] : "",
                             application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
                         }
@@ -1060,8 +1064,9 @@ ZWave.prototype.defineHandlers = function () {
 
 			body.updateTime = _.max(packets, function (v) {
 				return v.updateTime;
-			}).updateTime;
+			});
 
+			body.updateTime = body.updateTime.updateTime;
 
 			if(!_.isNull(filterObj)) {
 
@@ -1079,13 +1084,17 @@ ZWave.prototype.defineHandlers = function () {
 
 				if (filterObj.dest.value != "") {
 					filter = packets.filter(function (p) {
+						// filter by array of destinations
+						var dests =  filterObj.dest.value.split(',');
+
 						if(parseInt(filterObj.dest.show) === 1) {
-							return p.dest == filterObj.dest.value;
+							return dests.indexOf(p.dest.toString()) > -1;
 						} else {
-							return p.dest != filterObj.dest.value;
+							return dests.indexOf(p.dest.toString()) < 0;
 						}
 
 					});
+
 					packets = filter;
 				}
 			}
@@ -1100,7 +1109,7 @@ ZWave.prototype.defineHandlers = function () {
 				"Content-Type": "application/json",
 				"Connection": "keep-alive"
 			},
-			body: packets
+			body: body
 		};
 	};
 
@@ -1114,73 +1123,79 @@ ZWave.prototype.defineHandlers = function () {
                 "message": "200 OK",
                 "updateTime": null,
                 "data": []
-            };
+            },
+			now = Math.round((new Date()).getTime() / 1000);
 
-        var lastipacket = _.max(ipacket, function (v) {
-            return v.updateTime;
-        }).updateTime;
+		var getLatestPackages = function (packets) {
 
-        _ipacket = _.where(ipacket, function (p) {
-                p.updateTime >= lastipacket
-        });
+			var lastUpdate = now - 1; // default: search communication packages during last second
+
+            // get packets since last request
+			var filteredPackets = _.filter(packets, function (p) {
+				return p.updateTime >= lastUpdate;
+			});
+
+			return filteredPackets;
+		};
+
+        _ipacket = getLatestPackages(ipacket);
 
         _ipacket.forEach(function(packet) {
             var exist = _.find(packets, function(p){
                 return p.updateTime === packet.updateTime &&
-                    p.type === 'incoming'
+                    p.type === 'incoming';
             });
 
-            packets.push(
-                {
-                    type: 'incoming',
-                    updateTime: packet.updateTime,
-                    value: (_.isArray(packet.value) && packet.value.length >= 5) ? packet.value.slice(5) : packet.value,
-                    src: (_.isArray(packet.value)) ? packet.value[3] : "",
-                    rssi: (packet.RSSI.value) ? packet.RSSI.value : "",
-                    dest: nodeid,
-                    application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
-                }
-            );
+			if ((exist && exist.length < 1) || !exist) {
+				packets.push(
+					{
+						type: 'incoming',
+						updateTime: packet.updateTime,
+						value: (_.isArray(packet.value) && packet.value.length >= 5) ? packet.value.slice(5) : packet.value,
+						src: (_.isArray(packet.value)) ? packet.value[3] : "",
+						rssi: packet.RSSI && packet.RSSI.value? packet.RSSI.value : "",
+						dest: nodeid,
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+					}
+				);
+			}
         });
 
-        var lastopacket = _.max(opacket, function (v) {
-            return v.updateTime;
-        }).updateTime;
-
-        _opacket = _.where(opacket, function (p) {
-            p.updateTime >= lastopacket
-        });
+        _opacket = getLatestPackages(opacket);
 
         _opacket.forEach(function(packet) {
             var exist = _.find(packets, function(p){
                 return p.updateTime === packet.updateTime &&
-                    p.type === 'incoming'
+                    p.type === 'outgoing';
             });
 
-            var bytes = packet.value;
-            console.log(JSON.stringify(packet));
-            (_.isArray(bytes)) ? bytes.unshift(0) :bytes = "";	// prepend 1 byte
-            packets.push(
-                {
-                    type: 'outgoing',
-                    updateTime: packet.updateTime,
-                    value: (_.isArray(bytes) && bytes.length >= 5) ? bytes.slice(5, -1) : bytes,
-                    src: nodeid,
-                    speed: (packet.speed.value) ? packet.speed.value : "",
-                    rssi: (packet.returnRSSI.value) ? packet.returnRSSI.value : "",
-                    hops: (packet.hops.value) ? packet.hops.value : "",
-                    tries: (packet.tries.value) ? packet.tries.value : "",
-                    dest: (_.isArray(bytes)) ? bytes[3] : "",
-                    application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
-                }
-            );
-            packet.value = bytes.slice(1, bytes.length);
+			if ((exist && exist.length < 1) || !exist) {
+				var bytes = packet.value;
+
+				(_.isArray(bytes)) ? bytes.unshift(0) : bytes = "";	// prepend 1 byte
+
+				packets.push(
+					{
+						type: 'outgoing',
+						updateTime: packet.updateTime,
+						value: (_.isArray(bytes) && bytes.length >= 5) ? bytes.slice(5, -1) : bytes,
+						src: nodeid,
+						speed: packet.speed && packet.speed.value? packet.speed.value : "",
+						rssi: packet.returnRSSI && packet.returnRSSI.value? packet.returnRSSI.value : "",
+						hops: packet.hops && packet.hops.value? packet.hops.value : "",
+						tries: packet.tries && packet.tries.value? packet.tries.value : "",
+						dest: (_.isArray(bytes)) ? bytes[3] : "",
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+					}
+				);
+				packet.value = bytes.slice(1, bytes.length);
+			}
         });
 
         function packetApplication(packet) {
             var cmdClassKey = decToHex(packet[5], 2, '0x');
 
-            var cmdKey = decToHex(packet[6], 2, '0x')
+            var cmdKey = decToHex(packet[6], 2, '0x');
 
             var ret = {};
 
@@ -1221,7 +1236,9 @@ ZWave.prototype.defineHandlers = function () {
 
         time = _.max(packets, function (v) {
             return v.updateTime;
-        }).updateTime;
+        });
+
+		time = time.updateTime;
 
         body.updateTime = _.isEmpty(time) ? time : null;
 
