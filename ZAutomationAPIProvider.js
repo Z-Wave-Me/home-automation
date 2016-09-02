@@ -2163,7 +2163,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             }
 
                             // set url
-                            obj.url = "http://192.168.10.252/dev/cloudbackup/?uri=backupcreate";
+                            obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
 
                             // clean up data
                             obj.data = "";
