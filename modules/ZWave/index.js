@@ -1072,10 +1072,13 @@ ZWave.prototype.defineHandlers = function () {
 
 				if (filterObj.src.value != "") {
 					filter = packets.filter(function (p) {
+						// filter by array of sources
+						var srcs =  filterObj.src.value.split(',');
+
 						if(parseInt(filterObj.src.show) === 1) {
-							return p.src == filterObj.src.value;
+							return srcs.indexOf(p.src.toString()) > -1;
 						} else {
-							return p.src != filterObj.src.value;
+							return srcs.indexOf(p.src.toString()) < 0;
 						}
 
 					});
