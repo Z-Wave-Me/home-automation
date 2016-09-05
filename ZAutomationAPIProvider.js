@@ -2125,7 +2125,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if(this.req.method === "POST" && this.req.body) {
             reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id')) {
+            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id') && reqObj.hasOwnProperty('cloud_host_url')) {
                 backupconfig.active = reqObj.active
 
                 if(reqObj.active) {
@@ -2163,7 +2163,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             }
 
                             // set url
-                            obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+                            //obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+                            console.log("reqObj.cloud_host_url: ", reqObj.cloud_host_url);
+                            obj.url = reqObj.cloud_host_url;
 
                             // clean up data
                             obj.data = "";
@@ -2179,12 +2181,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             // end of boundary
                             obj.data += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
 
+                            console.log("obj ", JSON.stringify(obj));
+
                             // return cloud server response
                             return http.request(obj);
 
                         }
 
                         res = formRequest(backup);
+
+                        console.log("res.data.status ", res.data.status);
 
                         // prepare response
                         if (!res.data.status || res.data.status !== 200) {
@@ -2201,6 +2207,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         reply.error = backup.error;
                     }
                 }
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad Request';
             }
         }
 
@@ -2216,7 +2225,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 reply.code = 200; 
             } else {
-
+                reply.code = 400;
+                reply.error = 'Bad Request';
             }
         }
 
