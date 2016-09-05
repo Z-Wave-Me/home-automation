@@ -425,7 +425,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		var data = loadObject("rssidata.json");
 
 		if(!data) data = [];
-		//zway.GetBackgroundRSSI();
+		zway.GetBackgroundRSSI();
 
 		var rssi = zway.controller.data.statistics.backgroundRSSI;
 
@@ -969,7 +969,7 @@ ZWave.prototype.defineHandlers = function () {
                     {
                         type: 'incoming',
                         updateTime: packet.updateTime,
-                        value: (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
+                        value: prepareValues(bytes),
                         src: (_.isArray(packet.value)) ? packet.value[3] : "",
                         rssi: packet.RSSI && packet.RSSI.value ? packet.RSSI.value : "",
                         dest: nodeid,
@@ -999,11 +999,12 @@ ZWave.prototype.defineHandlers = function () {
 				if((exist && exist.length < 1) || !exist) {
 					(_.isArray(packet.value)) ? packet.value.unshift(0) : packet.value = "";	// prepend 1 byte
                     var bytes = packet.value;
+
                     packets.push(
                         {
                             type: 'outgoing',
                             updateTime: packet.updateTime,
-                            value:  (_.isArray(bytes) && bytes >= 5) ? bytes.slice(5, -1) : packet.value,
+                            value:  prepareValues(bytes),
                             src: nodeid,
                             speed: packet.speed && packet.speed.value? packet.speed.value : "",
                             rssi: packet.returnRSSI && packet.returnRSSI.value ? packet.returnRSSI.value : "",
@@ -1017,6 +1018,23 @@ ZWave.prototype.defineHandlers = function () {
 				}
 			});
 		}
+
+		function prepareValues(packetValue) {
+			// var pV = (_.isArray(packetValue) && packetValue.length >= 5) ? packetValue.slice(5) : packetValue;
+			var pV = packetValue;
+
+			if (_.isArray(packetValue)){
+				if (packetValue.length >= 8) {
+					console.log("##### packetValue[7]:", packetValue[7]);
+					pV = packetValue[7];
+				} else if (packetValue.length >= 6){
+					console.log("##### packetValue.slice(5, -1):", packetValue.slice(5, -1));
+					pV = packetValue.slice(5, -1);
+				}
+			}
+			console.log("##### pV:", pV);
+			return pV;
+		};
 
 		function packetApplication(packet) {
 			var cmdClassKey = decToHex(packet[5], 2, '0x');
@@ -1131,7 +1149,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		var getLatestPackages = function (packets) {
 
-			var lastUpdate = now - 1; // default: search communication packages during last second
+			var lastUpdate = now - 3; // default: search communication packages during last three seconds
 
             // get packets since last request
 			var filteredPackets = _.filter(packets, function (p) {
@@ -1150,11 +1168,12 @@ ZWave.prototype.defineHandlers = function () {
             });
 
 			if ((exist && exist.length < 1) || !exist) {
+				console.log("########### incoming packet.value:", JSON.stringify(packet.value));
 				packets.push(
 					{
 						type: 'incoming',
 						updateTime: packet.updateTime,
-						value: (_.isArray(packet.value) && packet.value.length >= 5) ? packet.value.slice(5) : packet.value,
+						value: prepareValues(packet.value),
 						src: (_.isArray(packet.value)) ? packet.value[3] : "",
 						rssi: packet.RSSI && packet.RSSI.value? packet.RSSI.value : "",
 						dest: nodeid,
@@ -1174,6 +1193,7 @@ ZWave.prototype.defineHandlers = function () {
 
 			if ((exist && exist.length < 1) || !exist) {
 				var bytes = packet.value;
+				console.log("########### outgoing bytes:", JSON.stringify(bytes));
 
 				(_.isArray(bytes)) ? bytes.unshift(0) : bytes = "";	// prepend 1 byte
 
@@ -1181,7 +1201,7 @@ ZWave.prototype.defineHandlers = function () {
 					{
 						type: 'outgoing',
 						updateTime: packet.updateTime,
-						value: (_.isArray(bytes) && bytes.length >= 5) ? bytes.slice(5, -1) : bytes,
+						value: prepareValues(bytes),
 						src: nodeid,
 						speed: packet.speed && packet.speed.value? packet.speed.value : "",
 						rssi: packet.returnRSSI && packet.returnRSSI.value? packet.returnRSSI.value : "",
@@ -1194,6 +1214,23 @@ ZWave.prototype.defineHandlers = function () {
 				packet.value = bytes.slice(1, bytes.length);
 			}
         });
+
+        function prepareValues(packetValue) {
+            // var pV = (_.isArray(packetValue) && packetValue.length >= 5) ? packetValue.slice(5) : packetValue;
+            var pV = packetValue;
+
+            if (_.isArray(packetValue)){
+                if (packetValue.length >= 8) {
+                    console.log("##### packetValue[7]:", packetValue[7]);
+                    pV = packetValue[7];
+                } else if (packetValue.length >= 6){
+                    console.log("##### packetValue.slice(5, -1):", packetValue.slice(5, -1));
+                    pV = packetValue.slice(5, -1);
+                }
+            }
+            console.log("##### pV:", pV);
+            return pV;
+        };
 
         function packetApplication(packet) {
             var cmdClassKey = decToHex(packet[5], 2, '0x');
