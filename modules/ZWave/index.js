@@ -144,8 +144,6 @@ ZWave.prototype.init = function (config) {
 	if (!this.zway) {
 		return;
 	}
-	
-	this.CommunicationLogger();
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
 		if (zwayName === self.config.name && self.zway) {
@@ -225,6 +223,8 @@ ZWave.prototype.startBinding = function () {
 		this.deadDetectionStart();
 		this.gateDevicesStart();
 	}
+
+    this.CommunicationLogger();
 };
 
 ZWave.prototype.stop = function () {
@@ -970,10 +970,10 @@ ZWave.prototype.defineHandlers = function () {
                         type: 'incoming',
                         updateTime: packet.updateTime,
                         value: prepareValues(bytes),
-                        src: (_.isArray(packet.value)) ? packet.value[3] : "",
+                        src: packet.nodeId && packet.nodeId.value? packet.nodeId.value : "",
                         rssi: packet.RSSI && packet.RSSI.value ? packet.RSSI.value : "",
                         dest: nodeid,
-                        application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+                        application: (_.isArray(packet.value)) ? packetApplication(packet.value, 'incoming') : ""
                     }
                 );
             }
@@ -1011,7 +1011,7 @@ ZWave.prototype.defineHandlers = function () {
                             hops: packet.hops && packet.hops.value? packet.hops.value : "",
                             tries: packet.tries && packet.tries.value? packet.tries.value : "",
                             dest: (_.isArray(packet.value)) ? packet.value[3] : "",
-                            application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+                            application: (_.isArray(packet.value)) ? packetApplication(packet.value, 'outgoing') : ""
                         }
                     );
                     packet.value = bytes.slice(1, bytes.length);
@@ -1025,21 +1025,26 @@ ZWave.prototype.defineHandlers = function () {
 
 			if (_.isArray(packetValue)){
 				if (packetValue.length >= 8) {
-					console.log("##### packetValue[7]:", packetValue[7]);
-					pV = packetValue[7];
+					pV = packetValue.slice(7);
 				} else if (packetValue.length >= 6){
-					console.log("##### packetValue.slice(5, -1):", packetValue.slice(5, -1));
 					pV = packetValue.slice(5, -1);
 				}
 			}
-			console.log("##### pV:", pV);
+			//console.log("##### pV:", pV);
 			return pV;
 		};
 
-		function packetApplication(packet) {
-			var cmdClassKey = decToHex(packet[5], 2, '0x');
+		function packetApplication(packet, packet_type) {
+            var cmdClassKey = 0;
+            var cmdKey = 0;
 
-			var cmdKey = decToHex(packet[6], 2, '0x')
+            if (packet.length >= 6 & packet_type === 'outgoing') {
+                cmdClassKey = decToHex(packet[5], 2, '0x');
+                cmdKey = decToHex(packet[6], 2, '0x');
+            } else {
+                cmdClassKey = decToHex(packet[0], 2, '0x');
+                cmdKey = decToHex(packet[1], 2, '0x');
+            }
 
 			var ret = {};
 
@@ -1168,18 +1173,21 @@ ZWave.prototype.defineHandlers = function () {
             });
 
 			if ((exist && exist.length < 1) || !exist) {
-				console.log("########### incoming packet.value:", JSON.stringify(packet.value));
+                //console.log("########### incoming packet:", JSON.stringify(packet));
+				//console.log("########### incoming packet.value:", JSON.stringify(packet.value));
 				packets.push(
 					{
 						type: 'incoming',
 						updateTime: packet.updateTime,
 						value: prepareValues(packet.value),
-						src: (_.isArray(packet.value)) ? packet.value[3] : "",
+						src: packet.nodeId && packet.nodeId.value? packet.nodeId.value : "",
 						rssi: packet.RSSI && packet.RSSI.value? packet.RSSI.value : "",
 						dest: nodeid,
-						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value, 'incoming') : ""
 					}
 				);
+
+                console.log()
 			}
         });
 
@@ -1193,7 +1201,7 @@ ZWave.prototype.defineHandlers = function () {
 
 			if ((exist && exist.length < 1) || !exist) {
 				var bytes = packet.value;
-				console.log("########### outgoing bytes:", JSON.stringify(bytes));
+				//console.log("########### outgoing bytes:", JSON.stringify(bytes));
 
 				(_.isArray(bytes)) ? bytes.unshift(0) : bytes = "";	// prepend 1 byte
 
@@ -1208,7 +1216,7 @@ ZWave.prototype.defineHandlers = function () {
 						hops: packet.hops && packet.hops.value? packet.hops.value : "",
 						tries: packet.tries && packet.tries.value? packet.tries.value : "",
 						dest: (_.isArray(bytes)) ? bytes[3] : "",
-						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value,'outgoing') : ""
 					}
 				);
 				packet.value = bytes.slice(1, bytes.length);
@@ -1221,25 +1229,33 @@ ZWave.prototype.defineHandlers = function () {
 
             if (_.isArray(packetValue)){
                 if (packetValue.length >= 8) {
-                    console.log("##### packetValue[7]:", packetValue[7]);
-                    pV = packetValue[7];
+                    pV = packetValue.slice(7);
                 } else if (packetValue.length >= 6){
-                    console.log("##### packetValue.slice(5, -1):", packetValue.slice(5, -1));
                     pV = packetValue.slice(5, -1);
                 }
             }
-            console.log("##### pV:", pV);
+            //console.log("##### pV:", pV);
             return pV;
         };
 
-        function packetApplication(packet) {
-            var cmdClassKey = decToHex(packet[5], 2, '0x');
+        function packetApplication(packet, packet_type) {
 
-            var cmdKey = decToHex(packet[6], 2, '0x');
+            var cmdClassKey = 0;
+            var cmdKey = 0;
+
+            if (packet.length >= 6 & packet_type === 'outgoing') {
+                cmdClassKey = decToHex(packet[5], 2, '0x');
+                cmdKey = decToHex(packet[6], 2, '0x');
+            } else {
+                cmdClassKey = decToHex(packet[0], 2, '0x');
+                cmdKey = decToHex(packet[1], 2, '0x');
+            }
 
             var ret = {};
 
             var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
+
+            //console.log("findCmdClass:", JSON.stringify(findCmdClass));
 
             if (!findCmdClass) {
                 return;
@@ -1281,6 +1297,8 @@ ZWave.prototype.defineHandlers = function () {
 		time = time.updateTime;
 
         body.updateTime = _.isEmpty(time) ? time : null;
+
+        packets = _.sortBy(packets, function(o) {return o.updateTime});
 
         body.data = packets;
 
