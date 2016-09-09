@@ -327,8 +327,17 @@ ZWave.prototype.CommunicationLogger = function() {
         data = JSON.parse(data);
         data = createIncomingEntry(data);
 
-        iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
-        //console.log('####=======>>## iPacketBuffer:', JSON.stringify(iPacketBuffer.packets));
+        if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id'), data)){
+
+            var ms = (new Date).getMilliseconds();
+            ms = ms.length === 1? ms.toString() + '00': (ms.length === 2? ms.toString() + '0': ms );
+            var pId = parseInt(data.updateTime.toString() + ms.toString(), 10);
+
+            data.id = pId;
+
+            iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
+            //console.log('####=======>>## iPacketBuffer:', JSON.stringify(iPacketBuffer.packets));
+        }
 
         if (ipacket.length >= 100) {
 
@@ -338,7 +347,7 @@ ZWave.prototype.CommunicationLogger = function() {
                 _ipacket = [];
             }
 
-            _ipacket = _ipacket.concat(ipacket, iPacketBuffer.packets);
+            _ipacket = _ipacket.concat(ipacket);
 
             if (_ipacket.length > 1000) {
                 console.log('####=======>>## slice _ipacket ...');
@@ -377,8 +386,17 @@ ZWave.prototype.CommunicationLogger = function() {
         //console.log('####=======>>## data:', JSON.stringify(data));
         data = createOutgoingEntry(data);
 
-        oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
-        //console.log('####=======>>## oPacketBuffer:', JSON.stringify(oPacketBuffer.packets));
+        if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id'), data)){
+
+            var ms = (new Date).getMilliseconds();
+            ms = ms.length === 1? ms.toString() + '00': (ms.length === 2? ms.toString() + '0': ms );
+            var pId = parseInt(data.updateTime.toString() + ms.toString(), 10);
+
+            data.id = pId;
+
+            oPacketBuffer = packetBuffer(oPacketBuffer, data, 'in');
+            //console.log('####=======>>## iPacketBuffer:', JSON.stringify(iPacketBuffer.packets));
+        }
 
         if(opacket.length >= 50) {
             var _opacket = loadObject("outgoingPacket.json");
@@ -387,7 +405,7 @@ ZWave.prototype.CommunicationLogger = function() {
                 _opacket = [];
             }
 
-            _opacket = _opacket.concat(opacket, oPacketBuffer.packets);
+            _opacket = _opacket.concat(opacket);
 
             if (_opacket.length > 500) {
                 console.log('####=======>>## slice _opacket ...');
@@ -468,7 +486,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		var rssi = zway.controller.data.statistics.backgroundRSSI;
 
 		var d = {
-			"time": rssi.updateTime,
+			"time": Math.round((new Date()).getTime()/1000),
 			"channel1": rssi.channel1.value - 256,
 			"channel2": rssi.channel2.value - 256
 		};
@@ -572,12 +590,8 @@ ZWave.prototype.CommunicationLogger = function() {
 
     function createIncomingEntry(packet) {
         //console.log("############# nodeId:", packet.nodeId.value, " | incoming packet.value:", JSON.stringify(packet.value), " | length:", packet.value.length);
-        var ms = (new Date).getMilliseconds();
-        ms = ms.length === 1? ms.toString() + '00': (ms.length === 2? ms.toString() + '0': ms );
-        var pId = parseInt(packet.updateTime.toString() + ms.toString(), 10);
 
         return {
-            id: pId,
             type: 'incoming',
             updateTime: packet.updateTime,
             bytes:packet.value,
@@ -592,14 +606,10 @@ ZWave.prototype.CommunicationLogger = function() {
     function createOutgoingEntry(packet) {
         //console.log("############# nodeId:", nodeid, " | outgoing packet.value:", JSON.stringify(packet.value), " | length:", packet.value.length);
         var bytes = packet.value;
-        var ms = (new Date).getMilliseconds();
-        ms = ms.length === 1? ms.toString() + '00': (ms.length === 2? ms.toString() + '0': ms );
-        var pId = parseInt(packet.updateTime.toString() + ms.toString(), 10);
 
         (_.isArray(bytes)) ? bytes.unshift(0) : (bytes = "");	// prepend 1 byte
 
         return {
-            id: pId,
             type: 'outgoing',
             updateTime: packet.updateTime,
             bytes:packet.value,
