@@ -2088,7 +2088,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: 500
-            };
+            },
+            res = {};
         var backupconfig = loadObject("backupconfig.json");
 
         var profile = _.filter(this.controller.profiles, function (p) {
@@ -2097,7 +2098,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             })[0];
 
-        if(!!!backupconfig) {
+        if(backupconfig === null) {
             backupconfig = {
                 'active': false,
                 'email_log': 0
@@ -2128,42 +2129,73 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 backupconfig.active = reqObj.active
 
                 if(reqObj.active) {
-                    
+
+                    // create backup data
                     backup = this.backup();
 
-                    if(backup.data != null) {
+                    if(!!backup.data) {
 
-                        var keys = Object.keys(backup.headers);
-                        var index = backup.headers[keys[1]].indexOf('=');
-                        var filename = backup.headers[keys[1]].substring(index+1, backup.headers[keys[1]].length);
+                        var formRequest = function (obj) {
+                            var remoteid = self.getRemoteId();
 
-                        var msg = '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
-                        msg += 'Content-Disposition: form-data; name="remote_id"\r\n\r\n';
-                        msg += reqObj.remote_id+'\r\n';
-                        msg += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
-                        msg += 'Content-Disposition: form-data; name="email_report"\r\n\r\n';
-                        msg += backupconfig.email_log+'\r\n';
-                        msg += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
-                        msg += 'Content-Disposition: form-data; name="file"; filename="'+filename+'"\r\n';
-                        msg += 'Content-Type: application/octet-stream\r\n\r\n';
-                        msg += JSON.stringify(backup);
-                        msg += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
+                            // define form elements
+                            var formElements = [
+                                {
+                                    name: 'remote_id',
+                                    value: remoteid.data.remote_id
+                                },{
+                                    name: 'email_report',
+                                    value: backupconfig.email_log
+                                },{
+                                    name: 'file',
+                                    filename: obj.headers["Content-Disposition"]? obj.headers["Content-Disposition"].split('=').pop() : '',
+                                    type: 'application/octet-stream',
+                                    value: JSON.stringify(backup)
+                                }];
 
-                        var response = http.request({
-                            url: "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate",
-                            method: "POST",
-                            headers: {
+                            // set method
+                            obj.method = "POST";
+
+                            // set headers
+                            obj.headers = {
+                                "Connection": "keep-alive",
                                 "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
-                            },
-                            data: msg
-                        });
-                        
-                        console.log(JSON.stringify(response));
-                        
-                        reply.error = response.data.error;
-                        reply.code = response.data.status;
-                        reply.data = response.statusText;
-                        //console.log(JSON.stringify(response));
+                            }
+
+                            // set url
+                            obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+
+                            // clean up data
+                            obj.data = "";
+
+                            // create form boundary
+                            for (var index in formElements) {
+                                obj.data += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
+                                obj.data += 'Content-Disposition: form-data; name="' + formElements[index].name + '"' + (formElements[index].filename ? ('; filename="' + formElements[index].filename) +'"': '') + '\r\n';
+                                obj.data += formElements[index].type ? ('Content-Type: ' + formElements[index].type + '\r\n\r\n') : '\r\n';
+                                obj.data += formElements[index].value + '\r\n';
+                            }
+
+                            // end of boundary
+                            obj.data += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
+
+                            // return cloud server response
+                            return http.request(obj);
+
+                        }
+
+                        res = formRequest(backup);
+
+                        // prepare response
+                        if (!res.data.status || res.data.status !== 200) {
+                            reply.error = backup.error;
+                            reply.code = res.data.code;
+                        } else {
+                            reply.code = 200;
+                        }
+
+                        reply.message = res.data.message;
+                        reply.data = res.data.data;
 
                     } else {
                         reply.error = backup.error;
