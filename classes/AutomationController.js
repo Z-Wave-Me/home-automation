@@ -2374,3 +2374,80 @@ AutomationController.prototype.hashCode = function(str) {
     }
     return hash;
 };
+
+AutomationController.prototype.createBackup = function() {
+    var self = this,
+        backupJSON = {},
+        userModules = [],
+        skins = [],
+        result = null;
+
+    var list = loadObject("__storageContent");
+
+    try {
+
+        // save all objects in storage
+        for (var ind in list) {
+            if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
+                backupJSON[list[ind]] = loadObject(list[ind]);
+            }
+        }
+
+        // add list of current userModules
+        _.forEach(fs.list('userModules')|| [], function(moduleName) {
+            if (fs.stat('userModules/' + moduleName).type === 'dir' && !_.findWhere(userModules, {name: moduleName})) {
+                userModules.push({
+                    name: moduleName,
+                    version: self.modules[moduleName]? self.modules[moduleName].meta.version : ''
+                });
+            }
+        });
+
+        if (userModules.length > 0) {
+            backupJSON['__userModules'] = userModules;
+        }
+
+        // add list of current skins excluding default skin
+        _.forEach(this.skins, function(skin) {
+            if (skins.indexOf(skin) === -1 && skin.name !== 'default') {
+                skins.push({
+                    name: skin.name,
+                    version: skin.version
+                });
+            }
+        });
+
+        if (skins.length > 0) {
+            backupJSON['__userSkins'] = skins;
+        }
+
+        // save Z-Way and EnOcean objects
+        if (!!global.ZWave) {
+            backupJSON["__ZWay"] = {};
+            global.ZWave.list().forEach(function(zwayName) {
+                var bcp = "",
+                    data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
+
+                for(var i = 0; i < data.length; i++) {
+                    bcp += String.fromCharCode(data[i]);
+                }
+
+                backupJSON["__ZWay"][zwayName] = bcp;
+            });
+        }
+
+        /* TODO
+         if (!!global.EnOcean) {
+         backupJSON["__EnOcean"] = {};
+         global.EnOcean.list().forEach(function(zenoName) {
+         // backupJSON["__EnOcean"][zenoName] = global.EnOcean[zenoName].zeno.controller.Backup();
+         });
+         }
+         */
+        result = backupJSON;
+    } catch(e) {
+        throw e.toString();
+    }
+
+    return result;
+};
