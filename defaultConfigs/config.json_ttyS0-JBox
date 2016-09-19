@@ -88,27 +88,6 @@
         }
     }, {
         "id": 5,
-        "moduleId": "InfoWidget",
-        "active": "true",
-        "title": "Dear Expert User",
-        "description": "Dieses Modul erzeugt ein Informations Widget.",
-        "params": {
-            "widgets": [],
-            "internationalize": true,
-            "widgetsInt": [{
-                "lang": "en",
-                "headline": "Dear Expert User",
-                "text": "<center>If you still want to use ExpertUI please go, after you are successfully logged in, to <br><strong> Menu > Devices > Manage with ExpertUI </strong> <br> or call <br><strong> http://MYRASP:8083/expert </strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
-                "imgURI": "app/img/logo-z-wave-z-only.png"
-            }, {
-                "lang": "de",
-                "headline": "Lieber Expert User",
-                "text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte, nachdem Sie sich erfolgreich angemeldet haben, auf <br><strong> Menü > Geräte > Verwaltung mit ExpertUI </strong> <br> oder rufen Sie <br><strong> http://MYRASP:8083/expert </strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
-                "imgURI": "app/img/logo-z-wave-z-only.png"
-            }]
-        }
-    }, {
-        "id": 6,
         "moduleId": "SensorsPolling",
         "active": "true",
         "title": "Periodical Sensor Polling",
@@ -120,7 +99,7 @@
             "period": "10"
         }
     }, {
-        "id": 7,
+        "id": 6,
         "moduleId": "BatteryPolling",
         "active": "true",
         "title": "Battery Polling",
@@ -130,7 +109,7 @@
             "warningLevel": "20"
         }
     }, {
-        "id": 8,
+        "id": 7,
         "moduleId": "SwitchControlGenerator",
         "active": "true",
         "title": "Trap events from Remotes and Sensors",
@@ -140,19 +119,17 @@
             "banned": [],
             "generated": []
         }
-    },
-    {
-        "id": 9,
+    }, {
+        "id": 8,
         "moduleId": "PhilioHW",
         "active": "true",
         "title": "Philio hardware support",
         "description":"Support for Philio hardware buttons, LEDs, power and battery management",
         "params": {
-		"no_battery": false
-	}
-    },
-    {
-        "id": 10,
+            "no_battery": false
+        }
+    }, {
+        "id": 9,
         "moduleId": "ZMEOpenWRT",
         "active": "true",
         "title": "Time zone and access from WAN",
@@ -160,9 +137,8 @@
             "timezone": "UTC",
             "wan_port_access": false
         }
-    },
-    {
-        "id": 11,
+    }, {
+        "id": 10,
         "moduleId": "TamperAutoOff",
         "active": "true",
         "title": "Tamper Auto Off",
