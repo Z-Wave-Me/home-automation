@@ -124,6 +124,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/backup", this.ROLE.ADMIN, this.backup);
         this.router.post("/restore", this.ROLE.ADMIN, this.restore);
         this.router.get("/resetToFactoryDefault", this.ROLE.ADMIN, this.resetToFactoryDefault);
+
+        // skins tokens
+        this.router.get("/skins/tokens", this.ROLE.ADMIN, this.getSkinTokens);
+        this.router.put("/skins/tokens", this.ROLE.ADMIN, this.storeSkinToken);
+        this.router.del("/skins/tokens", this.ROLE.ADMIN, this.deleteSkinToken);
+
+        this.router.get("/skins", this.ROLE.ADMIN, this.getSkins);
+        this.router.post("/skins/install", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.put("/skins/update/:skin_id", this.ROLE.ADMIN, this.addOrUpdateSkin);
+        this.router.get("/skins/setToDefault", this.ROLE.ADMIN, this.setDefaultSkin);
+        this.router.get("/skins/active", this.ROLE.ANONYMOUS, this.getActiveSkin);
+        this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
+        this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
+        this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -134,6 +148,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+
+        this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
     },
 
     // Used by the android app to request server status
@@ -166,6 +184,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (profile.password !== 'admin' && typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
             this.controller.config.firstaccess = false;
+        }
+
+        // if showWelcome flag is set in controller add showWelcome flag to profile and remove it from controller
+        if (!this.controller.config.firstaccess && this.controller.config.showWelcome) {
+            resProfile.showWelcome = true;
+
+            delete this.controller.config.showWelcome;
+            this.controller.saveConfig();
         }
 
         return {
@@ -207,7 +233,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reqObj;
 
         try {
-            reqObj = JSON.parse(this.req.body);
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body): this.req.body;
         } catch (ex) {
             return {
                 error: ex.message,
@@ -358,16 +384,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     ((notification.level !== 'device-info' && devices.indexOf(notification.source) === -1) || (notification.level === 'device-info' && devices.indexOf(notification.source) > -1));// filter by user device
         });
 
-        if (Boolean(this.req.query.pagination)) {
-            reply.data.total_count = notifications.length;
-            // !!! fix pagination
-            notifications = notifications.slice();
-        }
-
         reply.data = {
             updateTime: timestamp,
             notifications: notifications
         };
+
+        if (Boolean(this.req.query.pagination)) {
+            reply.data.total_count= notifications.length;
+            // !!! fix pagination
+            notifications = notifications.slice();
+        }
 
         return reply;
     },
@@ -1754,7 +1780,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             userModules = [];
 
         var now = new Date();
-
         // create a timestamp in format yyyy-MM-dd-HH-mm
         var ts = now.getFullYear() + "-";
         ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
@@ -1765,6 +1790,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var list = loadObject("__storageContent");
 
         try {        
+
             // save all objects in storage
             for (var ind in list) {
                 if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
@@ -1800,6 +1826,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     backupJSON["__ZWay"][zwayName] = bcp;
                 });
             }
+
             /* TODO
             if (!!global.EnOcean) {
                 backupJSON["__EnOcean"] = {};
@@ -1808,6 +1835,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 });
             }
             */
+           
             reply.headers= {
                     "Content-Type": "application/x-download; charset=utf-8",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
@@ -1984,6 +2012,160 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         
         return reply;
     },
+    cloudbackup: function() {
+        var self = this,
+            reqObj,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            res = {};
+        var backupconfig = loadObject("backupconfig.json");
+
+        var profile = _.filter(this.controller.profiles, function (p) {
+                if(p.login === "admin") {
+                    return p;
+                }
+            })[0];
+
+        if(backupconfig === null) {
+            backupconfig = {
+                'active': false,
+                'email_log': 0
+            };
+        }
+
+        if(this.req.method === "GET") {
+            var remoteid = this.getRemoteId();
+            if(remoteid.data != null) {
+
+                reply.code = 200;
+                reply.data = {
+                    'active': backupconfig.active,
+                    'remote_id': remoteid.data.remote_id,
+                    'email': profile.email,
+                    'email_log': backupconfig.email_log
+                };
+
+            } else {
+                reply.error = remoteid.error
+            }
+        }
+
+        if(this.req.method === "POST" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id') && reqObj.hasOwnProperty('cloud_host_url')) {
+                backupconfig.active = reqObj.active
+
+                if(reqObj.active) {
+
+                    // create backup data
+                    backup = this.backup();
+
+                    if(!!backup.data) {
+
+                        var formRequest = function (obj) {
+                            var remoteid = self.getRemoteId();
+
+                            // define form elements
+                            var formElements = [
+                                {
+                                    name: 'remote_id',
+                                    value: remoteid.data.remote_id
+                                },{
+                                    name: 'email_report',
+                                    value: backupconfig.email_log
+                                },{
+                                    name: 'file',
+                                    filename: obj.headers["Content-Disposition"]? obj.headers["Content-Disposition"].split('=').pop() : '',
+                                    type: 'application/octet-stream',
+                                    value: JSON.stringify(backup)
+                                }];
+
+                            // set method
+                            obj.method = "POST";
+
+                            // set headers
+                            obj.headers = {
+                                "Connection": "keep-alive",
+                                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+                            }
+
+                            // set url
+                            //obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+                            console.log("reqObj.cloud_host_url: ", reqObj.cloud_host_url);
+                            obj.url = reqObj.cloud_host_url;
+
+                            // clean up data
+                            obj.data = "";
+
+                            // create form boundary
+                            for (var index in formElements) {
+                                obj.data += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
+                                obj.data += 'Content-Disposition: form-data; name="' + formElements[index].name + '"' + (formElements[index].filename ? ('; filename="' + formElements[index].filename) +'"': '') + '\r\n';
+                                obj.data += formElements[index].type ? ('Content-Type: ' + formElements[index].type + '\r\n\r\n') : '\r\n';
+                                obj.data += formElements[index].value + '\r\n';
+                            }
+
+                            // end of boundary
+                            obj.data += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
+
+                            console.log("obj ", JSON.stringify(obj));
+
+                            // return cloud server response
+                            return http.request(obj);
+
+                        }
+
+                        res = formRequest(backup);
+
+                        console.log("res.data.status ", res.data.status);
+
+                        // prepare response
+                        if (!res.data.status || res.data.status !== 200) {
+                            reply.error = backup.error;
+                            reply.code = res.data.code;
+                        } else {
+                            reply.code = 200;
+                        }
+
+                        reply.message = res.data.message;
+                        reply.data = res.data.data;
+
+                    } else {
+                        reply.error = backup.error;
+                    }
+                }
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad Request';
+            }
+        }
+
+        if(this.req.method === "PUT" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('email_log') && reqObj.hasOwnProperty('email')) {
+                backupconfig.email_log = reqObj.email_log;
+
+                profile.email = reqObj.email;
+
+                profile = this.controller.updateProfile(profile, profile.id);
+
+                reply.code = 200; 
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad Request';
+            }
+        }
+
+        saveObject("backupconfig.json", backupconfig);
+
+        return reply;
+
+    },
     resetToFactoryDefault: function() {
         var self = this,
             langFile = this.controller.loadMainLang();
@@ -1996,6 +2178,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             storageContentList = loadObject("__storageContent"),
             defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
             defaultConfig = {},
+            defaultSkins = [{
+                name: "default",
+                title: "Default",
+                description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                version: "1.0.3",
+                icon: true,
+                author: "Martin Vach",
+                homepage: "http://www.zwave.eu",
+                active: true
+            }],
             now = new Date();
 
         try{
@@ -2067,6 +2259,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     });
 
+                    // remove skins
+                    _.forEach(this.controller.skins, function(skin) {
+                        self.controller.uninstallSkin(skin.name); 
+                    });
+
                     // stop the controller
                     this.controller.stop();
                     
@@ -2085,6 +2282,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // set back to default config
                     saveObject('config.json', defaultConfig);
+                    saveObject('userSkins.json', defaultSkins);
 
                     // start controller with reload flag to apply config.json
                     this.controller.start(true);
@@ -2105,6 +2303,306 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } catch (e) {
             reply.error = 'Something went wrong. Error: ' + e.message;
+        }
+
+        return reply;
+    },
+    getSkins: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            reply.data = this.controller.skins;
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    getSkin: function (skinName) {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.name === skinName; 
+            });
+
+            if (index > -1) {
+                reply.data = this.controller.skins[index];
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    getActiveSkin: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                };
+            
+        if (this.controller.skins) {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.active === true; 
+            });
+
+            if (index > -1) {
+                reply.data = this.controller.skins[index];
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.error = 'failed_to_load_skins';
+        }
+
+        return reply;
+    },
+    activateOrDeactivateSkin: function (skinName) {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            skin = null;
+
+        skin = this.controller.setSkinState(skinName, reqObj);
+
+        try {
+            if (!!skin) {
+                reply.data = skin;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } catch (e) {
+            reply.error = 'failed_to_load_skins';
+            reply.message = e.message;
+        }
+
+        return reply;
+    },
+    addOrUpdateSkin: function (skinName) {
+        var reply = {
+                error: 'skin_failed_to_install',
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            result = "",
+            skName = skinName || reqObj.name;
+
+        if (skName !== 'default') {
+
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.name === skName; 
+            });
+
+            if ((index < 0 && this.req.method === 'POST') || 
+                    (index > -1 && this.req.method === 'PUT' && skinName)) {
+                
+                // download and install the skin
+                result = this.controller.installSkin(reqObj, skName, index);
+
+                if (result === "done") {
+                    reply.code = 200;
+                    reply.data = this.req.method === 'POST'? "skin_installation_successful" : "skin_update_successful"; // send language key as response
+                    reply.error = null;
+                } 
+
+            } else if (this.req.method === 'POST' && !skinName) {
+                reply.code = 409;
+                reply.error = 'skin_from_url_already_exists';
+            } else if (this.req.method === 'PUT' && skinName) {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.code = 403;
+            reply.error = 'No Permission';
+        }
+        
+        return reply;
+    },
+    deleteSkin: function (skinName) {
+        var reply = {
+                error: 'skin_failed_to_delete',
+                data: null,
+                code: 500
+            },
+            uninstall = false;
+
+        if (skinName !== 'default') {
+            index = _.findIndex(this.controller.skins, function(skin) { 
+                return skin.name === skinName; 
+            });
+
+            if (index > -1) {
+
+                uninstall = this.controller.uninstallSkin(skinName);
+
+                if (uninstall) {
+
+                    reply.code = 200;
+                    reply.data = "skin_delete_successful"; // send language key as response
+                    reply.error = null;
+                }       
+            } else {
+                reply.code = 404;
+                reply.error = 'skin_not_exists';
+            }
+        } else {
+            reply.code = 403;
+            reply.error = 'No Permission';
+        }
+        
+        return reply;
+    },
+    setDefaultSkin: function () {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+            
+            try {
+
+                // deactivate all skins and set default skin to active: true
+                _.forEach(this.controller.skins, function (skin) {
+                    skin.active = skin.name === 'default'? true : false;
+                })
+
+                saveObject("userSkins.json", this.controller.skins);
+
+                reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
+                reply.code = 200;
+                // do logout
+                setTimeout(function(){
+                    self.doLogout();
+                }, 3000);
+            } catch (e) {
+                reply.error = "Something went wrong.";
+                reply.message = e.message;
+            }
+
+        return reply;
+    },
+    getSkinTokens: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                }, 
+                tokenObj = loadObject('skinTokens.json');
+
+        if (tokenObj === null) {
+
+            tokenObj = {
+                    skinTokens: []
+            };
+
+            saveObject('skinTokens.json', tokenObj);
+        }
+            
+        if (!!tokenObj) {
+            reply.data = tokenObj;
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
+        }
+
+        return reply;
+    },
+    storeSkinToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('skinTokens.json');
+
+        if (reqObj && reqObj.token) {
+
+            if (tokenObj === null) {
+
+                tokenObj = {
+                    skinTokens: [reqObj.token]
+                }
+
+                // save tokens
+                saveObject('skinTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 201;
+
+            } else if (!!tokenObj && tokenObj.skinTokens) {
+
+                if (tokenObj.skinTokens.indexOf(reqObj.token) < 0) {
+                    // add new token id
+                    tokenObj.skinTokens.push(reqObj.token);
+
+                    // save tokens
+                    saveObject('skinTokens.json', tokenObj);
+
+                    reply.data = tokenObj;
+                    reply.code = 201;
+                } else {
+                    reply.code = 409;
+                    reply.error = 'skin_token_not_unique';
+                }
+            }
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
+        }
+
+        return reply;
+    },
+    deleteSkinToken: function () {
+        var reply = {
+                    error: null,
+                    data: null,
+                    code: 500
+                },
+                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                tokenObj = loadObject('skinTokens.json');
+
+        if (reqObj && reqObj.token && !!tokenObj && tokenObj.skinTokens) {
+            if (tokenObj.skinTokens.indexOf(reqObj.token) > -1) {
+                // add new token id
+                tokenObj.skinTokens = _.filter(tokenObj.skinTokens, function(token) {
+                    return token !== reqObj.token;
+                });
+
+                // save tokens
+                saveObject('skinTokens.json', tokenObj);
+
+                reply.data = tokenObj;
+                reply.code = 200;
+            } else {
+                reply.code = 404;
+                reply.error = 'not_existing_skin_token';
+            }
+        } else {
+            reply.error = 'failed_to_load_skin_tokens';
         }
 
         return reply;
@@ -2217,12 +2715,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 return profile.login === 'admin' && profile.password === 'admin';
             });
 
-            if (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) {
+            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
                 reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
                 reply.data.defaultProfile = setLogin.data; // set login data of default profile
                 reply.data.firstaccess = true;
+                reply.data.defaultProfile.showWelcome = true;
                 reply.code = 200;
+
             } else {
                 reply.data = { firstaccess: false };
                 reply.code = 200;
@@ -2270,16 +2770,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         
         try {
+
+            // if reboot has flag firstaccess=true add showWelcome to controller config
+            if(this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
+                this.controller.config.showWelcome = true;
+                this.controller.saveConfig();
+            }
+
             // reboot after 5 seconds
             this.rebootTimer = setTimeout(function() {
                 if(self.rebootTimer) {
                     clearTimeout(self.rebootTimer);
                 }
+                console.log("Rebooting system ...");
                 system("reboot"); // reboot the box
             }, 5000);
 
             reply.code = 200;
-            reply.message = "System is rebooting ...";
+            reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
         }

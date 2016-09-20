@@ -46,6 +46,16 @@ function AutomationController() {
     this._loadedSingletons = [];
     
     this.auth = new AuthController(this);
+    this.skins = loadObject('userSkins.json') || [{
+                    name: "default",
+                    title: "Default",
+                    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                    version: "1.0.3",
+                    icon: true,
+                    author: "Martin Vach",
+                    homepage: "http://www.zwave.eu",
+                    active: true
+              }];
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -187,6 +197,16 @@ AutomationController.prototype.start = function (reload) {
         console.log("Reload config...");
         // Reload config
         this.reloadConfig();
+        this.skins = loadObject('userSkins.json') || [{
+                    name: "default",
+                    title: "Default",
+                    description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+                    version: "1.0.3",
+                    icon: true,
+                    author: "Martin Vach",
+                    homepage: "http://www.zwave.eu",
+                    active: true
+              }];
     }
 
     // Restore persistent data
@@ -1018,6 +1038,142 @@ AutomationController.prototype.deleteInstance = function (id) {
 
     this.saveConfig();
     this.emit('core.instanceDeleted', id);
+};
+
+AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
+    var result = "in progress";
+
+    if (reqObj.file_path) {
+        
+        console.log('Installing skin', skinName, '...');
+
+        skininstaller.install(
+            reqObj.file_path,
+            skinName,
+            function() {
+                    result = "done";
+            },  function() {
+                    result = "failed";
+            }
+        );
+        
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+                processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+                result = "failed";
+        }
+
+        if (result === 'done') {
+            if (index < 0){
+                // add new skin
+                newSkin = {
+                    name: '',
+                    title: '',
+                    description: '',
+                    version: '',
+                    icon: false,
+                    author: '',
+                    homepage: '',
+                    active: false
+                };
+
+                for (var property in reqObj) {
+                    if (reqObj.hasOwnProperty(property) && newSkin.hasOwnProperty(property)) {
+                        newSkin[property] = reqObj[property];
+                    }
+                }
+
+                this.skins.push(newSkin);
+            } else {
+                // update entries
+                for (var property in reqObj) {
+                    if (reqObj.hasOwnProperty(property) && this.skins[index].hasOwnProperty(property)) {
+                        this.skins[index][property] = reqObj[property];
+                    }
+                }
+
+                this.skins[index].active = false;
+            }
+
+            saveObject("userSkins.json", this.skins);
+        }
+    }
+
+    return result;
+};
+
+AutomationController.prototype.uninstallSkin = function(skinName) {
+    var langFile = this.loadMainLang(),
+        result = "in progress";
+
+    try {
+        skininstaller.remove(
+            skinName,
+            function() {
+                    result = "done";
+            },  function() {
+                    result = "failed";
+            }
+        );
+        
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+        
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+        
+        if (result === "in progress") {
+            result = "failed";
+        }
+
+        if (result === "done") {
+            this.skins = _.filter(this.skins, function (skin) {
+                return skin.name !== skinName;
+            });
+
+            this.profiles.forEach(function(prof) {
+                if (prof.skin === skinName) {
+                    prof.skin = 'default';
+                }
+            });
+
+            saveObject("userSkins.json", this.skins);
+        }
+
+    } catch (e) {
+        console.log('Uninstalling or reseting of skin "' + skinName + '" has failed. ERROR:', e);
+        this.addNotification("error", langFile.ac_err_uninstall_skin + ': ' + skinName, "core", "AutomationController");
+    }
+
+    return result;
+};
+
+AutomationController.prototype.setSkinState = function(skinName, reqObj) {
+
+    var res = null;
+
+    if (reqObj.hasOwnProperty('active')) {
+
+        _.forEach(this.skins, function (skin) {
+            if (reqObj.active === true || reqObj.active === 'true') {
+                // activate target skin and deactivate all others
+                skin.active = skin.name === skinName? true : false;
+                res = skin.name === skinName? skin : res;
+            } else {
+                // deactivate all skins and set default skin to active: true
+                skin.active = skin.name === 'default'? true : false;
+                res = skin.name === 'default'? skin : res;
+            }
+        })
+
+        saveObject("userSkins.json", this.skins);
+    }
+
+    return res;
 };
 
 AutomationController.prototype.deviceExists = function (vDevId) {

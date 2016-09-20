@@ -27,6 +27,11 @@
         if (!profile.email) {
           profile.email = '';
         }
+
+        // add default skin entry
+        if (profile.skin) {
+          delete profile.skin;
+        }
       });
     } else {
       // default profile
@@ -394,6 +399,36 @@
           console.log("Error: can not write back config.json to storage: ", e);
         }
       }
+    }
+  }
+
+  if (skins) {
+    try {
+
+      if (skins === null) {
+        skins = [{
+              name: "default",
+              title: "Default",
+              description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
+              version: "1.0.3",
+              icon: true,
+              author: "Martin Vach",
+              homepage: "http://www.zwave.eu",
+              active: true
+        }];
+      } else {
+        skins.forEach(function(skin) {
+          if (skin.name === 'default' && !skin.hasOwnProperty('active')) {
+            skin.active = true;
+          } else if (!skin.hasOwnProperty('active')) {
+            skin.active = false;
+          }
+        });
+      }
+
+      saveObject("userSkins.json", skins);
+    } catch (e) {
+      console.log("Error: can not write userSkins.json to storage: ", e);
     }
   }
 })();

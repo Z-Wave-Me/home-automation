@@ -56,9 +56,31 @@ RoundRobinScenes.prototype.init = function (config) {
         },
         moduleId: this.id
     });
+    
+    if (this.config.trackCurrent) {
+        this.tracker = function(vDev) {
+            for (var i in self.config.scenes) {
+                if (self.config.scenes[i] === vDev.id) {
+                    self.currentSceneIndex = i;
+                }
+            }
+        };
+        
+        for (var i in this.config.scenes) {
+            this.controller.devices.on(self.config.scenes[i], "change:metrics:level", this.tracker);
+        }
+    }
 };
 
 RoundRobinScenes.prototype.stop = function () {
+    if (this.config.trackCurrent) {
+        for (var i in this.config.scenes) {
+            this.controller.devices.off(self.config.scenes[i], "change:metrics:level", this.tracker);
+        }
+
+        this.tracker = null;
+    }
+
     if (this.vDev) {
         this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
