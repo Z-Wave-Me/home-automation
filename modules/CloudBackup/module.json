@@ -18,12 +18,13 @@
     "description": "__m_descr__",
     "user_active": false,
     "email": "",
-    "emial_log": 0,
+    "email_log": "0",
     "remoteid": null,
     "days": null,
     "weekDays": null,
     "hours": null,
-    "minutes": null
+    "minutes": null,
+    "scheduler": "0"
   },
   "schema" : {
     "type": "object",
@@ -33,12 +34,13 @@
         "required": true
       },
       "email_log": {
-        "type": "integer",
-        "enum": [0,1,2],
+        "type": "string",
+        "enum": ["0","1","2"],
         "required": true
       },
       "remoteid": {
         "type": "integer",
+        "readonly": true,
         "required": true
       },
       "hours": {
@@ -56,7 +58,19 @@
       "days": {
         "type": "string",
         "enum": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
+      },
+      "scheduler": {
+        "type": "string",
+        "enum": ["0", "1", "2", "3"],
+        "required": true
       }
+    },
+    "dependencies": {
+      "scheduler": ["remoteid", "email"],
+      "minutes": ["scheduler"],
+      "weekDays": ["scheduler"],
+      "days": ["scheduler"],
+      "hours": ["scheduler"]
     }
   },
   "options": {
@@ -66,27 +80,46 @@
       },
       "email_log": {
         "type": "radio",
+        "emptySelectFirst": true,
         "label": "__l_email_log__",
         "optionLabels": ["__l_no_log__", "__l_only_log__", "__l_log_notification__"]
+      },
+      "scheduler": {
+        "type": "radio",
+        "emptySelectFirst": true,
+        "label": "__l_scheduler__",
+        "optionLabels": ["__l_daily__", "__l_weekly__", "__l_monthly__", "__l_manual__"]
       },
       "remoteid": {
         "label": "__l_remoteid__"
       },
       "hours": {
         "type": "select",
-        "label": "__l_hours__"
+        "label": "__l_hours__",
+        "dependencies": {
+          "scheduler": ["0","1","2"]
+        }
       },
       "minutes": {
         "type": "select",
-        "label": "__l_minutes__"
+        "label": "__l_minutes__",
+        "dependencies": {
+          "scheduler": ["0","1","2"]
+        }
       },
       "weekDays": {
         "type": "select",
         "optionLabels": ["__l_su__", "__l_mo__", "__l_tu__", "__l_we__", "__l_th__", "__l_fr__", "__l_sa__"],
-        "label": "__l_weekDays__"
+        "label": "__l_weekDays__",
+        "dependencies": {
+          "scheduler": ["1"]
+        }
       },
       "days": {
-        "label": "__l_days__"
+        "label": "__l_days__",
+        "dependencies": {
+          "scheduler": ["2"]
+        }
       }
     }
   }

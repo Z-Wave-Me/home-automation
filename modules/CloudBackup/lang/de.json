@@ -17,5 +17,10 @@
   "l_th":"Donnerstag",
   "l_fr":"Freitag",
   "l_sa":"Samstag",
-  "l_days":"Tage"
+  "l_days":"Tage",
+  "l_scheduler":"",
+  "l_daily":"Täglich",
+  "l_weekly":"Wöchentlich",
+  "l_monthly":"Monatlich",
+  "l_manual":"Manuell"
 }

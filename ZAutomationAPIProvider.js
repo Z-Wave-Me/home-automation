@@ -1007,7 +1007,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } else {
             reply.code = 404;
-            reply.error.key = "App not found.";
+            reply.error = "App not found.";
         }
         
         return reply;
