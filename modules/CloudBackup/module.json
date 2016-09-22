@@ -1,0 +1,93 @@
+{
+  "dependencies": [],
+  "singleton": true,
+  "autoload": true,
+  "category": "",
+  "author": "Z-Wave.Me",
+  "homepage": "http://razberry.z-wave.me",
+  "icon": "",
+  "moduleName":"CloudBackup",
+  "version": "1.0.0",
+  "maturity": "stable",
+  "repository": {
+    "type": "git",
+    "source": "https://github.com/Z-Wave-Me/home-automation"
+  },
+  "defaults": {
+    "title": "__m_title__",
+    "description": "__m_descr__",
+    "user_active": false,
+    "email": "",
+    "emial_log": 0,
+    "remoteid": null,
+    "days": null,
+    "weekDays": null,
+    "hours": null,
+    "minutes": null
+  },
+  "schema" : {
+    "type": "object",
+    "properties": {
+      "email": {
+        "type": "string",
+        "required": true
+      },
+      "email_log": {
+        "type": "integer",
+        "enum": [0,1,2],
+        "required": true
+      },
+      "remoteid": {
+        "type": "integer",
+        "required": true
+      },
+      "hours": {
+        "type": "string",
+        "enum": ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
+      },
+      "minutes": {
+        "type": "string",
+        "enum": ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59"]
+      },
+      "weekDays": {
+        "type": "integer",
+        "enum": [0, 1, 2, 3, 4, 5, 6]
+      },
+      "days": {
+        "type": "string",
+        "enum": ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
+      }
+    }
+  },
+  "options": {
+    "fields": {
+      "email": {
+        "label": "__l_email__"
+      },
+      "email_log": {
+        "type": "radio",
+        "label": "__l_email_log__",
+        "optionLabels": ["__l_no_log__", "__l_only_log__", "__l_log_notification__"]
+      },
+      "remoteid": {
+        "label": "__l_remoteid__"
+      },
+      "hours": {
+        "type": "select",
+        "label": "__l_hours__"
+      },
+      "minutes": {
+        "type": "select",
+        "label": "__l_minutes__"
+      },
+      "weekDays": {
+        "type": "select",
+        "optionLabels": ["__l_su__", "__l_mo__", "__l_tu__", "__l_we__", "__l_th__", "__l_fr__", "__l_sa__"],
+        "label": "__l_weekDays__"
+      },
+      "days": {
+        "label": "__l_days__"
+      }
+    }
+  }
+}

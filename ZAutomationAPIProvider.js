@@ -148,10 +148,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
-
-        this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
-        this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
-        this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
     },
 
     // Used by the android app to request server status
@@ -1785,12 +1781,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.headers= {
                 "Content-Type": "application/octet-stream", // application/x-download octet-stream
                 "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
-                "Content-Encoding" : "",
                 "Connection": "keep-alive"
             };
 
             reply.code = 200;
-            reply.data = backupJSON;
+            reply.data = Base64.encode(JSON.stringify(backupJSON));
         } catch(e) {
             reply.code = 500;
             reply.error = e.toString();
@@ -1838,10 +1833,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             //this.reset();
-            console.log(this.req.body.backupFile.content);
             reqObj = typeof this.req.body.backupFile.content === 'string'? JSON.parse(this.req.body.backupFile.content) : this.req.body.backupFile.content;
-            
+
+            decodeData = Base64.decode(reqObj.data);
+            reqObj.data = JSON.parse(decodeData);
+
             // stop the controller
+
             this.controller.stop();
 
             for (var obj in reqObj.data) {
@@ -1858,8 +1856,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // restore Z-Wave and EnOcean
             !!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
                 var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
+                console.log(zwayData);
+                saveObject("utf8",zwayData)
                 global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
+
             /* TODO
             !!reqObj.data["__EnOcean"] && reqObj.data["__EnOcean"].forEach(function(zenoName) {
                 // global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj.data["__EnOcean"][zenoName]);
@@ -1867,6 +1868,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             */
            
             // install userModules
+
             if (reqObj.data["__userModules"]) {
                 var installedModules = [];
 
@@ -2014,208 +2016,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 userModules: installedModules,
                 userSkins: installedSkins
             };
-           
+
         } catch (e) {
             reply.error = e.toString();
         }
-        
-        return reply;
-    },
-    cloudbackup: function() {
-        var self = this,
-            reqObj,
-            reply = {
-                data: null,
-                error: null,
-                code: 500,
-                message: null
-            },
-            res = {};
 
-        var now = new Date();
-        // create a timestamp in format yyyy-MM-dd-HH-mm
-        var ts = now.getFullYear() + "-";
-        ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
-        ts += ("0" + now.getDate()).slice(-2) + "-";
-        ts += ("0" + now.getHours()).slice(-2) + "-";
-        ts += ("0" + now.getMinutes()).slice(-2);
-
-        var backupconfig = loadObject("backupconfig.json");
-
-        var profile = _.filter(this.controller.profiles, function (p) {
-                if(p.login === "admin") {
-                    return p;
-                }
-            })[0];
-
-        if(backupconfig === null) {
-            backupconfig = {
-                'active': false,
-                'email_log': 0,
-                'time': {
-                    'minute': null,
-                    'hour': null,
-                    'weekDay': null,
-                    'day': null,
-                    'month': null
-                }
-            };
-        }
-
-        // GET
-        if(this.req.method === "GET") {
-            var remoteid = this.getRemoteId();
-            if(remoteid.data != null) {
-
-                reply.code = 200;
-                reply.data = {
-                    'active': backupconfig.active,
-                    'remote_id': remoteid.data.remote_id,
-                    'email': profile.email,
-                    'email_log': backupconfig.email_log,
-                    'time': backupconfig.time
-                };
-
-            } else {
-                reply.error = remoteid.error;
-            }
-        }
-
-        // POST
-        if(this.req.method === "POST" && this.req.body) {
-            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
-
-            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id')) {
-                backupconfig.active = reqObj.active
-
-                if(reqObj.active) {
-
-                    // create backup data
-                    var backupJSON = self.controller.createBackup();
-
-                    if(!_.isNull(backupJSON)) {
-
-                        saveObject("backupbeforeupload", backupJSON);
-
-                        var value = {"data": backupJSON};
-                        saveObject("backupnostringify", value);
-                        saveObject("backupstringify", JSON.stringify(value));
-
-                        function RandomString() {
-                            var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghiklmnopqrstuvwxyz";
-                            var string_length = 15;
-                            var randomString = '';
-                            for (var i = 0; i < string_length; i++) {
-                                var rnum = Math.floor(Math.random() * chars.length);
-                                randomString += chars.substring(rnum,rnum+1);
-                            }
-                            return randomString;
-                        }
-
-                        var formRequest = function (obj) {
-                            var remoteid = self.getRemoteId();
-
-                            var boundary = "----WebKitFormBoundary" + RandomString();
-                            // define form elements
-                            var formElements = [
-                                {
-                                    name: 'remote_id',
-                                    value: remoteid.data.remote_id
-                                },{
-                                    name: 'email_report',
-                                    value: backupconfig.email_log
-                                },{
-                                    name: 'file',
-                                    filename: "z-way-backup-" + ts + ".zab",
-                                    type: 'application/octet-stream',
-                                    value: JSON.stringify(value)
-                                }];
-
-                            // set method
-                            obj.method = "POST";
-
-                            // set headers
-                            obj.headers = {
-                                "Connection": "keep-alive",
-                                "Content-Type": "multipart/form-data; boundary=" + boundary
-                            }
-
-                            // set url
-                            obj.url = "http://192.168.10.252/dev/cloudbackup/?uri=backupcreate";
-
-                            // clean up data
-                            obj.data = "";
-
-                            // create form boundary
-                            for (var index in formElements) {
-                                obj.data += '--'+boundary+'\r\n';
-                                obj.data += 'Content-Disposition: form-data; name="' + formElements[index].name + '"' + (formElements[index].filename ? ('; filename="' + formElements[index].filename) +'"': '') + '\r\n';
-                                obj.data += formElements[index].type ? ('Content-Type: ' + formElements[index].type + '\r\n\r\n') : '\r\n';
-                                obj.data += formElements[index].value + '\r\n';
-                            }
-
-                            // end of boundary
-                            obj.data += '\r\n--'+boundary+'--\r\n';
-
-                            saveObject("backupserver", obj);
-
-                            // return cloud server response
-                            return http.request(obj);
-                        }
-
-                        res = formRequest(backupJSON);
-
-                        // prepare response
-                        if (!res.data.status || res.data.status !== 200) {
-                            reply.error = res.data.message;
-                            reply.code = res.data.status;
-                        } else {
-                            reply.code = 200;
-                            reply.message = res.data.message; // router override custom http message? --> always 200 OK
-                        }
-
-                        reply.data = res.data.data;
-
-                    } else {
-                        reply.error = backup.error;
-                    }
-                }
-            }
-        }
-
-        if(this.req.method === "PUT" && this.req.body) {
-            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
-
-            console.log(JSON.stringify(reqObj));
-
-            /*
-            time = body.time;
-
-            this.controller.emit("cron.addTask", "cloudbackup", {
-                minute: time.minute,
-                hour: time.hour,
-                weekDay: time.weekDay,
-                day: time.day,
-                month: time.month
-            });*/
-
-            if(reqObj.hasOwnProperty('email_log') && reqObj.hasOwnProperty('email')) {
-                backupconfig.email_log = reqObj.email_log;
-                backupconfig.time = JSON.parse(reqObj.time);
-
-                if(profile.email !== "" && profile.email !== reqObj.email) {
-                    profile.email = reqObj.email;
-                    profile = this.controller.updateProfile(profile, profile.id);
-                }
-
-                reply.code = 200;
-            } else {
-
-            }
-        }
-
-        saveObject("backupconfig.json", backupconfig);
-        //console.log(JSON.stringify(reply));
         return reply;
     },
     resetToFactoryDefault: function() {
@@ -2685,41 +2490,23 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: 500
-            },
-            checkIfTypeError = true;
-
-        if (typeof ZBWConnect === 'function') {
-            try {
-                zbw = new ZBWConnect(); // find zbw by path or use (raspberry) location /etc/zbw as default
-
-                if(!!zbw) {
-                    checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
-                }
-
-            } catch (e) {
-                try {
-                    zbw = new ZBWConnect('./zbw');
-
-                    checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
-
-                } catch (er) {
-                    console.log('Something went wrong. Reading remote id has failed. Error:' + er.message);
-                }
             }
 
-            if(checkIfTypeError) {
-                reply.error = 'Something went wrong. Reading remote id has failed.';
-            } else {
+            try {
                 reply.code = 200;
                 reply.data = {
-                    remote_id: zbw.getUserId()
+                    remote_id: self.controller.getRemoteId()
                 };
-            }
-        } else {
-            reply.code = 503;
-            reply.error = 'Reading remote id has failed. Service is not available.';
-        }
 
+            } catch (e) {
+                if(e.name === "service-not-available") {
+                    reply.code = 503;
+                    reply.error = e.message;
+                } else {
+                    reply.code = 500;
+                    reply.error = e.message;
+                }
+            }
         return reply;
     },
     // set a timout for accessing firmware update tab of 8084
