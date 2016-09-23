@@ -89,7 +89,7 @@
     }, {
         "id": 5,
         "moduleId": "SensorsPolling",
-        "active": "true",
+        "active": true,
         "title": "Periodical Sensor Polling",
         "description": "Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.\n(Added by default)",
         "params": {
@@ -101,7 +101,7 @@
     }, {
         "id": 6,
         "moduleId": "BatteryPolling",
-        "active": "true",
+        "active": true,
         "title": "Battery Polling",
         "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
         "params": {
@@ -111,7 +111,7 @@
     }, {
         "id": 7,
         "moduleId": "SwitchControlGenerator",
-        "active": "true",
+        "active": true,
         "title": "Trap events from Remotes and Sensors",
         "description": "",
         "params": {
@@ -122,7 +122,7 @@
     }, {
         "id": 8,
         "moduleId": "PhilioHW",
-        "active": "true",
+        "active": true,
         "title": "Philio hardware support",
         "description":"Support for Philio hardware buttons, LEDs, power and battery management",
         "params": {
@@ -131,7 +131,7 @@
     }, {
         "id": 9,
         "moduleId": "ZMEOpenWRT",
-        "active": "true",
+        "active": true,
         "title": "Time zone and access from WAN",
         "params": {
             "timezone": "UTC",
@@ -140,7 +140,7 @@
     }, {
         "id": 10,
         "moduleId": "TamperAutoOff",
-        "active": "true",
+        "active": true,
         "title": "Tamper Auto Off",
         "params": {
             "devices": [],
