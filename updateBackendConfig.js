@@ -1,8 +1,9 @@
 // This script transforms old formats to new
 
 (function () {
-  var config = loadObject("config.json");
-      oldConfigJSON = JSON.stringify(config);
+  var config = loadObject("config.json"),
+      oldConfigJSON = JSON.stringify(config),
+      skins = loadObject("userSkins.json");
 
   if (config) {
     // Change profiles data
