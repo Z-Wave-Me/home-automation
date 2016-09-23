@@ -60,7 +60,7 @@
     }, {
         "id": 2,
         "moduleId": "InfoWidget",
-        "active": "true",
+        "active": true,
         "title": "Dear Expert User",
         "description": "Dieses Modul erzeugt ein Informations Widget.",
         "params": {
