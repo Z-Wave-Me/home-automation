@@ -1,3 +1,52 @@
+#27.09.2016 v2.2.4
+
+Changes:
+* update main.js (//--- Load 3d-party dependencies) for HomeGear support
+* Postfix - (ZWave module):
+** a lot of  changes in internal postfix logic
+** new configuration possibilities:
+*** change device name (new)
+*** change device icon (new)
+*** change node name (new)
+*** hide devices (new)
+*** deactivate devices (new)
+*** suppress device creation
+*** change configuration
+*** change CC data
+*** app switch controller support
+** app major minor condition changed
+** bugfix for fibaro smoke sensor postfix
+** add postfix error messages, postfix.json updated
+* Postfix - (ZWaveAPI):
+** add expertconfig and api ExpertConfigGet + ExperConfigUpdate
+** api's Postfix, PostfixUpdate, PostfixGet, PostfixRemove, PostfixAdd added
+* ZAutomation API:
+** allow also req type object as post object in login
+** fix reload of initial getFirstLoginInfo call, add showWelcome entry - affecting (rebootBox, setLogin)
+
+Modules:
+* TamperAutoOff:
+** added, workaround for devices that don't deactivate tamper sensor
+* RoundRobinScenes:
+** new param added in config
+* LightMotionRockerAutocontrol:
+** some bug fixes and improvements
+* ZWave:
+** Timing statistics changed according to new IMA data
+** Added support for new bootloader and OTW to 6.70 SDK
+** new sensortypes, seismic, acceleration x, y and z added
+
+Fixes:
+* ZWave module:
+** Fixed Communication statistics wrong timestamp
+** Fixed non-working blind stop command
+** fix for: Second Z-Wave module not generate a widgets #369
+** bugfix: cannot read data of undefined / null (incomingPacket)
+*RemoteAccess:
+** bugfix: wrong ID after changing real ZBW ID.
+* ScheduledScene:
+** fixed bug after adding locks to the list of actions
+
 #12.07.2016 v2.2.3
 
 Changes:

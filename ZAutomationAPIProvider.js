@@ -1233,7 +1233,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
-                hide_single_device_events: []
+                hide_single_device_events: [],
+                skin: ''
             });
 
             reqObj = _.omit(reqObj, 'passwordConfirm');
@@ -1777,7 +1778,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             backupJSON = {}, 
-            userModules = [];
+            userModules = [],
+            skins = [];
 
         var now = new Date();
         // create a timestamp in format yyyy-MM-dd-HH-mm
@@ -1810,6 +1812,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if (userModules.length > 0) {
                 backupJSON['__userModules'] = userModules;
+            }
+
+            // add list of current skins excluding default skin
+            _.forEach(this.controller.skins, function(skin) {
+                if (skins.indexOf(skin) === -1 && skin.name !== 'default') {
+                    skins.push({
+                        name: skin.name,
+                        version: skin.version
+                    });
+                }
+            });
+
+            if (skins.length > 0) {
+                backupJSON['__userSkins'] = skins;
             }
             
             // save Z-Way and EnOcean objects
@@ -1859,7 +1875,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 code: 500
             },
             result = "",
-            langfile = this.controller.loadMainLang();
+            langfile = this.controller.loadMainLang(),
+            waitForInstallation = function (allreadyInstalled, reqKey) {
+                var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
+        
+                while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
+                        
+                        if (allreadyInstalled.length === reqObj.data[reqKey].length) {
+                            break;   
+                        }
+                        
+                        processPendingCallbacks();
+                }
+
+                if (allreadyInstalled.length === reqObj.data[reqKey].length) {
+                    // success
+                    reply.code = 200;
+                }
+            };
 
         try {
             function utf8Decode(bytes) {
@@ -1880,7 +1913,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout"]; // objects that should be ignored 
+                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout","__userSkins"]; // objects that should be ignored 
                 
                 if (dontSave.indexOf(obj) === -1) {
                     saveObject(obj, reqObj.data[obj]);
@@ -1984,27 +2017,71 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         }                        
                     });
                 });
-    
-                var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-        
-                while ((new Date()).valueOf() < d && installedModules.length <= reqObj.data["__userModules"].length) {
-                        
-                        if (installedModules.length === reqObj.data["__userModules"].length) {
-                            break;   
-                        }
-                        
-                        processPendingCallbacks();
-                }
 
-                if (installedModules.length === reqObj.data["__userModules"].length) {
-                    // success
-                    reply.code = 200;
-                }
+                waitForInstallation(installedModules,"__userModules");
+
+            }
+
+            // install userSkins
+            if (reqObj.data["__userSkins"]) {
+                var installedSkins = [],
+                    remoteSkins = [];
+
+                http.request({
+                    // get online list of all existing modules first
+                    url:'http://hrix.net/developer-console/?uri=api-skins',
+                    method:'GET',
+                    async: true,
+                    success: function(res){
+                        if (res.data.data) {
+                            remoteSkins = res.data.data;
+
+                            // download all skins that are online available
+                            _.forEach(reqObj.data["__userSkins"], function(entry) {
+                                var item = {
+                                        name: entry.name,
+                                        status: 'failed'
+                                    },
+                                    // check if backed up skin is in online list
+                                    remSkinObj = _.filter(remoteSkins, function(skin) {
+                                        return skin.name === entry.name;
+                                    });
+
+                                if (remSkinObj[0]) {
+
+                                    index = _.findIndex(self.controller.skins, function(skin) { 
+                                        return skin.name === entry.name; 
+                                    });
+
+                                    try {
+                                        // install skin
+                                        result = self.controller.installSkin(remSkinObj[0], entry.name, index);
+                                        item.status = result;
+                                    } catch (e) {
+                                        self.controller.addNotification("error", langfile.zaap_err_no_archives + ' :: ' + entry.name, "core", "SkinInstaller");
+                                    }
+                                }                    
+
+                                installedSkins.push(item);
+
+                            });
+                        }                       
+                    },
+                    error: function(res){
+                        self.controller.addNotification("error", langfile.zaap_err_server + ' :: ' + res.statusText, "core", "SkinInstaller");
+                    }                        
+                });
+
+                waitForInstallation(installedSkins,"__userSkins");
 
             }
             
             // success
             reply.code = 200;
+            reply.data = {
+                userModules: installedModules,
+                userSkins: installedSkins
+            };
            
         } catch (e) {
             reply.error = e.toString();
