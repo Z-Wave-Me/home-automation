@@ -1229,7 +1229,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 color: '#dddddd',
                 dashboard: [],
                 interval: 2000,
-                rooms: [0],
+                rooms: reqObj.role === 1? [0] : [],
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,

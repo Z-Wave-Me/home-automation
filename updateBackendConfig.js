@@ -33,6 +33,10 @@
         if (profile.skin) {
           delete profile.skin;
         }
+
+        if (profile.role !== 1 && profile.rooms.indexOf(0) > -1) {
+          profile.rooms.splice(profile.rooms.indexOf(0),1);
+        }
       });
     } else {
       // default profile
@@ -64,7 +68,7 @@
         color:'#dddddd',
         dashboard: [],
         interval: 2000,
-        rooms:[0],
+        rooms:[],
         expert_view: false,
         hide_all_device_events: false,
         hide_system_events: false,
@@ -336,7 +340,7 @@
         }
 
         // add room 0 if rooms exists but room 0 is missing
-        if(profile.rooms && Array.isArray(profile.rooms)){
+        if(profile.role === 1 && profile.rooms && Array.isArray(profile.rooms)){
           if(profile.rooms.indexOf(0) === -1){
             profile.rooms.push(0);
           }
