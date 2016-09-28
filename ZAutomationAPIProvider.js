@@ -182,6 +182,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.config.firstaccess = false;
         }
 
+        // if showWelcome flag is set in controller add showWelcome flag to profile and remove it from controller
+        if (!this.controller.config.firstaccess && this.controller.config.showWelcome) {
+            resProfile.showWelcome = true;
+
+            delete this.controller.config.showWelcome;
+            this.controller.saveConfig();
+        }
+
         return {
             error: null,
             data: resProfile,
@@ -2555,12 +2563,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 return profile.login === 'admin' && profile.password === 'admin';
             });
 
-            if (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) {
+            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
                 reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
                 reply.data.defaultProfile = setLogin.data; // set login data of default profile
                 reply.data.firstaccess = true;
+                reply.data.defaultProfile.showWelcome = true;
                 reply.code = 200;
+
             } else {
                 reply.data = { firstaccess: false };
                 reply.code = 200;
@@ -2608,16 +2618,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         
         try {
+
+            // if reboot has flag firstaccess=true add showWelcome to controller config
+            if(this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
+                this.controller.config.showWelcome = true;
+                this.controller.saveConfig();
+            }
+
             // reboot after 5 seconds
             this.rebootTimer = setTimeout(function() {
                 if(self.rebootTimer) {
                     clearTimeout(self.rebootTimer);
                 }
+                console.log("Rebooting system ...");
                 system("reboot"); // reboot the box
             }, 5000);
 
             reply.code = 200;
-            reply.message = "System is rebooting ...";
+            reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
         }
