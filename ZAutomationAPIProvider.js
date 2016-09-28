@@ -2486,11 +2486,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     getRemoteId: function () {
-        var reply = {
+        var self = this,
+            reply = {
                 error: null,
                 data: null,
                 code: 500
-            }
+            };
 
             try {
                 reply.code = 200;
