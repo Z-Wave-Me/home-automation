@@ -1573,7 +1573,10 @@ AutomationController.prototype.createProfile = function (profile) {
     id = profileIds.length > 0? Math.max.apply(null, profileIds) + 1 : 1;
     
     profile.id = id;
-    profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
+
+    if (profile.role === 1) {
+        profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
+    }
 
     this.profiles.push(profile);
 
