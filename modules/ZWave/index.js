@@ -339,7 +339,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		saveObject("incomingPacket.json", ipacket);
 	};
 
-	zway.controller.data.incomingPacket.bind(inH);
+	//zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
@@ -386,7 +386,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		saveObject("outgoingPacket.json", opacket);
 	};
 
-	zway.controller.data.outgoingPacket.bind(outH);
+	//zway.controller.data.outgoingPacket.bind(outH);
 
 	/*
 	rssiH = function() {
@@ -409,7 +409,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
 	*/
 
-	this.timer = setInterval(function() {
+	/*this.timer = setInterval(function() {
 		var data = loadObject("rssidata.json");
 
 		if(!data) data = [];
@@ -426,7 +426,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 		data.push(d);
 		saveObject("rssidata.json", data);
-	}, 1000*60);
+	}, 1000*60);*/
 };
 
 
@@ -801,8 +801,6 @@ ZWave.prototype.defineHandlers = function () {
 
 		this.zw = zw;
 		this.zway = null;
-		this.zwayBinding = null;
-		this.devicesBindings = {};
 		this.communicationStatistics = {};
 
 		this.init(zw);
@@ -811,52 +809,34 @@ ZWave.prototype.defineHandlers = function () {
 	this.CommunicationStatistics.prototype.init = function(zw) {
 		var self = this;
 
-		if (!zw.zway || this.zwayBinding) {
+		if (!zw.zway) {
 			return;
 		}
 
 		this.zway = zw.zway;
-		this.zwayBinding = this.zway.bind(function(type, nodeId) {
-			if (type === zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
-				self.attach(nodeId);
-			}
-		}, zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | zw.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+		this.zway.controller.data.outgoingPacket.bind(this.handler, this, false);
 	};
 
-	this.CommunicationStatistics.prototype.attach = function(nodeId) {
-		if (!this.zway || !this.zwayBinding || !this.zway.devices[nodeId] || this.devicesBindings[nodeId]) {
-			return;
+	this.CommunicationStatistics.prototype.handler = function(type, self) {
+		if (type === self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		if (!self.communicationStatistics[this.nodeId.value]) {
+			self.communicationStatistics[this.nodeId.value] = [];
 		}
-
-		this.communicationStatistics[nodeId] = [];
-		this.devicesBindings[nodeId] = this.zway.devices[nodeId].data.lastPacketInfo.bind(this.handler, {self: this, nodeId: nodeId}, false);
-	};
-
-	this.CommunicationStatistics.prototype.handler = function(type, args, self) {
-		if (type === args.self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
-		args.self.communicationStatistics[args.nodeId].push({
-			"date": (new Date()).getTime(),
+		self.communicationStatistics[this.nodeId.value].push({
+			"date": (new Date()).getTime()/1000,
 			"delivered": this.delivered.value,
 			"packetLength": this.packetLength.value,
 			"deliveryTime": this.deliveryTime.value
 		});
-		args.self.communicationStatistics[args.nodeId].splice(0, Math.max(args.self.communicationStatistics[args.nodeId].length - args.self.MAX_ARRAY_LENGTH, 0));
+		self.communicationStatistics[this.nodeId.value].splice(0, Math.max(self.communicationStatistics[this.nodeId.value].length - self.MAX_ARRAY_LENGTH, 0));
 	};
 
 	this.CommunicationStatistics.prototype.stop = function() {
-		var self = this;
-
-		if (!this.zway || !this.zwayBinding) {
+		if (!this.zway) {
 			return;
 		}
 
-		this.zway.unbind(this.zwayBinding);
-		this.zwayBinding = null;
-
-		Object.keys(this.devicesBindings).forEach(function(nodeId) {
-			self.this.zway.devices[nodeId].data.lastPacketInfo.unbind(self.devicesBindings[nodeId]);
-		});
-		this.devicesBindings = {};
+		this.zway.controller.data.outgoingPacket.unbind(this.handler);
 
 		this.communicationStatistics = {};
 
@@ -894,7 +874,7 @@ ZWave.prototype.defineHandlers = function () {
 					"message": "200 OK",
 				    "updateTime": null,
 					"data": []
-				}
+			   }
 
 		var timestamp = parseInt(url.substring(1), 10) || 0;
 
@@ -916,6 +896,7 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			if(typeof exist === 'undefined') {
+				console.log("incomming:" +JSON.stringify(packets));
 				packets.push(
 					{
 						type: 'incoming',
@@ -927,6 +908,7 @@ ZWave.prototype.defineHandlers = function () {
 						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 					}
 				);
+				console.log("incomming:" +JSON.stringify(packets));
 			}
 		});
 
@@ -942,6 +924,7 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			if(typeof exist === 'undefined') {
+				console.log("outgoing:" +JSON.stringify(packets));
 				packets.push(
 					{
 						type: 'outgoing',
@@ -953,6 +936,7 @@ ZWave.prototype.defineHandlers = function () {
 						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 					}
 				);
+				console.log("outgoing:" +JSON.stringify(packets));
 			}
 		});
 
@@ -1012,10 +996,11 @@ ZWave.prototype.defineHandlers = function () {
 		packets = packets.filter(function(p) {
 			return p.updateTime >= timestamp;
 		});
-
+		
+		/*
 		packets = _.sortBy(packets, function (a, b) {
 			return b.updateTime - a.updateTime;
-		});
+		});*/
 
 		if(!_.isNull(filterObj)) {
 
@@ -1166,8 +1151,13 @@ ZWave.prototype.defineHandlers = function () {
 				contentType: "application/octet-stream",
 				success: function(response) {
 					var L = 32,
-					    addr = 0x7800, // M25PE10
-					    data = response.data.slice(0x1800);
+					    bootloader_6_70 = 
+					    	zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+					    	|| 
+					    	zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+					    ,
+					    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+					    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
 					
 					for (var i = 0; i < data.byteLength; i += L) {
 						var arr = (new Uint8Array(data.slice(i, i+L)));
