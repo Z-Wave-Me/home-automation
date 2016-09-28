@@ -35,7 +35,7 @@ IfThen.prototype.init = function (config) {
         var that = self,
             value = sDev.get("metrics:level"),
             operator = ifElement.operator,
-            ifLevel = ifElement.status,
+            ifLevel = ifElement.status === 'level' && ifElement.level? ifElement.level : ifElement.status,
             check = true;
 
         if (operator && ifLevel) {
@@ -56,16 +56,23 @@ IfThen.prototype.init = function (config) {
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,
-                    lvl = el[type].status,
-                    customlvl = el[type].level,
-                    vDev = that.controller.devices.get(id);
+                    lvl = el[type].status === 'level' && el[type].level? el[type].level : el[type].status,
+                    vDev = that.controller.devices.get(id),
+                    // compare old and new level to avoid unneccessary updates
+                    compareValues = function(valOld,valNew){
+                        var vO = _.isNaN(parseFloat(valOld))? valOld : parseFloat(valOld),
+                            vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
+
+                        return vO !== vN;
+                    },
+                    set = compareValues(vDev.get("metrics:level"), lvl);
                 
-                if (vDev) {
+                if (vDev && set) {
                     if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat")) {
-                        if (type === "switchMultilevel" && lvl !== 'level'){
+                        if (lvl === 'on' || lvl === 'off'){
                             vDev.performCommand(lvl);
                         } else {
-                            vDev.performCommand("exact", { level: customlvl? customlvl : lvl });
+                            vDev.performCommand("exact", { level: lvl });
                         }
                     } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
                         vDev.performCommand("on");
