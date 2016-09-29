@@ -33,10 +33,6 @@
         if (profile.skin) {
           delete profile.skin;
         }
-
-        if (profile.role !== 1 && profile.rooms.indexOf(0) > -1) {
-          profile.rooms.splice(profile.rooms.indexOf(0),1);
-        }
       });
     } else {
       // default profile
@@ -336,7 +332,7 @@
         
         // transform room if it is no array
         if(profile.rooms && !Array.isArray(profile.rooms)){
-            profile.rooms = !isNaN(profile.rooms) && profile.rooms % 1 === 0? [profile.rooms] : [0];
+            profile.rooms = !isNaN(profile.rooms) && profile.rooms % 1 === 0? [profile.rooms] : [];
         }
 
         // add room 0 if rooms exists but room 0 is missing
@@ -344,6 +340,11 @@
           if(profile.rooms.indexOf(0) === -1){
             profile.rooms.push(0);
           }
+        }
+
+        // remove room 0 form non admin profiles
+        if (profile.role !== 1 && profile.rooms.indexOf(0) > -1) {
+            profile.rooms.splice(profile.rooms.indexOf(0),1);
         }
 
         // transform positions into dashboard
