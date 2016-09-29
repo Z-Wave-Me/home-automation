@@ -1279,7 +1279,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         // id is never changeable
                         // login is changed by updateProfileAuth()
                         profile.role = reqObj.role;                    
-                        profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                        profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1? reqObj.rooms.push(0) : reqObj.rooms;
                         profile.expert_view = reqObj.expert_view;
                     }
                     // could be changed by user role
