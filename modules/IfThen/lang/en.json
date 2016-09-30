@@ -20,5 +20,8 @@
 	"sensorBinary": "Binary Sensor",
 	"l_choose":"--- Choose a device type ---",
 	"l_choose_dev":"--- Choose a device ---",
-	"h_statusOn":"The only command that will be send is 'On'."
+	"h_statusOn":"The only command that will be send is 'On'.",
+	"l_delay":"Delay (in seconds)",
+	"actionSetStatus":"Set Status / Level",
+	"actionDelayUpdate":"Update Status (with optional delay)"
 }

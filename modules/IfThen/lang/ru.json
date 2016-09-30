@@ -20,5 +20,8 @@
 	"sensorBinary": "Бинарный датчик",
 	"l_choose":"--- Выберите тип устройства ---",
 	"l_choose_dev":"--- Выберите устройство ---",
-	"h_statusOn":"Единственная команда, которая будет отправлять это 'Включить'"
+	"h_statusOn":"Единственная команда, которая будет отправлять это 'Включить'",
+	"l_delay":"Delay (in seconds)",
+	"actionSetStatus":"Set Status / Level",
+	"actionDelayUpdate":"Update Status (with optional delay)"
 }
