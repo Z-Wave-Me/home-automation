@@ -186,6 +186,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.config.firstaccess = false;
         }
 
+        // if showWelcome flag is set in controller add showWelcome flag to profile and remove it from controller
+        if (!this.controller.config.firstaccess && this.controller.config.showWelcome) {
+            resProfile.showWelcome = true;
+
+            delete this.controller.config.showWelcome;
+            this.controller.saveConfig();
+        }
+
         return {
             error: null,
             data: resProfile,
@@ -1221,7 +1229,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 color: '#dddddd',
                 dashboard: [],
                 interval: 2000,
-                rooms: [0],
+                rooms: reqObj.role === 1? [0] : [],
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
@@ -1271,7 +1279,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         // id is never changeable
                         // login is changed by updateProfileAuth()
                         profile.role = reqObj.role;                    
-                        profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                        profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1? reqObj.rooms.push(0) : reqObj.rooms;
                         profile.expert_view = reqObj.expert_view;
                     }
                     // could be changed by user role
@@ -2125,7 +2133,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if(this.req.method === "POST" && this.req.body) {
             reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id')) {
+            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id') && reqObj.hasOwnProperty('cloud_host_url')) {
                 backupconfig.active = reqObj.active
 
                 if(reqObj.active) {
@@ -2163,7 +2171,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             }
 
                             // set url
-                            obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+                            //obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+                            console.log("reqObj.cloud_host_url: ", reqObj.cloud_host_url);
+                            obj.url = reqObj.cloud_host_url;
 
                             // clean up data
                             obj.data = "";
@@ -2179,12 +2189,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             // end of boundary
                             obj.data += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
 
+                            console.log("obj ", JSON.stringify(obj));
+
                             // return cloud server response
                             return http.request(obj);
 
                         }
 
                         res = formRequest(backup);
+
+                        console.log("res.data.status ", res.data.status);
 
                         // prepare response
                         if (!res.data.status || res.data.status !== 200) {
@@ -2201,6 +2215,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         reply.error = backup.error;
                     }
                 }
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad Request';
             }
         }
 
@@ -2216,7 +2233,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 reply.code = 200; 
             } else {
-
+                reply.code = 400;
+                reply.error = 'Bad Request';
             }
         }
 
@@ -2774,12 +2792,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 return profile.login === 'admin' && profile.password === 'admin';
             });
 
-            if (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) {
+            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
                 reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
                 reply.data.defaultProfile = setLogin.data; // set login data of default profile
                 reply.data.firstaccess = true;
+                reply.data.defaultProfile.showWelcome = true;
                 reply.code = 200;
+
             } else {
                 reply.data = { firstaccess: false };
                 reply.code = 200;
@@ -2827,16 +2847,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         
         try {
+
+            // if reboot has flag firstaccess=true add showWelcome to controller config
+            if(this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
+                this.controller.config.showWelcome = true;
+                this.controller.saveConfig();
+            }
+
             // reboot after 5 seconds
             this.rebootTimer = setTimeout(function() {
                 if(self.rebootTimer) {
                     clearTimeout(self.rebootTimer);
                 }
+                console.log("Rebooting system ...");
                 system("reboot"); // reboot the box
             }, 5000);
 
             reply.code = 200;
-            reply.message = "System is rebooting ...";
+            reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
         }

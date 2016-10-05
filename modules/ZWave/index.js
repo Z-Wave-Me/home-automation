@@ -339,7 +339,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		saveObject("incomingPacket.json", ipacket);
 	};
 
-	zway.controller.data.incomingPacket.bind(inH);
+	//zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
@@ -386,7 +386,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		saveObject("outgoingPacket.json", opacket);
 	};
 
-	zway.controller.data.outgoingPacket.bind(outH);
+	//zway.controller.data.outgoingPacket.bind(outH);
 
 	/*
 	rssiH = function() {
@@ -409,7 +409,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
 	*/
 
-	this.timer = setInterval(function() {
+	/*this.timer = setInterval(function() {
 		var data = loadObject("rssidata.json");
 
 		if(!data) data = [];
@@ -426,7 +426,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 		data.push(d);
 		saveObject("rssidata.json", data);
-	}, 1000*60);
+	}, 1000*60);*/
 };
 
 

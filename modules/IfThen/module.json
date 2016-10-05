@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName": "IfThen",
-	"version": "2.0.5",
+	"version": "2.1.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -26,8 +26,30 @@
 				"properties": {
 					"filterIf": {
 						"type":"string",
-						"enum": ["scene","switchControl","switchBinary","switchMultilevel","sensorBinary"],
+						"enum": ["scene","switchControl","switchBinary","switchMultilevel","sensorBinary", "sensorMultilevel"],
 						"required": true
+					},
+					"sensorMultilevel": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_sensorMultilevel:deviceId",
+								"required": true
+							},
+							"operator": {
+								"type": "string",
+								"enum": ["=",">","<"],
+								"required": true
+							},
+							"status": {
+								"type": "integer",
+								"minimum": 0,
+								"required": true
+							}
+						}
 					},
 					"switchBinary": {
 						"type": "object",
@@ -70,7 +92,20 @@
 							},
 							"status": {
 								"type": "integer",
-								"enum": ["off", "on"],
+								"enum": ["off", "on", "level"],
+								"required": true
+							},
+							"operator": {
+								"dependencies":"status",
+								"type": "string",
+								"enum": ["=",">","<"],
+								"required": true
+							},
+							"level": {
+								"dependencies":"status",
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 99,
 								"required": true
 							}
 						}
@@ -87,7 +122,20 @@
 							},
 							"status": {
 								"type": "integer",
-								"enum": ["off", "on"],
+								"enum": ["off", "on","level"],
+								"required": true
+							},
+							"operator": {
+								"dependencies":"status",
+								"type": "string",
+								"enum": ["=",">","<"],
+								"required": true
+							},
+							"level": {
+								"dependencies":"status",
+								"type": "integer",
+								"minimum": 0,
+								"maximum": 99,
 								"required": true
 							}
 						}
@@ -118,7 +166,7 @@
 					"properties": {
 						"filterThen": {
 							"type":"string",
-							"enum": ["switchBinary","switchMultilevel","doorlock","scene"],
+							"enum": ["switchBinary","switchMultilevel","doorlock","scene","thermostat"],
 							"required": true
 						},
 						"switchBinary": {
@@ -149,6 +197,12 @@
 									"required": true
 								},
 								"status": {
+									"type": "integer",
+									"enum": ["off", "on","level"],
+									"required": true
+								},
+								"level": {
+									"dependencies":"status",
 									"type": "integer",
 									"minimum": 0,
 									"maximum": 99,
@@ -184,6 +238,67 @@
 									"required": true
 								}
 							}
+						},
+						"thermostat":{
+							"type": "object",
+							"dependencies":"filterThen",
+							"properties": {
+								"target": {
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_thermostat:deviceId",
+									"required": true
+								},
+								"status": {
+									"enum": [
+										5,
+										5.5,
+										6,
+										6.5,
+										7,
+										7.5,
+										8,
+										8.5,
+										9,
+										9.5,
+										10,
+										10.5,
+										11,
+										11.5,
+										12,
+										12.5,
+										13,
+										13.5,
+										14,
+										14.5,
+										15,
+										15.5,
+										16,
+										16.5,
+										17,
+										17.5,
+										18,
+										18.5,
+										19,
+										19.5,
+										20,
+										20.5,
+										21,
+										21.5,
+										22,
+										22.5,
+										23,
+										23.5,
+										24,
+										24.5,
+										25,
+										25.5,
+										26,
+										26.5,
+										27
+									]
+								}
+							}
 						}
 					}
 				}
@@ -200,7 +315,28 @@
 						"removeDefaultNone": false,
 						"noneLabel": "__l_choose__",
 						"label":"__l_filter__",
-						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__"]
+						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__","__sensorMultilevel__"]
+					},
+					"sensorMultilevel": {
+						"dependencies": {
+							"filterIf": "sensorMultilevel"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_sensorMultilevel:deviceName"
+							},
+							"operator": {
+								"type": "select"
+							},
+							"status": {
+								"label": "__l_level__"
+							}
+						}
 					},
 					"switchBinary": {
 						"dependencies": {
@@ -250,7 +386,20 @@
 								"optionLabels": "namespaces:devices_switchControl:deviceName"
 							},
 							"status": {
-								"optionLabels": ["__off__", "__on__"]
+								"type":"select",
+								"label": "__l_level__",
+								"optionLabels": ["__off__", "__on__","__level__"]
+							},
+							"operator": {
+								"dependencies": {
+									"status": ["level"]
+								},
+								"type": "select"
+							},
+							"level": {
+								"dependencies": {
+									"status": ["level"]
+								}
 							}
 						}
 					},
@@ -268,7 +417,20 @@
 								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 							},
 							"status": {
-								"optionLabels": ["__off__", "__on__"]
+								"type":"select",
+								"label": "__l_level__",
+								"optionLabels": ["__off__", "__on__","__level__"]
+							},
+							"operator": {
+								"dependencies": {
+									"status": ["level"]
+								},
+								"type": "select"
+							},
+							"level": {
+								"dependencies": {
+									"status": ["level"]
+								}
 							}
 						}
 					},
@@ -302,7 +464,7 @@
 								"removeDefaultNone": false,
 								"noneLabel": "__l_choose__",
 								"label":"__l_filter__",
-								"optionLabels": ["__switchBinary__","__switchMultilevel__","__doorlock__","__l_scene__"]
+								"optionLabels": ["__switchBinary__","__switchMultilevel__","__doorlock__","__l_scene__","__thermostat__"]
 							},
 							"switchBinary": {
 								"dependencies": {
@@ -339,7 +501,14 @@
 										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 									},
 									"status": {
-										"label": "__l_level__"
+										"type":"select",
+										"label": "__l_level__",
+										"optionLabels": ["__off__", "__on__","__level__"]
+									},
+									"level": {
+										"dependencies": {
+											"status": ["level"]
+										}
 									}
 								}
 							},
@@ -377,6 +546,26 @@
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_toggleButton:deviceName"
+									}
+								}
+							},
+							"thermostat": {
+								"dependencies": {
+									"filterThen": "thermostat"
+								},
+								"fields":{
+									"target" :{
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
+										"label": "__l_target_device__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_thermostat:deviceName"
+									},
+									"status": {
+										"type":"select",
+										"label": "__l_level__"
 									}
 								}
 							}
