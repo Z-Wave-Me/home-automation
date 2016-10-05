@@ -1364,8 +1364,13 @@ ZWave.prototype.defineHandlers = function () {
 
 		if(request.method === "POST" && request.body) {
 
-			var date = new Date(),
-				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			var date = new Date();
+
+			try {
+				var reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			} catch(e) {
+				return { status: 400, body: e.toString() };
+			}
 
             var custom_postfix = loadObject("custompostfix.json");
 
