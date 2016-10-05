@@ -3184,9 +3184,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId]['name'] ? compileTitle(renameDevices[notificationTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door', false) : compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 									a_defaults.probeType = 'alarm_door';
-									a_defaults.metrics.icon = changeIcons[notificationTypeId] && changeIcons[notificationTypeId]['icon'] ? changeIcons[notificationTypeId]['icon'] : a_defaults.metrics.icon;
+
+									// apply postfix if available
+									if (changeVDev[cVDId]) {
+										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									}
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
