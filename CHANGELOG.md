@@ -1,4 +1,4 @@
-#27.09.2016 v2.2.4
+#05.10.2016 v2.2.4
 
 Changes:
 * update main.js (//--- Load 3d-party dependencies) for HomeGear support
