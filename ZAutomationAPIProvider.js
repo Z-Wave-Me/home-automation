@@ -1864,8 +1864,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // restore Z-Wave and EnOcean
             !!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
                 var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
-                console.log(zwayData);
-                saveObject("utf8",zwayData)
                 global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
 

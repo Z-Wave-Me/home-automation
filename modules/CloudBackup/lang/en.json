@@ -7,6 +7,7 @@
   "l_only_log":"Send me error log only by email",
   "l_log_notification":"Send me error log and notifivations by email",
   "l_remoteid":"Remote ID",
+  "h_remoteid":"Will automatically add",
   "l_hours":"Hours",
   "l_minutes":"Minutes",
   "l_weekDays":"Weekdays",

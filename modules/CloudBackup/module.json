@@ -18,6 +18,7 @@
   "defaults": {
     "title": "__m_title__",
     "description": "__m_descr__",
+    "api": "/CloudBackupAPI/Backup",
     "user_active": false,
     "email": "",
     "email_log": "0",
@@ -90,24 +91,26 @@
       "scheduler": {
         "type": "radio",
         "emptySelectFirst": true,
+        "fieldClass": "cloudBackupScheduler",
         "label": "__l_scheduler__",
-        "optionLabels": ["__l_daily__", "__l_weekly__", "__l_monthly__", "__l_manual__"]
+        "optionLabels": ["__l_manual__", "__l_daily__", "__l_weekly__", "__l_monthly__"]
       },
       "remoteid": {
-        "label": "__l_remoteid__"
+        "label": "__l_remoteid__",
+        "helper": "__h_remoteid__"
       },
       "hours": {
         "type": "select",
         "label": "__l_hours__",
         "dependencies": {
-          "scheduler": ["0","1","2"]
+          "scheduler": ["1","2","3"]
         }
       },
       "minutes": {
         "type": "select",
         "label": "__l_minutes__",
         "dependencies": {
-          "scheduler": ["0","1","2"]
+          "scheduler": ["1","2","3"]
         }
       },
       "weekDays": {
@@ -115,15 +118,16 @@
         "optionLabels": ["__l_su__", "__l_mo__", "__l_tu__", "__l_we__", "__l_th__", "__l_fr__", "__l_sa__"],
         "label": "__l_weekDays__",
         "dependencies": {
-          "scheduler": ["1"]
+          "scheduler": ["2"]
         }
       },
       "days": {
         "label": "__l_days__",
         "dependencies": {
-          "scheduler": ["2"]
+          "scheduler": ["3"]
         }
       }
     }
-  }
+  },
+  "postRender": "loadFunction:postRender.js"
 }

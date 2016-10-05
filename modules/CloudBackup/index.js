@@ -1,4 +1,12 @@
+/*** CloudBackup Z-Way HA module *******************************************
 
+ Version: 1.0.0 beta
+ (c) Z-Wave.Me, 2016
+ -----------------------------------------------------------------------------
+ Author: Michael Hensche <mh@zwave.eu>
+ Description:
+
+ ******************************************************************************/
 
 function CloudBackup (id, controller) {
     // Call superconstructor first (AutomationModule)
@@ -13,12 +21,8 @@ CloudBackup.prototype.init = function(config) {
     CloudBackup.super_.prototype.init.call(this, config);
 
     this.moduleName = "CloudBackup";
-
     var self = this,
-        url = "http://192.168.10.252/dev/cloudbackup/?uri=backupcreate",
         langFile = self.controller.loadModuleLang(this.moduleName);
-
-    console.log(JSON.stringify(langFile));
 
     // load remote_id
     try {
@@ -29,45 +33,58 @@ CloudBackup.prototype.init = function(config) {
         return;
     }
 
+    this.defineHandlers();
+    this.externalAPIAllow();
+    global["CloudBackupAPI"] = this.CloudBackupAPI;
+
+
     this.uploadBackup = function() {
         console.log("###### start Backup ");
-        var backupJSON = self.controller.createBackup();
 
-        var now = new Date();
-        // create a timestamp in format yyyy-MM-dd-HH-mm
-        var ts = now.getFullYear() + "-";
-        ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
-        ts += ("0" + now.getDate()).slice(-2) + "-";
-        ts += ("0" + now.getHours()).slice(-2) + "-";
-        ts += ("0" + now.getMinutes()).slice(-2);
+        var url = "http://192.168.10.252/dev/cloudbackup/?uri=backupcreate",
+            error = "";
+        try {
+            var backupJSON = self.controller.createBackup();
 
-        if(!_.isNull(backupJSON)) {
-            var data = {"data": Base64.encode(JSON.stringify(backupJSON))};
+            var now = new Date();
+            // create a timestamp in format yyyy-MM-dd-HH-mm
+            var ts = now.getFullYear() + "-";
+            ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
+            ts += ("0" + now.getDate()).slice(-2) + "-";
+            ts += ("0" + now.getHours()).slice(-2) + "-";
+            ts += ("0" + now.getMinutes()).slice(-2);
 
-            var formElements = [
-                {
-                    name: 'remote_id',
-                    value: self.config.remoteid.toString()
-                },{
-                    name: 'email_report',
-                    value: self.config.email_log.toString()
-                },{
-                    name: 'file',
-                    filename: "z-way-backup-" + ts + ".zab",
-                    type: 'application/octet-stream',
-                    value: JSON.stringify(data)
-                }];
+            if(!_.isNull(backupJSON)) {
+                var data = {"data": Base64.encode(JSON.stringify(backupJSON))};
 
-            res = formRequest.send(formElements, "POST", url);
+                var formElements = [
+                    {
+                        name: 'remote_id',
+                        value: self.config.remoteid.toString()
+                    },{
+                        name: 'email_report',
+                        value: self.config.email_log.toString()
+                    },{
+                        name: 'file',
+                        filename: "z-way-backup-" + ts + ".zab",
+                        type: 'application/octet-stream',
+                        value: JSON.stringify(data)
+                    }];
 
-            // prepare response
-            if (!res.data.status || res.data.status !== 200) {
-                self.controller.addNotification("error", res.data.message, "core", this.moduleName);
+                res = formRequest.send(formElements, "POST", url);
+
+                // prepare response
+                if (res.data.status !== 200) {
+                    self.controller.addNotification("error", res.data.message.toString(), "module", self.moduleName);
+                } else {
+                    self.controller.addNotification("info", res.data.message.toString(), "module", self.moduleName);
+                }
             } else {
-                self.controller.addNotification("info", res.data.message, "core", this.moduleName);
+                self.controller.addNotification("error", "Text", "core", self.moduleName);
             }
-        } else {
-            self.controller.addNotification("error","text" , "core", "CloudBackup");
+
+        } catch(e) {
+            self.controller.addNotification("error", e.toString(), "core", self.moduleName);
         }
 
         console.log("###### finisch Backup ");
@@ -80,25 +97,28 @@ CloudBackup.prototype.init = function(config) {
     }
 
     if(self.config.email !== "" && !_.isNull(self.config.remoteid)) {
+        console.log("userUpdate");
+        this.userUpdate();
         self.config.user_active = true;
     }
 
-    if(self.config.user_active) {
-        console.log(self.config.email);
-    }
-
-    if(!self.config.scheduler === "3") { // manual
-        // set up cron handler
-        self.controller.on("CloudBackup.upload", this.uploadBackup);
+    if(self.config.scheduler !== "0") { // manual
         this.updateTask();
     } else {
-        this.removeTask();
+        this.controller.emit("cron.removeTask", "CloudBackup.upload");
     }
+
+    // set up cron handler
+    self.controller.on("CloudBackup.upload", self.uploadBackup);
 };
 
 CloudBackup.prototype.stop = function() {
 
-    this.removeTask();
+    this.controller.off("CloudBackup.upload", this.uploadBackup);
+    this.controller.emit("cron.removeTask", "CloudBackup.upload");
+
+    delete global["CloudBackupAPI"];
+
 
     CloudBackup.super_.prototype.stop.call(this);
 };
@@ -111,29 +131,29 @@ CloudBackup.prototype.updateTask = function() {
     var self = this;
 
     switch(self.config.scheduler) {
-        case "0": // daily
-            self.config.weekDays = null;
-            self.config.days = null;
-            break;
-        case "1": // weekly
-            self.config.days = null;
-            break;
-        case "2": // monthly
-            self.config.weekDays = null;
-            break;
-        case "3": // manual
+        case "0": // manual
             self.config.minutes = null;
             self.config.hours = null;
             self.config.weekDays = null;
             self.config.days = null;
             break;
+        case "1": // daily
+            self.config.weekDays = null;
+            self.config.days = null;
+            break;
+        case "2": // weekly
+            self.config.days = null;
+            break;
+        case "3": // monthly
+            self.config.weekDays = null;
+            break;
     };
 
     console.log("### Backuptime ###");
-    console.log("m", _.isNull(self.config.minutes) ? null : parseInt(self.config.minutes));
-    console.log("h", _.isNull(self.config.hours) ? null : parseInt(self.config.hours));
-    console.log("wd", _.isNull(self.config.weekDays) ? null : parseInt(self.config.weekDays));
-    console.log("d", _.isNull(self.config.days) ? null : parseInt(self.config.days));
+    console.log("h", _.isNull(self.config.hours) ? "null" : parseInt(self.config.hours));
+    console.log("m", _.isNull(self.config.minutes) ? "null" : parseInt(self.config.minutes));
+    console.log("wd", _.isNull(self.config.weekDays) ? "null" : parseInt(self.config.weekDays));
+    console.log("d", _.isNull(self.config.days) ? "null" : parseInt(self.config.days));
     console.log("##################");
 
     self.controller.emit("cron.addTask", "CloudBackup.upload", {
@@ -143,13 +163,6 @@ CloudBackup.prototype.updateTask = function() {
         day: _.isNull(self.config.days) ? null : parseInt(self.config.days),
         month: null
     });
-
-    //self.controller.addNotification
-};
-
-CloudBackup.prototype.removeTask = function() {
-    this.controller.emit("cron.removeTask", "CloudBackup.upload");
-    this.controller.off("CloudBackup.upload", this.uploadBackup);
 };
 
 CloudBackup.prototype.activateCloudBackup = function(active) {
@@ -194,16 +207,50 @@ CloudBackup.prototype.userUpdate = function() {
         method: "POST",
         data: {
             remote_id: self.config.remoteid,
-            email: self.config.email
+            email: self.config.email,
+            email_log: self.config.email_log
         }
     };
-
     res = http.request(obj);
 
     if(res.data.status === 200) {
-        // self.config.email =
-        // self.controller.addNotification("info", res.data.message, "core", this.moduleName);
+        self.controller.addNotification("info", "User update "+res.data.message, "core", this.moduleName);
     } else {
-        // self.controller.addNotification("error", res.data.message, "core", this.moduleName);
+        self.controller.addNotification("error", res.data.message, "core", this.moduleName);
     }
 };
+
+
+// --------------- Public HTTP API -------------------
+
+
+CloudBackup.prototype.externalAPIAllow = function (name) {
+    var _name = !!name ? ("CloudBackup." + name) : "CloudBackupAPI";
+
+    ws.allowExternalAccess(_name, this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".Backup", this.controller.auth.ROLE.ADMIN);
+};
+
+CloudBackup.prototype.externalAPIRevoke = function (name) {
+    var _name = !!name ? ("CloudBackup." + name) : "CloudBackupAPI";
+
+    ws.revokeExternalAccess(_name);
+    ws.revokeExternalAccess(_name + ".Backup");
+};
+
+CloudBackup.prototype.defineHandlers = function () {
+    var self = this;
+
+    this.CloudBackupAPI = function () {
+        return {status: 400, body: "Bad CloudBackupAPI request "};
+    };
+
+    this.CloudBackupAPI.Backup = function () {
+        try {
+            self.uploadBackup();
+            return {status: 200, body: "OK"};
+        } catch(e) {
+            return {status: 500, body: e.toString()};
+        }
+    };
+}
