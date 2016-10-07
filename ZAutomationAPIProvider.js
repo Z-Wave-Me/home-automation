@@ -207,7 +207,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reqObj;
 
         try {
-            reqObj = JSON.parse(this.req.body);
+            reqObj = this.req.body;
         } catch (ex) {
             return {
                 error: ex.message,
