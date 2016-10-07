@@ -213,8 +213,11 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.funcA.state", function(type) {
         switch (this.value) {
-            case 3:
-                system("/etc/btnd/wps_click.sh");
+            case 3: // click
+                system("/lib/wifi-helper.sh WPS");
+                break;
+            case 2: // hold
+                system("/lib/wifi-helper.sh WPSRegistrar");
                 break;
         }
     }, "");
