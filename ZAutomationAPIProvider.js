@@ -207,7 +207,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reqObj;
 
         try {
-            reqObj = this.req.body;
+            if (typeof this.req.body == 'object') {
+                reqObj = this.req.body;
+            } else {
+                reqObj = JSON.parse(this.req.body);
+            }
         } catch (ex) {
             return {
                 error: ex.message,
