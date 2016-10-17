@@ -51,7 +51,7 @@ BindDevices.prototype.init = function (config) {
             if (vDev) {
                 if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "switchMultilevel" && actionMultilevel === null) {
                     vDev.performCommand(actionBinary);
-                } else if (vDev.get("deviceType") === "switchMultilevel") {
+                } else if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat")) {
                     vDev.performCommand("exact", { level: actionMultilevel });
                 }
             }
@@ -65,7 +65,7 @@ BindDevices.prototype.init = function (config) {
             var vDev = self.controller.devices.get(el);
             
             if (vDev) {
-                if (vDev.get("deviceType") === "switchMultilevel") {
+		if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat")) {
                     vDev.performCommand(action);
                 }
             }
