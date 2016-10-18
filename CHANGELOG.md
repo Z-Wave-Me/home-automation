@@ -1,6 +1,8 @@
-#05.10.2016 v2.2.4
+#18.10.2016 v2.2.4
 
 Changes:
+* pull request #372
+* pull request #342
 * update main.js (//--- Load 3d-party dependencies) for HomeGear support
 * Postfix - (ZWave module):
 ** a lot of  changes in internal postfix logic
@@ -35,8 +37,18 @@ Modules:
 ** Timing statistics changed according to new IMA data
 ** Added support for new bootloader and OTW to 6.70 SDK
 ** new sensortypes, seismic, acceleration x, y and z added
+* IfThen
+** add Thermostat, SensorMultilevel support
+* BindDevices
+** add thermostat support
+** change name to Elementassociation
+* Notification
+** descriptions adjusted
+* AutoLock
+** pull request #319
 
 Fixes:
+* Z-Wave-Me/zwave-smarthome #190
 * ZWave module:
 ** Fixed Communication statistics wrong timestamp
 ** Fixed non-working blind stop command
@@ -50,6 +62,7 @@ Fixes:
 #12.07.2016 v2.2.3
 
 Changes:
+* Allowing Basic Authentication for Ajax Requests
 * language keys updated
 * dependency / instance handling:
  ** fetch undefined and failed instances to avoid error when they were adressed to global variable
