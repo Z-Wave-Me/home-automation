@@ -1972,7 +1972,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						switch (scaleId) {
 							case 0:
-								defaults.probeType = 'meterElectric_kilowatt_per_hour';
+								defaults.probeType = 'meterElectric_kilowatt_hour';
 								break;
 							case 2:
 								defaults.probeType = 'meterElectric_watt';
