@@ -131,9 +131,22 @@
 									"enum": "namespaces:devices_switchBinary:deviceId",
 									"required": true
 								},
+								"action": {
+									"type":"string",
+									"enum": ["status", "delay"],
+									"required": true
+								},
 								"status": {
 									"type": "integer",
+									"dependencies":"action",
 									"enum": ["off", "on"],
+									"required": true
+								},
+								"delay": {
+									"type": "integer",
+									"dependencies":"action",
+									"minimum": 0,
+									"maximum": 60,
 									"required": true
 								}
 							}
@@ -148,10 +161,23 @@
 									"enum": "namespaces:devices_switchMultilevel:deviceId",
 									"required": true
 								},
+								"action": {
+									"type":"string",
+									"enum": ["status", "delay"],
+									"required": true
+								},
 								"status": {
 									"type": "integer",
+									"dependencies":"action",
 									"minimum": 0,
 									"maximum": 99,
+									"required": true
+								},
+								"delay": {
+									"type": "integer",
+									"dependencies":"action",
+									"minimum": 0,
+									"maximum": 60,
 									"required": true
 								}
 							}
@@ -166,9 +192,22 @@
 									"enum": "namespaces:devices_doorlock:deviceId",
 									"required": true
 								},
+								"action": {
+									"type":"string",
+									"enum": ["status", "delay"],
+									"required": true
+								},
 								"status": {
 									"type": "integer",
+									"dependencies":"action",
 									"enum": ["close", "open"],
+									"required": true
+								},
+								"delay": {
+									"type": "integer",
+									"dependencies":"action",
+									"minimum": 0,
+									"maximum": 60,
 									"required": true
 								}
 							}
@@ -181,6 +220,12 @@
 									"type":"string",
 									"datasource": "namespaces",
 									"enum": "namespaces:devices_toggleButton:deviceId",
+									"required": true
+								},
+								"delay": {
+									"type": "integer",
+									"minimum": 0,
+									"maximum": 60,
 									"required": true
 								}
 							}
@@ -318,7 +363,23 @@
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_switchBinary:deviceName"
 									},
+									"action": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose__",
+										"label":"__l_action__",
+										"optionLabels": ["__actionSetStatus__","__actionDelayUpdate__"]
+									},
+									"delay": {
+										"dependencies": {
+											"action": "delay"
+										},
+										"label": "__l_delay__"
+									},
 									"status": {
+										"dependencies": {
+											"action": "status"
+										},
 										"label": "__l_action__",
 										"optionLabels": ["__off__", "__on__"]
 									}
@@ -338,7 +399,23 @@
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
 									},
+									"action": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose__",
+										"label":"__l_action__",
+										"optionLabels": ["__actionSetStatus__","__actionDelayUpdate__"]
+									},
+									"delay": {
+										"dependencies": {
+											"action": "delay"
+										},
+										"label": "__l_delay__"
+									},
 									"status": {
+										"dependencies": {
+											"action": "status"
+										},
 										"label": "__l_level__"
 									}
 								}
@@ -357,7 +434,23 @@
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_doorlock:deviceName"
 									},
+									"action": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose__",
+										"label":"__l_action__",
+										"optionLabels": ["__actionSetStatus__","__actionDelayUpdate__"]
+									},
+									"delay": {
+										"dependencies": {
+											"action": "delay"
+										},
+										"label": "__l_delay__"
+									},
 									"status": {
+										"dependencies": {
+											"action": "status"
+										},
 										"label": "__l_action__",
 										"optionLabels": ["__close__", "__open__"]
 									}
@@ -377,6 +470,9 @@
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_toggleButton:deviceName"
+									},
+									"delay": {
+										"label": "__l_delay__"
 									}
 								}
 							}

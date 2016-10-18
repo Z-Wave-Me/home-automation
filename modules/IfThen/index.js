@@ -39,16 +39,38 @@ IfThen.prototype.init = function (config) {
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,
+                    action = el[type].action,
                     lvl = el[type].status,
+                    delay = el[type].delay,
                     vDev = that.controller.devices.get(id);
                 
                 if (vDev) {
                     if (vDev.get("deviceType") === type && type === "switchMultilevel") {
-                        vDev.performCommand("exact", { level: lvl });
+                        if (action === "delay") {
+                            if (delay === 0) {
+                                vDev.performCommand("update");
+                            } else {
+                                setTimeout(function() { vDev.performCommand("update"); }, (delay * 1000));
+                            }
+                        } else {
+                            vDev.performCommand("exact", { level: lvl });
+                        }
                     } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
-                        vDev.performCommand("on");
+                        if (delay !== 0) {
+                            setTimeout(function() { vDev.performCommand("on"); }, (delay * 1000));
+                        } else {
+                            vDev.performCommand("on");
+                        }
                     } else if (vDev.get("deviceType") === type) {
-                        vDev.performCommand(lvl);
+                        if (action === "delay") {
+                            if (delay === 0) {
+                                vDev.performCommand("update");
+                            } else {
+                                setTimeout(function() { vDev.performCommand("update"); }, (delay * 1000));
+                            }
+                        } else {
+                            vDev.performCommand(lvl);
+                        }
                     }
                 }
             });
