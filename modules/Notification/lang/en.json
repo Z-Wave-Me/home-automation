@@ -1,6 +1,6 @@
 {
 	"m_title":"Email&SMS Notification",
-	"m_descr":"Scene of send email or sms.",
+	"m_descr":"This app creates a scene widget that could send email (via https://mandrillapp.com) or sms (via http://sms.ru). You need to be a registered user to use there service.",
 	"l_message":"Text message",
 	"l_phone":"Phone number to send SMS. In form of 79261234567",
 	"l_api_key_sms":"API key from http://sms.ru",
