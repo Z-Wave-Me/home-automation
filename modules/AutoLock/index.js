@@ -32,40 +32,29 @@ AutoLock.prototype.init = function (config) {
 
     var self = this;
     
-    // init value at start
-    var lastSensorStatus = "on";
-
     // handler - it is a name of your function
     this.handler = function (vDev) {
         var nowSensorStatus = vDev.get("metrics:level");
 
-        if (self.timer) {
-            // Timer is set, so we destroy it
+        console.log("----------------------------- AutoLock", self.config.BinarySensor, "=", nowSensorStatus);
+
+        // Clear delay if door opened
+        if (nowSensorStatus === "on") {
+            console.log("Clear delay");
             clearTimeout(self.timer);
         }
-
-        // Check if sensor is triggered
-        if (lastSensorStatus !== nowSensorStatus) {
-            console.log("----------------------------- AutoLock", self.config.BinarySensor, "=", nowSensorStatus);
-
-            // Clear delay if door opened
-            if (nowSensorStatus === "on") {
-                console.log("Clear delay");
-                clearTimeout(self.timer);
-            };
-            // Close lock if sensor false
-            if (nowSensorStatus === "off") {
-                // Start Timer
-                console.log("Start delay");
-                self.timer = setTimeout(function () {
-                    // Close lock 
-                    self.controller.devices.get(self.config.DoorLock).performCommand("close");
-                    // And clearing out this.timer variable
-                    self.timer = null;
-                }, self.config.delay*1000);
-            }
-            lastSensorStatus = nowSensorStatus;
-        };
+        
+        // Close lock if sensor false
+        if (nowSensorStatus === "off") {
+            // Start Timer
+            console.log("Start delay");
+            self.timer = setTimeout(function () {
+                // Close lock 
+                self.controller.devices.get(self.config.DoorLock).performCommand("close");
+                // And clearing out this.timer variable
+                self.timer = null;
+            }, self.config.delay*1000);
+        }
     };
 
     // Setup metric update event listener
