@@ -41,7 +41,7 @@ Modules:
 ** add Thermostat, SensorMultilevel support
 * BindDevices
 ** add thermostat support
-** change name to Elementassociation
+** change name to Association
 * Notification
 ** descriptions adjusted
 * AutoLock
