@@ -1,15 +1,26 @@
-v1.2.2
+WARNING: Because the structure has changed since v1.2.5 an update from a lower version like v1.2.2 could corrupt your existing Instances of Logical Rule.
+
+# v1.2.7
+- minor changes
+
+# v1.2.6
+- Fixed the nested condition
+
+# v1.2.5
+- Changed the Settings structure
+
+# v1.2.2
 - german translations added
 - helper label for time condition added
 
-v1.2.1
+# v1.2.1
 - Added option to LogicalRules - don't send On command if device already turned on,similarly for Off
 
-v1.2.0
+# v1.2.0
 - ui form structure refactored to reduce overhead
 - translations added (ru translations in english)
 - descriptions and examples added for a better usability
 
-v1.1.1
+# v1.1.1
 - format of time input field changed (HH:mm 24h)
 - version number corrected now 1.1.1

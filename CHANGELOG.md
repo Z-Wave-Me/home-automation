@@ -1,4 +1,7 @@
-#18.10.2016 v2.2.4
+#20.10.2016 v2.2.4
+
+PLEASE NOTE:
+Update will install Logical Rule v1.2.7. If you are still using App Logical Rule with version lower than v1.2.5 the update could corrupt your existing instances. this is caused by bigger changes of internal module structure.
 
 Changes:
 * pull request #372
