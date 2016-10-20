@@ -138,6 +138,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
+
+        this.router.get("/icons", this.ROLE.ADMIN, this.getIcons);
+        this.router.del("/icons/:icon_id", this.ROLE.ADMIN, this.deleteIcons);
+        this.router.post("/icons/upload", this.ROLE.ADMIN, this.uploadIcon);
+        this.router.post("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
+        //this.router.put("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
         
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
@@ -310,25 +316,59 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     setVDevFunc: function (vDevId) {
         var reqObj,
+            device = null,
             reply = {
                 error: null,
-                data: null
+                data: null,
+                code: 500,
             },
-            device = this.deviceByUser(vDevId, this.req.user);
+            result = false;
 
         try {
-            reqObj = JSON.parse(this.req.body);
+            reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
         } catch (ex) {
             reply.error = ex.message;
+            return reply;
         }
 
-        if (device) {
+        if(this.req.query.hasOwnProperty('icon')) {
+
+            device = this.controller.devices.get(vDevId);
+
+            if(device) {
+                if(_.isEmpty(device.get('customIcons')) || (device.get('customIcons').hasOwnProperty('default') &&
+                    reqObj.customicons.hasOwnProperty('default'))) {
+
+                    device.set('customIcons', reqObj.customicons, {silent: true});
+                } else if(device.get('customIcons').hasOwnProperty('level') && reqObj.customicons.hasOwnProperty('level')) {
+                    var temp = device.get('customIcons');
+
+                    for (var property in reqObj.customicons.level) {
+                        temp.level[property] = reqObj.customicons.level[property];
+                    }
+                    device.set('customIcons', temp, {silent:true});
+
+                } else {
+                    device.set('customIcons', {}, {silent:true});
+                }
+                result = true;
+            }
+
+        } else {
+            device = this.deviceByUser(vDevId, this.req.user);
+            if (device) {
+                reply.data = device.set(reqObj);
+                result = true;
+            }
+        }
+        if(result) {
             reply.code = 200;
-            reply.data = device.set(reqObj);
+            reply.body = "OK";
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
         }
+
         return reply;
     },
     performVDevCommandFunc: function (vDevId, commandId) {
@@ -2512,6 +2552,137 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } else {
             reply.error = 'failed_to_load_skin_tokens';
+        }
+
+        return reply;
+    },
+    getIcons: function () {
+        var reply = {
+            error: null,
+            data: null,
+            code: 500
+        };
+
+        if (this.controller.icons) {
+            reply.data = this.controller.icons;
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_icons';
+        }
+
+        return reply;
+    },
+    uploadIcon: function() {
+        var reply = {
+            error: 'icon_failed_to_install',
+            data: null,
+            code: 500
+        };
+
+        for (prop in this.req.body){
+            if(this.req.body[prop]['content']) {
+
+                file = this.req.body[prop];
+            }
+        }
+
+        console.log(unescape(encodeURIComponent(file.content)));
+        //file.content = Base64.encode(file.content);
+        saveObject("test1234.png", unescape(encodeURIComponent(file.content)));
+        saveObject("test.png", file.content);
+
+
+        console.log(file.content);
+
+        result = this.controller.installIcon('local', file, 'custom', 'icon');
+
+        if (result === "done") {
+
+            reply.code = 200;
+            reply.data = "icon_installation_successful";
+            reply.error = null;
+        }
+
+        return reply
+    },
+    addOrUpdateIcons: function(iconName) {
+        var reply = {
+                error: 'icon_failed_to_install',
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            result = "",
+            icName = iconName || reqObj.name,
+            id = reqObj.id;
+
+        index = _.findIndex(this.controller.icons, function(icon) {
+            return icon.source === icName+"_"+id;
+        });
+
+        if (index === -1 ) {
+
+            // download and install the icon
+            result = this.controller.installIcon('remote', reqObj, icName, reqObj.id);
+
+            if (result === "done") {
+
+                reply.code = 200;
+                reply.data = "icon_installation_successful";
+                reply.error = null;
+            }
+        } else {
+            reply.code = 409;
+            reply.error = 'icon_from_url_already_exists';
+        }
+
+        return reply;
+    },
+    deleteIcons: function(iconName) {
+        var reply = {
+                error: 'icon_failed_to_delete',
+                data: null,
+                code: 500
+            },
+            uninstall = false;
+
+        var reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
+        console.log(iconName);
+        console.log(JSON.stringify(reqObj));
+
+        // check if icon used in any device
+        var devices = this.controller.devices.filter(function(dev) {
+            if(!_.isEmpty(dev.get('customIcons'))) {
+                if(dev.get('customIcons').hasOwnProperty('default')) {
+                    return dev.get('customIcons').default === iconName;
+                } else {
+                    if(dev.get('customIcons').hasOwnProperty('level')) {
+                        for(var property in dev.get('customIcons').level) {
+                            if(dev.get('customIcons').level[property] === iconName) {
+                                return dev;
+                            }
+                        }
+                    }
+                }
+            }
+        }).map(function(dev) {
+            return dev.get('metrics:title');
+        });
+
+        if(devices.length == 0) {
+
+            uninstall = this.controller.uninstallIcon(iconName);
+
+            if (uninstall) {
+
+                reply.code = 200;
+                reply.data = "icon_delete_successful";
+                reply.error = null;
+            }
+
+        } else {
+            reply.error = 'icon_used_in_device';
+            reply.data = devices;
         }
 
         return reply;

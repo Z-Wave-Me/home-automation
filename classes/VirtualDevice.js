@@ -11,8 +11,9 @@ VirtualDevice = function (options) {
 
     var probeType = options.defaults.probeType? options.defaults.probeType : (options.overlay.probeType? options.overlay.probeType : ''),
         permHidden = options.defaults.hasOwnProperty('permanently_hidden')? options.defaults.permanently_hidden : false,
-        visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true;
-    
+        visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true,
+        customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {};
+
     _.extend(this, options, {
         id: options.deviceId,
         accessAttrs: [
@@ -28,7 +29,8 @@ VirtualDevice = function (options) {
             'hasHistory',
             'visibility',
             'creationTime',
-            'probeType'
+            'probeType',
+            'customIcons'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -40,6 +42,7 @@ VirtualDevice = function (options) {
         hasHistory: false,
         visibility: visibility,
         probeType: probeType,
+        customIcons: customicons,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -51,6 +54,7 @@ VirtualDevice = function (options) {
             visibility: visibility,
             creationTime: 0,
             probeType: probeType,
+            customIcons: customicons
         },
         changed: {},
         overlay: options.overlay || {},
