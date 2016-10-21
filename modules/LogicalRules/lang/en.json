@@ -14,7 +14,7 @@
 	"l_testNested":"Nested conditions",
 	"l_action":"Actions",
 	"l_switches":"List of switches:",
-	"l_thermostats":"Thermostats",
+	"l_thermostats":"List of thermostats",
 	"off":"Off",
 	"on":"On",
 	"upstart":"Up start",
@@ -33,9 +33,5 @@
 	"h_testNested": "Add a new nested condition - like in logical notation: A AND B AND (C OR D). The additional nested condition is (C OR D). An action is only triggered if the conditions A and B and either the condition C or D are met together. Example: If outside the light sensor A > 80% and the temperature sensor B > 26°C and (time < 12:00 am or time > 02:00 pm) then the jalousie in the living room is set to 50%.",
 	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
 	"h_sendAction":"Need to avoid flooding the network.",
-	"h_testTime":"This condition checks if the current time is 'less than or equal to' or 'greater than or equal to' the entered time. E.g. current time: 09:00 and condition: >= 10:00 will return 'false' and not pass the rule. 24-h-format - hh:mm",
-	"l_triggers": "How the Logical Rule is triggered",
-	"l_conditions": "What triggers the Logical Rule",
-	"p_select": " Please choose",
-	"WrongOperator": "Choose a valid operator"
+	"h_testTime":"This condition checks if the current time is 'less than or equal to' or 'greater than or equal to' the entered time. E.g. current time: 09:00 and condition: >= 10:00 will return 'false' and not pass the rule. 24-h-format - hh:mm"
 }

@@ -1,6 +1,6 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.2.7
+Version: 1.2.2
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
@@ -38,7 +38,7 @@ LogicalRules.prototype.init = function (config) {
 
     var self = this;
     
-    this.config.conditions.tests.forEach(function(test) {
+    this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
             self.attachDetach(test.testBinary, true);
         } else if (test.testType === "multilevel") {
@@ -46,22 +46,20 @@ LogicalRules.prototype.init = function (config) {
         } else if (test.testType === "remote") {
             self.attachDetach(test.testRemote, true);
         } else if (test.testType === "nested") {
-            test.testNested.conditions.tests.forEach(function(xtest) {
+            test.testNested.tests.forEach(function(xtest) {
                 if (xtest.testType === "binary") {
                     self.attachDetach(xtest.testBinary, true);
                 } else if (xtest.testType === "multilevel") {
                     self.attachDetach(xtest.testMultilevel, true);
                 } else if (xtest.testType === "remote") {
                     self.attachDetach(xtest.testRemote, true);
-                } else if ( xtest.testType === "time") {
-                    self.attachDetach(xtest.testTime, true);
                 }
             });
         }
     });    
 
-    if (this.config.triggers.eventSource) {
-        this.config.triggers.eventSource.forEach(function(scene) {
+    if (this.config.eventSource) {
+        this.config.eventSource.forEach(function(scene) {
             self.controller.devices.on(scene, "change:metrics:level", self._testRule);
         });
     }
@@ -70,13 +68,13 @@ LogicalRules.prototype.init = function (config) {
 LogicalRules.prototype.stop = function () {
     var self = this;
     
-    if (this.config.triggers.eventSource) {
-        this.config.triggers.eventSource.forEach(function(scene) {
+    if (this.config.eventSource) {
+        this.config.eventSource.forEach(function(scene) {
             self.controller.devices.off(scene, "change:metrics:level", self._testRule);
         });
     }
      
-    this.config.conditions.tests.forEach(function(test) {
+    this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
             self.attachDetach(test.testBinary, false);
         } else if (test.testType === "multilevel") {
@@ -84,17 +82,14 @@ LogicalRules.prototype.stop = function () {
         } else if (test.testType === "remote") {
             self.attachDetach(test.testRemote, false);
         } else if (test.testType === "nested") {
-            test.testNested.conditions.tests.forEach(function(xtest) {
+            test.testNested.tests.forEach(function(xtest) {
                 if (xtest.testType === "binary") {
                     self.attachDetach(xtest.testBinary, false);
                 } else if (xtest.testType === "multilevel") {
                     self.attachDetach(xtest.testMultilevel, false);
                 } else if (xtest.testType === "remote") {
                     self.attachDetach(xtest.testRemote, false);
-                } else if(xtest.testType === "time") {
-		    self.attachDetach(xtest.testTime, false);	
-		}
-			
+                }
             });
         }
     });
@@ -109,7 +104,7 @@ LogicalRules.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
-    if (this.config.triggers.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
+    if (this.config.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
         return;
     }
     
@@ -134,10 +129,10 @@ LogicalRules.prototype.testRule = function (tree) {
         tree = this.config;
     }
     
-    if (tree.conditions.logicalOperator === "and") {
+    if (tree.logicalOperator === "and") {
         res = true;
     
-        tree.conditions.tests.forEach(function(test) {
+        tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
                 res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
@@ -153,10 +148,10 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res && self.testRule(test.testNested);
             }
         });
-    } else if (tree.conditions.logicalOperator === "or") {
+    } else if (tree.logicalOperator === "or") {
         res = false;
     
-        tree.conditions.tests.forEach(function(test) {
+        tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
                 res = res || self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
@@ -172,10 +167,6 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res || self.testRule(test.testNested);
             }
         });
-    }
-    else if (tree.conditions.logicalOperator === " none")
-    {
-        self.controller.addNotification("error", langFile.WrongOperator, "module", "LogicalRules");
     }
     
     if (topLevel && res) {
