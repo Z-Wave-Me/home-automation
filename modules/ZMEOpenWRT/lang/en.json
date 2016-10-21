@@ -1,9 +1,9 @@
 {
-	"m_title":"Time zone and access from WAN",
-	"m_descr":"Z-Wave.Me specific OpenWRT features configuration",
+	"m_title":"Time zone and access from home network",
+	"m_descr":"Configuration of time zone and definition of local access by Ethernet.",
 	"l_timezone": "Time zone",
 	"h_timezone": "Select your time zone from the list. You will need to REBOOT your box after saving this data for time to change.",
-	"l_wan_port_access": "Allow access to the Smart Home UI from WAN port",
-	"rl_wan_port_access": "enable access from WAN",
-	"h_wan_port_access": "Open access from port we assume to look in the Internet. If you connect WAN port to your local network and you feel safe to open access from it."
+	"l_wan_port_access": "Allow access from home network by Ethernet",
+	"rl_wan_port_access": "enable Ethernet access",
+	"h_wan_port_access": "Access by Ethernet is turned off by factory default. If activated the security of your gateway depends on the security of your cable based home network."
 }
