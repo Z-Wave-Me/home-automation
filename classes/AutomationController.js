@@ -1180,28 +1180,25 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 };
 
 AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
-    var result = "in progress";
-    var filelist = {};
-    var input = "";
-
-
-    console.log(option);
-    console.log(JSON.stringify(reqObj));
-    console.log(iconName);
-    console.log(id);
+    var result = "in progress",
+        filelist = {},
+        input = "",
+        name = "";
 
     switch(option) {
         case 'remote':
             input = reqObj.file_path;
+            name = iconName
             break;
         case 'local':
             input = JSON.stringify(reqObj);
+            name = reqObj.name;
             break;
     }
 
     if (input) {
-        console.log('Installing icon', iconName, '...');
-        console.log(typeof input);
+        console.log('Installing icon', name, '...');
+
         iconinstaller.install(
             input,
             iconName,
