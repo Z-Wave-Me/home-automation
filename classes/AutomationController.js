@@ -80,10 +80,7 @@ AutomationController.prototype.init = function () {
 
     function pushNamespaces(device, locationNspcOnly) {
         self.generateNamespaces(function (namespaces) {
-            ws.push({
-                type: 'me.z-wave.namespaces.update',
-                data: JSON.stringify(namespaces)
-            });
+            ws.push('me.z-wave.namespaces.update', JSON.stringify(namespaces));
         }, device, locationNspcOnly);
     }
 
@@ -92,45 +89,30 @@ AutomationController.prototype.init = function () {
         
         // update namespaces if device title has changed
         self.devices.on('change:metrics:title', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.title_update",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.title_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, false);
         });
 
         // update only location namespaces if device location has changed
         self.devices.on('change:location', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.location_update",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, true);
         });
 
         // update namespaces if device permanently_hidden status has changed
         self.devices.on('change:permanently_hidden', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.visibility_update",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, false);
         });
 
         // update namespaces if structure of devices collection changed
         self.devices.on('created', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.add",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
             pushNamespaces(device);
         });
 
         self.devices.on('destroy', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.destroy",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
         });
 
         self.devices.on('removed', function (device) {
@@ -138,10 +120,7 @@ AutomationController.prototype.init = function () {
         });
 
         self.on("notifications.push", function (notice) {
-            ws.push({
-                type: "me.z-wave.notifications.add",
-                data: JSON.stringify(notice)
-            });
+            ws.push("me.z-wave.notifications.add", JSON.stringify(notice));
         });
     });
 };
