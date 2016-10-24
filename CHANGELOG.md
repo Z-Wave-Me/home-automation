@@ -1,3 +1,8 @@
+# v2.3
+Changes:
+* Added password field to all modules which use password field
+* pull request #385 from pathec/patch-websocket
+
 #21.10.2016 v2.2.4
 
 Changes:
