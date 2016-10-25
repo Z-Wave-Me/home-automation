@@ -169,6 +169,7 @@
 				"required": false
 			},
 			"password": {
+				"format": "password",
 				"type": "string",
 				"required": false
 			}

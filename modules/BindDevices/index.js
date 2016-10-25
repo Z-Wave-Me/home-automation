@@ -1,6 +1,6 @@
 /*** BindDevices Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -51,7 +51,7 @@ BindDevices.prototype.init = function (config) {
             if (vDev) {
                 if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "switchMultilevel" && actionMultilevel === null) {
                     vDev.performCommand(actionBinary);
-                } else if (vDev.get("deviceType") === "switchMultilevel") {
+                } else if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat")) {
                     vDev.performCommand("exact", { level: actionMultilevel });
                 }
             }
@@ -65,7 +65,7 @@ BindDevices.prototype.init = function (config) {
             var vDev = self.controller.devices.get(el);
             
             if (vDev) {
-                if (vDev.get("deviceType") === "switchMultilevel") {
+		if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat")) {
                     vDev.performCommand(action);
                 }
             }
