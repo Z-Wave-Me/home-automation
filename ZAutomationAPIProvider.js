@@ -2637,8 +2637,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             return output;
         }
+        var data,
+            bytes = new Uint8Array(utf8Decode(file.content)),
+            re = /(?:\.([^.]+))?$/;
+            ext = re.exec(file.name)[1];
 
-        file.content = Uint8ToBase64(new Uint8Array(utf8Decode(file.content)));
+        if(ext === 'gz') {
+            var gunzip = new Zlib.Gunzip(bytes);
+            data = gunzip.decompress();
+        } else {
+            data = bytes;
+        }
+
+        file.content = Uint8ToBase64(data);
 
         result = this.controller.installIcon('local', file, 'custom', 'icon');
 
