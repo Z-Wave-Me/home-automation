@@ -3401,6 +3401,133 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					}
 				}, "child");
 			}
+		} else if (this.CC["CentralScene"] === commandClassId) {
+			defaults = {
+				deviceType: 'sensorMultilevel',
+				probeType: 'discrete',
+				metrics: {
+					probeTitle: 'Discrete',
+					icon: '',
+					level: '',
+					title: compileTitle('Sensor', '', vDevIdNI + separ + vDevIdC)
+				}
+			};
+			/*Object.keys(cc.data).forEach(function (sensorTypeId) {
+
+			 sensorTypeId = parseInt(sensorTypeId, 10);
+			 if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
+
+			 var cVDId = changeDevId + separ + sensorTypeId;
+
+			 // check if it should be created
+			 if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+
+			 defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
+			 defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
+			 defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+			 if (sensorTypeId === 1) {
+			 defaults.metrics.icon = "temperature";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 3) {
+			 defaults.metrics.icon = "luminosity";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 4 || sensorTypeId === 15 || sensorTypeId === 16) {
+			 defaults.metrics.icon = "energy";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 5) {
+			 defaults.metrics.icon = "humidity";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 9) {
+			 defaults.metrics.icon = "barometer";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 25) {
+			 defaults.metrics.icon = "seismic";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 27) {
+			 defaults.metrics.icon = "ultraviolet";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 52) {
+			 defaults.metrics.icon = "acceleration_x";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 53) {
+			 defaults.metrics.icon = "acceleration_y";
+			 defaults.probeType = defaults.metrics.icon;
+			 } else if (sensorTypeId === 54) {
+			 defaults.metrics.icon = "acceleration_z";
+			 defaults.probeType = defaults.metrics.icon;
+			 }
+
+			 // apply postfix if available
+			 if (changeVDev[cVDId]) {
+			 defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+			 }
+
+			 var vDev = self.controller.devices.create({
+			 deviceId: vDevId + separ + sensorTypeId,
+			 defaults: defaults,
+			 overlay: {},
+			 handler: function (command) {
+			 if (command === "update") {
+			 cc.Get(sensorTypeId);
+			 }
+			 },
+			 moduleId: self.id
+			 });
+
+			 if (vDev) {
+			 self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function (type) {
+			 if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+			 self.controller.devices.remove(vDevId + separ + sensorTypeId);
+			 } else {
+			 try {
+			 vDev.set("metrics:level", this.value);
+			 } catch (e) {
+			 }
+			 }
+			 }, "value");
+			 }
+			 }
+			 }
+			 });*/
+
+			var vDev = self.controller.devices.create({
+				deviceId: vDevId + separ + 'DS',
+				defaults: defaults,
+				overlay: {},
+				handler: function (command) {
+					if (command === "update") {
+						cc.Get('currentScene');
+						cc.Get('keyAttribute');
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				/*self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function (type) {
+					if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+						self.controller.devices.remove(vDevId + separ + sensorTypeId);
+					} else {
+						try {
+							vDev.set("metrics:level", this.value ? "on" : "off");
+						} catch (e) {
+						}
+						;
+					}
+				}, "value");*/
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
+					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+						self.controller.devices.remove(vDevId + separ + "DS");
+						//self.remove(self.zway, [nodeId, instanceId, commandClassId, "S"]);
+					} else {
+						//self.handler(self.zway, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, instanceId, this.value, "S"]);
+						try {
+							vDev.set("metrics:level", cc.data['currentScene'].value + '.' + cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : 0);
+						} catch (e) {
+						}
+					}
+				}, "value");
+			}
 		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
 				if (this.value) {
