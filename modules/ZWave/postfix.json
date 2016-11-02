@@ -586,6 +586,25 @@
 			"last_update": "2016-10-05 08:49:40",
 			"tester": "NIR",
 			"commentary": "rename 0-113-6 and 0-113-7-3,change icon of 0-113-7-3,rename node"
+		},
+		{
+			"id": "78",
+			"p_id": "271.3841.4096",
+			"p_sku": "FIBEFGPB-101-2",
+			"product": "Fibaro The Button",
+			"preInterview": [],
+			"postInterview": [
+				"discreteValue,0-91,1,1x pressed",
+				"discreteValue,0-91,13,2x pressed",
+				"discreteValue,0-91,14,3x pressed",
+				"discreteValue,0-91,15,4x pressed",
+				"discreteValue,0-91,16,5x pressed",
+				"setCCData(0,91,'security','value',false);",
+				"renameNode,Fibaro The Button"
+			],
+			"last_update": "2016-11-02 11:34:00",
+			"tester": "NIR",
+			"commentary": "set secure Communication for centralscene class to secure:false, add different discrete values to discrete sensor"
 		}
 	]
 }
