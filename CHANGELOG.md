@@ -1,3 +1,13 @@
+# v2.3
+Changes:
+* Added password field to all modules which use password field
+* pull request #385 from pathec/patch-websocket
+
+Modules:
+* ImportRemoteHA 2.0.1
+ * add functionality to tag all remote widgets
+ * enhance url input to add ip adress only (with backward compatibility)
+
 #21.10.2016 v2.2.4
 
 Changes:
