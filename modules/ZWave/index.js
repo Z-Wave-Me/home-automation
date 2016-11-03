@@ -3437,18 +3437,19 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: 'gesture',
 					level: '',
 					title: compileTitle('Sensor', 'Control', vDevIdNI + separ + vDevIdC),
+                    state: '',
 					//GESTURES:
 					// hold,
 					// press / tap (cnt),
 					// release,
-					// swipe-up,
-					// swipe-down,
-					// swipe-left-to-right,
-					// swipe-right-to-left,
-					// swipe-top-left-to-bottom-right,
-					// swipe-top-right-to-bottom-left,
-					// swipe-bottom-left-to-top-right,
-					// swipe-bottom-right-to-top-left
+					// swipe_up,
+					// swipe_down,
+					// swipe_left_to_right,
+					// swipe_right_to_left,
+					// swipe_top_left_to_bottom_right,
+					// swipe_top_right_to_bottom_left,
+					// swipe_bottom_left_to_top_right,
+					// swipe_bottom_right_to_top_left
 					discreteStates: {}
 				}
 			};
@@ -3481,7 +3482,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : '';
 							var kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : '';
 							var cL = cS.toString() + kA.toString();
+                            var st = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL] && defaults.metrics.discreteStates[cL]['action']? defaults.metrics.discreteStates[cL]['action'] : '';
 
+                            vDev.set("metrics:state",  st);
 							vDev.set("metrics:level",  cL);
 						} catch (e) {
 						}
