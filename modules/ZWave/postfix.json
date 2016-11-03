@@ -594,11 +594,13 @@
 			"product": "Fibaro The Button",
 			"preInterview": [],
 			"postInterview": [
-				"discreteValue,0-91,1,1x pressed",
-				"discreteValue,0-91,13,2x pressed",
-				"discreteValue,0-91,14,3x pressed",
-				"discreteValue,0-91,15,4x pressed",
-				"discreteValue,0-91,16,5x pressed",
+				"discreteState,0-91,1,1,press",
+				"discreteState,0-91,11,1,release",
+				"discreteState,0-91,12,1,hold",
+				"discreteState,0-91,13,2,press",
+				"discreteState,0-91,14,3,press",
+				"discreteState,0-91,15,4,press",
+				"discreteState,0-91,16,5,press",
 				"setCCData(0,91,'security','value',false);",
 				"renameNode,Fibaro The Button"
 			],

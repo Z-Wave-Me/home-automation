@@ -2022,20 +2022,23 @@ ZWave.prototype.gateDevicesStart = function () {
 														}
 
 														break;
-													case 'discreteValue':
+													case 'discreteState':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
 															if (!changeVDev[splittedEntry[1]]) {
 																changeVDev[splittedEntry[1]] = {};
 															}
 
-															if (!changeVDev[splittedEntry[1]]['discreteValue']) {
-																changeVDev[splittedEntry[1]]['discreteValue'] = {};
+															if (!changeVDev[splittedEntry[1]]['discreteState']) {
+																changeVDev[splittedEntry[1]]['discreteState'] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) / postFix type / scene + keyAttribute / value - fallback undefined
-															changeVDev[splittedEntry[1]]['discreteValue'][splittedEntry[2]] = splittedEntry[3] ? splittedEntry[3] : undefined;
-															//console.log('discreteValue',splittedEntry[3]);
+															changeVDev[splittedEntry[1]]['discreteState'][splittedEntry[2]] = {
+																cnt: splittedEntry[3] ? splittedEntry[3] : undefined,
+																action: splittedEntry[4] ? splittedEntry[4] : undefined
+															};
+															//console.log('discreteState',splittedEntry[3]);
 															//console.log('changeVDev',JSON.stringify(changeVDev, null, 4));
 														}
 
@@ -2249,7 +2252,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			defaultObj.permanently_hidden = changeObj.deactivate? true : false;
 
 			if (defaultObj.metrics.discreteStates) {
-				defaultObj.metrics.discreteStates = changeObj.discreteValue && !_.isEmpty(changeObj.discreteValue)? changeObj.discreteValue : defaultObj.metrics.discreteStates;
+				defaultObj.metrics.discreteStates = changeObj.discreteState && !_.isEmpty(changeObj.discreteState)? changeObj.discreteState : defaultObj.metrics.discreteStates;
 			}
 
 			postfixLog(devId, changeObj);
@@ -3427,13 +3430,25 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var devId = vDevId + separ + 'DS';
 
 			defaults = {
-				deviceType: 'sensorMultilevel',
-				probeType: 'discrete',
+				deviceType: 'discreteSensor',
+				probeType: 'control',
 				metrics: {
-					probeTitle: 'Discrete',
-					icon: '',
+					probeTitle: 'Control',
+					icon: 'gesture',
 					level: '',
-					title: compileTitle('Sensor', 'Discrete', vDevIdNI + separ + vDevIdC),
+					title: compileTitle('Sensor', 'Control', vDevIdNI + separ + vDevIdC),
+					//GESTURES:
+					// hold,
+					// press / tap (cnt),
+					// release,
+					// swipe-up,
+					// swipe-down,
+					// swipe-left-to-right,
+					// swipe-right-to-left,
+					// swipe-top-left-to-bottom-right,
+					// swipe-top-right-to-bottom-left,
+					// swipe-bottom-left-to-top-right,
+					// swipe-bottom-right-to-top-left
 					discreteStates: {}
 				}
 			};
@@ -3466,10 +3481,6 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : '';
 							var kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : '';
 							var cL = cS.toString() + kA.toString();
-
-							if (defaults.metrics.discreteStates[cL]) {
-								cL = defaults.metrics.discreteStates[cL];
-							}
 
 							vDev.set("metrics:level",  cL);
 						} catch (e) {
