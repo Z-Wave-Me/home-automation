@@ -41,7 +41,9 @@ LightScene.prototype.init = function (config) {
             }
         },
         overlay: {},
-        handler: function () {
+        handler: function (command) {
+            if (command !== 'on') return;
+
             self.config.switches.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
