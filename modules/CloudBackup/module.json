@@ -9,7 +9,7 @@
   "homepage": "http://razberry.z-wave.me",
   "icon": "",
   "moduleName":"CloudBackup",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "maturity": "beta",
   "repository": {
     "type": "git",
@@ -80,41 +80,38 @@
   "options": {
     "fields": {
       "email": {
+        "type": "hidden",
         "label": "__l_email__"
       },
       "email_log": {
-        "type": "radio",
+        "type": "hidden",
         "emptySelectFirst": true,
         "label": "__l_email_log__",
         "optionLabels": ["__l_no_log__", "__l_only_log__", "__l_log_notification__"]
       },
       "scheduler": {
-        "type": "radio",
+        "type": "hidden",
         "emptySelectFirst": true,
         "fieldClass": "cloudBackupScheduler",
         "label": "__l_scheduler__",
         "optionLabels": ["__l_manual__", "__l_daily__", "__l_weekly__", "__l_monthly__"]
       },
-      "remoteid": {
-        "label": "__l_remoteid__",
-        "helper": "__h_remoteid__"
-      },
       "hours": {
-        "type": "select",
+        "type": "hidden",
         "label": "__l_hours__",
         "dependencies": {
           "scheduler": ["1","2","3"]
         }
       },
       "minutes": {
-        "type": "select",
+        "type": "hidden",
         "label": "__l_minutes__",
         "dependencies": {
           "scheduler": ["1","2","3"]
         }
       },
       "weekDays": {
-        "type": "select",
+        "type": "hidden",
         "optionLabels": ["__l_su__", "__l_mo__", "__l_tu__", "__l_we__", "__l_th__", "__l_fr__", "__l_sa__"],
         "label": "__l_weekDays__",
         "dependencies": {
@@ -122,6 +119,7 @@
         }
       },
       "days": {
+        "type": "hidden",
         "label": "__l_days__",
         "dependencies": {
           "scheduler": ["3"]
