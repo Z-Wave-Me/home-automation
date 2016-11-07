@@ -514,15 +514,18 @@
 		{
 			"id": "73",
 			"p_id": "316.2.31",
-			"p_sku": "PHI_PST02-1A",
-			"product": "Philio Vision PAT02-1A",
+			"p_sku": "Philio PAT02-1A Flood Sensor",
+			"product": "Philio PAT02-1A Flood Sensor",
 			"preInterview": [],
 			"postInterview": [
-				"renameNode,Philio Vision PAT02-1A"
+				"noVDev,0-113",
+				"setConfig(0,7,16,1);",
+				"setCCData(0,132,'security','value',false);",
+				"renameNode,Philio PAT02-1A Flood Sensor"
 			],
-			"last_update": "2016-10-05 08:49:40",
+			"last_update": "2016-11-07 17:14:39",
 			"tester": "NIR",
-			"commentary": "rename node"
+			"commentary": "don't create Alarm devices, change node name, change configuration,set wakeup to unsecure"
 		},
 		{
 			"id": "74",
