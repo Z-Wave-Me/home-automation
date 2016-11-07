@@ -2013,30 +2013,35 @@ ZWave.prototype.gateDevicesStart = function () {
 													case 'icon':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															var nId = nodeId + '-' + splittedEntry[1];
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) / postFix type / value - fallback true for hide / deactivate
-															changeVDev[splittedEntry[1]][splittedEntry[0]] = splittedEntry[2] ? splittedEntry[2] : true;
+															changeVDev[nId][splittedEntry[0]] = splittedEntry[2] ? splittedEntry[2] : true;
 														}
 
 														break;
 													case 'discreteState':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															var nId = nodeId + '-' + splittedEntry[1];
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
-															if (!changeVDev[splittedEntry[1]]['discreteState']) {
-																changeVDev[splittedEntry[1]]['discreteState'] = {};
+															if (!changeVDev[nId]['discreteState']) {
+																changeVDev[nId]['discreteState'] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) / postFix type / scene + keyAttribute / value - fallback undefined
-															changeVDev[splittedEntry[1]]['discreteState'][splittedEntry[2]] = {
+															changeVDev[nId]['discreteState'][splittedEntry[2]] = {
 																cnt: splittedEntry[3] ? splittedEntry[3] : undefined,
-																action: splittedEntry[4] ? splittedEntry[4] : undefined
+																action: splittedEntry[4] ? splittedEntry[4] : undefined,
+																type: splittedEntry[5] ? splittedEntry[5] : undefined
 															};
 															//console.log('discreteState',splittedEntry[3]);
 															//console.log('changeVDev',JSON.stringify(changeVDev, null, 4));
@@ -2044,15 +2049,17 @@ ZWave.prototype.gateDevicesStart = function () {
 
 														break;
 													case 'noVDev':
-
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
+
+															var nId = nodeId + '-' + splittedEntry[1];
+
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) without creation
-															changeVDev[splittedEntry[1]].noVDev = true;
+															changeVDev[nId].noVDev = true;
 														}
 
 														break;
@@ -2080,7 +2087,7 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
-					var ccId = instanceId + '-' + commandClassId;
+					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
 					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev);
@@ -2153,7 +2160,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		vDevIdNI = nodeId + separ + instanceId,
 		vDevIdC = commandClassId,
 		vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
-		changeDevId = instanceId + separ + vDevIdC,
+		changeDevId = vDevIdNI + separ + vDevIdC,
 		defaults;
 		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
@@ -2408,7 +2415,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					probeType: 'switchColor_rgb',
 					metrics: {
 						icon: 'multilevel',
-						title: compileTitle('Color', vDevIdNI + separ + vDevIdC),
+						title: compileTitle('Color', vDevIdNI),
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 						level: 'off'
 					}
@@ -2469,7 +2476,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							probeType: '',
 							metrics: {
 								icon: 'multilevel',
-								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
+								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 								level: 'off'
 							}
 						}
@@ -2595,7 +2602,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
 						// aivs // Motion icon for Sensor Binary by default
 						defaults.metrics.icon = "motion";
 						defaults.probeType = "general_purpose";
@@ -2687,7 +2694,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
 						if (sensorTypeId === 1) {
 							defaults.metrics.icon = "temperature";
 							defaults.probeType = defaults.metrics.icon;
@@ -2781,7 +2788,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 						defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
+						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI);
 
 						switch (scaleId) {
 							case 0:
@@ -3103,7 +3110,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-							a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI);
 
 							switch (sensorTypeId) {
 								case 0:
@@ -3213,7 +3220,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 									a_defaults.probeType = 'alarm_door';
 
 									// apply postfix if available
@@ -3329,7 +3336,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
 												if (!self.controller.devices.get(a_id)) {
-													a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+													a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 
 													// apply postfix if available
 													if (changeVDev[cVDId]) {
@@ -3379,7 +3386,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
 									// check if it should be created
 									if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 
 										// apply postfix if available
 										if (changeVDev[cVDId]) {
@@ -3436,20 +3443,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					probeTitle: 'Control',
 					icon: 'gesture',
 					level: '',
-					title: compileTitle('Sensor', 'Control', vDevIdNI + separ + vDevIdC),
+					title: compileTitle('Sensor', 'Control', vDevIdNI),
                     state: '',
-					//GESTURES:
-					// hold,
-					// press / tap (cnt),
-					// release,
-					// swipe_up,
-					// swipe_down,
-					// swipe_left_to_right,
-					// swipe_right_to_left,
-					// swipe_top_left_to_bottom_right,
-					// swipe_top_right_to_bottom_left,
-					// swipe_bottom_left_to_top_right,
-					// swipe_bottom_right_to_top_left
+					/* GESTURES (state):
+					 * hold,
+					 * press / tap (cnt),
+					 * release,
+					 * swipe_up,
+					 * swipe_down,
+					 * swipe_left,
+					 * swipe_right,
+					 * swipe_top_left_to_bottom_right,
+					 * swipe_top_right_to_bottom_left,
+					 * swipe_bottom_left_to_top_right,
+					 * swipe_bottom_right_to_top_left
+					 */
+					currentScene: '',
 					discreteStates: {}
 				}
 			};
@@ -3465,8 +3474,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				overlay: {},
 				handler: function (command) {
 					if (command === "update") {
-						cc.Get('currentScene');
-						cc.Get('keyAttribute');
+						cc.Get;
 					}
 				},
 				moduleId: self.id
@@ -3479,13 +3487,60 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					} else {
 						try {
 							// output curScene + keyAttr or ''
-							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : '';
-							var kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : '';
-							var cL = cS.toString() + kA.toString();
-                            var st = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL] && defaults.metrics.discreteStates[cL]['action']? defaults.metrics.discreteStates[cL]['action'] : '';
+							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : '',
+								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : '',
+								/*
+								 * CentralScene v3:
+								 *
+								 * 0x00 Key Pressed 1 time
+								 * 0x01 Key Released
+								 * 0x02 Key Held Down
+								 * 0x03 Key Pressed 2 times
+								 * 0x04 Key Pressed 3 times
+								 * 0x05 Key Pressed 4 times
+								 * 0x06 Key Pressed 5 times
+								 */
+								kaCnt = kA > 0x02? kA - 0x01 : 0x01,
+								cL = cS.toString() + kA.toString(),
+								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
+								st = dS && dS['action']? dS['action'] : 'press',
+								cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
+								type = dS && dS['type']? dS['type'] : 'B',
+								oldM = vDev.get('metrics'),
+								setAction = function () {
+									switch (kA) {
+										case 0x01:
+											st = dS && dS['action']? dS['action'] : 'release';
+											break;
+										case 0x02:
+											st = dS && dS['action']? dS['action'] : 'hold';
+											break;
+										default:
+											st = dS && dS['action']? dS['action'] : 'press';
+											break;
+									}
+								};
 
-                            vDev.set("metrics:state",  st);
-							vDev.set("metrics:level",  cL);
+
+							setAction();
+
+							vDev.set("metrics:state", st);
+							vDev.set("metrics:currentScene", cS);
+							vDev.set("metrics:keyAttribute", kA);
+							vDev.set("metrics:level", cL);
+							vDev.set("metrics:cnt", cnt);
+							vDev.set("metrics:type", type);
+
+
+							/*vDev.set("metrics", _.extend(oldM, {
+								state: st,
+								currentScene: cS,
+								keyAttribute: kA,
+								level: cL,
+								cnt: cnt,
+								type: type
+							}));*/
+
 						} catch (e) {
 						}
 					}

@@ -145,7 +145,6 @@
 			"product": "NodOn Wall Switch",
 			"preInterview": [],
 			"postInterview": [
-				"sceneSupport(0,91,4,'S');",
 				"renameNode,NodOn Wall Switch"
 			],
 			"last_update": "2016-10-05 08:49:38",
@@ -594,13 +593,6 @@
 			"product": "Fibaro The Button",
 			"preInterview": [],
 			"postInterview": [
-				"discreteState,0-91,1,1,press",
-				"discreteState,0-91,11,1,release",
-				"discreteState,0-91,12,1,hold",
-				"discreteState,0-91,13,2,press",
-				"discreteState,0-91,14,3,press",
-				"discreteState,0-91,15,4,press",
-				"discreteState,0-91,16,5,press",
 				"setCCData(0,91,'security','value',false);",
 				"renameNode,Fibaro The Button"
 			],
