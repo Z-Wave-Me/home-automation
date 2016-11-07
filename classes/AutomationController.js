@@ -1223,7 +1223,14 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 
         if (result === 'done') {
             for (var file in filelist) {
-                this.icons.push({'file': filelist[file], 'source': iconName+"_"+id});
+                var icon = {
+                    'file': filelist[file],
+                    'source': iconName+"_"+id,
+                    'timestamp': Math.floor(new Date().getTime() / 1000),
+                    'source_title': reqObj.title
+                };
+
+                this.icons.push(icon);
             }
 
             saveObject("userIcons.json", this.icons);

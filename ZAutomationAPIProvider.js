@@ -332,28 +332,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         if(this.req.query.hasOwnProperty('icon')) {
-
             device = this.controller.devices.get(vDevId);
-
             if(device) {
-                if(_.isEmpty(device.get('customIcons')) || (device.get('customIcons').hasOwnProperty('default') &&
-                    reqObj.customicons.hasOwnProperty('default'))) {
-
-                    device.set('customIcons', reqObj.customicons, {silent: true});
-                } else if(device.get('customIcons').hasOwnProperty('level') && reqObj.customicons.hasOwnProperty('level')) {
-                    var temp = device.get('customIcons');
-
-                    for (var property in reqObj.customicons.level) {
-                        temp.level[property] = reqObj.customicons.level[property];
-                    }
-                    device.set('customIcons', temp, {silent:true});
-
-                } else {
-                    device.set('customIcons', {}, {silent:true});
-                }
+                device.set('customIcons', reqObj.customicons, {silent:true});
                 result = true;
             }
-
         } else {
             device = this.deviceByUser(vDevId, this.req.user);
             if (device) {
@@ -361,6 +344,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 result = true;
             }
         }
+
         if(result) {
             reply.code = 200;
             reply.data = "OK";
@@ -368,7 +352,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
         }
-
         return reply;
     },
     performVDevCommandFunc: function (vDevId, commandId) {
@@ -2738,6 +2721,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.error = 'icon_used_in_device';
             reply.data = devices;
+            reply.code = 409;
         }
 
         return reply;
