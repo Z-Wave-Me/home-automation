@@ -1,2 +1,8 @@
+v2.1.1
+- bugfix missing change of levels switch multilevel and refactoring
+- avoid update of vDev with same level
+v2.1.0
+- add Thermostat and Multilevel Sensor support
+- add set Level to switch control and switch multilevel
 v2.0.5
 - bugfix: wrong adressing of 'if'-device if app is stopped, so that conditions are still active

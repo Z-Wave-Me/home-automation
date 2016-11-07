@@ -339,7 +339,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		saveObject("incomingPacket.json", ipacket);
 	};
 
-	zway.controller.data.incomingPacket.bind(inH);
+	//zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
@@ -386,7 +386,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		saveObject("outgoingPacket.json", opacket);
 	};
 
-	zway.controller.data.outgoingPacket.bind(outH);
+	//zway.controller.data.outgoingPacket.bind(outH);
 
 	/*
 	rssiH = function() {
@@ -409,7 +409,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
 	*/
 
-	this.timer = setInterval(function() {
+	/*this.timer = setInterval(function() {
 		var data = loadObject("rssidata.json");
 
 		if(!data) data = [];
@@ -426,7 +426,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 		data.push(d);
 		saveObject("rssidata.json", data);
-	}, 1000*60);
+	}, 1000*60);*/
 };
 
 
@@ -1364,8 +1364,13 @@ ZWave.prototype.defineHandlers = function () {
 
 		if(request.method === "POST" && request.body) {
 
-			var date = new Date(),
-				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			var date = new Date();
+
+			try {
+				var reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			} catch(e) {
+				return { status: 400, body: e.toString() };
+			}
 
             var custom_postfix = loadObject("custompostfix.json");
 
@@ -2269,8 +2274,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
-			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], this.zway.devices[nodeId].data.specificType.value);
-
+			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value);
 			defaults = {
 				deviceType: "switchMultilevel",
 				probeType: isMotor ? 'motor' : 'multilevel',
@@ -2756,7 +2760,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						switch (scaleId) {
 							case 0:
-								defaults.probeType = 'meterElectric_kilowatt_per_hour';
+								defaults.probeType = 'meterElectric_kilowatt_hour';
 								break;
 							case 2:
 								defaults.probeType = 'meterElectric_watt';
@@ -3184,9 +3188,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId]['name'] ? compileTitle(renameDevices[notificationTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door', false) : compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 									a_defaults.probeType = 'alarm_door';
-									a_defaults.metrics.icon = changeIcons[notificationTypeId] && changeIcons[notificationTypeId]['icon'] ? changeIcons[notificationTypeId]['icon'] : a_defaults.metrics.icon;
+
+									// apply postfix if available
+									if (changeVDev[cVDId]) {
+										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									}
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,

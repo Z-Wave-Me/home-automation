@@ -444,8 +444,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.code = 200;
             reply.data = locations;
         } else {
-            reply.code = 500;
-            reply.error = 'Could not list Instances.';
+            reply.code = 404;
+            reply.error = 'Could not list locations.';
         }
 
         return reply;
@@ -1225,7 +1225,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 color: '#dddddd',
                 dashboard: [],
                 interval: 2000,
-                rooms: [0],
+                rooms: reqObj.role === 1? [0] : [],
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
@@ -1275,7 +1275,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         // id is never changeable
                         // login is changed by updateProfileAuth()
                         profile.role = reqObj.role;                    
-                        profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                        profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1? reqObj.rooms.push(0) : reqObj.rooms;
                         profile.expert_view = reqObj.expert_view;
                     }
                     // could be changed by user role
