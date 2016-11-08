@@ -452,8 +452,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PostfixAdd", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -478,8 +478,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixUpdate");
 	ws.revokeExternalAccess(_name + ".Postfix");
 	ws.revokeExternalAccess(_name + ".PostfixAdd");
-    ws.revokeExternalAccess(_name + ".PostfixGet");
-    ws.revokeExternalAccess(_name + ".PostfixRemove");
+	ws.revokeExternalAccess(_name + ".PostfixGet");
+	ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
@@ -1085,7 +1085,14 @@ ZWave.prototype.defineHandlers = function () {
 
 			if (data.file && data.file.content) {
 				// update firmware from file
-				fwUpdate.Perform(manufacturerId, firmwareId, targetId, data.file.content);
+				var fw;
+				if (data.file.content.substr(0, 1) === ":") {
+					// this is a .hex file
+					fw = IntelHex2bin(data.file.content);
+				} else {
+					fw = data.file.content;
+				}
+				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 			} else if (data.url) {
 				// update firmware from url
 				http.request({
@@ -1094,7 +1101,14 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream", // enforce binary response
 					async: true,
 					success: function (res) {
-						fwUpdate.Perform(manufacturerId, firmwareId, targetId, res.data);
+						var fw;
+						if (res.data.substr(0, 1) === ":") {
+							// this is a .hex file
+							fw = IntelHex2bin(res.data);
+						} else {
+							fw = res.data;
+						}
+						fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 					},
 					error: function (res) {
 						console.error("Failed to download firmware: " + res.statusText);
