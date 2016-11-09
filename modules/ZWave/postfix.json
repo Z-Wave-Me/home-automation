@@ -359,7 +359,7 @@
 			"preInterview": [],
 			"postInterview": [
 				"noVDev,0-113",
-				"setConfig(0,7,16,1);",
+				"setConfig(0,7,22,1);",
 				"setCCData(0,132,'security','value',false);",
 				"renameNode,Philio PST02-5B Motion Sensor"
 			],
