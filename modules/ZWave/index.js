@@ -315,9 +315,10 @@ ZWave.prototype.CommunicationLogger = function() {
 	uniq = function(arr) { return arr.filter(function(value, index, self) { return self.indexOf(value) === index; }); };
 	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
 
+	/*
 	inH = function () {
 
-		console.log(JSON.stringify(this));
+		//console.log(JSON.stringify(this));
 
 		//if(ipacket.length > 4000) { ipacket = [];}
 
@@ -334,22 +335,22 @@ ZWave.prototype.CommunicationLogger = function() {
 				return x.RSSI.value;
 			});
 			console.log("homeid: "+id, "avg rssi: "+avg(rssis), stddev(rssis), "rssi length: "+rssis.length);
-		};*/
+		};
 
-		saveObject("incomingPacket.json", ipacket);
+		//saveObject("incomingPacket.json", ipacket);
 	};
 
 	//zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
-		console.log(JSON.stringify(this));
+		//console.log(JSON.stringify(this));
 
 		//if(opacket.length > 4000) { opacket = [];}
 
 		opacket.push(this);
 
-		/*
+
 		outNodes = uniq(opacket.filter(function(x) { return x.nodeId }).map(function(x) { return x.nodeId.value }));
 
 		console.log("id PER delivery time, RSSI, hops");
@@ -382,11 +383,12 @@ ZWave.prototype.CommunicationLogger = function() {
 
 			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
 		};
-		*/
-		saveObject("outgoingPacket.json", opacket);
+
+		//saveObject("outgoingPacket.json", opacket);
 	};
 
 	//zway.controller.data.outgoingPacket.bind(outH);
+	*/
 
 	/*
 	rssiH = function() {
@@ -452,8 +454,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PostfixAdd", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -478,8 +480,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixUpdate");
 	ws.revokeExternalAccess(_name + ".Postfix");
 	ws.revokeExternalAccess(_name + ".PostfixAdd");
-    ws.revokeExternalAccess(_name + ".PostfixGet");
-    ws.revokeExternalAccess(_name + ".PostfixRemove");
+	ws.revokeExternalAccess(_name + ".PostfixGet");
+	ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
@@ -884,7 +886,7 @@ ZWave.prototype.defineHandlers = function () {
 			var filterObj = null;
 		}
 
-		ipacket.forEach(function (packet) {
+		/*ipacket.forEach(function (packet) {
 			var exist = _.find(packets, function(p){
 				if(p.updateTime === packet.updateTime && p.type === 'incoming') {
 					if(_.isArray(p.value) && _.isArray(packet.value)) {
@@ -910,9 +912,10 @@ ZWave.prototype.defineHandlers = function () {
 				);
 				console.log("incomming:" +JSON.stringify(packets));
 			}
-		});
 
-		opacket.forEach(function (packet) {
+		});*/
+
+		/*opacket.forEach(function (packet) {
 			var exist = _.find(packets, function(p){
 				if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
 					if(_.isArray(p.value) && _.isArray(packet.value)) {
@@ -924,7 +927,7 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			if(typeof exist === 'undefined') {
-				console.log("outgoing:" +JSON.stringify(packets));
+				//console.log("outgoing:" +JSON.stringify(packets));
 				packets.push(
 					{
 						type: 'outgoing',
@@ -936,14 +939,14 @@ ZWave.prototype.defineHandlers = function () {
 						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 					}
 				);
-				console.log("outgoing:" +JSON.stringify(packets));
+				//console.log("outgoing:" +JSON.stringify(packets));
 			}
-		});
+		});*/
 
 		function packetApplication(packet) {
 			var cmdClassKey = decToHex(packet[5], 2, '0x');
 
-			var cmdKey = decToHex(packet[6], 2, '0x')
+			var cmdKey = decToHex(packet[6], 2, '0x');
 
 			var ret = {};
 
@@ -1085,7 +1088,14 @@ ZWave.prototype.defineHandlers = function () {
 
 			if (data.file && data.file.content) {
 				// update firmware from file
-				fwUpdate.Perform(manufacturerId, firmwareId, targetId, data.file.content);
+				var fw;
+				if (data.file.content.substr(0, 1) === ":") {
+					// this is a .hex file
+					fw = IntelHex2bin(data.file.content);
+				} else {
+					fw = data.file.content;
+				}
+				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 			} else if (data.url) {
 				// update firmware from url
 				http.request({
@@ -1094,7 +1104,14 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream", // enforce binary response
 					async: true,
 					success: function (res) {
-						fwUpdate.Perform(manufacturerId, firmwareId, targetId, res.data);
+						var fw;
+						if (res.data.substr(0, 1) === ":") {
+							// this is a .hex file
+							fw = IntelHex2bin(res.data);
+						} else {
+							fw = res.data;
+						}
+						fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 					},
 					error: function (res) {
 						console.error("Failed to download firmware: " + res.statusText);

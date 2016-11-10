@@ -3,5 +3,5 @@
 	"m_descr":"Создать кнопку, отправляющую команду устройству Global Caché.",
 	"l_host":"IP или имя хоста "Global Caché",
 	"l_data":"Отправляемая команда",
-	"h_data":"Команда, полученная из Global Caché IR Learning Utility БЕЗ символов переноса строки (\\r\\n\\r\\n)."
+	"h_data":"Команда, полученная из Global Caché IR Learning Utility БЕЗ символов переноса строки (&#92;r&#92;n&#92;r&#92;n)."
 }
