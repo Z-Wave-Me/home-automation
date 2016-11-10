@@ -1,3 +1,6 @@
+#10.11.2016 v2.2.5
+* some performance enhancements in CommunicationLogger and CommunicationHistory
+
 #21.10.2016 v2.2.4
 
 Changes:
