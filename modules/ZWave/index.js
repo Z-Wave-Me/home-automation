@@ -315,9 +315,10 @@ ZWave.prototype.CommunicationLogger = function() {
 	uniq = function(arr) { return arr.filter(function(value, index, self) { return self.indexOf(value) === index; }); };
 	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
 
+	/*
 	inH = function () {
 
-		console.log(JSON.stringify(this));
+		//console.log(JSON.stringify(this));
 
 		//if(ipacket.length > 4000) { ipacket = [];}
 
@@ -334,22 +335,22 @@ ZWave.prototype.CommunicationLogger = function() {
 				return x.RSSI.value;
 			});
 			console.log("homeid: "+id, "avg rssi: "+avg(rssis), stddev(rssis), "rssi length: "+rssis.length);
-		};*/
+		};
 
-		saveObject("incomingPacket.json", ipacket);
+		//saveObject("incomingPacket.json", ipacket);
 	};
 
 	//zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
-		console.log(JSON.stringify(this));
+		//console.log(JSON.stringify(this));
 
 		//if(opacket.length > 4000) { opacket = [];}
 
 		opacket.push(this);
 
-		/*
+
 		outNodes = uniq(opacket.filter(function(x) { return x.nodeId }).map(function(x) { return x.nodeId.value }));
 
 		console.log("id PER delivery time, RSSI, hops");
@@ -382,11 +383,12 @@ ZWave.prototype.CommunicationLogger = function() {
 
 			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
 		};
-		*/
-		saveObject("outgoingPacket.json", opacket);
+
+		//saveObject("outgoingPacket.json", opacket);
 	};
 
 	//zway.controller.data.outgoingPacket.bind(outH);
+	*/
 
 	/*
 	rssiH = function() {
@@ -884,7 +886,7 @@ ZWave.prototype.defineHandlers = function () {
 			var filterObj = null;
 		}
 
-		ipacket.forEach(function (packet) {
+		/*ipacket.forEach(function (packet) {
 			var exist = _.find(packets, function(p){
 				if(p.updateTime === packet.updateTime && p.type === 'incoming') {
 					if(_.isArray(p.value) && _.isArray(packet.value)) {
@@ -910,9 +912,10 @@ ZWave.prototype.defineHandlers = function () {
 				);
 				console.log("incomming:" +JSON.stringify(packets));
 			}
-		});
 
-		opacket.forEach(function (packet) {
+		});*/
+
+		/*opacket.forEach(function (packet) {
 			var exist = _.find(packets, function(p){
 				if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
 					if(_.isArray(p.value) && _.isArray(packet.value)) {
@@ -924,7 +927,7 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			if(typeof exist === 'undefined') {
-				console.log("outgoing:" +JSON.stringify(packets));
+				//console.log("outgoing:" +JSON.stringify(packets));
 				packets.push(
 					{
 						type: 'outgoing',
@@ -936,14 +939,14 @@ ZWave.prototype.defineHandlers = function () {
 						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
 					}
 				);
-				console.log("outgoing:" +JSON.stringify(packets));
+				//console.log("outgoing:" +JSON.stringify(packets));
 			}
-		});
+		});*/
 
 		function packetApplication(packet) {
 			var cmdClassKey = decToHex(packet[5], 2, '0x');
 
-			var cmdKey = decToHex(packet[6], 2, '0x')
+			var cmdKey = decToHex(packet[6], 2, '0x');
 
 			var ret = {};
 
