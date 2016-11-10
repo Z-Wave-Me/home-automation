@@ -2689,39 +2689,49 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
 
         // check if icon used in any device
-        var devices = this.controller.devices.filter(function(dev) {
+
+
+        this.controller.devices.each(function(dev) {
             if(!_.isEmpty(dev.get('customIcons'))) {
-                if(dev.get('customIcons').hasOwnProperty('default')) {
-                    return dev.get('customIcons').default === iconName;
-                } else {
-                    if(dev.get('customIcons').hasOwnProperty('level')) {
-                        for(var property in dev.get('customIcons').level) {
-                            if(dev.get('customIcons').level[property] === iconName) {
-                                return dev;
-                            }
+                var customIcon = dev.get('customIcons');
+                _.each(customIcon, function(key, value) {
+                    console.log("key",key);
+                    console.log("key",typeof key);
+                    console.log("value", value);
+                    if(typeof key !== "object") {
+                        if(key === iconName) {
+                            customIcon = {};
+                            console.log("output", JSON.stringify(customIcon));
+                            dev.set('customIcons', customIcon, {silent:true});
                         }
+                    } else {
+                        _.each(key, function(level, val) {
+                           if(level === iconName) {
+                               console.log("gefunden");
+                               console.log(JSON.stringify(customIcon[value][val]));
+                               delete customIcon[value][val];
+
+                           }
+                        });
+
+                        if(_.isEmpty(customIcon[value])) {
+                            customIcon = {};
+                        }
+                        console.log("output", JSON.stringify(customIcon));
+                        dev.set('customIcons', customIcon, {silent:true});
                     }
-                }
+                });
+
             }
-        }).map(function(dev) {
-            return dev.get('metrics:title');
         });
 
-        if(devices.length == 0) {
+        uninstall = this.controller.uninstallIcon(iconName);
 
-            uninstall = this.controller.uninstallIcon(iconName);
+        if (uninstall) {
 
-            if (uninstall) {
-
-                reply.code = 200;
-                reply.data = "icon_delete_successful";
-                reply.error = null;
-            }
-
-        } else {
-            reply.error = 'icon_used_in_device';
-            reply.data = devices;
-            reply.code = 409;
+            reply.code = 200;
+            reply.data = "icon_delete_successful";
+            reply.error = null;
         }
 
         return reply;

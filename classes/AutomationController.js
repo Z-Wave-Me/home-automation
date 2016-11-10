@@ -1227,7 +1227,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
                     'file': filelist[file],
                     'source': iconName+"_"+id,
                     'timestamp': Math.floor(new Date().getTime() / 1000),
-                    'source_title': reqObj.title
+                    'source_title': option === "local" ? iconName+" "+id : reqObj.title
                 };
 
                 this.icons.push(icon);
