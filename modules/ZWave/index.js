@@ -2248,10 +2248,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			lastIdArr = args[last].split('-');
 
 			// devices[nodeId].instances[0].commandClasses[96]
-			if (this.zway.devices[lastIdArr[0]].instances[0].commandClasses[96]) {
+			if (this.zway.devices[lastIdArr[0]].instances[0].commandClasses[96] && Object.keys(this.zway.devices[lastIdArr[0]].instances).length > 1) {
 				lastId = '(' + args[last].replace(/-/g, '.') + ')';
 			} else {
-				lastId = '(' + lastIdArr[0] + ')';
+				lastId = '(#' + lastIdArr[0] + ')';
 			}
 
 			/*if (args[last].indexOf('-0') > -1 ) {
