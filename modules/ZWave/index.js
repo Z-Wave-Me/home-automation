@@ -1,8 +1,8 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.1.3
+Version: 2.2.0
 -------------------------------------------------------------------------------
-Author: Serguei Poltorak <ps@z-wave.me>
+Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Copyright: (c) Z-Wave.Me, 2014
 
 ******************************************************************************/
@@ -2071,6 +2071,7 @@ ZWave.prototype.gateDevicesStart = function () {
 															var nId = nodeId + '-' + splittedEntry[1];
 
 															//add devId
+															//add devId
 															if (!changeVDev[nId]) {
 																changeVDev[nId] = {};
 															}
@@ -2207,7 +2208,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var args = [],
 				sortArgs = [],
 				last = 0,
-				addVendor = true;
+				addVendor = true,
+				lastId = '',
+				lastIdArr = [];
 
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
@@ -2242,7 +2245,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			// add id
-			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
+			lastIdArr = args[last].split('-');
+
+			// devices[nodeId].instances[0].commandClasses[96]
+			if (this.zway.devices[lastIdArr[0]].instances[0].commandClasses[96]) {
+				lastId = '(' + args[last].replace(/-/g, '.') + ')';
+			} else {
+				lastId = '(' + lastIdArr[0] + ')';
+			}
+
+			/*if (args[last].indexOf('-0') > -1 ) {
+				lastId = args[last].split('-').shift();
+			} else {
+				lastId = '(' + args[last].replace(/-/g, '.') + ')';
+			}*/
+
+			sortArgs.push(lastId);
 			
 			return sortArgs.join(' ');
 		}
@@ -2440,7 +2458,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 				// apply postfix if available
 				if (changeVDev[changeDevId]) {
-					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI + separ + vDevIdC);
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI);
 				}
 
 				var vDev_rgb = this.controller.devices.create({
@@ -2500,7 +2518,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI + separ + vDevIdC + separ + colorId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI);
 						}
 
 						switch(colorId) {
@@ -2649,7 +2667,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -2746,7 +2764,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -2832,7 +2850,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + scaleId, vDevIdNI + separ + vDevIdC + separ + scaleId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + scaleId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -3172,7 +3190,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 							// apply postfix if available
 							if (changeVDev[cVDId]) {
-								a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+								a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 							}
 
 							var a_vDev = self.controller.devices.create({
@@ -3242,7 +3260,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 									// apply postfix if available
 									if (changeVDev[cVDId]) {
-										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 									}
 
 									var a_vDev = self.controller.devices.create({
@@ -3357,7 +3375,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 													// apply postfix if available
 													if (changeVDev[cVDId]) {
-														a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+														a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 													}
 
 													var a_vDev = self.controller.devices.create({
@@ -3407,7 +3425,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 										// apply postfix if available
 										if (changeVDev[cVDId]) {
-											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 										}
 
 										var a_vDev = self.controller.devices.create({
@@ -3454,7 +3472,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var devId = vDevId + separ + 'DS';
 
 			defaults = {
-				deviceType: 'discreteSensor',
+				deviceType: 'sensorDiscrete',
 				probeType: 'control',
 				metrics: {
 					probeTitle: 'Control',
@@ -3482,7 +3500,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 			// apply postfix if available
 			if (changeVDev[changeDevId]) {
-				defaults = applyPostfix(defaults, changeVDev[changeDevId], devId, vDevIdNI + separ + vDevIdC);
+				defaults = applyPostfix(defaults, changeVDev[changeDevId], devId, vDevIdNI);
 			}
 
 			var vDev = self.controller.devices.create({
@@ -3505,6 +3523,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						try {
 							// output curScene + keyAttr or ''
 							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : '',
+								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : '',
 								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : '',
 								/*
 								 * CentralScene v3:
@@ -3520,10 +3539,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								kaCnt = kA > 0x02? kA - 0x01 : 0x01,
 								cL = cS.toString() + kA.toString(),
 								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
-								st = dS && dS['action']? dS['action'] : 'press',
+								st = '',
 								cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
 								type = dS && dS['type']? dS['type'] : 'B',
-								oldM = vDev.get('metrics'),
 								setAction = function () {
 									switch (kA) {
 										case 0x01:
@@ -3544,19 +3562,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:state", st);
 							vDev.set("metrics:currentScene", cS);
 							vDev.set("metrics:keyAttribute", kA);
+							vDev.set("metrics:maxScenes", mC);
 							vDev.set("metrics:level", cL);
 							vDev.set("metrics:cnt", cnt);
 							vDev.set("metrics:type", type);
-
-
-							/*vDev.set("metrics", _.extend(oldM, {
-								state: st,
-								currentScene: cS,
-								keyAttribute: kA,
-								level: cL,
-								cnt: cnt,
-								type: type
-							}));*/
 
 						} catch (e) {
 						}

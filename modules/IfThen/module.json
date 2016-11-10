@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName": "IfThen",
-	"version": "2.1.1",
+	"version": "2.2.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -26,7 +26,7 @@
 				"properties": {
 					"filterIf": {
 						"type":"string",
-						"enum": ["scene","switchControl","switchBinary","switchMultilevel","sensorBinary", "sensorMultilevel"],
+						"enum": ["scene","switchControl","switchBinary","switchMultilevel","sensorBinary", "sensorMultilevel", "sensorDiscrete"],
 						"required": true
 					},
 					"sensorMultilevel": {
@@ -76,6 +76,22 @@
 								"field": "enum",
 								"datasource": "namespaces",
 								"enum": "namespaces:devices_toggleButton:deviceId",
+								"required": true
+							}
+						}
+					},
+					"sensorDiscrete": {
+						"type": "object",
+						"dependencies":"filterIf",
+						"properties": {
+							"device": {
+								"field": "enum",
+								"datasource": "namespaces",
+								"enum": "namespaces:devices_discreteSensor:deviceId",
+								"required": true
+							},
+							"level": {
+								"type": "string",
 								"required": true
 							}
 						}
@@ -315,7 +331,7 @@
 						"removeDefaultNone": false,
 						"noneLabel": "__l_choose__",
 						"label":"__l_filter__",
-						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__","__sensorMultilevel__"]
+						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__","__sensorMultilevel__","__discreteSensor__"]
 					},
 					"sensorMultilevel": {
 						"dependencies": {
@@ -369,6 +385,26 @@
 								"field": "optionLabels",
 								"helper": "__h_statusOn__",
 								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+							}
+						}
+					},
+					"sensorDiscrete": {
+						"dependencies": {
+							"filterIf": "sensorDiscrete"
+						},
+						"fields": {
+							"device": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_dev__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"helper": "__h_statusOn__",
+								"optionLabels": "namespaces:devices_discreteSensor:deviceName"
+							},
+							"level": {
+								"label": "__l_controller_action__",
+								"helper": "__h_controller_action__"
 							}
 						}
 					},
