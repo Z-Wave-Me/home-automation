@@ -8,5 +8,7 @@
 	"power_failure":"AC power lost",
 	"power_recovery":"AC power recover",
 	"l_no_battery": "No battery installed",
-	"h_no_battery": "Check if controller have no battery installed to hide battery and power status widgets"
+	"h_no_battery": "Check if controller have no battery installed to hide battery and power status widgets",
+	"l_no_breath": "No contour LED",
+	"h_no_breath": "Disable 'breathing' LEDs"
 }

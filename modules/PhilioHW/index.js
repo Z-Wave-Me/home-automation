@@ -92,6 +92,11 @@ PhilioHW.prototype.init = function (config) {
             this.zwayReg(name);
         }
     }
+    
+    this.WPS_OFF = 0;
+    this.WPS_REGISTRAR = 1;
+    this.WPS_ENROLLEE = 2;
+    this.WPS = this.WPS_OFF; // for LED indicator of WPS
 }
 
 PhilioHW.prototype.stop = function () {
@@ -131,12 +136,20 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     global.ZWave[zwayName].zway.ZMEPHIGetButton(2);
 
     function roundLED() {
-        if (!self.config.no_battery && global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
+        if (self.WPS === self.WPS_REGISTRAR) {
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x04); // LED steady On
+        } else if (self.WPS === self.WPS_ENROLLEE) {
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x08); // Fast blink
+        } else if (!self.config.no_battery && global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
         } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
         } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 2) {
-            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
+            if (self.config.no_breath) {
+                global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off
+            } else {
+                global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
+            }
         }
     }
     
@@ -215,9 +228,21 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         switch (this.value) {
             case 3: // click
                 system("/lib/wifi-helper.sh WPSRegistrar");
+                self.WPS = self.WPS_REGISTRAR;
+                setTimeout(function() {
+                    self.WPS = self.WPS_OFF;
+                    roundLED();
+                }, 30*1000);
+                roundLED();
                 break;
             case 2: // hold
                 system("/lib/wifi-helper.sh WPS");
+                self.WPS = self.WPS_ENROLLEE;
+                setTimeout(function() {
+                    self.WPS = self.WPS_OFF;
+                    roundLED();
+                }, 30*1000);
+                roundLED();
                 break;
         }
     }, "");
