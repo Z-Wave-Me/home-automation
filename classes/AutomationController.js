@@ -1244,15 +1244,14 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
         result = "in progress";
 
     try {
-        result = "done";
-        /*iconinstaller.remove(
+        iconinstaller.remove(
             iconName,
             function() {
                 result = "done";
             },  function() {
                 result = "failed";
             }
-        );*/
+        );
 
         var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
 

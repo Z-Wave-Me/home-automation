@@ -1838,7 +1838,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             if (skins.length > 0) {
                 backupJSON['__userSkins'] = skins;
             }
-            
+
+            /*
+            TODO icon backup
+            var ret = "";
+            iconinstaller.backup(
+                function(backup) {
+                console.log(backup);
+                ret = backup;
+                    //ret =  new Uint8Array(backup);
+            }, function(error){
+                console.log(error);
+                ret = "failed";
+            });
+            console.log(ret);
+            if(ret !== "failed") {
+                var bcp = "";
+                for(var i = 0; i < ret.length; i++) {
+                    bcp += String.fromCharCode(ret[i]);
+                }
+
+                backupJSON["__Icons"] = bcp;
+            }*/
+
             // save Z-Way and EnOcean objects
             if (!!global.ZWave) {
                 backupJSON["__ZWay"] = {};
@@ -1853,6 +1875,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     backupJSON["__ZWay"][zwayName] = bcp;
                 });
             }
+
             /* TODO
             if (!!global.EnOcean) {
                 backupJSON["__EnOcean"] = {};
@@ -2688,36 +2711,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         var reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
 
-        // check if icon used in any device
-
-
         this.controller.devices.each(function(dev) {
             if(!_.isEmpty(dev.get('customIcons'))) {
                 var customIcon = dev.get('customIcons');
-                _.each(customIcon, function(key, value) {
-                    console.log("key",key);
-                    console.log("key",typeof key);
-                    console.log("value", value);
-                    if(typeof key !== "object") {
-                        if(key === iconName) {
+                _.each(customIcon, function(value, key) {
+                    if(typeof value !== "object") {
+                        if(value === iconName) {
                             customIcon = {};
-                            console.log("output", JSON.stringify(customIcon));
                             dev.set('customIcons', customIcon, {silent:true});
+                            return false;
                         }
                     } else {
-                        _.each(key, function(level, val) {
-                           if(level === iconName) {
-                               console.log("gefunden");
-                               console.log(JSON.stringify(customIcon[value][val]));
-                               delete customIcon[value][val];
-
+                        _.each(value, function(icon, level) {
+                           if(icon === iconName) {
+                               delete customIcon[key][level];
                            }
                         });
 
-                        if(_.isEmpty(customIcon[value])) {
+                        if(_.isEmpty(customIcon[key])) {
                             customIcon = {};
                         }
-                        console.log("output", JSON.stringify(customIcon));
                         dev.set('customIcons', customIcon, {silent:true});
                     }
                 });
