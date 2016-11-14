@@ -145,7 +145,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
         } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 2) {
-            if (self.config.no_breath) {
+            if (self.config.breath) {
                 global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off
             } else {
                 global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED

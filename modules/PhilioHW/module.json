@@ -23,7 +23,7 @@
 				"type": "boolean",
 				"default": false
 			},
-			"no_breath": {
+			"breath": {
 				"type": "boolean",
 				"default": false
 			}
@@ -37,10 +37,10 @@
 				"label": "__l_no_battery__",
 				"helper": "__h_no_battery__"
 			},
-			"no_breath": {
+			"breath": {
 				"type": "checkbox",
-				"label": "__l_no_breath__",
-				"helper": "__h_no_breath__"
+				"label": "__l_breath__",
+				"helper": "__h_breath__"
 			}
 		}
 	}
