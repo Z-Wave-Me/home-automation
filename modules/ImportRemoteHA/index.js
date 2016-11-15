@@ -150,8 +150,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
 
                 self.controller.devices.create(dev);
 
-                self.config.renderDevices.push({deviceId: localId, deviceType: item.deviceType});
-                self.saveConfig();
+                self.renderDevice({deviceId: localId, deviceType: item.deviceType});
             }
         });
         
@@ -216,4 +215,20 @@ ImportRemoteHA.prototype.skipDevice = function(id) {
     });
     
     return skip;
+};
+
+ImportRemoteHA.prototype.renderDevice = function (obj) {
+    var skip = false;
+    
+    this.config.renderDevices.forEach(function (deviceObj) {
+        if (deviceObj.deviceId === obj.deviceId) {
+            skip |= true;
+            return false; // break
+        }
+    });
+    
+    if (!skip) {
+        this.config.renderDevices.push(obj);
+        this.saveConfig();
+    }
 };
