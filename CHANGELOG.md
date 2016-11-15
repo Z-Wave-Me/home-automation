@@ -3,10 +3,19 @@ Changes:
 * Added password field to all modules which use password field
 * pull request #385 from pathec/patch-websocket
 
+Features:
+* add new device type 'sensorDiscrete' - n-state vDev for CentralScene CC
+
 Modules:
 * ImportRemoteHA 2.0.1
  * add functionality to tag all remote widgets
  * enhance url input to add ip adress only (with backward compatibility)
+* IfThen 2.2.0
+ * add sensorDiscrete support
+ * bugfix: doesn't decide if on/off was triggered - action is still fired 
+
+#10.11.2016 v2.2.5
+* some performance enhancements in CommunicationLogger and CommunicationHistory
 
 #21.10.2016 v2.2.4
 

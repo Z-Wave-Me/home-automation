@@ -90,7 +90,7 @@ HTTPDevice.prototype.init = function (config) {
 
             if ((command === "off" || command === "on" || command === "exact") && vDevType === "switchMultilevel") {
                 var level = command === "exact" ? parseInt(args.level, 10) : (command === "on" ? 99 : 0);
-                self.act(this, "Level", level.toString(), level.toString());
+                self.act(this, "Level", level, level);
             }
         },
         moduleId: this.id
@@ -178,7 +178,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
         langFile = self.controller.loadModuleLang(moduleName);
     
     if (!!url) {
-    	if (subst) {
+    	if (subst !== null) {
     		url = url.replace(/\$\$/g, subst);
     	}
         var req = {

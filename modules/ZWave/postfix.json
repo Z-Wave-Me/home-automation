@@ -145,7 +145,6 @@
 			"product": "NodOn Wall Switch",
 			"preInterview": [],
 			"postInterview": [
-				"sceneSupport(0,91,4,'S');",
 				"renameNode,NodOn Wall Switch"
 			],
 			"last_update": "2016-10-05 08:49:38",
@@ -359,7 +358,7 @@
 			"preInterview": [],
 			"postInterview": [
 				"noVDev,0-113",
-				"setConfig(0,7,16,1);",
+				"setConfig(0,7,22,1);",
 				"setCCData(0,132,'security','value',false);",
 				"renameNode,Philio PST02-5B Motion Sensor"
 			],
@@ -514,15 +513,18 @@
 		{
 			"id": "73",
 			"p_id": "316.2.31",
-			"p_sku": "PHI_PST02-1A",
-			"product": "Philio Vision PAT02-1A",
+			"p_sku": "Philio PAT02-1A Flood Sensor",
+			"product": "Philio PAT02-1A Flood Sensor",
 			"preInterview": [],
 			"postInterview": [
-				"renameNode,Philio Vision PAT02-1A"
+				"noVDev,0-113",
+				"setConfig(0,7,16,1);",
+				"setCCData(0,132,'security','value',false);",
+				"renameNode,Philio PAT02-1A Flood Sensor"
 			],
-			"last_update": "2016-10-05 08:49:40",
+			"last_update": "2016-11-07 17:14:39",
 			"tester": "NIR",
-			"commentary": "rename node"
+			"commentary": "don't create Alarm devices, change node name, change configuration,set wakeup to unsecure"
 		},
 		{
 			"id": "74",
@@ -586,6 +588,20 @@
 			"last_update": "2016-10-05 08:49:40",
 			"tester": "NIR",
 			"commentary": "rename 0-113-6 and 0-113-7-3,change icon of 0-113-7-3,rename node"
+		},
+		{
+			"id": "78",
+			"p_id": "271.3841.4096",
+			"p_sku": "FIBEFGPB-101-2",
+			"product": "Fibaro The Button",
+			"preInterview": [],
+			"postInterview": [
+				"setCCData(0,91,'security','value',false);",
+				"renameNode,Fibaro The Button"
+			],
+			"last_update": "2016-11-02 11:34:00",
+			"tester": "NIR",
+			"commentary": "set secure Communication for centralscene class to secure:false, add different discrete values to discrete sensor"
 		}
 	]
 }

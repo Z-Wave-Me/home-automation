@@ -804,9 +804,8 @@ AutomationController.prototype.listInstances = function (){
             var moduleJSON = self.getModuleData(instance.moduleId);
 
             expInstances.push(_.extend(instance, {
-                // seems to be not in use anymore ...
-                // state : moduleJSON.state || null,
-                // module : moduleJSON.defaults && moduleJSON.defaults.title || null,
+                // use category from module and use it's title as fallback ...
+                category : moduleJSON && moduleJSON.category || null,
                 title : (!instance.title || instance.title === '') ? ((moduleJSON.defaults && moduleJSON.defaults.title) ? moduleJSON.defaults.title : "?") : instance.title
             }));
         });
