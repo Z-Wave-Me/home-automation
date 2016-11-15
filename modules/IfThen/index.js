@@ -1,6 +1,6 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.1.1
+Version: 2.2.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -36,7 +36,7 @@ IfThen.prototype.init = function (config) {
             value = sDev.get("metrics:level"),
             operator = ifElement.operator,
             ifLevel = ifElement.status === 'level' && ifElement.level? ifElement.level : ifElement.status,
-            check = true;
+            check = false;
 
         if (operator && ifLevel) {
             switch (operator) {

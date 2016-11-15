@@ -448,8 +448,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.code = 200;
             reply.data = locations;
         } else {
-            reply.code = 500;
-            reply.error = 'Could not list Instances.';
+            reply.code = 404;
+            reply.error = 'Could not list locations.';
         }
 
         return reply;

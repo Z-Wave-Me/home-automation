@@ -1,6 +1,27 @@
-#27.09.2016 v2.2.4
+# v2.3
+Changes:
+* Added password field to all modules which use password field
+* pull request #385 from pathec/patch-websocket
+
+Features:
+* add new device type 'sensorDiscrete' - n-state vDev for CentralScene CC
+
+Modules:
+* ImportRemoteHA 2.0.1
+ * add functionality to tag all remote widgets
+ * enhance url input to add ip adress only (with backward compatibility)
+* IfThen 2.2.0
+ * add sensorDiscrete support
+ * bugfix: doesn't decide if on/off was triggered - action is still fired 
+
+#10.11.2016 v2.2.5
+* some performance enhancements in CommunicationLogger and CommunicationHistory
+
+#21.10.2016 v2.2.4
 
 Changes:
+* pull request #372
+* pull request #342
 * update main.js (//--- Load 3d-party dependencies) for HomeGear support
 * Postfix - (ZWave module):
 ** a lot of  changes in internal postfix logic
@@ -35,8 +56,18 @@ Modules:
 ** Timing statistics changed according to new IMA data
 ** Added support for new bootloader and OTW to 6.70 SDK
 ** new sensortypes, seismic, acceleration x, y and z added
+* IfThen
+** add Thermostat, SensorMultilevel support
+* BindDevices
+** add thermostat support
+** change name to Association
+* Notification
+** descriptions adjusted
+* AutoLock
+** pull request #319
 
 Fixes:
+* Z-Wave-Me/zwave-smarthome #190
 * ZWave module:
 ** Fixed Communication statistics wrong timestamp
 ** Fixed non-working blind stop command
@@ -50,6 +81,7 @@ Fixes:
 #12.07.2016 v2.2.3
 
 Changes:
+* Allowing Basic Authentication for Ajax Requests
 * language keys updated
 * dependency / instance handling:
  ** fetch undefined and failed instances to avoid error when they were adressed to global variable

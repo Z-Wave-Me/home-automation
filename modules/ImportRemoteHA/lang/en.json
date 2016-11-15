@@ -6,5 +6,9 @@
 	"l_password":"Password",
 	"l_dT":"Update period (in milliseconds)",
 	"l_skipDevices":"List of devices not to import from remote side",
-	"l_renderDevices":"List of devices imported from remote side (filled automatically)"
+	"l_renderDevices":"List of devices imported from remote side (filled automatically)",
+	"rl_addTag":"Add tag to all remote widgets",
+	"l_tagName":"Tag",
+	"ph_tagName": "Remote Box",
+	"h_tagName": "RemoteHA_ID is used if no tag is added"
 }

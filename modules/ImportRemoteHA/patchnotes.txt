@@ -1,0 +1,9 @@
+#v2.0.3
+- fixed: hidden and deactivated devices of remote controller were also shown
+
+#v2.0.2 (pull request #393 by xibrix)
+- fixed: RenderDevices array in storage are doubleing up when module config is edited.
+
+#v2.0.1
+ - add functionality to tag all remote widgets
+ - enhance url input to add ip adress only (with backward compatibility)

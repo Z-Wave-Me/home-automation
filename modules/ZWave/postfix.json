@@ -1,31 +1,38 @@
 {
-	"last_update": 1469705519,
+	"last_update": 1475663319,
 	"fixes": [
 		{
 			"id": "2",
 			"p_id": "340.256.257",
+			"p_sku": "Wall-C",
 			"product": "Wall-Controller ZME",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,4,'S');",
 				"renameNode,Wall-Controller ZME"
 			],
-			"last_update": "2016-07-21 15:21:45"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support"
 		},
 		{
 			"id": "3",
 			"p_id": "277.256.259",
+			"p_sku": "POPE009204",
 			"product": "POPP KFOB",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,4,'S');",
 				"renameNode,POPP KFOB"
 			],
-			"last_update": "2016-07-21 15:21:55"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support"
 		},
 		{
 			"id": "4",
 			"p_id": "316.2.12",
+			"p_sku": "PHI_PST02-1A",
 			"product": "Philio Vision 1A",
 			"preInterview": [],
 			"postInterview": [
@@ -34,11 +41,14 @@
 				"setConfig(0,7,22,1);",
 				"setCCData(0,132,'security','value',false);"
 			],
-			"last_update": "2016-07-21 15:22:19"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, configuration and set wakeup to unsecure"
 		},
 		{
 			"id": "5",
 			"p_id": "316.2.2",
+			"p_sku": "PHI_PST02-1A-RU",
 			"product": "Philio PST02-A RU",
 			"preInterview": [],
 			"postInterview": [
@@ -47,11 +57,14 @@
 				"setConfig(0,7,22,1);",
 				"setCCData(0,132,'security','value',false);"
 			],
-			"last_update": "2016-07-21 15:23:03"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, configuration and set wakeup to unsecure"
 		},
 		{
 			"id": "6",
 			"p_id": "271.3074.4098",
+			"p_sku": "FIBEFGSD-002",
 			"product": "Fibaro Smoke Sensor FGSD-002",
 			"preInterview": [],
 			"postInterview": [
@@ -64,11 +77,14 @@
 				"rename,0-113-1-2,Smoke Alarm",
 				"renameNode,Fibaro Smoke Sensor FGSD-002"
 			],
-			"last_update": "2016-07-28 14:31:35"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "hide Alarm and AlarmSensor widgets, rename widgets and node"
 		},
 		{
 			"id": "23",
 			"p_id": "271.2816.4097",
+			"p_sku": "FIB_FGFS-101",
 			"product": "Fibaro Flood Sensor FGFS-101",
 			"preInterview": [],
 			"postInterview": [
@@ -76,55 +92,69 @@
 				"noVDev,0-156-0",
 				"noVDev,1-48-1"
 			],
-			"last_update": "2016-07-21 15:34:14"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "rename node, don't create sensors"
 		},
 		{
 			"id": "25",
 			"p_id": "357.2.2",
+			"p_sku": "NODECRC360",
 			"product": "NodOn Soft Remote",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,4,'S');",
 				"renameNode,NodOn Soft Remote"
 			],
-			"last_update": "2016-07-21 15:36:21"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node"
 		},
 		{
 			"id": "26",
 			"p_id": "316.9.34",
+			"p_sku": "PHI_PSR04-1",
 			"product": "Philio PSR04 Smart Color Button",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,1,'S');",
 				"renameNode,Philio PSR04 Smart Color Button"
 			],
-			"last_update": "2016-07-21 15:36:35"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node"
 		},
 		{
 			"id": "28",
 			"p_id": "357.2.1",
+			"p_sku": "NODECRC3100",
 			"product": "NodOn Octan Remote",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,4,'S');",
 				"renameNode,NodOn Octan Remote"
 			],
-			"last_update": "2016-07-21 15:36:46"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node"
 		},
 		{
 			"id": "29",
 			"p_id": "357.2.3",
+			"p_sku": "NODECWS3101",
 			"product": "NodOn Wall Switch",
 			"preInterview": [],
 			"postInterview": [
-				"sceneSupport(0,91,4,'S');",
 				"renameNode,NodOn Wall Switch"
 			],
-			"last_update": "2016-07-21 15:36:57"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node"
 		},
 		{
 			"id": "30",
 			"p_id": "2.3.32784",
+			"p_sku": "DAN_RS-Z",
 			"product": "Danfoss Temperature Room Sensor",
 			"preInterview": [],
 			"postInterview": [
@@ -132,11 +162,14 @@
 				"renameNode,Danfoss Temperature Room Sensor",
 				"if (commandClassId==0x72 && self.zway.devices[nodeId].ThermostatSetPoint.data.version!=2) { self.zway.devices[nodeId].ThermostatSetPoint.data.version = 2; self.zway.devices[nodeId].ThermostatSetPoint.Interview(); }"
 			],
-			"last_update": "2016-07-21 15:37:16"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node, set ThermostatSetPoint version to 2"
 		},
 		{
 			"id": "32",
 			"p_id": "316.2.14",
+			"p_sku": "PHI_PST02-1C",
 			"product": "Philio Vision 1C (PST02-5C Door Sensor)",
 			"preInterview": [],
 			"postInterview": [
@@ -145,11 +178,14 @@
 				"setConfig(0,7,16,1);",
 				"setCCData(0,132,'security','value',false);"
 			],
-			"last_update": "2016-07-21 15:05:32"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, rename node, change config, set wakeup to unsecure,"
 		},
 		{
 			"id": "34",
 			"p_id": "134.2.89",
+			"p_sku": "AEO_ZW089",
 			"product": "Aeotec Recessed Door G5",
 			"preInterview": [],
 			"postInterview": [
@@ -158,11 +194,14 @@
 				"rename,0-48-1,Door",
 				"renameNode,Aeotec Recessed Door G5"
 			],
-			"last_update": "2016-07-21 15:40:29"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "change config,don't create Alarm devices,rename 0-48-1,rename node"
 		},
 		{
 			"id": "35",
 			"p_id": "264.2.13",
+			"p_sku": "D Link Batterie Motion Sensor",
 			"product": "D-Link Batterie Motion Sensor",
 			"preInterview": [],
 			"postInterview": [
@@ -172,33 +211,42 @@
 				"setCCData(0,132,'security','value',false);",
 				"renameNode,D-Link Motion Sensor"
 			],
-			"last_update": "2016-07-21 15:50:59"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "don't create devices,change config,set wakeup to unsecure,change node name"
 		},
 		{
 			"id": "36",
 			"p_id": "340.256.259",
+			"p_sku": "POPE009204",
 			"product": "POPP KFOB",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,4,'S');",
 				"renameNode,POPP KFOB"
 			],
-			"last_update": "2016-07-21 15:53:18"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node"
 		},
 		{
 			"id": "37",
 			"p_id": "21076.1.34064",
+			"p_sku": "REMOTEC-PC",
 			"product": "Remotec Portable Controller",
 			"preInterview": [],
 			"postInterview": [
 				"sceneSupport(0,91,8,'S');",
 				"renameNode,Remotec Portable Controller"
 			],
-			"last_update": "2016-07-21 15:54:55"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "add scene support, rename node"
 		},
 		{
 			"id": "40",
 			"p_id": "340.4.2",
+			"p_sku": "POPE009402",
 			"product": "Popp 10 year smoke detector ",
 			"preInterview": [],
 			"postInterview": [
@@ -209,11 +257,14 @@
 				"icon,0-48-8,tamper",
 				"rename,0-48-2,Smoke Alarm"
 			],
-			"last_update": "2016-07-21 15:59:38"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, rename devices,change icon"
 		},
 		{
 			"id": "41",
 			"p_id": "271.2049.4097",
+			"p_sku": "FIBEFGMS-001-ZW5",
 			"product": "Fibaro PIR Gen 5 (Magic Eye)",
 			"preInterview": [],
 			"postInterview": [
@@ -230,11 +281,14 @@
 				"icon,0-113-7-3,tamper",
 				"renameNode,Fibaro PIR G5 (Magic Eye)"
 			],
-			"last_update": "2016-07-21 16:05:10"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "don't create sensor devices, change node name,rename sensors and change their icons"
 		},
 		{
 			"id": "43",
 			"p_id": "134.2.74",
+			"p_sku": "AEOEZW074 ",
 			"product": "Aeotec Multisensor G5",
 			"preInterview": [],
 			"postInterview": [
@@ -245,11 +299,14 @@
 				"rename,0-48-1,Door",
 				"renameNode,Aeotec Multisensor G5"
 			],
-			"last_update": "2016-07-21 16:12:31"
+			"last_update": "2016-10-05 08:49:38",
+			"tester": "NIR",
+			"commentary": "Hide burglar alarm, activate all sensors, set timeout of motion sensor to 10 sec, activate motion sensor,rename node and widget"
 		},
 		{
 			"id": "44",
 			"p_id": "271.2817.4098",
+			"p_sku": "FIB_FGFS-101",
 			"product": "Fibaro Leakage Sensor G5",
 			"preInterview": [],
 			"postInterview": [
@@ -260,11 +317,14 @@
 				"icon,0-113-5-2,water",
 				"renameNode,Fibaro Leakage Sensor G5"
 			],
-			"last_update": "2016-07-21 16:17:00"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm/Sensor devices,rename node,rename widget and change icon"
 		},
 		{
 			"id": "45",
 			"p_id": "271.3329.4096",
+			"p_sku": "FIBEFGGC-001",
 			"product": "Fibaro Swipe - Gesture Controller",
 			"preInterview": [],
 			"postInterview": [
@@ -272,35 +332,44 @@
 				"setCCData(0,91,'security','value',false);",
 				"renameNode,Fibaro Swipe - Gesture Controller"
 			],
-			"last_update": "2016-07-21 16:19:17"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "add scene support,set CentrlaScene to unsecure,rename node"
 		},
 		{
 			"id": "47",
 			"p_id": "271.1793.4097",
-			"product": "Fibaro Door/Window Sensor",
+			"p_sku": "FIBEFGK-101-ZW5",
+			"product": "Fibaro Door/Window Sensor G5",
 			"preInterview": [],
 			"postInterview": [
 				"setCCData(0,113,'security','value',false);",
-				"renameNode,Fibaro Door/Window Sensor"
+				"renameNode,Fibaro Door/Window Sensor G5"
 			],
-			"last_update": "2016-07-21 16:22:21"
+			"last_update": "2016-10-05 11:58:49",
+			"tester": "NIR",
+			"commentary": "set wakeup to unsecure,rename node"
 		},
 		{
 			"id": "49",
 			"p_id": "316.2.13",
+			"p_sku": "Philio PST02-5B Motion Sensor",
 			"product": "Philio PST02-5B Motion Sensor",
 			"preInterview": [],
 			"postInterview": [
 				"noVDev,0-113",
-				"setConfig(0,7,16,1);",
+				"setConfig(0,7,22,1);",
 				"setCCData(0,132,'security','value',false);",
 				"renameNode,Philio PST02-5B Motion Sensor"
 			],
-			"last_update": "2016-07-27 08:54:48"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices,change node name, change configuration,set wakeup to unsecure"
 		},
 		{
 			"id": "50",
 			"p_id": "316.2.33",
+			"p_sku": "Philio PAT02-5C Flood Sensor",
 			"product": "Philio PAT02-5C Flood Sensor",
 			"preInterview": [],
 			"postInterview": [
@@ -309,11 +378,14 @@
 				"setCCData(0,132,'security','value',false);",
 				"renameNode,Philio PAT02-5C Flood Sensor"
 			],
-			"last_update": "2016-07-27 08:57:04"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, change configuration,set wakeup to unsecure"
 		},
 		{
 			"id": "51",
 			"p_id": "316.2.30",
+			"p_sku": "Philio PSG01 Smoke Sensor",
 			"product": "Philio PSG01 Smoke Sensor",
 			"preInterview": [],
 			"postInterview": [
@@ -322,11 +394,14 @@
 				"setCCData(0,132,'security','value',false);",
 				"renameNode,Philio PSG01 Smoke Sensor"
 			],
-			"last_update": "2016-07-27 08:57:51"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, change configuration,set wakeup to unsecure,"
 		},
 		{
 			"id": "52",
 			"p_id": "134.2.100",
+			"p_sku": "AEOEZW100",
 			"product": "Aeotec Multisensor Gen 6",
 			"preInterview": [],
 			"postInterview": [
@@ -337,11 +412,14 @@
 				"rename,0-113-7-3,Tamper",
 				"renameNode,Aeotec Multisensor Gen 6"
 			],
-			"last_update": "2016-07-27 09:05:34"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm device 113-7-8, change node name, change configuration,rename tamper and motion sensor"
 		},
 		{
 			"id": "56",
 			"p_id": "134.3.99",
+			"p_sku": "AEOEZW099",
 			"product": "Aeotec SmartDimmer 6",
 			"preInterview": [],
 			"postInterview": [
@@ -349,11 +427,14 @@
 				"noVDev,2-50",
 				"renameNode,Aeotec SmartDimmer 6"
 			],
-			"last_update": "2016-07-27 09:08:26"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create meter devices 1-50 and 2-50,rename node"
 		},
 		{
 			"id": "68",
 			"p_id": "265.8193.262",
+			"p_sku": "VISEZD2102-5",
 			"product": "Vision ZD2102 G5",
 			"preInterview": [],
 			"postInterview": [
@@ -363,11 +444,14 @@
 				"icon,0-113-7-6,door",
 				"renameNode,Vision ZD2102 G5"
 			],
-			"last_update": "2016-07-27 09:24:08"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "rename and change icon of devices 0-113-7-3 and 0-113-7-6,rename node"
 		},
 		{
 			"id": "69",
 			"p_id": "134.2.112",
+			"p_sku": "AEOEZW112",
 			"product": "Aeotec Door Window Sensor 6",
 			"preInterview": [],
 			"postInterview": [
@@ -376,11 +460,14 @@
 				"rename,0-48-1,Door/Window",
 				"renameNode,Aeotec Door Window Sensor 6"
 			],
-			"last_update": "2016-07-27 09:26:43"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, change configuration,rename device 0-48-1"
 		},
 		{
 			"id": "70",
 			"p_id": "271.1792.4096",
+			"p_sku": "FIB_FGK-107",
 			"product": "Fibaro Door/Window Sensor G3",
 			"preInterview": [],
 			"postInterview": [
@@ -389,11 +476,14 @@
 				"rename,0-48-1,Door/Window",
 				"renameNode,Fibaro Door/Window Sensor G3"
 			],
-			"last_update": "2016-07-27 09:34:02"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create AlarmSensor devices, change icon and name of 0-48-1,rename node"
 		},
 		{
 			"id": "71",
 			"p_id": "271.2048.4097",
+			"p_sku": "Fibaro Motion Series 300",
 			"product": "Fibaro Motion Series 300",
 			"preInterview": [],
 			"postInterview": [
@@ -401,11 +491,14 @@
 				"rename,0-48-1,Fibaro PIR",
 				"renameNode,Fibaro Motion Series 300"
 			],
-			"last_update": "2016-07-27 09:39:27"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create AlarmSensor devices,rename device 0-48-1,rename node "
 		},
 		{
 			"id": "72",
 			"p_id": "265.8220.7169",
+			"p_sku": "VIS_ZF5201",
 			"product": "Vision ZF5201 G3",
 			"preInterview": [],
 			"postInterview": [
@@ -413,21 +506,30 @@
 				"icon,0-48-1,water",
 				"renameNode,Vision ZF5201 G3"
 			],
-			"last_update": "2016-07-27 09:42:39"
+			"last_update": "2016-10-05 08:49:40",
+			"tester": "NIR",
+			"commentary": "change name and icon of 0-48-1,rename node"
 		},
 		{
 			"id": "73",
 			"p_id": "316.2.31",
-			"product": "Philio Vision PAT02-1A",
+			"p_sku": "Philio PAT02-1A Flood Sensor",
+			"product": "Philio PAT02-1A Flood Sensor",
 			"preInterview": [],
 			"postInterview": [
-				"renameNode,Philio Vision PAT02-1A"
+				"noVDev,0-113",
+				"setConfig(0,7,16,1);",
+				"setCCData(0,132,'security','value',false);",
+				"renameNode,Philio PAT02-1A Flood Sensor"
 			],
-			"last_update": "2016-07-27 09:45:16"
+			"last_update": "2016-11-07 17:14:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name, change configuration,set wakeup to unsecure"
 		},
 		{
 			"id": "74",
 			"p_id": "340.256.513",
+			"p_sku": "",
 			"product": "Popp Smoke Detector (Secudo)",
 			"preInterview": [],
 			"postInterview": [
@@ -436,11 +538,14 @@
 				"rename,0-48-2,Smoke Alarm",
 				"renameNode,Popp Smoke Detector/Siren"
 			],
-			"last_update": "2016-07-27 09:48:22"
+			"last_update": "2016-10-05 07:55:22",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name,rename devices 0-37 and 0-48-2"
 		},
 		{
 			"id": "75",
 			"p_id": "410.3.3",
+			"p_sku": "SENE1110",
 			"product": "Sensative Strip",
 			"preInterview": [],
 			"postInterview": [
@@ -448,11 +553,14 @@
 				"rename,0-113-7-4,Door",
 				"renameNode,Sensative Strip"
 			],
-			"last_update": "2016-07-27 11:35:11"
+			"last_update": "2016-10-05 08:49:40",
+			"tester": "NIR",
+			"commentary": "change icon and name of 0-113-7-4,rename node"
 		},
 		{
 			"id": "76",
 			"p_id": "340.4.3",
+			"p_sku": "POPE004407",
 			"product": "Popp CO Sensor",
 			"preInterview": [],
 			"postInterview": [
@@ -461,11 +569,14 @@
 				"rename,0-48-3,CO Alarm",
 				"renameNode,Popp CO Sensor"
 			],
-			"last_update": "2016-07-27 11:42:34"
+			"last_update": "2016-10-05 08:49:39",
+			"tester": "NIR",
+			"commentary": "don't create Alarm devices, change node name,change name of 0-48-8 and 0-48-3"
 		},
 		{
 			"id": "77",
 			"p_id": "261.8193.261",
+			"p_sku": "VISEZD2105EU-5",
 			"product": "Vision ZD2105EU-5",
 			"preInterview": [],
 			"postInterview": [
@@ -474,7 +585,23 @@
 				"icon,0-113-7-3,tamper",
 				"renameNode,Vision ZD2105EU-5"
 			],
-			"last_update": "2016-07-27 12:11:32"
+			"last_update": "2016-10-05 08:49:40",
+			"tester": "NIR",
+			"commentary": "rename 0-113-6 and 0-113-7-3,change icon of 0-113-7-3,rename node"
+		},
+		{
+			"id": "78",
+			"p_id": "271.3841.4096",
+			"p_sku": "FIBEFGPB-101-2",
+			"product": "Fibaro The Button",
+			"preInterview": [],
+			"postInterview": [
+				"setCCData(0,91,'security','value',false);",
+				"renameNode,Fibaro The Button"
+			],
+			"last_update": "2016-11-02 11:34:00",
+			"tester": "NIR",
+			"commentary": "set secure Communication for centralscene class to secure:false, add different discrete values to discrete sensor"
 		}
 	]
 }
