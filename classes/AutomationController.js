@@ -2496,6 +2496,28 @@ AutomationController.prototype.createBackup = function() {
             backupJSON['__userSkins'] = skins;
         }
 
+        /*
+         TODO icon backup
+         var ret = "";
+         iconinstaller.backup(
+         function(backup) {
+         console.log(backup);
+         ret = backup;
+         //ret =  new Uint8Array(backup);
+         }, function(error){
+         console.log(error);
+         ret = "failed";
+         });
+         console.log(ret);
+         if(ret !== "failed") {
+         var bcp = "";
+         for(var i = 0; i < ret.length; i++) {
+         bcp += String.fromCharCode(ret[i]);
+         }
+
+         backupJSON["__Icons"] = bcp;
+         }*/
+
         // save Z-Way and EnOcean objects
         if (!!global.ZWave) {
             backupJSON["__ZWay"] = {};
