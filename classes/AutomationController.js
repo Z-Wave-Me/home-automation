@@ -56,6 +56,8 @@ function AutomationController() {
                     homepage: "http://www.zwave.eu",
                     active: true
               }];
+
+    this.icons = loadObject('userIcons.json') || [];
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -178,6 +180,7 @@ AutomationController.prototype.start = function (reload) {
                     homepage: "http://www.zwave.eu",
                     active: true
               }];
+        this.icons = loadObject('userIcons.json') || [];
     }
 
     // Restore persistent data
@@ -1084,18 +1087,18 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
         skininstaller.remove(
             skinName,
             function() {
-                    result = "done";
+                result = "done";
             },  function() {
-                    result = "failed";
+                result = "failed";
             }
         );
-        
+
         var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-        
+
         while ((new Date()).valueOf() < d &&  result === "in progress") {
             processPendingCallbacks();
         }
-        
+
         if (result === "in progress") {
             result = "failed";
         }
@@ -1146,6 +1149,106 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
     return res;
 };
 
+AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
+    var result = "in progress",
+        filelist = {},
+        input = "",
+        name = "";
+
+    switch(option) {
+        case 'remote':
+            input = reqObj.file_path;
+            name = iconName
+            break;
+        case 'local':
+            input = JSON.stringify(reqObj);
+            name = reqObj.name;
+            break;
+    }
+
+    if (input) {
+        console.log('Installing icon', name, '...');
+
+        iconinstaller.install(
+            input,
+            iconName,
+            id,
+            function(success) {
+                filelist = typeof success === 'string'? JSON.parse(success) : success;
+                result = "done";
+            },  function() {
+                result = "failed";
+            }
+        );
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+            result = "failed";
+        }
+
+        if (result === 'done') {
+            for (var file in filelist) {
+                var icon = {
+                    'file': filelist[file],
+                    'source': iconName+"_"+id,
+                    'timestamp': Math.floor(new Date().getTime() / 1000),
+                    'source_title': option === "local" ? iconName+" "+id : reqObj.title
+                };
+
+                this.icons.push(icon);
+            }
+
+            saveObject("userIcons.json", this.icons);
+        }
+    }
+    return result;
+};
+
+AutomationController.prototype.uninstallIcon = function(iconName) {
+    var langFile = this.loadMainLang(),
+        result = "in progress";
+
+    try {
+        iconinstaller.remove(
+            iconName,
+            function() {
+                result = "done";
+            },  function() {
+                result = "failed";
+            }
+        );
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+            result = "failed";
+        }
+
+        if (result === "done") {
+            this.icons = _.filter(this.icons, function (icon) {
+                return icon.file !== iconName;
+            });
+
+            saveObject("userIcons.json", this.icons);
+        }
+
+    } catch (e) {
+        console.log('Uninstalling or reseting of icon "' + iconName + '" has failed. ERROR:', e);
+        this.addNotification("error", langFile.ac_err_uninstall_icon + ': ' + iconName, "core", "AutomationController");
+    }
+
+    return result;
+}
+
 AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
 };
@@ -1155,7 +1258,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 };
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden", "creationTime");
+    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden", "creationTime", "customIcons");
     this.saveConfig();
     return this.vdevInfo[id];
 };
