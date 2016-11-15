@@ -1,6 +1,6 @@
 /*** ImportRemoteHA Z-Way HA module *******************************************
 
-Version: 2.0.1
+Version: 2.0.3
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
@@ -135,7 +135,9 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     deviceId: localId,
                     defaults: {
                         deviceType: item.deviceType,
-                        metrics: item.metrics
+                        metrics: item.metrics,
+                        visibility: item.visibility,
+                        permanently_hidden: item.permanently_hidden
                     },
                     handler: function(command, args) {
                         self.handleCommand(this, command, args);
@@ -144,6 +146,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     moduleId: this.id
                 }
 
+                // add tag if activated
                 if (self.config.addTag) {
                     dev.overlay.tags = self.config.tagName && self.config.tagName !== ''? [self.config.tagName] : ["RemoteHA_" + self.id];
                 }
@@ -217,6 +220,7 @@ ImportRemoteHA.prototype.skipDevice = function(id) {
     return skip;
 };
 
+// check if deviceId is already added to list
 ImportRemoteHA.prototype.renderDevice = function (obj) {
     var skip = false;
     
