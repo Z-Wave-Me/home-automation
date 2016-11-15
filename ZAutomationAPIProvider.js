@@ -154,6 +154,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+
+        this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+        this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
     },
 
     // Used by the android app to request server status
@@ -186,6 +190,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (profile.password !== 'admin' && typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
             this.controller.config.firstaccess = false;
+        }
+
+        // if showWelcome flag is set in controller add showWelcome flag to profile and remove it from controller
+        if (!this.controller.config.firstaccess && this.controller.config.showWelcome) {
+            resProfile.showWelcome = true;
+
+            delete this.controller.config.showWelcome;
+            this.controller.saveConfig();
         }
 
         return {
@@ -459,8 +471,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.code = 200;
             reply.data = locations;
         } else {
-            reply.code = 500;
-            reply.error = 'Could not list Instances.';
+            reply.code = 404;
+            reply.error = 'Could not list locations.';
         }
 
         return reply;
@@ -1240,7 +1252,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 color: '#dddddd',
                 dashboard: [],
                 interval: 2000,
-                rooms: [0],
+                rooms: reqObj.role === 1? [0] : [],
                 expert_view: false,
                 hide_all_device_events: false,
                 hide_system_events: false,
@@ -1290,7 +1302,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         // id is never changeable
                         // login is changed by updateProfileAuth()
                         profile.role = reqObj.role;                    
-                        profile.rooms = reqObj.rooms.indexOf(0) > -1? reqObj.rooms : reqObj.rooms.push(0);
+                        profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1? reqObj.rooms.push(0) : reqObj.rooms;
                         profile.expert_view = reqObj.expert_view;
                     }
                     // could be changed by user role
@@ -1793,7 +1805,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             skins = [];
 
         var now = new Date();
-
         // create a timestamp in format yyyy-MM-dd-HH-mm
         var ts = now.getFullYear() + "-";
         ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
@@ -1804,6 +1815,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var list = loadObject("__storageContent");
 
         try {        
+
             // save all objects in storage
             for (var ind in list) {
                 if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
@@ -1884,6 +1896,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 });
             }
             */
+           
             reply.headers= {
                     "Content-Type": "application/x-download; charset=utf-8",
                     "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
@@ -2120,6 +2133,160 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
         
         return reply;
+    },
+    cloudbackup: function() {
+        var self = this,
+            reqObj,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            res = {};
+        var backupconfig = loadObject("backupconfig.json");
+
+        var profile = _.filter(this.controller.profiles, function (p) {
+                if(p.login === "admin") {
+                    return p;
+                }
+            })[0];
+
+        if(backupconfig === null) {
+            backupconfig = {
+                'active': false,
+                'email_log': 0
+            };
+        }
+
+        if(this.req.method === "GET") {
+            var remoteid = this.getRemoteId();
+            if(remoteid.data != null) {
+
+                reply.code = 200;
+                reply.data = {
+                    'active': backupconfig.active,
+                    'remote_id': remoteid.data.remote_id,
+                    'email': profile.email,
+                    'email_log': backupconfig.email_log
+                };
+
+            } else {
+                reply.error = remoteid.error
+            }
+        }
+
+        if(this.req.method === "POST" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id') && reqObj.hasOwnProperty('cloud_host_url')) {
+                backupconfig.active = reqObj.active
+
+                if(reqObj.active) {
+
+                    // create backup data
+                    backup = this.backup();
+
+                    if(!!backup.data) {
+
+                        var formRequest = function (obj) {
+                            var remoteid = self.getRemoteId();
+
+                            // define form elements
+                            var formElements = [
+                                {
+                                    name: 'remote_id',
+                                    value: remoteid.data.remote_id
+                                },{
+                                    name: 'email_report',
+                                    value: backupconfig.email_log
+                                },{
+                                    name: 'file',
+                                    filename: obj.headers["Content-Disposition"]? obj.headers["Content-Disposition"].split('=').pop() : '',
+                                    type: 'application/octet-stream',
+                                    value: JSON.stringify(backup)
+                                }];
+
+                            // set method
+                            obj.method = "POST";
+
+                            // set headers
+                            obj.headers = {
+                                "Connection": "keep-alive",
+                                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
+                            }
+
+                            // set url
+                            //obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
+                            console.log("reqObj.cloud_host_url: ", reqObj.cloud_host_url);
+                            obj.url = reqObj.cloud_host_url;
+
+                            // clean up data
+                            obj.data = "";
+
+                            // create form boundary
+                            for (var index in formElements) {
+                                obj.data += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
+                                obj.data += 'Content-Disposition: form-data; name="' + formElements[index].name + '"' + (formElements[index].filename ? ('; filename="' + formElements[index].filename) +'"': '') + '\r\n';
+                                obj.data += formElements[index].type ? ('Content-Type: ' + formElements[index].type + '\r\n\r\n') : '\r\n';
+                                obj.data += formElements[index].value + '\r\n';
+                            }
+
+                            // end of boundary
+                            obj.data += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
+
+                            console.log("obj ", JSON.stringify(obj));
+
+                            // return cloud server response
+                            return http.request(obj);
+
+                        }
+
+                        res = formRequest(backup);
+
+                        console.log("res.data.status ", res.data.status);
+
+                        // prepare response
+                        if (!res.data.status || res.data.status !== 200) {
+                            reply.error = backup.error;
+                            reply.code = res.data.code;
+                        } else {
+                            reply.code = 200;
+                        }
+
+                        reply.message = res.data.message;
+                        reply.data = res.data.data;
+
+                    } else {
+                        reply.error = backup.error;
+                    }
+                }
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad Request';
+            }
+        }
+
+        if(this.req.method === "PUT" && this.req.body) {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.hasOwnProperty('email_log') && reqObj.hasOwnProperty('email')) {
+                backupconfig.email_log = reqObj.email_log;
+
+                profile.email = reqObj.email;
+
+                profile = this.controller.updateProfile(profile, profile.id);
+
+                reply.code = 200; 
+            } else {
+                reply.code = 400;
+                reply.error = 'Bad Request';
+            }
+        }
+
+        saveObject("backupconfig.json", backupconfig);
+
+        return reply;
+
     },
     resetToFactoryDefault: function() {
         var self = this,
@@ -2377,11 +2544,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 result = this.controller.installSkin(reqObj, skName, index);
 
                 if (result === "done") {
-
                     reply.code = 200;
                     reply.data = this.req.method === 'POST'? "skin_installation_successful" : "skin_update_successful"; // send language key as response
                     reply.error = null;
-                }
+                } 
+
             } else if (this.req.method === 'POST' && !skinName) {
                 reply.code = 409;
                 reply.error = 'skin_from_url_already_exists';
@@ -2857,12 +3024,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 return profile.login === 'admin' && profile.password === 'admin';
             });
 
-            if (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) {
+            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
                 reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
                 reply.data.defaultProfile = setLogin.data; // set login data of default profile
                 reply.data.firstaccess = true;
+                reply.data.defaultProfile.showWelcome = true;
                 reply.code = 200;
+
             } else {
                 reply.data = { firstaccess: false };
                 reply.code = 200;
@@ -2910,16 +3079,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         
         try {
+
+            // if reboot has flag firstaccess=true add showWelcome to controller config
+            if(this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
+                this.controller.config.showWelcome = true;
+                this.controller.saveConfig();
+            }
+
             // reboot after 5 seconds
             this.rebootTimer = setTimeout(function() {
                 if(self.rebootTimer) {
                     clearTimeout(self.rebootTimer);
                 }
+                console.log("Rebooting system ...");
                 system("reboot"); // reboot the box
             }, 5000);
 
             reply.code = 200;
-            reply.message = "System is rebooting ...";
+            reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
         }

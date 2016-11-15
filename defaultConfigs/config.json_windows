@@ -74,7 +74,7 @@
     }, {
         "id": 4,
         "moduleId": "InfoWidget",
-        "active": "true",
+        "active": true,
         "title": "Dear Expert User",
         "description": "Dieses Modul erzeugt ein Informations Widget.",
         "params": {
@@ -95,7 +95,7 @@
     }, {
         "id": 5,
         "moduleId": "SensorsPolling",
-        "active": "true",
+        "active": true,
         "title": "Periodical Sensor Polling",
         "description": "Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.\n(Added by default)",
         "params": {
@@ -107,7 +107,7 @@
     }, {
         "id": 6,
         "moduleId": "BatteryPolling",
-        "active": "true",
+        "active": true,
         "title": "Battery Polling",
         "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
         "params": {
@@ -117,7 +117,7 @@
     }, {
         "id": 7,
         "moduleId": "SwitchControlGenerator",
-        "active": "true",
+        "active": true,
         "title": "Trap events from Remotes and Sensors",
         "description": "",
         "params": {

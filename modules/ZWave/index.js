@@ -1,8 +1,8 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.1.3
+Version: 2.2.0
 -------------------------------------------------------------------------------
-Author: Serguei Poltorak <ps@z-wave.me>
+Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Copyright: (c) Z-Wave.Me, 2014
 
 ******************************************************************************/
@@ -57,6 +57,11 @@ function ZWave (id, controller) {
 		"DeviceResetLocally": 0x5a,
 		"BarrierOperator": 0x66
 	};
+
+	this.default_expert_config = {
+		'debug' : false
+	};
+
 }
 
 // Module inheritance and setup
@@ -92,9 +97,29 @@ ZWave.prototype.init = function (config) {
 		this.postfix = updatedPostfix; 
 	}
 
+	this.expert_config = loadObject("expertconfig.json");
+
+	if(!!!this.expert_config) {
+		this.expert_config = self.default_expert_config;
+		saveObject("expertconfig.json", this.expert_config);
+	}
+
+	this.cmdClasses = this.loadModuleJSON("cmd_classes.json");
+
+	this.ipacket = loadObject("incomingPacket.json");
+
+	if(!!!this.ipacket) {
+		this.ipacket = [];
+	}
+
+	this.opacket = loadObject("outgoingPacket.json");
+
+	if(!!!this.opacket) {
+		this.opacket = [];
+	}
+
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
-
 
     // add custom_postfix to postfix
 	if(!!custom_postfix) {
@@ -128,6 +153,8 @@ ZWave.prototype.init = function (config) {
 	if (!this.zway) {
 		return;
 	}
+	
+	this.CommunicationLogger();
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
 		if (zwayName === self.config.name && self.zway) {
@@ -215,6 +242,8 @@ ZWave.prototype.stop = function () {
 
 	this.stopBinding();
 
+	clearInterval(this.timer);
+
 	if (this._dataBind) {
 		this.controller.off("ZWave.dataBind", this._dataBind);
 	}
@@ -274,6 +303,134 @@ ZWave.prototype.terminating = function () {
 	}
 };
 
+ZWave.prototype.CommunicationLogger = function() {
+
+	var self = this,
+		zway = this.zway,
+		ipacket = this.ipacket,
+		opacket = this.opacket;
+
+	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
+	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
+	uniq = function(arr) { return arr.filter(function(value, index, self) { return self.indexOf(value) === index; }); };
+	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
+
+	/*
+	inH = function () {
+
+		//console.log(JSON.stringify(this));
+
+		//if(ipacket.length > 4000) { ipacket = [];}
+
+		ipacket.push(this);
+
+		/*
+		inNodes = uniq(ipacket.map(function(x) { return x.value[3] }));
+
+		for (indx in inNodes) {
+			var id = inNodes[indx];
+			var rssis = data.filter(function(x) {
+				return x.value[3] == id && x.RSSI;
+			}).map(function(x) {
+				return x.RSSI.value;
+			});
+			console.log("homeid: "+id, "avg rssi: "+avg(rssis), stddev(rssis), "rssi length: "+rssis.length);
+		};
+
+		//saveObject("incomingPacket.json", ipacket);
+	};
+
+	//zway.controller.data.incomingPacket.bind(inH);
+
+	outH = function () {
+
+		//console.log(JSON.stringify(this));
+
+		//if(opacket.length > 4000) { opacket = [];}
+
+		opacket.push(this);
+
+
+		outNodes = uniq(opacket.filter(function(x) { return x.nodeId }).map(function(x) { return x.nodeId.value }));
+
+		console.log("id PER delivery time, RSSI, hops");
+		for (indx in outNodes) {
+			var id = outNodes[indx];
+
+			var delivered = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.delivered;
+			}).map(function(x) {
+				return x.delivered.value * 100;
+			});
+
+			var deliveryTime = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.delivered;
+			}).map(function(x) {
+				return x.deliveryTime.value;
+			});
+
+			var rssis = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.returnRSSI
+			}).map(function(x) {
+				return x.returnRSSI.value[0];
+			});
+
+			var hops = opacket.filter(function(x) {
+				return x.nodeId && x.nodeId.value == id && x.returnRSSI;
+			}).map(function(x) {
+				return x.hops.value.length;
+			});
+
+			console.log("homeid: "+id, "delivered: "+avg(delivered).toFixed(2), "deliveryTime: "+avg(deliveryTime).toFixed(2), "delivered: "+stddev(deliveryTime).toFixed(2), "avg rssi: "+avg(rssis).toFixed(2), stddev(rssis).toFixed(2), "avg hops: "+avg(hops).toFixed(2));
+		};
+
+		//saveObject("outgoingPacket.json", opacket);
+	};
+
+	//zway.controller.data.outgoingPacket.bind(outH);
+	*/
+
+	/*
+	rssiH = function() {
+		var data = loadObject("rssidata.json");
+
+		if(!data) data = [];
+		var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+		var d = {
+			"time": rssi.updateTime,
+			"channel1": rssi.channel1.value,
+			"channel2": rssi.channel2.value,
+			"channel3": rssi.channel3.value
+		};
+
+		data.push(d);
+		saveObject("rssidata.json", data);
+	}
+
+	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
+	*/
+
+	/*this.timer = setInterval(function() {
+		var data = loadObject("rssidata.json");
+
+		if(!data) data = [];
+		zway.GetBackgroundRSSI();
+
+		var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+		var d = {
+			"time": rssi.updateTime,
+			"channel1": rssi.channel1.value,
+			"channel2": rssi.channel2.value,
+			"channel3": rssi.channel3.value
+		};
+
+		data.push(d);
+		saveObject("rssidata.json", data);
+	}, 1000*60);*/
+};
+
 
 // --------------- Public HTTP API -------------------
 
@@ -289,6 +446,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".Restore", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CreateZDDX", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -296,8 +454,10 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PostfixAdd", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -312,6 +472,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".Restore");
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
+	ws.revokeExternalAccess(_name + ".CommunicationHistory");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
@@ -319,15 +480,24 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixUpdate");
 	ws.revokeExternalAccess(_name + ".Postfix");
 	ws.revokeExternalAccess(_name + ".PostfixAdd");
-    ws.revokeExternalAccess(_name + ".PostfixGet");
-    ws.revokeExternalAccess(_name + ".PostfixRemove");
+	ws.revokeExternalAccess(_name + ".PostfixGet");
+	ws.revokeExternalAccess(_name + ".PostfixRemove");
+	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
+	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
 ZWave.prototype.defineHandlers = function () {
 	var zway = this.zway;
 	var postfix = this.postfix;
+	var expert_config = this.expert_config;
 	var self = this;
+
+	var ipacket = this.ipacket;
+	var opacket = this.opacket;
+
+	var cmdClasses = this.cmdClasses;
+
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -633,8 +803,6 @@ ZWave.prototype.defineHandlers = function () {
 
 		this.zw = zw;
 		this.zway = null;
-		this.zwayBinding = null;
-		this.devicesBindings = {};
 		this.communicationStatistics = {};
 
 		this.init(zw);
@@ -643,52 +811,34 @@ ZWave.prototype.defineHandlers = function () {
 	this.CommunicationStatistics.prototype.init = function(zw) {
 		var self = this;
 
-		if (!zw.zway || this.zwayBinding) {
+		if (!zw.zway) {
 			return;
 		}
 
 		this.zway = zw.zway;
-		this.zwayBinding = this.zway.bind(function(type, nodeId) {
-			if (type === zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
-				self.attach(nodeId);
-			}
-		}, zw.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | zw.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+		this.zway.controller.data.outgoingPacket.bind(this.handler, this, false);
 	};
 
-	this.CommunicationStatistics.prototype.attach = function(nodeId) {
-		if (!this.zway || !this.zwayBinding || !this.zway.devices[nodeId] || this.devicesBindings[nodeId]) {
-			return;
+	this.CommunicationStatistics.prototype.handler = function(type, self) {
+		if (type === self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		if (!self.communicationStatistics[this.nodeId.value]) {
+			self.communicationStatistics[this.nodeId.value] = [];
 		}
-
-		this.communicationStatistics[nodeId] = [];
-		this.devicesBindings[nodeId] = this.zway.devices[nodeId].data.lastPacketInfo.bind(this.handler, {self: this, nodeId: nodeId}, false);
-	};
-
-	this.CommunicationStatistics.prototype.handler = function(type, args, self) {
-		if (type === args.self.zw.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
-		args.self.communicationStatistics[args.nodeId].push({
-			"date": (new Date()).getTime(),
+		self.communicationStatistics[this.nodeId.value].push({
+			"date": (new Date()).getTime()/1000,
 			"delivered": this.delivered.value,
 			"packetLength": this.packetLength.value,
 			"deliveryTime": this.deliveryTime.value
 		});
-		args.self.communicationStatistics[args.nodeId].splice(0, Math.max(args.self.communicationStatistics[args.nodeId].length - args.self.MAX_ARRAY_LENGTH, 0));
+		self.communicationStatistics[this.nodeId.value].splice(0, Math.max(self.communicationStatistics[this.nodeId.value].length - self.MAX_ARRAY_LENGTH, 0));
 	};
 
 	this.CommunicationStatistics.prototype.stop = function() {
-		var self = this;
-
-		if (!this.zway || !this.zwayBinding) {
+		if (!this.zway) {
 			return;
 		}
 
-		this.zway.unbind(this.zwayBinding);
-		this.zwayBinding = null;
-
-		Object.keys(this.devicesBindings).forEach(function(nodeId) {
-			self.this.zway.devices[nodeId].data.lastPacketInfo.unbind(self.devicesBindings[nodeId]);
-		});
-		this.devicesBindings = {};
+		this.zway.controller.data.outgoingPacket.unbind(this.handler);
 
 		this.communicationStatistics = {};
 
@@ -714,7 +864,197 @@ ZWave.prototype.defineHandlers = function () {
 				data: this.value
 			});
 		});
-	}
+	};
+
+	this.ZWaveAPI.CommunicationHistory = function(url, request) {
+		self = this,
+			   cmdClass = cmdClasses.zw_classes.cmd_class,
+			   packets = [],
+			   nodeid = zway.controller.data.nodeId.value,
+			   body = {
+					"code": 200,
+					"message": "200 OK",
+				    "updateTime": null,
+					"data": []
+			   }
+
+		var timestamp = parseInt(url.substring(1), 10) || 0;
+
+		if (request.query) {
+			var filterObj = JSON.parse(request.query.filter);
+		}  else {
+			var filterObj = null;
+		}
+
+		/*ipacket.forEach(function (packet) {
+			var exist = _.find(packets, function(p){
+				if(p.updateTime === packet.updateTime && p.type === 'incoming') {
+					if(_.isArray(p.value) && _.isArray(packet.value)) {
+						if(_.isEqual(p.value, packet.value)) {
+							return p;
+						}
+					}
+				}
+			});
+
+			if(typeof exist === 'undefined') {
+				console.log("incomming:" +JSON.stringify(packets));
+				packets.push(
+					{
+						type: 'incoming',
+						updateTime: packet.updateTime,
+						value: packet.value,
+						src: (_.isArray(packet.value)) ? packet.value[3] : "",
+						dest: nodeid,
+						data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+					}
+				);
+				console.log("incomming:" +JSON.stringify(packets));
+			}
+
+		});*/
+
+		/*opacket.forEach(function (packet) {
+			var exist = _.find(packets, function(p){
+				if(p.updateTime === packet.updateTime && p.type === 'outgoing') {
+					if(_.isArray(p.value) && _.isArray(packet.value)) {
+						if(_.isEqual(p.value, packet.value)) {
+							return p;
+						}
+					}
+				}
+			});
+
+			if(typeof exist === 'undefined') {
+				//console.log("outgoing:" +JSON.stringify(packets));
+				packets.push(
+					{
+						type: 'outgoing',
+						updateTime: packet.updateTime,
+						value: packet.value,
+						src: nodeid,
+						dest: (_.isArray(packet.value)) ? packet.value[3] : "",
+						data: (_.isArray(packet.value)) ? setZnifferDataType(packet.value[2]) : "",
+						application: (_.isArray(packet.value)) ? packetApplication(packet.value) : ""
+					}
+				);
+				//console.log("outgoing:" +JSON.stringify(packets));
+			}
+		});*/
+
+		function packetApplication(packet) {
+			var cmdClassKey = decToHex(packet[5], 2, '0x');
+
+			var cmdKey = decToHex(packet[6], 2, '0x');
+
+			var ret = {};
+
+			var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
+
+			if (!findCmdClass) {
+				return;
+			}
+
+			var _cmdClass = findCmdClass.pop();
+
+			if (_.isArray(_cmdClass.cmd)) {
+				ret = _.findWhere(_cmdClass.cmd, {_key: cmdKey});
+			} else {
+				ret = _cmdClass.cmd;
+			}
+			if(typeof ret === "object") {
+				if(ret.hasOwnProperty('_help')) {
+					ret = ret._help;
+				} else {
+					ret = "";
+				}
+			} else {
+				ret = "";
+			}
+
+			return ret;
+		}
+
+		function decToHex(decimal, chars, x) {
+			var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
+			return (x || '') + hex;
+		};
+
+		function setZnifferDataType(data) {
+			switch (data) {
+				case 0:
+					return 'Singlecast';
+				case 255:
+					return 'Predicast';
+				default:
+					return 'Multicast';
+			}
+		};
+
+		body.updateTime = _.max(packets, function (v) {
+			return v.updateTime;
+		}).updateTime;
+
+		packets = packets.filter(function(p) {
+			return p.updateTime >= timestamp;
+		});
+		
+		/*
+		packets = _.sortBy(packets, function (a, b) {
+			return b.updateTime - a.updateTime;
+		});*/
+
+		if(!_.isNull(filterObj)) {
+
+			if (filterObj.src.value != "") {
+				filter = packets.filter(function (p) {
+					if(filterObj.src.show) {
+						return p.src == filterObj.src.value;
+					} else {
+						return p.src != filterObj.src.value;
+					}
+
+				});
+				packets = filter;
+			}
+
+			if (filterObj.dest.value != "") {
+				filter = packets.filter(function (p) {
+					if(filterObj.dest.show) {
+						return p.dest == filterObj.dest.value;
+					} else {
+						return p.dest != filterObj.dest.value;
+					}
+
+				});
+				packets = filter;
+			}
+
+			if(filterObj.data.value != "") {
+				filter = packets.filter(function(p) {
+					if(filterObj.data.show) {
+						return p.data == filterObj.data.value;
+					} else {
+						return p.data != filterObj.data.value;
+					}
+
+				});
+				packets = filter;
+			}
+		}
+
+		body.data = packets;
+
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body: body
+		};
+	};
 
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
@@ -748,7 +1088,14 @@ ZWave.prototype.defineHandlers = function () {
 
 			if (data.file && data.file.content) {
 				// update firmware from file
-				fwUpdate.Perform(manufacturerId, firmwareId, targetId, data.file.content);
+				var fw;
+				if (data.file.content.substr(0, 1) === ":") {
+					// this is a .hex file
+					fw = IntelHex2bin(data.file.content);
+				} else {
+					fw = data.file.content;
+				}
+				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 			} else if (data.url) {
 				// update firmware from url
 				http.request({
@@ -757,7 +1104,14 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream", // enforce binary response
 					async: true,
 					success: function (res) {
-						fwUpdate.Perform(manufacturerId, firmwareId, targetId, res.data);
+						var fw;
+						if (res.data.substr(0, 1) === ":") {
+							// this is a .hex file
+							fw = IntelHex2bin(res.data);
+						} else {
+							fw = res.data;
+						}
+						fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 					},
 					error: function (res) {
 						console.error("Failed to download firmware: " + res.statusText);
@@ -814,8 +1168,13 @@ ZWave.prototype.defineHandlers = function () {
 				contentType: "application/octet-stream",
 				success: function(response) {
 					var L = 32,
-					    addr = 0x7800, // M25PE10
-					    data = response.data.slice(0x1800);
+					    bootloader_6_70 = 
+					    	zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+					    	|| 
+					    	zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+					    ,
+					    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+					    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
 					
 					for (var i = 0; i < data.byteLength; i += L) {
 						var arr = (new Uint8Array(data.slice(i, i+L)));
@@ -916,7 +1275,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.Postfix = function(url, request) {		
 		
-		var show = request.query && request.query.full? request.query.full : 'false';
+		var show = request.query ? request.query : null;
 
 		if (!!postfix) {
 
@@ -997,40 +1356,38 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
-
-	this.ZWaveAPI.PostfixGet = function(url, request) {
-        if(request.method === "POST" && request.body) {
-
-			var fixes = postfix.fixes,
-				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
-
-            var fix = fixes.filter(function(fix) {
-                return 	fix.p_id === reqObj.p_id;
+	this.ZWaveAPI.PostfixGet = function(url) {
+        var p_id = url.substring(1),
+            fixes = postfix.fixes,
+            fix = fixes.filter(function (fix) {
+                return fix.p_id === p_id;
             });
 
-			if(!_.isEmpty(fix)) {
-				return {
-					status: 200,
-					headers: {
-						"Content-Type": "application/json",
-						"Connection": "keep-alive"
-					},
-					body: fix[0]
-				};
-			} else {
-				return { status: 404, body: "Postfix with p_id: " + reqObj.p_id + " not found"};
-			}
+        if (!_.isEmpty(fix)) {
+            return {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Connection": "keep-alive"
+                },
+                body: fix[0]
+            };
+        } else {
+            return {status: 404, body: "Postfix with p_id: " + p_id + " not found"};
         }
-        return { status: 400, body: "Invalid request" };
     };
-
 
 	this.ZWaveAPI.PostfixAdd = function(url, request) {
 
 		if(request.method === "POST" && request.body) {
 
-			var date = new Date(),
-				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			var date = new Date();
+
+			try {
+				var reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			} catch(e) {
+				return { status: 400, body: e.toString() };
+			}
 
             var custom_postfix = loadObject("custompostfix.json");
 
@@ -1135,6 +1492,51 @@ ZWave.prototype.defineHandlers = function () {
         }
         return { status: 400, body: "Invalid request" };
     };
+
+    this.ZWaveAPI.ExpertConfigGet = function() {
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Connection": "close"
+			},
+			body: expert_config
+		};
+	};
+
+	this.ZWaveAPI.ExpertConfigUpdate = function(url, request) {
+		var self = this,
+			reqObj;
+
+		if (request.method === "POST" && request.body) {
+			reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+
+			if(Object.keys(reqObj).length = 1) {
+				var keys = Object.keys(reqObj);
+
+				if(expert_config.hasOwnProperty(keys[0])) {
+					_.assign(expert_config, reqObj);
+
+					saveObject("expertconfig.json", expert_config);
+					return {
+						status: 200,
+						body: "Done"
+					};
+
+				} else {
+					return { status: 404, body: "Property " + keys[0] + " not found" };
+				}
+			}
+			//TODO multiple property update
+			/*
+			 for( key in keys) {
+			 if(expert_config.hasOwnProperty(keys[key])) {
+			 expert_config[keys[key]] = reqObj[keys[key]];
+			 }
+			 }*/
+		}
+		return { status: 400, body: "Invalid request" };
+	};
 
 
 	/*
@@ -1450,11 +1852,11 @@ ZWave.prototype.gateDevicesStart = function () {
 
 						devId = mId + '.' + mPT + '.' + mPId,
 						appMajorId = devId + '.' + appMajor,
-						appMinorId = devId + '.' + appMinor,
+						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor,
 						postFix = fixes.filter(function(fix) {
 							return 	fix.p_id === devId || 		//search by manufacturerProductId
 									fix.p_id === appMajorId || //search by applicationMajor
-									fix.p_id === appMinorId; 	//search by applicationMinor
+									fix.p_id === appMajorMinorId; 	//search by applicationMajor and applicationMinor
 						});
 					}
 
@@ -1628,25 +2030,54 @@ ZWave.prototype.gateDevicesStart = function () {
 													case 'icon':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															var nId = nodeId + '-' + splittedEntry[1];
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) / postFix type / value - fallback true for hide / deactivate
-															changeVDev[splittedEntry[1]][splittedEntry[0]] = splittedEntry[2] ? splittedEntry[2] : true;
+															changeVDev[nId][splittedEntry[0]] = splittedEntry[2] ? splittedEntry[2] : true;
+														}
+
+														break;
+													case 'discreteState':
+														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
+															//add devId
+															var nId = nodeId + '-' + splittedEntry[1];
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
+															}
+
+															if (!changeVDev[nId]['discreteState']) {
+																changeVDev[nId]['discreteState'] = {};
+															}
+
+															// devId (instId-CC-sCC-eT) / postFix type / scene + keyAttribute / value - fallback undefined
+															changeVDev[nId]['discreteState'][splittedEntry[2]] = {
+																cnt: splittedEntry[3] ? splittedEntry[3] : undefined,
+																action: splittedEntry[4] ? splittedEntry[4] : undefined,
+																type: splittedEntry[5] ? splittedEntry[5] : undefined
+															};
+															//console.log('discreteState',splittedEntry[3]);
+															//console.log('changeVDev',JSON.stringify(changeVDev, null, 4));
 														}
 
 														break;
 													case 'noVDev':
-
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
+
+															var nId = nodeId + '-' + splittedEntry[1];
+
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															//add devId
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) without creation
-															changeVDev[splittedEntry[1]].noVDev = true;
+															changeVDev[nId].noVDev = true;
 														}
 
 														break;
@@ -1674,7 +2105,7 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
-					var ccId = instanceId + '-' + commandClassId;
+					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
 					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev);
@@ -1747,7 +2178,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		vDevIdNI = nodeId + separ + instanceId,
 		vDevIdC = commandClassId,
 		vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
-		changeDevId = instanceId + separ + vDevIdC,
+		changeDevId = vDevIdNI + separ + vDevIdC,
 		defaults;
 		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
@@ -1777,7 +2208,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var args = [],
 				sortArgs = [],
 				last = 0,
-				addVendor = true;
+				addVendor = true,
+				lastId = '',
+				lastIdArr = [];
 
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
@@ -1812,7 +2245,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			// add id
-			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
+			lastIdArr = args[last].split('-');
+
+			// devices[nodeId].instances[0].commandClasses[96]
+			if (this.zway.devices[lastIdArr[0]].instances[0].commandClasses[96] && Object.keys(this.zway.devices[lastIdArr[0]].instances).length > 1) {
+				lastId = '(' + args[last].replace(/-/g, '.') + ')';
+			} else {
+				lastId = '(#' + lastIdArr[0] + ')';
+			}
+
+			/*if (args[last].indexOf('-0') > -1 ) {
+				lastId = args[last].split('-').shift();
+			} else {
+				lastId = '(' + args[last].replace(/-/g, '.') + ')';
+			}*/
+
+			sortArgs.push(lastId);
 			
 			return sortArgs.join(' ');
 		}
@@ -1844,6 +2292,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			defaultObj.metrics.title = changeObj.rename? compileTitle(changeObj.rename, devIdNI, false) : defaultObj.metrics.title;
 			defaultObj.visibility = changeObj.hide? false : true;
 			defaultObj.permanently_hidden = changeObj.deactivate? true : false;
+
+			if (defaultObj.metrics.discreteStates) {
+				defaultObj.metrics.discreteStates = changeObj.discreteState && !_.isEmpty(changeObj.discreteState)? changeObj.discreteState : defaultObj.metrics.discreteStates;
+			}
 
 			postfixLog(devId, changeObj);
 
@@ -1889,8 +2341,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
-			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], this.zway.devices[nodeId].data.specificType.value);
-
+			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value);
 			defaults = {
 				deviceType: "switchMultilevel",
 				probeType: isMotor ? 'motor' : 'multilevel',
@@ -1953,12 +2404,16 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						}
 					} else if ("stop" === command) { // Commands for Blinds
 						cc.StopLevelChange();
+						return;
 					} else if ("startUp" === command) {
 						cc.StartLevelChange(0);
+						return;
 					} else if ("startDown" === command) {
 						cc.StartLevelChange(1);
+						return;
 					} else if ("update" === command) {
 						cc.Get(vDevId);
+						return;
 					}
 
 					if (0 === newVal || !!newVal) {
@@ -1995,7 +2450,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					probeType: 'switchColor_rgb',
 					metrics: {
 						icon: 'multilevel',
-						title: compileTitle('Color', vDevIdNI + separ + vDevIdC),
+						title: compileTitle('Color', vDevIdNI),
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 						level: 'off'
 					}
@@ -2003,7 +2458,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 				// apply postfix if available
 				if (changeVDev[changeDevId]) {
-					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI + separ + vDevIdC);
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI);
 				}
 
 				var vDev_rgb = this.controller.devices.create({
@@ -2056,14 +2511,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							probeType: '',
 							metrics: {
 								icon: 'multilevel',
-								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
+								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 								level: 'off'
 							}
 						}
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI + separ + vDevIdC + separ + colorId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI);
 						}
 
 						switch(colorId) {
@@ -2182,7 +2637,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
 						// aivs // Motion icon for Sensor Binary by default
 						defaults.metrics.icon = "motion";
 						defaults.probeType = "general_purpose";
@@ -2212,7 +2667,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -2274,7 +2729,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
 						if (sensorTypeId === 1) {
 							defaults.metrics.icon = "temperature";
 							defaults.probeType = defaults.metrics.icon;
@@ -2309,7 +2764,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -2368,11 +2823,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 						defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
+						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI);
 
 						switch (scaleId) {
 							case 0:
-								defaults.probeType = 'meterElectric_kilowatt_per_hour';
+								defaults.probeType = 'meterElectric_kilowatt_hour';
 								break;
 							case 2:
 								defaults.probeType = 'meterElectric_watt';
@@ -2395,7 +2850,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + scaleId, vDevIdNI + separ + vDevIdC + separ + scaleId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + scaleId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -2690,7 +3145,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-							a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI);
 
 							switch (sensorTypeId) {
 								case 0:
@@ -2735,7 +3190,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 							// apply postfix if available
 							if (changeVDev[cVDId]) {
-								a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+								a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 							}
 
 							var a_vDev = self.controller.devices.create({
@@ -2800,9 +3255,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId]['name'] ? compileTitle(renameDevices[notificationTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door', false) : compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 									a_defaults.probeType = 'alarm_door';
-									a_defaults.metrics.icon = changeIcons[notificationTypeId] && changeIcons[notificationTypeId]['icon'] ? changeIcons[notificationTypeId]['icon'] : a_defaults.metrics.icon;
+
+									// apply postfix if available
+									if (changeVDev[cVDId]) {
+										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
+									}
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
@@ -2912,11 +3371,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
 												if (!self.controller.devices.get(a_id)) {
-													a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+													a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 
 													// apply postfix if available
 													if (changeVDev[cVDId]) {
-														a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+														a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 													}
 
 													var a_vDev = self.controller.devices.create({
@@ -2962,11 +3421,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
 									// check if it should be created
 									if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 
 										// apply postfix if available
 										if (changeVDev[cVDId]) {
-											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 										}
 
 										var a_vDev = self.controller.devices.create({
@@ -3007,6 +3466,111 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, changeVDev);
 					}
 				}, "child");
+			}
+		} else if (this.CC["CentralScene"] === commandClassId) {
+
+			var devId = vDevId + separ + 'DS';
+
+			defaults = {
+				deviceType: 'sensorDiscrete',
+				probeType: 'control',
+				metrics: {
+					probeTitle: 'Control',
+					icon: 'gesture',
+					level: '',
+					title: compileTitle('Sensor', 'Control', vDevIdNI),
+                    state: '',
+					/* GESTURES (state):
+					 * hold,
+					 * press / tap (cnt),
+					 * release,
+					 * swipe_up,
+					 * swipe_down,
+					 * swipe_left,
+					 * swipe_right,
+					 * swipe_top_left_to_bottom_right,
+					 * swipe_top_right_to_bottom_left,
+					 * swipe_bottom_left_to_top_right,
+					 * swipe_bottom_right_to_top_left
+					 */
+					currentScene: '',
+					discreteStates: {}
+				}
+			};
+
+			// apply postfix if available
+			if (changeVDev[changeDevId]) {
+				defaults = applyPostfix(defaults, changeVDev[changeDevId], devId, vDevIdNI);
+			}
+
+			var vDev = self.controller.devices.create({
+				deviceId: devId,
+				defaults: defaults,
+				overlay: {},
+				handler: function (command) {
+					if (command === "update") {
+						cc.Get;
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
+					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+						self.controller.devices.remove(devId);
+					} else {
+						try {
+							// output curScene + keyAttr or ''
+							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : '',
+								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : '',
+								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : '',
+								/*
+								 * CentralScene v3:
+								 *
+								 * 0x00 Key Pressed 1 time
+								 * 0x01 Key Released
+								 * 0x02 Key Held Down
+								 * 0x03 Key Pressed 2 times
+								 * 0x04 Key Pressed 3 times
+								 * 0x05 Key Pressed 4 times
+								 * 0x06 Key Pressed 5 times
+								 */
+								kaCnt = kA > 0x02? kA - 0x01 : 0x01,
+								cL = cS.toString() + kA.toString(),
+								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
+								st = '',
+								cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
+								type = dS && dS['type']? dS['type'] : 'B',
+								setAction = function () {
+									switch (kA) {
+										case 0x01:
+											st = dS && dS['action']? dS['action'] : 'release';
+											break;
+										case 0x02:
+											st = dS && dS['action']? dS['action'] : 'hold';
+											break;
+										default:
+											st = dS && dS['action']? dS['action'] : 'press';
+											break;
+									}
+								};
+
+
+							setAction();
+
+							vDev.set("metrics:state", st);
+							vDev.set("metrics:currentScene", cS);
+							vDev.set("metrics:keyAttribute", kA);
+							vDev.set("metrics:maxScenes", mC);
+							vDev.set("metrics:level", cL);
+							vDev.set("metrics:cnt", cnt);
+							vDev.set("metrics:type", type);
+
+						} catch (e) {
+						}
+					}
+				}, "value");
 			}
 		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {

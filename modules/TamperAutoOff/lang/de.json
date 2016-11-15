@@ -1,0 +1,6 @@
+{
+	"m_title":"Tamper Auto Off",
+	"m_descr":"Some devices can't send command, when tamper state goes to off. This app sets tamper state to off after timeout.",
+	"l_devices":"Tamper excluded from autooff:",
+	"l_timeout":"Timeout"
+}

@@ -1,7 +1,7 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.0.5
-(c) Z-Wave.Me, 2014
+Version: 2.2.0
+(c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Description:
@@ -33,18 +33,47 @@ IfThen.prototype.init = function (config) {
 
     this.handlerLevel = function (sDev) {
         var that = self,
-            value = sDev.get("metrics:level");
+            value = sDev.get("metrics:level"),
+            operator = ifElement.operator,
+            ifLevel = ifElement.status === 'level' && ifElement.level? ifElement.level : ifElement.status,
+            check = false;
 
-        if(value === ifElement.status || sDev.get('deviceType') === 'toggleButton'){
+        if (operator && ifLevel) {
+            switch (operator) {
+                case '>':
+                    check = value > ifLevel;
+                    break;
+                case '=':
+                    check = value === ifLevel;
+                    break;
+                case '<':
+                    check = value < ifLevel;
+                    break;
+            }
+        }
+
+        if(check || value === ifElement.status || sDev.get('deviceType') === 'toggleButton'){
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,
-                    lvl = el[type].status,
-                    vDev = that.controller.devices.get(id);
+                    lvl = el[type].status === 'level' && el[type].level? el[type].level : el[type].status,
+                    vDev = that.controller.devices.get(id),
+                    // compare old and new level to avoid unneccessary updates
+                    compareValues = function(valOld,valNew){
+                        var vO = _.isNaN(parseFloat(valOld))? valOld : parseFloat(valOld),
+                            vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
+
+                        return vO !== vN;
+                    },
+                    set = compareValues(vDev.get("metrics:level"), lvl);
                 
-                if (vDev) {
-                    if (vDev.get("deviceType") === type && type === "switchMultilevel") {
-                        vDev.performCommand("exact", { level: lvl });
+                if (vDev && set) {
+                    if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat")) {
+                        if (lvl === 'on' || lvl === 'off'){
+                            vDev.performCommand(lvl);
+                        } else {
+                            vDev.performCommand("exact", { level: lvl });
+                        }
                     } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
                         vDev.performCommand("on");
                     } else if (vDev.get("deviceType") === type) {
