@@ -2497,26 +2497,35 @@ AutomationController.prototype.createBackup = function() {
         }
 
         /*
-         TODO icon backup
-         var ret = "";
+         //TODO icon backup
+         var ret = "in progress";
          iconinstaller.backup(
          function(backup) {
-         console.log(backup);
-         ret = backup;
-         //ret =  new Uint8Array(backup);
-         }, function(error){
-         console.log(error);
-         ret = "failed";
+             console.log("success", backup);
+             console.log("success length", backup.length);
+             ret =  new Uint8Array(backup);
+             }, function(error){
+             console.log("error", error);
+             ret = "failed";
          });
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  ret === "in progress") {
+            processPendingCallbacks();
+        }
+
          console.log(ret);
          if(ret !== "failed") {
-         var bcp = "";
-         for(var i = 0; i < ret.length; i++) {
-         bcp += String.fromCharCode(ret[i]);
-         }
+             var bcp = "";
+             console.log(ret.length);
+             for(var i = 0; i < ret.length; i++) {
+             bcp += String.fromCharCode(ret[i]);
+             }
 
-         backupJSON["__Icons"] = bcp;
-         }*/
+             backupJSON["__Icons"] = bcp;
+         }
+        */
 
         // save Z-Way and EnOcean objects
         if (!!global.ZWave) {

@@ -1,6 +1,6 @@
 {
   "m_title":"CloudBackup",
-  "m_descr":"",
+  "m_descr":"Gives possibility to upload and store your backups on the remote server.",
   "l_email":"E-Mail",
   "l_email_log":"E-Mail notification",
   "l_no_log":"Do not send me log by email",

@@ -21,6 +21,10 @@ CloudBackup.prototype.init = function(config) {
     CloudBackup.super_.prototype.init.call(this, config);
 
     this.moduleName = "CloudBackup";
+    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate";
+    this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate";
+    this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate";
+
     var self = this,
         langFile = self.controller.loadModuleLang(this.moduleName);
 
@@ -41,8 +45,7 @@ CloudBackup.prototype.init = function(config) {
     this.uploadBackup = function() {
         console.log("###### start Backup ");
 
-        var url = "http://192.168.10.252/dev/cloudbackup/?uri=backupcreate",
-            error = "";
+        var error = "";
         try {
             var backupJSON = self.controller.createBackup();
 
@@ -71,14 +74,18 @@ CloudBackup.prototype.init = function(config) {
                         value: JSON.stringify(data)
                     }];
 
-                res = formRequest.send(formElements, "POST", url);
+                res = formRequest.send(formElements, "POST", self.backupcreate_url);
 
                 // prepare response
-                if (res.data.status !== 200) {
-                    self.controller.addNotification("error", res.data.message.toString(), "module", self.moduleName);
-                } else {
-                    self.controller.addNotification("info", res.data.message.toString(), "module", self.moduleName);
-                }
+                //if() { TODO check isf response empty
+                    if (res.data.status !== 200) {
+                        self.controller.addNotification("error", res.data.message.toString(), "module", self.moduleName);
+                    } else {
+                        self.controller.addNotification("info", res.data.message.toString(), "module", self.moduleName);
+                    }
+                //} else {
+
+                //}
             } else {
                 self.controller.addNotification("error", "Text", "core", self.moduleName);
             }
@@ -181,7 +188,7 @@ CloudBackup.prototype.userCreate = function() {
     var self = this;
 
     var obj = {
-        url: "http://192.168.10.252/dev/cloudbackup/?uri=usercreate",
+        url: this.usercreate_url,
         method: "POST",
         data: {
             remote_id: self.config.remoteid,
@@ -203,7 +210,7 @@ CloudBackup.prototype.userUpdate = function() {
     var self = this;
 
     var obj = {
-        url: "http://192.168.10.252/dev/cloudbackup/?uri=userupdate",
+        url: this.userupdate_url,
         method: "POST",
         data: {
             remote_id: self.config.remoteid,
@@ -248,9 +255,21 @@ CloudBackup.prototype.defineHandlers = function () {
     this.CloudBackupAPI.Backup = function () {
         try {
             self.uploadBackup();
-            return {status: 200, body: "OK"};
+            return {status: 200,
+                    body: {
+                        error: null,
+                        data: null,
+                        code: 200
+                    }
+            };
         } catch(e) {
-            return {status: 500, body: e.toString()};
+            return {status: 500,
+                body: {
+                    error:  e.toString(),
+                    data: null,
+                    code: 500
+                }
+            };
         }
     };
 }

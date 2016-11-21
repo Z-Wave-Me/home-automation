@@ -7,7 +7,7 @@
   "category": "",
   "author": "Z-Wave.Me",
   "homepage": "http://razberry.z-wave.me",
-  "icon": "",
+  "icon": "icon.png",
   "moduleName":"CloudBackup",
   "version": "0.1.1",
   "maturity": "beta",
@@ -79,6 +79,9 @@
   },
   "options": {
     "fields": {
+      "remoteid": {
+        "type": "hidden"
+      },
       "email": {
         "type": "hidden",
         "label": "__l_email__"
