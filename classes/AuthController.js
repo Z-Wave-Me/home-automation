@@ -55,6 +55,10 @@ AuthController.prototype.getSessionId = function(request) {
 AuthController.prototype.resolve = function(request, requestedRole) {
     var role, session,
         self = this;
+
+    var defaultProfile = _.filter(this.controller.profiles, function (profile) {
+        return profile.login === 'admin' && profile.password === 'admin';
+    });
     
     session = this.sessions[this.getSessionId(request)];
 
@@ -81,8 +85,15 @@ AuthController.prototype.resolve = function(request, requestedRole) {
         }
 
         if (!session && requestedRole === this.ROLE.USER) {
+
+            /*defaultProfile = _.filter(this.controller.profiles, function (profile) {
+                return profile.login === 'admin' && profile.password === 'admin';
+            });
+
+            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess))*/
+
             // try to find Local user account
-            if (request.peer.address === "127.0.0.1") {
+            if (request.peer.address === "127.0.0.1" && defaultProfile.length < 1 && !this.controller.config.firstaccess) {
                 // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
                 if (!(request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }))) {
                     // TODO: cache this in future

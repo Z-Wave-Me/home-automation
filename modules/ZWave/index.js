@@ -116,6 +116,10 @@ ZWave.prototype.init = function (config) {
         lastUpdate: null,
         packets: []
     };
+    this.originPackets = loadObject('originPackets.json') || {
+        incoming: [],
+        outgoing: []
+    }
 
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
@@ -306,6 +310,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	var self = this,
 		zway = this.zway,
+        originPackets = this.originPackets,
         iPacketBuffer = this.iPacketBuffer,
         oPacketBuffer = this.oPacketBuffer,
 		ipacket = this.ipacket,
@@ -325,18 +330,39 @@ ZWave.prototype.CommunicationLogger = function() {
         var data = JSON.stringify(this);
 
         data = JSON.parse(data);
+
+        if (!!originPackets) {
+            originPackets.incoming.push(data);
+            //console.log('####=>>IN>>## originPackets.incoming:', JSON.stringify(originPackets.incoming));
+        }
+
+        var _data = data;
         data = createIncomingEntry(data);
 
-        if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id'), data)){
+        if (data.application === '') {
+            console.log('####=>>IN>>## _data:', JSON.stringify(_data));
+        }
 
-            var ms = (new Date).getMilliseconds();
-            ms = ms.length === 1? ms.toString() + '00': (ms.length === 2? ms.toString() + '0': ms );
-            var pId = parseInt(data.updateTime.toString() + ms.toString(), 10);
+        if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id', 'rssi'), _.omit(data,'rssi'))){
+            console.log("### IN: Not EQUAL ...");
+
+            //console.log('####=======>>IN>>## last packet:', JSON.stringify(_.omit(ipacket[ipacket.length-1], 'id', 'rssi')));
+            //console.log('####=======>>IN>>## new packet:', JSON.stringify(_.omit(data,'rssi')));
+
+            var ms = (new Date).getMilliseconds().toString();
+            //console.log("######### ms in before:", ms);
+            ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
+            //console.log("######### ms in after:", ms);
+            var pId = parseInt(data.updateTime.toString() + ms, 10);
 
             data.id = pId;
 
+            console.log("######### incoming ID:", data.id);
+
             iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
             //console.log('####=======>>## iPacketBuffer:', JSON.stringify(iPacketBuffer.packets));
+        } else {
+            console.log("### IN: IS EQUAL!");
         }
 
         if (ipacket.length >= 100) {
@@ -351,12 +377,25 @@ ZWave.prototype.CommunicationLogger = function() {
 
             if (_ipacket.length > 1000) {
                 console.log('####=======>>## slice _ipacket ...');
-                _ipacket.slice(0, 1000);
+				_ipacket = _.filter(_ipacket, function(entry){
+					return entry.id > ((new Date()).getTime() - 8640000);
+				});
             }
 
             saveObject("incomingPacket.json", _ipacket);
 
             ipacket = [];
+        }
+
+        if (originPackets.incoming.length % 100 === 0) {
+
+            if (originPackets.incoming.length > 1000) {
+                originPackets.incoming = _.filter(originPackets.incoming, function(inPacket) {
+                    return inPacket.updateTime > Math.round((new Date()).getTime()/1000);
+                })
+            }
+
+            saveObject("originPackets.json", originPackets);
         }
 
 
@@ -382,20 +421,40 @@ ZWave.prototype.CommunicationLogger = function() {
         console.log("log outgoing");
         var data = JSON.stringify(this);
 
+        if (!!originPackets) {
+            originPackets.outgoing.push(data);
+            //console.log('####=>>OUT>>## originPackets.outgoing:', JSON.stringify(originPackets.outgoing));
+        }
+
         data = JSON.parse(data);
         //console.log('####=======>>## data:', JSON.stringify(data));
+        var _data = data;
         data = createOutgoingEntry(data);
 
-        if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id'), data)){
+        if (data.application === '') {
+            console.log('####=>>OUT>>## _data:', JSON.stringify(_data));
+        }
 
-            var ms = (new Date).getMilliseconds();
-            ms = ms.length === 1? ms.toString() + '00': (ms.length === 2? ms.toString() + '0': ms );
-            var pId = parseInt(data.updateTime.toString() + ms.toString(), 10);
+        if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id', 'rssi', 'hops', 'tries', 'speed'), _.omit(data,'rssi', 'hops', 'tries', 'speed'))){
+            console.log("### OUT: Not EQUAL ...");
+
+            //console.log('####=======>>OUT>>## last packet:', JSON.stringify(_.omit(opacket[opacket.length-1], 'id', 'rssi')));
+            //console.log('####=======>>OUT>>## new packet:', JSON.stringify(_.omit(data,'rssi')));
+
+            var ms = (new Date).getMilliseconds().toString();
+            //console.log("######### ms out before:", ms);
+            ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
+            //console.log("######### ms out after:", ms);
+            var pId = parseInt(data.updateTime.toString() + ms, 10);
 
             data.id = pId;
 
-            oPacketBuffer = packetBuffer(oPacketBuffer, data, 'in');
-            //console.log('####=======>>## iPacketBuffer:', JSON.stringify(iPacketBuffer.packets));
+            console.log("######### outgoing ID:", data.id);
+
+            oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
+            //console.log('####=======>>## oPacketBuffer:', JSON.stringify(oPacketBuffer.packets, null, 4));
+        } else {
+            console.log("### OUT: IS EQUAL!");
         }
 
         if(opacket.length >= 50) {
@@ -409,12 +468,25 @@ ZWave.prototype.CommunicationLogger = function() {
 
             if (_opacket.length > 500) {
                 console.log('####=======>>## slice _opacket ...');
-                _opacket.slice(0, 500);
+				_opacket = _.filter(_opacket, function(entry){
+					return entry.id > ((new Date()).getTime() - 8640000);
+				});
             }
 
             saveObject("outgoingPacket.json", _opacket);
 
             opacket = [];
+        }
+
+        if (originPackets.outgoing.length % 100 === 0) {
+
+            if (originPackets.outgoing.length > 1000) {
+                originPackets.outgoing = _.filter(originPackets.outgoing, function(outPacket) {
+                    return outPacket.updateTime > Math.round((new Date()).getTime()/1000);
+                })
+            }
+
+            saveObject("originPackets.json", originPackets);
         }
 
 		/*
@@ -456,29 +528,9 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	zway.controller.data.outgoingPacket.bind(outH);
 
-	/*
-	rssiH = function() {
-		var data = loadObject("rssidata.json");
-
-		if(!data) data = [];
-		var rssi = zway.controller.data.statistics.backgroundRSSI;
-
-		var d = {
-			"time": rssi.updateTime,
-			"channel1": rssi.channel1.value,
-			"channel2": rssi.channel2.value,
-			"channel3": rssi.channel3.value
-		};
-
-		data.push(d);
-		saveObject("rssidata.json", data);
-	}
-
-	zway.controller.data.statistics.backgroundRSSI.bind(rssiH);
-	*/
-
 	this.timer = setInterval(function() {
 		var data = loadObject("rssidata.json");
+		var now = Math.round((new Date()).getTime()/1000);
 
 		if(!data) data = [];
 		zway.GetBackgroundRSSI();
@@ -486,18 +538,21 @@ ZWave.prototype.CommunicationLogger = function() {
 		var rssi = zway.controller.data.statistics.backgroundRSSI;
 
 		var d = {
-			"time": Math.round((new Date()).getTime()/1000),
+			"time": now,
 			"channel1": rssi.channel1.value - 256,
 			"channel2": rssi.channel2.value - 256
 		};
 
 		data.push(d);
 
-        if ( data.length > 1440 ){
-            data.slice(0, 1440);
+        if ( data.length > 1440){
+        	var lastDay = now - 86400;
+            data = _.filter(data, function(entry){
+            	return entry.time > lastDay;
+			});
         }
 		saveObject("rssidata.json", data);
-	}, 1000*60);
+	}, 1000*30);
 
     // =================== helper functions ========================
     function prepareRSSI(rssiPacket) {
@@ -505,39 +560,50 @@ ZWave.prototype.CommunicationLogger = function() {
 
         if(_.isArray(rssiPacket)){
             _.forEach(rssiPacket, function (rssiValue){
-                rssi.push(~(rssiValue - 128)); // transform to two's (Zweierkomplement)
+                rssi.push(~(rssiValue - 128) + ' dBm'); // transform to two's (Zweierkomplement)
             });
         } else {
-            rssi = ~(rssiPacket - 128);
+            rssi = ~(rssiPacket - 128) + ' dBm';
         }
 
 
         return _.isArray(rssiPacket) && rssi.length < 1? '': rssi;
     }
 
-    function prepareValues(packetValue, packetType) {
+    function prepareValues(packetValue, packetType,encap) {
         var pV = packetValue;
 
         if (_.isArray(packetValue)) {
             if (packetType === 'out') {
                 if (packetValue.length >= 8) {
-                    pV = packetValue.slice(7);
+                    pV = packetValue.slice(7, -1);
                 } else {
-                    pV = packetValue.length >= 6? packetValue.slice(5): '';
+                    pV = packetValue.length >= 6? packetValue.slice(5, -1): '';
                 }
             } else {
-                pV = packetValue.length >= 3? packetValue.slice(2) : '';
+				if (encap !== '') {
+					pV = packetValue.length >= 5? packetValue.slice(4) : '';
+				} else {
+					pV = packetValue.length >= 3? packetValue.slice(2) : '';
+				}
             }
         }
         return pV;
     };
+
+    //49,5,3,10,0,0,7,145
+	//sensorMultilevel, (GET)/Report,Version?, */Version?, *, Level, *, *
 
     function packetApplication(packet, packetType) {
         var cmdClassKey = 0,
             cmdKey = 0,
             ret = {},
             findCmdClass = [],
-            _cmdClass = {};
+            _cmdClass = {},
+			result= {
+                encap: '',
+                application: ''
+            };
 
         if (packet.length >= 6 && packetType === 'out') {
             cmdClassKey = decToHex(packet[5], 2, '0x');
@@ -547,12 +613,34 @@ ZWave.prototype.CommunicationLogger = function() {
             cmdKey = decToHex(packet[1], 2, '0x');
         }
 
+		switch(cmdClassKey + '|'+ cmdKey) {
+			case '0x8f|0x01':
+				result.encap = 'M';
+				break;
+			case '0x98|0x81':
+                result.encap = 'S';
+				break;
+			case '0x56|0x01':
+                result.encap = 'C';
+				break;
+		}
+
+		if (result.encap !== '' && packetType === 'in') {
+			cmdClassKey = decToHex(packet[2], 2, '0x');
+			cmdKey = decToHex(packet[3], 2, '0x');
+		}
+
         findCmdClass = _.filter(cmdC, function (cc){
             return cc['_key'] === cmdClassKey;
         });
 
         if (findCmdClass.length < 1) {
-            return;
+			if (packet.length > 0) {
+				result.application = 'NIF';
+				return result;
+			} else {
+				return;
+			}
         }
 
         _cmdClass = findCmdClass.pop();
@@ -570,17 +658,38 @@ ZWave.prototype.CommunicationLogger = function() {
         } else {
             ret = _cmdClass.cmd;
         }
+
         if(typeof ret === "object") {
             if(ret.hasOwnProperty('_help')) {
-                ret = ret['_help'];
+                result.application = ret['_help'];
             } else {
-                ret = "";
+                result.application = "";
             }
         } else {
-            ret = "";
+            result.application = "";
         }
 
-        return ret;
+		/*if(typeof ret === "object") {
+			if(ret.hasOwnProperty('_help')) {
+				ret = ret['_help'];
+			} else {
+				ret = "";
+			}
+		} else {
+			ret = "";
+		}*/
+
+		if (_cmdClass['_help'] && _cmdClass['_help'] !== '' && result.application === '') {
+			result.application = _cmdClass['_help'].substring(14) + ': ' + cmdKey;
+		}
+
+        /*if (_cmdClass['_help'] && _cmdClass['_help'] !== '' && ret === '') {
+            ret = _cmdClass['_help'] + ': unknown command'
+        }*/
+
+        return result;
+
+		/*return ret;*/
     }
 
     function decToHex(decimal, chars, x) {
@@ -591,25 +700,38 @@ ZWave.prototype.CommunicationLogger = function() {
     function createIncomingEntry(packet) {
         //console.log("############# nodeId:", packet.nodeId.value, " | incoming packet.value:", JSON.stringify(packet.value), " | length:", packet.value.length);
 
-        return {
+		var pA = _.isArray(packet.value)? packetApplication(packet.value, 'in'):"";
+
+		pA = pA? pA : '';
+
+		var obj = {
             type: 'incoming',
             updateTime: packet.updateTime,
             bytes:packet.value,
             value: prepareValues(packet.value, 'in'),
             src: packet.nodeId && packet.nodeId.value ? packet.nodeId.value : "",
             rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : "",
+			encaps: pA !== '' && pA.encap ? pA.encap : "",
             dest: nodeid,
-            application: (_.isArray(packet.value)) ? packetApplication(packet.value, 'in') : ""
-        }
+            application: pA !== '' && pA.application ? pA.application : ""
+        };
+
+        console.log("######### incoming APPLICATION:", obj.application, " || encap:", obj.encaps,"|| bytes:", JSON.stringify(packet.value));
+
+        return obj;
     };
 
     function createOutgoingEntry(packet) {
         //console.log("############# nodeId:", nodeid, " | outgoing packet.value:", JSON.stringify(packet.value), " | length:", packet.value.length);
         var bytes = packet.value;
 
-        (_.isArray(bytes)) ? bytes.unshift(0) : (bytes = "");	// prepend 1 byte
+		(_.isArray(bytes)) ? bytes.unshift(0) : (bytes = "");	// prepend 1 byte
 
-        return {
+		var pA = bytes !== ""? packetApplication(bytes, 'out') : "";
+
+		pA = pA? pA : '';
+
+        var obj = {
             type: 'outgoing',
             updateTime: packet.updateTime,
             bytes:packet.value,
@@ -618,16 +740,20 @@ ZWave.prototype.CommunicationLogger = function() {
             speed: packet.speed && packet.speed.value? packet.speed.value : "",
             rssi: packet.returnRSSI && packet.returnRSSI.value? prepareRSSI(packet.returnRSSI.value) : "",
             hops: packet.hops && packet.hops.value? packet.hops.value : "",
+			encaps: pA !== '' && pA.encap ? pA.encap : "",
             tries: packet.tries && packet.tries.value? packet.tries.value : "",
             dest: (_.isArray(packet.value)) ? packet.value[3] : "",
-            application: (_.isArray(packet.value)) ? packetApplication(packet.value, 'out') : ""
+			application: pA !== '' && pA.application ? pA.application : ""
         };
+
+        console.log("######### outgoing APPLICATION:", obj.application, "|| encap:", obj.encaps,"|| bytes:", JSON.stringify(bytes));
+
+        return obj;
     };
 
     // handle packet buffer
     function packetBuffer(bufferObject, packetData, packetType) {
-        var now = (new Date()).getTime(),
-            bufferedPackets = [];
+        var now = (new Date()).getTime();
 
         // add to in/outlists
         if (packetType === 'out') {
@@ -639,15 +765,19 @@ ZWave.prototype.CommunicationLogger = function() {
         bufferObject.packets.push(packetData);
         bufferObject.lastUpdate = now;
 
-        bufferedPackets = bufferObject.packets;
+        //bufferedPackets = bufferObject.packets;
 
-        _.forEach(bufferObject.packets, function (packet, index) {
+        bufferObject.packets = _.filter(bufferObject.packets, function(packet){
+            return packet.id > (now - 15000);
+        });
+
+        /*_.forEach(bufferObject.packets, function (packet, index) {
             if (packet.id < (now - 30000)) {
                 bufferedPackets = bufferedPackets.slice(index, 1);
             }
-        });
+        });*/
 
-        bufferObject.packets = bufferedPackets;
+        //bufferObject.packets = bufferedPackets;
 
         return bufferObject;
     }
@@ -1211,6 +1341,10 @@ ZWave.prototype.defineHandlers = function () {
 
         packets = packets.concat(iPacketBuffer.packets, oPacketBuffer.packets);
 
+        packets = _.filter(packets, function(p){
+            return p.id > ((new Date()).getTime() - 10000);
+        });
+
         //console.log("### packets:", packets.length);
 
         if (packets.length > 0) {
@@ -1227,8 +1361,8 @@ ZWave.prototype.defineHandlers = function () {
 
             packets = _.sortBy(packets, function(o) {return o.id});
 
-            iPacketBuffer.packets = [];
-            oPacketBuffer.packets = [];
+            /*iPacketBuffer.packets = [];
+            oPacketBuffer.packets = [];*/
         }
 
         /*
@@ -1673,8 +1807,13 @@ ZWave.prototype.defineHandlers = function () {
 
 		if(request.method === "POST" && request.body) {
 
-			var date = new Date(),
-				reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			var date = new Date();
+
+			try {
+				var reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			} catch(e) {
+				return { status: 400, body: e.toString() };
+			}
 
             var custom_postfix = loadObject("custompostfix.json");
 
@@ -2056,9 +2195,6 @@ ZWave.prototype.deadDetectionStop = function () {
 	try {
 		if (this.deadDetectionDataBindings) {
 			this.dataUnbind(this.deadDetectionDataBindings);
-		}
-		if (this.zway) {
-			this.zway.unbind(this.zwayBinding);
 		}
 	} catch(e) {
 		// Z-Way already gone, skip deallocation
@@ -3065,7 +3201,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						switch (scaleId) {
 							case 0:
-								defaults.probeType = 'meterElectric_kilowatt_per_hour';
+								defaults.probeType = 'meterElectric_kilowatt_hour';
 								break;
 							case 2:
 								defaults.probeType = 'meterElectric_watt';
@@ -3493,9 +3629,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = renameDevices[notificationTypeId] && renameDevices[notificationTypeId]['name'] ? compileTitle(renameDevices[notificationTypeId]['name'], vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door', false) : compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
 									a_defaults.probeType = 'alarm_door';
-									a_defaults.metrics.icon = changeIcons[notificationTypeId] && changeIcons[notificationTypeId]['icon'] ? changeIcons[notificationTypeId]['icon'] : a_defaults.metrics.icon;
+
+									// apply postfix if available
+									if (changeVDev[cVDId]) {
+										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									}
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,

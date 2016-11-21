@@ -26,7 +26,7 @@ function AutomationController() {
         'ZWAYSession'
     ];
     this.config = config.controller || {};
-    this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se']; // will be updated by correct ISO language codes in future
+    this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se', 'fr']; // will be updated by correct ISO language codes in future
     this.defaultLang = 'en';
     this.profiles = config.profiles;
     this.instances = config.instances;
@@ -1573,7 +1573,10 @@ AutomationController.prototype.createProfile = function (profile) {
     id = profileIds.length > 0? Math.max.apply(null, profileIds) + 1 : 1;
     
     profile.id = id;
-    profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
+
+    if (profile.role === 1) {
+        profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
+    }
 
     this.profiles.push(profile);
 
