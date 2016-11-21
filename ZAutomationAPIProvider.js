@@ -139,7 +139,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
         
-        this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
+        this.router.get("/system/webif-access", this.ROLE.ANONYMOUS, this.setWebifAccessTimout); // TODO change from ADMIN to ANONYMOUS for IMA testing
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
