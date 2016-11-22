@@ -86,12 +86,15 @@ Cron.prototype.init = function (config) {
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
+    self.schedules = self.config.schedules;
+
     // Setup metric update event listener
     this.controller.on('cron.addTask', function (eventName, schedule, eventArgs) {
       if (!self.schedules.hasOwnProperty(eventName)) {
         self.schedules[eventName] = [];
       }
-      self.schedules[eventName].push([self.renderSchedule(schedule), eventArgs]);
+      var time = {"time": schedule};
+      self.schedules[eventName].push([self.renderSchedule(schedule), time, eventArgs]);
       // console.log(JSON.stringify(self.renderSchedule(schedule))); // debug !
     });
 
