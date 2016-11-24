@@ -343,6 +343,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             device = this.controller.devices.get(vDevId);
             if(device) {
                 device.set('customIcons', reqObj.customicons, {silent:true});
+                reply.data = "OK";
                 result = true;
             }
         } else {
@@ -355,7 +356,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if(result) {
             reply.code = 200;
-            reply.data = "OK";
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
