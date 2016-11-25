@@ -1216,9 +1216,11 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
     try {
         iconinstaller.remove(
             iconName,
-            function() {
+            function(success) {
+                console.log(success);
                 result = "done";
-            },  function() {
+            },  function(error) {
+                console.log(error);
                 result = "failed";
             }
         );

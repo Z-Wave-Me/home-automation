@@ -150,6 +150,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
+        this.router.put("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
@@ -343,6 +344,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             device = this.controller.devices.get(vDevId);
             if(device) {
                 device.set('customIcons', reqObj.customicons, {silent:true});
+                reply.data = "OK";
                 result = true;
             }
         } else {
@@ -355,7 +357,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if(result) {
             reply.code = 200;
-            reply.data = "OK";
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
@@ -2697,6 +2698,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.error = 'Cannot get current date and time.';
         }
+
+        return reply;
+    },
+    setTimezone: function() {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            data = {
+                "act": "set",
+                "tz": ""
+            };
+
+        reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+        data.tz = reqObj.timezone;
+
+        var req = {
+            url: "http://localhost:8084/cgi-bin/main.cgi",
+            method: "POST",
+            data: data
+        };
+
+        // Set access for 10 seconds
+        saveObject('8084AccessTimeout', 10);
+        var res = http.request(req);
+        saveObject('8084AccessTimeout', null);
+
+        if(res.status === 200) {
+            reply.code = 200;
+            reply.data = res.statusText;
+        } else {
+            reply.error = res.statusText;
+        }
+        // restart z-way-server
+        system("/etc/init.d/z-way-server restart");
 
         return reply;
     },
