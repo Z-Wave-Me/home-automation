@@ -1,6 +1,6 @@
 /*** OpenWeather Extended Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@z-wave.me>
