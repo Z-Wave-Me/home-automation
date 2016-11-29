@@ -87,7 +87,7 @@
 							"device": {
 								"field": "enum",
 								"datasource": "namespaces",
-								"enum": "namespaces:devices_discreteSensor:deviceId",
+								"enum": "namespaces:devices_sensorDiscrete:deviceId",
 								"required": true
 							},
 							"level": {
@@ -331,7 +331,7 @@
 						"removeDefaultNone": false,
 						"noneLabel": "__l_choose__",
 						"label":"__l_filter__",
-						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__","__sensorMultilevel__","__discreteSensor__"]
+						"optionLabels": ["__toggleButton__","__switchControl__","__switchBinary__","__switchMultilevel__","__sensorBinary__","__sensorMultilevel__","__sensorDiscrete__"]
 					},
 					"sensorMultilevel": {
 						"dependencies": {
@@ -400,7 +400,7 @@
 								"datasource": "namespaces",
 								"field": "optionLabels",
 								"helper": "__h_statusOn__",
-								"optionLabels": "namespaces:devices_discreteSensor:deviceName"
+								"optionLabels": "namespaces:devices_sensorDiscrete:deviceName"
 							},
 							"level": {
 								"label": "__l_controller_action__",
