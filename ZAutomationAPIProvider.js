@@ -144,6 +144,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
+        this.router.post("/system/timezone", this.ROLE.ANONYMOUS, this.setTimezone);
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
@@ -2701,6 +2702,49 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             };
         } else {
             reply.error = 'Cannot get current date and time.';
+        }
+
+        return reply;
+    },
+    setTimezone: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            data = {
+                "act": "set",
+                "tz": ""
+            },
+            req = {
+                url: "http://localhost:8084/cgi-bin/main.cgi",
+                data: "",
+                method: "POST"
+            };
+
+        var reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+        data.tz = reqObj.time_zone;
+
+        req.data = data;
+
+        // Set access
+        saveObject('8084AccessTimeout', 10);
+        var resp = http.request(req);
+
+        if(resp.status == 200) {
+            reply.code = 200;
+            reply.data = resp.statusText;
+
+            http.request({
+                url: "http://localhost:8084/cgi-bin/main.cgi",
+                method: "POST",
+                data: "act=set&zway_restart"
+            });
+
+        } else {
+            reply.error = resp.statusText;
+            saveObject('8084AccessTimeout', null);
         }
 
         return reply;
