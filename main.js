@@ -144,4 +144,26 @@ if (!config) {
         }
     };
     ws.allowExternalAccess("JS.Run", controller.auth.ROLE.ADMIN);
+
+    // overwrite console.debug function
+    console.debug = function(){
+        var arr = [];
+
+        // use JS API /JS/Run/controller.debug=true / false to activate debug output
+        if (controller.debug){
+            for (var key in arguments) {
+                var arg = '';
+
+                //format objects automatically
+                if (typeof arguments[key] === 'object' && !!arguments[key]) {
+                    arg = JSON.stringify(arguments[key], null, 4);
+                } else {
+                    arg = arguments[key];
+                }
+                arr.push(arg);
+            }
+
+            debugPrint(arr);
+        }
+    };
 }
