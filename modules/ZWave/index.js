@@ -503,9 +503,11 @@ ZWave.prototype.CommunicationLogger = function() {
         return _.isArray(rssiPacket) && rssi.length < 1? '': rssi;
     }
 
-    function prepareValues(packetValue, packetType,encap) {
+    function prepareValues(packetValue, packetType,encap,paramCnt) {
         var pV = packetValue,
-			shift = encap != 'S' || encap != ''? 2 : 0;
+			shift = encap != 'S' && encap != ''? 2 : 0;
+
+		shift = encap === 'I'? 4 : shift;
 
         if (_.isArray(packetValue)) {
             if (packetType === 'out') {
@@ -521,7 +523,12 @@ ZWave.prototype.CommunicationLogger = function() {
 					pV = packetValue.length >= 3? packetValue.slice(2 + shift) : '';
 				}
             }
+
+			if (pV.length === 1 && pV[0] === 0 && paramCnt === 0){
+				pV = [];
+			}
         }
+
         return pV;
     };
 
@@ -534,13 +541,14 @@ ZWave.prototype.CommunicationLogger = function() {
             _cmdClass = {},
 			encaps=[
 					'0x60.0x0D', // 'I' => Multichannel
-					'0x8f.0x01', // 'M' => Multicommand
+					'0x8F.0x01', // 'M' => Multicommand
 					'0x98.0x81', // 'S' => Security
 					'0x56.0x01'  // 'C' => CRC16
 			]
 			result= {
                 encap: '',
-                application: ''
+                application: '',
+				params: 0
             },
 			hexPString = [],
 			shift = 0,
@@ -558,7 +566,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 				if (encaps.indexOf(capString) > -1) {
 					switch(capString) {
-						case '0x8f.0x01':
+						case '0x8F.0x01':
 							result.encap = 'M'; // Multi Cmd Encap
 							shift = 2; // shift by two to decode CC and CC Cmd
 							return;
@@ -571,7 +579,7 @@ ZWave.prototype.CommunicationLogger = function() {
 							return;
 						case '0x60.0x0D':
 							result.encap = 'I'; // Multi Channel Multi Instance Encap
-							shift = 2; // shift by two to decode CC and CC Cmd
+							shift = 4; // shift by two to decode CC and CC Cmd
 							return;
 					}
 				}
@@ -629,18 +637,15 @@ ZWave.prototype.CommunicationLogger = function() {
             ret = _cmdClass.cmd;
         }
 
-        if(typeof ret === "object") {
-            if(ret.hasOwnProperty('_help') && (result.encap === '' || result.encap != 'S')) {
-                result.application = ret['_help'];
-            } else {
-                result.application = "";
-            }
-        } else {
-            result.application = "";
-        }
+
+		if(typeof ret === "object" && ret.hasOwnProperty('_help') && (result.encap === '' || (result.encap != 'S' && result.encap != 'M'))) {
+			result.application = ret['_help'] || '';
+			result.params = ret['param']? Object.keys(ret['param']).length : 0;
+		}
 
 		if (_cmdClass['_help'] && _cmdClass['_help'] !== '' && result.application === '' && result.encap === '') {
 			result.application = _cmdClass['_help'].substring(14) + ': ' + cmdKey;
+			result.params = _cmdClass['param']? Object.keys(ret['param']).length : 0;
 		}
 
         return result;
@@ -667,7 +672,7 @@ ZWave.prototype.CommunicationLogger = function() {
             application: pA !== '' && pA.application ? pA.application : ''
         };
 
-        obj.value = prepareValues(packet.value, 'in', obj.encaps);
+        obj.value = prepareValues(packet.value, 'in', obj.encaps, obj.params);
 
         console.debug("######### incoming APPLICATION:", obj.application, " || encap:", obj.encaps,"|| bytes:", packet.value);
 
@@ -697,7 +702,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			application: pA !== '' && pA.application ? pA.application : ''
         };
 
-		obj.value = prepareValues(bytes, 'out', obj.encaps);
+		obj.value = prepareValues(bytes, 'out', obj.encaps, obj.params);
 
         console.debug("######### outgoing APPLICATION:", obj.application, "|| encap:", obj.encaps,"|| bytes:", bytes);
 
