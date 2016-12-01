@@ -139,11 +139,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
         
-        this.router.get("/system/webif-access", this.ROLE.ANONYMOUS, this.setWebifAccessTimout); // TODO change from ADMIN to ANONYMOUS for IMA testing
+        this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
+        this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
@@ -152,6 +153,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
         this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
         this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
+
+        this.router.get("/callallnif", this.ROLE.ADMIN, this.callAllNIF);
     },
 
     // Used by the android app to request server status
@@ -2705,6 +2708,49 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
+    setTimezone: function() {
+        var reply = {
+                error: null,
+                data: null,
+                code: 500
+            },
+            data = {
+                "act": "set",
+                "tz": ""
+            },
+            req = {
+                url: "http://localhost:8084/cgi-bin/main.cgi",
+                data: "",
+                method: "POST"
+            };
+
+        var reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+        data.tz = reqObj.time_zone;
+
+        req.data = data;
+
+        // Set access
+        saveObject('8084AccessTimeout', 10);
+        var resp = http.request(req);
+
+        if(resp.status == 200) {
+            reply.code = 200;
+            reply.data = resp.statusText;
+
+            http.request({
+                url: "http://localhost:8084/cgi-bin/main.cgi",
+                method: "POST",
+                data: "act=set&zway_restart"
+            });
+
+        } else {
+            reply.error = resp.statusText;
+            saveObject('8084AccessTimeout', null);
+        }
+
+        return reply;
+    },
     getRemoteId: function () {
         var reply = {
                 error: null,
@@ -2870,6 +2916,50 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         return reply;
+    },
+    callAllNIF: function() {
+        var self =this,
+            reply = {
+                data: null,
+                error: null,
+                code: 500
+            },
+            timeout = 10000,
+            timer = null;
+
+        if(zway) {
+            var devices = Object.keys(zway.devices);
+            console.log(devices);
+
+            for(var i = 0; i < devices.length; i++) {
+                var nodeId = devices[i];
+                if(zway.devices[nodeId].data.deviceTypeString !== 'Static PC Controller') {
+                    timer = setTimeout(function(){
+                        console.log("nodeId: "+ nodeId + "RequestNodeInformation()");
+                        zway.devices[devices.shift()].RequestNodeInformation();
+                    }, timeout);
+                }
+            }
+
+            /*devices.forEach(function(v) {
+                //console.log(JSON.stringify(v));
+                zway.devices[v.id].RequestNodeInformation();
+                console.log('devices[' + v.id + '].RequestNodeInformation()');
+            });*/
+        }
+
+        /*console.log(JSON.stringify(devices));
+        console.log(devices.length);
+        _.each(devices, function(v, k) {
+            console.log("k",k);
+            console.log(devices.get(k));
+            console.log(JSON.stringify(devices[k]));
+            timeout(function() {
+
+
+            }, 30000);
+        });*/
+
     }/*,
     getTrustMyNetwork: function() {
         var reply = {
