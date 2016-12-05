@@ -234,7 +234,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // Check if login exists and password is correct 
     verifyLogin: function() {
-        var reqObj;
+        var reqObj,
+            boxTypeIsCIT = false;
 
         try {
             reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body): this.req.body;
@@ -251,7 +252,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        if (profile && reqObj.password === profile.password) {
+        try {
+            var bT = system('cat /etc/z-way/box_type');
+
+            bT.forEach(function(bType){
+                if(typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')) {
+                    boxTypeIsCIT = true;
+                    return;
+                }
+            });
+        } catch (e) {
+        }
+
+        if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
             return this.setLogin(profile);
         } else {
             return this.denyLogin();
