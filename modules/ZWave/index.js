@@ -1909,7 +1909,9 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
     this.ZWaveAPI.CallForAllNIF = function(url, request) {
-        var delay = request && request.query && request.query.delay? request.query.delay :null,
+        var req = request && request.body? request.body : request && request.data? request.data : undefined,
+            req = req && typeof req === 'string'? JSON.parse(req) : req,
+            delay = req && req.delay? req.delay :null,
             timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
             timer = null;
 
@@ -1952,10 +1954,12 @@ ZWave.prototype.defineHandlers = function () {
 
     },
     this.ZWaveAPI.CheckAllLinks = function(url, request) {
-        var delay = request && request.data && request.data.delay? request.data.delay :null,
+        var req = request && request.body? request.body : request && request.data? request.data : undefined,
+            req = req && typeof req === 'string'? JSON.parse(req) : req,
+            delay = req && req.delay? req.delay :null,
             timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
             timer = null,
-            nodeId = request && request.data && request.data.nodeId? request.data.nodeId : null;
+            nodeId = req && req.nodeId? req.nodeId : null;
 
         try {
             if(!!nodeId && zway.devices[nodeId]) {
