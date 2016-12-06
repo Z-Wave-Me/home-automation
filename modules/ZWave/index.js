@@ -763,6 +763,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
     ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".CallForAllNIF", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -792,6 +794,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
     ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
+    ws.revokeExternalAccess(_name + ".CallForAllNIF");
+    ws.revokeExternalAccess(_name + ".CheckAllLinks");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -1903,6 +1907,95 @@ ZWave.prototype.defineHandlers = function () {
 		}
 		return { status: 400, body: "Invalid request" };
 	};
+
+    this.ZWaveAPI.CallForAllNIF = function(url, request) {
+        var delay = request && request.query && request.query.delay? request.query.delay :null,
+            timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
+            timer = null;
+
+        try {
+            var devices = Object.keys(zway.devices);
+            var runtime = (devices.length * timeout) / 1000;
+            var ret = {"runtime": runtime};
+            var dTS = '';
+
+            // do initial request
+            if(devices.length > 0) {
+                while((dTS === '' || dTS === 'Static PC Controller') && devices.length > 0) {
+                    nodeId = devices.pop();
+                    dTS = zway.devices[nodeId].data.deviceTypeString.valueOf();
+                }
+
+                if(zway.devices[nodeId]) {
+                    zway.devices[nodeId].RequestNodeInformation();
+                }
+            }
+
+            var timer = setInterval(function() {
+                if(devices.length > 0) {
+                    var nodeId = devices.pop();
+
+                    if (zway.devices[nodeId].data.deviceTypeString.valueOf() !== 'Static PC Controller') {
+                        zway.devices[nodeId].RequestNodeInformation();
+                    }
+                } else {
+                    clearInterval(timer);
+                }
+            }, timeout);
+
+            return { status: 200, body: ret };
+        } catch (e) {
+            return { status: 500, body: e.toString() }
+        }
+
+        return reply;
+
+    },
+    this.ZWaveAPI.CheckAllLinks = function(url, request) {
+        var delay = request && request.data && request.data.delay? request.data.delay :null,
+            timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
+            timer = null,
+            nodeId = request && request.data && request.data.nodeId? request.data.nodeId : null;
+
+        try {
+            if(!!nodeId && zway.devices[nodeId]) {
+                var neighbours = zway.devices[nodeId].data.neighbours.value;
+                var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
+
+                if (supported) {
+                    if (neighbours.length > 0) {
+                        var runtime = (neighbours.length * timeout) / 1000,
+                            ret = {"runtime": runtime},
+                            firstNId = neighbours.pop();
+                        // do initial request
+                        zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(firstNId, 6, 20);
+
+                        timer = setInterval(function () {
+                            if (neighbours.length > 0) {
+                                var neighboursId = neighbours.pop();
+
+                                zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(neighboursId, 6, 20);
+                            } else {
+                                clearInterval(timer);
+                            }
+                        }, timeout);
+
+                        return { status: 200, body: ret };
+                    } else {
+                        return { status: 404, body: 'No neighbours found.' };
+                    }
+                } else {
+                    return { status: 404, body: 'Not supported.' };
+                }
+            } else {
+                return { status: 404, body: 'Node not found.' };
+            }
+        } catch (e) {
+            return { status: 500, body: e.toString() };
+        }
+
+        return reply;
+    }
 
 
 	/*

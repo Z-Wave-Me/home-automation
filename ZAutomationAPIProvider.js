@@ -153,9 +153,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
         this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
         this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
-
-        this.router.get("/callallnif", this.ROLE.ADMIN, this.callAllNIF);
-        this.router.post("/checklink/:nodeId", this.ROLE.ADMIN, this.checkLinks, [parseInt]);
     },
 
     // Used by the android app to request server status
@@ -2927,89 +2924,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
-        }
-
-        return reply;
-    },
-    callAllNIF: function() {
-        var self =this,
-            reply = {
-                data: null,
-                error: null,
-                code: 500
-            },
-            timeout = 10000,
-            timer = null;
-
-        if(zway) {
-            var devices = Object.keys(zway.devices);
-
-            var runtime = (devices.length * timeout) / 1000;
-
-            var ret = {"runtime": runtime};
-
-            var timer = setInterval(function() {
-                if(devices.length > 0) {
-                    var nodeId = devices.pop();
-
-                    if (zway.devices[nodeId].data.deviceTypeString !== 'Static PC Controller') {
-                        zway.devices[nodeId].RequestNodeInformation();
-                    }
-                } else {
-                    clearInterval(timer);
-                }
-            }, timeout);
-
-            reply.code = 200;
-            reply.data = ret;
-
-        } else {
-            reply.code = 404;
-            reply.error = 'Z-Way not found.';
-        }
-
-        return reply;
-
-    },
-    checkLinks: function(nodeId) {
-        var self =this,
-            reply = {
-                data: null,
-                error: null,
-                code: 500
-            },
-            timeout = 10000,
-            timer = null;
-
-        if(zway) {
-            if(zway.devices[nodeId]) {
-                var neighbours = zway.devices[nodeId].data.neighbours.value;
-                if (neighbours.length > 0) {
-                    var runtime = (neighbours.length * timeout) / 1000,
-                        ret = {"runtime": runtime};
-
-                    timer = setInterval(function () {
-                        if (neighbours.length > 0) {
-                            var neighboursId = neighbours.pop();
-                            zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(neighboursId, 6, 20);
-                        } else {
-                            clearInterval(timer);
-                        }
-                    }, timeout);
-
-                    reply.code = 200;
-                    reply.data = ret;
-                } else {
-                    reply.code = 404;
-                    reply.error = 'No neighbours found.';
-                }
-            } else {
-                reply.code = 404;
-                reply.error = 'Node not found.';
-            }
-        } else {
-            reply.code = 404;
-            reply.error = 'Z-Way not found.';
         }
 
         return reply;
