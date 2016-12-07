@@ -2704,14 +2704,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
+            tz = "",
             now = new Date();
+
+        try {
+            var sys = system('cat /etc/timezone');
+            sys.forEach(function(i) {
+               if(typeof i === 'string') {
+                   tz = i.replace(/\n/g, '');
+                   return;
+               };
+            });
+        } catch(e) {}
 
         if (now) {
             reply.code = 200;
             reply.data = {
                 localTimeUT: Math.round((now.getTime() + (now.getTimezoneOffset() * -60000)) / 1000), // generate timestamp with correct timezone offset
                 localTimeString: now.toLocaleString(),
-                localTimeZoneOffset: now.getTimezoneOffset() /60
+                localTimeZoneOffset: now.getTimezoneOffset() /60,
+                localTimeZone: tz
             };
         } else {
             reply.error = 'Cannot get current date and time.';
