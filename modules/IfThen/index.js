@@ -30,12 +30,11 @@ IfThen.prototype.init = function (config) {
 
     var self = this,
         ifElement = self.config.sourceDevice[self.config.sourceDevice.filterIf];
-
     this.handlerLevel = function (sDev) {
         var that = self,
             value = sDev.get("metrics:level"),
             operator = ifElement.operator,
-            ifLevel = ifElement.status === 'level' && ifElement.level? ifElement.level : ifElement.status,
+            ifLevel = (ifElement.status === 'level' && ifElement.level) || (!ifElement.status && ifElement.level) ? ifElement.level : ifElement.status,
             check = false;
 
         if (operator && ifLevel) {
@@ -52,7 +51,12 @@ IfThen.prototype.init = function (config) {
             }
         }
 
-        if(check || value === ifElement.status || sDev.get('deviceType') === 'toggleButton'){
+        if(ifLevel === "10" && sDev.get('deviceType') === "sensorDiscrete")
+        {
+                ifLevel = "1";
+        }
+
+        if(check || value === ifLevel || sDev.get('deviceType') === 'toggleButton'){
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,
@@ -77,6 +81,7 @@ IfThen.prototype.init = function (config) {
                     } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
                         vDev.performCommand("on");
                     } else if (vDev.get("deviceType") === type) {
+                        
                         vDev.performCommand(lvl);
                     }
                 }
