@@ -21,7 +21,7 @@ CloudBackup.prototype.init = function(config) {
     CloudBackup.super_.prototype.init.call(this, config);
 
     this.moduleName = "CloudBackup";
-    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate";
+    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate"; //backupcreate
     this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate";
     this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate";
 
@@ -44,8 +44,13 @@ CloudBackup.prototype.init = function(config) {
 
     this.uploadBackup = function() {
         console.log("###### start Backup ");
+        var reply = {
+            "status":500,
+            "message":"",
+            "error":null,
+            "data":null
+        };
 
-        var error = "";
         try {
             var backupJSON = self.controller.createBackup();
 
@@ -76,25 +81,32 @@ CloudBackup.prototype.init = function(config) {
 
                 res = formRequest.send(formElements, "POST", self.backupcreate_url);
 
+                //console.log(JSON.stringify(res.data));
                 // prepare response
-                //if() { TODO check isf response empty
-                    if (res.data.status !== 200) {
-                        self.controller.addNotification("error", res.data.message.toString(), "module", self.moduleName);
-                    } else {
-                        self.controller.addNotification("info", res.data.message.toString(), "module", self.moduleName);
-                    }
-                //} else {
+                //TODO check isf response empty
+                reply.status = res.data.status;
+                reply.message = res.data.message.toString();
+                reply.data = res.data.data;
+                reply.error = res.data.error;
 
-                //}
+                /*
+                if (res.data.status !== 200) {
+                    self.controller.addNotification("error", res.data.message.toString(), "module", self.moduleName);
+                } else {
+                    self.controller.addNotification("info", res.data.message.toString(), "module", self.moduleName);
+                }*/
+
             } else {
-                self.controller.addNotification("error", "Text", "core", self.moduleName);
+                reply.message = "Backup file empty!";
+                //self.controller.addNotification("error", "Text", "core", self.moduleName);
             }
 
         } catch(e) {
-            self.controller.addNotification("error", e.toString(), "core", self.moduleName);
+            reply.message = e.toString();
+            //self.controller.addNotification("error", e.toString(), "core", self.moduleName);
         }
-
         console.log("###### finisch Backup ");
+        return reply;
     };
 
 
@@ -221,9 +233,11 @@ CloudBackup.prototype.userUpdate = function() {
     res = http.request(obj);
 
     if(res.data.status === 200) {
-        self.controller.addNotification("info", "User update "+res.data.message, "core", this.moduleName);
+        console.log(res.data.message);
+        //self.controller.addNotification("info", "User update "+res.data.message, "core", this.moduleName);
     } else {
-        self.controller.addNotification("error", res.data.message, "core", this.moduleName);
+        console.log(res.data.message);
+        //self.controller.addNotification("error", res.data.message, "core", this.moduleName);
     }
 };
 
@@ -253,23 +267,17 @@ CloudBackup.prototype.defineHandlers = function () {
     };
 
     this.CloudBackupAPI.Backup = function () {
-        try {
-            self.uploadBackup();
-            return {status: 200,
-                    body: {
-                        error: null,
-                        data: null,
-                        code: 200
-                    }
-            };
-        } catch(e) {
-            return {status: 500,
+
+        var ret = self.uploadBackup();
+        console.log(JSON.stringify(ret));
+        return {status: ret.status,
                 body: {
-                    error:  e.toString(),
-                    data: null,
-                    code: 500
+                    error: ret.error,
+                    data: ret.data,
+                    code: ret.status,
+                    message: ret.message
                 }
-            };
-        }
+        };
+
     };
 }
