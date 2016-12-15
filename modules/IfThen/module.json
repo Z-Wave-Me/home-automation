@@ -182,7 +182,7 @@
 					"properties": {
 						"filterThen": {
 							"type":"string",
-							"enum": ["switchBinary","switchMultilevel","doorlock","scene","thermostat"],
+							"enum": ["switchBinary","switchMultilevel","doorlock","scene","thermostat","switchRGBW"],
 							"required": true
 						},
 						"switchBinary": {
@@ -313,6 +313,48 @@
 										26.5,
 										27
 									]
+								}
+							}
+						},
+						"switchRGBW":{
+							"type": "object",
+							"dependencies":"filterThen",
+							"properties": {
+								"target": {
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchRGBW:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "integer",
+									"enum": ["off","on","color"],
+									"required": true,
+									"default": "on"
+								},
+								"color": {
+									"type": "object",
+									"dependencies":"status",
+									"properties": {
+										"red": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 255,
+											"required": true
+										},
+										"green": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 255,
+											"required": true
+										},
+										"blue": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 255,
+											"required": true
+										}
+									}
 								}
 							}
 						}
@@ -500,7 +542,7 @@
 								"removeDefaultNone": false,
 								"noneLabel": "__l_choose__",
 								"label":"__l_filter__",
-								"optionLabels": ["__switchBinary__","__switchMultilevel__","__doorlock__","__l_scene__","__thermostat__"]
+								"optionLabels": ["__switchBinary__","__switchMultilevel__","__doorlock__","__l_scene__","__thermostat__", "__switchRGBW__"]
 							},
 							"switchBinary": {
 								"dependencies": {
@@ -602,6 +644,47 @@
 									"status": {
 										"type":"select",
 										"label": "__l_level__"
+									}
+								}
+							},
+							"switchRGBW":{
+								"dependencies": {
+									"filterThen": "switchRGBW"
+								},
+								"fields":{
+									"target" :{
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
+										"label": "__l_target_device__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchRGBW:deviceName"
+									},
+									"status": {
+										"type":"select",
+										"label": "__l_level__",
+										"optionLabels": ["__off__", "__on__","__colors__"]
+									},
+									"color": {
+										"dependencies": {
+											"status": ["color"]
+										},
+										"label": "__colors__",
+										"fields": {
+											"red": {
+												"label": "__l_red__",
+												"helper": "__h_color__"
+											},
+											"green": {
+												"label": "__l_green__",
+												"helper": "__h_color__"
+											},
+											"blue": {
+												"label": "__l_blue__",
+												"helper": "__h_color__"
+											}
+										}
 									}
 								}
 							}

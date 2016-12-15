@@ -117,6 +117,15 @@ InbandNotifications.prototype.init = function (config) {
 
                             self.controller.addNotification('device-info', msg , msgType, devId);
                             break;
+                        case 'sensorDiscrete':
+                            msg = {
+                                dev: devName,
+                                l: lvl
+                            };
+                            msgType = 'device-status';
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
+                            break;
                         case 'sensorMultilevel':
                         case 'sensorMultiline':
                         case 'thermostat':

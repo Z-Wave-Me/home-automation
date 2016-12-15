@@ -32,10 +32,10 @@ IfThen.prototype.init = function (config) {
         ifElement = self.config.sourceDevice[self.config.sourceDevice.filterIf];
     this.handlerLevel = function (sDev) {
         var that = self,
-            value = sDev.get("metrics:level"),
             operator = ifElement.operator,
             ifLevel = (ifElement.status === 'level' && ifElement.level) || (!ifElement.status && ifElement.level) ? ifElement.level : ifElement.status,
-            check = false;
+            check = false,
+            value = sDev.get("metrics:level");
 
         if (operator && ifLevel) {
             switch (operator) {
@@ -51,16 +51,11 @@ IfThen.prototype.init = function (config) {
             }
         }
 
-        if(ifLevel === "10" && sDev.get('deviceType') === "sensorDiscrete")
-        {
-                ifLevel = "1";
-        }
-
         if(check || value === ifLevel || sDev.get('deviceType') === 'toggleButton'){
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,
-                    lvl = el[type].status === 'level' && el[type].level? el[type].level : el[type].status,
+                    lvl = el[type].status === 'level' && el[type].level? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
                     vDev = that.controller.devices.get(id),
                     // compare old and new level to avoid unneccessary updates
                     compareValues = function(valOld,valNew){
@@ -72,9 +67,11 @@ IfThen.prototype.init = function (config) {
                     set = compareValues(vDev.get("metrics:level"), lvl);
                 
                 if (vDev && set) {
-                    if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat")) {
+                    if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat" || type === "switchRGBW")) {
                         if (lvl === 'on' || lvl === 'off'){
                             vDev.performCommand(lvl);
+                        } else if (typeof lvl === 'object') {
+                            vDev.performCommand("exact", lvl);
                         } else {
                             vDev.performCommand("exact", { level: lvl });
                         }
