@@ -7,12 +7,17 @@ Features:
 * add new device type 'sensorDiscrete' - n-state vDev for CentralScene CC
 
 Modules:
-* ImportRemoteHA 2.0.1
+* ImportRemoteHA 2.0.3
  * add functionality to tag all remote widgets
  * enhance url input to add ip adress only (with backward compatibility)
-* IfThen 2.2.0
- * add sensorDiscrete support
- * bugfix: doesn't decide if on/off was triggered - action is still fired 
+* IfThen 2.4.0
+  * add support for Color Switch (in targets)
+  * add support for type 'sensorDiscrete' (in actions)
+ * bugfix: doesn't decide if on/off was triggered - action is still fired
+* ZWave 2.3.0
+ * add new device type 'sensorDiscrete'
+* InbandNotifications 1.1.0
+ * add support for type 'sensorDiscrete'
 
 #10.11.2016 v2.2.5
 * some performance enhancements in CommunicationLogger and CommunicationHistory
@@ -24,59 +29,59 @@ Changes:
 * pull request #342
 * update main.js (//--- Load 3d-party dependencies) for HomeGear support
 * Postfix - (ZWave module):
-** a lot of  changes in internal postfix logic
-** new configuration possibilities:
-*** change device name (new)
-*** change device icon (new)
-*** change node name (new)
-*** hide devices (new)
-*** deactivate devices (new)
-*** suppress device creation
-*** change configuration
-*** change CC data
-*** app switch controller support
-** app major minor condition changed
-** bugfix for fibaro smoke sensor postfix
-** add postfix error messages, postfix.json updated
+ * a lot of  changes in internal postfix logic
+ * new configuration possibilities:
+  * change device name (new)
+  * change device icon (new)
+  * change node name (new)
+  * hide devices (new)
+  * deactivate devices (new)
+  * suppress device creation
+  * change configuration
+  * change CC data
+  * app switch controller support
+ * app major minor condition changed
+ * bugfix for fibaro smoke sensor postfix
+ * add postfix error messages, postfix.json updated
 * Postfix - (ZWaveAPI):
-** add expertconfig and api ExpertConfigGet + ExperConfigUpdate
-** api's Postfix, PostfixUpdate, PostfixGet, PostfixRemove, PostfixAdd added
+ * add expertconfig and api ExpertConfigGet + ExperConfigUpdate
+ * api's Postfix, PostfixUpdate, PostfixGet, PostfixRemove, PostfixAdd added
 * ZAutomation API:
-** allow also req type object as post object in login
-** fix reload of initial getFirstLoginInfo call, add showWelcome entry - affecting (rebootBox, setLogin)
+ * allow also req type object as post object in login
+ * fix reload of initial getFirstLoginInfo call, add showWelcome entry - affecting (rebootBox, setLogin)
 
 Modules:
 * TamperAutoOff:
-** added, workaround for devices that don't deactivate tamper sensor
+ * added, workaround for devices that don't deactivate tamper sensor
 * RoundRobinScenes:
-** new param added in config
+ * new param added in config
 * LightMotionRockerAutocontrol:
-** some bug fixes and improvements
+ * some bug fixes and improvements
 * ZWave:
-** Timing statistics changed according to new IMA data
-** Added support for new bootloader and OTW to 6.70 SDK
-** new sensortypes, seismic, acceleration x, y and z added
+ * Timing statistics changed according to new IMA data
+ * Added support for new bootloader and OTW to 6.70 SDK
+ * new sensortypes, seismic, acceleration x, y and z added
 * IfThen
-** add Thermostat, SensorMultilevel support
+ * add Thermostat, SensorMultilevel support
 * BindDevices
-** add thermostat support
-** change name to Association
+ * add thermostat support
+ * change name to Association
 * Notification
-** descriptions adjusted
+ * descriptions adjusted
 * AutoLock
-** pull request #319
+ * pull request #319
 
 Fixes:
 * Z-Wave-Me/zwave-smarthome #190
 * ZWave module:
-** Fixed Communication statistics wrong timestamp
-** Fixed non-working blind stop command
-** fix for: Second Z-Wave module not generate a widgets #369
-** bugfix: cannot read data of undefined / null (incomingPacket)
+ * Fixed Communication statistics wrong timestamp
+ * Fixed non-working blind stop command
+ * fix for: Second Z-Wave module not generate a widgets #369
+ * bugfix: cannot read data of undefined / null (incomingPacket)
 *RemoteAccess:
-** bugfix: wrong ID after changing real ZBW ID.
+ * bugfix: wrong ID after changing real ZBW ID.
 * ScheduledScene:
-** fixed bug after adding locks to the list of actions
+ * fixed bug after adding locks to the list of actions
 
 #12.07.2016 v2.2.3
 
@@ -84,11 +89,11 @@ Changes:
 * Allowing Basic Authentication for Ajax Requests
 * language keys updated
 * dependency / instance handling:
- ** fetch undefined and failed instances to avoid error when they were adressed to global variable
- ** rework loaded singleton handling - in-/activate instance will not influence that list 
- ** add new installed and added apps also to loadedModules list, to avoid there reinitialization
- ** flags of dependency error messages changed
- ** filtering in instantiateModules() changed
+ * fetch undefined and failed instances to avoid error when they were adressed to global variable
+ * rework loaded singleton handling - in-/activate instance will not influence that list 
+ * add new installed and added apps also to loadedModules list, to avoid there reinitialization
+ * flags of dependency error messages changed
+ * filtering in instantiateModules() changed
 * remove pushNamespaces() for emit 'destroy'
 * CHANGELOG, README, api doc updated
 
@@ -140,11 +145,11 @@ New Command Classes:
 Stability and security fixes:
 * Better error handling of broken instances.
 * Re-initialization of module refactored:
- ** for better error handling
- ** instances will be filtered and removed first
- ** the module reloaded and all instances created again
- ** user will get error output in events
- ** instances will not be recreated, if something has broken
+ * for better error handling
+ * instances will be filtered and removed first
+ * the module reloaded and all instances created again
+ * user will get error output in events
+ * instances will not be recreated, if something has broken
 * Version handling added, to check which installed App needs to be prefered (already preinstalled apps with higher version have priority).
 * Description and instances entries of default configs updated.
 * Don't backup/restore notifications.
@@ -235,11 +240,11 @@ UI:
 * Description of the bug report function added.
 * Menu icons for Elements and Rooms are twisted.
 * Whole new design of App store.
- ** Now App store is open for third parties.
- ** Allow update and delete of apps.
- ** Apps are now grouped by theme.
- ** Its possible to access private apps using token string.
- ** New section "featured" for the most important apps.
+ * Now App store is open for third parties.
+ * Allow update and delete of apps.
+ * Apps are now grouped by theme.
+ * Its possible to access private apps using token string.
+ * New section "featured" for the most important apps.
 * Newly created elements are color marked to find them better.
 * New Icons for Thermostats and different other sensor values.
 * Elements are now ordered by name.

@@ -1,6 +1,6 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.0.6
+Version: 1.1.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
