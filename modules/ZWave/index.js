@@ -458,6 +458,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -484,6 +486,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
+	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
+	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -1536,6 +1540,85 @@ ZWave.prototype.defineHandlers = function () {
 			 }*/
 		}
 		return { status: 400, body: "Invalid request" };
+	};
+
+	this.ZWaveAPI.ZWaveDeviceInfoGet = function() {
+
+		var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "close"
+				},
+				body: null
+			},
+			devInfo = loadObject(this.controller.defaultLang +'.devices.json')
+
+		if (!!devInfo) {
+			reply.body= expert_config;
+		} else {
+			reply.status = 500;
+			reply.message = 'Something went wrong';
+		};
+
+		return reply;
+	};
+
+	this.ZWaveAPI.ZWaveDeviceInfoUpdate = function() {
+		var self = this,
+			result = [],
+			l = this.controller.availableLang,
+			reply = {
+				status: 500,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "close"
+				},
+				body: null
+			}
+			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+
+		try {
+			// update postfix JSON
+			l.forEach(function(lang) {
+				var obj = {};
+
+				obj[lang] = false;
+
+				http.request({
+					url: "http://manuals-backend.z-wave.info/make.php?lang=" + lang + "&mode=ui_devices",
+					async: true,
+					success: function(res) {
+						if (res.data) {
+							saveObject(lang +'.devices.json', res.data);
+							obj[lang] = true;
+						}
+
+						result.push(obj);
+					},
+					error: function() {
+						console.log('ZWave device list for lang:' + lang + ' not found.');
+						result.push(obj);
+					}
+				});
+			});
+
+
+			while (result.length < l.length && (new Date()).valueOf() < delay) {
+				processPendingCallbacks();
+			}
+
+			if(result) {
+				reply.status = 200;
+				reply.body = result;
+			}
+
+		} catch (e) {
+			console.log('Error has occured during updating the ZWave devices list');
+			reply.message = 'Something went wrong';
+		}
+
+		return reply;
 	};
 
 
