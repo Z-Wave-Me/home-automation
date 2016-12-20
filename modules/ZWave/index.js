@@ -1597,9 +1597,8 @@ ZWave.prototype.defineHandlers = function () {
 		return { status: 400, body: "Invalid request" };
 	};
 
-	this.ZWaveAPI.ZWaveDeviceInfoGet = function() {
-
-		var reply = {
+	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
+        var reply = {
 				status: 200,
 				headers: {
 					"Content-Type": "application/json",
@@ -1607,14 +1606,44 @@ ZWave.prototype.defineHandlers = function () {
 				},
 				body: null
 			},
-			devInfo = loadObject(this.controller.defaultLang +'.devices.json')
+			l = ['en','de'],  //this.controller.availableLang
+            devInfo = {},
+        	reqObj = !request.query? undefined : (typeof request.query === "string" ? JSON.parse(request.query) : request.query);
 
-		if (!!devInfo) {
-			reply.body= expert_config;
-		} else {
-			reply.status = 500;
-			reply.message = 'Something went wrong';
-		};
+		try {
+
+			devID = reqObj && reqObj.id? reqObj.id : null;
+			language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1? reqObj.lang : 'en';
+
+			if (reqObj && reqObj.lang && l.indexOf(reqObj.lang) === -1) {
+				reply.message = 'Language not found. English is used instead.';
+			}
+
+            devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
+
+
+			if (devInfo === null) {
+                reply.status = 404;
+                reply.message = 'No list of Z-Wave devices found. Please try to download them first.';
+			} else {
+                reply.body = devInfo;
+
+                if (!!devID) {
+                    reply.body = _.find(devInfo.zwave_devices, function(dev) {
+                        return dev['Certification_ID'] === devID;
+                    });
+
+                    if (!reply.body) {
+                       reply.status = 404;
+                       reply.message = 'No ZWave devices found. Please try to download them first.';
+                       reply.body = null;
+					}
+				}
+			}
+		} catch (e) {
+            reply.status = 500;
+            reply.message = 'Something went wrong:' + e.message;
+		}
 
 		return reply;
 	};
@@ -1622,7 +1651,7 @@ ZWave.prototype.defineHandlers = function () {
 	this.ZWaveAPI.ZWaveDeviceInfoUpdate = function() {
 		var self = this,
 			result = [],
-			l = this.controller.availableLang,
+			l = ['en','de'],  //this.controller.availableLang,
 			reply = {
 				status: 500,
 				headers: {
@@ -1630,13 +1659,17 @@ ZWave.prototype.defineHandlers = function () {
 					"Connection": "close"
 				},
 				body: null
-			}
+			},
 			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
 
 		try {
 			// update postfix JSON
 			l.forEach(function(lang) {
-				var obj = {};
+				var obj = {},
+                	blub = {
+						updateTime: '',
+						zwave_devices: []
+					};
 
 				obj[lang] = false;
 
@@ -1645,7 +1678,14 @@ ZWave.prototype.defineHandlers = function () {
 					async: true,
 					success: function(res) {
 						if (res.data) {
-							saveObject(lang +'.devices.json', res.data);
+							data = typeof res.data === 'string'? JSON.parse(res.data) : res.data;
+                            blub.updateTime = (new Date()).getTime();
+
+							for (index in data) {
+                                blub.zwave_devices.push(data[index]);
+							}
+
+							saveObject(lang +'.devices.json', blub);
 							obj[lang] = true;
 						}
 
@@ -1658,7 +1698,6 @@ ZWave.prototype.defineHandlers = function () {
 				});
 			});
 
-
 			while (result.length < l.length && (new Date()).valueOf() < delay) {
 				processPendingCallbacks();
 			}
@@ -1670,7 +1709,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		} catch (e) {
 			console.log('Error has occured during updating the ZWave devices list');
-			reply.message = 'Something went wrong';
+			reply.message = 'Something went wrong:' + e.message;
 		}
 
 		return reply;
