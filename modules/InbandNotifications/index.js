@@ -57,7 +57,14 @@ InbandNotifications.prototype.init = function (config) {
             var devId = vDev.get('id'),
                 devType = vDev.get('deviceType'),
                 devProbeType = vDev.get('probeType'),
+                devLocation = device.get('location'),
                 devName = vDev.get('metrics:title'),
+                if (devLocation) {
+                    location = self.controller.getLocation(self.controller.locations, devLocation),
+                    if (location) {
+                      devName = location.title + ' - ' + devName;
+                    }
+                }
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
                 eventType = function(){
