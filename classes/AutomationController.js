@@ -1152,7 +1152,7 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 
 AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
     var result = "in progress",
-        filelist = {},
+        filelist = [],
         input = "",
         name = "";
 
@@ -1195,8 +1195,11 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
         if (result === 'done') {
             for (var file in filelist) {
                 var icon = {
-                    'file': filelist[file],
+                    'file': filelist[file].filename,
+                    'orgfile': filelist[file].orgfilename,
                     'source': iconName+"_"+id,
+                    'name': iconName,
+                    'id': id,
                     'timestamp': Math.floor(new Date().getTime() / 1000),
                     'source_title': option === "local" ? iconName+" "+id : reqObj.title
                 };
@@ -1218,11 +1221,13 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
         iconinstaller.remove(
             iconName,
             function(success) {
-                console.log(success);
                 result = "done";
             },  function(error) {
-                console.log(error);
-                result = "failed";
+                if(error == "No such icon.") {
+                    result = "done";
+                } else {
+                    result = "failed";
+                }
             }
         );
 
@@ -1250,6 +1255,42 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
     }
 
     return result;
+}
+
+AutomationController.prototype.deleteCustomicon = function(iconName) {
+    self = this;
+    self.devices.each(function(dev) {
+        if(!_.isEmpty(dev.get('customIcons'))) {
+            var customIcon = dev.get('customIcons');
+            _.each(customIcon, function(value, key) {
+                if(typeof value !== "object") {
+                    if(value === iconName) {
+                        customIcon = {};
+                        dev.set('customIcons', customIcon, {silent:true});
+                        return false;
+                    }
+                } else {
+                    _.each(value, function(icon, level) {
+                        if(icon === iconName) {
+                            delete customIcon[key][level];
+                        }
+                    });
+
+                    if(_.isEmpty(customIcon[key])) {
+                        customIcon = {};
+                    }
+                    dev.set('customIcons', customIcon, {silent:true});
+                }
+            });
+        }
+    });
+}
+
+AutomationController.prototype.deleteAllCustomicons = function() {
+    self = this;
+    self.devices.each(function(dev) {
+        dev.set('customIcons', {}, {silent:true});
+    });
 }
 
 AutomationController.prototype.deviceExists = function (vDevId) {

@@ -5,7 +5,7 @@
   "l_email_log":"E-Mail notification",
   "l_no_log":"Do not send me log by email",
   "l_only_log":"Send me error log only by email",
-  "l_log_notification":"Send me error log and notifivations by email",
+  "l_log_notification":"Send me error log and notifications by email",
   "l_hours":"Hours",
   "l_minutes":"Minutes",
   "l_weekDays":"Weekdays",

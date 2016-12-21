@@ -458,6 +458,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -484,6 +486,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
+	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
+	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -1156,47 +1160,75 @@ ZWave.prototype.defineHandlers = function () {
 	this.ZWaveAPI.ZMEFirmwareUpgrade = function(url, request) {
 		try {
 			var data = request && request.data;
-			if (!data || !data.url) {
+			if (!data) {
 				throw "Invalid request";
 			}
 
 			var result = "in progress";
 
-			http.request({
-				url: data.url,
-				async: true,
-				contentType: "application/octet-stream",
-				success: function(response) {
-					var L = 32,
-					    bootloader_6_70 = 
-					    	zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
-					    	|| 
-					    	zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
-					    ,
-					    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-					    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
-					
-					for (var i = 0; i < data.byteLength; i += L) {
-						var arr = (new Uint8Array(data.slice(i, i+L)));
-						if (arr.length == 1) {
-							arr = [arr[0]]
-							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-						}
-						zway.NVMExtWriteLongBuffer(addr + i, arr);
+			if (data.file && data.file.content) {
+				var L = 32,
+				    bootloader_6_70 = 
+					zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+					|| 
+					zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+				    ,
+				    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+				    data = bootloader_6_70 ? data.file.content : data.file.content.slice(0x1800);
+				
+				// here it is data.length, not data.byteLength
+				for (var i = 0; i < data.length; i += L) {
+					var arr = (new Uint8Array(data.slice(i, i+L)));
+					if (arr.length == 1) {
+						arr = [arr[0]]
+						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
 					}
-					
-					zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
-						function() {
-							zway.SerialAPISoftReset(function() {
-								result = "done"
-							});
-					});
-				},
-				error: function (res) {
-					console.error("Failed to download firmware: " + res.statusText);
-					result = "failed";
+					zway.NVMExtWriteLongBuffer(addr + i, arr);
 				}
-			});
+				
+				zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+					function() {
+						zway.SerialAPISoftReset(function() {
+							result = "done"
+						});
+				});
+			} else if (data.url) {
+				http.request({
+					url: data.url,
+					async: true,
+					contentType: "application/octet-stream",
+					success: function(response) {
+						var L = 32,
+						    bootloader_6_70 = 
+							zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+							|| 
+							zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+						    ,
+						    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+						    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
+						
+						for (var i = 0; i < data.byteLength; i += L) {
+							var arr = (new Uint8Array(data.slice(i, i+L)));
+							if (arr.length == 1) {
+								arr = [arr[0]]
+								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+							}
+							zway.NVMExtWriteLongBuffer(addr + i, arr);
+						}
+						
+						zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+							function() {
+								zway.SerialAPISoftReset(function() {
+									result = "done"
+								});
+						});
+					},
+					error: function (res) {
+						console.error("Failed to download firmware: " + res.statusText);
+						result = "failed";
+					}
+				});
+			}
 			
 			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
 			
@@ -1217,47 +1249,74 @@ ZWave.prototype.defineHandlers = function () {
 	this.ZWaveAPI.ZMEBootloaderUpgrade = function(url, request) {
 		try {
 			var data = request && request.data;
-			if (!data || !data.url) {
+			if (!data) {
 				throw "Invalid request";
 			}
 
 			var result = "in progress";
 
-			http.request({
-				url: data.url,
-				async: true,
-				contentType: "application/octet-stream",
-				success: function(response) {
-					var L = 32,
-					    seg = 6,	 // Функция бутлодера принимает номер сегмента
-					    addr = seg*0x800, // ==12k
-					    data = response.data;
-					
-					for (var i = 0; i < data.byteLength; i += L) {
-						var arr = (new Uint8Array(data.slice(i, i+L)));
-						if (arr.length == 1) {
-							arr = [arr[0]]
-							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-						}
-						zway.NVMExtWriteLongBuffer(addr + i, arr);
+			if (data.file && data.file.content) {
+				var L = 32,
+				    seg = 6,	 // Функция бутлодера принимает номер сегмента
+				    addr = seg*0x800, // ==12k
+				    data = data.file.content;
+				
+				// here it is data.length, not data.byteLength
+				for (var i = 0; i < data.length; i += L) {
+					var arr = (new Uint8Array(data.slice(i, i+L)));
+					if (arr.length == 1) {
+						arr = [arr[0]]
+						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
 					}
-					
-					zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
-						function() {
-							//Вызываем перезапись bootloder
-							zway.ZMEBootloaderFlash(seg, function() {
-								result = "done";
-							},  function() {
-								result = "failed";
-							});
-					});
-				},
-				error: function (res) {
-					console.error("Failed to download bootloader: " + res.statusText);
-					result = "failed";
+					zway.NVMExtWriteLongBuffer(addr + i, arr);
 				}
-			});
-
+				
+				zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+					function() {
+						//Вызываем перезапись bootloder
+						zway.ZMEBootloaderFlash(seg, function() {
+							result = "done";
+						},  function() {
+							result = "failed";
+						});
+				});
+			} else if (data.url) {
+				http.request({
+					url: data.url,
+					async: true,
+					contentType: "application/octet-stream",
+					success: function(response) {
+						var L = 32,
+						    seg = 6,	 // Функция бутлодера принимает номер сегмента
+						    addr = seg*0x800, // ==12k
+						    data = response.data;
+						
+						for (var i = 0; i < data.byteLength; i += L) {
+							var arr = (new Uint8Array(data.slice(i, i+L)));
+							if (arr.length == 1) {
+								arr = [arr[0]]
+								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+							}
+							zway.NVMExtWriteLongBuffer(addr + i, arr);
+						}
+						
+						zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+							function() {
+								//Вызываем перезапись bootloder
+								zway.ZMEBootloaderFlash(seg, function() {
+									result = "done";
+								},  function() {
+									result = "failed";
+								});
+						});
+					},
+					error: function (res) {
+						console.error("Failed to download bootloader: " + res.statusText);
+						result = "failed";
+					}
+				});
+			}
+			
 			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
 			
 			while ((new Date()).valueOf() < d &&  result === "in progress") {
@@ -1536,6 +1595,124 @@ ZWave.prototype.defineHandlers = function () {
 			 }*/
 		}
 		return { status: 400, body: "Invalid request" };
+	};
+
+	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
+        var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "close"
+				},
+				body: null
+			},
+			l = ['en','de'],  //this.controller.availableLang
+            devInfo = {},
+        	reqObj = !request.query? undefined : (typeof request.query === "string" ? JSON.parse(request.query) : request.query);
+
+		try {
+
+			devID = reqObj && reqObj.id? reqObj.id : null;
+			language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1? reqObj.lang : 'en';
+
+			if (reqObj && reqObj.lang && l.indexOf(reqObj.lang) === -1) {
+				reply.message = 'Language not found. English is used instead.';
+			}
+
+            devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
+
+
+			if (devInfo === null) {
+                reply.status = 404;
+                reply.message = 'No list of Z-Wave devices found. Please try to download them first.';
+			} else {
+                reply.body = devInfo;
+
+                if (!!devID) {
+                    reply.body = _.find(devInfo.zwave_devices, function(dev) {
+                        return dev['Certification_ID'] === devID;
+                    });
+
+                    if (!reply.body) {
+                       reply.status = 404;
+                       reply.message = 'No ZWave devices found. Please try to download them first.';
+                       reply.body = null;
+					}
+				}
+			}
+		} catch (e) {
+            reply.status = 500;
+            reply.message = 'Something went wrong:' + e.message;
+		}
+
+		return reply;
+	};
+
+	this.ZWaveAPI.ZWaveDeviceInfoUpdate = function() {
+		var self = this,
+			result = [],
+			l = ['en','de'],  //this.controller.availableLang,
+			reply = {
+				status: 500,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "close"
+				},
+				body: null
+			},
+			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+
+		try {
+			// update postfix JSON
+			l.forEach(function(lang) {
+				var obj = {},
+                	blub = {
+						updateTime: '',
+						zwave_devices: []
+					};
+
+				obj[lang] = false;
+
+				http.request({
+					url: "http://manuals-backend.z-wave.info/make.php?lang=" + lang + "&mode=ui_devices",
+					async: true,
+					success: function(res) {
+						if (res.data) {
+							data = typeof res.data === 'string'? JSON.parse(res.data) : res.data;
+                            blub.updateTime = (new Date()).getTime();
+
+							for (index in data) {
+                                blub.zwave_devices.push(data[index]);
+							}
+
+							saveObject(lang +'.devices.json', blub);
+							obj[lang] = true;
+						}
+
+						result.push(obj);
+					},
+					error: function() {
+						console.log('ZWave device list for lang:' + lang + ' not found.');
+						result.push(obj);
+					}
+				});
+			});
+
+			while (result.length < l.length && (new Date()).valueOf() < delay) {
+				processPendingCallbacks();
+			}
+
+			if(result) {
+				reply.status = 200;
+				reply.body = result;
+			}
+
+		} catch (e) {
+			console.log('Error has occured during updating the ZWave devices list');
+			reply.message = 'Something went wrong:' + e.message;
+		}
+
+		return reply;
 	};
 
 
