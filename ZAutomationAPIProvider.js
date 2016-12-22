@@ -2642,37 +2642,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         var reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
 
-        this.controller.devices.each(function(dev) {
-            if(!_.isEmpty(dev.get('customIcons'))) {
-                var customIcon = dev.get('customIcons');
-                _.each(customIcon, function(value, key) {
-                    if(typeof value !== "object") {
-                        if(value === iconName) {
-                            customIcon = {};
-                            dev.set('customIcons', customIcon, {silent:true});
-                            return false;
-                        }
-                    } else {
-                        _.each(value, function(icon, level) {
-                           if(icon === iconName) {
-                               delete customIcon[key][level];
-                           }
-                        });
-
-                        if(_.isEmpty(customIcon[key])) {
-                            customIcon = {};
-                        }
-                        dev.set('customIcons', customIcon, {silent:true});
-                    }
-                });
-
-            }
-        });
+        this.controller.deleteCustomicon(iconName);
 
         uninstall = this.controller.uninstallIcon(iconName);
 
         if (uninstall) {
-
             reply.code = 200;
             reply.data = "icon_delete_successful";
             reply.error = null;
