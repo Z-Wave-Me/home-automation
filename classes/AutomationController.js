@@ -1816,6 +1816,10 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 cutSubType = '',
                 paramEntry;
 
+            if (devLocation) {
+                devEntry.deviceName = location.title + ' - ' + devEntry.deviceName;
+            }
+
             // check for type entry
             typeEntryExists = _.filter(nspc, function(typeEntry){
                 return typeEntry.id === devTypeEntry;
