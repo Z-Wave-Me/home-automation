@@ -62,7 +62,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 
     
     this.generated = this.config.generated; // used to stop after config changed
-    this.bindings = [];
+    this.bindings = {};
     
     this.zwayReg = function (zwayName) {
         var zway = global.ZWave && global.ZWave[zwayName].zway;
@@ -214,6 +214,7 @@ SwitchControlGenerator.prototype.init = function (config) {
             self.controller.devices.remove(name);
         });
         self.bindings[zwayName] = null;
+        delete self.bindings[zwayName];
     };
     
     this.controller.on("ZWave.register", this.zwayReg);
@@ -247,7 +248,7 @@ SwitchControlGenerator.prototype.stop = function () {
         this.controller.emit("ZWave.dataUnbind", this.bindings[name]);
     }
     
-    this.bindings = [];
+    this.bindings = {};
 
     var self = this;
     

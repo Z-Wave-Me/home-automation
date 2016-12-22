@@ -1,9 +1,9 @@
 /*** ImportRemoteHA Z-Way HA module *******************************************
 
-Version: 2.0.0
+Version: 2.0.3
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
-Author: Poltorak Serguei <ps@z-wave.me>
+Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
     Imports devices from remote HA engine
 ******************************************************************************/
@@ -29,8 +29,12 @@ ImportRemoteHA.prototype.init = function (config) {
     ImportRemoteHA.super_.prototype.init.call(this, config);
 
     var self = this;
+
+    var config_url = this.config.url.indexOf('http://') > -1? this.config.url : 'http://' + this.config.url + ':8083';
+
+    console.log('config_url',config_url);
     
-    this.urlPrefix = this.config.url + "/ZAutomation/api/v1/devices";
+    this.urlPrefix = config_url + "/ZAutomation/api/v1/devices";
     this.dT = Math.max(this.config.dT, 500); // 500 ms minimal delay between requests
     this.timestamp = 0;
     this.lastRequest = 0;
@@ -127,21 +131,29 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     return;
                 }
 
-                self.controller.devices.create({
+                var dev = {
                     deviceId: localId,
                     defaults: {
                         deviceType: item.deviceType,
-                        metrics: item.metrics
+                        metrics: item.metrics,
+                        visibility: item.visibility,
+                        permanently_hidden: item.permanently_hidden
                     },
                     handler: function(command, args) {
                         self.handleCommand(this, command, args);
                     },
                     overlay: {},
                     moduleId: this.id
-                });
+                }
 
-                self.config.renderDevices.push({deviceId: localId, deviceType: item.deviceType});
-                self.saveConfig();
+                // add tag if activated
+                if (self.config.addTag) {
+                    dev.overlay.tags = self.config.tagName && self.config.tagName !== ''? [self.config.tagName] : ["RemoteHA_" + self.id];
+                }
+
+                self.controller.devices.create(dev);
+
+                self.renderDevice({deviceId: localId, deviceType: item.deviceType});
             }
         });
         
@@ -206,4 +218,21 @@ ImportRemoteHA.prototype.skipDevice = function(id) {
     });
     
     return skip;
+};
+
+// check if deviceId is already added to list
+ImportRemoteHA.prototype.renderDevice = function (obj) {
+    var skip = false;
+    
+    this.config.renderDevices.forEach(function (deviceObj) {
+        if (deviceObj.deviceId === obj.deviceId) {
+            skip |= true;
+            return false; // break
+        }
+    });
+    
+    if (!skip) {
+        this.config.renderDevices.push(obj);
+        this.saveConfig();
+    }
 };

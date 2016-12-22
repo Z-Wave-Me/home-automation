@@ -1,6 +1,6 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.0.6
+Version: 1.1.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -113,6 +113,15 @@ InbandNotifications.prototype.init = function (config) {
                                 dev: devName,
                                 l: lvl + '%'
                                 };
+                            msgType = 'device-status';
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
+                            break;
+                        case 'sensorDiscrete':
+                            msg = {
+                                dev: devName,
+                                l: lvl
+                            };
                             msgType = 'device-status';
 
                             self.controller.addNotification('device-info', msg , msgType, devId);

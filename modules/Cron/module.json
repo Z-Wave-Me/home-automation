@@ -14,7 +14,8 @@
     },
     "defaults": {
         "title": "__m_title__",
-	    "description": "__m_descr__"
+	    "description": "__m_descr__",
+        "schedules": {}
     },
     "schema": {
     },

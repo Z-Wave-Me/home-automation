@@ -57,17 +57,11 @@ function AutomationController() {
                     homepage: "http://www.zwave.eu",
                     active: true
               }];
+
+    this.icons = loadObject('userIcons.json') || [];
 }
 
 inherits(AutomationController, EventEmitter2);
-
-var Base64 = {
-    _keyStr:"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
-    encode:function(e){var t="";var n,r,i,s,o,u,a;var f=0;e=Base64._utf8_encode(e);while(f<e.length){n=e.charCodeAt(f++);r=e.charCodeAt(f++);i=e.charCodeAt(f++);s=n>>2;o=(n&3)<<4|r>>4;u=(r&15)<<2|i>>6;a=i&63;if(isNaN(r)){u=a=64}else if(isNaN(i)){a=64}t=t+this._keyStr.charAt(s)+this._keyStr.charAt(o)+this._keyStr.charAt(u)+this._keyStr.charAt(a)}return t},
-    decode:function(e){var t="";var n,r,i;var s,o,u,a;var f=0;e=e.replace(/[^A-Za-z0-9\+\/\=]/g,"");while(f<e.length){s=this._keyStr.indexOf(e.charAt(f++));o=this._keyStr.indexOf(e.charAt(f++));u=this._keyStr.indexOf(e.charAt(f++));a=this._keyStr.indexOf(e.charAt(f++));n=s<<2|o>>4;r=(o&15)<<4|u>>2;i=(u&3)<<6|a;t=t+String.fromCharCode(n);if(u!=64){t=t+String.fromCharCode(r)}if(a!=64){t=t+String.fromCharCode(i)}}t=Base64._utf8_decode(t);return t},
-    _utf8_encode:function(e){e=e.replace(/\r\n/g,"\n");var t="";for(var n=0;n<e.length;n++){var r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r)}else if(r>127&&r<2048){t+=String.fromCharCode(r>>6|192);t+=String.fromCharCode(r&63|128)}else{t+=String.fromCharCode(r>>12|224);t+=String.fromCharCode(r>>6&63|128);t+=String.fromCharCode(r&63|128)}}return t},
-    _utf8_decode:function(e){var t="";var n=0;var r=c1=c2=0;while(n<e.length){r=e.charCodeAt(n);if(r<128){t+=String.fromCharCode(r);n++}else if(r>191&&r<224){c2=e.charCodeAt(n+1);t+=String.fromCharCode((r&31)<<6|c2&63);n+=2}else{c2=e.charCodeAt(n+1);c3=e.charCodeAt(n+2);t+=String.fromCharCode((r&15)<<12|(c2&63)<<6|c3&63);n+=3}}return t}
-};
 
 function wrap(self, func) {
     return function () {
@@ -81,10 +75,7 @@ AutomationController.prototype.init = function () {
 
     function pushNamespaces(device, locationNspcOnly) {
         self.generateNamespaces(function (namespaces) {
-            ws.push({
-                type: 'me.z-wave.namespaces.update',
-                data: JSON.stringify(namespaces)
-            });
+            ws.push('me.z-wave.namespaces.update', JSON.stringify(namespaces));
         }, device, locationNspcOnly);
     }
 
@@ -93,45 +84,30 @@ AutomationController.prototype.init = function () {
         
         // update namespaces if device title has changed
         self.devices.on('change:metrics:title', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.title_update",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.title_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, false);
         });
 
         // update only location namespaces if device location has changed
         self.devices.on('change:location', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.location_update",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, true);
         });
 
         // update namespaces if device permanently_hidden status has changed
         self.devices.on('change:permanently_hidden', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.visibility_update",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, false);
         });
 
         // update namespaces if structure of devices collection changed
         self.devices.on('created', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.add",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
             pushNamespaces(device);
         });
 
         self.devices.on('destroy', function (device) {
-            ws.push({
-                type: "me.z-wave.devices.destroy",
-                data: JSON.stringify(device.toJSON())
-            });
+            ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
         });
 
         self.devices.on('removed', function (device) {
@@ -139,10 +115,7 @@ AutomationController.prototype.init = function () {
         });
 
         self.on("notifications.push", function (notice) {
-            ws.push({
-                type: "me.z-wave.notifications.add",
-                data: JSON.stringify(notice)
-            });
+            ws.push("me.z-wave.notifications.add", JSON.stringify(notice));
         });
     });
 };
@@ -208,6 +181,7 @@ AutomationController.prototype.start = function (reload) {
                     homepage: "http://www.zwave.eu",
                     active: true
               }];
+        this.icons = loadObject('userIcons.json') || [];
     }
 
     // Restore persistent data
@@ -834,9 +808,8 @@ AutomationController.prototype.listInstances = function (){
             var moduleJSON = self.getModuleData(instance.moduleId);
 
             expInstances.push(_.extend(instance, {
-                // seems to be not in use anymore ...
-                // state : moduleJSON.state || null,
-                // module : moduleJSON.defaults && moduleJSON.defaults.title || null,
+                // use category from module and use it's title as fallback ...
+                category : moduleJSON && moduleJSON.category || null,
                 title : (!instance.title || instance.title === '') ? ((moduleJSON.defaults && moduleJSON.defaults.title) ? moduleJSON.defaults.title : "?") : instance.title
             }));
         });
@@ -1115,18 +1088,18 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
         skininstaller.remove(
             skinName,
             function() {
-                    result = "done";
+                result = "done";
             },  function() {
-                    result = "failed";
+                result = "failed";
             }
         );
-        
+
         var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-        
+
         while ((new Date()).valueOf() < d &&  result === "in progress") {
             processPendingCallbacks();
         }
-        
+
         if (result === "in progress") {
             result = "failed";
         }
@@ -1177,6 +1150,149 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
     return res;
 };
 
+AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
+    var result = "in progress",
+        filelist = [],
+        input = "",
+        name = "";
+
+    switch(option) {
+        case 'remote':
+            input = reqObj.file_path;
+            name = iconName
+            break;
+        case 'local':
+            input = JSON.stringify(reqObj);
+            name = reqObj.name;
+            break;
+    }
+
+    if (input) {
+        console.log('Installing icon', name, '...');
+
+        iconinstaller.install(
+            input,
+            iconName,
+            id,
+            function(success) {
+                filelist = typeof success === 'string'? JSON.parse(success) : success;
+                result = "done";
+            },  function() {
+                result = "failed";
+            }
+        );
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+            result = "failed";
+        }
+
+        if (result === 'done') {
+            for (var file in filelist) {
+                var icon = {
+                    'file': filelist[file].filename,
+                    'orgfile': filelist[file].orgfilename,
+                    'source': iconName+"_"+id,
+                    'name': iconName,
+                    'id': id,
+                    'timestamp': Math.floor(new Date().getTime() / 1000),
+                    'source_title': option === "local" ? iconName+" "+id : reqObj.title
+                };
+
+                this.icons.push(icon);
+            }
+
+            saveObject("userIcons.json", this.icons);
+        }
+    }
+    return result;
+};
+
+AutomationController.prototype.uninstallIcon = function(iconName) {
+    var langFile = this.loadMainLang(),
+        result = "in progress";
+
+    try {
+        iconinstaller.remove(
+            iconName,
+            function(success) {
+                result = "done";
+            },  function(error) {
+                if(error == "No such icon.") {
+                    result = "done";
+                } else {
+                    result = "failed";
+                }
+            }
+        );
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+
+        if (result === "in progress") {
+            result = "failed";
+        }
+
+        if (result === "done") {
+            this.icons = _.filter(this.icons, function (icon) {
+                return icon.file !== iconName;
+            });
+
+            saveObject("userIcons.json", this.icons);
+        }
+
+    } catch (e) {
+        console.log('Uninstalling or reseting of icon "' + iconName + '" has failed. ERROR:', e);
+        this.addNotification("error", langFile.ac_err_uninstall_icon + ': ' + iconName, "core", "AutomationController");
+    }
+
+    return result;
+}
+
+AutomationController.prototype.deleteCustomicon = function(iconName) {
+    self = this;
+    self.devices.each(function(dev) {
+        if(!_.isEmpty(dev.get('customIcons'))) {
+            var customIcon = dev.get('customIcons');
+            _.each(customIcon, function(value, key) {
+                if(typeof value !== "object") {
+                    if(value === iconName) {
+                        customIcon = {};
+                        dev.set('customIcons', customIcon, {silent:true});
+                        return false;
+                    }
+                } else {
+                    _.each(value, function(icon, level) {
+                        if(icon === iconName) {
+                            delete customIcon[key][level];
+                        }
+                    });
+
+                    if(_.isEmpty(customIcon[key])) {
+                        customIcon = {};
+                    }
+                    dev.set('customIcons', customIcon, {silent:true});
+                }
+            });
+        }
+    });
+}
+
+AutomationController.prototype.deleteAllCustomicons = function() {
+    self = this;
+    self.devices.each(function(dev) {
+        dev.set('customIcons', {}, {silent:true});
+    });
+}
+
 AutomationController.prototype.deviceExists = function (vDevId) {
     return Object.keys(this.devices).indexOf(vDevId) >= 0;
 };
@@ -1186,7 +1302,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 };
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
-    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden", "creationTime");
+    this.vdevInfo[id] = _.pick(device, "deviceType", "metrics", "location", "tags", "permanently_hidden", "creationTime", "customIcons");
     this.saveConfig();
     return this.vdevInfo[id];
 };
@@ -2377,4 +2493,153 @@ AutomationController.prototype.hashCode = function(str) {
         hash  = hash & hash; // Convert to 32bit integer
     }
     return hash;
+};
+
+AutomationController.prototype.createBackup = function() {
+    var self = this,
+        backupJSON = {},
+        userModules = [],
+        skins = [],
+        result = null;
+
+    var list = loadObject("__storageContent");
+
+    try {
+        // save all objects in storage
+        for (var ind in list) {
+            if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
+                backupJSON[list[ind]] = loadObject(list[ind]);
+            }
+        }
+
+        // add list of current userModules
+        _.forEach(fs.list('userModules')|| [], function(moduleName) {
+            if (fs.stat('userModules/' + moduleName).type === 'dir' && !_.findWhere(userModules, {name: moduleName})) {
+                userModules.push({
+                    name: moduleName,
+                    version: self.modules[moduleName]? self.modules[moduleName].meta.version : ''
+                });
+            }
+        });
+
+        if (userModules.length > 0) {
+            backupJSON['__userModules'] = userModules;
+        }
+
+        // add list of current skins excluding default skin
+        _.forEach(this.skins, function(skin) {
+            if (skins.indexOf(skin) === -1 && skin.name !== 'default') {
+                skins.push({
+                    name: skin.name,
+                    version: skin.version
+                });
+            }
+        });
+
+        if (skins.length > 0) {
+            backupJSON['__userSkins'] = skins;
+        }
+
+        /*
+         //TODO icon backup
+         var ret = "in progress";
+         iconinstaller.backup(
+         function(backup) {
+             console.log("success", backup);
+             console.log("success length", backup.length);
+             ret =  new Uint8Array(backup);
+             }, function(error){
+             console.log("error", error);
+             ret = "failed";
+         });
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  ret === "in progress") {
+            processPendingCallbacks();
+        }
+
+         console.log(ret);
+         if(ret !== "failed") {
+             var bcp = "";
+             console.log(ret.length);
+             for(var i = 0; i < ret.length; i++) {
+             bcp += String.fromCharCode(ret[i]);
+             }
+
+             backupJSON["__Icons"] = bcp;
+         }
+        */
+
+        // save Z-Way and EnOcean objects
+        if (!!global.ZWave) {
+            backupJSON["__ZWay"] = {};
+            global.ZWave.list().forEach(function(zwayName) {
+                var bcp = "",
+                    data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
+
+                for(var i = 0; i < data.length; i++) {
+                    bcp += String.fromCharCode(data[i]);
+                }
+
+                backupJSON["__ZWay"][zwayName] = bcp;
+            });
+        }
+
+        /* TODO
+         if (!!global.EnOcean) {
+         backupJSON["__EnOcean"] = {};
+         global.EnOcean.list().forEach(function(zenoName) {
+         // backupJSON["__EnOcean"][zenoName] = global.EnOcean[zenoName].zeno.controller.Backup();
+         });
+         }
+         */
+
+        result = backupJSON;
+    } catch(e) {
+        throw e.toString();
+    }
+
+    return result;
+};
+
+AutomationController.prototype.getRemoteId = function() {
+    var checkIfTypeError = true,
+        result = null;
+
+    if (typeof ZBWConnect === 'function') {
+        try {
+            zbw = new ZBWConnect(); // find zbw by path or use (raspberry) location /etc/zbw as default
+
+            if(!!zbw) {
+                checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
+            }
+        } catch(e) {
+            try {
+                zbw = new ZBWConnect('./zbw');
+                checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
+            } catch (er) {
+                console.log('Something went wrong. Reading remote id has failed. Error:' + er.message);
+                throw {
+                    name: "service-error",
+                    message: "Something went wrong. Reading remote id has failed. Error:" + er.message
+                };
+            }
+        }
+        if(checkIfTypeError) {
+            throw {
+                name: "service-error",
+                message: "Something went wrong. Reading remote id has failed."
+            };
+        } else {
+            result = zbw.getUserId();
+        }
+    } else {
+        throw {
+            name: "service-not-available",
+            message: "Reading remote id has failed. Service is not available."
+        };
+    }
+
+    return result;
 };

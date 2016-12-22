@@ -30,6 +30,7 @@ HTTPDevice.prototype.init = function (config) {
 
     var self = this,
         icon = "",
+        probeType = "",
         deviceType = this.config.deviceType;
         
     switch(deviceType) {
@@ -42,6 +43,7 @@ HTTPDevice.prototype.init = function (config) {
             break;
         case "switchMultilevel":
             icon = "multilevel";
+            probeType = "multilevel";
             break;
         case "toggleButton":
             icon = "";
@@ -67,7 +69,8 @@ HTTPDevice.prototype.init = function (config) {
         },
         overlay: {
             deviceType: deviceType,
-            metrics: config_metrics
+            metrics: config_metrics,
+            probeType: probeType
         },
         handler: function (command, args) {
             var vDevType = deviceType;
@@ -175,7 +178,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
         langFile = self.controller.loadModuleLang(moduleName);
     
     if (!!url) {
-    	if (subst) {
+    	if (subst !== null) {
     		url = url.replace(/\$\$/g, subst);
     	}
         var req = {

@@ -1,3 +1,5 @@
+v2.3.0
+- adding support for sensorDiscrete
 v2.1.1
 - bugfix missing change of levels switch multilevel and refactoring
 - avoid update of vDev with same level

@@ -138,21 +138,23 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/skins/:skin_id", this.ROLE.ADMIN, this.getSkin);
         this.router.put("/skins/:skin_id", this.ROLE.ADMIN, this.activateOrDeactivateSkin);
         this.router.del("/skins/:skin_id", this.ROLE.ADMIN, this.deleteSkin);
-        
+
+        this.router.get("/icons", this.ROLE.ADMIN, this.getIcons);
+        this.router.del("/icons/:icon_id", this.ROLE.ADMIN, this.deleteIcons);
+        this.router.post("/icons/upload", this.ROLE.ADMIN, this.uploadIcon);
+        this.router.post("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
+        //this.router.put("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
+
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
         this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
-        this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
+        this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
-
-        this.router.get("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
-        this.router.post("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
-        this.router.put("/cloudbackup", this.ROLE.ADMIN, this.cloudbackup);
     },
 
     // Used by the android app to request server status
@@ -336,21 +338,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     setVDevFunc: function (vDevId) {
         var reqObj,
+            device = null,
             reply = {
                 error: null,
-                data: null
+                data: null,
+                code: 500,
             },
-            device = this.deviceByUser(vDevId, this.req.user);
+            result = false;
 
         try {
-            reqObj = JSON.parse(this.req.body);
+            reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
         } catch (ex) {
             reply.error = ex.message;
+            return reply;
         }
 
-        if (device) {
+        if(this.req.query.hasOwnProperty('icon')) {
+            device = this.controller.devices.get(vDevId);
+            if(device) {
+                device.set('customIcons', reqObj.customicons, {silent:true});
+                reply.data = "OK";
+                result = true;
+            }
+        } else {
+            device = this.deviceByUser(vDevId, this.req.user);
+            if (device) {
+                reply.data = device.set(reqObj);
+                result = true;
+            }
+        }
+
+        if(result) {
             reply.code = 200;
-            reply.data = device.set(reqObj);
         } else {
             reply.code = 404;
             reply.error = "Device " + vDevId + " doesn't exist";
@@ -1033,7 +1052,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
         } else {
             reply.code = 404;
-            reply.error.key = "App not found.";
+            reply.error = "App not found.";
         }
         
         return reply;
@@ -1790,10 +1809,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: null,
                 data: null,
                 code: 500
-            },
-            backupJSON = {}, 
-            userModules = [],
-            skins = [];
+            };
 
         var now = new Date();
         // create a timestamp in format yyyy-MM-dd-HH-mm
@@ -1803,81 +1819,23 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         ts += ("0" + now.getHours()).slice(-2) + "-";
         ts += ("0" + now.getMinutes()).slice(-2);
 
-        var list = loadObject("__storageContent");
+        try {
 
-        try {        
+            var backupJSON = self.controller.createBackup();
 
-            // save all objects in storage
-            for (var ind in list) {
-                if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
-                    backupJSON[list[ind]] = loadObject(list[ind]);
-                }
-            }
-
-            // add list of current userModules
-            _.forEach(fs.list('userModules')|| [], function(moduleName) {
-                if (fs.stat('userModules/' + moduleName).type === 'dir' && !_.findWhere(userModules, {name: moduleName})) {
-                    userModules.push({
-                        name: moduleName,
-                        version: self.controller.modules[moduleName]? self.controller.modules[moduleName].meta.version : ''
-                    });
-                }
-            });
-
-            if (userModules.length > 0) {
-                backupJSON['__userModules'] = userModules;
-            }
-
-            // add list of current skins excluding default skin
-            _.forEach(this.controller.skins, function(skin) {
-                if (skins.indexOf(skin) === -1 && skin.name !== 'default') {
-                    skins.push({
-                        name: skin.name,
-                        version: skin.version
-                    });
-                }
-            });
-
-            if (skins.length > 0) {
-                backupJSON['__userSkins'] = skins;
-            }
-            
-            // save Z-Way and EnOcean objects
-            if (!!global.ZWave) {
-                backupJSON["__ZWay"] = {};
-                global.ZWave.list().forEach(function(zwayName) {
-                    var bcp = "",
-                        data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
-                    
-                    for(var i = 0; i < data.length; i++) {
-                        bcp += String.fromCharCode(data[i]);
-                    }
-
-                    backupJSON["__ZWay"][zwayName] = bcp;
-                });
-            }
-
-            /* TODO
-            if (!!global.EnOcean) {
-                backupJSON["__EnOcean"] = {};
-                global.EnOcean.list().forEach(function(zenoName) {
-                    // backupJSON["__EnOcean"][zenoName] = global.EnOcean[zenoName].zeno.controller.Backup();
-                });
-            }
-            */
-           
             reply.headers= {
-                    "Content-Type": "application/x-download; charset=utf-8",
-                    "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
-                    "Connection": "keep-alive"
-            }
+                "Content-Type": "application/octet-stream", // application/x-download octet-stream
+                "Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
+                "Connection": "keep-alive"
+            };
+
             reply.code = 200;
-            reply.data = backupJSON;
+            reply.data = Base64.encode(JSON.stringify(backupJSON));
         } catch(e) {
             reply.code = 500;
             reply.error = e.toString();
         }
-        
+
         return reply;
     },
     restore: function () {
@@ -1920,10 +1878,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             //this.reset();
-            
             reqObj = typeof this.req.body.backupFile.content === 'string'? JSON.parse(this.req.body.backupFile.content) : this.req.body.backupFile.content;
-            
+
+            decodeData = Base64.decode(reqObj.data);
+            reqObj.data = JSON.parse(decodeData);
+
             // stop the controller
+
             this.controller.stop();
 
             for (var obj in reqObj.data) {
@@ -1942,6 +1903,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
                 global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
             });
+
             /* TODO
             !!reqObj.data["__EnOcean"] && reqObj.data["__EnOcean"].forEach(function(zenoName) {
                 // global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj.data["__EnOcean"][zenoName]);
@@ -2096,166 +2058,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 userModules: installedModules,
                 userSkins: installedSkins
             };
-           
+
         } catch (e) {
             reply.error = e.toString();
         }
-        
-        return reply;
-    },
-    cloudbackup: function() {
-        var self = this,
-            reqObj,
-            reply = {
-                error: null,
-                data: null,
-                code: 500
-            },
-            res = {};
-        var backupconfig = loadObject("backupconfig.json");
-
-        var profile = _.filter(this.controller.profiles, function (p) {
-                if(p.login === "admin") {
-                    return p;
-                }
-            })[0];
-
-        if(backupconfig === null) {
-            backupconfig = {
-                'active': false,
-                'email_log': 0
-            };
-        }
-
-        if(this.req.method === "GET") {
-            var remoteid = this.getRemoteId();
-            if(remoteid.data != null) {
-
-                reply.code = 200;
-                reply.data = {
-                    'active': backupconfig.active,
-                    'remote_id': remoteid.data.remote_id,
-                    'email': profile.email,
-                    'email_log': backupconfig.email_log
-                };
-
-            } else {
-                reply.error = remoteid.error
-            }
-        }
-
-        if(this.req.method === "POST" && this.req.body) {
-            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
-
-            if(reqObj.hasOwnProperty('active') && reqObj.hasOwnProperty('remote_id') && reqObj.hasOwnProperty('cloud_host_url')) {
-                backupconfig.active = reqObj.active
-
-                if(reqObj.active) {
-
-                    // create backup data
-                    backup = this.backup();
-
-                    if(!!backup.data) {
-
-                        var formRequest = function (obj) {
-                            var remoteid = self.getRemoteId();
-
-                            // define form elements
-                            var formElements = [
-                                {
-                                    name: 'remote_id',
-                                    value: remoteid.data.remote_id
-                                },{
-                                    name: 'email_report',
-                                    value: backupconfig.email_log
-                                },{
-                                    name: 'file',
-                                    filename: obj.headers["Content-Disposition"]? obj.headers["Content-Disposition"].split('=').pop() : '',
-                                    type: 'application/octet-stream',
-                                    value: JSON.stringify(backup)
-                                }];
-
-                            // set method
-                            obj.method = "POST";
-
-                            // set headers
-                            obj.headers = {
-                                "Connection": "keep-alive",
-                                "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW"
-                            }
-
-                            // set url
-                            //obj.url = "http://192.168.10.200/dev/cloudbackup/?uri=backupcreate";
-                            console.log("reqObj.cloud_host_url: ", reqObj.cloud_host_url);
-                            obj.url = reqObj.cloud_host_url;
-
-                            // clean up data
-                            obj.data = "";
-
-                            // create form boundary
-                            for (var index in formElements) {
-                                obj.data += '------WebKitFormBoundary7MA4YWxkTrZu0gW\r\n';
-                                obj.data += 'Content-Disposition: form-data; name="' + formElements[index].name + '"' + (formElements[index].filename ? ('; filename="' + formElements[index].filename) +'"': '') + '\r\n';
-                                obj.data += formElements[index].type ? ('Content-Type: ' + formElements[index].type + '\r\n\r\n') : '\r\n';
-                                obj.data += formElements[index].value + '\r\n';
-                            }
-
-                            // end of boundary
-                            obj.data += '\r\n------WebKitFormBoundary7MA4YWxkTrZu0gW--\r\n';
-
-                            console.log("obj ", JSON.stringify(obj));
-
-                            // return cloud server response
-                            return http.request(obj);
-
-                        }
-
-                        res = formRequest(backup);
-
-                        console.log("res.data.status ", res.data.status);
-
-                        // prepare response
-                        if (!res.data.status || res.data.status !== 200) {
-                            reply.error = backup.error;
-                            reply.code = res.data.code;
-                        } else {
-                            reply.code = 200;
-                        }
-
-                        reply.message = res.data.message;
-                        reply.data = res.data.data;
-
-                    } else {
-                        reply.error = backup.error;
-                    }
-                }
-            } else {
-                reply.code = 400;
-                reply.error = 'Bad Request';
-            }
-        }
-
-        if(this.req.method === "PUT" && this.req.body) {
-            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
-
-            if(reqObj.hasOwnProperty('email_log') && reqObj.hasOwnProperty('email')) {
-                backupconfig.email_log = reqObj.email_log;
-
-                profile.email = reqObj.email;
-
-                profile = this.controller.updateProfile(profile, profile.id);
-
-                reply.code = 200; 
-            } else {
-                reply.code = 400;
-                reply.error = 'Bad Request';
-            }
-        }
-
-        saveObject("backupconfig.json", backupconfig);
 
         return reply;
-
     },
     resetToFactoryDefault: function() {
         var self = this,
@@ -2698,6 +2506,167 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
+    getIcons: function () {
+        var reply = {
+            error: null,
+            data: null,
+            code: 500
+        };
+
+        if (this.controller.icons) {
+            reply.data = this.controller.icons;
+            reply.code = 200;
+        } else {
+            reply.error = 'failed_to_load_icons';
+        }
+
+        return reply;
+    },
+    uploadIcon: function() {
+        var reply = {
+            error: 'icon_failed_to_install',
+            data: null,
+            code: 500
+        };
+
+        for (prop in this.req.body){
+            if(this.req.body[prop]['content']) {
+
+                file = this.req.body[prop];
+            }
+        }
+
+        function utf8Decode(bytes) {
+            var chars = [];
+
+            for(var i = 0; i < bytes.length; i++) {
+                chars[i] = bytes.charCodeAt(i);
+            }
+
+            return chars;
+        }
+
+        function Uint8ToBase64(uint8) {
+            var i,
+                extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
+                output = "",
+                temp, length;
+
+            var lookup = [
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+                'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+                'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+                'w', 'x', 'y', 'z', '0', '1', '2', '3',
+                '4', '5', '6', '7', '8', '9', '+', '/'
+            ];
+
+            function tripletToBase64(num) {
+                return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
+            };
+
+            // go through the array every three bytes, we'll deal with trailing stuff later
+            for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
+                temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
+                output += tripletToBase64(temp);
+            }
+
+            // this prevents an ERR_INVALID_URL in Chrome (Firefox okay)
+            switch (output.length % 4) {
+                case 1:
+                    output += '=';
+                    break;
+                case 2:
+                    output += '==';
+                    break;
+                default:
+                    break;
+            }
+
+            return output;
+        }
+        var data,
+            bytes = new Uint8Array(utf8Decode(file.content)),
+            re = /(?:\.([^.]+))?$/;
+            ext = re.exec(file.name)[1];
+
+        if(ext === 'gz') {
+            var gunzip = new Zlib.Gunzip(bytes);
+            data = gunzip.decompress();
+        } else {
+            data = bytes;
+        }
+
+        file.content = Uint8ToBase64(data);
+
+        result = this.controller.installIcon('local', file, 'custom', 'icon');
+
+        if (result === "done") {
+
+            reply.code = 200;
+            reply.data = "icon_installation_successful";
+            reply.error = null;
+        }
+
+        return reply
+    },
+    addOrUpdateIcons: function(iconName) {
+        var reply = {
+                error: 'icon_failed_to_install',
+                data: null,
+                code: 500
+            },
+            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            result = "",
+            icName = iconName || reqObj.name,
+            id = reqObj.id;
+
+        index = _.findIndex(this.controller.icons, function(icon) {
+            return icon.source === icName+"_"+id;
+        });
+
+        if (index === -1 ) {
+
+            // download and install the icon
+            result = this.controller.installIcon('remote', reqObj, icName, reqObj.id);
+
+            if (result === "done") {
+
+                reply.code = 200;
+                reply.data = "icon_installation_successful";
+                reply.error = null;
+            }
+        } else {
+            reply.code = 409;
+            reply.error = 'icon_from_url_already_exists';
+        }
+
+        return reply;
+    },
+    deleteIcons: function(iconName) {
+        var reply = {
+                error: 'icon_failed_to_delete',
+                data: null,
+                code: 500
+            },
+            uninstall = false;
+
+        var reqObj = typeof this.req.body === 'string' ? JSON.parse(this.req.body) : this.req.body;
+
+        this.controller.deleteCustomicon(iconName);
+
+        uninstall = this.controller.uninstallIcon(iconName);
+
+        if (uninstall) {
+            reply.code = 200;
+            reply.data = "icon_delete_successful";
+            reply.error = null;
+        }
+
+        return reply;
+    },
     getTime: function () {
         var reply = {
                 error: null,
@@ -2732,7 +2701,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     setTimezone: function() {
-        var reply = {
+        var self = this,
+            reply = {
                 error: null,
                 data: null,
                 code: 500
@@ -2740,80 +2710,57 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             data = {
                 "act": "set",
                 "tz": ""
-            },
-            req = {
-                url: "http://localhost:8084/cgi-bin/main.cgi",
-                data: "",
-                method: "POST"
             };
 
-        var reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+        reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-        data.tz = reqObj.time_zone;
+        data.tz = reqObj.timezone;
 
-        req.data = data;
+        var req = {
+            url: "http://localhost:8084/cgi-bin/main.cgi",
+            method: "POST",
+            data: data
+        };
 
-        // Set access
+        // Set access for 10 seconds
         saveObject('8084AccessTimeout', 10);
-        var resp = http.request(req);
+        var res = http.request(req);
+        saveObject('8084AccessTimeout', null);
 
-        if(resp.status == 200) {
+        if(res.status === 200) {
             reply.code = 200;
-            reply.data = resp.statusText;
-
-            http.request({
-                url: "http://localhost:8084/cgi-bin/main.cgi",
-                method: "POST",
-                data: "act=set&zway_restart"
-            });
-
+            reply.data = res.statusText;
         } else {
-            reply.error = resp.statusText;
-            saveObject('8084AccessTimeout', null);
+            reply.error = res.statusText;
         }
+        // restart z-way-server
+        system("/etc/init.d/z-way-server restart");
 
         return reply;
     },
     getRemoteId: function () {
-        var reply = {
+        var self = this,
+            reply = {
                 error: null,
                 data: null,
                 code: 500
-            },
-            checkIfTypeError = true;
+            };
 
-        if (typeof ZBWConnect === 'function') {
             try {
-                zbw = new ZBWConnect(); // find zbw by path or use (raspberry) location /etc/zbw as default
-
-                if(!!zbw) {
-                    checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
-                }
-
-            } catch (e) {
-                try {
-                    zbw = new ZBWConnect('./zbw');
-
-                    checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
-
-                } catch (er) {
-                    console.log('Something went wrong. Reading remote id has failed. Error:' + er.message);
-                }
-            }
-
-            if(checkIfTypeError) {
-                reply.error = 'Something went wrong. Reading remote id has failed.';
-            } else {
                 reply.code = 200;
                 reply.data = {
-                    remote_id: zbw.getUserId()
+                    remote_id: self.controller.getRemoteId()
                 };
-            }
-        } else {
-            reply.code = 503;
-            reply.error = 'Reading remote id has failed. Service is not available.';
-        }
 
+            } catch (e) {
+                if(e.name === "service-not-available") {
+                    reply.code = 503;
+                    reply.error = e.message;
+                } else {
+                    reply.code = 500;
+                    reply.error = e.message;
+                }
+            }
         return reply;
     },
     // set a timout for accessing firmware update tab of 8084

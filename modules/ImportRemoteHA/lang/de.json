@@ -6,5 +6,9 @@
 	"l_password":"Password",
 	"l_dT":"Updateperiode (in Millisekunden)",
 	"l_skipDevices":"Geräte die nicht aus dem Z-Wave Homegateway importiert werden sollen:",
-	"l_renderDevices":"Aus dem Z-Wave Homegateway importierte Geräte (wird automatisch geladen):"
+	"l_renderDevices":"Aus dem Z-Wave Homegateway importierte Geräte (wird automatisch geladen):",
+	"rl_addTag":"Füge einen Tag zu allen Remote Geräten hinzu",
+	"l_tagName":"Tag",
+	"ph_tagName": "Remote Box",
+	"h_tagName": "RemoteHA_ID wird benutzt, wenn kein Tag angegeben ist"
 }

@@ -23,5 +23,15 @@
 	"sensorBinary": "Binärsensor",
 	"l_choose":"--- Gerätetyp wählen ---",
 	"l_choose_dev":"--- Gerät wählen ---",
-	"h_statusOn":"Es wird nur 'An' als Befehl gesendet."
+	"h_statusOn":"Es wird nur 'An' als Befehl gesendet.",
+	"l_choose_controller_action":"--- Interaktion wählen ---",
+	"l_controller_action":"Interaktionen",,
+	"h_controller_action":"Wenn Sie das Event 'Taste 2 loslassen' abfangen möchten, geben sie '2' für 'Taste 2' und '1' für Interaktion 'loslassen' ein => '22'. Je nach Gerät sind folgende Interaktionen möglich: 0 (einmal drücken), 1 (loslassen), 2 (gedrückt halten), 3 (zweimal drücken), 4 (dreimal drücken), 5 (viermal drücken), 6 (fünfmal drücken)",
+	"sensorDiscrete":"Steuerung (Interaktion)",
+	"switchRGBW":"Farbsteuerung",
+	"l_red":"Rot",
+	"l_green":"Grün",
+	"l_blue":"Blau",
+	"colors":"Farben",
+	"h_color":"Wählen Sie einen Wert von 0 - 255"
 }

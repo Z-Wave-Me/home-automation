@@ -71,6 +71,7 @@
                 "required": false
             },
             "password": {
+                "format": "password",
                 "required": false
             },
             "doorDevices": {

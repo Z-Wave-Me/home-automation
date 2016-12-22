@@ -1,6 +1,6 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.1.1
+Version: 2.4.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -30,13 +30,12 @@ IfThen.prototype.init = function (config) {
 
     var self = this,
         ifElement = self.config.sourceDevice[self.config.sourceDevice.filterIf];
-
     this.handlerLevel = function (sDev) {
         var that = self,
-            value = sDev.get("metrics:level"),
             operator = ifElement.operator,
-            ifLevel = ifElement.status === 'level' && ifElement.level? ifElement.level : ifElement.status,
-            check = true;
+            ifLevel = (ifElement.status === 'level' && ifElement.level) || (!ifElement.status && ifElement.level) ? ifElement.level : ifElement.status,
+            check = false,
+            value = sDev.get("metrics:level");
 
         if (operator && ifLevel) {
             switch (operator) {
@@ -52,11 +51,11 @@ IfThen.prototype.init = function (config) {
             }
         }
 
-        if(check || value === ifElement.status || sDev.get('deviceType') === 'toggleButton'){
+        if(check || value === ifLevel || sDev.get('deviceType') === 'toggleButton'){
             self.config.targets.forEach(function(el) {
                 var type = el.filterThen,
                     id = el[type].target,
-                    lvl = el[type].status === 'level' && el[type].level? el[type].level : el[type].status,
+                    lvl = el[type].status === 'level' && el[type].level? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
                     vDev = that.controller.devices.get(id),
                     // compare old and new level to avoid unneccessary updates
                     compareValues = function(valOld,valNew){
@@ -68,15 +67,18 @@ IfThen.prototype.init = function (config) {
                     set = compareValues(vDev.get("metrics:level"), lvl);
                 
                 if (vDev && set) {
-                    if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat")) {
+                    if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat" || type === "switchRGBW")) {
                         if (lvl === 'on' || lvl === 'off'){
                             vDev.performCommand(lvl);
+                        } else if (typeof lvl === 'object') {
+                            vDev.performCommand("exact", lvl);
                         } else {
                             vDev.performCommand("exact", { level: lvl });
                         }
                     } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
                         vDev.performCommand("on");
                     } else if (vDev.get("deviceType") === type) {
+                        
                         vDev.performCommand(lvl);
                     }
                 }

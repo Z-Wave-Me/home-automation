@@ -1,8 +1,8 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.1.3
+Version: 2.3.0
 -------------------------------------------------------------------------------
-Author: Serguei Poltorak <ps@z-wave.me>
+Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Copyright: (c) Z-Wave.Me, 2014
 
 ******************************************************************************/
@@ -759,12 +759,14 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Postfix", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PostfixAdd", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".CallForAllNIF", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -790,12 +792,14 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixUpdate");
 	ws.revokeExternalAccess(_name + ".Postfix");
 	ws.revokeExternalAccess(_name + ".PostfixAdd");
-    ws.revokeExternalAccess(_name + ".PostfixGet");
-    ws.revokeExternalAccess(_name + ".PostfixRemove");
+	ws.revokeExternalAccess(_name + ".PostfixGet");
+	ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
     ws.revokeExternalAccess(_name + ".CallForAllNIF");
     ws.revokeExternalAccess(_name + ".CheckAllLinks");
+	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
+	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -1472,7 +1476,14 @@ ZWave.prototype.defineHandlers = function () {
 
 			if (data.file && data.file.content) {
 				// update firmware from file
-				fwUpdate.Perform(manufacturerId, firmwareId, targetId, data.file.content);
+				var fw;
+				if (data.file.content.substr(0, 1) === ":") {
+					// this is a .hex file
+					fw = IntelHex2bin(data.file.content);
+				} else {
+					fw = data.file.content;
+				}
+				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 			} else if (data.url) {
 				// update firmware from url
 				http.request({
@@ -1481,7 +1492,14 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream", // enforce binary response
 					async: true,
 					success: function (res) {
-						fwUpdate.Perform(manufacturerId, firmwareId, targetId, res.data);
+						var fw;
+						if (res.data.substr(0, 1) === ":") {
+							// this is a .hex file
+							fw = IntelHex2bin(res.data);
+						} else {
+							fw = res.data;
+						}
+						fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 					},
 					error: function (res) {
 						console.error("Failed to download firmware: " + res.statusText);
@@ -1526,47 +1544,75 @@ ZWave.prototype.defineHandlers = function () {
 	this.ZWaveAPI.ZMEFirmwareUpgrade = function(url, request) {
 		try {
 			var data = request && request.data;
-			if (!data || !data.url) {
+			if (!data) {
 				throw "Invalid request";
 			}
 
 			var result = "in progress";
 
-			http.request({
-				url: data.url,
-				async: true,
-				contentType: "application/octet-stream",
-				success: function(response) {
-					var L = 32,
-					    bootloader_6_70 = 
-					    	zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
-					    	|| 
-					    	zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
-					    ,
-					    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-					    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
-					
-					for (var i = 0; i < data.byteLength; i += L) {
-						var arr = (new Uint8Array(data.slice(i, i+L)));
-						if (arr.length == 1) {
-							arr = [arr[0]]
-							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-						}
-						zway.NVMExtWriteLongBuffer(addr + i, arr);
+			if (data.file && data.file.content) {
+				var L = 32,
+				    bootloader_6_70 =
+					zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+					||
+					zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+				    ,
+				    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+				    data = bootloader_6_70 ? data.file.content : data.file.content.slice(0x1800);
+
+				// here it is data.length, not data.byteLength
+				for (var i = 0; i < data.length; i += L) {
+					var arr = (new Uint8Array(data.slice(i, i+L)));
+					if (arr.length == 1) {
+						arr = [arr[0]]
+						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
 					}
-					
-					zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
-						function() {
-							zway.SerialAPISoftReset(function() {
-								result = "done"
-							});
-					});
-				},
-				error: function (res) {
-					console.error("Failed to download firmware: " + res.statusText);
-					result = "failed";
+					zway.NVMExtWriteLongBuffer(addr + i, arr);
 				}
-			});
+
+				zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+					function() {
+						zway.SerialAPISoftReset(function() {
+							result = "done"
+						});
+				});
+			} else if (data.url) {
+				http.request({
+					url: data.url,
+					async: true,
+					contentType: "application/octet-stream",
+					success: function(response) {
+						var L = 32,
+						    bootloader_6_70 =
+							zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+							||
+							zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+						    ,
+						    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+						    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
+
+						for (var i = 0; i < data.byteLength; i += L) {
+							var arr = (new Uint8Array(data.slice(i, i+L)));
+							if (arr.length == 1) {
+								arr = [arr[0]]
+								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+							}
+							zway.NVMExtWriteLongBuffer(addr + i, arr);
+						}
+
+						zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+							function() {
+								zway.SerialAPISoftReset(function() {
+									result = "done"
+								});
+						});
+					},
+					error: function (res) {
+						console.error("Failed to download firmware: " + res.statusText);
+						result = "failed";
+					}
+				});
+			}
 			
 			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
 			
@@ -1587,46 +1633,73 @@ ZWave.prototype.defineHandlers = function () {
 	this.ZWaveAPI.ZMEBootloaderUpgrade = function(url, request) {
 		try {
 			var data = request && request.data;
-			if (!data || !data.url) {
+			if (!data) {
 				throw "Invalid request";
 			}
 
 			var result = "in progress";
 
-			http.request({
-				url: data.url,
-				async: true,
-				contentType: "application/octet-stream",
-				success: function(response) {
-					var L = 32,
-					    seg = 6,	 // Функция бутлодера принимает номер сегмента
-					    addr = seg*0x800, // ==12k
-					    data = response.data;
-					
-					for (var i = 0; i < data.byteLength; i += L) {
-						var arr = (new Uint8Array(data.slice(i, i+L)));
-						if (arr.length == 1) {
-							arr = [arr[0]]
-							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-						}
-						zway.NVMExtWriteLongBuffer(addr + i, arr);
+			if (data.file && data.file.content) {
+				var L = 32,
+				    seg = 6,	 // Функция бутлодера принимает номер сегмента
+				    addr = seg*0x800, // ==12k
+				    data = data.file.content;
+
+				// here it is data.length, not data.byteLength
+				for (var i = 0; i < data.length; i += L) {
+					var arr = (new Uint8Array(data.slice(i, i+L)));
+					if (arr.length == 1) {
+						arr = [arr[0]]
+						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
 					}
-					
-					zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
-						function() {
-							//Вызываем перезапись bootloder
-							zway.ZMEBootloaderFlash(seg, function() {
-								result = "done";
-							},  function() {
-								result = "failed";
-							});
-					});
-				},
-				error: function (res) {
-					console.error("Failed to download bootloader: " + res.statusText);
-					result = "failed";
+					zway.NVMExtWriteLongBuffer(addr + i, arr);
 				}
-			});
+
+				zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+					function() {
+						//Вызываем перезапись bootloder
+						zway.ZMEBootloaderFlash(seg, function() {
+							result = "done";
+						},  function() {
+							result = "failed";
+						});
+				});
+			} else if (data.url) {
+				http.request({
+					url: data.url,
+					async: true,
+					contentType: "application/octet-stream",
+					success: function(response) {
+						var L = 32,
+						    seg = 6,	 // Функция бутлодера принимает номер сегмента
+						    addr = seg*0x800, // ==12k
+						    data = response.data;
+
+						for (var i = 0; i < data.byteLength; i += L) {
+							var arr = (new Uint8Array(data.slice(i, i+L)));
+							if (arr.length == 1) {
+								arr = [arr[0]]
+								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+							}
+							zway.NVMExtWriteLongBuffer(addr + i, arr);
+						}
+
+						zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+							function() {
+								//Вызываем перезапись bootloder
+								zway.ZMEBootloaderFlash(seg, function() {
+									result = "done";
+								},  function() {
+									result = "failed";
+								});
+						});
+					},
+					error: function (res) {
+						console.error("Failed to download bootloader: " + res.statusText);
+						result = "failed";
+					}
+				});
+			}
 
 			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
 			
@@ -2000,6 +2073,124 @@ ZWave.prototype.defineHandlers = function () {
 
         return reply;
     }
+
+	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
+        var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "close"
+				},
+				body: null
+			},
+			l = ['en','de'],  //this.controller.availableLang
+            devInfo = {},
+        	reqObj = !request.query? undefined : (typeof request.query === "string" ? JSON.parse(request.query) : request.query);
+
+		try {
+
+			devID = reqObj && reqObj.id? reqObj.id : null;
+			language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1? reqObj.lang : 'en';
+
+			if (reqObj && reqObj.lang && l.indexOf(reqObj.lang) === -1) {
+				reply.message = 'Language not found. English is used instead.';
+			}
+
+            devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
+
+
+			if (devInfo === null) {
+                reply.status = 404;
+                reply.message = 'No list of Z-Wave devices found. Please try to download them first.';
+			} else {
+                reply.body = devInfo;
+
+                if (!!devID) {
+                    reply.body = _.find(devInfo.zwave_devices, function(dev) {
+                        return dev['Certification_ID'] === devID;
+                    });
+
+                    if (!reply.body) {
+                       reply.status = 404;
+                       reply.message = 'No ZWave devices found. Please try to download them first.';
+                       reply.body = null;
+					}
+				}
+			}
+		} catch (e) {
+            reply.status = 500;
+            reply.message = 'Something went wrong:' + e.message;
+		}
+
+		return reply;
+	};
+
+	this.ZWaveAPI.ZWaveDeviceInfoUpdate = function() {
+		var self = this,
+			result = [],
+			l = ['en','de'],  //this.controller.availableLang,
+			reply = {
+				status: 500,
+				headers: {
+					"Content-Type": "application/json",
+					"Connection": "close"
+				},
+				body: null
+			},
+			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+
+		try {
+			// update postfix JSON
+			l.forEach(function(lang) {
+				var obj = {},
+                	blub = {
+						updateTime: '',
+						zwave_devices: []
+					};
+
+				obj[lang] = false;
+
+				http.request({
+					url: "http://manuals-backend.z-wave.info/make.php?lang=" + lang + "&mode=ui_devices",
+					async: true,
+					success: function(res) {
+						if (res.data) {
+							data = typeof res.data === 'string'? JSON.parse(res.data) : res.data;
+                            blub.updateTime = (new Date()).getTime();
+
+							for (index in data) {
+                                blub.zwave_devices.push(data[index]);
+							}
+
+							saveObject(lang +'.devices.json', blub);
+							obj[lang] = true;
+						}
+
+						result.push(obj);
+					},
+					error: function() {
+						console.log('ZWave device list for lang:' + lang + ' not found.');
+						result.push(obj);
+					}
+				});
+			});
+
+			while (result.length < l.length && (new Date()).valueOf() < delay) {
+				processPendingCallbacks();
+			}
+
+			if(result) {
+				reply.status = 200;
+				reply.body = result;
+			}
+
+		} catch (e) {
+			console.log('Error has occured during updating the ZWave devices list');
+			reply.message = 'Something went wrong:' + e.message;
+		}
+
+		return reply;
+	};
 
 
 	/*
@@ -2490,25 +2681,55 @@ ZWave.prototype.gateDevicesStart = function () {
 													case 'icon':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															var nId = nodeId + '-' + splittedEntry[1];
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) / postFix type / value - fallback true for hide / deactivate
-															changeVDev[splittedEntry[1]][splittedEntry[0]] = splittedEntry[2] ? splittedEntry[2] : true;
+															changeVDev[nId][splittedEntry[0]] = splittedEntry[2] ? splittedEntry[2] : true;
+														}
+
+														break;
+													case 'discreteState':
+														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
+															//add devId
+															var nId = nodeId + '-' + splittedEntry[1];
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
+															}
+
+															if (!changeVDev[nId]['discreteState']) {
+																changeVDev[nId]['discreteState'] = {};
+															}
+
+															// devId (instId-CC-sCC-eT) / postFix type / scene + keyAttribute / value - fallback undefined
+															changeVDev[nId]['discreteState'][splittedEntry[2]] = {
+																cnt: splittedEntry[3] ? splittedEntry[3] : undefined,
+																action: splittedEntry[4] ? splittedEntry[4] : undefined,
+																type: splittedEntry[5] ? splittedEntry[5] : undefined
+															};
+															//console.log('discreteState',splittedEntry[3]);
+															//console.log('changeVDev',JSON.stringify(changeVDev, null, 4));
 														}
 
 														break;
 													case 'noVDev':
 
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
+
+															var nId = nodeId + '-' + splittedEntry[1];
+
 															//add devId
-															if (!changeVDev[splittedEntry[1]]) {
-																changeVDev[splittedEntry[1]] = {};
+															//add devId
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
 															}
 
 															// devId (instId-CC-sCC-eT) without creation
-															changeVDev[splittedEntry[1]].noVDev = true;
+															changeVDev[nId].noVDev = true;
 														}
 
 														break;
@@ -2536,7 +2757,7 @@ ZWave.prototype.gateDevicesStart = function () {
 						}
 					}
 
-					var ccId = instanceId + '-' + commandClassId;
+					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
 					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev);
@@ -2609,7 +2830,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		vDevIdNI = nodeId + separ + instanceId,
 		vDevIdC = commandClassId,
 		vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
-		changeDevId = instanceId + separ + vDevIdC,
+		changeDevId = vDevIdNI + separ + vDevIdC,
 		defaults;
 		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
@@ -2639,7 +2860,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var args = [],
 				sortArgs = [],
 				last = 0,
-				addVendor = true;
+				addVendor = true,
+				lastId = '',
+				lastIdArr = [];
 
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
@@ -2674,7 +2897,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			// add id
-			sortArgs.push('(' + args[last].replace(/-/g, '.') + ')');
+			lastIdArr = args[last].split('-');
+
+			// devices[nodeId].instances[0].commandClasses[96]
+			if (this.zway.devices[lastIdArr[0]].instances[0].commandClasses[96] && Object.keys(this.zway.devices[lastIdArr[0]].instances).length > 1) {
+				lastId = '(' + args[last].replace(/-/g, '.') + ')';
+			} else {
+				lastId = '(#' + lastIdArr[0] + ')';
+			}
+
+			/*if (args[last].indexOf('-0') > -1 ) {
+				lastId = args[last].split('-').shift();
+			} else {
+				lastId = '(' + args[last].replace(/-/g, '.') + ')';
+			}*/
+
+			sortArgs.push(lastId);
 			
 			return sortArgs.join(' ');
 		}
@@ -2706,6 +2944,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			defaultObj.metrics.title = changeObj.rename? compileTitle(changeObj.rename, devIdNI, false) : defaultObj.metrics.title;
 			defaultObj.visibility = changeObj.hide? false : true;
 			defaultObj.permanently_hidden = changeObj.deactivate? true : false;
+
+			if (defaultObj.metrics.discreteStates) {
+				defaultObj.metrics.discreteStates = changeObj.discreteState && !_.isEmpty(changeObj.discreteState)? changeObj.discreteState : defaultObj.metrics.discreteStates;
+			}
 
 			postfixLog(devId, changeObj);
 
@@ -2751,8 +2993,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
-			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([3, 5, 6, 7], this.zway.devices[nodeId].data.specificType.value);
-
+			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value);
 			defaults = {
 				deviceType: "switchMultilevel",
 				probeType: isMotor ? 'motor' : 'multilevel',
@@ -2861,7 +3102,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					probeType: 'switchColor_rgb',
 					metrics: {
 						icon: 'multilevel',
-						title: compileTitle('Color', vDevIdNI + separ + vDevIdC),
+						title: compileTitle('Color', vDevIdNI),
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 						level: 'off'
 					}
@@ -2869,7 +3110,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 				// apply postfix if available
 				if (changeVDev[changeDevId]) {
-					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI + separ + vDevIdC);
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI);
 				}
 
 				var vDev_rgb = this.controller.devices.create({
@@ -2922,14 +3163,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							probeType: '',
 							metrics: {
 								icon: 'multilevel',
-								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI + separ + vDevIdC + separ + colorId),
+								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 								level: 'off'
 							}
 						}
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI + separ + vDevIdC + separ + colorId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI);
 						}
 
 						switch(colorId) {
@@ -3048,7 +3289,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
-						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
 						// aivs // Motion icon for Sensor Binary by default
 						defaults.metrics.icon = "motion";
 						defaults.probeType = "general_purpose";
@@ -3078,7 +3319,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -3140,7 +3381,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
-						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
 						if (sensorTypeId === 1) {
 							defaults.metrics.icon = "temperature";
 							defaults.probeType = defaults.metrics.icon;
@@ -3175,7 +3416,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + sensorTypeId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -3234,7 +3475,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 						defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI + separ + vDevIdC + separ + scaleId);
+						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI);
 
 						switch (scaleId) {
 							case 0:
@@ -3261,7 +3502,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
-							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + scaleId, vDevIdNI + separ + vDevIdC + separ + scaleId);
+							defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + scaleId, vDevIdNI);
 						}
 
 						var vDev = self.controller.devices.create({
@@ -3556,7 +3797,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-							a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+							a_defaults.metrics.title = compileTitle('Alarm', cc.data[sensorTypeId].typeString.value, vDevIdNI);
 
 							switch (sensorTypeId) {
 								case 0:
@@ -3601,7 +3842,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 							// apply postfix if available
 							if (changeVDev[cVDId]) {
-								a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + sensorTypeId);
+								a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 							}
 
 							var a_vDev = self.controller.devices.create({
@@ -3666,12 +3907,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 								if (!self.controller.devices.get(a_id)) {
-									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+									a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 									a_defaults.probeType = 'alarm_door';
 
 									// apply postfix if available
 									if (changeVDev[cVDId]) {
-										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + 'Door');
+										a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 									}
 
 									var a_vDev = self.controller.devices.create({
@@ -3782,11 +4023,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
 												if (!self.controller.devices.get(a_id)) {
-													a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+													a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 
 													// apply postfix if available
 													if (changeVDev[cVDId]) {
-														a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+														a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 													}
 
 													var a_vDev = self.controller.devices.create({
@@ -3832,11 +4073,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
 									// check if it should be created
 									if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
 
 										// apply postfix if available
 										if (changeVDev[cVDId]) {
-											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI + separ + vDevIdC + separ + notificationTypeId + separ + eventTypeId);
+											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
 										}
 
 										var a_vDev = self.controller.devices.create({
@@ -3877,6 +4118,111 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, changeVDev);
 					}
 				}, "child");
+			}
+		} else if (this.CC["CentralScene"] === commandClassId) {
+
+			var devId = vDevId + separ + 'DS';
+
+			defaults = {
+				deviceType: 'sensorDiscrete',
+				probeType: 'control',
+				metrics: {
+					probeTitle: 'Control',
+					icon: 'gesture',
+					level: '',
+					title: compileTitle('Sensor', 'Control', vDevIdNI),
+                    state: '',
+					/* GESTURES (state):
+					 * hold,
+					 * press / tap (cnt),
+					 * release,
+					 * swipe_up,
+					 * swipe_down,
+					 * swipe_left,
+					 * swipe_right,
+					 * swipe_top_left_to_bottom_right,
+					 * swipe_top_right_to_bottom_left,
+					 * swipe_bottom_left_to_top_right,
+					 * swipe_bottom_right_to_top_left
+					 */
+					currentScene: '',
+					discreteStates: {}
+				}
+			};
+
+			// apply postfix if available
+			if (changeVDev[changeDevId]) {
+				defaults = applyPostfix(defaults, changeVDev[changeDevId], devId, vDevIdNI);
+			}
+
+			var vDev = self.controller.devices.create({
+				deviceId: devId,
+				defaults: defaults,
+				overlay: {},
+				handler: function (command) {
+					if (command === "update") {
+						cc.Get;
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
+					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
+						self.controller.devices.remove(devId);
+					} else {
+						try {
+							// output curScene + keyAttr or ''
+							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : 0,
+								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : 0,
+								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : 0,
+								/*
+								 * CentralScene v3:
+								 *
+								 * 0x00 Key Pressed 1 time
+								 * 0x01 Key Released
+								 * 0x02 Key Held Down
+								 * 0x03 Key Pressed 2 times
+								 * 0x04 Key Pressed 3 times
+								 * 0x05 Key Pressed 4 times
+								 * 0x06 Key Pressed 5 times
+								 */
+								kaCnt = kA > 0x02? kA - 0x01 : 0x01,
+								cL = cS.toString() + kA.toString(),
+								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
+								st = '',
+								cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
+								type = dS && dS['type']? dS['type'] : 'B',
+								setAction = function () {
+									switch (kA) {
+										case 0x01:
+											st = dS && dS['action']? dS['action'] : 'release';
+											break;
+										case 0x02:
+											st = dS && dS['action']? dS['action'] : 'hold';
+											break;
+										default:
+											st = dS && dS['action']? dS['action'] : 'press';
+											break;
+									}
+								};
+
+
+							setAction();
+
+							vDev.set("metrics:state", st);
+							vDev.set("metrics:currentScene", cS);
+							vDev.set("metrics:keyAttribute", kA);
+							vDev.set("metrics:maxScenes", mC);
+							vDev.set("metrics:level", cL);
+							vDev.set("metrics:cnt", cnt);
+							vDev.set("metrics:type", type);
+
+						} catch (e) {
+						}
+					}
+				}, "value");
 			}
 		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
