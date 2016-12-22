@@ -241,7 +241,6 @@ CloudBackup.prototype.userUpdate = function() {
     }
 };
 
-
 // --------------- Public HTTP API -------------------
 
 
