@@ -1163,6 +1163,12 @@ ZWave.prototype.defineHandlers = function () {
 			var result = "in progress";
 
 			if (data.file && data.file.content) {
+				var buf = new ArrayBuffer(data.file.content.length);
+				var bufView = new Uint8Array(buf);
+				for (var i = 0; i < data.file.content.length; i++) {
+					bufView[i] = data.file.content.charCodeAt(i);
+				}
+				
 				var L = 32,
 				    bootloader_6_70 = 
 					zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
@@ -1170,10 +1176,9 @@ ZWave.prototype.defineHandlers = function () {
 					zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
 				    ,
 				    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-				    data = bootloader_6_70 ? data.file.content : data.file.content.slice(0x1800);
+				    data = bootloader_6_70 ? buf : buf.slice(0x1800);
 				
-				// here it is data.length, not data.byteLength
-				for (var i = 0; i < data.length; i += L) {
+				for (var i = 0; i < data.byteLength; i += L) {
 					var arr = (new Uint8Array(data.slice(i, i+L)));
 					if (arr.length == 1) {
 						arr = [arr[0]]
@@ -1252,13 +1257,18 @@ ZWave.prototype.defineHandlers = function () {
 			var result = "in progress";
 
 			if (data.file && data.file.content) {
+				var buf = new ArrayBuffer(data.file.content.length);
+				var bufView = new Uint8Array(buf);
+				for (var i = 0; i < data.file.content.length; i++) {
+					bufView[i] = data.file.content.charCodeAt(i);
+				}
+				
 				var L = 32,
 				    seg = 6,	 // Функция бутлодера принимает номер сегмента
 				    addr = seg*0x800, // ==12k
-				    data = data.file.content;
+				    data = buf;
 				
-				// here it is data.length, not data.byteLength
-				for (var i = 0; i < data.length; i += L) {
+				for (var i = 0; i < data.byteLength; i += L) {
 					var arr = (new Uint8Array(data.slice(i, i+L)));
 					if (arr.length == 1) {
 						arr = [arr[0]]
