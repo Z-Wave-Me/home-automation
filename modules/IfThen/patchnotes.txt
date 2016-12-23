@@ -1,5 +1,7 @@
-v2.3.0
+v2.4.1
 - adding support for sensorDiscrete
+- adding support for switchRGBW
+- bugfix ON/OFF if sensorMultilevel is trigger action
 v2.1.1
 - bugfix missing change of levels switch multilevel and refactoring
 - avoid update of vDev with same level
