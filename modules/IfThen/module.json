@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName": "IfThen",
-	"version": "2.4.0",
+	"version": "2.4.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -425,7 +425,6 @@
 								"noneLabel": "__l_choose_dev__",
 								"datasource": "namespaces",
 								"field": "optionLabels",
-								"helper": "__h_statusOn__",
 								"optionLabels": "namespaces:devices_toggleButton:deviceName"
 							}
 						}
@@ -441,7 +440,6 @@
 								"noneLabel": "__l_choose_dev__",
 								"datasource": "namespaces",
 								"field": "optionLabels",
-								"helper": "__h_statusOn__",
 								"optionLabels": "namespaces:devices_sensorDiscrete:deviceName"
 							},
 							"level": {
@@ -620,7 +618,7 @@
 										"removeDefaultNone": false,
 										"noneLabel": "__l_choose_dev__",
 										"label": "__l_scene__",
-										"helper": "__h_statusOn__",
+										"label": "__l_scene__",
 										"datasource": "namespaces",
 										"field": "optionLabels",
 										"optionLabels": "namespaces:devices_toggleButton:deviceName"

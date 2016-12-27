@@ -2,7 +2,7 @@
   "m_title":"CloudBackup",
   "m_descr":"",
   "l_email":"E-Mail",
-  "l_email_log":"E-Mail Benachrichtigung bei erstellter Datensicherung",
+  "l_email_log":"E-Mail Benachrichtigung zur Datensicherung",
   "l_no_log":"Kein E-Mail Benachrichtigung",
   "l_only_log":"E-Mail Benachrichtigung bei fehlgeschlagener Datensicherung",
   "l_log_notification":"E-Mail Benachrichtigung bei fehlgeschlagener und erfolgreicher Datensicherung",
