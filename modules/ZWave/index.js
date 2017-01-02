@@ -1233,6 +1233,9 @@ ZWave.prototype.defineHandlers = function () {
 						result = "failed";
 					}
 				});
+			} else {
+                console.error("Wrong request. Failed to apply firmware.");
+                result = "failed";
 			}
 			
 			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
