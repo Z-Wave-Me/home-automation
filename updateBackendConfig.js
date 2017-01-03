@@ -3,7 +3,8 @@
 (function () {
   var config = loadObject("config.json"),
       oldConfigJSON = JSON.stringify(config),
-      skins = loadObject("userSkins.json");
+      skins = loadObject("userSkins.json"),
+      notifications = loadObject("notifications");
 
   if (config) {
     // Change profiles data
@@ -437,4 +438,24 @@
       console.log("Error: can not write userSkins.json to storage: ", e);
     }
   }
+
+  // change notification property h into uts and delete h
+  if (notifications) {
+        try {
+            notifications.forEach(function(notification){
+                if(!notification.hasOwnProperty('uts')) {
+                    notification.uts = Math.floor(notification.id*1000);
+                }
+
+                if(notification.hasOwnProperty('h')) {
+                    delete notification.h;
+                }
+            });
+
+            saveObject('notifications', notifications);
+        } catch (e) {
+            console.log("Error: Cannot write notifications to storage: ", e.message);
+        }
+
+    }
 })();
