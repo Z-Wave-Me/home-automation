@@ -443,8 +443,8 @@
   if (notifications) {
         try {
             notifications.forEach(function(notification){
-                if(!notification.hasOwnProperty('uts')) {
-                    notification.uts = Math.floor(notification.id*1000);
+                if(notification.hasOwnProperty('id') && notification.id.toString().length === 10) {
+                    notification.id = Math.floor(notification.id*1000);
                 }
 
                 if(notification.hasOwnProperty('h')) {

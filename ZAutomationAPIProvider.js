@@ -87,6 +87,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
         this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.getLocationFunc);
 
+        this.router.get("/notifications/:notification_id", this.ROLE.USER, this.exposeNotifications, [parseInt]);
         this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
         this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
@@ -383,31 +384,50 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     // Notifications
-    exposeNotifications: function () {
+    exposeNotifications: function (notificationId) {
         var notifications,
             reply = {
                 error: null,
                 data: null,
                 code: 200
             },
-            timestamp = Math.floor(new Date().getTime() / 1000),
+            timestamp = new Date().getTime(),
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
             to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
             profile = this.profileByUser(this.req.user),
-            devices = this.devicesByUser(this.req.user).map(function(device) { return device.id; });
+            devices = this.devicesByUser(this.req.user).map(function(device) { return device.id; }),
+            test = function(n) {
+                return ((profile.hide_system_events === false && n.level !== 'device-info') || // hide_system_events = false
+                    (profile.hide_all_device_events === false && n.level === 'device-info')) && // hide_device_events = false
+                    (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(n.source) === -1) && // remove events from devices to hide
+                    ((n.level !== 'device-info' && devices.indexOf(n.source) === -1) || (n.level === 'device-info' && devices.indexOf(n.source) > -1));//  filter device by user
+            };
 
-        notifications = this.controller.notifications.filter(function (notification) {
-            return  notification.id >= since && notification.id <= to && // filter by time
-                    ((profile.hide_system_events === false && notification.level !== 'device-info') || // hide_system_events = false
-                    (profile.hide_all_device_events === false && notification.level === 'device-info')) && // hide_device_events = false
-                    (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(notification.source) === -1) && // remove events from devices to hide
-                    ((notification.level !== 'device-info' && devices.indexOf(notification.source) === -1) || (notification.level === 'device-info' && devices.indexOf(notification.source) > -1));// filter by user device
-        });
+        if (notificationId) {
 
-        reply.data = {
-            updateTime: timestamp,
-            notifications: notifications
-        };
+            notification = this.controller.notifications.filter(function (notification) {
+                return notification.id === notificationId && // filter by id
+                        test(notification); // check against 2nd filter
+            });
+
+            if (notification.length > 0 ) {
+                reply.data = notification[0];
+            } else {
+                reply.code = 404;
+                reply.error = 'Not found';
+            }
+
+        } else {
+            notifications = this.controller.notifications.filter(function (notification) {
+                return  notification.id >= since && notification.id <= to && // filter by time
+                        test(notification); // check against 2nd filter
+            });
+
+            reply.data = {
+                updateTime: Math.floor(timestamp/1000),
+                notifications: notifications
+            };
+        }
 
         if (Boolean(this.req.query.pagination)) {
             reply.data.total_count= notifications.length;

@@ -1329,10 +1329,8 @@ AutomationController.prototype.loadNotifications = function () {
 
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
     var now = new Date(),
-        uts = now.getTime(),
         notice = {
-            id: Math.floor(uts /1000),
-            uts: uts,
+            id: Math.floor(now.getTime()),
             timestamp: now.toISOString(),
             level: severity,
             message: message, 
@@ -1361,12 +1359,12 @@ AutomationController.prototype.deleteNotifications = function (ts, before, callb
     if (ts !== 0) {
         if (before) {
             newNotificationList = this.notifications.filter(function (notification) {
-                return notification.uts >= ts;
+                return notification.id >= ts;
             });
             console.log('---------- all notifications before ' + ts + ' deleted ----------');
         } else {
             newNotificationList = this.notifications.filter(function (notification) {
-                return notification.uts !== ts;
+                return notification.id !== ts;
             });
             console.log('---------- notification with id ' + ts + ' deleted ----------');
         }
@@ -1407,7 +1405,7 @@ AutomationController.prototype.redeemNotification = function (id, redeemed, call
 
     if (id > 0) {
         this.notifications.forEach(function(notification) {
-            if (notification.uts === id) {
+            if (notification.id === id) {
                 notification.redeemed = r;
             }
         });
