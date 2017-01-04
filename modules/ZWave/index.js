@@ -1643,7 +1643,7 @@ ZWave.prototype.defineHandlers = function () {
 
                 if (!!devID) {
                     reply.body = _.find(devInfo.zwave_devices, function(dev) {
-                        return dev['Certification_ID'] === devID;
+                        return dev['Product_Code'] === devID;
                     });
 
                     if (!reply.body) {
