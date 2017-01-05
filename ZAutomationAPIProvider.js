@@ -44,6 +44,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/login", this.ROLE.ANONYMOUS, this.verifyLogin);
         this.router.get("/logout", this.ROLE.USER, this.doLogout);
         this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
+        this.router.put("/notifications", this.ROLE.ADMIN, this.redeemNotifications);
+        this.router.del("/notifications", this.ROLE.ADMIN, this.deleteNotifications);
         this.router.get("/history", this.ROLE.USER, this.exposeHistory);
         this.router.del("/history", this.ROLE.USER, this.exposeHistory);
         this.router.get("/devices", this.ROLE.USER, this.listDevices);
@@ -85,7 +87,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
         this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.getLocationFunc);
 
+        this.router.get("/notifications/:notification_id", this.ROLE.USER, this.exposeNotifications, [parseInt]);
         this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
+        this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
         this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
         this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
@@ -143,11 +147,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.del("/icons/:icon_id", this.ROLE.ADMIN, this.deleteIcons);
         this.router.post("/icons/upload", this.ROLE.ADMIN, this.uploadIcon);
         this.router.post("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
-        //this.router.put("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
 
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
-        //this.router.get("/system/trust-my-network", this.ROLE.ADMIN, this.getTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
-        //this.router.put("/system/trust-my-network", this.ROLE.ADMIN, this.setTrustMyNetwork); // TODO !! Remove this as it should be stored in the UI, not on the server
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
         this.router.put("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
@@ -383,31 +384,50 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     // Notifications
-    exposeNotifications: function () {
+    exposeNotifications: function (notificationId) {
         var notifications,
             reply = {
                 error: null,
                 data: null,
                 code: 200
             },
-            timestamp = Math.floor(new Date().getTime() / 1000),
+            timestamp = new Date().getTime(),
             since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
             to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
             profile = this.profileByUser(this.req.user),
-            devices = this.devicesByUser(this.req.user).map(function(device) { return device.id; });
+            devices = this.devicesByUser(this.req.user).map(function(device) { return device.id; }),
+            test = function(n) {
+                return ((profile.hide_system_events === false && n.level !== 'device-info') || // hide_system_events = false
+                    (profile.hide_all_device_events === false && n.level === 'device-info')) && // hide_device_events = false
+                    (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(n.source) === -1) && // remove events from devices to hide
+                    ((n.level !== 'device-info' && devices.indexOf(n.source) === -1) || (n.level === 'device-info' && devices.indexOf(n.source) > -1));//  filter device by user
+            };
 
-        notifications = this.controller.notifications.filter(function (notification) {
-            return  notification.id >= since && notification.id <= to && // filter by time
-                    ((profile.hide_system_events === false && notification.level !== 'device-info') || // hide_system_events = false
-                    (profile.hide_all_device_events === false && notification.level === 'device-info')) && // hide_device_events = false
-                    (!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(notification.source) === -1) && // remove events from devices to hide
-                    ((notification.level !== 'device-info' && devices.indexOf(notification.source) === -1) || (notification.level === 'device-info' && devices.indexOf(notification.source) > -1));// filter by user device
-        });
+        if (notificationId) {
 
-        reply.data = {
-            updateTime: timestamp,
-            notifications: notifications
-        };
+            notification = this.controller.notifications.filter(function (notification) {
+                return notification.id === notificationId && // filter by id
+                        test(notification); // check against 2nd filter
+            });
+
+            if (notification.length > 0 ) {
+                reply.data = notification[0];
+            } else {
+                reply.code = 404;
+                reply.error = 'Not found';
+            }
+
+        } else {
+            notifications = this.controller.notifications.filter(function (notification) {
+                return  notification.id >= since && notification.id <= to && // filter by time
+                        test(notification); // check against 2nd filter
+            });
+
+            reply.data = {
+                updateTime: Math.floor(timestamp/1000),
+                notifications: notifications
+            };
+        }
 
         if (Boolean(this.req.query.pagination)) {
             reply.data.total_count= notifications.length;
@@ -419,39 +439,73 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // delete single notifications or all privious by a choosen timestamp
     deleteNotifications: function (notificationId) {
-       
+
         var id = notificationId ? parseInt(notificationId) : 0,
             reply = {
+                code: 500,
                 data: null,
-                error: null,
-                code: 200
+                error: "Something went wrong."
             },
             before;
 
         before = this.req.query.hasOwnProperty("allPrevious") ? Boolean(this.req.query.allPrevious) : false;
-        uid = this.req.query.hasOwnProperty("uid") ? parseInt(this.req.query.uid) : 0;
-        
-        if (id > 0 && before === false && !_.any(this.controller.notifications, function (notification) { return (notification.id === id && notification.h === uid);})) {
-            reply.code = 404;
-            reply.error = "Notification '" + id + "' with uid '" + uid + "' not found";
-        } else if (id > 0 && before !== false && !_.any(this.controller.notifications, function (notification) { return (notification.id === id);})) {
-            reply.code = 404;
-            reply.error = "Notification " + id + " not found";
-        } else if (before === true && !_.any(this.controller.notifications, function (notification) { return notification.id < id; })) {
-            reply.code = 404;
-            reply.error = "No notifications found older than unix timestamp: " + id;
-        } else {
-            this.controller.deleteNotifications(id, before, uid, function (notice) {
+        redeemed = this.req.query.hasOwnProperty("allRedeemed") ? Boolean(this.req.query.allRedeemed) : false;
+
+        if (!redeemed) {
+            this.controller.deleteNotifications(id, before, function (notice) {
                 if (notice) {
                     reply.code = 204;
                     reply.data = null;
+                    reply.error = null;
                 } else {
                     reply.code = 404;
                     reply.data = null;
                     reply.error = "Notifications not found.";
                 }
-            }, true);
+            });
+        } else {
+            this.controller.deleteAllRedeemedNotifications(function (notice) {
+                if (notice) {
+                    reply.code = 204;
+                    reply.data = null;
+                    reply.error = null;
+                }
+            });
         }
+
+        return reply;
+    },
+    // redeem single or all notifications (true/false)
+    redeemNotifications: function (notificationId) {
+
+        var id = notificationId ? parseInt(notificationId) : 0,
+            reply = {
+                code: 500,
+                data: null,
+                error: "Something went wrong."
+            };
+
+        redeemed = this.req.query.hasOwnProperty("set_redeemed") ? Boolean(this.req.query.set_redeemed) : true;
+        all = this.req.query.hasOwnProperty("all") ? Boolean(this.req.query.all) : false;
+
+        if (!all) {
+            this.controller.redeemNotification(id, redeemed, function (notice) {
+                if (notice) {
+                    reply.code = 204;
+                    reply.data = null;
+                    reply.error = null;
+                }
+            });
+        } else {
+            this.controller.redeemAllNotifications(redeemed, function (notice) {
+                if (notice) {
+                    reply.code = 204;
+                    reply.data = null;
+                    reply.error = null;
+                }
+            });
+        }
+
         return reply;
     },
     //locations
@@ -2500,6 +2554,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             code: 500
         };
 
+        this.controller.icons = _.filter(function(icon) {
+            return
+        });
+
         if (this.controller.icons) {
             reply.data = this.controller.icons;
             reply.code = 200;
@@ -2861,49 +2919,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         return reply;
-    }/*,
-    getTrustMyNetwork: function() {
-        var reply = {
-                error: null,
-                data: null,
-                code: 500
-            },
-            tMN;
-
-        try {            
-            tMN = this.controller.config.trustMyNetwork? this.controller.config.trustMyNetwork : false;
-
-            reply.data = { trustMyNetwork: tMN };
-            reply.code = 200;
-        } catch (e) {
-            reply.error = 'Something went wrong: ' + e.message;
-        }
-
-        return reply;
-    },
-    setTrustMyNetwork: function() {
-        var reply = {
-                error: null,
-                data: null,
-                code: 500
-            },
-            reqObj = typeof this.req.body !== 'object'? JSON.parse(this.req.body): this.req.body;
-
-        try {
-            if (reqObj && typeof reqObj.trustMyNetwork !== 'undefined' && typeof reqObj.trustMyNetwork === 'boolean') {
-                this.controller.config.trustMyNetwork = reqObj.trustMyNetwork;
-                reply.code = 200;
-                reply.data = { trustMyNetwork: this.controller.config.trustMyNetwork };
-            } else {
-                reply.code = 400;
-                reply.error = 'Bad request.';
-            }
-        } catch (e) {
-            reply.error = 'Something went wrong: ' + e.message;
-        }
-
-        return reply;
-    }*/
+    }
 });
 
 ZAutomationAPIWebRequest.prototype.profileByUser = function(userId) {

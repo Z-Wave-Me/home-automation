@@ -1233,6 +1233,9 @@ ZWave.prototype.defineHandlers = function () {
 						result = "failed";
 					}
 				});
+			} else {
+                console.error("Wrong request. Failed to apply firmware.");
+                result = "failed";
 			}
 			
 			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
@@ -1640,7 +1643,7 @@ ZWave.prototype.defineHandlers = function () {
 
                 if (!!devID) {
                     reply.body = _.find(devInfo.zwave_devices, function(dev) {
-                        return dev['Certification_ID'] === devID;
+                        return dev['Product_Code'] === devID;
                     });
 
                     if (!reply.body) {
