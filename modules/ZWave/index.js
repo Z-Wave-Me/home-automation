@@ -78,7 +78,8 @@ Object.defineProperty(ZWave, "list", {
 	writable: false,  
 	configurable: false 
 });
-// ws.allowExternalAccess("ZWave.list",  config.publicAPI ? controller.auth.ROLE.ANONYMOUS : controller.auth.ROLE.ADMIN);
+
+ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
 
 ZWave.prototype.updateList = function() {
 	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
@@ -398,11 +399,12 @@ ZWave.prototype.CommunicationLogger = function() {
         console.debug("log outgoing");
         var data = JSON.stringify(this);
 
+        data = JSON.parse(data);
+
         if (!!originPackets) {
             originPackets.outgoing.push(data);
         }
 
-        data = JSON.parse(data);
         var _data = data;
         data = createOutgoingEntry(data);
 
@@ -741,7 +743,6 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
 	ws.allowExternalAccess(_name, this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-	ws.allowExternalAccess(_name + ".list",  this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Run", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Data", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".InspectQueue", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -774,7 +775,6 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
 	ws.revokeExternalAccess(_name);
-	ws.revokeExternalAccess(_name + ".list");
 	ws.revokeExternalAccess(_name + ".Run");
 	ws.revokeExternalAccess(_name + ".Data");
 	ws.revokeExternalAccess(_name + ".InspectQueue");
