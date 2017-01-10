@@ -1328,7 +1328,10 @@ ZWave.prototype.defineHandlers = function () {
 						result = "failed";
 					}
 				});
-			}
+			} else {
+                console.error("Wrong request. Failed to apply bootloader.");
+                result = "failed";
+            }
 			
 			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
 			

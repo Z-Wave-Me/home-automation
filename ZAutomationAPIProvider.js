@@ -2554,10 +2554,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             code: 500
         };
 
-        this.controller.icons = _.filter(function(icon) {
-            return
-        });
-
         if (this.controller.icons) {
             reply.data = this.controller.icons;
             reply.code = 200;
