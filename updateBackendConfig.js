@@ -1,11 +1,19 @@
 // This script transforms old formats to new
 
 (function () {
-  var config = loadObject("config.json"),
+  var config,
       oldConfigJSON = JSON.stringify(config),
       skins = loadObject("userSkins.json"),
       notifications = loadObject("notifications");
 
+  try {
+    config = loadObject("config.json");
+  } catch (e) {
+    console.log("Error loading config.json! Using default config.");
+    config = fs.loadJSON("defaultConfigs/config.json");
+    saveObject("config.json", config);
+  }
+  
   if (config) {
     // Change profiles data
     if (config.hasOwnProperty('profiles') && Array.isArray(config.profiles) && config.profiles.length > 0) {
