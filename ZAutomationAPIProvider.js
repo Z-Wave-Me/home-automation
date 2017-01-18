@@ -1921,8 +1921,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             //this.reset();
             reqObj = typeof this.req.body.backupFile.content === 'string'? JSON.parse(this.req.body.backupFile.content) : this.req.body.backupFile.content;
 
-            decodeData = Base64.decode(reqObj.data);
-            reqObj.data = JSON.parse(decodeData);
+            if (typeof reqObj.data === 'string') {
+                // new .zab files are base64 encoded, while old are not
+                decodeData = Base64.decode(reqObj.data);
+                reqObj.data = JSON.parse(decodeData);
+            }
 
             // stop the controller
 
