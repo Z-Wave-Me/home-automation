@@ -22,6 +22,10 @@
 			"no_battery": {
 				"type": "boolean",
 				"default": false
+			},
+			"breath": {
+				"type": "boolean",
+				"default": false
 			}
 		}
 	},
@@ -32,6 +36,11 @@
 				"type": "checkbox",
 				"label": "__l_no_battery__",
 				"helper": "__h_no_battery__"
+			},
+			"breath": {
+				"type": "checkbox",
+				"label": "__l_breath__",
+				"helper": "__h_breath__"
 			}
 		}
 	}
