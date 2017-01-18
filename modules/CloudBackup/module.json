@@ -9,7 +9,7 @@
   "homepage": "http://razberry.z-wave.me",
   "icon": "icon.png",
   "moduleName":"CloudBackup",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "maturity": "beta",
   "repository": {
     "type": "git",
@@ -20,6 +20,7 @@
     "description": "__m_descr__",
     "api": "/CloudBackupAPI/Backup",
     "user_active": false,
+    "service_status": true,
     "email": "",
     "email_log": "0",
     "remoteid": null,
