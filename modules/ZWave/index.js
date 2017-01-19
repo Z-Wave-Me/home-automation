@@ -670,7 +670,7 @@ ZWave.prototype.CommunicationLogger = function() {
             src: packet.nodeId && packet.nodeId.value ? packet.nodeId.value : '',
             rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : '',
 			encaps: pA !== '' && pA.encap ? pA.encap : '',
-            dest: nodeid,
+            dest: packet.dstNodeId.value,
             application: pA !== '' && pA.application ? pA.application : ''
         };
 
