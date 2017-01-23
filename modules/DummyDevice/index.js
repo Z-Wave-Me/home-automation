@@ -34,7 +34,7 @@ DummyDevice.prototype.init = function (config) {
         deviceId: "DummyDevice_" + this.id,
         defaults: {
             metrics: {
-                level: 'off',
+                level: self.config.deviceType === 'switchMultilevel'? 0 : 'off',
                 title: self.getInstanceTitle(this.id)
             }
         },

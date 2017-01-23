@@ -1,23 +1,28 @@
-# v2.3
+# v2.3.0
 Changes:
 * Added password field to all modules which use password field
 * pull request #385 from pathec/patch-websocket
+* notification api refactored
+* add possibility to redeem or delete already redeemed notifications (via request params)
 
 Features:
 * add new device type 'sensorDiscrete' - n-state vDev for CentralScene CC
 
 Modules:
 * ImportRemoteHA 2.0.3
- * add functionality to tag all remote widgets
- * enhance url input to add ip adress only (with backward compatibility)
+  * add functionality to tag all remote widgets
+  * enhance url input to add ip adress only (with backward compatibility)
 * IfThen 2.4.0
   * add support for Color Switch (in targets)
   * add support for type 'sensorDiscrete' (in actions)
- * bugfix: doesn't decide if on/off was triggered - action is still fired
+  * bugfix: doesn't decide if on/off was triggered - action is still fired
 * ZWave 2.3.0
- * add new device type 'sensorDiscrete'
+  * add new device type 'sensorDiscrete'
 * InbandNotifications 1.1.0
- * add support for type 'sensorDiscrete'
+  * add support for type 'sensorDiscrete'
+  * some refactorings
+* Cron 1.0.0
+  * bugfix initialization
 
 #10.11.2016 v2.2.5
 * some performance enhancements in CommunicationLogger and CommunicationHistory

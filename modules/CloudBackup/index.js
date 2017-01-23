@@ -1,6 +1,6 @@
 /*** CloudBackup Z-Way HA module *******************************************
 
- Version: 1.0.0 beta
+ Version: 0.1.2 beta
  (c) Z-Wave.Me, 2016
  -----------------------------------------------------------------------------
  Author: Michael Hensche <mh@zwave.eu>
@@ -21,9 +21,9 @@ CloudBackup.prototype.init = function(config) {
     CloudBackup.super_.prototype.init.call(this, config);
 
     this.moduleName = "CloudBackup";
-    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate"; //backupcreate
-    this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate";
-    this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate";
+    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate"; //"http://192.168.10.254/dev/cloudbackup/?uri=backupcreate";//"https://service.z-wave.me/cloudbackup/?uri=backupcreate";
+    this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate"; //"http://192.168.10.254/dev/cloudbackup/?uri=usercreate";//"https://service.z-wave.me/cloudbackup/?uri=usercreate";
+    this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate"; //"http://192.168.10.254/dev/cloudbackup/?uri=userupdate";//"https://service.z-wave.me/cloudbackup/?uri=userupdate";
 
     var self = this,
         langFile = self.controller.loadModuleLang(this.moduleName);
@@ -44,12 +44,7 @@ CloudBackup.prototype.init = function(config) {
 
     this.uploadBackup = function() {
         console.log("###### start Backup ");
-        var reply = {
-            "status":500,
-            "message":"",
-            "error":null,
-            "data":null
-        };
+        var ret = false;
 
         try {
             var backupJSON = self.controller.createBackup();
@@ -81,44 +76,38 @@ CloudBackup.prototype.init = function(config) {
 
                 res = formRequest.send(formElements, "POST", self.backupcreate_url);
 
-                //console.log(JSON.stringify(res.data));
-                // prepare response
-                //TODO check isf response empty
-                reply.status = res.data.status;
-                reply.message = res.data.message.toString();
-                reply.data = res.data.data;
-                reply.error = res.data.error;
-
-                /*
-                if (res.data.status !== 200) {
-                    self.controller.addNotification("error", res.data.message.toString(), "module", self.moduleName);
+                if(res.status === -1) { //error e.g. no connection to server
+                    self.controller.addNotification("error", res.statusText, "module", self.moduleName);
                 } else {
-                    self.controller.addNotification("info", res.data.message.toString(), "module", self.moduleName);
-                }*/
+                    if(res.status === 200) {
+                        ret = true;
+                        self.controller.addNotification("info", res.data.message, "module", self.moduleName);
+                    } else {
+                        self.controller.addNotification("error", res.data.message, "module", self.moduleName);
+                    }
+                }
 
             } else {
-                reply.message = "Backup file empty!";
-                //self.controller.addNotification("error", "Text", "core", self.moduleName);
+                console.log("Backup file empty!");
             }
 
         } catch(e) {
-            reply.message = e.toString();
-            //self.controller.addNotification("error", e.toString(), "core", self.moduleName);
+            console.log(e);
         }
         console.log("###### finisch Backup ");
-        return reply;
+        return ret;
     };
-
 
     if(self.config.email !== "" && !_.isNull(self.config.remoteid) && !self.config.user_active) {
         console.log("userCreate");
         this.userCreate();
+    } else {
+        self.config.user_active = false;
     }
 
     if(self.config.email !== "" && !_.isNull(self.config.remoteid)) {
         console.log("userUpdate");
         this.userUpdate();
-        self.config.user_active = true;
     }
 
     if(self.config.scheduler !== "0") { // manual
@@ -141,6 +130,7 @@ CloudBackup.prototype.stop = function() {
 
     CloudBackup.super_.prototype.stop.call(this);
 };
+
 
 // ----------------------------------------------------------------------------
 // --- Module methods
@@ -184,18 +174,6 @@ CloudBackup.prototype.updateTask = function() {
     });
 };
 
-CloudBackup.prototype.activateCloudBackup = function(active) {
-    var self = this;
-
-    if(active) {
-        self.backupconfig.active = active;
-        self.controller.on("CloudBackup.upload", this.uploadBackup);
-    } else {
-        self.backupconfig.active = active;
-        this.stop();
-    }
-};
-
 CloudBackup.prototype.userCreate = function() {
     var self = this;
 
@@ -208,14 +186,25 @@ CloudBackup.prototype.userCreate = function() {
         }
     };
 
-    res = http.request(obj);
+    var res = http.request(obj);
 
-    if(res.data.status === 200) {
+    if(res.status === -1) { //error e.g. no connection to server
+        self.config.service_status = false;
+        self.config.user_active = false;
+    } else {
+        if(res.status === 200) {
+            self.config.user_active = true;
+        } else {
+            self.config.user_active = false;
+        }
+    }
+
+    /*if(res.data.status === 200) {
         self.config.user_active = true
         self.controller.addNotification("info", res.data.message, "core", this.moduleName);
     } else {
         self.controller.addNotification("error", res.data.message, "core", this.moduleName);
-    }
+    }*/
 };
 
 CloudBackup.prototype.userUpdate = function() {
@@ -230,15 +219,29 @@ CloudBackup.prototype.userUpdate = function() {
             email_log: self.config.email_log
         }
     };
-    res = http.request(obj);
 
-    if(res.data.status === 200) {
+    var res = http.request(obj);
+
+    if(res.status === -1) { //error e.g. no connection to server
+        console.log("error");
+        self.config.service_status = false;
+        self.config.user_active = false;
+    } else {
+        self.config.service_status = true;
+
+        if(res.status === 200) {
+            self.config.user_active = true;
+        } else {
+            self.config.user_active = false;
+        }
+    }
+    /*if(res.data.status === 200) {
         console.log(res.data.message);
         //self.controller.addNotification("info", "User update "+res.data.message, "core", this.moduleName);
     } else {
         console.log(res.data.message);
         //self.controller.addNotification("error", res.data.message, "core", this.moduleName);
-    }
+    }*/
 };
 
 // --------------- Public HTTP API -------------------
@@ -266,17 +269,17 @@ CloudBackup.prototype.defineHandlers = function () {
     };
 
     this.CloudBackupAPI.Backup = function () {
-
-        var ret = self.uploadBackup();
-        console.log(JSON.stringify(ret));
-        return {status: ret.status,
-                body: {
-                    error: ret.error,
-                    data: ret.data,
-                    code: ret.status,
-                    message: ret.message
-                }
+        var ret = {status: 500,
+            body: {"error": true}
         };
 
+        var state = self.uploadBackup();
+
+        if(state) {
+            ret.status = 200;
+            ret.body = {"error": false};
+        }
+        console.log(JSON.stringify(ret));
+        return ret;
     };
 }
