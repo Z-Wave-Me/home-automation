@@ -128,7 +128,7 @@
     }, {
         "id": 8,
         "moduleId": "CloudBackup",
-        "active": false,
+        "active": true,
         "title": "CloudBackup",
         "description": "Gives possibility to upload and store your backups on the remote server.",
         "params": {
