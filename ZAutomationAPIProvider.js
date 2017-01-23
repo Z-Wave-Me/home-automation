@@ -156,6 +156,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+        this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
+        this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
     },
 
     // Used by the android app to request server status
@@ -2940,6 +2942,75 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
+        }
+
+        return reply;
+    },
+    setWifiSettings: function() {
+        var self = this,
+            reply = {
+                error: "Wifi setup failed!",
+                data: null,
+                code: 500
+            },
+            retPp = [],
+            retSsid = [],
+            retR = [];
+
+        try {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.password !== '') {
+                if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
+                    retPp = system("sh /opt/z-way-server/automation/lib/configAP.sh setPp " + reqObj.password);
+                } else {
+                    reply.error = "Password must between 8 and 63 characters long.";
+                    return reply;
+                }
+            } else {
+                retPp[1] = "";
+            }
+
+            if(reqObj.ssid !== '') {
+                retSsid = system("sh /opt/z-way-server/automation/lib/configAP.sh setSsid " + reqObj.ssid);
+            } else {
+                retSsid[1] = "";
+            }
+
+            if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
+                var retR = system("sh /opt/z-way-server/automation/lib/configAP.sh reload");
+                if(retR[1].indexOf("Done") !== -1 ) {
+                    reply.error = null;
+                    reply.data = "OK";
+                    reply.code = 200;
+                }
+            }
+
+        } catch(e) {
+            console.log("Error: ", e);
+        }
+
+        return reply;
+    },
+    getWifiSettings: function() {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+
+        try {
+
+            var retSsid = system("sh /opt/z-way-server/automation/lib/configAP.sh getSsid");
+
+            console.log(retSsid);
+            var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
+            reply.code = 200;
+            reply.data = {"ssid": ssid};
+
+        } catch(e) {
+            console.log("Error: ", e);
         }
 
         return reply;
