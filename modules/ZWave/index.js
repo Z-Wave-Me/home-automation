@@ -1,6 +1,6 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 2.3.0
+Version: 2.3.1
 -------------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Copyright: (c) Z-Wave.Me, 2014
@@ -2566,9 +2566,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function () {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function (type) {
 					try {
-						vDev.set("metrics:level", this.value ? "on" : "off");
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value ? "on" : "off");
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -2661,7 +2663,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type, arg) {
 					try {
-						vDev.set("metrics:level", this.value);
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value);
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -2840,7 +2844,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									self.controller.devices.remove(vDevId + separ + colorId);
 								} else {
 									try {
-										vDev.set("metrics:level", this.value);
+										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+											vDev.set("metrics:level", this.value);
+										}	
 									} catch (e) {}
 								}
 							}, "value");
@@ -2920,7 +2926,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									self.controller.devices.remove(vDevId + separ + sensorTypeId);
 								} else {
 									try {
-										vDev.set("metrics:level", this.value ? "on" : "off");
+										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+											vDev.set("metrics:level", this.value ? "on" : "off");
+										}
 									} catch (e) {
 									}
 									;
@@ -3017,7 +3025,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									self.controller.devices.remove(vDevId + separ + sensorTypeId);
 								} else {
 									try {
-										vDev.set("metrics:level", this.value);
+										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+											vDev.set("metrics:level", this.value);
+										}
 									} catch (e) {
 									}
 								}
@@ -3103,7 +3113,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									self.controller.devices.remove(vDevId + separ + scaleId);
 								} else {
 									try {
-										vDev.set("metrics:level", this.value);
+										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+											vDev.set("metrics:level", this.value);
+										}
 									} catch (e) {
 									}
 								}
@@ -3150,9 +3162,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function() {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function(type) {
 					try {
-						vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -3188,7 +3202,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function() {
 					try {
-						vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -3222,9 +3238,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 			if (vDev) {
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "state", function() {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "state", function(type) {
 					try {
-						vDev.set("metrics:level", this.value === 255 ? "open" : "close");
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value === 255 ? "open" : "close");
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -3282,9 +3300,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (m_vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function () {
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function (type) {
 							try {
-								m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
+								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+									m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
+								}
 							} catch (e) {}
 						}, "value");
 					}
@@ -3443,7 +3463,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
 									} else {
 										try {
-											a_vDev.set("metrics:level", this.value ? "on" : "off");
+											if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+												a_vDev.set("metrics:level", this.value ? "on" : "off");
+											}
 										} catch (e) {
 										}
 									}
@@ -3515,7 +3537,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											} else {
 												if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) {
 													try {
-														a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
+														if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+															a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
+														}
 													} catch (e) {
 													}
 												}
@@ -3629,7 +3653,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 															} else {
 																if (this.event.value === eventTypeId || this.event.value === 0) {
 																	try {
-																		a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+																		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+																			a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+																		}
 																	} catch (e) {
 																	}
 																}
@@ -3679,7 +3705,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 												} else {
 													if (this.event.value === eventTypeId || this.event.value === 0) {
 														try {
-															a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+															if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+																a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+															}
 														} catch (e) {
 														}
 													}
@@ -3753,52 +3781,53 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						self.controller.devices.remove(devId);
 					} else {
 						try {
-							// output curScene + keyAttr or ''
-							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : 0,
-								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : 0,
-								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : 0,
-								/*
-								 * CentralScene v3:
-								 *
-								 * 0x00 Key Pressed 1 time
-								 * 0x01 Key Released
-								 * 0x02 Key Held Down
-								 * 0x03 Key Pressed 2 times
-								 * 0x04 Key Pressed 3 times
-								 * 0x05 Key Pressed 4 times
-								 * 0x06 Key Pressed 5 times
-								 */
-								kaCnt = kA > 0x02? kA - 0x01 : 0x01,
-								cL = cS.toString() + kA.toString(),
-								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
-								st = '',
-								cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
-								type = dS && dS['type']? dS['type'] : 'B',
-								setAction = function () {
-									switch (kA) {
-										case 0x01:
-											st = dS && dS['action']? dS['action'] : 'release';
-											break;
-										case 0x02:
-											st = dS && dS['action']? dS['action'] : 'hold';
-											break;
-										default:
-											st = dS && dS['action']? dS['action'] : 'press';
-											break;
-									}
-								};
+							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+								// output curScene + keyAttr or ''
+								var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : 0,
+									mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : 0,
+									kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : 0,
+									/*
+									 * CentralScene v3:
+									 *
+									 * 0x00 Key Pressed 1 time
+									 * 0x01 Key Released
+									 * 0x02 Key Held Down
+									 * 0x03 Key Pressed 2 times
+									 * 0x04 Key Pressed 3 times
+									 * 0x05 Key Pressed 4 times
+									 * 0x06 Key Pressed 5 times
+									 */
+									kaCnt = kA > 0x02? kA - 0x01 : 0x01,
+									cL = cS.toString() + kA.toString(),
+									dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
+									st = '',
+									cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
+									type = dS && dS['type']? dS['type'] : 'B',
+									setAction = function () {
+										switch (kA) {
+											case 0x01:
+												st = dS && dS['action']? dS['action'] : 'release';
+												break;
+											case 0x02:
+												st = dS && dS['action']? dS['action'] : 'hold';
+												break;
+											default:
+												st = dS && dS['action']? dS['action'] : 'press';
+												break;
+										}
+									};
 
 
-							setAction();
+								setAction();
 
-							vDev.set("metrics:state", st);
-							vDev.set("metrics:currentScene", cS);
-							vDev.set("metrics:keyAttribute", kA);
-							vDev.set("metrics:maxScenes", mC);
-							vDev.set("metrics:level", cL);
-							vDev.set("metrics:cnt", cnt);
-							vDev.set("metrics:type", type);
-
+								vDev.set("metrics:state", st);
+								vDev.set("metrics:currentScene", cS);
+								vDev.set("metrics:keyAttribute", kA);
+								vDev.set("metrics:maxScenes", mC);
+								vDev.set("metrics:level", cL);
+								vDev.set("metrics:cnt", cnt);
+								vDev.set("metrics:type", type);
+							}
 						} catch (e) {
 						}
 					}
