@@ -135,6 +135,7 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                     deviceId: localId,
                     defaults: {
                         deviceType: item.deviceType,
+                        probeType: item.probeType,
                         metrics: item.metrics,
                         visibility: item.visibility,
                         permanently_hidden: item.permanently_hidden
