@@ -1,17 +1,77 @@
-# v2.3.0
+#26.01.2017 v2.3.0
 Changes:
 * Added password field to all modules which use password field
 * pull request #385 from pathec/patch-websocket
-* notification api refactored
+* notification api refactored:
+  * prepare redeem and delete of single or more notifications
 * add possibility to redeem or delete already redeemed notifications (via request params)
+* Postfix updated:
+ * Philio PST02-5B added
+ * Philio Vision PAT02-1A added
+ * sensorDiscrete support updated for all CentralScene devices
+* fix debug.console
+ * deactivated by default
+ * JS/Run/controller.debug=true will activate console.debug output
+* lib file descriptions updated
 
 Features:
-* add new device type 'sensorDiscrete' - n-state vDev for CentralScene CC
+* add new device type 'sensorDiscrete'
+  * n-state vDev for CentralScene CC
+  * handles triggered scene in combination with their current key attribute
+* skins api for skins ui feature support:
+  * update and install skins from https://developer.z-wave.me
+  * delete and apply skins
+  * reset skin
+* custom icons api for custom icons ui feature support:
+  * update and install icon packages from https://developer.z-wave.me
+  * upload single icons or custom icon packages locally
+  * delete and apply icons
+  * icons can be applied depending on device type and there different levels or states
+* cloud backup module for cloud backup ui feature support:
+  * only adjustable in SHUI under Configuration > Management > Backup & Restore
+  * needs deposited e-mail adress of user (Configuration > My Settings)
+  * restricted for admin users only
+  * could be triggered manually or automatically by configured schedule
+  * limited to 3 backups per box (remote id)
+  * a request for you cloud backups will verify your email against https://service.z-wave.me/cloudbackup/ and send you a response including accesses to your box backups  
+  * this feature is OPTIONAL, so you can still use the already existing backup (Configuration > Management > Backup & Restore > Download backup to your computer) 
+* prepare set for timezone api
+* prepare ZWaveAPI (ZWaveDeviceInfoGet/ZWaveDeviceInfoUpdate) for DB update of device data
+* uploadModule.sh under automation/userModules added to allow upload of packed modules (tar.gz) directly from directory by ssh
+
+ZWaveAPI:
+* ZMEFirmwareUpgrade:
+  * Added a way to flash ZMEFirmware from local file
+* ZMEBootloaderUpgrade:
+  * Added a way to flash ZMEBootloader from local file
+* Added Access-Control-Allow-* headers
+* new:
+  * ZWaveDeviceInfoGet ... GET
+  * ZWaveDeviceInfoUpdate ... GET
+
+ZAutomation API:
+* new:
+  * /notifications ... PUT/DELETE
+  * /notifications/:notification_id ... PUT/DELETE
+  * /skins/tokens ... GET/PUT/DELETE
+  * /skins ... GET
+  * /skins/install ... POST
+  * /skins/update/:skin_id ... PUT
+  * /skins/setToDefault ... GET
+  * /skins/active ... GET (ANONYMOUS)
+  * /skins/:skin_id ... GET/PUT/DELETE
+  * /icons ... GET
+  * /icons/:icon_id ... DELETE
+  * /icons/upload ... POST
+  * /icons/install ... PUT
+  * /system/timezone ... PUT
 
 Modules:
 * ImportRemoteHA 2.0.3
   * add functionality to tag all remote widgets
   * enhance url input to add ip adress only (with backward compatibility)
+  * bugfix: vDevs siblings
+  * bugfix: inherit hidden or dectivated state
 * IfThen 2.4.0
   * add support for Color Switch (in targets)
   * add support for type 'sensorDiscrete' (in actions)
@@ -22,8 +82,15 @@ Modules:
   * add support for type 'sensorDiscrete'
   * some refactorings
 * Cron 1.0.0
-  * bugfix initialization
-
+  * bugfix: initialization
+* PhilioHW (POPP Hub 2)
+  * no_breath option and WPS LED indication
+  * breath off by default
+* CloudBackup 0.1.2 beta
+  * added to automation/modules
+* OpenWeather 1.0.1
+  * update open weather url's
+  
 #10.11.2016 v2.2.5
 * some performance enhancements in CommunicationLogger and CommunicationHistory
 
