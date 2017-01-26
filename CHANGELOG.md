@@ -14,6 +14,9 @@ Changes:
  * JS/Run/controller.debug=true will activate console.debug output
 * lib file descriptions updated
 
+Bugfix:
+* Do not update widgets if type is Invalidated
+
 Features:
 * add new device type 'sensorDiscrete'
   * n-state vDev for CentralScene CC
