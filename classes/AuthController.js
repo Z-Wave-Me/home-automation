@@ -76,7 +76,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
                         return profile.login === authInfo[0];
                     });
                 
-                    if (profile && profile.password === authInfo[1]) {
+                    if (profile && (!profile.salt && profile.password === authInfo[1] || profile.salt && profile.password === hashPassword(authInfo[1], profile.salt))) {
                         // auth successful, use selected profile
                         session = profile;
                     }
@@ -85,13 +85,6 @@ AuthController.prototype.resolve = function(request, requestedRole) {
         }
 
         if (!session && requestedRole === this.ROLE.USER) {
-
-            /*defaultProfile = _.filter(this.controller.profiles, function (profile) {
-                return profile.login === 'admin' && profile.password === 'admin';
-            });
-
-            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess))*/
-
             // try to find Local user account
             if (request.peer.address === "127.0.0.1" && defaultProfile.length < 1 && !this.controller.config.firstaccess) {
                 // dont' treat find.z-wave.me as local user (connection comes from local ssh server)

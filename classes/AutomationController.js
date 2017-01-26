@@ -1818,7 +1818,8 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
         p = this.profiles[index];
         
         if (object.hasOwnProperty('password') && object.password !== '' && !!object.password) {
-            p.password = object.password;
+            p.salt = generateSalt();
+            p.password = hashPassword(object.password, p.salt);
         }
         if (object.hasOwnProperty('login') && object.login !== '' && !!object.login) {
             p.login = object.login;

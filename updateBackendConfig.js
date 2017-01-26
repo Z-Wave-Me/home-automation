@@ -405,6 +405,15 @@
             });
       }
     
+      // convert password to a secure salted hash
+      config.profiles.forEach(function(profile) {
+        if (profile.login === "admin" && profile.password === "admin" || profile.login === "local" && profile.password === "local") return; // skip default profiles
+        if (!!profile.salt) return; // skip already converted
+        
+        profile.salt = generateSalt();
+        profile.password = hashPassword(profile.password, profile.salt);
+      });
+      
       // Save changes
       
       if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?

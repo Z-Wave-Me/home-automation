@@ -251,7 +251,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        if (profile && reqObj.password === profile.password) {
+        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt))) {
             return this.setLogin(profile);
         } else {
             return this.denyLogin();
