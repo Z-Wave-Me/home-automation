@@ -18,7 +18,6 @@ var window = global = this;
 
 // load utilities
 executeFile("Utils.js");
-executeFile("HomeKit.js");
 
 // do transition script to adopt old versions to new
 executeFile("updateBackendConfig.js");
