@@ -37,7 +37,7 @@ Downloads are available for Raspbian (POPP Hub 1, also complete images), Debian,
 * [Expert UI changelog](https://github.com/Z-Wave-Me/ExpertUI/blob/master/README.md)
 * [Full z-way-server changelog on http://razberry.z-wave.me](http://razberry.z-wave.me/z-way-server/ChangeLog)
 
-## Z-wave.Me - Developer Console (App Store)
+## Z-Wave.Me - Developer Console (App Store)
 Create an account and upload your own z-way home automation apps, share them with a special group or verify them for public access. 
 
 * https://developer.z-wave.me/
@@ -47,7 +47,7 @@ There are also some How To's about creating own apps for home automation and wha
 * also checkout the tab Upload-Process to see how it works
 
 You can also find a list of all [currently published apps](https://developer.z-wave.me/?uri=public#/web/apps) 
-## Disscussion plattforms:
+## Disscussion platforms:
 * https://forum.z-wave.me/ (discussions available in en/de/ru/fr/it/cn, posts about: RaZberry, Z-Uno ...)
 * http://www.zwave.de/forum (de)
 * http://www.z-wave.info/forum (en)
