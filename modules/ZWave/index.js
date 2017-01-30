@@ -48,6 +48,7 @@ function ZWave (id, controller) {
 		"SensorBinary": 0x30,
 		"SensorMultilevel": 0x31,
 		"Meter": 0x32,
+		"MeterPulse": 0x35,
 		"ThermostatMode": 0x40,
 		"ThermostatSetPoint": 0x43,
 		"ThermostatFanMode": 0x44,
@@ -3130,6 +3131,56 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						self.parseAddCommandClass(nodeId, instanceId, commandClassId, true, changeVDev);
 					}
 				}, "child");
+			}
+		} else if (this.CC["MeterPulse"] === commandClassId) {
+			defaults = {
+				deviceType: 'sensorMultilevel',
+				probeType: '',
+				metrics: {
+					probeTitle: 'meterElectric_pulse_count',
+					scaleTitle: '',
+					level: '',
+					icon: 'meter',
+					title: compileTitle('Meter', 'Pulse', vDevIdNI)
+				}
+			};
+
+			if (!self.controller.devices.get(vDevId)) {
+				var cVDId = changeDevId;
+				// check if it should be created
+				if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+					// apply postfix if available
+					if (changeVDev[cVDId]) {
+						defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId, vDevIdNI);
+					}
+
+					var vDev = self.controller.devices.create({
+						deviceId: vDevId,
+						defaults: defaults,
+						overlay: {},
+						handler: function (command) {
+							if (command === "update") {
+								cc.Get();
+							}
+						},
+						moduleId: self.id
+					});
+
+					if (vDev) {
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "val", function (type) {
+							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+								self.controller.devices.remove(vDevId);
+							} else {
+								try {
+									if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+										vDev.set("metrics:level", this.value);
+									}
+								} catch (e) {
+								}
+							}
+						}, "value");
+					}
+				}
 			}
 		} else if (this.CC["Battery"] === commandClassId && !self.controller.devices.get(vDevId)) {
 
