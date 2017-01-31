@@ -1220,6 +1220,38 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
     return result;
 };
 
+AutomationController.prototype.listIcons = function() {
+    var result = "in progress",
+        icons = {};
+
+    try {
+        iconinstaller.list(
+            function(success) {
+                icons = success;
+                result = "done";
+            },
+            function() {
+                result = "failed";
+            }
+        );
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+
+        if(result == "in progress") {
+            result = "failed";
+        }
+
+    } catch(e) {
+        console.log(e)
+    }
+
+    return icons;
+}
+
 AutomationController.prototype.uninstallIcon = function(iconName) {
     var langFile = this.loadMainLang(),
         result = "in progress";
@@ -1256,7 +1288,7 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
         saveObject("userIcons.json", this.icons);
         //}
 
-    } catch (e) {
+    } catch(e) {
         console.log('Uninstalling or reseting of icon "' + iconName + '" has failed. ERROR:', e);
         this.addNotification("error", langFile.ac_err_uninstall_icon + ': ' + iconName, "core", "AutomationController");
     }
@@ -1786,7 +1818,8 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
         p = this.profiles[index];
         
         if (object.hasOwnProperty('password') && object.password !== '' && !!object.password) {
-            p.password = object.password;
+            p.salt = generateSalt();
+            p.password = hashPassword(object.password, p.salt);
         }
         if (object.hasOwnProperty('login') && object.login !== '' && !!object.login) {
             p.login = object.login;

@@ -1,4 +1,4 @@
-/*** Main Automation webserver module *****************************************
+/*** ZAutomationAPI Provider **************************************************
 
 Version:
 -------------------------------------------------------------------------------
@@ -266,7 +266,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } catch (e) {
         }
 
-        if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
+        //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
+        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {
             return this.setLogin(profile);
         } else {
             return this.denyLogin();
