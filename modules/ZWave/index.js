@@ -3416,7 +3416,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										self.controller.devices.remove(_vDevId);
 									} else {
 										try {
-											t_vDev[mode].set("metrics:level", this.value);
+                                            if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+                                                t_vDev[mode].set("metrics:level", this.value);
+                                            }
 										} catch (e) {
 										}
 									}
