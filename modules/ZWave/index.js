@@ -1216,7 +1216,8 @@ ZWave.prototype.defineHandlers = function () {
 				zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
 					function() {
 						zway.SerialAPISoftReset(function() {
-							result = "done"
+							result = "done";
+							zway.stop(); // to force re-start Z-Way
 						});
 				});
 			} else if (data.url) {
@@ -1246,7 +1247,8 @@ ZWave.prototype.defineHandlers = function () {
 						zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
 							function() {
 								zway.SerialAPISoftReset(function() {
-									result = "done"
+									result = "done";
+									zway.stop(); // to force re-start Z-Way
 								});
 						});
 					},
@@ -1311,6 +1313,7 @@ ZWave.prototype.defineHandlers = function () {
 						//Вызываем перезапись bootloder
 						zway.ZMEBootloaderFlash(seg, function() {
 							result = "done";
+							zway.stop(); // to force re-start Z-Way
 						},  function() {
 							result = "failed";
 						});
@@ -1340,6 +1343,7 @@ ZWave.prototype.defineHandlers = function () {
 								//Вызываем перезапись bootloder
 								zway.ZMEBootloaderFlash(seg, function() {
 									result = "done";
+									zway.stop(); // to force re-start Z-Way
 								},  function() {
 									result = "failed";
 								});
