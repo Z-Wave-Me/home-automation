@@ -472,7 +472,8 @@ ZWave.prototype.CommunicationLogger = function() {
 			var d = {
 				"time": now,
 				"channel1": (rssi.channel1.value - 256) > -131 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-				"channel2": (rssi.channel2.value - 256) > -131 && !_.isNaN(rssi.channel1.value)? rssi.channel2.value - 256 : null
+				"channel2": (rssi.channel2.value - 256) > -131 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+                "channel3": (rssi.channel3.value - 256) > -131 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
 			};
 
 			data.push(d);
