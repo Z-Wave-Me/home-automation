@@ -2793,8 +2793,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.error = res.statusText;
         }
-        // restart z-way-server
-        system("/etc/init.d/z-way-server restart");
+
+        // reboot after 5 seconds
+        setTimeout(function() {
+            console.log("Rebooting system ...");
+            system("reboot"); // reboot the box
+        }, 5000);
 
         return reply;
     },

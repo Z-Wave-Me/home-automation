@@ -2047,17 +2047,71 @@ ZWave.prototype.defineHandlers = function () {
             req = req && typeof req === 'string'? JSON.parse(req) : req,
             delay = req && req.delay? req.delay :null,
             timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
-            timer = null;
+            timer = null,
+			now = (new Date()).valueOf();
 
         try {
             var devices = Object.keys(zway.devices);
-            var runtime = (devices.length * timeout) / 1000;
-            var ret = {"runtime": runtime};
+            var ret = {
+            	result: [],
+            	runtime: 0
+            };
             var dTS = '';
 
-            // do initial request
             if(devices.length > 0) {
-                while((dTS === '' || dTS === 'Static PC Controller') && devices.length > 0) {
+
+                // do not send NIF to itself
+                devices.forEach(function (nodeId) {
+                	var request = "in progress",
+						entry = {
+                            nodeId: nodeId,
+                            result: "",
+                            runtime: 0,
+                            isFLiRS: false
+						},
+                        start = (new Date()).valueOf(),
+                    	pendingDelay = start + timeout;
+
+                	if (zway.devices[nodeId] && nodeId !== zway.controller.data.nodeId.value) {
+
+                        var isListening = zway.devices[nodeId].data.isListening.value;
+                        var isFLiRS = !isListening && (zway.devices[nodeId].data.sensor250.value || zway.devices[nodeId].data.sensor1000.value);
+
+						console.log('Send NIF to node #' + nodeId + ' ...');
+                        zway.RequestNodeInformation(
+                        	nodeId,
+							function() {
+                                request = "done";
+                                entry.result = request;
+                                entry.runtime= ((new Date()).valueOf() - start) /1000;
+                                entry.isFLiRS = isFLiRS;
+							},  function() {
+                                request = "failed";
+                                entry.result = request;
+                                entry.runtime= ((new Date()).valueOf() - start) /1000;
+                                entry.isFLiRS = isFLiRS;
+							});
+
+                        while (request === "in progress" && (new Date()).valueOf() < pendingDelay && !isFLiRS) {
+                            processPendingCallbacks();
+                        }
+
+                        if (result === "in progress") {
+                            result = isFLiRS? "waiting for wakeup" : "failed";
+                            entry.result = request;
+                            entry.runtime= ((new Date()).valueOf() - start) /1000;
+                            entry.isFLiRS = isFLiRS;
+                        }
+
+                        ret.result.push(entry);
+                    }
+                });
+            }
+
+            // do initial request
+            /*if(devices.length > 0) {
+            	// do not send NIF to itself
+                while((dTS === '' || nodeId !== zway.controller.data.nodeId.value) && devices.length > 0) {
                     nodeId = devices.pop();
                     dTS = zway.devices[nodeId].data.deviceTypeString.valueOf();
                 }
@@ -2071,13 +2125,18 @@ ZWave.prototype.defineHandlers = function () {
                 if(devices.length > 0) {
                     var nodeId = devices.pop();
 
-                    if (zway.devices[nodeId].data.deviceTypeString.valueOf() !== 'Static PC Controller') {
+                    //if (zway.devices[nodeId].data.deviceTypeString.valueOf() !== 'Static PC Controller') {
+                    if (nodeId !== zway.controller.data.nodeId.value) {
                         zway.devices[nodeId].RequestNodeInformation();
                     }
                 } else {
                     clearInterval(timer);
                 }
-            }, timeout);
+            }, timeout);*/
+
+            ret.runtime = Math.floor(((new Date()).valueOf() - now)/1000);
+
+            //console.log(JSON.stringify(ret, null, 1));
 
             return { status: 200, body: ret };
         } catch (e) {
