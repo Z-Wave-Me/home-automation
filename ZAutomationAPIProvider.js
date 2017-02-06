@@ -2774,7 +2774,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-        data.tz = reqObj.timezone;
+        data.tz = reqObj.time_zone;
 
         var req = {
             url: "http://localhost:8084/cgi-bin/main.cgi",
@@ -2785,7 +2785,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         // Set access for 10 seconds
         saveObject('8084AccessTimeout', 10);
         var res = http.request(req);
-        saveObject('8084AccessTimeout', null);
 
         if(res.status === 200) {
             reply.code = 200;
@@ -2793,6 +2792,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.error = res.statusText;
         }
+
+        saveObject('8084AccessTimeout', null);
 
         // reboot after 5 seconds
         setTimeout(function() {
