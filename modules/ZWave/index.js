@@ -471,9 +471,9 @@ ZWave.prototype.CommunicationLogger = function() {
 
 			var d = {
 				"time": now,
-				"channel1": (rssi.channel1.value - 256) > -131 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-				"channel2": (rssi.channel2.value - 256) > -131 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-                "channel3": (rssi.channel3.value - 256) > -131 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+				"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
+				"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+                "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
 			};
 
 			data.push(d);
@@ -2150,7 +2150,7 @@ ZWave.prototype.defineHandlers = function () {
         var req = request && request.body? request.body : request && request.data? request.data : undefined,
             req = req && typeof req === 'string'? JSON.parse(req) : req,
             delay = req && req.delay? req.delay :null,
-            timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
+            timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 2000,
             timer = null,
             nodeId = req && req.nodeId? req.nodeId : null;
 
@@ -2158,32 +2158,41 @@ ZWave.prototype.defineHandlers = function () {
             if(!!nodeId && zway.devices[nodeId]) {
                 var neighbours = zway.devices[nodeId].data.neighbours.value;
                 var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
+                var ret = {
+                	runtime: neighbours.length * (timeout /1000),
+					test: []
+				};
 
-                if (supported) {
-                    if (neighbours.length > 0) {
-                        var runtime = (neighbours.length * timeout) / 1000,
-                            ret = {"runtime": runtime},
-                            firstNId = neighbours.pop();
-                        // do initial request
-                        zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(firstNId, 6, 20);
+                neighbours.forEach(function (neighbour) {
 
-                        timer = setInterval(function () {
-                            if (neighbours.length > 0) {
-                                var neighboursId = neighbours.pop();
+                	var start = (new Date()).valueOf();
+                	var item = {
+                		srcNodeId: nodeId,
+						destNodeId: neighbour,
+						linkTest: ''
+					}
 
-                                zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(neighboursId, 6, 20);
-                            } else {
-                                clearInterval(timer);
-                            }
-                        }, timeout);
-
-                        return { status: 200, body: ret };
+                    if (supported) {
+                        console.log('# Send TestNodeSet to '+ neighbour);
+                        item.link_test = 'TestNodeSet';
+                        zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(neighbour, 6, 20);
                     } else {
-                        return { status: 404, body: 'No neighbours found.' };
+                        console.log('# Send NOP to '+ neighbour);
+                        item.link_test = 'NOP';
+                        zway.devices[neighbour].instances[0].commandClasses[32].Get();
                     }
-                } else {
-                    return { status: 404, body: 'Not supported.' };
-                }
+
+                    // wait 5 sec
+                    while ((new Date()).valueOf() < (start + timeout)) {
+                    	processPendingCallbacks();
+					}
+
+                    ret.test.push(item);
+
+                });
+
+                return { status: 200, body: ret };
+
             } else {
                 return { status: 404, body: 'Node not found.' };
             }
