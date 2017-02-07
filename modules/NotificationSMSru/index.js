@@ -1,6 +1,6 @@
 /*** NotificationSMSru Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.1.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -29,13 +29,13 @@ _module = NotificationSMSru;
 NotificationSMSru.prototype.init = function (config) {
     NotificationSMSru.super_.prototype.init.call(this, config);
 
-    this.handler = this.onNotificationHandler();
+    this.handler = this.onNotificationHandler(config);
     
     this.api_key = config.api_key.toString();
     this.phone = config.phone.toString();
     this.prefix = config.prefix.toString();
 
-    this.controller.on('notifications.push', this.handler);    
+    this.controller.on('notifications.push', this.handler);
 };
 
 NotificationSMSru.prototype.stop = function () {
@@ -48,11 +48,12 @@ NotificationSMSru.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-NotificationSMSru.prototype.onNotificationHandler = function () {
+NotificationSMSru.prototype.onNotificationHandler = function (config) {
     var self = this;
 
     return function(notice) {
-        http.request({
+        if (config.level.indexOf(notice.level) > -1) {
+            http.request({
             method: 'POST',
             url: "http://sms.ru/sms/send",
             data: {
@@ -61,5 +62,8 @@ NotificationSMSru.prototype.onNotificationHandler = function () {
                 text: self.prefix + " " + notice.message
             }
         });
+
+        }
+
     }
 }
