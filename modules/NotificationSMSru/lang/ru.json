@@ -6,5 +6,11 @@
 	"l_phone":"Номер телефона на который будут приходить СМС. Формат: 79261234567",
 	"l_prefix":"Префикс для всех сообщений",
 	"l_api_key":"API ключ с сайта SMS.ru",
-	"h_api_key":"После регистрации телефона на SMS.ru в правой колонке появится ключ api_id (пример: a43f6376-f57d-27e4-5981-ec48945d871f)"
+	"h_api_key":"После регистрации телефона на SMS.ru в правой колонке появится ключ api_id (пример: a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"critical":"Critical",
+	"error":"Error",
+	"warning":"Warning",
+	"info":"Info",
+	"device-info":"Device-info",
+	"notification":"Notification"
 }

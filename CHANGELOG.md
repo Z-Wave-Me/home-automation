@@ -1,4 +1,4 @@
-#26.01.2017 v2.3.0
+#27.01.2017 v2.3.0
 Changes:
 * Added password field to all modules which use password field
 * pull request #385 from pathec/patch-websocket
@@ -13,6 +13,10 @@ Changes:
  * deactivated by default
  * JS/Run/controller.debug=true will activate console.debug output
 * lib file descriptions updated
+* more robust on config.json fault - will use default config.json instead
+
+Bugfix:
+* Do not update widgets if type is Invalidated
 
 Bugfix:
 * Do not update widgets if type is Invalidated
@@ -73,14 +77,16 @@ Modules:
 * ImportRemoteHA 2.0.3
   * add functionality to tag all remote widgets
   * enhance url input to add ip adress only (with backward compatibility)
-  * bugfix: vDevs siblings
+  * bugfix: vDevs siblings (pull request #393 from xibriz) 
   * bugfix: inherit hidden or dectivated state
+  * bugfix: missing probeType
 * IfThen 2.4.0
   * add support for Color Switch (in targets)
   * add support for type 'sensorDiscrete' (in actions)
   * bugfix: doesn't decide if on/off was triggered - action is still fired
 * ZWave 2.3.0
   * add new device type 'sensorDiscrete'
+  * do not update vDev if type is Invalidated
 * InbandNotifications 1.1.0
   * add support for type 'sensorDiscrete'
   * some refactorings
@@ -93,6 +99,8 @@ Modules:
   * added to automation/modules
 * OpenWeather 1.0.1
   * update open weather url's
+* DummyDevice 1.0.1
+  * bugfix: NaN on switchMultilevel initialization
   
 #10.11.2016 v2.2.5
 * some performance enhancements in CommunicationLogger and CommunicationHistory

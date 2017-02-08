@@ -151,11 +151,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
         this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
-        this.router.put("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
-        this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);        
+        this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
+        this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+        this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
+        this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
     },
 
     // Used by the android app to request server status
@@ -234,7 +236,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // Check if login exists and password is correct 
     verifyLogin: function() {
-        var reqObj;
+        var reqObj,
+            boxTypeIsCIT = false;
 
         try {
             reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body): this.req.body;
@@ -251,7 +254,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt))) {
+        try {
+            var bT = system('cat /etc/z-way/box_type');
+
+            bT.forEach(function(bType){
+                if(typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')) {
+                    boxTypeIsCIT = true;
+                    return;
+                }
+            });
+        } catch (e) {
+        }
+
+        //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
+        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {
             return this.setLogin(profile);
         } else {
             return this.denyLogin();
@@ -2717,14 +2733,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
+            tz = "",
             now = new Date();
+
+        try {
+            var sys = system('cat /etc/timezone');
+            sys.forEach(function(i) {
+               if(typeof i === 'string') {
+                   tz = i.replace(/\n/g, '');
+                   return;
+               };
+            });
+        } catch(e) {}
 
         if (now) {
             reply.code = 200;
             reply.data = {
                 localTimeUT: Math.round((now.getTime() + (now.getTimezoneOffset() * -60000)) / 1000), // generate timestamp with correct timezone offset
                 localTimeString: now.toLocaleString(),
-                localTimeZoneOffset: now.getTimezoneOffset() /60
+                localTimeZoneOffset: now.getTimezoneOffset() /60,
+                localTimeZone: tz
             };
         } else {
             reply.error = 'Cannot get current date and time.';
@@ -2746,7 +2774,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-        data.tz = reqObj.timezone;
+        data.tz = reqObj.time_zone;
 
         var req = {
             url: "http://localhost:8084/cgi-bin/main.cgi",
@@ -2757,7 +2785,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         // Set access for 10 seconds
         saveObject('8084AccessTimeout', 10);
         var res = http.request(req);
-        saveObject('8084AccessTimeout', null);
 
         if(res.status === 200) {
             reply.code = 200;
@@ -2765,8 +2792,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.error = res.statusText;
         }
-        // restart z-way-server
-        system("/etc/init.d/z-way-server restart");
+
+        saveObject('8084AccessTimeout', null);
+
+        // reboot after 5 seconds
+        setTimeout(function() {
+            console.log("Rebooting system ...");
+            system("reboot"); // reboot the box
+        }, 5000);
 
         return reply;
     },
@@ -2915,6 +2948,75 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reply.data = "System is rebooting ...";
         } catch (e){
             reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
+        }
+
+        return reply;
+    },
+    setWifiSettings: function() {
+        var self = this,
+            reply = {
+                error: "Wifi setup failed!",
+                data: null,
+                code: 500
+            },
+            retPp = [],
+            retSsid = [],
+            retR = [];
+
+        try {
+            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+
+            if(reqObj.password !== '') {
+                if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
+                    retPp = system("sh /opt/z-way-server/automation/lib/configAP.sh setPp " + reqObj.password);
+                } else {
+                    reply.error = "Password must between 8 and 63 characters long.";
+                    return reply;
+                }
+            } else {
+                retPp[1] = "";
+            }
+
+            if(reqObj.ssid !== '') {
+                retSsid = system("sh /opt/z-way-server/automation/lib/configAP.sh setSsid " + reqObj.ssid);
+            } else {
+                retSsid[1] = "";
+            }
+
+            if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
+                var retR = system("sh /opt/z-way-server/automation/lib/configAP.sh reload");
+                if(retR[1].indexOf("Done") !== -1 ) {
+                    reply.error = null;
+                    reply.data = "OK";
+                    reply.code = 200;
+                }
+            }
+
+        } catch(e) {
+            console.log("Error: ", e);
+        }
+
+        return reply;
+    },
+    getWifiSettings: function() {
+        var self = this,
+            reply = {
+                error: null,
+                data: null,
+                code: 500
+            };
+
+        try {
+
+            var retSsid = system("sh /opt/z-way-server/automation/lib/configAP.sh getSsid");
+
+            console.log(retSsid);
+            var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
+            reply.code = 200;
+            reply.data = {"ssid": ssid};
+
+        } catch(e) {
+            console.log("Error: ", e);
         }
 
         return reply;
