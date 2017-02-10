@@ -2150,7 +2150,7 @@ ZWave.prototype.defineHandlers = function () {
         var req = request && request.body? request.body : request && request.data? request.data : undefined,
             req = req && typeof req === 'string'? JSON.parse(req) : req,
             delay = req && req.delay? req.delay :null,
-            timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 2000,
+            timeout = !!delay && parseInt(delay.toString(), 10) >= 1? parseInt(delay.toString(), 10) * 1000 : 2000,
             timer = null,
             nodeId = req && req.nodeId? req.nodeId : null;
 
@@ -2182,7 +2182,7 @@ ZWave.prototype.defineHandlers = function () {
                         zway.devices[neighbour].instances[0].commandClasses[32].Get();
                     }
 
-                    // wait 5 sec
+                    // wait 2 sec or more
                     while ((new Date()).valueOf() < (start + timeout)) {
                     	processPendingCallbacks();
 					}
