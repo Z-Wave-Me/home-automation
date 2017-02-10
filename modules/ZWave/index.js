@@ -753,8 +753,9 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CreateZDDX", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".RSSIGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".RSSIGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".TestNode", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMELicense", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZMEFirmwareUpgrade", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -766,8 +767,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".PostfixRemove", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".CallForAllNIF", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".CallForAllNIF", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -785,8 +786,9 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".CommunicationHistory");
-    ws.revokeExternalAccess(_name + ".Zniffer");
-    ws.revokeExternalAccess(_name + ".RSSIGet");
+	ws.revokeExternalAccess(_name + ".Zniffer");
+	ws.revokeExternalAccess(_name + ".RSSIGet");
+	ws.revokeExternalAccess(_name + ".TestNode");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
 	ws.revokeExternalAccess(_name + ".ZMELicense");
 	ws.revokeExternalAccess(_name + ".ZMEFirmwareUpgrade");
@@ -798,8 +800,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".PostfixRemove");
 	ws.revokeExternalAccess(_name + ".ExpertConfigGet");
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
-    ws.revokeExternalAccess(_name + ".CallForAllNIF");
-    ws.revokeExternalAccess(_name + ".CheckAllLinks");
+	ws.revokeExternalAccess(_name + ".CallForAllNIF");
+	ws.revokeExternalAccess(_name + ".CheckAllLinks");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
@@ -1478,8 +1480,60 @@ ZWave.prototype.defineHandlers = function () {
                 body: body
             };
         }
-	};
+    };
+    
+        this.ZWaveAPI.TestNode = function(url, request) {
+		try {
+			var nodeId = url.split("/")[1],
+				N = url.split("/")[2] || 10;
+			
+			var delivered = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+				sent =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
+			var result = "in progress";
+
+			function hasFinished() {
+				if (sent.reduce(function(a, b) { return a + b; }, 0) == 10 * N) {
+					result = "done";
+				}
+			}
+			
+			for (var powerlevel = 0; powerlevel < 10; powerlevel++) {
+				(function(pwrlvl) {
+					var succesCbk = function() {
+						sent[pwrlvl]++;
+						delivered[pwrlvl]++;
+						console.log("+++", pwrlvl, sent, delivered);
+						hasFinished();
+					};
+					var failCbk = function() {
+						sent[pwrlvl]++;
+						console.log("--", pwrlvl, sent, delivered);
+						hasFinished();
+					};
+
+					for (var n = 0; n < N; n++) {
+						zway.SendTestFrame(nodeId, pwrlvl, succesCbk, failCbk);
+					}
+				})(powerlevel)
+			}
+
+			var d = (new Date()).valueOf() + 10*N*1000; // wait not more than 10*N seconds
+			
+			while ((new Date()).valueOf() < d && result === "in progress") {
+				processPendingCallbacks();
+			}
+			
+			if (result === "in progress") {
+				throw("Timeout");
+			}
+
+			return delivered.map(function(val, index) { return 100 * val / sent[index]; });
+		} catch (e) {
+			return { status: 500, body: e.toString() };
+		}
+	};
+	
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
 			var deviceId = parseInt(url.substring(1), 10);
@@ -1614,7 +1668,8 @@ ZWave.prototype.defineHandlers = function () {
 				zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
 					function() {
 						zway.SerialAPISoftReset(function() {
-							result = "done"
+							result = "done";
+							zway.stop(); // to force re-start Z-Way
 						});
 				});
 			} else if (data.url) {
@@ -1644,7 +1699,8 @@ ZWave.prototype.defineHandlers = function () {
 						zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
 							function() {
 								zway.SerialAPISoftReset(function() {
-									result = "done"
+									result = "done";
+									zway.stop(); // to force re-start Z-Way
 								});
 						});
 					},
@@ -1709,6 +1765,7 @@ ZWave.prototype.defineHandlers = function () {
 						//Вызываем перезапись bootloder
 						zway.ZMEBootloaderFlash(seg, function() {
 							result = "done";
+							zway.stop(); // to force re-start Z-Way
 						},  function() {
 							result = "failed";
 						});
@@ -1738,6 +1795,7 @@ ZWave.prototype.defineHandlers = function () {
 								//Вызываем перезапись bootloder
 								zway.ZMEBootloaderFlash(seg, function() {
 									result = "done";
+									zway.stop(); // to force re-start Z-Way
 								},  function() {
 									result = "failed";
 								});

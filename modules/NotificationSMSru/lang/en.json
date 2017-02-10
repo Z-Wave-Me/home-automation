@@ -6,5 +6,11 @@
 	"l_phone":"Phone number to send SMS. In form of 79261234567",
 	"l_prefix":"Prefix for all messages",
 	"l_api_key":"API key from SMS.ru",
-	"h_api_key":"After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)"
+	"h_api_key":"After registration on the right you will see api_id (looks like a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"critical":"Critical",
+	"error":"Error",
+	"warning":"Warning",
+	"info":"Info",
+	"device-info":"Device-info",
+	"notification":"Notification"
 }
