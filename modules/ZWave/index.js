@@ -1503,12 +1503,10 @@ ZWave.prototype.defineHandlers = function () {
 					var succesCbk = function() {
 						sent[pwrlvl]++;
 						delivered[pwrlvl]++;
-						console.log("+++", pwrlvl, sent, delivered);
 						hasFinished();
 					};
 					var failCbk = function() {
 						sent[pwrlvl]++;
-						console.log("--", pwrlvl, sent, delivered);
 						hasFinished();
 					};
 
@@ -3096,7 +3094,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			lastIdArr = args[last].split('-');
 
 			// devices[nodeId].instances[0].commandClasses[96]
-			if (this.zway.devices[lastIdArr[0]].instances[0].commandClasses[96] && Object.keys(this.zway.devices[lastIdArr[0]].instances).length > 1) {
+			if (self.zway.devices[lastIdArr[0]].instances[0].commandClasses[96] && Object.keys(self.zway.devices[lastIdArr[0]].instances).length > 1) {
 				lastId = '(' + args[last].replace(/-/g, '.') + ')';
 			} else {
 				lastId = '(#' + lastIdArr[0] + ')';
