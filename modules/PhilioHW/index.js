@@ -92,6 +92,17 @@ PhilioHW.prototype.init = function (config) {
             this.zwayReg(name);
         }
     }
+    
+    this.WPS_OFF = 0;
+    this.WPS_REGISTRAR = 1;
+    this.WPS_ENROLLEE = 2;
+    this.WPS = this.WPS_OFF; // for LED indicator of WPS
+
+    this.amINervous = false;
+    // export function to show LED status with nervous blinks
+    if (!PhilioHW.nervous) {
+        PhilioHW.nervous = self.nervous;
+    }
 }
 
 PhilioHW.prototype.stop = function () {
@@ -105,6 +116,10 @@ PhilioHW.prototype.stop = function () {
     }
     
     this.bindings = [];
+    
+    if (PhilioHW.nervous == self.nervous) {
+        PhilioHW.nervous = undefined;
+    }
 
     PhilioHW.super_.prototype.stop.call(this);
 };
@@ -112,6 +127,31 @@ PhilioHW.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+PhilioHW.prototype.nervous = function(amINervous) {
+    this.amINervous = amINervous;
+    this.roundLED();
+};
+
+PhilioHW.prototype.roundLED = function() {
+    if (this.WPS === this.WPS_REGISTRAR) {
+        global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x04); // LED steady On
+    } else if (this.WPS === this.WPS_ENROLLEE) {
+        global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x08); // Fast blink
+    } else if (!this.config.no_battery && global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
+        global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
+    } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
+        global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
+    } else if (this.amINervous) {
+        global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x08); // Fast blink
+    } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 2) {
+        if (this.config.breath) {
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
+        } else {
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off
+        }
+    }
+}
 
 PhilioHW.prototype.registerButtons = function(zwayName) {
     var self = this,
@@ -130,16 +170,6 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     global.ZWave[zwayName].zway.ZMEPHIGetButton(1);
     global.ZWave[zwayName].zway.ZMEPHIGetButton(2);
 
-    function roundLED() {
-        if (!self.config.no_battery && global.ZWave[zwayName].zway.controller.data.philiohw.powerFail.value) {
-            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off to save battery
-        } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
-            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
-        } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 2) {
-            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
-        }
-    }
-    
     // Create vDev
     
     var tamperDev = this.controller.devices.create({
@@ -208,15 +238,27 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
                     break;
             }
         }
-        roundLED();
+        self.roundLED();
     }, "");
 
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.funcA.state", function(type) {
         switch (this.value) {
             case 3: // click
+                self.WPS = self.WPS_REGISTRAR;
+                self.roundLED();
+                setTimeout(function() {
+                    self.WPS = self.WPS_OFF;
+                    self.roundLED();
+                }, 30*1000);
                 system("/lib/wifi-helper.sh WPSRegistrar");
                 break;
             case 2: // hold
+                self.WPS = self.WPS_ENROLLEE;
+                self.roundLED();
+                setTimeout(function() {
+                    self.WPS = self.WPS_OFF;
+                    self.roundLED();
+                }, 30*1000);
                 system("/lib/wifi-helper.sh WPS");
                 break;
         }
@@ -279,7 +321,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
                     }, 3600*1000);
                 }
             }
-            roundLED();
+            self.roundLED();
         }, "");
 
         this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryFail", function(type) {
@@ -291,5 +333,5 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     }
     
     // sync round LED with actual box status on start
-    roundLED();
+    self.roundLED();
 };

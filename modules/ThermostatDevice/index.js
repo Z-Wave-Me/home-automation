@@ -40,7 +40,7 @@ ThermostatDevice.prototype.init = function (config) {
                 min: this.config.scale === 'C' ? 5 : 41,
                 max: this.config.scale === 'C' ? 40 : 104,
                 icon: '',
-                title: 'Thermostat Device ' + this.id
+                title: 'Virtual Thermostat ' + this.id
             }
         },
         overlay: {},

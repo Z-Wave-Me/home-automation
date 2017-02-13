@@ -23,9 +23,15 @@
 	"sensorBinary": "Binary Sensor",
 	"l_choose":"--- Choose a device type ---",
 	"l_choose_dev":"--- Choose a device ---",
-	"h_statusOn":"The only command that will be send is 'On'.",
+	"l_choose_dev":"--- Choose a device ---",
 	"l_choose_controller_action":"--- Choose a controller action ---",
 	"l_controller_action":"Controller Actions",
-	"h_controller_action":"If you want to trigger 'release button 2', type '2' for 'button 2' and '1' for interaction 'release' => '22'. Depending on the device the following interactions are possible: 0 (press one time), 1 (release), 2 (hold), 3 (press two times), 4 (press three times), 5 (press for times), 6 (press five times)",
-	"sensorDiscrete":"Control (Interaction)"
+	"h_controller_action":"The action is described with a two-digit value: The first digit is the button number, the second digit points to the action of this button (0=short press, 1=release, 2=hold, 3=short press two times, 4 = short press three times, and so on. Examples: Double Click button 2 => 23, Single Click button 1 = 10)",
+	"sensorDiscrete":"Scene Controller",
+	"switchRGBW":"Color Switch",
+	"l_red":"Red",
+	"l_green":"Green",
+	"l_blue":"Blue",
+	"colors":"Colors",
+	"h_color":"Choose a value from 0 - 255"
 }

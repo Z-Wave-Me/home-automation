@@ -1,5 +1,11 @@
+/*** Initialize Webserver and Handlers *****************************************
 
-// Start webserver and set up handlers
+ Version:
+ -------------------------------------------------------------------------------
+ Author: Serguei Poltorak <ps@zwave.me>
+ Copyright: (c) ZWave.Me, 2015
+
+ ******************************************************************************/
 
 ws = new WebServer(8083, function(req) {
 	var q = req.url.substring(1).replace(/\//g, '.');

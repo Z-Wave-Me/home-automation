@@ -52,6 +52,26 @@ function get_values (obj) {
     return res;
 }
 
+function byteArrayToString(data) {
+	if (typeof ArrayBuffer !== 'undefined' && (data instanceof ArrayBuffer)) {
+		data = new Uint8Array(data);
+	}
+
+	var output = "";
+	for (var i = 0; i < data.byteLength; i++) {
+		output += String.fromCharCode(data[i]);
+	}
+	return output;
+}
+
+function generateSalt() {
+    return Base64.encode(byteArrayToString(crypto.random(64)));
+}
+
+function hashPassword(password, salt) {
+    return Base64.encode(byteArrayToString(crypto.sha512(password + salt)));
+}
+
 function has_higher_version (newVersion, currVersion) {
     var isHigher = false,
         newVersion = newVersion && newVersion.toString()? newVersion.toString().split('.') : null,

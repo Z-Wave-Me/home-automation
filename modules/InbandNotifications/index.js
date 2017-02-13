@@ -1,6 +1,6 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.0.6
+Version: 1.1.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -117,6 +117,15 @@ InbandNotifications.prototype.init = function (config) {
 
                             self.controller.addNotification('device-info', msg , msgType, devId);
                             break;
+                        case 'sensorDiscrete':
+                            msg = {
+                                dev: devName,
+                                l: lvl
+                            };
+                            msgType = 'device-status';
+
+                            self.controller.addNotification('device-info', msg , msgType, devId);
+                            break;
                         case 'sensorMultilevel':
                         case 'sensorMultiline':
                         case 'thermostat':
@@ -151,25 +160,18 @@ InbandNotifications.prototype.init = function (config) {
     };
 
     this.onPollDeleteNotifications = function () {
-        if(self.controller.profileSID !== ''){
-            var now = new Date(),
+
+        var now = new Date(),
             startOfDay = now.setHours(0,0,0,0),
-            tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6,
-            notifications,
-            firstNotification,
-            id,
-            profile;
+            tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6;
 
-            profile = self.controller.profiles.filter(function (p) {
-                    return p.id === 1;
-            });
+        self.controller.notifications = _.filter(self.controller.notifications, function (n) {
+           return n.id >= tsSevenDaysBefore;
+        });
 
-            notifications = self.controller.listNotifications(tsSevenDaysBefore, 0 , profile[0], false);
-            firstNotification = notifications.shift();
-            id = firstNotification.id;
-        
-        self.controller.deleteNotifications(id, tsSevenDaysBefore, true, this.onPollDeleteNotifications, true);
-        }        
+        console.log('---------- all notifications older than 7 days deleted ----------');
+
+        self.controller.saveNotifications();
     };
 
     this.onPollSaveNotifications = function () {

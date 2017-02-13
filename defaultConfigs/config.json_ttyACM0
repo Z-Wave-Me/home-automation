@@ -140,5 +140,23 @@
             "banned": [],
             "generated": []
         }
+    }, {
+        "id": 9,
+        "moduleId": "CloudBackup",
+        "active": true,
+        "title": "CloudBackup",
+        "description": "Gives possibility to upload and store your backups on the remote server.",
+        "params": {
+            "api": "/CloudBackupAPI/Backup",
+            "user_active": false,
+            "email": "",
+            "email_log": "0",
+            "remoteid": null,
+            "days": null,
+            "weekDays": null,
+            "hours": null,
+            "minutes": null,
+            "scheduler": "0"
+        }
     }]
 }

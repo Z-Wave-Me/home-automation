@@ -26,6 +26,7 @@ function AutomationController() {
         'ZWAYSession'
     ];
     this.config = config.controller || {};
+    this.debug = false;
     this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se', 'fr']; // will be updated by correct ISO language codes in future
     this.defaultLang = 'en';
     this.profiles = config.profiles;
@@ -1103,19 +1104,20 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
             result = "failed";
         }
 
-        if (result === "done") {
-            this.skins = _.filter(this.skins, function (skin) {
-                return skin.name !== skinName;
-            });
+        //if (result === "done") {
 
-            this.profiles.forEach(function(prof) {
-                if (prof.skin === skinName) {
-                    prof.skin = 'default';
-                }
-            });
+        this.skins = _.filter(this.skins, function (skin) {
+            return skin.name !== skinName;
+        });
 
-            saveObject("userSkins.json", this.skins);
-        }
+        this.profiles.forEach(function(prof) {
+            if (prof.skin === skinName) {
+                prof.skin = 'default';
+            }
+        });
+
+        saveObject("userSkins.json", this.skins);
+        //}
 
     } catch (e) {
         console.log('Uninstalling or reseting of skin "' + skinName + '" has failed. ERROR:', e);
@@ -1151,9 +1153,10 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 
 AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
     var result = "in progress",
-        filelist = {},
+        filelist = [],
         input = "",
-        name = "";
+        name = "",
+        update = false;
 
     switch(option) {
         case 'remote':
@@ -1193,21 +1196,61 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 
         if (result === 'done') {
             for (var file in filelist) {
-                var icon = {
-                    'file': filelist[file],
-                    'source': iconName+"_"+id,
-                    'timestamp': Math.floor(new Date().getTime() / 1000),
-                    'source_title': option === "local" ? iconName+" "+id : reqObj.title
-                };
+                if (filelist[file].filename && filelist[file].orgfilename) {
+                    var icon = {
+                        'file': filelist[file].filename,
+                        'orgfile': filelist[file].orgfilename,
+                        'source': iconName+"_"+id,
+                        'name': iconName,
+                        'id': id,
+                        'timestamp': Math.floor(new Date().getTime() / 1000),
+                        'source_title': option === "local" ? iconName+" "+id : reqObj.title
+                    };
 
-                this.icons.push(icon);
+                    this.icons.push(icon);
+                    update = true;
+                }
             }
 
-            saveObject("userIcons.json", this.icons);
+            if (update) {
+                saveObject("userIcons.json", this.icons);
+            }
         }
     }
     return result;
 };
+
+AutomationController.prototype.listIcons = function() {
+    var result = "in progress",
+        icons = {};
+
+    try {
+        iconinstaller.list(
+            function(success) {
+                icons = success;
+                result = "done";
+            },
+            function() {
+                result = "failed";
+            }
+        );
+
+        var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+        while ((new Date()).valueOf() < d &&  result === "in progress") {
+            processPendingCallbacks();
+        }
+
+        if(result == "in progress") {
+            result = "failed";
+        }
+
+    } catch(e) {
+        console.log(e)
+    }
+
+    return icons;
+}
 
 AutomationController.prototype.uninstallIcon = function(iconName) {
     var langFile = this.loadMainLang(),
@@ -1217,11 +1260,13 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
         iconinstaller.remove(
             iconName,
             function(success) {
-                console.log(success);
                 result = "done";
             },  function(error) {
-                console.log(error);
-                result = "failed";
+                if(error == "No such icon.") {
+                    result = "done";
+                } else {
+                    result = "failed";
+                }
             }
         );
 
@@ -1235,20 +1280,56 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
             result = "failed";
         }
 
-        if (result === "done") {
-            this.icons = _.filter(this.icons, function (icon) {
-                return icon.file !== iconName;
-            });
+        //if (result === "done") {
+        this.icons = _.filter(this.icons, function (icon) {
+            return icon.file !== iconName;
+        });
 
-            saveObject("userIcons.json", this.icons);
-        }
+        saveObject("userIcons.json", this.icons);
+        //}
 
-    } catch (e) {
+    } catch(e) {
         console.log('Uninstalling or reseting of icon "' + iconName + '" has failed. ERROR:', e);
         this.addNotification("error", langFile.ac_err_uninstall_icon + ': ' + iconName, "core", "AutomationController");
     }
 
     return result;
+}
+
+AutomationController.prototype.deleteCustomicon = function(iconName) {
+    self = this;
+    self.devices.each(function(dev) {
+        if(!_.isEmpty(dev.get('customIcons'))) {
+            var customIcon = dev.get('customIcons');
+            _.each(customIcon, function(value, key) {
+                if(typeof value !== "object") {
+                    if(value === iconName) {
+                        customIcon = {};
+                        dev.set('customIcons', customIcon, {silent:true});
+                        return false;
+                    }
+                } else {
+                    _.each(value, function(icon, level) {
+                        if(icon === iconName) {
+                            delete customIcon[key][level];
+                        }
+                    });
+
+                    if(_.isEmpty(customIcon[key])) {
+                        customIcon = {};
+                    }
+                    dev.set('customIcons', customIcon, {silent:true});
+                }
+            });
+        }
+    });
+}
+
+AutomationController.prototype.deleteAllCustomicons = function() {
+    self = this;
+    self.devices.each(function(dev) {
+        dev.set('customIcons', {}, {silent:true});
+    });
 }
 
 AutomationController.prototype.deviceExists = function (vDevId) {
@@ -1281,15 +1362,13 @@ AutomationController.prototype.loadNotifications = function () {
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
     var now = new Date(),
         notice = {
-            id: Math.floor(now.getTime() /1000),
+            id: Math.floor(now.getTime()),
             timestamp: now.toISOString(),
             level: severity,
             message: message, 
             type: type || 'device',
             source: source,
-            redeemed: false,
-            // add unified hash - produces with source, cause timestamp in sec is not unique ...
-            h: this.hashCode(source)
+            redeemed: false
         };
 
     if(typeof message === 'object'){
@@ -1304,45 +1383,93 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     console.log("Notification:", severity, "(" + type + "):", msg);
 };
 
-AutomationController.prototype.deleteNotifications = function (id, before, uid, callback, removeNotification) {
-    var that = this,
-        ids = [],
-        newNotificationList = [];
-    
-    if (removeNotification) {
-        id = parseInt(id) || 0;
-        before = Boolean(before);
-        uid = parseInt(uid) || 0;
+AutomationController.prototype.deleteNotifications = function (ts, before, callback) {
+    var before = Boolean(before)|| false,
+        newNotificationList = [],
+        ts = parseInt(ts) || 0;
 
-        if(id !== 0 && uid !== 0 && before === false){
-            newNotificationList = that.notifications.filter(function (notification) {
-                return notification.id !== id && notification.h !== uid;
+    if (ts !== 0) {
+        if (before) {
+            newNotificationList = this.notifications.filter(function (notification) {
+                return notification.id >= ts;
             });
-            console.log('---------- notification with id ' + id + ' deleted ----------');
+            console.log('---------- all notifications before ' + ts + ' deleted ----------');
+        } else {
+            newNotificationList = this.notifications.filter(function (notification) {
+                return notification.id !== ts;
+            });
+            console.log('---------- notification with id ' + ts + ' deleted ----------');
         }
 
-        if(id !== 0 && before === true){
-            newNotificationList = that.notifications.filter(function (notification) {
-                return notification.id >= id;
-            });
-            console.log('---------- all notifications before ' + id + ' deleted ----------');
-        }
+        this.notifications = newNotificationList;
 
-        that.notifications = newNotificationList;    
-    
-    } else {
-        that.notifications.forEach(function (notification) {
-            if (ids.indexOf(parseInt(notification.id)) !== -1) {
-                that.notifications[that.notifications.indexOf(notification)].redeemed = true;
+        this.saveNotifications();
+
+        if (typeof callback === 'function') {
+            callback(true);
+        }
+    }
+};
+
+AutomationController.prototype.deleteAllRedeemedNotifications = function (callback) {
+    try {
+        this.notifications = this.notifications.filter(function(notification) {
+            return !notification.redeemed;
+        });
+
+        this.saveNotifications();
+
+        if (typeof callback === 'function') {
+            callback(true);
+        }
+    } catch (e) {
+        console.log('deleteAllRedeemedNotifications - something went wrong:', e.message);
+
+        if (typeof callback === 'function') {
+            callback(false);
+        }
+    }
+};
+
+AutomationController.prototype.redeemNotification = function (id, redeemed, callback) {
+    var r = redeemed || true,
+        id = id || 0;
+
+    if (id > 0) {
+        this.notifications.forEach(function(notification) {
+            if (notification.id === id) {
+                notification.redeemed = r;
             }
         });
-    }
 
-    if (typeof callback === 'function') {
-        callback(true);
-    }
+        this.saveNotifications();
 
-    that.saveNotifications();
+        if (typeof callback === 'function') {
+            callback(true);
+        }
+    }
+};
+
+AutomationController.prototype.redeemAllNotifications = function (redeemed, callback) {
+    var r = redeemed || true;
+
+    try {
+        this.notifications.forEach(function(notification) {
+            if (!notification.redeemed) {
+                notification.redeemed = r;
+            }
+        });
+
+        this.saveNotifications();
+
+        if (typeof callback === 'function') {
+            callback(true);
+        }
+    } catch(e) {
+        if (typeof callback === 'function') {
+            callback(false);
+        }
+    }
 };
 
 AutomationController.prototype.getLocation = function (locations, locationId) {
@@ -1691,7 +1818,8 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
         p = this.profiles[index];
         
         if (object.hasOwnProperty('password') && object.password !== '' && !!object.password) {
-            p.password = object.password;
+            p.salt = generateSalt();
+            p.password = hashPassword(object.password, p.salt);
         }
         if (object.hasOwnProperty('login') && object.login !== '' && !!object.login) {
             p.login = object.login;

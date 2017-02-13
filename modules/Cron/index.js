@@ -86,8 +86,6 @@ Cron.prototype.init = function (config) {
     // Remember "this" for detached callbacks (such as event listener callbacks)
     var self = this;
 
-    self.schedules = self.config.schedules;
-
     // Setup metric update event listener
     this.controller.on('cron.addTask', function (eventName, schedule, eventArgs) {
       if (!self.schedules.hasOwnProperty(eventName)) {
@@ -95,11 +93,15 @@ Cron.prototype.init = function (config) {
       }
       var time = {"time": schedule};
       self.schedules[eventName].push([self.renderSchedule(schedule), time, eventArgs]);
+
+      self.config.schedules = self.schedules;
       // console.log(JSON.stringify(self.renderSchedule(schedule))); // debug !
     });
 
     this.controller.on('cron.removeTask', function (eventName) {
       delete self.schedules[eventName];
+
+      self.config.schedules = self.schedules;
     });
 
     this.timer = setInterval(function () {

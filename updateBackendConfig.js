@@ -1,10 +1,19 @@
 // This script transforms old formats to new
 
 (function () {
-  var config = loadObject("config.json"),
+  var config,
       oldConfigJSON = JSON.stringify(config),
-      skins = loadObject("userSkins.json");
+      skins = loadObject("userSkins.json"),
+      notifications = loadObject("notifications");
 
+  try {
+    config = loadObject("config.json");
+  } catch (e) {
+    console.log("Error loading config.json! Using default config.");
+    config = fs.loadJSON("defaultConfigs/config.json");
+    saveObject("config.json", config);
+  }
+  
   if (config) {
     // Change profiles data
     if (config.hasOwnProperty('profiles') && Array.isArray(config.profiles) && config.profiles.length > 0) {
@@ -396,6 +405,15 @@
             });
       }
     
+      // convert password to a secure salted hash
+      config.profiles.forEach(function(profile) {
+        if (profile.login === "admin" && profile.password === "admin" || profile.login === "local" && profile.password === "local") return; // skip default profiles
+        if (!!profile.salt) return; // skip already converted
+        
+        profile.salt = generateSalt();
+        profile.password = hashPassword(profile.password, profile.salt);
+      });
+      
       // Save changes
       
       if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?
@@ -437,4 +455,24 @@
       console.log("Error: can not write userSkins.json to storage: ", e);
     }
   }
+
+  // change notification property h into uts and delete h
+  if (notifications) {
+        try {
+            notifications.forEach(function(notification){
+                if(notification.hasOwnProperty('id') && notification.id.toString().length === 10) {
+                    notification.id = Math.floor(notification.id*1000);
+                }
+
+                if(notification.hasOwnProperty('h')) {
+                    delete notification.h;
+                }
+            });
+
+            saveObject('notifications', notifications);
+        } catch (e) {
+            console.log("Error: Cannot write notifications to storage: ", e.message);
+        }
+
+    }
 })();
