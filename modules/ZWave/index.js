@@ -901,8 +901,16 @@ ZWave.prototype.defineHandlers = function () {
 		};
 	};
 
-	this.ZWaveAPI.Backup = function(url) {
-		var now = new Date();
+	this.ZWaveAPI.Backup = function(url, request) {
+		var now = new Date(),
+        	withLog = false,
+			lines = '',
+			q = request.query,
+			testLines = function(lines) {
+				var l = parseInt(lines,10);
+				return l > 0 && l <= 20000 || false;
+			},
+			logAvailable = fs.stat('lib/fetchLog.sh');
 
 		// create a timestamp in format yyyy-MM-dd-HH-mm
 		var ts = now.getFullYear() + "-";
@@ -911,9 +919,27 @@ ZWave.prototype.defineHandlers = function () {
 		ts += ("0" + now.getHours()).slice(-2) + "-";
 		ts += ("0" + now.getMinutes()).slice(-2);
 
+		if (q && logAvailable) {
+            withLog = q.log? Boolean(q.log) : withLog;
+            lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines)? parseInt(q.lines,10) : lines;
+		}
+
 		try {
+
+			if (withLog && logAvailable) {
+                //grep log and add to config/map
+				system("sh /opt/z-way-server/automation/lib/fetchLog.sh getLog " + lines);
+			}
+
+			// do backup
 			var data = zway.controller.Backup();
-			return {
+
+            if (withLog && logAvailable) {
+                //cleanup log's in config/map directory
+                system("sh /opt/z-way-server/automation/lib/fetchLog.sh removeLog");
+            }
+
+            return {
 				status: 200,
 				headers: {
 					"Content-Type": "application/x-download",
