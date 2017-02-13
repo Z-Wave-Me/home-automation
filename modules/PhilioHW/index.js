@@ -283,7 +283,6 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         }
     }, "");
 
-    /* Temporarily remove LED control on inclusion/exclusion due to some conflict in packets inside M0
     this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "controllerState", function(type) {
         if (this.value == 0) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x10, 0x02); // idle
@@ -295,7 +294,6 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x10, 0x20); // other
         }
     }, "");
-    */
 
     if (!self.config.no_battery) {
         this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
