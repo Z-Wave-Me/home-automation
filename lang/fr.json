@@ -28,5 +28,6 @@
 	"zaap_war_app_installed_corrupt_instance" : "Aucune application avec cette version dans les archives disponibles. La dernière version a été installé en remplacement. Il est possible que des instances existantes de cette application cessent de fonctionner. Veuillez les retirer dans Applications > Actives et ajouté les nouvelles sous Applications > Application locale",
 	"zaap_war_core_app_is_newer" : "Cette application est déjà installé avec une version supérieur ou identique. L'installation a été annulée. Il est possible que des instances existantes de cette application cessent de fonctionner. Veuillez les retirer dans Applications > Actives et ajouté les nouvelles sous Applications > Application locale.",
 	"zaap_err_no_archives" : "Cette application n'a pas d'archive. L'installation a été annulée.",
-	"zaap_err_server" : "Le serveur de téléchargement n'est pas accessible ou ne répond pas. Veuillez réessayer plus tard."
+	"zaap_err_server" : "Le serveur de téléchargement n'est pas accessible ou ne répond pas. Veuillez réessayer plus tard.",
+	"zaap_err_reboot":"Reboot command is not supported on your platform, please unplug the power or follow the controller manual."
 }
