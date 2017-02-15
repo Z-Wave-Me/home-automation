@@ -329,9 +329,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	inH = function () {
 
         console.debug("log incoming");
-        var data = JSON.stringify(this);
-
-        data = JSON.parse(data);
+        var data = this;
 
         if (!!originPackets) {
             originPackets.incoming.push(data);
@@ -398,9 +396,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	outH = function () {
 
         console.debug("log outgoing");
-        var data = JSON.stringify(this);
-
-        data = JSON.parse(data);
+        var data = this;
 
         if (!!originPackets) {
             originPackets.outgoing.push(data);
@@ -771,6 +767,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -804,6 +801,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CheckAllLinks");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
+    ws.revokeExternalAccess(_name + ".sendZwayReport");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -902,42 +900,15 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.Backup = function(url, request) {
-		var now = new Date(),
-        	withLog = false,
-			lines = '',
-			q = request.query,
-			testLines = function(lines) {
-				var l = parseInt(lines,10);
-				return l > 0 && l <= 20000 || false;
-			},
-			logAvailable = fs.stat('lib/fetchLog.sh');
+		var now = new Date();
 
 		// create a timestamp in format yyyy-MM-dd-HH-mm
-		var ts = now.getFullYear() + "-";
-		ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
-		ts += ("0" + now.getDate()).slice(-2) + "-";
-		ts += ("0" + now.getHours()).slice(-2) + "-";
-		ts += ("0" + now.getMinutes()).slice(-2);
-
-		if (q && logAvailable) {
-            withLog = q.log? Boolean(q.log) : withLog;
-            lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines)? parseInt(q.lines,10) : lines;
-		}
+        var ts = getHRDateformat(now);
 
 		try {
 
-			if (withLog && logAvailable) {
-                //grep log and add to config/map
-				system("sh /opt/z-way-server/automation/lib/fetchLog.sh getLog " + lines);
-			}
-
 			// do backup
 			var data = zway.controller.Backup();
-
-            if (withLog && logAvailable) {
-                //cleanup log's in config/map directory
-                system("sh /opt/z-way-server/automation/lib/fetchLog.sh removeLog");
-            }
 
             return {
 				status: 200,
@@ -955,6 +926,115 @@ ZWave.prototype.defineHandlers = function () {
 			return { status: 500, body: e.toString() };
 		}
 	};
+
+    this.ZWaveAPI.sendZWayReport = function(url, request) {
+        var lines = '',
+            q = request.query,
+            testLines = function(lines) {
+                var l = parseInt(lines,10);
+                return l > 0 && l <= 20000 || false;
+            },
+            logAvailable = fs.stat('lib/fetchLog.sh'),
+            report_url = "http://hrix.net/shuiapi/bugreport/debug.php",
+            ret = false,
+        	formElements = [],
+			reqObj = request.body? request.body : request.data,
+			data;
+
+        reqObj = reqObj && typeof reqObj !== 'string'? reqObj : parseInt(reqObj);
+
+        //TODO: Implement for Multiple zways
+        /*function createBackup(){
+        	var zwayBcp = {}
+            // do backup
+            global.ZWave.list().forEach(function(zwayName) {
+                var bcp = "",
+                    data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
+
+                for(var i = 0; i < data.length; i++) {
+                    bcp += String.fromCharCode(data[i]);
+                }
+
+                zwayBcp[zwayName] = bcp;
+            });
+
+        	return zwayBcp;
+		}*/
+
+        function createBackup(){
+            var zwayBcp = []
+
+			// do backup
+			var bcp = "",
+				data = new Uint8Array(zway.controller.Backup());
+
+			for(var i = 0; i < data.length; i++) {
+				bcp += String.fromCharCode(data[i]);
+			}
+
+			zwayBcp = bcp;
+
+            return zwayBcp;
+        }
+
+        if (q && logAvailable) {
+            lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines)? parseInt(q.lines,10) : lines;
+        }
+
+		if (logAvailable) {
+			//grep log and add to config/map
+			system("sh /opt/z-way-server/automation/lib/fetchLog.sh getLog " + lines);
+
+            data = createBackup();
+
+			//cleanup log's in config/map directory
+			system("sh /opt/z-way-server/automation/lib/fetchLog.sh removeLog");
+		} else {
+            data = createBackup();
+		}
+
+		try {
+			var now = new Date();
+			// create a timestamp in format yyyy-MM-dd-HH-mm
+			var ts = getHRDateformat(now);
+
+			// prepare system information
+			for (param in reqObj) {
+				formElements.push({
+					name: param,
+					value: reqObj[param].toString()
+				})
+			}
+
+			if(data) {
+				// add backup with log
+				formElements.push({
+					name: 'log_name',
+					value: "report-z-way-backup-log-" + ts + ".tgz"
+				},{
+                    name: 'log_data',
+                    value: Base64.encode(JSON.stringify(data))
+				});
+			}
+
+			res = formRequest.send(formElements, "POST", report_url);
+
+			if(res.status === -1) { //error e.g. no connection to server
+				self.controller.addNotification("error", res.statusText, "module", self.id);
+			} else {
+				if(res.status === 200) {
+					ret = true;
+					self.controller.addNotification("info", res.data.message, "module", self.id);
+				} else {
+					self.controller.addNotification("error", res.data.message, "module", self.id);
+				}
+			}
+
+		} catch(e) {
+			return { status: 500, body: e.toString() }
+		}
+		return ret;
+    };
 
 	this.ZWaveAPI.Restore = function(url, request) {
 		if (request.method === "POST" && request.data && request.data && request.data.config_backup) {

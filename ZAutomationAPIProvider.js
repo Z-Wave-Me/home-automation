@@ -1870,11 +1870,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         var now = new Date();
         // create a timestamp in format yyyy-MM-dd-HH-mm
-        var ts = now.getFullYear() + "-";
-        ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
-        ts += ("0" + now.getDate()).slice(-2) + "-";
-        ts += ("0" + now.getHours()).slice(-2) + "-";
-        ts += ("0" + now.getMinutes()).slice(-2);
+        var ts = getHRDateformat(now);
 
         try {
 
