@@ -31,5 +31,6 @@
 	"zaap_war_app_installed_corrupt_instance":"There was no app with this version in the archive available. The lastest version was installed instead. It could be that already existing instances of this app do not work anymore. Please remove them from Apps > Active and add new ones under Apps > Local.",
 	"zaap_war_core_app_is_newer":"This app is already installed with a newer or same version. The installation was cancelled. It could be that already existing instances of this app do not work anymore. Please remove them from Apps > Active and add new ones under Apps > Local.",
 	"zaap_err_no_archives":"This app has no archive. The installation was cancelled.",
-	"zaap_err_server":"The download server is not reachable or responses with an error. Please try again later."
+	"zaap_err_server":"The download server is not reachable or responses with an error. Please try again later.",
+	"zaap_err_reboot":"Reboot command is not supported on your platform, please unplug the power or follow the controller manual."
 }

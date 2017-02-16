@@ -31,5 +31,6 @@
 	"zaap_war_app_installed_corrupt_instance":"Es stand keine App im Archiv mit dieser Version zur Verfügung. Stattdessen wurde die aktuellste Version installiert. Es kann vorkommen, dass bereits aktive Instanzen dieser App anschließend nicht mehr funktionieren. Bitte entfernen Sie diese von den Anwendungen > Aktiv und fügen Sie diese neu hinzu unter Anwendungen > Lokal.",
 	"zaap_war_core_app_is_newer":"Die App ist bereits mit der selben oder einer höheren auf ihrem System vorinstalliert. Die Installation wurde abgebrochen. Es kann vorkommen, dass bereits aktive Instanzen dieser App anschließend nicht mehr funktionieren. Bitte entfernen Sie diese von den Anwendungen > Aktiv und fügen Sie diese neu hinzu unter Anwendungen > Lokal.",
 	"zaap_err_no_archives":"Diese App hat kein Archiv. Die Installation wurde abgebrochen.",
-	"zaap_err_server":"Der Download-Server ist nicht erreichbar oder hat mit einem Fehler geantwortet. Versuchen Sie es später erneut."
+	"zaap_err_server":"Der Download-Server ist nicht erreichbar oder hat mit einem Fehler geantwortet. Versuchen Sie es später erneut.",
+	"zaap_err_reboot":"Die Systemneustart wird auf Ihrem Gerät nicht unterstützt. Starten Sie ihr System neu, in dem Sie kurz die Stromversorgung trennen oder die Anweisungen aus dem Handbuch befolgen."
 }

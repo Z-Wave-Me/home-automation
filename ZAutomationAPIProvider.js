@@ -1870,11 +1870,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         var now = new Date();
         // create a timestamp in format yyyy-MM-dd-HH-mm
-        var ts = now.getFullYear() + "-";
-        ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
-        ts += ("0" + now.getDate()).slice(-2) + "-";
-        ts += ("0" + now.getHours()).slice(-2) + "-";
-        ts += ("0" + now.getMinutes()).slice(-2);
+        var ts = getHRDateformat(now);
 
         try {
 
@@ -2762,6 +2758,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     setTimezone: function() {
         var self = this,
+            langfile = this.controller.loadMainLang();
             reply = {
                 error: null,
                 data: null,
@@ -2789,17 +2786,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         if(res.status === 200) {
             reply.code = 200;
             reply.data = res.statusText;
+
+            // reboot after 5 seconds
+            setTimeout(function() {
+                try {
+                    console.log("Rebooting system ...");
+                    system("reboot"); // reboot the box
+                } catch (e) {
+                    self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "SetTimezone");
+                }
+            }, 5000);
+
         } else {
             reply.error = res.statusText;
         }
 
         saveObject('8084AccessTimeout', null);
-
-        // reboot after 5 seconds
-        setTimeout(function() {
-            console.log("Rebooting system ...");
-            system("reboot"); // reboot the box
-        }, 5000);
 
         return reply;
     },
@@ -2921,13 +2923,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     rebootBox: function() {
         var self = this,
+            langfile = this.controller.loadMainLang();
             reply = {
                 error: null,
                 data: null,
                 code: 500
             };
-        
-        try {
 
             // if reboot has flag firstaccess=true add showWelcome to controller config
             if(this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
@@ -2936,19 +2937,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             // reboot after 5 seconds
-            this.rebootTimer = setTimeout(function() {
-                if(self.rebootTimer) {
-                    clearTimeout(self.rebootTimer);
+            setTimeout(function() {
+                try {
+                    console.log("Rebooting system ...");
+                    system("reboot"); // reboot the box
+                } catch (e){
+                    self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "RebootBox");
                 }
-                console.log("Rebooting system ...");
-                system("reboot"); // reboot the box
             }, 5000);
 
             reply.code = 200;
             reply.data = "System is rebooting ...";
-        } catch (e){
-            reply.error = "Reboot command is not supported on your platform, please unplug the power or follow the controller manual.";
-        }
 
         return reply;
     },

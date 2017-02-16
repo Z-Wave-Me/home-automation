@@ -138,7 +138,10 @@ var formRequest = {
         // set headers
         obj.headers = {
             "Connection": "keep-alive",
-            "Content-Type": "multipart/form-data; boundary=" + boundary
+            "Content-Type": "multipart/form-data; boundary=" + boundary,
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+            "Access-Control-Allow-Headers": "Authorization"
         };
         // set url
         obj.url = url;
@@ -157,3 +160,13 @@ var formRequest = {
         return http.request(obj);
     }
 };
+
+function getHRDateformat(now){
+    var ts = now.getFullYear() + "-";
+    ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
+    ts += ("0" + now.getDate()).slice(-2) + "-";
+    ts += ("0" + now.getHours()).slice(-2) + "-";
+    ts += ("0" + now.getMinutes()).slice(-2);
+
+    return ts;
+}
