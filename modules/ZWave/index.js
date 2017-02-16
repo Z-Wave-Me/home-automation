@@ -935,13 +935,13 @@ ZWave.prototype.defineHandlers = function () {
                 return l > 0 && l <= 20000 || false;
             },
             logAvailable = fs.stat('lib/fetchLog.sh'),
-            report_url = "http://hrix.net/shuiapi/bugreport/debug.php",
+            report_url = "https://service.z-wave.me/report/index.php",
             ret = false,
         	formElements = [],
 			reqObj = request.body? request.body : request.data,
 			data;
 
-        reqObj = reqObj && typeof reqObj !== 'string'? reqObj : parseInt(reqObj);
+        reqObj = reqObj && typeof reqObj !== 'string'? reqObj : JSON.parse(reqObj);
 
         //TODO: Implement for Multiple zways
         /*function createBackup(){
