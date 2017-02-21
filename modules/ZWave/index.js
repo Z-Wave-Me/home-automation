@@ -2258,7 +2258,7 @@ ZWave.prototype.defineHandlers = function () {
                             processPendingCallbacks();
                         }
 
-                        if (result === "in progress") {
+                        if (request === "in progress") {
                             result = isFLiRS? "waiting for wakeup" : "failed";
                             entry.result = request;
                             entry.runtime= ((new Date()).valueOf() - start) /1000;
@@ -2307,7 +2307,8 @@ ZWave.prototype.defineHandlers = function () {
 
         return reply;
 
-    },
+    };
+
     this.ZWaveAPI.CheckAllLinks = function(url, request) {
         var req = request && request.body? request.body : request && request.data? request.data : undefined,
             req = req && typeof req === 'string'? JSON.parse(req) : req,
@@ -2363,7 +2364,7 @@ ZWave.prototype.defineHandlers = function () {
         }
 
         return reply;
-    }
+    };
 
 	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
         var reply = {
