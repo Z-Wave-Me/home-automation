@@ -2729,3 +2729,7 @@ AutomationController.prototype.getRemoteId = function() {
 
     return result;
 };
+
+AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
+    return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
+};
