@@ -458,28 +458,9 @@ ZWave.prototype.CommunicationLogger = function() {
 	this.timer = setInterval(function() {
 		try {
 			var data = loadObject("rssidata.json");
-			var now = Math.round((new Date()).getTime()/1000);
 
-			if(!data) data = [];
-			zway.GetBackgroundRSSI();
+			data = self.rssiData(data);
 
-			var rssi = zway.controller.data.statistics.backgroundRSSI;
-
-			var d = {
-				"time": now,
-				"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-				"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-                "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
-			};
-
-			data.push(d);
-
-			if ( data.length > 1440){
-				var lastDay = now - 86400;
-				data = _.filter(data, function(entry){
-					return entry.time > lastDay;
-				});
-			}
 			saveObject("rssidata.json", data);
 		} catch (e) {
 			console.log('Cannot fetch background RSSI. Error:', e.message);
@@ -488,6 +469,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	}, 1000*30);
 
     // =================== helper functions ========================
+
     function prepareRSSI(rssiPacket) {
         var rssi = [];
 
@@ -732,7 +714,6 @@ ZWave.prototype.CommunicationLogger = function() {
 
     // =====================================================
 };
-
 
 // --------------- Public HTTP API -------------------
 
@@ -1550,9 +1531,8 @@ ZWave.prototype.defineHandlers = function () {
         };*/
     }
 
-    this.ZWaveAPI.RSSIGet = function() {
-        var self = this,
-            headers = {
+    this.ZWaveAPI.RSSIGet = function(url, request) {
+        var headers = {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
                 "Access-Control-Allow-Headers": "Authorization",
@@ -1566,7 +1546,14 @@ ZWave.prototype.defineHandlers = function () {
                 "data": []
             };
 
-        body.data = loadObject('rssidata.json');
+        var par = url.split("/")[1];
+
+        if(par == "realtime") {
+        	var temp = [];
+			body.data = self.rssiData(temp);
+		} else {
+            body.data = loadObject('rssidata.json');
+		}
 
         if (!!body.data) {
 
@@ -4640,3 +4627,30 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 
 	this.controller.devices.remove(vDevId);
 };
+
+ZWave.prototype.rssiData = function(data) {
+    var now = Math.round((new Date()).getTime()/1000);
+
+    if(!data) data = [];
+    zway.GetBackgroundRSSI();
+
+    var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+    var d = {
+        "time": now,
+        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
+        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+    };
+
+    data.push(d);
+
+    if ( data.length > 1440){
+        var lastDay = now - 86400;
+        data = _.filter(data, function(entry){
+            return entry.time > lastDay;
+        });
+    }
+
+    return data;
+}
