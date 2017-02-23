@@ -1549,8 +1549,25 @@ ZWave.prototype.defineHandlers = function () {
         var par = url.split("/")[1];
 
         if(par == "realtime") {
-        	var temp = [];
-			body.data = self.rssiData(temp);
+
+			var now = Math.round((new Date()).getTime()/1000);
+
+		    var data = [];
+		    zway.GetBackgroundRSSI();
+
+		    var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+		    var d = {
+		        "time": now,
+		        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
+		        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+		        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+		    };
+
+		    data.push(d);
+
+		    body.data = data;
+
 		} else {
             body.data = loadObject('rssidata.json');
 		}
