@@ -2184,7 +2184,7 @@ ZWave.prototype.defineHandlers = function () {
 			if(Object.keys(reqObj).length = 1) {
 				var keys = Object.keys(reqObj);
 
-				if(expert_config.hasOwnProperty(keys[0])) {
+				//if(expert_config.hasOwnProperty(keys[0])) {
 					_.assign(expert_config, reqObj);
 
 					saveObject("expertconfig.json", expert_config);
@@ -2193,9 +2193,9 @@ ZWave.prototype.defineHandlers = function () {
 						body: "Done"
 					};
 
-				} else {
-					return { status: 404, body: "Property " + keys[0] + " not found" };
-				}
+				//} else {
+				//	return { status: 404, body: "Property " + keys[0] + " not found" };
+				//}
 			}
 			//TODO multiple property update
 			/*
