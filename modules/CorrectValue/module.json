@@ -1,0 +1,60 @@
+{
+    "singleton": false,
+    "dependencies": [],
+    "category": "device_enhancements",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "icon.png",
+    "moduleName": "CorrectValue",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "repository": {
+        "type": "git",
+        "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "__m_title__",
+        "description": "__m_descr__",
+        "correctionValue": 0,
+        "device": "",
+        "hide":true
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "device": {
+                "field": "enum",
+                "datasource": "namespaces",
+                "enum": "namespaces:devices_sensorMultilevel:deviceId",
+                "required": true
+            },
+            "correctionValue": {
+                "type": "number",
+                "required": true
+            },
+            "hide": {
+                "type": "boolean",
+                "required": true
+            }
+        },
+        "required": true
+    },
+    "options": {
+        "fields": {
+            "device": {
+                "label": "__l_dev__",
+                "datasource": "namespaces",
+                "field": "optionLabels",
+                "optionLabels": "namespaces:devices_sensorMultilevel:deviceName"
+            },
+            "correctionValue": {
+                "label": "__l_correctionValue__",
+                "helper": "__h_correctionValue__"
+            },
+            "hide": {
+                "type": "checkbox",
+                "rightLabel": "__rl_hide_original__"
+            }
+        }
+    }
+}
