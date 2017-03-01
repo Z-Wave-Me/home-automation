@@ -2214,13 +2214,13 @@ ZWave.prototype.defineHandlers = function () {
             delay = req && req.delay? req.delay :null,
             timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
             timer = null,
-			now = (new Date()).valueOf();
+            now = (new Date()).valueOf();
 
         try {
             var devices = Object.keys(zway.devices);
             var ret = {
-            	result: [],
-            	runtime: 0
+                result: [],
+                runtime: 0
             };
             var dTS = '';
 
@@ -2228,45 +2228,51 @@ ZWave.prototype.defineHandlers = function () {
 
                 // do not send NIF to itself
                 devices.forEach(function (nodeId) {
-                	var request = "in progress",
-						entry = {
+                    var request = "in progress",
+                        entry = {
                             nodeId: nodeId,
                             result: "",
                             runtime: 0,
-                            isFLiRS: false
-						},
+                            isFLiRS: false,
+                            hasBattery: false
+                        },
                         start = (new Date()).valueOf(),
-                    	pendingDelay = start + timeout;
+                        pendingDelay = start + timeout;
+                    console.log('nodeId:',nodeId);
+                    console.log('controller nodeId:',zway.controller.data.nodeId.value);
 
-                	if (zway.devices[nodeId] && nodeId !== zway.controller.data.nodeId.value) {
+                    if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
 
                         var isListening = zway.devices[nodeId].data.isListening.value;
                         var isFLiRS = !isListening && (zway.devices[nodeId].data.sensor250.value || zway.devices[nodeId].data.sensor1000.value);
+                        var hasWakeup = 0x84 in zway.devices[nodeId].instances[0].commandClasses;
 
-						console.log('Send NIF to node #' + nodeId + ' ...');
+                        console.log('Send NIF to node #' + nodeId + ' ...');
                         zway.RequestNodeInformation(
-                        	nodeId,
-							function() {
+                            nodeId,
+                            function() {
                                 request = "done";
                                 entry.result = request;
                                 entry.runtime= ((new Date()).valueOf() - start) /1000;
                                 entry.isFLiRS = isFLiRS;
-							},  function() {
+                                entry.hasBattery = hasWakeup;
+                            },  function() {
                                 request = "failed";
                                 entry.result = request;
                                 entry.runtime= ((new Date()).valueOf() - start) /1000;
                                 entry.isFLiRS = isFLiRS;
-							});
+                                entry.hasBattery = hasWakeup;
+                            });
 
                         while (request === "in progress" && (new Date()).valueOf() < pendingDelay && !isFLiRS) {
                             processPendingCallbacks();
                         }
 
                         if (request === "in progress") {
-                            result = isFLiRS? "waiting for wakeup" : "failed";
-                            entry.result = request;
+                            entry.result = hasWakeup? "waiting for wakeup" : "failed";
                             entry.runtime= ((new Date()).valueOf() - start) /1000;
                             entry.isFLiRS = isFLiRS;
+                            entry.hasBattery = hasWakeup;
                         }
 
                         ret.result.push(entry);
@@ -2274,35 +2280,8 @@ ZWave.prototype.defineHandlers = function () {
                 });
             }
 
-            // do initial request
-            /*if(devices.length > 0) {
-            	// do not send NIF to itself
-                while((dTS === '' || nodeId !== zway.controller.data.nodeId.value) && devices.length > 0) {
-                    nodeId = devices.pop();
-                    dTS = zway.devices[nodeId].data.deviceTypeString.valueOf();
-                }
-
-                if(zway.devices[nodeId]) {
-                    zway.devices[nodeId].RequestNodeInformation();
-                }
-            }
-
-            var timer = setInterval(function() {
-                if(devices.length > 0) {
-                    var nodeId = devices.pop();
-
-                    //if (zway.devices[nodeId].data.deviceTypeString.valueOf() !== 'Static PC Controller') {
-                    if (nodeId !== zway.controller.data.nodeId.value) {
-                        zway.devices[nodeId].RequestNodeInformation();
-                    }
-                } else {
-                    clearInterval(timer);
-                }
-            }, timeout);*/
-
             ret.runtime = Math.floor(((new Date()).valueOf() - now)/1000);
-
-            //console.log(JSON.stringify(ret, null, 1));
+            ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
 
             return { status: 200, body: ret };
         } catch (e) {
@@ -2322,43 +2301,47 @@ ZWave.prototype.defineHandlers = function () {
             nodeId = req && req.nodeId? req.nodeId : null;
 
         try {
-            if(!!nodeId && zway.devices[nodeId]) {
+            if(!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
                 var neighbours = zway.devices[nodeId].data.neighbours.value;
                 var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
                 var ret = {
                 	runtime: neighbours.length * (timeout /1000),
+                    link_test : 'TestNodeSet',
+                    srcNodeId: nodeId,
+                    dstNodeIds: neighbours,
 					test: []
 				};
+                if (supported) {
+                    neighbours.forEach(function (neighbour) {
+                        var start = (new Date()).valueOf();
+                        var item = {};
+                        var powerLvl = zway.devices[nodeId].instances[0].commandClasses[115];
 
-                neighbours.forEach(function (neighbour) {
+                        console.log('# Send TestNodeSet from #' + nodeId + ' to #' + neighbour);
+                        powerLvl.TestNodeSet(neighbour, 6, 20);
 
-                	var start = (new Date()).valueOf();
-                	var item = {
-                		srcNodeId: nodeId,
-						destNodeId: neighbour,
-						linkTest: ''
-					}
+                        // wait 2 sec or more
+                        while ((new Date()).valueOf() < (start + timeout)) {
+                            processPendingCallbacks();
+                        }
 
-                    if (supported) {
-                        console.log('# Send TestNodeSet to '+ neighbour);
-                        item.link_test = 'TestNodeSet';
-                        zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(neighbour, 6, 20);
-                    } else {
-                        console.log('# Send NOP to '+ neighbour);
-                        item.link_test = 'NOP';
-                        zway.devices[neighbour].instances[0].commandClasses[32].Get();
-                    }
+                        if (powerLvl.data[neighbour]) {
+                            item[neighbour] = {
+                                totalFrames: powerLvl.data[neighbour].totalFrames.value,
+                                acknowledgedFrames: powerLvl.data[neighbour].acknowledgedFrames.value
+                            }
+                        }
 
-                    // wait 2 sec or more
-                    while ((new Date()).valueOf() < (start + timeout)) {
-                    	processPendingCallbacks();
-					}
+                        ret.test.push(item);
 
-                    ret.test.push(item);
+                    });
 
-                });
+                    ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
 
-                return { status: 200, body: ret };
+                    return { status: 200, body: ret };
+                } else {
+                    return { status: 404, body: 'Not supported for this device.'};
+				}
 
             } else {
                 return { status: 404, body: 'Node not found.' };
