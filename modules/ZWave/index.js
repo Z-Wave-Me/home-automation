@@ -749,6 +749,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -783,6 +784,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
     ws.revokeExternalAccess(_name + ".sendZwayReport");
+    ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -2238,8 +2240,6 @@ ZWave.prototype.defineHandlers = function () {
                         },
                         start = (new Date()).valueOf(),
                         pendingDelay = start + timeout;
-                    console.log('nodeId:',nodeId);
-                    console.log('controller nodeId:',zway.controller.data.nodeId.value);
 
                     if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
 
@@ -2476,6 +2476,239 @@ ZWave.prototype.defineHandlers = function () {
 
 		return reply;
 	};
+
+    this.ZWaveAPI.NetworkReorganization = function(url, request) {
+        var self = this,
+            result = [],
+            reply = {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "Authorization",
+                    "Connection": "close"
+                },
+                body: null
+            },
+            delay = (new Date()).valueOf() + 10000, // wait not more than 10 seconds
+			flirs = [],
+			battery = [],
+            req = request && request.data? request.data : undefined,
+            req = req && typeof req === 'string'? JSON.parse(req) : req,
+            reorgMain = req && req.reorgMain? req.reorgMain : true,
+            reorgBattery = req && req.reorgBattery? req.reorgBattery : false;
+
+        var res={};
+
+        var result = "in progress";
+
+        function doReorg(nodeId, type){
+            var i = 0;
+			var succesCbk = function() {
+                result = 'done'
+				res[nodeId] = {
+					status: result,
+					type: type,
+					tries: i
+				}
+
+                i=3;
+			};
+			var failCbk = function() {
+                result = 'failed'
+                res[nodeId] = {
+                    status: result,
+                    type: type,
+                    tries: i
+                }
+			};
+
+
+			for (i; i < 3; i++) {
+                var delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+				zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
+
+                while (result === "in progress" && (new Date()).valueOf() < delay) {
+                    processPendingCallbacks();
+                }
+
+				zway.GetRoutingTableLine(nodeId);
+
+                if (type !== 'main') {
+                	i = 3;
+                }
+			}
+		}
+
+        try {
+            Object.keys(zway.devices).forEach(function(nodeId) {
+				var node = zway.devices[nodeId],
+					isListening = node.data.isListening.value,
+                	isFLiRS = !isListening && (node.data.sensor250.value || node.data.sensor1000.value),
+                 	hasWakeup = 0x84 in node.instances[0].commandClasses;
+
+				if (reorgBattery && hasWakeup) { // has battery and reorg for battery is forced
+                    battery.push(nodeId);
+				} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
+                    flirs.push(nodeId);
+
+				} else if (reorgMain && !hasWakeup) {// is main powered and reorg for main/FLiRS is forced (default)
+                    doReorg(nodeId, 'main');
+				}
+			});
+
+            if (flirs.length > 0 && reorgMain) {
+                flirs.forEach(function(nodeId){
+                    doReorg(nodeId, 'flirs');
+				});
+			}
+
+            if (battery.length > 0 && reorgBattery) {
+                battery.forEach(function(nodeId){
+                    doReorg(nodeId, 'battery');
+                });
+            }
+
+			console.log('#### res:', res);
+
+
+            /*$scope.reorgNodesNeighbours = function(current, result, doNext) {
+                if (("complete" in current) && current.complete) {
+                    doNext();
+                    return;
+                }
+                dataService.store('devices[' + current.nodeId + '].RequestNodeNeighbourUpdate()', function(response) {
+                    var pollForNodeNeighbourUpdate = function(current) {
+                        dataService.updateZwaveDataSince(current.since, function(updateZWaveAPIData) {
+                            $scope.appendLog(".", current.line);
+                            try {
+                                if ("devices." + current.nodeId + ".data.neighbours" in updateZWaveAPIData) {
+                                    var obj = updateZWaveAPIData["devices." + current.nodeId + ".data.neighbours"]
+                                    if (current.since < obj.updateTime && obj.invalidateTime < obj.updateTime) {
+                                        $scope.ZWaveAPIData.devices[current.nodeId].data.neighbours = obj;
+                                        $scope.nodes[current.nodeId].node = $scope.ZWaveAPIData.devices[current.nodeId];
+                                        // routes updated
+                                        var routesCount = $filter('getRoutesCount')($scope.ZWaveAPIData, current.nodeId);
+                                        $.each($scope.ZWaveAPIData.devices, function(nnodeId, nnode) {
+                                            if (!routesCount[nnodeId]) {
+                                                return;
+                                            }
+                                        });
+                                        $scope.appendLog(" " + $scope._t('reorg_done'), current.line);
+                                        if (current.type == "battery") {
+                                            if ("battery_completed" in result) {
+                                                result.battery_completed++;
+                                            } else {
+                                                result.battery_completed = 1;
+                                            }
+                                        } else {
+                                            if ("mains_completed" in result) {
+                                                result.mains_completed++;
+                                            } else {
+                                                result.mains_completed = 1;
+                                            }
+                                        }
+                                        // mark all retries in processQueue as complete
+                                        for (var i = 0; i < $scope.processQueue.length; i++) {
+                                            if ($scope.processQueue[i].nodeId == current.nodeId) {
+                                                $scope.processQueue[i].complete = true;
+                                            }
+                                        }
+                                        current.complete = true;
+                                        doNext();
+                                        return;
+                                    }
+                                }
+                            } catch (exception) {
+                                $scope.appendLog(" " + e.message, current.line);
+                            }
+                            if (current.timeout < (new Date()).getTime()) {
+                                // timeout waiting for an update-route occured, proceed
+                                $scope.appendLog(" " + $scope._t('reorg_timeout'), current.line);
+                                if (current.retry == 3) {
+                                    if (current.type == "battery") {
+                                        if ("battery_pending" in result) {
+                                            result.battery_pending++;
+                                        } else {
+                                            result.battery_pending = 1;
+                                        }
+                                    } else {
+                                        if ("mains_pending" in result) {
+                                            result.mains_pending++;
+                                        } else {
+                                            result.mains_pending = 1;
+                                        }
+                                    }
+                                }
+                                current.complete = true;
+                                doNext();
+                                return;
+                            }
+                            // routes not yet updated, poll again
+                            window.setTimeout(pollForNodeNeighbourUpdate, cfg.interval, current);
+                        }, function(error) {
+                            // error handler
+                            $scope.appendLog(error, current.line);
+                            if (current.retry == 3) {
+                                if (current.type == "battery") {
+                                    if ("battery_pending" in result) {
+                                        result.battery_pending++;
+                                    } else {
+                                        result.battery_pending = 1;
+                                    }
+                                } else {
+                                    if ("mains_pending" in result) {
+                                        result.mains_pending++;
+                                    } else {
+                                        result.mains_pending = 1;
+                                    }
+                                }
+                            }
+                            current.complete = true;
+                            doNext();
+                        });
+                    };
+                    // first polling
+                    pollForNodeNeighbourUpdate(current);
+                }, function(error) {
+                    // error handler
+                    $scope.appendLog(error, current.line);
+                    if (current.type == "battery") {
+                        if ("battery_pending" in result) {
+                            result.battery_pending++;
+                        } else {
+                            result.battery_pending = 1;
+                        }
+                    } else {
+                        if ("mains_pending" in result) {
+                            result.mains_pending++;
+                        } else {
+                            result.mains_pending = 1;
+                        }
+                    }
+                    current.complete = true;
+                    doNext();
+                });
+            };*/
+
+
+            /*while (result.length < l.length && (new Date()).valueOf() < delay) {
+                processPendingCallbacks();
+            }*/
+
+            if(result) {
+                reply.status = 200;
+                reply.body = res;
+            }
+
+        } catch (e) {
+            console.log('Error has occured during updating the ZWave devices list');
+            reply.message = 'Something went wrong:' + e.message;
+        }
+
+        return reply;
+    };
 
 
 	/*
