@@ -319,7 +319,8 @@ ZWave.prototype.CommunicationLogger = function() {
 		opacket = this.opacket,
         cmdClasses = this.cmdClasses,
         cmdC = cmdClasses.zw_classes.cmd_class,
-        nodeid = zway.controller.data.nodeId.value;
+        nodeid = zway.controller.data.nodeId.value,
+        boxTypeIsCIT = false;
 
 	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
 	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
@@ -455,18 +456,23 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	zway.controller.data.outgoingPacket.bind(outH);
 
-	this.timer = setInterval(function() {
-		try {
-			var data = loadObject("rssidata.json");
+    boxTypeIsCIT = this.controller.isCIT();
 
-			data = self.rssiData(data);
+    if (boxTypeIsCIT) {
+        this.timer = setInterval(function() {
+            try {
+                var data = loadObject("rssidata.json");
 
-			saveObject("rssidata.json", data);
-		} catch (e) {
-			console.log('Cannot fetch background RSSI. Error:', e.message);
-		}
+                data = self.rssiData(data);
 
-	}, 1000*30);
+                saveObject("rssidata.json", data);
+            } catch (e) {
+                console.log('Cannot fetch background RSSI. Error:', e.message);
+            }
+
+        }, 1000*30);
+	}
+
 
     // =================== helper functions ========================
 
