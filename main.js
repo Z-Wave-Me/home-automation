@@ -66,6 +66,7 @@ if (!config) {
     executeFile(config.libPath + "/BAOS_API_2011_01_29_001.js");
     executeFile(config.libPath + "/IntelHex2bin.js");
     executeFile(config.libPath + "/base64.js");
+    executeFile(config.libPath + "/qrcode.js");
 
     //--- Load Automation subsystem classes
     executeFile(config.classesPath + "/VirtualDevice.js");
