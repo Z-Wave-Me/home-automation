@@ -756,6 +756,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -791,6 +792,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
     ws.revokeExternalAccess(_name + ".sendZwayReport");
     ws.revokeExternalAccess(_name + ".NetworkReorganization");
+    ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -2497,226 +2499,314 @@ ZWave.prototype.defineHandlers = function () {
                 },
                 body: null
             },
-            delay = (new Date()).valueOf() + 10000, // wait not more than 10 seconds
-			flirs = [],
-			battery = [],
-            req = request && request.data? request.data : undefined,
+            req = request && request.query? request.query : undefined,
             req = req && typeof req === 'string'? JSON.parse(req) : req,
-            reorgMain = req && req.reorgMain? req.reorgMain : true,
-            reorgBattery = req && req.reorgBattery? req.reorgBattery : false;
+        	cntNodes = 0,
+            mains, flirs, battery, reorgMain, reorgBattery;
 
-        var res={};
+        self.reorgLog = [];
+        self.res = {};
+        self.reorgIntervallTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
 
-        var result = "in progress";
+        // object that shows progress of each container
+        self.progress = {
+            main: {
+            	reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
+                status: '',
+                pending: [],
+                timeout: [],
+				all: []
+            },
+            flirs: {
+                reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
+                status: '',
+                pending: [],
+                timeout: [],
+                all: []
+            },
+            battery: {
+                reorg: req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false,
+                status: '',
+                pending: [],
+                timeout: [],
+                all: []
+            }
+        };
 
-        function doReorg(nodeId, type){
-            var i = 0;
-			var succesCbk = function() {
-                result = 'done'
-				res[nodeId] = {
-					status: result,
-					type: type,
-					tries: i
-				}
+        mains = self.progress.main;
+        flirs = self.progress.flirs;
+        battery = self.progress.battery;
+        reorgMain = mains.reorg;
+        reorgBattery = battery.reorg;
 
-                i=3;
+        // function that add's a log entry to reorgLog
+        function addLog (message, nodeId) {
+        	var entry = {
+        		timestamp: (new Date()).valueOf(),
+				message: message,
+				node: nodeId? nodeId : undefined,
+				type: nodeId && self.res[nodeId]? self.res[nodeId].type : undefined,
+                status: nodeId && self.res[nodeId]? self.res[nodeId].status : undefined,
+                tries: nodeId && self.res[nodeId]? self.res[nodeId].tries : undefined
 			};
-			var failCbk = function() {
-                result = 'failed'
-                res[nodeId] = {
-                    status: result,
-                    type: type,
-                    tries: i
-                }
-			};
+            console.log(message);
+            self.reorgLog.push(entry);
 
-
-			for (i; i < 3; i++) {
-                var delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
-				zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
-
-                while (result === "in progress" && (new Date()).valueOf() < delay) {
-                    processPendingCallbacks();
-                }
-
-				zway.GetRoutingTableLine(nodeId);
-
-                if (type !== 'main') {
-                	i = 3;
-                }
+            if (self.reorgLog.length > 0) {
+                saveObject('reorgLog', self.reorgLog);
 			}
 		}
 
-        try {
-            Object.keys(zway.devices).forEach(function(nodeId) {
-				var node = zway.devices[nodeId],
-					isListening = node.data.isListening.value,
-                	isFLiRS = !isListening && (node.data.sensor250.value || node.data.sensor1000.value),
-                 	hasWakeup = 0x84 in node.instances[0].commandClasses;
+        // function that removes pending nodes after done/failed/timeout
+        function removeFromPending (type,nodeId) {
+            if(self.progress[type].pending.indexOf(nodeId) > -1) {
+                self.progress[type].pending = self.progress[type].pending.filter(function(node) {
+                    return	node != nodeId;
+                });
+            }
+        }
 
-				if (reorgBattery && hasWakeup) { // has battery and reorg for battery is forced
-                    battery.push(nodeId);
-				} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
-                    flirs.push(nodeId);
+        function removeFromTimeout (type,nodeId) {
+            if(self.progress[type].timeout.indexOf(nodeId) > -1) {
+                self.progress[type].timeout = self.progress[type].timeout.filter(function(node) {
+                    return	node != nodeId;
+                });
+            }
+        }
 
-				} else if (reorgMain && !hasWakeup) {// is main powered and reorg for main/FLiRS is forced (default)
-                    doReorg(nodeId, 'main');
+        // function that calls reorg and includes callback functions
+        function doReorg(nodeId, type){
+
+        	if (self.progress[type].pending.indexOf(nodeId) < 0) {
+                self.progress[type].pending.push(nodeId);
+			}
+
+			// add single node status
+            if (!self.res[nodeId]) {
+                self.res[nodeId] = {
+                    status: "in progress",
+                    type: type,
+                    tries: 1,
+                    timeout: 0
+                };
+			}
+
+			// success calback function
+			var succesCbk = function() {
+                var message = '%%%% reorg #'+nodeId+' ('+type+') ';
+                self.res[nodeId] = _.extend(self.res[nodeId],{
+					status: 'done',
+					type: type,
+					tries: self.res[nodeId].tries
+				});
+
+                zway.GetRoutingTableLine(nodeId);
+
+                addLog(message + '... done', nodeId);
+
+                removeFromPending(type, nodeId);
+                removeFromTimeout(type, nodeId);
+
+                i=4;
+			};
+			var failCbk = function() {
+				var preMessage = '%%%% reorg #'+nodeId+' ('+type+') ';
+				var message='';
+				var tries = self.res[nodeId].tries;
+
+				self.res[nodeId] = _.extend(self.res[nodeId],{
+                    status: 'failed',
+                    type: type,
+                    tries: tries++
+                });
+
+                if (type === 'main' && tries < 3) {
+                        addLog(preMessage + '... ' + tries + '. try has failed');
+                        addLog(preMessage + '- next try ... ');
+                        reorgUpdate(nodeId);
+				} else {
+                    message = type === 'main'? '- all tries have failed' : '... has failed' ;
+
+                    addLog(preMessage + message, nodeId);
+
+                    removeFromPending(type, nodeId);
+                    removeFromTimeout(type, nodeId);
+				}
+			};
+
+            var reorgUpdate = function (nodeId){
+                try {
+                    self.res[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
+                    zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
+                } catch (e) {
+                    console.log('Error has occured during reorg on node #'+nodeId+': ' + e.message);
+                    self.res[nodeId].status = 'failed';
+                    removeFromPending(type, nodeId);
+                    addLog('%%%% reorg #'+nodeId+' ('+self.res[nodeId].type+') ... has failed', nodeId);
+                }
+            }
+
+            // initial update request
+            reorgUpdate(nodeId);
+		}
+
+		var initialMsg = reorgBattery && reorgMain? ' (with battery powered devices)' : reorgBattery && !reorgMain? ' (battery powered devices only)' : ' (without battery powered devices)';
+
+		addLog('%%%% reorg started' + initialMsg);
+
+        //try {
+		Object.keys(zway.devices).forEach(function(nodeId) {
+			var node = zway.devices[nodeId],
+                isListening = node.data.isListening.value,
+				isMain = (isListening && node.data.isRouting.value) || (isListening && !node.data.isRouting.value),
+				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
+				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value);
+
+			if (reorgBattery && isBattery && !isFLiRS) { // has battery and reorg for battery is forced
+				battery.all.push(nodeId);
+				cntNodes++;
+			} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
+				flirs.all.push(nodeId);
+				cntNodes++;
+			} else if (reorgMain && isMain) {// is main powered and reorg for main/FLiRS is forced (default)
+                mains.all.push(nodeId);
+				cntNodes++;
+			}
+		});
+
+        if (mains.all.length > 0 && reorgMain) {
+            addLog('%%%% reorg all mains: ' + JSON.stringify(mains.all));
+            mains.status = 'in progress';
+
+            mains.all.forEach(function(nodeId){
+                doReorg(nodeId, 'main');
+            });
+        } else if (battery.all.length > 0 && reorgBattery) {
+            addLog('%%%% reorg all battery: ' + JSON.stringify(battery.all));
+            battery.status = 'in progress';
+            battery.all.forEach(function(nodeId){
+                doReorg(nodeId, 'battery');
+            });
+		}
+
+        this.reorgIntervall = setInterval(function(){
+            var nodes = [],
+                cntNodes = Object.keys(self.res).length,
+				now = (new Date()).valueOf();
+
+            Object.keys(self.res).forEach(function(nodeId){
+            	var resNode = self.res[nodeId],
+					type = resNode.type,
+					status = resNode.status,
+					currArr = self.progress[type];
+
+            	if (nodes.indexOf(nodeId) < 0) {
+
+            		if (status !== 'in progress') {
+                        nodes.push(nodeId);
+                    } else if (status === 'in progress' && resNode.timeout < now) {
+                        status = 'timeout';
+                        addLog('%%%% reorg #'+nodeId+' ('+type+') ... timeout', nodeId);
+                        removeFromPending(type, nodeId);
+                        nodes.push(nodeId);
+                        currArr.timeout.push(nodeId);
+                    } else {
+                    	if (currArr.pending.indexOf(nodeId) < 0) {
+                            currArr.pending.push(nodeId);
+						}
+					}
 				}
 			});
 
-            if (flirs.length > 0 && reorgMain) {
-                flirs.forEach(function(nodeId){
-                    doReorg(nodeId, 'flirs');
-				});
-			}
+            Object.keys(self.progress).forEach(function(t, i){
+                var nextType = Object.keys(self.progress)[i+1],
+					nextNodeArr = [],
+					currProgressType = self.progress[t],
+					pending = currProgressType.pending,
+					status = currProgressType.status,
+                    reorg = currProgressType.reorg,
+					nextReorg = false;
 
-            if (battery.length > 0 && reorgBattery) {
-                battery.forEach(function(nodeId){
-                    doReorg(nodeId, 'battery');
-                });
-            }
+                if(pending.length < 1 && status === 'in progress' && reorg) {
+                    self.progress[t].status = 'done';
+                    addLog('%%%% reorg ' + t + ' done');
 
-			console.log('#### res:', res);
+                    if (pending.length < 1 && nextType) {
+                        nextNodeArr = self.progress[nextType].all;
+                        nextReorg = self.progress[nextType].reorg;
 
+                        if (nextNodeArr.length > 0 && nextReorg ) {
+                            addLog('%%%% reorg all '+nextType+': '+ JSON.stringify(nextNodeArr));
+                            self.progress[nextType].status = 'in progress';
 
-            /*$scope.reorgNodesNeighbours = function(current, result, doNext) {
-                if (("complete" in current) && current.complete) {
-                    doNext();
-                    return;
+                            nextNodeArr.forEach(function(nodeId){
+                                doReorg(nodeId, nextType);
+                            });
+                        }
+					}
                 }
-                dataService.store('devices[' + current.nodeId + '].RequestNodeNeighbourUpdate()', function(response) {
-                    var pollForNodeNeighbourUpdate = function(current) {
-                        dataService.updateZwaveDataSince(current.since, function(updateZWaveAPIData) {
-                            $scope.appendLog(".", current.line);
-                            try {
-                                if ("devices." + current.nodeId + ".data.neighbours" in updateZWaveAPIData) {
-                                    var obj = updateZWaveAPIData["devices." + current.nodeId + ".data.neighbours"]
-                                    if (current.since < obj.updateTime && obj.invalidateTime < obj.updateTime) {
-                                        $scope.ZWaveAPIData.devices[current.nodeId].data.neighbours = obj;
-                                        $scope.nodes[current.nodeId].node = $scope.ZWaveAPIData.devices[current.nodeId];
-                                        // routes updated
-                                        var routesCount = $filter('getRoutesCount')($scope.ZWaveAPIData, current.nodeId);
-                                        $.each($scope.ZWaveAPIData.devices, function(nnodeId, nnode) {
-                                            if (!routesCount[nnodeId]) {
-                                                return;
-                                            }
-                                        });
-                                        $scope.appendLog(" " + $scope._t('reorg_done'), current.line);
-                                        if (current.type == "battery") {
-                                            if ("battery_completed" in result) {
-                                                result.battery_completed++;
-                                            } else {
-                                                result.battery_completed = 1;
-                                            }
-                                        } else {
-                                            if ("mains_completed" in result) {
-                                                result.mains_completed++;
-                                            } else {
-                                                result.mains_completed = 1;
-                                            }
-                                        }
-                                        // mark all retries in processQueue as complete
-                                        for (var i = 0; i < $scope.processQueue.length; i++) {
-                                            if ($scope.processQueue[i].nodeId == current.nodeId) {
-                                                $scope.processQueue[i].complete = true;
-                                            }
-                                        }
-                                        current.complete = true;
-                                        doNext();
-                                        return;
-                                    }
-                                }
-                            } catch (exception) {
-                                $scope.appendLog(" " + e.message, current.line);
-                            }
-                            if (current.timeout < (new Date()).getTime()) {
-                                // timeout waiting for an update-route occured, proceed
-                                $scope.appendLog(" " + $scope._t('reorg_timeout'), current.line);
-                                if (current.retry == 3) {
-                                    if (current.type == "battery") {
-                                        if ("battery_pending" in result) {
-                                            result.battery_pending++;
-                                        } else {
-                                            result.battery_pending = 1;
-                                        }
-                                    } else {
-                                        if ("mains_pending" in result) {
-                                            result.mains_pending++;
-                                        } else {
-                                            result.mains_pending = 1;
-                                        }
-                                    }
-                                }
-                                current.complete = true;
-                                doNext();
-                                return;
-                            }
-                            // routes not yet updated, poll again
-                            window.setTimeout(pollForNodeNeighbourUpdate, cfg.interval, current);
-                        }, function(error) {
-                            // error handler
-                            $scope.appendLog(error, current.line);
-                            if (current.retry == 3) {
-                                if (current.type == "battery") {
-                                    if ("battery_pending" in result) {
-                                        result.battery_pending++;
-                                    } else {
-                                        result.battery_pending = 1;
-                                    }
-                                } else {
-                                    if ("mains_pending" in result) {
-                                        result.mains_pending++;
-                                    } else {
-                                        result.mains_pending = 1;
-                                    }
-                                }
-                            }
-                            current.complete = true;
-                            doNext();
-                        });
-                    };
-                    // first polling
-                    pollForNodeNeighbourUpdate(current);
-                }, function(error) {
-                    // error handler
-                    $scope.appendLog(error, current.line);
-                    if (current.type == "battery") {
-                        if ("battery_pending" in result) {
-                            result.battery_pending++;
-                        } else {
-                            result.battery_pending = 1;
-                        }
-                    } else {
-                        if ("mains_pending" in result) {
-                            result.mains_pending++;
-                        } else {
-                            result.mains_pending = 1;
-                        }
-                    }
-                    current.complete = true;
-                    doNext();
-                });
-            };*/
+			});
 
+            // remove all
+            if (self.reorgIntervall &&
+					(nodes.length >= cntNodes &&
+                		self.progress.main.pending.length < 1 &&
+							self.progress.flirs.pending.length < 1 &&
+								self.progress.battery.pending.length < 1) ||
+                					self.reorgIntervallTimeout < now) {
 
-            /*while (result.length < l.length && (new Date()).valueOf() < delay) {
-                processPendingCallbacks();
-            }*/
+            	var allTimeout = [];
 
-            if(result) {
-                reply.status = 200;
-                reply.body = res;
+                Object.keys(self.progress).forEach(function (type) {
+                    allTimeout = _.uniq(allTimeout.concat(self.progress[type].timeout));
+				});
+
+                if (self.reorgIntervallTimeout < now) {
+                    addLog('%%%% reorg timeout ... canceled');
+                } else {
+                	if (allTimeout && allTimeout.length > 0) {
+                        addLog('%%%% reorg timed out for:' + JSON.stringify(allTimeout));
+					}
+                    addLog('%%%% reorg complete');
+                }
+
+            	clearInterval(self.reorgIntervall);
             }
+		}, 3000);
 
-        } catch (e) {
-            console.log('Error has occured during updating the ZWave devices list');
-            reply.message = 'Something went wrong:' + e.message;
-        }
+		if(self.res) {
+			reply.status = 201;
+			reply.body = {
+				data: 'Reorganization '+initialMsg+' is starting ...'
+			};
+		}
 
         return reply;
     };
 
+    this.ZWaveAPI.GetReorganizationLog = function(url, request) {
+        var self = this,
+            reply = {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "Authorization",
+                    "Connection": "close"
+                },
+                body: null
+            }
 
+		reorgLog = loadObject('reorgLog');
+
+        if(!!reorgLog) {
+            reply.status = 200;
+            reply.body = reorgLog;
+        }
+
+        return reply;
+    }
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
