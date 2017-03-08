@@ -1,0 +1,8 @@
+{
+	"m_title":"Correct sensor value",
+	"m_descr":"If sensor show not real value, you can correct it",
+	"l_dev":"Sensor",
+	"l_correctionValue":"Correction value",
+	"h_correctionValue":"As example, +4 or -3",
+	"rl_hide_original":"Hide original sensor"
+}

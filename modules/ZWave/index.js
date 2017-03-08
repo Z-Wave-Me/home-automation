@@ -319,7 +319,8 @@ ZWave.prototype.CommunicationLogger = function() {
 		opacket = this.opacket,
         cmdClasses = this.cmdClasses,
         cmdC = cmdClasses.zw_classes.cmd_class,
-        nodeid = zway.controller.data.nodeId.value;
+        nodeid = zway.controller.data.nodeId.value,
+        boxTypeIsCIT = false;
 
 	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
 	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
@@ -455,39 +456,26 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	zway.controller.data.outgoingPacket.bind(outH);
 
-	this.timer = setInterval(function() {
-		try {
-			var data = loadObject("rssidata.json");
-			var now = Math.round((new Date()).getTime()/1000);
+    boxTypeIsCIT = this.controller.isCIT();
 
-			if(!data) data = [];
-			zway.GetBackgroundRSSI();
+    if (boxTypeIsCIT) {
+        this.timer = setInterval(function() {
+            try {
+                var data = loadObject("rssidata.json");
 
-			var rssi = zway.controller.data.statistics.backgroundRSSI;
+                data = self.rssiData(data);
 
-			var d = {
-				"time": now,
-				"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-				"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-                "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
-			};
+                saveObject("rssidata.json", data);
+            } catch (e) {
+                console.log('Cannot fetch background RSSI. Error:', e.message);
+            }
 
-			data.push(d);
+        }, 1000*30);
+	}
 
-			if ( data.length > 1440){
-				var lastDay = now - 86400;
-				data = _.filter(data, function(entry){
-					return entry.time > lastDay;
-				});
-			}
-			saveObject("rssidata.json", data);
-		} catch (e) {
-			console.log('Cannot fetch background RSSI. Error:', e.message);
-		}
-
-	}, 1000*30);
 
     // =================== helper functions ========================
+
     function prepareRSSI(rssiPacket) {
         var rssi = [];
 
@@ -733,7 +721,6 @@ ZWave.prototype.CommunicationLogger = function() {
     // =====================================================
 };
 
-
 // --------------- Public HTTP API -------------------
 
 
@@ -768,6 +755,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -802,6 +791,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
     ws.revokeExternalAccess(_name + ".sendZwayReport");
+    ws.revokeExternalAccess(_name + ".NetworkReorganization");
+    ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -935,13 +926,13 @@ ZWave.prototype.defineHandlers = function () {
                 return l > 0 && l <= 20000 || false;
             },
             logAvailable = fs.stat('lib/fetchLog.sh'),
-            report_url = "http://hrix.net/shuiapi/bugreport/debug.php",
+            report_url = "https://service.z-wave.me/report/index.php",
             ret = false,
         	formElements = [],
 			reqObj = request.body? request.body : request.data,
 			data;
 
-        reqObj = reqObj && typeof reqObj !== 'string'? reqObj : parseInt(reqObj);
+        reqObj = reqObj && typeof reqObj !== 'string'? reqObj : JSON.parse(reqObj);
 
         //TODO: Implement for Multiple zways
         /*function createBackup(){
@@ -1550,9 +1541,8 @@ ZWave.prototype.defineHandlers = function () {
         };*/
     }
 
-    this.ZWaveAPI.RSSIGet = function() {
-        var self = this,
-            headers = {
+    this.ZWaveAPI.RSSIGet = function(url, request) {
+        var headers = {
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
                 "Access-Control-Allow-Headers": "Authorization",
@@ -1566,7 +1556,31 @@ ZWave.prototype.defineHandlers = function () {
                 "data": []
             };
 
-        body.data = loadObject('rssidata.json');
+        var par = url.split("/")[1];
+
+        if(par == "realtime") {
+
+			var now = Math.round((new Date()).getTime()/1000);
+
+		    var data = [];
+		    zway.GetBackgroundRSSI();
+
+		    var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+		    var d = {
+		        "time": now,
+		        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
+		        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+		        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+		    };
+
+		    data.push(d);
+
+		    body.data = data;
+
+		} else {
+            body.data = loadObject('rssidata.json');
+		}
 
         if (!!body.data) {
 
@@ -2180,7 +2194,7 @@ ZWave.prototype.defineHandlers = function () {
 			if(Object.keys(reqObj).length = 1) {
 				var keys = Object.keys(reqObj);
 
-				if(expert_config.hasOwnProperty(keys[0])) {
+				//if(expert_config.hasOwnProperty(keys[0])) {
 					_.assign(expert_config, reqObj);
 
 					saveObject("expertconfig.json", expert_config);
@@ -2189,9 +2203,9 @@ ZWave.prototype.defineHandlers = function () {
 						body: "Done"
 					};
 
-				} else {
-					return { status: 404, body: "Property " + keys[0] + " not found" };
-				}
+				//} else {
+				//	return { status: 404, body: "Property " + keys[0] + " not found" };
+				//}
 			}
 			//TODO multiple property update
 			/*
@@ -2210,13 +2224,13 @@ ZWave.prototype.defineHandlers = function () {
             delay = req && req.delay? req.delay :null,
             timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
             timer = null,
-			now = (new Date()).valueOf();
+            now = (new Date()).valueOf();
 
         try {
             var devices = Object.keys(zway.devices);
             var ret = {
-            	result: [],
-            	runtime: 0
+                result: [],
+                runtime: 0
             };
             var dTS = '';
 
@@ -2224,45 +2238,49 @@ ZWave.prototype.defineHandlers = function () {
 
                 // do not send NIF to itself
                 devices.forEach(function (nodeId) {
-                	var request = "in progress",
-						entry = {
+                    var request = "in progress",
+                        entry = {
                             nodeId: nodeId,
                             result: "",
                             runtime: 0,
-                            isFLiRS: false
-						},
+                            isFLiRS: false,
+                            hasBattery: false
+                        },
                         start = (new Date()).valueOf(),
-                    	pendingDelay = start + timeout;
+                        pendingDelay = start + timeout;
 
-                	if (zway.devices[nodeId] && nodeId !== zway.controller.data.nodeId.value) {
+                    if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
 
                         var isListening = zway.devices[nodeId].data.isListening.value;
                         var isFLiRS = !isListening && (zway.devices[nodeId].data.sensor250.value || zway.devices[nodeId].data.sensor1000.value);
+                        var hasWakeup = 0x84 in zway.devices[nodeId].instances[0].commandClasses;
 
-						console.log('Send NIF to node #' + nodeId + ' ...');
+                        console.log('Send NIF to node #' + nodeId + ' ...');
                         zway.RequestNodeInformation(
-                        	nodeId,
-							function() {
+                            nodeId,
+                            function() {
                                 request = "done";
                                 entry.result = request;
                                 entry.runtime= ((new Date()).valueOf() - start) /1000;
                                 entry.isFLiRS = isFLiRS;
-							},  function() {
+                                entry.hasBattery = hasWakeup;
+                            },  function() {
                                 request = "failed";
                                 entry.result = request;
                                 entry.runtime= ((new Date()).valueOf() - start) /1000;
                                 entry.isFLiRS = isFLiRS;
-							});
+                                entry.hasBattery = hasWakeup;
+                            });
 
                         while (request === "in progress" && (new Date()).valueOf() < pendingDelay && !isFLiRS) {
                             processPendingCallbacks();
                         }
 
-                        if (result === "in progress") {
-                            result = isFLiRS? "waiting for wakeup" : "failed";
-                            entry.result = request;
+                        if (request === "in progress") {
+                            entry.result = hasWakeup? "waiting for wakeup" : "failed";
                             entry.runtime= ((new Date()).valueOf() - start) /1000;
                             entry.isFLiRS = isFLiRS;
+                            entry.hasBattery = hasWakeup;
                         }
 
                         ret.result.push(entry);
@@ -2270,35 +2288,8 @@ ZWave.prototype.defineHandlers = function () {
                 });
             }
 
-            // do initial request
-            /*if(devices.length > 0) {
-            	// do not send NIF to itself
-                while((dTS === '' || nodeId !== zway.controller.data.nodeId.value) && devices.length > 0) {
-                    nodeId = devices.pop();
-                    dTS = zway.devices[nodeId].data.deviceTypeString.valueOf();
-                }
-
-                if(zway.devices[nodeId]) {
-                    zway.devices[nodeId].RequestNodeInformation();
-                }
-            }
-
-            var timer = setInterval(function() {
-                if(devices.length > 0) {
-                    var nodeId = devices.pop();
-
-                    //if (zway.devices[nodeId].data.deviceTypeString.valueOf() !== 'Static PC Controller') {
-                    if (nodeId !== zway.controller.data.nodeId.value) {
-                        zway.devices[nodeId].RequestNodeInformation();
-                    }
-                } else {
-                    clearInterval(timer);
-                }
-            }, timeout);*/
-
             ret.runtime = Math.floor(((new Date()).valueOf() - now)/1000);
-
-            //console.log(JSON.stringify(ret, null, 1));
+            ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
 
             return { status: 200, body: ret };
         } catch (e) {
@@ -2307,7 +2298,8 @@ ZWave.prototype.defineHandlers = function () {
 
         return reply;
 
-    },
+    };
+
     this.ZWaveAPI.CheckAllLinks = function(url, request) {
         var req = request && request.body? request.body : request && request.data? request.data : undefined,
             req = req && typeof req === 'string'? JSON.parse(req) : req,
@@ -2317,43 +2309,47 @@ ZWave.prototype.defineHandlers = function () {
             nodeId = req && req.nodeId? req.nodeId : null;
 
         try {
-            if(!!nodeId && zway.devices[nodeId]) {
+            if(!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
                 var neighbours = zway.devices[nodeId].data.neighbours.value;
                 var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
                 var ret = {
                 	runtime: neighbours.length * (timeout /1000),
+                    link_test : 'TestNodeSet',
+                    srcNodeId: nodeId,
+                    dstNodeIds: neighbours,
 					test: []
 				};
+                if (supported) {
+                    neighbours.forEach(function (neighbour) {
+                        var start = (new Date()).valueOf();
+                        var item = {};
+                        var powerLvl = zway.devices[nodeId].instances[0].commandClasses[115];
 
-                neighbours.forEach(function (neighbour) {
+                        console.log('# Send TestNodeSet from #' + nodeId + ' to #' + neighbour);
+                        powerLvl.TestNodeSet(neighbour, 6, 20);
 
-                	var start = (new Date()).valueOf();
-                	var item = {
-                		srcNodeId: nodeId,
-						destNodeId: neighbour,
-						linkTest: ''
-					}
+                        // wait 2 sec or more
+                        while ((new Date()).valueOf() < (start + timeout)) {
+                            processPendingCallbacks();
+                        }
 
-                    if (supported) {
-                        console.log('# Send TestNodeSet to '+ neighbour);
-                        item.link_test = 'TestNodeSet';
-                        zway.devices[nodeId].instances[0].commandClasses[115].TestNodeSet(neighbour, 6, 20);
-                    } else {
-                        console.log('# Send NOP to '+ neighbour);
-                        item.link_test = 'NOP';
-                        zway.devices[neighbour].instances[0].commandClasses[32].Get();
-                    }
+                        if (powerLvl.data[neighbour]) {
+                            item[neighbour] = {
+                                totalFrames: powerLvl.data[neighbour].totalFrames.value,
+                                acknowledgedFrames: powerLvl.data[neighbour].acknowledgedFrames.value
+                            }
+                        }
 
-                    // wait 2 sec or more
-                    while ((new Date()).valueOf() < (start + timeout)) {
-                    	processPendingCallbacks();
-					}
+                        ret.test.push(item);
 
-                    ret.test.push(item);
+                    });
 
-                });
+                    ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
 
-                return { status: 200, body: ret };
+                    return { status: 200, body: ret };
+                } else {
+                    return { status: 404, body: 'Not supported for this device.'};
+				}
 
             } else {
                 return { status: 404, body: 'Node not found.' };
@@ -2363,7 +2359,7 @@ ZWave.prototype.defineHandlers = function () {
         }
 
         return reply;
-    }
+    };
 
 	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
         var reply = {
@@ -2489,7 +2485,328 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+    this.ZWaveAPI.NetworkReorganization = function(url, request) {
+        var self = this,
+            result = [],
+            reply = {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "Authorization",
+                    "Connection": "close"
+                },
+                body: null
+            },
+            req = request && request.query? request.query : undefined,
+            req = req && typeof req === 'string'? JSON.parse(req) : req,
+        	cntNodes = 0,
+            mains, flirs, battery, reorgMain, reorgBattery;
 
+        self.reorgLog = [];
+        self.res = {};
+        self.reorgIntervallTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
+
+        // object that shows progress of each container
+        self.progress = {
+            main: {
+            	reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
+                status: '',
+                pending: [],
+                timeout: [],
+				all: []
+            },
+            flirs: {
+                reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
+                status: '',
+                pending: [],
+                timeout: [],
+                all: []
+            },
+            battery: {
+                reorg: req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false,
+                status: '',
+                pending: [],
+                timeout: [],
+                all: []
+            }
+        };
+
+        mains = self.progress.main;
+        flirs = self.progress.flirs;
+        battery = self.progress.battery;
+        reorgMain = mains.reorg;
+        reorgBattery = battery.reorg;
+
+        // function that add's a log entry to reorgLog
+        function addLog (message, nodeId) {
+        	var entry = {
+        		timestamp: (new Date()).valueOf(),
+				message: message,
+				node: nodeId? nodeId : undefined,
+				type: nodeId && self.res[nodeId]? self.res[nodeId].type : undefined,
+                status: nodeId && self.res[nodeId]? self.res[nodeId].status : undefined,
+                tries: nodeId && self.res[nodeId]? self.res[nodeId].tries : undefined
+			};
+            console.log(message);
+            self.reorgLog.push(entry);
+
+            if (self.reorgLog.length > 0) {
+                saveObject('reorgLog', self.reorgLog);
+			}
+		}
+
+        // function that removes pending nodes after done/failed/timeout
+        function removeFromPending (type,nodeId) {
+            if(self.progress[type].pending.indexOf(nodeId) > -1) {
+                self.progress[type].pending = self.progress[type].pending.filter(function(node) {
+                    return	node != nodeId;
+                });
+            }
+        }
+
+        function removeFromTimeout (type,nodeId) {
+            if(self.progress[type].timeout.indexOf(nodeId) > -1) {
+                self.progress[type].timeout = self.progress[type].timeout.filter(function(node) {
+                    return	node != nodeId;
+                });
+            }
+        }
+
+        // function that calls reorg and includes callback functions
+        function doReorg(nodeId, type){
+
+        	if (self.progress[type].pending.indexOf(nodeId) < 0) {
+                self.progress[type].pending.push(nodeId);
+			}
+
+			// add single node status
+            if (!self.res[nodeId]) {
+                self.res[nodeId] = {
+                    status: "in progress",
+                    type: type,
+                    tries: 1,
+                    timeout: 0
+                };
+			}
+
+			// success calback function
+			var succesCbk = function() {
+                var message = '%%%% reorg #'+nodeId+' ('+type+') ';
+                self.res[nodeId] = _.extend(self.res[nodeId],{
+					status: 'done',
+					type: type,
+					tries: self.res[nodeId].tries
+				});
+
+                zway.GetRoutingTableLine(nodeId);
+
+                addLog(message + '... done', nodeId);
+
+                removeFromPending(type, nodeId);
+                removeFromTimeout(type, nodeId);
+
+                i=4;
+			};
+			var failCbk = function() {
+				var preMessage = '%%%% reorg #'+nodeId+' ('+type+') ';
+				var message='';
+				var tries = self.res[nodeId].tries;
+
+				self.res[nodeId] = _.extend(self.res[nodeId],{
+                    status: 'failed',
+                    type: type,
+                    tries: tries++
+                });
+
+                if (type === 'main' && tries < 3) {
+                        addLog(preMessage + '... ' + tries + '. try has failed');
+                        addLog(preMessage + '- next try ... ');
+                        reorgUpdate(nodeId);
+				} else {
+                    message = type === 'main'? '- all tries have failed' : '... has failed' ;
+
+                    addLog(preMessage + message, nodeId);
+
+                    removeFromPending(type, nodeId);
+                    removeFromTimeout(type, nodeId);
+				}
+			};
+
+            var reorgUpdate = function (nodeId){
+                try {
+                    self.res[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
+                    zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
+                } catch (e) {
+                    console.log('Error has occured during reorg on node #'+nodeId+': ' + e.message);
+                    self.res[nodeId].status = 'failed';
+                    removeFromPending(type, nodeId);
+                    addLog('%%%% reorg #'+nodeId+' ('+self.res[nodeId].type+') ... has failed', nodeId);
+                }
+            }
+
+            // initial update request
+            reorgUpdate(nodeId);
+		}
+
+		var initialMsg = reorgBattery && reorgMain? ' (with battery powered devices)' : reorgBattery && !reorgMain? ' (battery powered devices only)' : ' (without battery powered devices)';
+
+		addLog('%%%% reorg started' + initialMsg);
+
+        //try {
+		Object.keys(zway.devices).forEach(function(nodeId) {
+			var node = zway.devices[nodeId],
+                isListening = node.data.isListening.value,
+				isMain = (isListening && node.data.isRouting.value) || (isListening && !node.data.isRouting.value),
+				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
+				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value);
+
+			if (reorgBattery && isBattery && !isFLiRS) { // has battery and reorg for battery is forced
+				battery.all.push(nodeId);
+				cntNodes++;
+			} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
+				flirs.all.push(nodeId);
+				cntNodes++;
+			} else if (reorgMain && isMain) {// is main powered and reorg for main/FLiRS is forced (default)
+                mains.all.push(nodeId);
+				cntNodes++;
+			}
+		});
+
+        if (mains.all.length > 0 && reorgMain) {
+            addLog('%%%% reorg all mains: ' + JSON.stringify(mains.all));
+            mains.status = 'in progress';
+
+            mains.all.forEach(function(nodeId){
+                doReorg(nodeId, 'main');
+            });
+        } else if (battery.all.length > 0 && reorgBattery) {
+            addLog('%%%% reorg all battery: ' + JSON.stringify(battery.all));
+            battery.status = 'in progress';
+            battery.all.forEach(function(nodeId){
+                doReorg(nodeId, 'battery');
+            });
+		}
+
+        this.reorgIntervall = setInterval(function(){
+            var nodes = [],
+                cntNodes = Object.keys(self.res).length,
+				now = (new Date()).valueOf();
+
+            Object.keys(self.res).forEach(function(nodeId){
+            	var resNode = self.res[nodeId],
+					type = resNode.type,
+					status = resNode.status,
+					currArr = self.progress[type];
+
+            	if (nodes.indexOf(nodeId) < 0) {
+
+            		if (status !== 'in progress') {
+                        nodes.push(nodeId);
+                    } else if (status === 'in progress' && resNode.timeout < now) {
+                        status = 'timeout';
+                        addLog('%%%% reorg #'+nodeId+' ('+type+') ... timeout', nodeId);
+                        removeFromPending(type, nodeId);
+                        nodes.push(nodeId);
+                        currArr.timeout.push(nodeId);
+                    } else {
+                    	if (currArr.pending.indexOf(nodeId) < 0) {
+                            currArr.pending.push(nodeId);
+						}
+					}
+				}
+			});
+
+            Object.keys(self.progress).forEach(function(t, i){
+                var nextType = Object.keys(self.progress)[i+1],
+					nextNodeArr = [],
+					currProgressType = self.progress[t],
+					pending = currProgressType.pending,
+					status = currProgressType.status,
+                    reorg = currProgressType.reorg,
+					nextReorg = false;
+
+                if(pending.length < 1 && status === 'in progress' && reorg) {
+                    self.progress[t].status = 'done';
+                    addLog('%%%% reorg ' + t + ' done');
+
+                    if (pending.length < 1 && nextType) {
+                        nextNodeArr = self.progress[nextType].all;
+                        nextReorg = self.progress[nextType].reorg;
+
+                        if (nextNodeArr.length > 0 && nextReorg ) {
+                            addLog('%%%% reorg all '+nextType+': '+ JSON.stringify(nextNodeArr));
+                            self.progress[nextType].status = 'in progress';
+
+                            nextNodeArr.forEach(function(nodeId){
+                                doReorg(nodeId, nextType);
+                            });
+                        }
+					}
+                }
+			});
+
+            // remove all
+            if (self.reorgIntervall &&
+					(nodes.length >= cntNodes &&
+                		self.progress.main.pending.length < 1 &&
+							self.progress.flirs.pending.length < 1 &&
+								self.progress.battery.pending.length < 1) ||
+                					self.reorgIntervallTimeout < now) {
+
+            	var allTimeout = [];
+
+                Object.keys(self.progress).forEach(function (type) {
+                    allTimeout = _.uniq(allTimeout.concat(self.progress[type].timeout));
+				});
+
+                if (self.reorgIntervallTimeout < now) {
+                    addLog('%%%% reorg timeout ... canceled');
+                } else {
+                	if (allTimeout && allTimeout.length > 0) {
+                        addLog('%%%% reorg timed out for:' + JSON.stringify(allTimeout));
+					}
+                    addLog('%%%% reorg complete');
+                }
+
+            	clearInterval(self.reorgIntervall);
+            }
+		}, 3000);
+
+		if(self.res) {
+			reply.status = 201;
+			reply.body = {
+				data: 'Reorganization '+initialMsg+' is starting ...'
+			};
+		}
+
+        return reply;
+    };
+
+    this.ZWaveAPI.GetReorganizationLog = function(url, request) {
+        var self = this,
+            reply = {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "Authorization",
+                    "Connection": "close"
+                },
+                body: null
+            }
+
+		reorgLog = loadObject('reorgLog');
+
+        if(!!reorgLog) {
+            reply.status = 200;
+            reply.body = reorgLog;
+        }
+
+        return reply;
+    }
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
@@ -4639,3 +4956,30 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 
 	this.controller.devices.remove(vDevId);
 };
+
+ZWave.prototype.rssiData = function(data) {
+    var now = Math.round((new Date()).getTime()/1000);
+
+    if(!data) data = [];
+    zway.GetBackgroundRSSI();
+
+    var rssi = zway.controller.data.statistics.backgroundRSSI;
+
+    var d = {
+        "time": now,
+        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
+        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+    };
+
+    data.push(d);
+
+    if ( data.length > 1440){
+        var lastDay = now - 86400;
+        data = _.filter(data, function(entry){
+            return entry.time > lastDay;
+        });
+    }
+
+    return data;
+}

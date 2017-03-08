@@ -182,7 +182,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     setLogin: function(profile) {
         var sid = crypto.guid(),
             resProfile = {};
-        
+
         this.controller.auth.checkIn(profile, sid);
 
         resProfile = this.getProfileResponse(profile);
@@ -254,20 +254,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        try {
-            var bT = system('cat /etc/z-way/box_type');
-
-            bT.forEach(function(bType){
-                if(typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')) {
-                    boxTypeIsCIT = true;
-                    return;
-                }
-            });
-        } catch (e) {
-        }
+        boxTypeIsCIT = this.controller.isCIT();
 
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
         if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {
+            if(profile.qrcode === "") {
+                this.controller.addQRCode(profile, reqObj);
+            }
             return this.setLogin(profile);
         } else {
             return this.denyLogin();
@@ -1830,7 +1823,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if(~file.name.indexOf('.csv') && typeof Papa === 'object'){
                     var csv = null;
-                    
                     Papa.parse(file.content, {
                         header: true,
                         dynamicTyping: true,

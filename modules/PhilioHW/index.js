@@ -54,6 +54,7 @@ PhilioHW.prototype.init = function (config) {
             return;
         }
 
+        self.zwayName = zwayName;
         self.bindings[zwayName] = [];
 
         if (zway.controller.data.philiohw) {
@@ -134,6 +135,8 @@ PhilioHW.prototype.nervous = function(amINervous) {
 };
 
 PhilioHW.prototype.roundLED = function() {
+    var zwayName = this.zwayName;
+    
     if (this.WPS === this.WPS_REGISTRAR) {
         global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x04); // LED steady On
     } else if (this.WPS === this.WPS_ENROLLEE) {
@@ -143,7 +146,12 @@ PhilioHW.prototype.roundLED = function() {
     } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 0) {
         global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x10); // Flashing LED
     } else if (this.amINervous) {
-        global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x08); // Fast blink
+        // vice versa to idle (tamper.state = 2)
+        if (!this.config.breath) {
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
+        } else {
+            global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x02); // LED off
+        }
     } else if (global.ZWave[zwayName].zway.controller.data.philiohw.tamper.state.value === 2) {
         if (this.config.breath) {
             global.ZWave[zwayName].zway.ZMEPHISetLED(0x11, 0x20); // Breathing LED
