@@ -169,4 +169,4 @@ function getHRDateformat(now){
     ts += ("0" + now.getMinutes()).slice(-2);
 
     return ts;
-}
+};

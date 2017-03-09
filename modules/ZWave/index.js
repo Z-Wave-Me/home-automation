@@ -458,12 +458,21 @@ ZWave.prototype.CommunicationLogger = function() {
 
     boxTypeIsCIT = this.controller.isCIT();
 
-    if (boxTypeIsCIT) {
+    //check if controller version is >= 05.20 or type is cit
+    if (boxTypeIsCIT || !has_higher_version('05.20', zway.controller.data.APIVersion.value)) {
         this.timer = setInterval(function() {
             try {
                 var data = loadObject("rssidata.json");
 
                 data = self.rssiData(data);
+
+                // remove values older than 24h
+                if ( data.length > 1440){
+                    var lastDay = now - 86400;
+                    data = _.filter(data, function(entry){
+                        return entry.time > lastDay;
+                    });
+                }
 
                 saveObject("rssidata.json", data);
             } catch (e) {
@@ -755,6 +764,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -789,6 +800,8 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
     ws.revokeExternalAccess(_name + ".sendZwayReport");
+    ws.revokeExternalAccess(_name + ".NetworkReorganization");
+    ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -1385,7 +1398,6 @@ ZWave.prototype.defineHandlers = function () {
 					packets = filter;
 				}
 			}
-			//packets = _.sortBy(packets, function(o) {return o.id});
 		}
 
 		body.data = packets;
@@ -1414,100 +1426,10 @@ ZWave.prototype.defineHandlers = function () {
 
         if (packets.length > 0) {
 
-            /*time = _.max(packets, function (v) {
-                return v.updateTime;
-            });
-
-            time = time.updateTime;
-
-            body.updateTime = _.isEmpty(time) ? time : null;*/
-
             body.updateTime = Math.round((new Date()).getTime()/1000);
 
             packets = _.sortBy(packets, function(o) {return o.id});
-
-            /*iPacketBuffer.packets = [];
-            oPacketBuffer.packets = [];*/
         }
-
-        /*
-        function prepareRSSI(rssiPacket) {
-            var rssi = [];
-
-            _.forEach(rssiPacket, function (rssiValue){
-                rssi.push((parseInt(rssiValue, 10) - 126)); // transform to two's (Zweierkomplement)
-            });
-
-            return rssi.length < 1? '': rssi;
-        }
-
-        function prepareValues(packetValue) {
-            // var pV = (_.isArray(packetValue) && packetValue.length >= 5) ? packetValue.slice(5) : packetValue;
-            var pV = packetValue;
-
-            if (_.isArray(packetValue)){
-                if (packetValue.length >= 8) {
-                    pV = packetValue.slice(7);
-                } else if (packetValue.length >= 6){
-                    pV = packetValue.slice(5, -1);
-                }
-            }
-            //console.log("##### pV:", pV);
-            return pV;
-        };
-
-        function packetApplication(packet, packet_type) {
-
-            var cmdClassKey = 0;
-            var cmdKey = 0;
-
-            if (packet.length >= 6 & packet_type === 'outgoing') {
-                cmdClassKey = decToHex(packet[5], 2, '0x');
-                cmdKey = decToHex(packet[6], 2, '0x');
-            } else {
-                cmdClassKey = decToHex(packet[0], 2, '0x');
-                cmdKey = decToHex(packet[1], 2, '0x');
-            }
-
-            var ret = {};
-
-            var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
-
-            //console.log("findCmdClass:", JSON.stringify(findCmdClass));
-
-            if (!findCmdClass) {
-                return;
-            }
-
-            var _cmdClass = findCmdClass.pop();
-
-            if(_.isEmpty(_cmdClass)) {
-                return;
-            }
-
-            if (_.isArray(_cmdClass.cmd)) {
-                ret = _.findWhere(_cmdClass.cmd, {_key: cmdKey});
-            } else {
-                ret = _cmdClass.cmd;
-            }
-            if(typeof ret === "object") {
-                if(ret.hasOwnProperty('_help')) {
-                    ret = ret._help;
-                } else {
-                    ret = "";
-                }
-            } else {
-                ret = "";
-            }
-
-            return ret;
-        }
-
-        function decToHex(decimal, chars, x) {
-            var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
-            return (x || '') + hex;
-        };
-        */
 
         body.data = packets;
 
@@ -1522,19 +1444,6 @@ ZWave.prototype.defineHandlers = function () {
             },
             body: body
         };
-
-        /*function getLatestPackages(packets) {
-
-            var now = (new Date()).getTime(),
-                lastUpdate = now - 5000; // default: search communication packages during last five seconds
-
-            // get packets since last request
-            var filteredPackets = _.filter(packets, function (p) {
-                return p.id >= lastUpdate;
-            });
-
-            return filteredPackets;
-        };*/
     }
 
     this.ZWaveAPI.RSSIGet = function(url, request) {
@@ -1552,50 +1461,45 @@ ZWave.prototype.defineHandlers = function () {
                 "data": []
             };
 
-        var par = url.split("/")[1];
+        try {
 
-        if(par == "realtime") {
+            var par = url.split("/")[1];
 
-			var now = Math.round((new Date()).getTime()/1000);
+            if (par == "realtime") {
 
-		    var data = [];
-		    zway.GetBackgroundRSSI();
+                data = self.rssiData();
 
-		    var rssi = zway.controller.data.statistics.backgroundRSSI;
+                body.data = data;
 
-		    var d = {
-		        "time": now,
-		        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-		        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-		        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
-		    };
+            } else {
+                body.data = loadObject('rssidata.json');
+            }
 
-		    data.push(d);
+            if (!!body.data) {
 
-		    body.data = data;
+                return {
+                    headers: headers,
+                    status: 200,
+                    body: body
+                };
+            } else {
 
-		} else {
-            body.data = loadObject('rssidata.json');
+                body.code = 404;
+                body.message = '404 Not Found';
+
+                return {
+                    headers: headers,
+                    status: 404,
+                    body: body
+                };
+            }
+        } catch (e) {
+            return {
+                headers: headers,
+                status: 500,
+                body: "Something went wrong:" + e.toString()
+            };
 		}
-
-        if (!!body.data) {
-
-            return {
-                headers: headers,
-                status: 200,
-                body: body
-            };
-        } else {
-
-            body.code = 404;
-            body.message = '404 Not Found';
-
-            return {
-                headers: headers,
-                status: 404,
-                body: body
-            };
-        }
     };
     
         this.ZWaveAPI.TestNode = function(url, request) {
@@ -2244,8 +2148,6 @@ ZWave.prototype.defineHandlers = function () {
                         },
                         start = (new Date()).valueOf(),
                         pendingDelay = start + timeout;
-                    console.log('nodeId:',nodeId);
-                    console.log('controller nodeId:',zway.controller.data.nodeId.value);
 
                     if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
 
@@ -2483,7 +2385,327 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+    this.ZWaveAPI.NetworkReorganization = function(url, request) {
+        var self = this,
+            result = [],
+            reply = {
+                status: 500,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "Authorization",
+                    "Connection": "close"
+                },
+                body: null
+            },
+            req = request && request.query? request.query : undefined,
+            req = req && typeof req === 'string'? JSON.parse(req) : req,
+        	cntNodes = 0,
+            mains, flirs, battery, reorgMain, reorgBattery;
 
+        self.reorgLog = [];
+        self.res = {};
+        self.reorgIntervallTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
+
+        // object that shows progress of each container
+        self.progress = {
+            main: {
+            	reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
+                status: '',
+                pending: [],
+                timeout: [],
+				all: []
+            },
+            flirs: {
+                reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
+                status: '',
+                pending: [],
+                timeout: [],
+                all: []
+            },
+            battery: {
+                reorg: req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false,
+                status: '',
+                pending: [],
+                timeout: [],
+                all: []
+            }
+        };
+
+        self.langFile = self.controller.loadModuleLang('ZWave');
+
+        mains = self.progress.main;
+        flirs = self.progress.flirs;
+        battery = self.progress.battery;
+        reorgMain = mains.reorg;
+        reorgBattery = battery.reorg;
+
+        // function that add's a log entry to reorgLog
+        function addLog (message, nodeId) {
+        	var entry = {
+        		timestamp: (new Date()).valueOf(),
+				message: message,
+				node: nodeId? nodeId : undefined,
+				type: nodeId && self.res[nodeId]? self.res[nodeId].type : undefined,
+                status: nodeId && self.res[nodeId]? self.res[nodeId].status : undefined,
+                tries: nodeId && self.res[nodeId]? self.res[nodeId].tries : undefined
+			};
+
+        	self.reorgLog.push(entry);
+
+            if (self.reorgLog.length > 0) {
+                saveObject('reorgLog', self.reorgLog);
+			}
+		}
+
+        // function that removes pending nodes after done/failed/timeout
+        function removeFromPending (type,nodeId) {
+            if(self.progress[type].pending.indexOf(nodeId) > -1) {
+                self.progress[type].pending = self.progress[type].pending.filter(function(node) {
+                    return	node != nodeId;
+                });
+            }
+        }
+
+        function removeFromTimeout (type,nodeId) {
+            if(self.progress[type].timeout.indexOf(nodeId) > -1) {
+                self.progress[type].timeout = self.progress[type].timeout.filter(function(node) {
+                    return	node != nodeId;
+                });
+            }
+        }
+
+        // function that calls reorg and includes callback functions
+        function doReorg(nodeId, type){
+
+        	if (self.progress[type].pending.indexOf(nodeId) < 0) {
+                self.progress[type].pending.push(nodeId);
+			}
+
+			// add single node status
+            if (!self.res[nodeId]) {
+                self.res[nodeId] = {
+                    status: "in progress",
+                    type: type,
+                    tries: 0,
+                    timeout: 0
+                };
+			}
+
+			// success calback function
+			var succesCbk = function() {
+                var message = '#'+nodeId+' ('+type+') ';
+                self.res[nodeId] = _.extend(self.res[nodeId],{
+					status: 'done',
+					type: type,
+					tries: self.res[nodeId].tries
+				});
+
+                zway.GetRoutingTableLine(nodeId);
+
+                addLog(message + '... '+self.langFile.reorg +' '+self.langFile.reorg_success, nodeId);
+
+                removeFromPending(type, nodeId);
+                removeFromTimeout(type, nodeId);
+
+                i=4;
+			};
+			var failCbk = function() {
+				var preMessage = '#'+nodeId+' ('+type+') ';
+				var message='';
+				var tries = self.res[nodeId].tries;
+
+				self.res[nodeId] = _.extend(self.res[nodeId],{
+                    status: 'failed',
+                    type: type,
+                    tries: tries++
+                });
+
+                if (type === 'main' && tries < 3) {
+                        addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed);
+                        addLog(preMessage + self.langFile.reorg_next_try);
+                        reorgUpdate(nodeId);
+				} else {
+                    message = type === 'main'? self.langFile.reorg_all_tries_failed : '... '+self.langFile.reorg +' '+self.langFile.reorg_failed;
+
+                    addLog(preMessage + message, nodeId);
+
+                    removeFromPending(type, nodeId);
+                    removeFromTimeout(type, nodeId);
+				}
+			};
+
+            var reorgUpdate = function (nodeId){
+                try {
+                    self.res[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
+                    zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
+                } catch (e) {
+                    console.log(self.langFile.reorg_err_node+nodeId+': ' + e.message);
+                    self.res[nodeId].status = 'failed';
+                    removeFromPending(type, nodeId);
+                    addLog('#'+nodeId+' ('+self.res[nodeId].type+') ... '+self.langFile.reorg +' '+self.langFile.reorg_failed, nodeId);
+                }
+            }
+
+            // initial update request
+            reorgUpdate(nodeId);
+		}
+
+		var initialMsg = reorgBattery && reorgMain? self.langFile.reorg_with_battery : reorgBattery && !reorgMain? self.langFile.reorg_battery_only : self.langFile.reorg_without_battery;
+
+		addLog(self.langFile.reorg_started + initialMsg);
+
+        //try {
+		Object.keys(zway.devices).forEach(function(nodeId) {
+			var node = zway.devices[nodeId],
+                isListening = node.data.isListening.value,
+				isMain = (isListening && node.data.isRouting.value) || (isListening && !node.data.isRouting.value),
+				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
+				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value);
+
+			if (reorgBattery && isBattery && !isFLiRS) { // has battery and reorg for battery is forced
+				battery.all.push(nodeId);
+				cntNodes++;
+			} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
+				flirs.all.push(nodeId);
+				cntNodes++;
+			} else if (reorgMain && isMain) {// is main powered and reorg for main/FLiRS is forced (default)
+                mains.all.push(nodeId);
+				cntNodes++;
+			}
+		});
+
+        if (mains.all.length > 0 && reorgMain) {
+            addLog(self.langFile.reorg_all_main + JSON.stringify(mains.all));
+            mains.status = 'in progress';
+
+            mains.all.forEach(function(nodeId){
+                doReorg(nodeId, 'main');
+            });
+        } else if (battery.all.length > 0 && reorgBattery) {
+            addLog(self.langFile.reorg_all_battery + JSON.stringify(battery.all));
+            battery.status = 'in progress';
+            battery.all.forEach(function(nodeId){
+                doReorg(nodeId, 'battery');
+            });
+		}
+
+        this.reorgIntervall = setInterval(function(){
+            var nodes = [],
+                cntNodes = Object.keys(self.res).length,
+				now = (new Date()).valueOf();
+
+            Object.keys(self.res).forEach(function(nodeId){
+            	var resNode = self.res[nodeId],
+					type = resNode.type,
+					status = resNode.status,
+					currArr = self.progress[type];
+
+            	if (nodes.indexOf(nodeId) < 0) {
+
+            		if (status !== 'in progress') {
+                        nodes.push(nodeId);
+                    } else if (status === 'in progress' && resNode.timeout < now) {
+                        status = 'timeout';
+                        addLog('#'+nodeId+' ('+type+') ... ' +self.langFile.reorg_timeout, nodeId);
+                        removeFromPending(type, nodeId);
+                        nodes.push(nodeId);
+                        currArr.timeout.push(nodeId);
+                    } else {
+                    	if (currArr.pending.indexOf(nodeId) < 0) {
+                            currArr.pending.push(nodeId);
+						}
+					}
+				}
+			});
+
+            Object.keys(self.progress).forEach(function(t, i){
+                var nextType = Object.keys(self.progress)[i+1],
+					nextNodeArr = [],
+					currProgressType = self.progress[t],
+					pending = currProgressType.pending,
+					status = currProgressType.status,
+                    reorg = currProgressType.reorg,
+					nextReorg = false;
+
+                if(pending.length < 1 && status === 'in progress' && reorg) {
+                    self.progress[t].status = 'done';
+                    addLog(self.langFile.reorg_of + self.langFile[t] + ' ' +self.langFile.reorg_complete);
+
+                    if (pending.length < 1 && nextType) {
+                        nextNodeArr = self.progress[nextType].all;
+                        nextReorg = self.progress[nextType].reorg;
+
+                        if (nextNodeArr.length > 0 && nextReorg ) {
+                            addLog(self.langFile.reorg_all+self.langFile[nextType]+': '+ JSON.stringify(nextNodeArr));
+                            self.progress[nextType].status = 'in progress';
+
+                            nextNodeArr.forEach(function(nodeId){
+                                doReorg(nodeId, nextType);
+                            });
+                        }
+					}
+                }
+			});
+
+            // remove all
+            if (self.reorgIntervall &&
+					(nodes.length >= cntNodes &&
+                		self.progress.main.pending.length < 1 &&
+							self.progress.flirs.pending.length < 1 &&
+								self.progress.battery.pending.length < 1) ||
+                					self.reorgIntervallTimeout < now) {
+
+            	var allTimeout = [];
+
+                Object.keys(self.progress).forEach(function (type) {
+                    allTimeout = _.uniq(allTimeout.concat(self.progress[type].timeout));
+				});
+
+                if (self.reorgIntervallTimeout < now) {
+                    addLog(self.langFile.reorg_timeout+' ... '+self.langFile.reorg_canceled);
+                } else {
+                	if (allTimeout && allTimeout.length > 0) {
+                        addLog(self.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
+					}
+                    addLog(self.langFile.reorg+' '+self.langFile.reorg_complete);
+                }
+
+            	clearInterval(self.reorgIntervall);
+            }
+		}, 3000);
+
+		if(self.res) {
+			reply.status = 201;
+			reply.body = {
+				data: self.langFile.reorg + initialMsg + self.langFile.reorg_starting
+			};
+		}
+
+        return reply;
+    };
+
+    this.ZWaveAPI.GetReorganizationLog = function(url, request) {
+        var self = this,
+            reply = {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                    "Access-Control-Allow-Headers": "Authorization",
+                    "Connection": "close"
+                },
+                body: null
+            }
+
+		reorgLog = loadObject('reorgLog');
+
+		reply.body = !!reorgLog? reorgLog : [];
+
+        return reply;
+    }
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
@@ -4637,7 +4859,8 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 ZWave.prototype.rssiData = function(data) {
     var now = Math.round((new Date()).getTime()/1000);
 
-    if(!data) data = [];
+    var data = data? data : [];
+
     zway.GetBackgroundRSSI();
 
     var rssi = zway.controller.data.statistics.backgroundRSSI;
@@ -4650,13 +4873,6 @@ ZWave.prototype.rssiData = function(data) {
     };
 
     data.push(d);
-
-    if ( data.length > 1440){
-        var lastDay = now - 86400;
-        data = _.filter(data, function(entry){
-            return entry.time > lastDay;
-        });
-    }
 
     return data;
 }
