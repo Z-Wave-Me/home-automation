@@ -36,18 +36,14 @@ saveObject = function(name, object) {
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
-    config = loadObject("config.json") || {
-        "controller": {},
-        "vdevInfo": {},
-        "locations": []
-    };
+    config = loadObject("config.json");
     files = loadObject("files.json") || {};
     schemas = loadObject("schemas.json") || [];
 } catch (ex) {
     console.log("Error loading config.json or files.json:", ex.message);
 }
 
-if (!config) {
+if (!config && config === null) {
     console.log("Can't read config.json or it's broken.");
     console.log("ZAutomation engine not started.");
 } else {
