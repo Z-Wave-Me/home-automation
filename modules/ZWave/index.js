@@ -2433,6 +2433,8 @@ ZWave.prototype.defineHandlers = function () {
             }
         };
 
+        self.langFile = self.controller.loadModuleLang('ZWave');
+
         mains = self.progress.main;
         flirs = self.progress.flirs;
         battery = self.progress.battery;
@@ -2449,8 +2451,8 @@ ZWave.prototype.defineHandlers = function () {
                 status: nodeId && self.res[nodeId]? self.res[nodeId].status : undefined,
                 tries: nodeId && self.res[nodeId]? self.res[nodeId].tries : undefined
 			};
-            console.log(message);
-            self.reorgLog.push(entry);
+
+        	self.reorgLog.push(entry);
 
             if (self.reorgLog.length > 0) {
                 saveObject('reorgLog', self.reorgLog);
@@ -2486,14 +2488,14 @@ ZWave.prototype.defineHandlers = function () {
                 self.res[nodeId] = {
                     status: "in progress",
                     type: type,
-                    tries: 1,
+                    tries: 0,
                     timeout: 0
                 };
 			}
 
 			// success calback function
 			var succesCbk = function() {
-                var message = '%%%% reorg #'+nodeId+' ('+type+') ';
+                var message = '#'+nodeId+' ('+type+') ';
                 self.res[nodeId] = _.extend(self.res[nodeId],{
 					status: 'done',
 					type: type,
@@ -2502,7 +2504,7 @@ ZWave.prototype.defineHandlers = function () {
 
                 zway.GetRoutingTableLine(nodeId);
 
-                addLog(message + '... done', nodeId);
+                addLog(message + '... '+self.langFile.reorg +' '+self.langFile.reorg_success, nodeId);
 
                 removeFromPending(type, nodeId);
                 removeFromTimeout(type, nodeId);
@@ -2510,7 +2512,7 @@ ZWave.prototype.defineHandlers = function () {
                 i=4;
 			};
 			var failCbk = function() {
-				var preMessage = '%%%% reorg #'+nodeId+' ('+type+') ';
+				var preMessage = '#'+nodeId+' ('+type+') ';
 				var message='';
 				var tries = self.res[nodeId].tries;
 
@@ -2521,11 +2523,11 @@ ZWave.prototype.defineHandlers = function () {
                 });
 
                 if (type === 'main' && tries < 3) {
-                        addLog(preMessage + '... ' + tries + '. try has failed');
-                        addLog(preMessage + '- next try ... ');
+                        addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed);
+                        addLog(preMessage + self.langFile.reorg_next_try);
                         reorgUpdate(nodeId);
 				} else {
-                    message = type === 'main'? '- all tries have failed' : '... has failed' ;
+                    message = type === 'main'? self.langFile.reorg_all_tries_failed : '... '+self.langFile.reorg +' '+self.langFile.reorg_failed;
 
                     addLog(preMessage + message, nodeId);
 
@@ -2539,10 +2541,10 @@ ZWave.prototype.defineHandlers = function () {
                     self.res[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
                     zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
                 } catch (e) {
-                    console.log('Error has occured during reorg on node #'+nodeId+': ' + e.message);
+                    console.log(self.langFile.reorg_err_node+nodeId+': ' + e.message);
                     self.res[nodeId].status = 'failed';
                     removeFromPending(type, nodeId);
-                    addLog('%%%% reorg #'+nodeId+' ('+self.res[nodeId].type+') ... has failed', nodeId);
+                    addLog('#'+nodeId+' ('+self.res[nodeId].type+') ... '+self.langFile.reorg +' '+self.langFile.reorg_failed, nodeId);
                 }
             }
 
@@ -2550,9 +2552,9 @@ ZWave.prototype.defineHandlers = function () {
             reorgUpdate(nodeId);
 		}
 
-		var initialMsg = reorgBattery && reorgMain? ' (with battery powered devices)' : reorgBattery && !reorgMain? ' (battery powered devices only)' : ' (without battery powered devices)';
+		var initialMsg = reorgBattery && reorgMain? self.langFile.reorg_with_battery : reorgBattery && !reorgMain? self.langFile.reorg_battery_only : self.langFile.reorg_without_battery;
 
-		addLog('%%%% reorg started' + initialMsg);
+		addLog(self.langFile.reorg_started + initialMsg);
 
         //try {
 		Object.keys(zway.devices).forEach(function(nodeId) {
@@ -2575,14 +2577,14 @@ ZWave.prototype.defineHandlers = function () {
 		});
 
         if (mains.all.length > 0 && reorgMain) {
-            addLog('%%%% reorg all mains: ' + JSON.stringify(mains.all));
+            addLog(self.langFile.reorg_all_main + JSON.stringify(mains.all));
             mains.status = 'in progress';
 
             mains.all.forEach(function(nodeId){
                 doReorg(nodeId, 'main');
             });
         } else if (battery.all.length > 0 && reorgBattery) {
-            addLog('%%%% reorg all battery: ' + JSON.stringify(battery.all));
+            addLog(self.langFile.reorg_all_battery + JSON.stringify(battery.all));
             battery.status = 'in progress';
             battery.all.forEach(function(nodeId){
                 doReorg(nodeId, 'battery');
@@ -2606,7 +2608,7 @@ ZWave.prototype.defineHandlers = function () {
                         nodes.push(nodeId);
                     } else if (status === 'in progress' && resNode.timeout < now) {
                         status = 'timeout';
-                        addLog('%%%% reorg #'+nodeId+' ('+type+') ... timeout', nodeId);
+                        addLog('#'+nodeId+' ('+type+') ... ' +self.langFile.reorg_timeout, nodeId);
                         removeFromPending(type, nodeId);
                         nodes.push(nodeId);
                         currArr.timeout.push(nodeId);
@@ -2629,14 +2631,14 @@ ZWave.prototype.defineHandlers = function () {
 
                 if(pending.length < 1 && status === 'in progress' && reorg) {
                     self.progress[t].status = 'done';
-                    addLog('%%%% reorg ' + t + ' done');
+                    addLog(self.langFile.reorg_of + self.langFile[t] + ' ' +self.langFile.reorg_complete);
 
                     if (pending.length < 1 && nextType) {
                         nextNodeArr = self.progress[nextType].all;
                         nextReorg = self.progress[nextType].reorg;
 
                         if (nextNodeArr.length > 0 && nextReorg ) {
-                            addLog('%%%% reorg all '+nextType+': '+ JSON.stringify(nextNodeArr));
+                            addLog(self.langFile.reorg_all+self.langFile[nextType]+': '+ JSON.stringify(nextNodeArr));
                             self.progress[nextType].status = 'in progress';
 
                             nextNodeArr.forEach(function(nodeId){
@@ -2662,12 +2664,12 @@ ZWave.prototype.defineHandlers = function () {
 				});
 
                 if (self.reorgIntervallTimeout < now) {
-                    addLog('%%%% reorg timeout ... canceled');
+                    addLog(self.langFile.reorg_timeout+' ... '+self.langFile.reorg_canceled);
                 } else {
                 	if (allTimeout && allTimeout.length > 0) {
-                        addLog('%%%% reorg timed out for:' + JSON.stringify(allTimeout));
+                        addLog(self.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
 					}
-                    addLog('%%%% reorg complete');
+                    addLog(self.langFile.reorg+' '+self.langFile.reorg_complete);
                 }
 
             	clearInterval(self.reorgIntervall);
@@ -2677,7 +2679,7 @@ ZWave.prototype.defineHandlers = function () {
 		if(self.res) {
 			reply.status = 201;
 			reply.body = {
-				data: 'Reorganization '+initialMsg+' is starting ...'
+				data: self.langFile.reorg + initialMsg + self.langFile.reorg_starting
 			};
 		}
 
