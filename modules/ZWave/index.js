@@ -458,12 +458,21 @@ ZWave.prototype.CommunicationLogger = function() {
 
     boxTypeIsCIT = this.controller.isCIT();
 
-    if (boxTypeIsCIT) {
+    //check if controller version is >= 05.20 or type is cit
+    if (boxTypeIsCIT || !has_higher_version('05.20', zway.controller.data.APIVersion.value)) {
         this.timer = setInterval(function() {
             try {
                 var data = loadObject("rssidata.json");
 
                 data = self.rssiData(data);
+
+                // remove values older than 24h
+                if ( data.length > 1440){
+                    var lastDay = now - 86400;
+                    data = _.filter(data, function(entry){
+                        return entry.time > lastDay;
+                    });
+                }
 
                 saveObject("rssidata.json", data);
             } catch (e) {
@@ -1389,7 +1398,6 @@ ZWave.prototype.defineHandlers = function () {
 					packets = filter;
 				}
 			}
-			//packets = _.sortBy(packets, function(o) {return o.id});
 		}
 
 		body.data = packets;
@@ -1418,100 +1426,10 @@ ZWave.prototype.defineHandlers = function () {
 
         if (packets.length > 0) {
 
-            /*time = _.max(packets, function (v) {
-                return v.updateTime;
-            });
-
-            time = time.updateTime;
-
-            body.updateTime = _.isEmpty(time) ? time : null;*/
-
             body.updateTime = Math.round((new Date()).getTime()/1000);
 
             packets = _.sortBy(packets, function(o) {return o.id});
-
-            /*iPacketBuffer.packets = [];
-            oPacketBuffer.packets = [];*/
         }
-
-        /*
-        function prepareRSSI(rssiPacket) {
-            var rssi = [];
-
-            _.forEach(rssiPacket, function (rssiValue){
-                rssi.push((parseInt(rssiValue, 10) - 126)); // transform to two's (Zweierkomplement)
-            });
-
-            return rssi.length < 1? '': rssi;
-        }
-
-        function prepareValues(packetValue) {
-            // var pV = (_.isArray(packetValue) && packetValue.length >= 5) ? packetValue.slice(5) : packetValue;
-            var pV = packetValue;
-
-            if (_.isArray(packetValue)){
-                if (packetValue.length >= 8) {
-                    pV = packetValue.slice(7);
-                } else if (packetValue.length >= 6){
-                    pV = packetValue.slice(5, -1);
-                }
-            }
-            //console.log("##### pV:", pV);
-            return pV;
-        };
-
-        function packetApplication(packet, packet_type) {
-
-            var cmdClassKey = 0;
-            var cmdKey = 0;
-
-            if (packet.length >= 6 & packet_type === 'outgoing') {
-                cmdClassKey = decToHex(packet[5], 2, '0x');
-                cmdKey = decToHex(packet[6], 2, '0x');
-            } else {
-                cmdClassKey = decToHex(packet[0], 2, '0x');
-                cmdKey = decToHex(packet[1], 2, '0x');
-            }
-
-            var ret = {};
-
-            var findCmdClass = _.where(cmdClass, {_key: cmdClassKey});
-
-            //console.log("findCmdClass:", JSON.stringify(findCmdClass));
-
-            if (!findCmdClass) {
-                return;
-            }
-
-            var _cmdClass = findCmdClass.pop();
-
-            if(_.isEmpty(_cmdClass)) {
-                return;
-            }
-
-            if (_.isArray(_cmdClass.cmd)) {
-                ret = _.findWhere(_cmdClass.cmd, {_key: cmdKey});
-            } else {
-                ret = _cmdClass.cmd;
-            }
-            if(typeof ret === "object") {
-                if(ret.hasOwnProperty('_help')) {
-                    ret = ret._help;
-                } else {
-                    ret = "";
-                }
-            } else {
-                ret = "";
-            }
-
-            return ret;
-        }
-
-        function decToHex(decimal, chars, x) {
-            var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
-            return (x || '') + hex;
-        };
-        */
 
         body.data = packets;
 
@@ -1526,19 +1444,6 @@ ZWave.prototype.defineHandlers = function () {
             },
             body: body
         };
-
-        /*function getLatestPackages(packets) {
-
-            var now = (new Date()).getTime(),
-                lastUpdate = now - 5000; // default: search communication packages during last five seconds
-
-            // get packets since last request
-            var filteredPackets = _.filter(packets, function (p) {
-                return p.id >= lastUpdate;
-            });
-
-            return filteredPackets;
-        };*/
     }
 
     this.ZWaveAPI.RSSIGet = function(url, request) {
@@ -1556,50 +1461,45 @@ ZWave.prototype.defineHandlers = function () {
                 "data": []
             };
 
-        var par = url.split("/")[1];
+        try {
 
-        if(par == "realtime") {
+            var par = url.split("/")[1];
 
-			var now = Math.round((new Date()).getTime()/1000);
+            if (par == "realtime") {
 
-		    var data = [];
-		    zway.GetBackgroundRSSI();
+                data = self.rssiData();
 
-		    var rssi = zway.controller.data.statistics.backgroundRSSI;
+                body.data = data;
 
-		    var d = {
-		        "time": now,
-		        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-		        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-		        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
-		    };
+            } else {
+                body.data = loadObject('rssidata.json');
+            }
 
-		    data.push(d);
+            if (!!body.data) {
 
-		    body.data = data;
+                return {
+                    headers: headers,
+                    status: 200,
+                    body: body
+                };
+            } else {
 
-		} else {
-            body.data = loadObject('rssidata.json');
+                body.code = 404;
+                body.message = '404 Not Found';
+
+                return {
+                    headers: headers,
+                    status: 404,
+                    body: body
+                };
+            }
+        } catch (e) {
+            return {
+                headers: headers,
+                status: 500,
+                body: "Something went wrong:" + e.toString()
+            };
 		}
-
-        if (!!body.data) {
-
-            return {
-                headers: headers,
-                status: 200,
-                body: body
-            };
-        } else {
-
-            body.code = 404;
-            body.message = '404 Not Found';
-
-            return {
-                headers: headers,
-                status: 404,
-                body: body
-            };
-        }
     };
     
         this.ZWaveAPI.TestNode = function(url, request) {
@@ -2787,7 +2687,7 @@ ZWave.prototype.defineHandlers = function () {
     this.ZWaveAPI.GetReorganizationLog = function(url, request) {
         var self = this,
             reply = {
-                status: 500,
+                status: 200,
                 headers: {
                     "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "*",
@@ -2800,10 +2700,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		reorgLog = loadObject('reorgLog');
 
-        if(!!reorgLog) {
-            reply.status = 200;
-            reply.body = reorgLog;
-        }
+		reply.body = !!reorgLog? reorgLog : [];
 
         return reply;
     }
@@ -4960,7 +4857,8 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 ZWave.prototype.rssiData = function(data) {
     var now = Math.round((new Date()).getTime()/1000);
 
-    if(!data) data = [];
+    var data = data? data : [];
+
     zway.GetBackgroundRSSI();
 
     var rssi = zway.controller.data.statistics.backgroundRSSI;
@@ -4973,13 +4871,6 @@ ZWave.prototype.rssiData = function(data) {
     };
 
     data.push(d);
-
-    if ( data.length > 1440){
-        var lastDay = now - 86400;
-        data = _.filter(data, function(entry){
-            return entry.time > lastDay;
-        });
-    }
 
     return data;
 }
