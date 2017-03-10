@@ -2514,17 +2514,17 @@ ZWave.prototype.defineHandlers = function () {
 			var failCbk = function() {
 				var preMessage = '#'+nodeId+' ('+type+') ';
 				var message='';
-				var tries = self.res[nodeId].tries;
 
 				self.res[nodeId] = _.extend(self.res[nodeId],{
                     status: 'failed',
                     type: type,
-                    tries: tries++
+                    tries: self.res[nodeId].tries + 1
                 });
 
+                var tries = self.res[nodeId].tries;
+
                 if (type === 'main' && tries < 3) {
-                        addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed);
-                        addLog(preMessage + self.langFile.reorg_next_try);
+                        addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed + ' ' + self.langFile.reorg_next_try);
                         reorgUpdate(nodeId);
 				} else {
                     message = type === 'main'? self.langFile.reorg_all_tries_failed : '... '+self.langFile.reorg +' '+self.langFile.reorg_failed;
