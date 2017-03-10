@@ -2578,14 +2578,14 @@ ZWave.prototype.defineHandlers = function () {
 
         if (mains.all.length > 0 && reorgMain) {
             addLog(self.langFile.reorg_all_main + JSON.stringify(mains.all));
-            mains.status = 'in progress';
+            self.progress['main'].status = 'in progress';
 
             mains.all.forEach(function(nodeId){
                 doReorg(nodeId, 'main');
             });
         } else if (battery.all.length > 0 && reorgBattery) {
             addLog(self.langFile.reorg_all_battery + JSON.stringify(battery.all));
-            battery.status = 'in progress';
+            self.progress['battery'].status = 'in progress';
             battery.all.forEach(function(nodeId){
                 doReorg(nodeId, 'battery');
             });
@@ -2607,7 +2607,7 @@ ZWave.prototype.defineHandlers = function () {
             		if (status !== 'in progress') {
                         nodes.push(nodeId);
                     } else if (status === 'in progress' && resNode.timeout < now) {
-                        status = 'timeout';
+                        self.res[nodeId].status = 'timeout';
                         addLog('#'+nodeId+' ('+type+') ... ' +self.langFile.reorg_timeout, nodeId);
                         removeFromPending(type, nodeId);
                         nodes.push(nodeId);
