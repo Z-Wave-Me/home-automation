@@ -2409,37 +2409,24 @@ ZWave.prototype.defineHandlers = function () {
         self.reorgIntervallTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
 
         // object that shows progress of each container
-        self.progress = {
-            main: {
-            	reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
-                status: '',
-                pending: [],
-                timeout: [],
-				all: []
-            },
-            flirs: {
-                reorg: req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true,
-                status: '',
-                pending: [],
-                timeout: [],
-                all: []
-            },
-            battery: {
-                reorg: req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false,
-                status: '',
-                pending: [],
-                timeout: [],
-                all: []
-            }
-        };
+        self.progress = {};
 
         self.langFile = self.controller.loadModuleLang('ZWave');
 
-        mains = self.progress.main;
-        flirs = self.progress.flirs;
-        battery = self.progress.battery;
-        reorgMain = mains.reorg;
-        reorgBattery = battery.reorg;
+        reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
+        reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
+
+        function addTypeToProgress (type, reorg) {
+            if(!self.progress[type]) {
+                self.progress[type] = {
+                    reorg: reorg,
+                    status: '',
+                    pending: [],
+                    timeout: [],
+                    all: []
+                };
+            }
+		};
 
         // function that add's a log entry to reorgLog
         function addLog (message, nodeId) {
@@ -2565,28 +2552,34 @@ ZWave.prototype.defineHandlers = function () {
 				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value);
 
 			if (reorgBattery && isBattery && !isFLiRS) { // has battery and reorg for battery is forced
-				battery.all.push(nodeId);
+                addTypeToProgress('battery',reorgBattery);
+
+                self.progress.battery.all.push(nodeId);
 				cntNodes++;
 			} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
-				flirs.all.push(nodeId);
+                addTypeToProgress('flirs',reorgMain);
+
+                self.progress.flirs.all.push(nodeId);
 				cntNodes++;
 			} else if (reorgMain && isMain) {// is main powered and reorg for main/FLiRS is forced (default)
-                mains.all.push(nodeId);
+                addTypeToProgress('main',reorgMain);
+
+                self.progress.main.all.push(nodeId);
 				cntNodes++;
 			}
 		});
 
-        if (mains.all.length > 0 && reorgMain) {
-            addLog(self.langFile.reorg_all_main + JSON.stringify(mains.all));
+        if (self.progress.main && self.progress.main.all.length > 0 && reorgMain) {
+            addLog(self.langFile.reorg_all_main + JSON.stringify(self.progress.main.all));
             self.progress['main'].status = 'in progress';
 
-            mains.all.forEach(function(nodeId){
+            self.progress.main.all.forEach(function(nodeId){
                 doReorg(nodeId, 'main');
             });
-        } else if (battery.all.length > 0 && reorgBattery) {
-            addLog(self.langFile.reorg_all_battery + JSON.stringify(battery.all));
+        } else if (self.progress.battery && self.progress.battery.all.length > 0 && reorgBattery) {
+            addLog(self.langFile.reorg_all_battery + JSON.stringify(self.progress.battery.all));
             self.progress['battery'].status = 'in progress';
-            battery.all.forEach(function(nodeId){
+            self.progress.battery.all.forEach(function(nodeId){
                 doReorg(nodeId, 'battery');
             });
 		}
@@ -2651,11 +2644,11 @@ ZWave.prototype.defineHandlers = function () {
 
             // remove all
             if (self.reorgIntervall &&
-					(nodes.length >= cntNodes &&
-                		self.progress.main.pending.length < 1 &&
-							self.progress.flirs.pending.length < 1 &&
-								self.progress.battery.pending.length < 1) ||
-                					self.reorgIntervallTimeout < now) {
+				(nodes.length >= cntNodes &&
+				(!self.progress.main || (self.progress.main && self.progress.main.pending.length < 1 ))&&
+                (!self.progress.flirs || (self.progress.flirs && self.progress.flirs.pending.length < 1 ))&&
+                (!self.progress.battery || (self.progress.battery && self.progress.battery.pending.length < 1))) ||
+				self.reorgIntervallTimeout < now) {
 
             	var allTimeout = [];
 
