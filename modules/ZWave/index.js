@@ -1467,7 +1467,7 @@ ZWave.prototype.defineHandlers = function () {
 
             if (par == "realtime") {
 
-                data = self.rssiData();
+                data = ZWave.prototype.rssiData();
 
                 body.data = data;
 
