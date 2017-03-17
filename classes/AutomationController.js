@@ -1874,7 +1874,7 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
     var qrcodeBase64 = qr.createImgTag(3);
 
     var file = "";
-    if(profile.qrcode === "") {
+    if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
         file = data.login + new Date().getTime()+ ".gif"; //Loginname + timespame + file extension(gif)
     } else {
         file = profile.qrcode

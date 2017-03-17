@@ -23,7 +23,7 @@
 	"reorg_success":"erfolgreich",
 	"reorg_try_failed":". Versuch fehlgeschlagen",
 	"reorg_next_try":"- nächster Versuch ... ",
-	"reorg_all_tries_failed":"- alle Versuche fehlgeschlagen",
+	"reorg_all_tries_failed":"- alle 3 Versuche sind fehlgeschlagen",
 	"reorg_failed":"fehlgeschlagen",
 	"reorg_err_node":"Fehler bei der Reorganisation von Node #",
 	"reorg_with_battery":" (auch batteriebetriebene Geräte)",

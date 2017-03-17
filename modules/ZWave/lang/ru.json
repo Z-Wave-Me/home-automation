@@ -23,7 +23,7 @@
 	"reorg_success":"successful",
 	"reorg_try_failed":". try has failed",
 	"reorg_next_try":"- next try ... ",
-	"reorg_all_tries_failed":"- all tries have failed",
+	"reorg_all_tries_failed":"- all 3 tries have failed",
 	"reorg_failed":"failed",
 	"reorg_err_node":"Error has occured during reorganization on node #",
 	"reorg_with_battery":" (with battery powered devices)",

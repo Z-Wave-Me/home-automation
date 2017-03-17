@@ -258,7 +258,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
         if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {
-            if(profile.qrcode === "") {
+            if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
                 this.controller.addQRCode(profile, reqObj);
             }
             return this.setLogin(profile);
