@@ -2165,8 +2165,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // reset z-way controller
                     console.log('Reset Controller ...');
+                    var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+
                     zway.controller.SetDefault();
-                    
+
+                    while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
+                        processPendingCallbacks();
+                    }
+
                     // remove instances of ZWave at least
                     // filter for instances of ZWave
                     zwInstances = this.controller.instances.filter(function (instance) {
@@ -2178,7 +2184,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     // remove instance of ZWave
                     if (zwInstances.length > 0) {
                         zwInstances.forEach(function (instanceId) {
-                            console.log('Remove ZWave intstance: ' + instanceId);
+                            console.log('Remove ZWave instance: ' + instanceId);
                             self.controller.deleteInstance(instanceId);
                         });
                     }
@@ -2208,7 +2214,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // remove skins
                     _.forEach(this.controller.skins, function(skin) {
-                        self.controller.uninstallSkin(skin.name); 
+                        if (skin.name !== 'default') {
+                            self.controller.uninstallSkin(skin.name);
+                        }
                     });
 
                     // stop the controller
@@ -2216,7 +2224,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     
                     // clean up storage
                     for (var ind in storageContentList) {
-                        if(ind !== 'backupConfig'){
+                        if(storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]){
                             saveObject(storageContentList[ind], null);
                         }
                     }
@@ -2249,7 +2257,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = 'No default configuration file found.';
             }
         } catch (e) {
-            reply.error = 'Something went wrong. Error: ' + e.message;
+            reply.error = 'Something went wrong. Error: ' + e.toString();
         }
 
         return reply;

@@ -5,6 +5,7 @@
       oldConfigJSON = JSON.stringify(config),
       skins = loadObject("userSkins.json"),
       notifications = loadObject("notifications"),
+      storageContentList = loadObject("__storageContent"),
       loadDefaultCfg = function (e) {
           var cfg = null;
           var error = e? e : ''
@@ -493,4 +494,13 @@
         }
 
     }
+
+  // remove null entries from list
+  if (storageContentList && Array.isArray(storageContentList) && storageContentList.length > 0) {
+      storageContentList = storageContentList.filter(function (entry) {
+          return !!entry;
+      });
+
+      saveObject('__storageContent', storageContentList);
+  }
 })();

@@ -3167,7 +3167,7 @@ ZWave.prototype.gateDevicesStart = function () {
 											// console output
 											console.log('##############', 'INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED:', '#' + nodeId,'#######################');
 											console.log('###');
-											console.log('###', 'ERROR:', e.message);
+											console.log('###', 'ERROR:', e.toString());
 											console.log('###');
 											console.log('######################################################################################################');
 										}
@@ -3259,7 +3259,7 @@ ZWave.prototype.gateDevicesStart = function () {
 								// console output
 								console.log('#######################', 'PRE-OR-POSTFIX-ERROR:', '#' + nodeId,'################################');
 								console.log('###');
-								console.log('###', 'ERROR:', e.message);
+								console.log('###', 'ERROR:', e.toString());
 								console.log('###');
 								console.log('#################################################################################################');
 							}
@@ -3428,11 +3428,11 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 		function postfixLog(devId, changeObj) {
 
-			try {
-				// console output
-				console.log('#######################', 'Apply postfix for:', devId,'################################');
-				console.log('###');
+            // console output
+            console.log('#######################', 'Apply postfix for:', devId,'################################');
+            console.log('###');
 
+			try {
 				if (changeObj.noVDev) {
 					console.log('###', 'not created');
 				} else {
@@ -3440,12 +3440,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						console.log('###', 'change ' + key + ' into:', changeObj[key]);
 					});
 				}
-
-				console.log('###');
-				console.log('########################################################################################');
 			} catch (e) {
-				console.log('Error in postfix log:', e.message);
+				console.log('Error in postfix log:', e.toString());
 			}
+
+            console.log('###');
+            console.log('########################################################################################');
 		}
 
 		function applyPostfix(defaultObj, changeObj, devId, devIdNI) {
