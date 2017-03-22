@@ -1592,29 +1592,64 @@ ZWave.prototype.defineHandlers = function () {
 					fw = data.file.content;
 				}
 				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
+
+                return { status: 200, body: "Initiating update" };
 			} else if (data.url) {
+				var result = {
+                    status: 'in progress'
+                };
+				var d = (new Date()).valueOf() + 300000; // wait no more than 5 min
 				// update firmware from url
 				http.request({
-					method: "GET",
 					url: data.url,
-					contentType: "application/octet-stream", // enforce binary response
+					headers: {
+                        "Access-Control-Allow-Origin": "*",
+                        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                        "Access-Control-Allow-Headers": "Authorization",
+                        "Connection": "keep-alive"
+					},
+					contentType: "application/octet-stream", // enforce binary response,
 					async: true,
 					success: function (res) {
+
+						console.log('upgrade res:', JSON.stringify(res, null, 1));
 						var fw;
-						if (res.data.substr(0, 1) === ":") {
-							// this is a .hex file
-							fw = IntelHex2bin(res.data);
-						} else {
-							fw = res.data;
+						try {
+							if (res.data.substr(0, 1) === ":") {
+								// this is a .hex file
+								fw = IntelHex2bin(res.data);
+							} else {
+								fw = res.data;
+							}
+								fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
+
+								result.status = 'done';
+						} catch (e) {
+                            result.error = 'Firmware download successful. Parsing has failed: ' + e.toString();
+                            result.status = 'fail';
+                            throw ('Firmware download successful. Parsing has failed: ' + e.toString());
 						}
-						fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 					},
 					error: function (res) {
-						console.error("Failed to download firmware: " + res.statusText);
+                        result.error = 'Failed to download firmware: ' + res.statusText;
+                        result.status = 'fail';
+                        throw ('Failed to download firmware: ' + res.statusText);
 					}
 				});
+
+                while ((new Date()).valueOf() < d &&  result.status === "in progress") {
+                    processPendingCallbacks();
+                }
+
+                result.status = result.status === 'in progress'? 'fail' : result.status;
+
+                if (result.status === 'fail') {
+                    return { status: 500, body: result.error };
+				} else {
+                    return { status: 200, body: "Initiating update" };
+				}
 			}
-			return { status: 200, body: "Initiating update" };
+
 		} catch (e) {
 			return { status: 500, body: e.toString() };
 		}
