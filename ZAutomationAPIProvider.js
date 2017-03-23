@@ -188,7 +188,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         resProfile = this.getProfileResponse(profile);
         resProfile.sid = sid;
 
-        if (profile.password !== 'admin' && typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
+        if (profile.password !== 'admin' && !this.controller.config.hasOwnProperty('firstaccess') || this.controller.config.firstaccess === true) {
             this.controller.config.firstaccess = false;
         }
 
@@ -2875,7 +2875,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 return profile.login === 'admin' && profile.password === 'admin';
             });
 
-            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
+            if ((!this.controller.config.first_start_up && defaultProfile.length > 0) || (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
                 reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
                 reply.data.defaultProfile = setLogin.data; // set login data of default profile
