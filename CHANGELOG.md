@@ -1,3 +1,46 @@
+#27.03.2017 v2.3.1
+Changes:
+* Added Z-Wave module restart after UZB/RaZberry upgrade
+* box reboot refactored
+* controller function - get instances by module name added
+* Factory reset:
+  * add controller state check after SetDefault()
+  * exclude 'default' from skin uninstaller
+  * add null check to storage cleanup
+  * add notification
+* saveObject():
+  * exclude null entries
+* updateBackendConfig:
+  * add transformation that removes 'null' entries from storage content list
+* User passwords converted to salted hash (sha512)  
+
+Bugfix:
+* Fixed crash on title compilation in system with multiple dongles
+* refactor error handling of broken or missing config.json / default-config.json
+* Fixed bug with door lock status not updated
+
+Features:
+* Z-Wave MeterPulse CC support added
+* QR code generation for login credentials added
+
+ZWaveAPI:
+* CallForALLNIF API added
+* TestNode API added
+* CheckAllLinks API added
+* RSSIGet API added
+* NetworkReorganization API added
+* GetRorganizationLog API added
+* sendZWayReport API added - sends a report including z-way data and last 1000 lines of z-way-server.log
+* ZWave Backup API enhancement - optional up to latest 20000 lines of z-way-server.log can be added to backup package
+
+Modules:
+* NotificationSMS.ru
+  * Added filter for notification level
+* PhilioHW
+  * improvements
+* Correct value 
+  * added
+
 #27.01.2017 v2.3.0
 Changes:
 * Added password field to all modules which use password field
@@ -14,9 +57,6 @@ Changes:
  * JS/Run/controller.debug=true will activate console.debug output
 * lib file descriptions updated
 * more robust on config.json fault - will use default config.json instead
-
-Bugfix:
-* Do not update widgets if type is Invalidated
 
 Bugfix:
 * Do not update widgets if type is Invalidated

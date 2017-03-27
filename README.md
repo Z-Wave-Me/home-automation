@@ -1,4 +1,4 @@
-Z-Way Home Automation Engine v2.3.0
+Z-Way Home Automation Engine v2.3.1
 =================================
 
 # Introduction #
