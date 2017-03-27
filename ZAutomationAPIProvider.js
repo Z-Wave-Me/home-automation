@@ -254,7 +254,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        boxTypeIsCIT = this.controller.isCIT();
+        boxTypeIsCIT = checkBoxtype('cit');
 
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
         if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {

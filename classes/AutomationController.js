@@ -2775,18 +2775,3 @@ AutomationController.prototype.getRemoteId = function() {
 AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
     return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
 };
-
-AutomationController.prototype.isCIT = function () {
-    var cit = false;
-
-    try {
-        var bT = system('cat /etc/z-way/box_type');
-
-        bT.forEach(function(bType){
-            cit = typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')? true : false;
-        });
-    } catch (e) {
-    }
-
-    return cit;
-}

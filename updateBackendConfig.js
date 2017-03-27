@@ -441,6 +441,24 @@
         }
       }
     }
+
+    try {
+        // once remove unnecessary modules from cit-installation
+        if (!config.controller.instancesTransformed && checkBoxtype('cit')) {
+            var allowed = ['ZWave','Cron','RemoteAccess'];
+
+            config.instances = config.instances.filter(function (instance){
+                return allowed.indexOf(instance.moduleId) >= 0;
+            });
+
+            config.controller.instancesTransformed = true;
+
+            saveObject('config.json', config);
+        }
+    } catch (e) {
+        console.log(e.toString());
+    }
+
   } else {
       console.log("Error loading config.json! Unable to start z-way-sever. Check if automation/defaultConfigs directory includes config.json or automation/storage directory includes configjson-06b2d3b23dce96e1619d2b53d6c947ec.json. Checkout https://github.com/Z-Wave-Me/home-automation or contact Z-Wave.Me support for help.");
   }

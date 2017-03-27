@@ -456,7 +456,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	zway.controller.data.outgoingPacket.bind(outH);
 
-    boxTypeIsCIT = this.controller.isCIT();
+    boxTypeIsCIT = checkBoxtype('cit');
 
     //check if controller version is >= 05.20 or type is cit
     if (boxTypeIsCIT || !has_higher_version('05.20', zway.controller.data.APIVersion.value)) {
