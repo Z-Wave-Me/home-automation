@@ -4,17 +4,34 @@
   var config,
       oldConfigJSON = JSON.stringify(config),
       skins = loadObject("userSkins.json"),
-      notifications = loadObject("notifications");
+      notifications = loadObject("notifications"),
+      storageContentList = loadObject("__storageContent"),
+      loadDefaultCfg = function (e) {
+          var cfg = null;
+          var error = e? e : ''
+          console.log("Error loading config.json from automation/storage! Using default config.json from automation/defaultConfigs:", error.toString());
+
+          try {
+              cfg = fs.loadJSON("defaultConfigs/config.json");
+              saveObject("config.json", cfg);
+          } catch (e) {
+              console.log("Error loading default config.json from automation/defaultConfigs:" + e.toString());
+          }
+
+          return cfg;
+      };
 
   try {
-    config = loadObject("config.json");
+      config = loadObject("config.json");
+
+      if (!config || config === null) {
+          config = loadDefaultCfg();
+      }
   } catch (e) {
-    console.log("Error loading config.json! Using default config.");
-    config = fs.loadJSON("defaultConfigs/config.json");
-    saveObject("config.json", config);
+      config = loadDefaultCfg(e);
   }
   
-  if (config) {
+  if (config && !!config) {
     // Change profiles data
     if (config.hasOwnProperty('profiles') && Array.isArray(config.profiles) && config.profiles.length > 0) {
       config.profiles.forEach(function (profile) {
@@ -408,7 +425,7 @@
       // convert password to a secure salted hash
       config.profiles.forEach(function(profile) {
         if (profile.login === "admin" && profile.password === "admin" || profile.login === "local" && profile.password === "local") return; // skip default profiles
-        if (!!profile.salt) return; // skip already converted
+        if (profile.salt && !!profile.salt) return; // skip already converted
         
         profile.salt = generateSalt();
         profile.password = hashPassword(profile.password, profile.salt);
@@ -424,6 +441,8 @@
         }
       }
     }
+  } else {
+      console.log("Error loading config.json! Unable to start z-way-sever. Check if automation/defaultConfigs directory includes config.json or automation/storage directory includes configjson-06b2d3b23dce96e1619d2b53d6c947ec.json. Checkout https://github.com/Z-Wave-Me/home-automation or contact Z-Wave.Me support for help.");
   }
 
   if (skins) {
@@ -475,4 +494,13 @@
         }
 
     }
+
+  // remove null entries from list
+  if (storageContentList && Array.isArray(storageContentList) && storageContentList.length > 0) {
+      storageContentList = storageContentList.filter(function (entry) {
+          return !!entry;
+      });
+
+      saveObject('__storageContent', storageContentList);
+  }
 })();

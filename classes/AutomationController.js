@@ -1825,6 +1825,8 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
             p.login = object.login;
         }
 
+        this.addQRCode(p, object);
+
         this.saveConfig();
         
         return p;
@@ -1841,6 +1843,46 @@ AutomationController.prototype.removeProfile = function (profileId) {
 
     this.saveConfig();
 };
+
+AutomationController.prototype.addQRCode = function(profile, obj) {
+    var typeNumber = 15,
+        errorCorrectionLevel = 'H',
+        data = {
+            id: "",
+            login: "",
+            service: "find.z-wave.me",
+            ssid: "",
+            ip: "",
+            wpa: "",
+            passwd: ""
+        },
+        url = "";
+
+    data.passwd = obj.password;
+    data.login = profile.login;
+    data.id = this.getRemoteId();
+
+    var qr = qrcode(typeNumber, errorCorrectionLevel);
+
+    var url = Object.keys(data).map(function(key){
+        return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
+    }).join('&');
+
+    qr.addData(url);
+    qr.make();
+
+    var qrcodeBase64 = qr.createImgTag(3);
+
+    var file = "";
+    if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
+        file = data.login + new Date().getTime()+ ".gif"; //Loginname + timespame + file extension(gif)
+    } else {
+        file = profile.qrcode
+    }
+
+    profile.qrcode = file;
+    saveObject(file ,qrcodeBase64.toString());
+}
 
 // namespaces
 AutomationController.prototype.generateNamespaces = function (callback, device, locationNspcOnly) {
@@ -2733,3 +2775,18 @@ AutomationController.prototype.getRemoteId = function() {
 AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
     return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
 };
+
+AutomationController.prototype.isCIT = function () {
+    var cit = false;
+
+    try {
+        var bT = system('cat /etc/z-way/box_type');
+
+        bT.forEach(function(bType){
+            cit = typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')? true : false;
+        });
+    } catch (e) {
+    }
+
+    return cit;
+}

@@ -182,13 +182,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     setLogin: function(profile) {
         var sid = crypto.guid(),
             resProfile = {};
-        
+
         this.controller.auth.checkIn(profile, sid);
 
         resProfile = this.getProfileResponse(profile);
         resProfile.sid = sid;
 
-        if (profile.password !== 'admin' && typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess === true) {
+        if (profile.password !== 'admin' && !this.controller.config.hasOwnProperty('firstaccess') || this.controller.config.firstaccess === true) {
             this.controller.config.firstaccess = false;
         }
 
@@ -254,20 +254,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        try {
-            var bT = system('cat /etc/z-way/box_type');
-
-            bT.forEach(function(bType){
-                if(typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')) {
-                    boxTypeIsCIT = true;
-                    return;
-                }
-            });
-        } catch (e) {
-        }
+        boxTypeIsCIT = this.controller.isCIT();
 
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
         if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {
+            if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
+                this.controller.addQRCode(profile, reqObj);
+            }
             return this.setLogin(profile);
         } else {
             return this.denyLogin();
@@ -1830,7 +1823,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if(~file.name.indexOf('.csv') && typeof Papa === 'object'){
                     var csv = null;
-                    
                     Papa.parse(file.content, {
                         header: true,
                         dynamicTyping: true,
@@ -2173,8 +2165,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // reset z-way controller
                     console.log('Reset Controller ...');
+                    var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+
                     zway.controller.SetDefault();
-                    
+
+                    while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
+                        processPendingCallbacks();
+                    }
+
                     // remove instances of ZWave at least
                     // filter for instances of ZWave
                     zwInstances = this.controller.instances.filter(function (instance) {
@@ -2186,7 +2184,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     // remove instance of ZWave
                     if (zwInstances.length > 0) {
                         zwInstances.forEach(function (instanceId) {
-                            console.log('Remove ZWave intstance: ' + instanceId);
+                            console.log('Remove ZWave instance: ' + instanceId);
                             self.controller.deleteInstance(instanceId);
                         });
                     }
@@ -2216,7 +2214,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     // remove skins
                     _.forEach(this.controller.skins, function(skin) {
-                        self.controller.uninstallSkin(skin.name); 
+                        if (skin.name !== 'default') {
+                            self.controller.uninstallSkin(skin.name);
+                        }
                     });
 
                     // stop the controller
@@ -2224,7 +2224,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     
                     // clean up storage
                     for (var ind in storageContentList) {
-                        if(ind !== 'backupConfig'){
+                        if(storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]){
                             saveObject(storageContentList[ind], null);
                         }
                     }
@@ -2257,7 +2257,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 reply.error = 'No default configuration file found.';
             }
         } catch (e) {
-            reply.error = 'Something went wrong. Error: ' + e.message;
+            reply.error = 'Something went wrong. Error: ' + e.toString();
         }
 
         return reply;
@@ -2875,7 +2875,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 return profile.login === 'admin' && profile.password === 'admin';
             });
 
-            if ((defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
+            if ((!this.controller.config.first_start_up && defaultProfile.length > 0) || (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
                 setLogin = this.setLogin(defaultProfile[0]);
                 reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
                 reply.data.defaultProfile = setLogin.data; // set login data of default profile

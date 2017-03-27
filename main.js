@@ -26,7 +26,7 @@ executeFile("updateBackendConfig.js");
 __saveObject = saveObject;
 __storageContent = loadObject("__storageContent") || [];
 saveObject = function(name, object) {
-    if (__storageContent.indexOf(name) === -1) {
+    if (__storageContent.indexOf(name) === -1 && !!name) {
         __storageContent.push(name);
         __saveObject("__storageContent", __storageContent);
     }
@@ -36,18 +36,14 @@ saveObject = function(name, object) {
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
 try {
-    config = loadObject("config.json") || {
-        "controller": {},
-        "vdevInfo": {},
-        "locations": []
-    };
+    config = loadObject("config.json");
     files = loadObject("files.json") || {};
     schemas = loadObject("schemas.json") || [];
 } catch (ex) {
     console.log("Error loading config.json or files.json:", ex.message);
 }
 
-if (!config) {
+if (!config && config === null) {
     console.log("Can't read config.json or it's broken.");
     console.log("ZAutomation engine not started.");
 } else {
@@ -66,6 +62,7 @@ if (!config) {
     executeFile(config.libPath + "/BAOS_API_2011_01_29_001.js");
     executeFile(config.libPath + "/IntelHex2bin.js");
     executeFile(config.libPath + "/base64.js");
+    executeFile(config.libPath + "/qrcode.js");
 
     //--- Load Automation subsystem classes
     executeFile(config.classesPath + "/VirtualDevice.js");
