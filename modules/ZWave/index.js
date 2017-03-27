@@ -3369,7 +3369,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type, arg) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value);
@@ -3958,7 +3958,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 			if (vDev) {
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function() {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value === 255 ? "close" : "open");
@@ -4123,9 +4123,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										self.controller.devices.remove(_vDevId);
 									} else {
 										try {
-                                            if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-                                                t_vDev[mode].set("metrics:level", this.value);
-                                            }
+											if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+												t_vDev[mode].set("metrics:level", this.value);
+											}
 										} catch (e) {
 										}
 									}
