@@ -143,22 +143,43 @@
             "generated": []
         }
     }, {
-        "id": 9,
-        "moduleId": "CloudBackup",
+         "id": 9,
+         "moduleId": "CloudBackup",
+         "active": true,
+         "title": "CloudBackup",
+         "description": "Gives possibility to upload and store your backups on the remote server.",
+         "params": {
+             "api": "/CloudBackupAPI/Backup",
+             "user_active": false,
+             "email": "",
+             "email_log": "0",
+             "remoteid": null,
+             "days": "28",
+             "weekDays": null,
+             "hours": "23",
+             "minutes": "59",
+             "scheduler": "3"
+         }
+     }, {
+        "id": 10,
+        "moduleId": "InfoWidget",
         "active": true,
-        "title": "CloudBackup",
-        "description": "Gives possibility to upload and store your backups on the remote server.",
+        "title": "Cloud Backup Instructions",
+        "description": "Dieses Modul erzeugt ein Informations Widget.",
         "params": {
-            "api": "/CloudBackupAPI/Backup",
-            "user_active": false,
-            "email": "",
-            "email_log": "0",
-            "remoteid": null,
-            "days": null,
-            "weekDays": null,
-            "hours": null,
-            "minutes": null,
-            "scheduler": "0"
+            "widgets": [],
+            "internationalize": true,
+            "widgetsInt": [{
+                "lang": "en",
+                "headline": "Cloud Backup Instructions",
+                "text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
+                "imgURI": "app/img/icon_cloudbackup.png"
+            }, {
+                "lang": "de",
+                "headline": "Cloud Backup Anleitung",
+                "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong>  Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
+                "imgURI": "app/img/icon_cloudbackup.png"
+            }]
         }
     }]
 }
