@@ -2437,6 +2437,7 @@ ZWave.prototype.defineHandlers = function () {
             req = request && request.query? request.query : undefined,
             req = req && typeof req === 'string'? JSON.parse(req) : req,
         	cntNodes = 0,
+			requestInterval = 10000, // wait 10 sec
             mains, flirs, battery, reorgMain, reorgBattery;
 
         self.reorgLog = [];
@@ -2445,6 +2446,7 @@ ZWave.prototype.defineHandlers = function () {
 
         // object that shows progress of each container
         self.progress = {};
+        self.nodesPending = [];
 
         self.langFile = self.controller.loadModuleLang('ZWave');
 
@@ -2458,7 +2460,10 @@ ZWave.prototype.defineHandlers = function () {
                     status: '',
                     pending: [],
                     timeout: [],
-                    all: []
+					intervalCnt: 0,
+					interval: null,
+                    all: [],
+                    nodesPending: []
                 };
             }
 		};
@@ -2483,11 +2488,15 @@ ZWave.prototype.defineHandlers = function () {
 
         // function that removes pending nodes after done/failed/timeout
         function removeFromPending (type,nodeId) {
-            if(self.progress[type].pending.indexOf(nodeId) > -1) {
+            if (self.progress[type].pending.indexOf(nodeId) > -1) {
                 self.progress[type].pending = self.progress[type].pending.filter(function(node) {
                     return	node != nodeId;
                 });
             }
+
+            /*self.nodesPending = self.nodesPending.filter(function(entry){
+            	return !_.isEqual(entry,{nodeId:nodeId,type:type})
+            });*/
         }
 
         function removeFromTimeout (type,nodeId) {
@@ -2501,9 +2510,9 @@ ZWave.prototype.defineHandlers = function () {
         // function that calls reorg and includes callback functions
         function doReorg(nodeId, type){
 
-        	if (self.progress[type].pending.indexOf(nodeId) < 0) {
+        	/*if (self.progress[type].pending.indexOf(nodeId) < 0) {
                 self.progress[type].pending.push(nodeId);
-			}
+			}*/
 
 			// add single node status
             if (!self.res[nodeId]) {
@@ -2584,40 +2593,137 @@ ZWave.prototype.defineHandlers = function () {
                 isListening = node.data.isListening.value,
 				isMain = (isListening && node.data.isRouting.value) || (isListening && !node.data.isRouting.value),
 				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
-				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value);
+				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value),
+				add = (reorgBattery && isBattery) || (reorgMain && !isBattery) || (reorgMain && isBattery && isFLiRS)? true: false,
+				type = isBattery && !isFLiRS? 'battery': (isFLiRS? 'flirs': 'main');
 
-			if (reorgBattery && isBattery && !isFLiRS) { // has battery and reorg for battery is forced
-                addTypeToProgress('battery',reorgBattery);
-
-                self.progress.battery.all.push(nodeId);
-				cntNodes++;
-			} else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
-                addTypeToProgress('flirs',reorgMain);
-
-                self.progress.flirs.all.push(nodeId);
-				cntNodes++;
-			} else if (reorgMain && isMain) {// is main powered and reorg for main/FLiRS is forced (default)
-                addTypeToProgress('main',reorgMain);
-
-                self.progress.main.all.push(nodeId);
-				cntNodes++;
+			if (add){
+                addTypeToProgress(type,add);
+                self.progress[type].all.push(nodeId);
+                self.progress[type].pending = self.progress[type].all;
+                self.progress[type].nodesPending.push({nodeId: nodeId, type: type});
+                cntNodes++;
 			}
+
+            /*if (reorgBattery && isBattery && !isFLiRS) { // has battery and reorg for battery is forced
+                addTypeToProgress('battery',reorgBattery);
+                self.progress.battery.all.push(nodeId);
+                self.progress.battery.nodesPending.push({nodeId: nodeId, type: 'battery'});
+                cntNodes++;
+            } else if (reorgMain && isFLiRS) { //is FLiRS and reorg for main/FLiRS is forced (default)
+                addTypeToProgress('flirs',reorgMain);
+                self.progress.flirs.all.push(nodeId);
+                self.progress.flirs.nodesPending.push({nodeId: nodeId, type: 'flirs'});
+                cntNodes++;
+            } else if (reorgMain && isMain) {// is main powered and reorg for main/FLiRS is forced (default)
+                addTypeToProgress('main',reorgMain);
+                self.progress.main.all.push(nodeId);
+                self.progress.main.nodesPending.push({nodeId: nodeId, type: 'main'});
+                cntNodes++;
+            }*/
 		});
 
-        if (self.progress.main && self.progress.main.all.length > 0 && reorgMain) {
-            addLog(self.langFile.reorg_all_main + JSON.stringify(self.progress.main.all));
+        if (self.progress.main) {
+            //addLog(self.langFile.reorg_all_main + JSON.stringify(self.progress.main.all));
             self.progress['main'].status = 'in progress';
-
-            self.progress.main.all.forEach(function(nodeId){
-                doReorg(nodeId, 'main');
-            });
-        } else if (self.progress.battery && self.progress.battery.all.length > 0 && reorgBattery) {
-            addLog(self.langFile.reorg_all_battery + JSON.stringify(self.progress.battery.all));
+        } else if (self.progress.battery) {
+            //addLog(self.langFile.reorg_all_battery + JSON.stringify(self.progress.battery.all));
             self.progress['battery'].status = 'in progress';
-            self.progress.battery.all.forEach(function(nodeId){
-                doReorg(nodeId, 'battery');
-            });
-		}
+        }
+
+        Object.keys(self.progress).forEach(function(type){
+            self.nodesPending = _.uniq(self.nodesPending.concat(self.progress[type].nodesPending));
+		});
+
+        this.progressInterval = setInterval(function(){
+            if (self.nodesPending[0]) {
+            	var nodeId = self.nodesPending[0].nodeId,
+                    type = self.nodesPending[0].type,
+                    currProgressType = self.progress[type],
+                    all = currProgressType.all,
+                    pending = currProgressType.pending,
+                    status = currProgressType.status,
+                    reorg = currProgressType.reorg,
+                    nextReorg = false,
+                	key = self.langFile['reorg_all_'+type]? self.langFile['reorg_all_'+type] : self.langFile['reorg_all'] + self.langFile[type] + ': ';
+
+                if(all.length > 0 && all.length === pending.length) {
+                    addLog(key + JSON.stringify(all));
+				} else if (pending.length < 1 && status === 'in progress' && reorg) {
+                    self.progress[type].status = 'done';
+                    addLog(self.langFile.reorg_of + self.langFile[type] + ' ' + self.langFile.reorg_complete);
+                }
+
+                // do reorg for node
+				doReorg(nodeId, type);
+
+				// remove first entry
+				self.nodesPending = self.nodesPending.filter(function(entry){
+                    return !_.isEqual(entry,{nodeId:nodeId,type:type})
+                });
+
+                /*var nextType = Object.keys(self.progress)[i+1],
+                    nextNodeArr = [],
+                    currProgressType = self.progress[t],
+                    pending = currProgressType.pending,
+                    status = currProgressType.status,
+                    reorg = currProgressType.reorg,
+                    nextReorg = false;
+
+                if(pending.length < 1 && status === 'in progress' && reorg) {
+                    self.progress[t].status = 'done';
+                    addLog(self.langFile.reorg_of + self.langFile[t] + ' ' +self.langFile.reorg_complete);
+
+                    if (pending.length < 1 && nextType) {
+                        nextNodeArr = self.progress[nextType].all;
+                        nextReorg = self.progress[nextType].reorg;
+                        i = self.progress[nextType].intervalCnt;
+
+                        if (nextNodeArr.length > 0 && nextReorg ) {
+                            addLog(self.langFile.reorg_all+self.langFile[nextType]+': '+ JSON.stringify(nextNodeArr));
+                            self.progress[nextType].status = 'in progress';*/
+
+                /*if (type main && self.progress.main.all.length > 0 && reorgMain) {
+                    doReorg(self.progress.main.all[self.progress.main.intervalCnt], 'main');
+
+					self.progress.main.all.forEach(function(nodeId){
+					 doReorg(nodeId, 'main');
+					 });
+
+					 if (self.progress.main.all[self.progress.main.intervalCnt]) {
+					 doReorg(self.progress.main.all[self.progress.main.intervalCnt], 'main');
+					 self.progress.main.intervalCnt++;
+					 } else {
+					 clearInterval(self.progress.main.interval);
+					 self.progress.main.interval = null;
+					 }
+					 console.log('main progress:', JSON.stringify(self.progress['main'], null, 1));
+					 },requestInterval);
+                } else if (self.progress.battery && self.progress.battery.all.length > 0 && reorgBattery) {
+                    addLog(self.langFile.reorg_all_battery + JSON.stringify(self.progress.battery.all));
+                    self.progress['battery'].status = 'in progress';
+					self.progress.battery.all.forEach(function(nodeId){
+					 doReorg(nodeId, 'battery');
+					 });
+
+					self.progress.battery.interval = setInterval(function(){
+					 if (self.progress.battery.all[self.progress.battery.intervalCnt]) {
+					 doReorg(self.progress.main.all[self.progress.battery.intervalCnt], 'battery');
+					 self.progress.battery.intervalCnt++;
+					 } else {
+					 clearInterval(self.progress.battery.interval);
+					 self.progress.battery.interval = null;
+					 }
+
+					 console.log('battery progress:', JSON.stringify(self.progress['battery'], null, 1));
+					 },requestInterval);
+                }*/
+            } else {
+                clearInterval(self.progressInterval);
+                self.progressInterval = null;
+                self.nodesPending = [];
+			}
+        }, requestInterval);
 
         this.reorgIntervall = setInterval(function(){
             var nodes = [],
@@ -2648,7 +2754,7 @@ ZWave.prototype.defineHandlers = function () {
 				}
 			});
 
-            Object.keys(self.progress).forEach(function(t, i){
+            /*Object.keys(self.progress).forEach(function(t, i){
                 var nextType = Object.keys(self.progress)[i+1],
 					nextNodeArr = [],
 					currProgressType = self.progress[t],
@@ -2664,18 +2770,32 @@ ZWave.prototype.defineHandlers = function () {
                     if (pending.length < 1 && nextType) {
                         nextNodeArr = self.progress[nextType].all;
                         nextReorg = self.progress[nextType].reorg;
+                        i = self.progress[nextType].intervalCnt;
 
                         if (nextNodeArr.length > 0 && nextReorg ) {
                             addLog(self.langFile.reorg_all+self.langFile[nextType]+': '+ JSON.stringify(nextNodeArr));
                             self.progress[nextType].status = 'in progress';
 
-                            nextNodeArr.forEach(function(nodeId){
+                            /!*console.log('nextType flirs?:', nextType);
+                            self.progress[nextType].interval = setInterval(function(){
+                                if (self.progress[nextType].all[self.progress[nextType].intervalCnt]) {
+                                    doReorg(self.progress[nextType].all[i], 'flirs');
+                                    self.progress[nextType].intervalCnt++;
+                                } else {
+                                    clearInterval(self.progress.flirs.interval);
+                                    self.progress.flirs.interval = null;
+                                }
+
+                                console.log(nextType +' progress:', JSON.stringify(self.progress[nextType], null, 1));
+                            },requestInterval);*!/
+
+                            /!*nextNodeArr.forEach(function(nodeId){
                                 doReorg(nodeId, nextType);
-                            });
+                            });*!/
                         }
 					}
                 }
-			});
+			});*/
 
             // remove all
             if (self.reorgIntervall &&
@@ -2693,16 +2813,18 @@ ZWave.prototype.defineHandlers = function () {
 
                 if (self.reorgIntervallTimeout < now) {
                     addLog(self.langFile.reorg_timeout+' ... '+self.langFile.reorg_canceled);
+                    addLog('finished');
                 } else {
                 	if (allTimeout && allTimeout.length > 0) {
                         addLog(self.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
 					}
                     addLog(self.langFile.reorg+' '+self.langFile.reorg_complete);
+                    addLog('finished');
                 }
 
             	clearInterval(self.reorgIntervall);
             }
-		}, 3000);
+		}, 5000);
 
 		if(self.res) {
 			reply.status = 201;
