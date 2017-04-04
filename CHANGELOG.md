@@ -1,3 +1,12 @@
+# v2.3.2
+Changes:
+* NetworkReorganization API refactored
+* widget CloudBackup instruction
+
+Features:
+* ZWave: 
+  * Added support of probeType GAS and WATER
+  
 #27.03.2017 v2.3.1
 Changes:
 * Added Z-Wave module restart after UZB/RaZberry upgrade
