@@ -4100,24 +4100,70 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
 						defaults.metrics.title = compileTitle('Meter', defaults.metrics.probeTitle, vDevIdNI);
 
-						switch (scaleId) {
-							case 0:
-								defaults.probeType = 'meterElectric_kilowatt_hour';
+						// Check sensor type, can be: Electric, Gas, Water
+						switch (cc.data[scaleId].sensorType.value) {
+							// Electric meter
+							case 1:
+								switch (scaleId) {
+									case 0:
+										defaults.probeType = 'meterElectric_kilowatt_hour';
+										break;
+									case 1:
+										defaults.probeType = 'meterElectric_kilovolt_ampere_hour';
+										break;
+									case 2:
+										defaults.probeType = 'meterElectric_watt';
+										break;
+									case 3:
+										defaults.probeType = 'meterElectric_pulse_count';
+										break;
+									case 4:
+										defaults.probeType = 'meterElectric_voltage';
+										break;
+									case 5:
+										defaults.probeType = 'meterElectric_ampere';
+										break;
+									case 6:
+										defaults.probeType = 'meterElectric_power_factor';
+										break;
+									default:
+										break;
+								}
 								break;
+							// Gas meter
 							case 2:
-								defaults.probeType = 'meterElectric_watt';
+								switch (scaleId) {
+									case 0:
+										defaults.probeType = 'meterGas_cubic_meters';
+										break;
+									case 1:
+										defaults.probeType = 'meterGas_cubic_feet';
+										break;
+									case 3:
+										defaults.probeType = 'meterGas_pulse_count';
+										break;
+									default:
+										break;
+								}
 								break;
+							// Water meter
 							case 3:
-								defaults.probeType = 'meterElectric_pulse_count';
-								break;
-							case 4:
-								defaults.probeType = 'meterElectric_voltage';
-								break;
-							case 5:
-								defaults.probeType = 'meterElectric_ampere';
-								break;
-							case 6:
-								defaults.probeType = 'meterElectric_power_factor';
+								switch (scaleId) {
+									case 0:
+										defaults.probeType = 'meterWater_cubic_meters';
+										break;
+									case 1:
+										defaults.probeType = 'meterWater_cubic_feet';
+										break;
+									case 2:
+										defaults.probeType = 'meterWater_us_gallons';
+										break;
+									case 3:
+										defaults.probeType = 'meterWater_pulse_count';
+										break;
+									default:
+										break;
+								}
 								break;
 							default:
 								break;
