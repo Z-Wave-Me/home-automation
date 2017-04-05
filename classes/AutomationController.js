@@ -2562,7 +2562,8 @@ AutomationController.prototype.loadMainLang = function (pathPrefix) {
 
 AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
     var img = ["png","jpg","jpeg","JPG","JPEG","gif"],
-        text = ["css","htm","html","shtml","js","txt","rtf","xml"],
+        text = ["css","js","txt","rtf","xml"],
+        html = ["htm","html","shtml"],
         video = ["mpeg","mpg","mpe","qt","mov","viv","vivo","avi","movie","mp4"],
         fe,
         resObject = {
@@ -2580,6 +2581,10 @@ AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
         
         if(text.indexOf(fe) > -1){
             resObject.ct = "text/(css|html|javascript|plain|rtf|xml)";
+        }
+
+        if(html.indexOf(fe) > -1){
+            resObject.ct = "text/html";
         }
 
         if(video.indexOf(fe) > -1){
