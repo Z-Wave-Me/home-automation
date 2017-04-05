@@ -41,6 +41,8 @@
 		"getterPollInterval_switchMultilevel": 0,
 
 		"method": "GET",
+        "contentType": "application/x-www-form-urlencoded",
+        "data":"",
 
 		"updateOnAction": false,
 
@@ -147,13 +149,19 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"method": {
 				"type": "string",
 				"required": true,
 				"enum": ["GET", "POST"]
 			},
-
+			"contentType": {
+                "type": "string",
+                "required": true
+            },
+            "data":{
+                "type": "string",
+                "required": false
+            },
 			"updateOnAction": {
 				"type": "boolean",
 				"required": true,
@@ -304,12 +312,18 @@
 					"deviceType": "switchMultilevel"
 				}
 			},
-
 			"method": {
 				"label": "__l_method__",
 				"type": "select"
 			},
-
+            "contentType": {
+                "label": "__l_contentType__",
+                "helper": "__h_contentType__"
+            },
+            "data":{
+                "label": "__l_data__",
+                "helper": "__h_data__"
+            },
 			"updateOnAction": {
 				"type": "checkbox",
 				"rightLabel": "__rl_updateOnAction__",
