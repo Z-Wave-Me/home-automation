@@ -132,7 +132,7 @@ InbandNotifications.prototype.init = function (config) {
                             if (!~devProbeType.indexOf('meterElectric_')){
                                 msg = {
                                     dev: devName,
-                                    l: lvl + ' ' + scaleUnit
+                                    l: lvl + scaleUnit? ' ' + scaleUnit: ''
                                 };
                                 msgType = 'device-' + eventType();
 
