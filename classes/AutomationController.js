@@ -2753,25 +2753,15 @@ AutomationController.prototype.getRemoteId = function() {
                 checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
             } catch (er) {
                 console.log('Something went wrong. Reading remote id has failed. Error:' + er.message);
-                throw {
-                    name: "service-error",
-                    message: "Something went wrong. Reading remote id has failed. Error:" + er.message
-                };
             }
         }
         if(checkIfTypeError) {
-            throw {
-                name: "service-error",
-                message: "Something went wrong. Reading remote id has failed."
-            };
+            console.log('Something went wrong. Reading remote id has failed.');
         } else {
             result = zbw.getUserId();
         }
     } else {
-        throw {
-            name: "service-not-available",
-            message: "Reading remote id has failed. Service is not available."
-        };
+        console.log('Reading remote id has failed. Service is not available.');
     }
 
     return result;
