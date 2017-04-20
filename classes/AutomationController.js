@@ -1505,7 +1505,8 @@ AutomationController.prototype.addLocation = function (locProps, callback) {
             title: locProps.title,
             user_img: locProps.user_img || '',
             default_img: locProps.default_img || '',
-            img_type: locProps.img_type || ''
+            img_type: locProps.img_type || '',
+            show_background: locProps.show_background || false
         };
            
         this.locations.push(location);
@@ -1550,7 +1551,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type, callback) {
+AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, callback) {
     var langFile = this.loadMainLang(),
         locations = this.locations.filter(function (location) {
             return location.id === id;
@@ -1560,6 +1561,7 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
         location = this.locations[this.locations.indexOf(locations[0])];
 
         location.title = title;
+        location.show_background = show_background;
         if (typeof user_img === 'string' && user_img.length > 0) {
             location.user_img = user_img;
         }
