@@ -107,6 +107,7 @@ PhilioHW.prototype.init = function (config) {
 }
 
 PhilioHW.prototype.stop = function () {
+    var self = this;
     // unsign event handlers
     this.controller.off("ZWave.register", this.zwayReg);
     this.controller.off("ZWave.unregister", this.zwayUnreg);

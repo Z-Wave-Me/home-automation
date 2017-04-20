@@ -1,7 +1,7 @@
 /*** HTTPDevice Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 2.0.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
@@ -159,7 +159,15 @@ HTTPDevice.prototype.update = function (vDev) {
                 console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
             } 
         };
-        // With authorization
+        // With Content type
+        req.headers = { "Content-Type": self.config.contentType }
+
+        // With Data
+        if (self.config.data) {
+            req.data = self.config.data;
+        }
+        
+        // With Authorization
         if (self.config.login && self.config.password) {
             req.auth = {
                     login: self.config.login,
@@ -189,6 +197,13 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
                 self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
             }
         };
+        // With Content type
+        req.headers = { "Content-Type": self.config.contentType }
+
+        // With Data
+        if (self.config.data) {
+            req.data = self.config.data.replace(/\$\$/g, subst);
+        }
         // With authorization
         if (self.config.login && self.config.password) {
             req.auth = {

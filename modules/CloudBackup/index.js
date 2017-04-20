@@ -1,10 +1,10 @@
 /*** CloudBackup Z-Way HA module *******************************************
 
- Version: 0.1.2 beta
+ Version: 0.1.3 beta
  (c) Z-Wave.Me, 2016
  -----------------------------------------------------------------------------
  Author: Michael Hensche <mh@zwave.eu>
- Description:
+ Description: Gives possibility to upload and store your backups on the remote server.
 
  ******************************************************************************/
 
@@ -21,9 +21,9 @@ CloudBackup.prototype.init = function(config) {
     CloudBackup.super_.prototype.init.call(this, config);
 
     this.moduleName = "CloudBackup";
-    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate"; //"http://192.168.10.254/dev/cloudbackup/?uri=backupcreate";//"https://service.z-wave.me/cloudbackup/?uri=backupcreate";
-    this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate"; //"http://192.168.10.254/dev/cloudbackup/?uri=usercreate";//"https://service.z-wave.me/cloudbackup/?uri=usercreate";
-    this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate"; //"http://192.168.10.254/dev/cloudbackup/?uri=userupdate";//"https://service.z-wave.me/cloudbackup/?uri=userupdate";
+    this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate";
+    this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate";
+    this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate";
 
     var self = this,
         langFile = self.controller.loadModuleLang(this.moduleName);
@@ -110,7 +110,7 @@ CloudBackup.prototype.init = function(config) {
         this.userUpdate();
     }
 
-    if(self.config.scheduler !== "0") { // manual
+    if(self.config.scheduler !== "0" && self.config.user_active == true) { // manual
         this.updateTask();
     } else {
         this.controller.emit("cron.removeTask", "CloudBackup.upload");

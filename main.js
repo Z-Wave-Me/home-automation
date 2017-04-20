@@ -26,7 +26,7 @@ executeFile("updateBackendConfig.js");
 __saveObject = saveObject;
 __storageContent = loadObject("__storageContent") || [];
 saveObject = function(name, object) {
-    if (__storageContent.indexOf(name) === -1) {
+    if (__storageContent.indexOf(name) === -1 && !!name) {
         __storageContent.push(name);
         __saveObject("__storageContent", __storageContent);
     }

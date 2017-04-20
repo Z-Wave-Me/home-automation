@@ -2562,7 +2562,8 @@ AutomationController.prototype.loadMainLang = function (pathPrefix) {
 
 AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
     var img = ["png","jpg","jpeg","JPG","JPEG","gif"],
-        text = ["css","htm","html","shtml","js","txt","rtf","xml"],
+        text = ["css","js","txt","rtf","xml"],
+        html = ["htm","html","shtml"],
         video = ["mpeg","mpg","mpe","qt","mov","viv","vivo","avi","movie","mp4"],
         fe,
         resObject = {
@@ -2580,6 +2581,10 @@ AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
         
         if(text.indexOf(fe) > -1){
             resObject.ct = "text/(css|html|javascript|plain|rtf|xml)";
+        }
+
+        if(html.indexOf(fe) > -1){
+            resObject.ct = "text/html";
         }
 
         if(video.indexOf(fe) > -1){
@@ -2748,25 +2753,15 @@ AutomationController.prototype.getRemoteId = function() {
                 checkIfTypeError = zbw.getUserId() instanceof TypeError? true : false;
             } catch (er) {
                 console.log('Something went wrong. Reading remote id has failed. Error:' + er.message);
-                throw {
-                    name: "service-error",
-                    message: "Something went wrong. Reading remote id has failed. Error:" + er.message
-                };
             }
         }
         if(checkIfTypeError) {
-            throw {
-                name: "service-error",
-                message: "Something went wrong. Reading remote id has failed."
-            };
+            console.log('Something went wrong. Reading remote id has failed.');
         } else {
             result = zbw.getUserId();
         }
     } else {
-        throw {
-            name: "service-not-available",
-            message: "Reading remote id has failed. Service is not available."
-        };
+        console.log('Reading remote id has failed. Service is not available.');
     }
 
     return result;
@@ -2775,18 +2770,3 @@ AutomationController.prototype.getRemoteId = function() {
 AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
     return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
 };
-
-AutomationController.prototype.isCIT = function () {
-    var cit = false;
-
-    try {
-        var bT = system('cat /etc/z-way/box_type');
-
-        bT.forEach(function(bType){
-            cit = typeof bType === 'string' && (bType.indexOf('cit') > -1 || bType === 'cit')? true : false;
-        });
-    } catch (e) {
-    }
-
-    return cit;
-}
