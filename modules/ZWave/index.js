@@ -319,8 +319,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		opacket = this.opacket,
         cmdClasses = this.cmdClasses,
         cmdC = cmdClasses.zw_classes.cmd_class,
-        nodeid = zway.controller.data.nodeId.value,
-        boxTypeIsCIT = false;
+        nodeid = zway.controller.data.nodeId.value;
 
 	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
 	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
@@ -456,10 +455,8 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	zway.controller.data.outgoingPacket.bind(outH);
 
-    boxTypeIsCIT = checkBoxtype('cit');
-
-    //check if controller version is >= 05.20 or type is cit
-    if (boxTypeIsCIT || !has_higher_version('05.20', zway.controller.data.APIVersion.value)) {
+    //check if controller supports background rssi
+    if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
         this.timer = setInterval(function() {
             try {
                 var data = loadObject("rssidata.json");
@@ -1463,36 +1460,48 @@ ZWave.prototype.defineHandlers = function () {
 
         try {
 
-            var par = url.split("/")[1];
+            //check if controller supports background rssi
+            if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+                var par = url.split("/")[1];
 
-            if (par == "realtime") {
+                if (par == "realtime") {
 
-                data = ZWave.prototype.rssiData();
+                    data = ZWave.prototype.rssiData();
 
-                body.data = data;
+                    body.data = data;
 
-            } else {
-                body.data = loadObject('rssidata.json');
-            }
+                } else {
+                    body.data = loadObject('rssidata.json');
+                }
 
-            if (!!body.data) {
+                if (!!body.data) {
 
-                return {
-                    headers: headers,
-                    status: 200,
-                    body: body
-                };
-            } else {
+                    return {
+                        headers: headers,
+                        status: 200,
+                        body: body
+                    };
+                } else {
 
+                    body.code = 404;
+                    body.message = '404 Not Found';
+
+                    return {
+                        headers: headers,
+                        status: 404,
+                        body: body
+                    };
+                }
+			} else {
                 body.code = 404;
-                body.message = '404 Not Found';
+                body.message = 'This function is not supported by controller.';
 
                 return {
                     headers: headers,
                     status: 404,
                     body: body
                 };
-            }
+			}
         } catch (e) {
             return {
                 headers: headers,
