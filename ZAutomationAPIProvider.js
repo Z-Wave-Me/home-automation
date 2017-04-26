@@ -691,6 +691,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             user_img,
             default_img,
             img_type,
+            show_background,
             reply = {
                 error: null,
                 data: null,
@@ -713,10 +714,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 user_img =reqObj.user_img || '';
                 default_img = reqObj.default_img || '';
                 img_type = reqObj.img_type || '';
+                show_background = reqObj.show_background || false;
             }
 
             if (!!title && title.length > 0) {
-                this.controller.updateLocation(id, title, user_img, default_img, img_type, function (data) {
+                this.controller.updateLocation(id, title, user_img, default_img, img_type,show_background, function (data) {
                     if (data) {
                         reply.data = data;
                     } else {
