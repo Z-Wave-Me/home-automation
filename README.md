@@ -1,5 +1,5 @@
-Z-Way Home Automation Engine v2.3.1
-=================================
+Z-Way Home Automation Engine v2.3.4
+====================================
 
 # Introduction #
 [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Z-Wave-Me/home-automation?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -11,17 +11,17 @@ Z-Way Home Automation Engine v2.3.1
 ## Pull Requests
 For a better integration during running developments, please use [Home Automation develop branch](https://github.com/Z-Wave-Me/home-automation/tree/develop) for your pull requests.
 
-##Home Automation Documentation's : 
+## Home Automation Documentation's : 
 * https://github.com/Z-Wave-Me/home-automation/wiki
 * [Z-Wave.Me Developers Documentation](https://github.com/Z-Wave-Me/Z-Way-Manual/raw/master/zwayDev.pdf) (PDF)
 * see also documentations on [http://razberry.z-wave.me](http://razberry.z-wave.me/index.php?id=5) for more information
 
-##API Documentation:
-####ZAutomation:
+## API Documentation:
+#### ZAutomation:
 * http://docs.zwayhomeautomation.apiary.io/ (still in work)
-#####TODO - ZWaveAPI
+##### TODO - ZWaveAPI
 
-##Issues, bugs and feature requests are welcome: 
+## Issues, bugs and feature requests are welcome: 
 * [Home Automation issues](https://github.com/Z-Wave-Me/home-automation/issues)
 * [Smart Home UI issues](https://github.com/Z-Wave-Me/zwave-smarthome/issues)
 * [Expert UI issues](https://github.com/Z-Wave-Me/ExpertUI/issues)
