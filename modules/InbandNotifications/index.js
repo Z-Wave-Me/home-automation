@@ -163,10 +163,12 @@ InbandNotifications.prototype.init = function (config) {
 
         var now = new Date(),
             startOfDay = now.setHours(0,0,0,0),
-            tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6;
+            s_tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6, // fallback for older versions
+            ms_tsSevenDaysBefore = Math.floor(startOfDay) - 86400000*6;
 
         self.controller.notifications = _.filter(self.controller.notifications, function (n) {
-           return n.id >= tsSevenDaysBefore;
+           return (n.id.toString().length <= 10 && n.id >= s_tsSevenDaysBefore) ||
+                    (n.id.toString().length > 10 && n.id >= ms_tsSevenDaysBefore);
         });
 
         console.log('---------- all notifications older than 7 days deleted ----------');
@@ -184,6 +186,8 @@ InbandNotifications.prototype.init = function (config) {
     self.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
     self.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 
+    //initial cleanup of all notifications
+    self.onPollDeleteNotifications();
     // initial saving of notifications
     self.controller.saveNotifications();
 };
