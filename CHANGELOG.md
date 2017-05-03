@@ -1,4 +1,4 @@
-# v2.3.2
+# 18.04.2017 v2.3.4
 Changes:
 * NetworkReorganization API refactored
 * widget CloudBackup instruction
