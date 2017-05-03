@@ -1701,6 +1701,11 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 			var result = "in progress";
+			
+			if (zway.controller.data.SDK.value === null) {
+				console.log("Unknown SDK version - update Z-Way");
+				throw "Unknown SDK version - update Z-Way";
+			}
 
 			if (data.file && data.file.content) {
 				var buf = new ArrayBuffer(data.file.content.length);
@@ -1714,6 +1719,8 @@ ZWave.prototype.defineHandlers = function () {
 					zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
 					||
 					zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+					||
+					parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71 // bootloader for 6.71 SDK
 				    ,
 				    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
 				    data = bootloader_6_70 ? buf : buf.slice(0x1800);
@@ -1745,6 +1752,8 @@ ZWave.prototype.defineHandlers = function () {
 							zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
 							||
 							zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+							||
+							parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71 // bootloader for 6.71 SDK
 						    ,
 						    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
 						    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
