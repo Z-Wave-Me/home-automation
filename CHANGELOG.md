@@ -7,7 +7,7 @@ Features:
 * ZWave: 
   * Added support of probeType GAS and WATER
   
-#27.03.2017 v2.3.1
+# 27.03.2017 v2.3.1
 Changes:
 * Added Z-Wave module restart after UZB/RaZberry upgrade
 * box reboot refactored
@@ -50,7 +50,7 @@ Modules:
 * Correct value 
   * added
 
-#27.01.2017 v2.3.0
+# 27.01.2017 v2.3.0
 Changes:
 * Added password field to all modules which use password field
 * pull request #385 from pathec/patch-websocket
@@ -151,10 +151,10 @@ Modules:
 * DummyDevice 1.0.1
   * bugfix: NaN on switchMultilevel initialization
   
-#10.11.2016 v2.2.5
+# 10.11.2016 v2.2.5
 * some performance enhancements in CommunicationLogger and CommunicationHistory
 
-#21.10.2016 v2.2.4
+# 21.10.2016 v2.2.4
 
 Changes:
 * pull request #372
@@ -215,7 +215,7 @@ Fixes:
 * ScheduledScene:
  * fixed bug after adding locks to the list of actions
 
-#12.07.2016 v2.2.3
+# 12.07.2016 v2.2.3
 
 Changes:
 * Allowing Basic Authentication for Ajax Requests
@@ -246,7 +246,7 @@ Modules:
 * PhilioHW: vDev added, batery charge timer
 * ZWave: alarm probeTypes changed, tamper probe type added, renamed 'door' probe type into 'door-window'
 
-#11.04.2016 v2.2.2
+# 11.04.2016 v2.2.2
 
 New features:
 * Reset to factory default (load default config, clear storage and userModules, set z-Way controller back to factory default, logout if succesful).
@@ -312,7 +312,7 @@ Debugging tools:
 * Default config in automation/defaultConfigs/config.json for factory reset. Can be used to revert to factory default after screwing up.
 
 
-#18.02.2016 v2.2.1
+# 18.02.2016 v2.2.1
 
 UI:
 * Enhanced display on mobile devices and tablets.
@@ -356,7 +356,7 @@ API changes:
 * Enable SIS on secondary controller after exclusion
 
 
-#12.12.2015 v2.2.0
+# 12.12.2015 v2.2.0
 
 UI:
 * Initial page forces to change default password and add email for password recovery. Password recovery by mail.
@@ -425,7 +425,7 @@ API changes:
 * lastExcludedDevice is now updated AFTER device complete removal and is now also updated in RemoveFailed success callback.
 
 
-#04.09.2015 v2.1.1
+# 04.09.2015 v2.1.1
 
 Command Classes:
 * MCAv3 implementation added.
@@ -462,7 +462,7 @@ UI:
 * Many improvements in Smart Home UI and Expert UI.
 
 
-#28.06.2015 v2.0.1
+# 28.06.2015 v2.0.1
 
 Command Classes:
 * MultiCmd MaxNum changed to 6
@@ -487,7 +487,7 @@ UI:
 * Removed UI selector page, access is possible via direct link or Info Widget
 
 
-#29.05.2015 v2.0.1-rc33
+# 29.05.2015 v2.0.1-rc33
 
 Command Classes:
 * Make Basic CC mandatory in Secure NIF too
@@ -527,7 +527,7 @@ UI:
 * Made new Smart Home UI as default HA.
 
 
-#03.02.2015 v2.0.1-rc15
+# 03.02.2015 v2.0.1-rc15
 
 Z-Wave Plus certified for US (Certification Number ZC10-15010005).
 
@@ -585,7 +585,7 @@ API changes:
 * WebSocket API changed: event type added. Server can filter events based on this type before sending to clients.
 
 
-#21.11.2014 v2.0.0
+# 21.11.2014 v2.0.0
 
 Z-Wave Plus certified for EU (Certification Number ZC10-14110009).
 Z-Way can work as primary and as secondary controller (to work with other Z-Wave controllers).
@@ -656,7 +656,7 @@ WebServer features:
 * WebSockets clients can receive notification from WebServer via webserver.push(obj) method
 
 
-#26.07.2014 v1.7.2
+# 26.07.2014 v1.7.2
 
 Fixes and improvements:
 * Fix auth parameter in http.request()
@@ -708,7 +708,7 @@ Debugger:
  Then you can connect either with d8 (./d8*-remote_debugger*-debugger_port=8183) or with node-inspector*-debug-port 8183.
 
 
-#23.05.2014 v1.7.0
+# 23.05.2014 v1.7.0
 
 Fixes and improvements
 * Check connectivity button fixed (NoOperation is not removed by Force Interview now).
@@ -747,7 +747,7 @@ New features:
 * Remote Access and 8084 port for maintainance added to the distribution.
 
 
-#13.02.2014 v1.5.0-rc1
+# 13.02.2014 v1.5.0-rc1
 
 New features:
 * XML parser in JavaScript with XPath (ZXmlDocument JS object).
@@ -769,7 +769,7 @@ Minor change in the API:
 * SwitchBinary level dataholder made boolean.
 
 
-#23.10.2013 v1.4.1
+# 23.10.2013 v1.4.1
 
 New Command Classes are implemented:
 * Alarm CC V1-3 supported (no expert UI yet).
@@ -787,7 +787,7 @@ Fixes:
 * Minor bug fixes
 
 
-#24.09.2013 v1.4
+# 24.09.2013 v1.4
 
 All available UIs are shipped included now. Go to /index.html page to select a UI:
 * future UI (in development)
@@ -834,13 +834,13 @@ NB! After backup & restore process it is recommended to re-install Z-Way (using 
 Otherwise it might not run next time after restore. (due to old config/Defaults.xml comming from old package).
 
  
-#19.05.2013 v1.3.1
+# 19.05.2013 v1.3.1
 
 New feature:
 * Backup/Restore implemented. You can restore config files only or full Z-Wave topology.
  
 
-#17.05.2013 v1.3
+# 17.05.2013 v1.3
 
 New features and improvements:
 * Full Security support with all certified locks (tested with Kwikset, Vision Security, Yale)
@@ -874,7 +874,7 @@ Major changes in software design:
 !NB Some devices might require interview force to show properly Expert Commands and configuration parameters!
  
 
-#29.03.2013 v1.2
+# 29.03.2013 v1.2
 
 New Command Classes:
 * SenorMultilevel V5 support (NB! Structure of SenorMultilevel data holder changed for all versions of this Command Class)
@@ -890,7 +890,7 @@ Fixes:
 * More sanity checks to prevent crashes
  
 
-#04.03.2013 v1.1
+# 04.03.2013 v1.1
 
 New features:
 * Z-Wave secure door locks support

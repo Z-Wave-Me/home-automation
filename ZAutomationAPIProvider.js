@@ -153,9 +153,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);
+        this.router.post("system/time/ntp/:action", this.ROLE.ADMIN, this.configNtp);
+
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
         this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
+
         this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
         this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
     },
@@ -2969,7 +2972,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             if(reqObj.password !== '') {
                 if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
-                    retPp = system("sh /opt/z-way-server/automation/lib/configAP.sh setPp " + reqObj.password);
+                    retPp = system("sh automation/lib/configAP.sh setPp " + reqObj.password);
                 } else {
                     reply.error = "Password must between 8 and 63 characters long.";
                     return reply;
@@ -2979,13 +2982,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             if(reqObj.ssid !== '') {
-                retSsid = system("sh /opt/z-way-server/automation/lib/configAP.sh setSsid " + reqObj.ssid);
+                retSsid = system("sh automation/lib/configAP.sh setSsid " + reqObj.ssid);
             } else {
                 retSsid[1] = "";
             }
 
             if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
-                var retR = system("sh /opt/z-way-server/automation/lib/configAP.sh reload");
+                var retR = system("sh automation/lib/configAP.sh reload");
                 if(retR[1].indexOf("Done") !== -1 ) {
                     reply.error = null;
                     reply.data = "OK";
@@ -3009,7 +3012,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         try {
 
-            var retSsid = system("sh /opt/z-way-server/automation/lib/configAP.sh getSsid");
+            var retSsid = system("sh automation/lib/configAP.sh getSsid");
 
             console.log(retSsid);
             var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
@@ -3018,6 +3021,38 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         } catch(e) {
             console.log("Error: ", e);
+        }
+
+        return reply;
+    },
+    configNtp: function(action) {
+        var reply = {
+                error: "Internal Server Error",
+                data: null,
+                code: 500
+            },
+            actions = ["stop","start","restart","disable","enable","reconfigure"];
+
+        if (fs.stat('lib/ntp.sh')) {
+            try {
+                if (actions.indexOf(action) > -1) {
+                    res = system("sh automation/lib/ntp.sh " + action);
+
+                    reply.data = res[1]? res[1] : res;
+                    reply.code = 200;
+                    reply.error = null;
+
+                } else {
+                    reply.error = 'Bad Request. Allowed are "stop", "start", "restart", "disable", "enable" and "reconfigure".';
+                    reply.code = 400;
+                }
+            } catch(e) {
+                console.log(e.toString());
+                reply.error = 'Internal Server Error. ' + e.toString();
+            }
+        } else {
+            reply.error = 'Not Implemented';
+            reply.code = 501;
         }
 
         return reply;

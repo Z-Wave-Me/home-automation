@@ -980,12 +980,12 @@ ZWave.prototype.defineHandlers = function () {
 
 		if (logAvailable) {
 			//grep log and add to config/map
-			system("sh /opt/z-way-server/automation/lib/fetchLog.sh getLog " + lines);
+			system("sh automation/lib/fetchLog.sh getLog " + lines);
 
             data = createBackup();
 
 			//cleanup log's in config/map directory
-			system("sh /opt/z-way-server/automation/lib/fetchLog.sh removeLog");
+			system("sh automation/lib/fetchLog.sh removeLog");
 		} else {
             data = createBackup();
 		}
