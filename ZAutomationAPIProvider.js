@@ -153,7 +153,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
         this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);
-        this.router.post("system/time/ntp/:action", this.ROLE.ADMIN, this.configNtp);
+        this.router.get("system/time/ntp/:action", this.ROLE.ADMIN, this.configNtp);
 
         this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
         this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
@@ -2957,8 +2957,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         return reply;
     },
     setWifiSettings: function() {
-        var self = this,
-            reply = {
+        var reply = {
                 error: "Wifi setup failed!",
                 data: null,
                 code: 500
@@ -2967,60 +2966,71 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             retSsid = [],
             retR = [];
 
-        try {
-            reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+        if (fs.stat('lib/configAP.sh')) {
+            try {
+                reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
 
-            if(reqObj.password !== '') {
-                if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
-                    retPp = system("sh automation/lib/configAP.sh setPp " + reqObj.password);
+                if(reqObj.password !== '') {
+                    if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
+                        retPp = system("sh automation/lib/configAP.sh setPp " + reqObj.password);
+                    } else {
+                        reply.error = "Password must between 8 and 63 characters long.";
+                        return reply;
+                    }
                 } else {
-                    reply.error = "Password must between 8 and 63 characters long.";
-                    return reply;
+                    retPp[1] = "";
                 }
-            } else {
-                retPp[1] = "";
-            }
 
-            if(reqObj.ssid !== '') {
-                retSsid = system("sh automation/lib/configAP.sh setSsid " + reqObj.ssid);
-            } else {
-                retSsid[1] = "";
-            }
-
-            if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
-                var retR = system("sh automation/lib/configAP.sh reload");
-                if(retR[1].indexOf("Done") !== -1 ) {
-                    reply.error = null;
-                    reply.data = "OK";
-                    reply.code = 200;
+                if(reqObj.ssid !== '') {
+                    retSsid = system("sh automation/lib/configAP.sh setSsid " + reqObj.ssid);
+                } else {
+                    retSsid[1] = "";
                 }
-            }
 
-        } catch(e) {
-            console.log("Error: ", e);
+                if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
+                    retR = system("sh automation/lib/configAP.sh reload");
+                    if(retR[1].indexOf("Done") !== -1 ) {
+                        reply.error = null;
+                        reply.data = "OK";
+                        reply.code = 200;
+                    }
+                }
+
+            } catch(e) {
+                console.log(e.toString());
+                reply.error = 'Internal Server Error. ' + e.toString();
+            }
+        } else {
+            reply.error = 'Not Implemented';
+            reply.code = 501;
         }
 
         return reply;
     },
     getWifiSettings: function() {
-        var self = this,
-            reply = {
+        var reply = {
                 error: null,
                 data: null,
                 code: 500
             };
 
-        try {
+        if (fs.stat('lib/configAP.sh')) {
+            try {
 
-            var retSsid = system("sh automation/lib/configAP.sh getSsid");
+                var retSsid = system("sh automation/lib/configAP.sh getSsid");
 
-            console.log(retSsid);
-            var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
-            reply.code = 200;
-            reply.data = {"ssid": ssid};
+                console.log(retSsid);
+                var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
+                reply.code = 200;
+                reply.data = {"ssid": ssid};
 
-        } catch(e) {
-            console.log("Error: ", e);
+            } catch(e) {
+                console.log(e.toString());
+                reply.error = 'Internal Server Error. ' + e.toString();
+            }
+        } else {
+            reply.error = 'Not Implemented';
+            reply.code = 501;
         }
 
         return reply;
@@ -3031,19 +3041,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            actions = ["stop","start","restart","disable","enable","reconfigure"];
+            actions = ["status","stop","start","restart","disable","enable","reconfigure"];
 
         if (fs.stat('lib/ntp.sh')) {
             try {
                 if (actions.indexOf(action) > -1) {
-                    res = system("sh automation/lib/ntp.sh " + action);
+                    res = system("./automation/lib/ntp.sh " + action);
 
-                    reply.data = res[1]? res[1] : res;
+                    if (action === 'status' && res[1]) {
+                        reply.data = JSON.parse(res[1]);
+                    } else {
+                        reply.data = res[1]? res[1] : res;
+                    }
+
                     reply.code = 200;
                     reply.error = null;
 
                 } else {
-                    reply.error = 'Bad Request. Allowed are "stop", "start", "restart", "disable", "enable" and "reconfigure".';
+                    reply.error = 'Bad Request. Allowed are: ' + actions.toString();
                     reply.code = 400;
                 }
             } catch(e) {
