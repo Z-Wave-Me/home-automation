@@ -1581,7 +1581,7 @@ ZWave.prototype.defineHandlers = function () {
 			var manufacturerId = fwUpdate.data.manufacturerId.value;
 			var firmwareId = fwUpdate.data.firmwareId.value;
 
-			if (!manufacturerId || !firmwareId) {
+			if (!manufacturerId && manufacturerId !== 0 || !firmwareId && firmwareId !== 0) {
 				throw "Either manufacturer or firmware id is not present";
 			}
 
