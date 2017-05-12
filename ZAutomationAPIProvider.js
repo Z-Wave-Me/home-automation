@@ -3041,12 +3041,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            actions = ["status","stop","start","restart","disable","enable","reconfigure"];
+            actions = ["status","stop","start","restart","disable","enable","reconfigure","setDateTime"],
+            dt_regex = /[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/;
 
         if (fs.stat('lib/ntp.sh')) {
             try {
-                if (actions.indexOf(action) > -1) {
-                    res = system("./automation/lib/ntp.sh " + action);
+                reqObj = typeof this.req.query === "string" ? JSON.parse(this.req.query) : this.req.query;
+
+                if (actions.indexOf(action) > -1 || (action == 'setDateTime' && reqObj.dateTime && dt_regex.exec(reqObj.dateTime))) {
+
+                    res = system("./automation/lib/ntp.sh " + action + (action == 'setDateTime'? " '" + reqObj.dateTime + "'" : ""));
 
                     if (action === 'status' && res[1]) {
                         reply.data = JSON.parse(res[1]);
@@ -3058,7 +3062,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.error = null;
 
                 } else {
-                    reply.error = 'Bad Request. Allowed are: ' + actions.toString();
+                    reply.error = 'Bad Request. Allowed are: ' + actions.toString() + '?dateTime=yyyy-mm-dd hh:mm';
                     reply.code = 400;
                 }
             } catch(e) {
