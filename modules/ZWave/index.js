@@ -86,6 +86,14 @@ ZWave.prototype.updateList = function() {
 	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
 };
 
+ZWave.prototype.loadObject = function(name) {
+	return loadObject(this.config.name + "_" + name);
+};
+
+ZWave.prototype.saveObject = function(name, obj) {
+	saveObject(this.config.name + "_" + name, obj);
+};
+
 ZWave.prototype.init = function (config) {
 	ZWave.super_.prototype.init.call(this, config);
 
@@ -99,11 +107,11 @@ ZWave.prototype.init = function (config) {
 		this.postfix = updatedPostfix; 
 	}
 
-	this.expert_config = loadObject("expertconfig.json");
+	this.expert_config = this.loadObject("expertconfig.json");
 
 	if(!!!this.expert_config) {
 		this.expert_config = self.default_expert_config;
-		saveObject("expertconfig.json", this.expert_config);
+		this.saveObject("expertconfig.json", this.expert_config);
 	}
 
 	this.cmdClasses = this.loadModuleJSON("cmd_classes.json");
@@ -118,7 +126,7 @@ ZWave.prototype.init = function (config) {
         lastUpdate: null,
         packets: []
     };
-    this.originPackets = loadObject('originPackets.json') || {
+    this.originPackets = this.loadObject('originPackets.json') || {
         incoming: [],
         outgoing: []
     }
@@ -347,7 +355,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
             data.id = pId;
 
-			console.debug("######### incoming ID:", data.id);
+            console.debug("######### incoming ID:", data.id);
 
             iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
             //console.debug('####=======>>## iPacketBuffer:', iPacketBuffer.packets);
@@ -357,7 +365,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
         if (ipacket.length >= 50) {
 
-            var _ipacket = loadObject("incomingPacket.json");
+            var _ipacket = self.loadObject("incomingPacket.json");
 
             if (_ipacket === null) {
                 _ipacket = [];
@@ -372,7 +380,7 @@ ZWave.prototype.CommunicationLogger = function() {
 				});
             }
 
-            saveObject("incomingPacket.json", _ipacket);
+            this.saveObject("incomingPacket.json", _ipacket);
 
             ipacket = [];
         }
@@ -386,7 +394,7 @@ ZWave.prototype.CommunicationLogger = function() {
                 })
             }
 
-            saveObject("originPackets.json", originPackets);
+            this.saveObject("originPackets.json", originPackets);
         }
 
 	};
@@ -420,7 +428,7 @@ ZWave.prototype.CommunicationLogger = function() {
         }
 
         if(opacket.length >= 50) {
-            var _opacket = loadObject("outgoingPacket.json");
+            var _opacket = self.loadObject("outgoingPacket.json");
 
             if(_opacket === null) {
                 _opacket = [];
@@ -435,7 +443,7 @@ ZWave.prototype.CommunicationLogger = function() {
 				});
             }
 
-            saveObject("outgoingPacket.json", _opacket);
+            this.saveObject("outgoingPacket.json", _opacket);
 
             opacket = [];
         }
@@ -449,7 +457,7 @@ ZWave.prototype.CommunicationLogger = function() {
                 })
             }
 
-            saveObject("originPackets.json", originPackets);
+            this.saveObject("originPackets.json", originPackets);
         }
 	};
 
@@ -459,7 +467,7 @@ ZWave.prototype.CommunicationLogger = function() {
     if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
         this.timer = setInterval(function() {
             try {
-                var data = loadObject("rssidata.json");
+                var data = self.loadObject("rssidata.json");
 
                 data = self.rssiData(data);
 
@@ -471,7 +479,7 @@ ZWave.prototype.CommunicationLogger = function() {
                     });
                 }
 
-                saveObject("rssidata.json", data);
+                this.saveObject("rssidata.json", data);
             } catch (e) {
                 console.log('Cannot fetch background RSSI. Error:', e.message);
             }
@@ -535,8 +543,10 @@ ZWave.prototype.CommunicationLogger = function() {
             _cmdClass = {},
 			encaps=[
 					'0x60.0x0D', // 'I' => Multichannel
+					'0x60.0x06', // 'I' => Multichannel
 					'0x8F.0x01', // 'M' => Multicommand
 					'0x98.0x81', // 'S' => Security
+					'0x98.0xC1', // 'S' => Security
 					'0x56.0x01'  // 'C' => CRC16
 			]
 			result= {
@@ -562,18 +572,23 @@ ZWave.prototype.CommunicationLogger = function() {
 					switch(capString) {
 						case '0x8F.0x01':
 							result.encap = 'M'; // Multi Cmd Encap
-							shift = 2; // shift by two to decode CC and CC Cmd
+							shift = 2; // shift to decode CC and CC Cmd
 							return;
 						case '0x98.0x81':
+						case '0x98.0xC1':
 							result.encap = 'S'; // Security Encap
 							return;
 						case '0x56.0x01':
-							result.encap = 'C'; // CR16Encap
-							shift = 2; // shift by two to decode CC and CC Cmd
+							result.encap = 'C'; // CR16 Encap
+							shift = 2; // shift to decode CC and CC Cmd
+							return;
+						case '0x60.0x06':
+							result.encap = 'I'; // Multi Instance Encap
+							shift = 3; // shift to decode CC and CC Cmd
 							return;
 						case '0x60.0x0D':
-							result.encap = 'I'; // Multi Channel Multi Instance Encap
-							shift = 4; // shift by two to decode CC and CC Cmd
+							result.encap = 'I'; // Multi Channel Encap
+							shift = 4; // shift to decode CC and CC Cmd
 							return;
 					}
 				}
@@ -582,7 +597,6 @@ ZWave.prototype.CommunicationLogger = function() {
 			}
 		});
 
-		// shift by two if encap was found
         if (packet.length >= 6 && packetType === 'out') {
             cmdClassKey = hexPString[5 + shift];
             cmdKey = hexPString[6  + shift];
@@ -742,6 +756,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CreateZDDX", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".PacketLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RSSIGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".TestNode", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -778,6 +793,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CreateZDDX");
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".CommunicationHistory");
+	ws.revokeExternalAccess(_name + ".PacketLog");
 	ws.revokeExternalAccess(_name + ".Zniffer");
 	ws.revokeExternalAccess(_name + ".RSSIGet");
 	ws.revokeExternalAccess(_name + ".TestNode");
@@ -1345,8 +1361,8 @@ ZWave.prototype.defineHandlers = function () {
                 "updateTime": null,
                 "data": []
             },
-            _ipacket = loadObject("incomingPacket.json"),
-            _opacket = loadObject("outgoingPacket.json"),
+            _ipacket = this.loadObject("incomingPacket.json"),
+            _opacket = this.loadObject("outgoingPacket.json"),
             filterObj = null;
 
 		if (request.query && request.query.filter) {
@@ -1443,6 +1459,26 @@ ZWave.prototype.defineHandlers = function () {
         };
     }
 
+    this.ZWaveAPI.PacketLog = function() {
+        return {
+            status: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Authorization",
+                "Content-Type": "application/json",
+                "Connection": "keep-alive"
+            },
+            body: {
+                "code": 200,
+                "message": "200 OK",
+                "updateTime": Math.round((new Date()).getTime() / 1000),
+                data: loadObject('originPackets.json')
+            }
+        };
+    };
+
+
     this.ZWaveAPI.RSSIGet = function(url, request) {
         var headers = {
                 "Access-Control-Allow-Origin": "*",
@@ -1471,7 +1507,7 @@ ZWave.prototype.defineHandlers = function () {
                     body.data = data;
 
                 } else {
-                    body.data = loadObject('rssidata.json');
+                    body.data = self.loadObject('rssidata.json');
                 }
 
                 if (!!body.data) {
@@ -2150,7 +2186,7 @@ ZWave.prototype.defineHandlers = function () {
 				//if(expert_config.hasOwnProperty(keys[0])) {
 					_.assign(expert_config, reqObj);
 
-					saveObject("expertconfig.json", expert_config);
+					this.saveObject("expertconfig.json", expert_config);
 					return {
 						status: 200,
 						body: "Done"
@@ -2518,7 +2554,7 @@ ZWave.prototype.defineHandlers = function () {
         	self.reorgLog.push(entry);
 
             if (self.reorgLog.length > 0) {
-                saveObject('reorgLog', self.reorgLog);
+                self.saveObject('reorgLog', self.reorgLog);
 			}
 		}
 
@@ -2813,11 +2849,10 @@ ZWave.prototype.defineHandlers = function () {
                     "Connection": "close"
                 },
                 body: null
-            }
+            },
+            reorgLog = this.loadObject('reorgLog');
 
-		reorgLog = loadObject('reorgLog');
-
-		reply.body = !!reorgLog? reorgLog : [];
+        reply.body = !!reorgLog? reorgLog : [];
 
         return reply;
     }
