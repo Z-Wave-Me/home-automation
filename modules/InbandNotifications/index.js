@@ -1,6 +1,6 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.1.0
+Version: 1.0.6
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -57,6 +57,7 @@ InbandNotifications.prototype.init = function (config) {
             var devId = vDev.get('id'),
                 devType = vDev.get('deviceType'),
                 devProbeType = vDev.get('probeType'),
+                devLocation = vDev.get('location'),
                 devName = vDev.get('metrics:title'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
@@ -69,6 +70,13 @@ InbandNotifications.prototype.init = function (config) {
                 },
                 createItem = 0,
                 item, msg, msgType;
+
+            if (devLocation) {
+                var location = self.controller.getLocation(self.controller.locations, devLocation);
+                if (location) {
+                  devName = location.title + ' - ' + devName;
+                }
+            }
 
             if(lastChanges.filter(function(o){
                             return o.id === devId;
@@ -113,15 +121,6 @@ InbandNotifications.prototype.init = function (config) {
                                 dev: devName,
                                 l: lvl + '%'
                                 };
-                            msgType = 'device-status';
-
-                            self.controller.addNotification('device-info', msg , msgType, devId);
-                            break;
-                        case 'sensorDiscrete':
-                            msg = {
-                                dev: devName,
-                                l: lvl
-                            };
                             msgType = 'device-status';
 
                             self.controller.addNotification('device-info', msg , msgType, devId);
