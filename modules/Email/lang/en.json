@@ -1,0 +1,7 @@
+{
+        "m_title":"Email",
+        "m_descr":"Scene of send email. You must have sendmail or postfix or an equivalent mail program installed and setup in order to use this properly.",
+        "l_message":"Message",
+        "l_subject":"Subject",
+        "l_email":"Email Address"
+}

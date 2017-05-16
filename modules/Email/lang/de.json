@@ -1,0 +1,7 @@
+{
+        "m_title":"Email",
+        "m_descr":"Szene von E-Mail senden. Sie müssen sendmail oder postfix oder eine gleichwertige Mail-Programm installiert und eingerichtet haben, um dies richtig zu verwenden.",
+        "l_message":"Meldung",
+        "l_subject":"Subjekt",
+        "l_email":"E-Mail-Adresse"
+}

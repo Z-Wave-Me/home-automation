@@ -1,0 +1,53 @@
+{
+    "autoload": false,
+    "singleton": false,
+    "category": "environment",
+    "author": "James Millar",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "icon.png",
+    "version": "1.0.0",
+    "maturity": "stable",
+    "userView": true,
+    "defaults": {
+        "title": "__m_title__",
+        "description": "__m_descr__",
+        "units": "hPa",
+	    "city": "",
+        "country": ""
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "city": {
+                "type": "string",
+                "required": true
+            },
+            "country": {
+                "type": "string",
+                "required": true
+            },
+            "units": {
+                "type": "select",
+		"enum": ["hPa", "inHg"],
+                "required": true
+            }
+        },
+        "required": true
+    },
+    "options": {
+        "fields": {
+            "city": {
+                "label": "__l_city__",
+		"placeholder": "__p_city__"
+            },
+            "country": {
+                "label": "__l_country__",
+		"placeholder": "__p_country__"
+            },
+            "units": {
+                "label": "__l_units__",
+                "optionLabels": ["hPa", "inHg"]
+            }
+        }
+    }
+}

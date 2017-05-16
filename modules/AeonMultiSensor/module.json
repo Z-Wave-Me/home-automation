@@ -1,0 +1,203 @@
+{
+  "dependencies": [],
+  "singleton": false,
+  "category": "complex_applications",
+  "author": "Z-Wave.Me",
+  "homepage": "http://razberry.z-wave.me",
+  "icon": "icon.png",
+  "moduleName":"AeonMultiSensor",
+  "version": "1.0.0",
+  "maturity": "stable",
+  "repository": {
+    "type": "git",
+    "source": "https://github.com/Z-Wave-Me/home-automation"
+  },
+  "defaults": {
+    "title": "__m_title__",
+    "description": "__m_descr__",
+    "MotionSensor": null,
+    "Dimmer": null,
+    "Level": null,
+    "LuxValue": 20,
+    "HumValueLow": 60,
+    "HumValueHigh": 70,
+    "Day": {
+      "DayTimeStart": "05:00",
+      "DayTimeEnd": "21:59"
+    }
+  },
+  "schema": {
+    "type": "object",
+    "properties": {
+      "MotionSensor": {
+        "field": "enum",
+        "datasource": "namespaces",
+        "enum": "namespaces:devices_sensorBinary:deviceId",
+        "required": true
+      },
+      "Dimmer": {
+        "field": "enum",
+        "datasource": "namespaces",
+        "enum": "namespaces:devices_switchMultilevel:deviceId",
+        "required": true
+      },
+      "Level": {
+        "type": "number",
+        "required": true
+      },
+      "Luminosity": {
+        "type": "object",
+        "properties": {
+          "LuminositySensor": {
+            "field": "enum",
+            "datasource": "namespaces",
+            "enum": "namespaces:devices_sensorMultilevel:deviceId",
+            "required": false
+          },
+          "LuxValue": {
+            "type": "number",
+            "dependencies": "LuminositySensor",
+            "required": false
+          }
+        }
+      },
+      "Humidity": {
+        "type": "object",
+        "properties": {
+          "HumiditySensor": {
+            "field": "enum",
+            "datasource": "namespaces",
+            "enum": "namespaces:devices_sensorMultilevel:deviceId",
+            "required": false
+          },
+          "Switch": {
+            "field": "enum",
+            "dependencies": "HumiditySensor",
+            "datasource": "namespaces",
+            "enum": "namespaces:devices_switchBinary:deviceId",
+            "required": false
+          },
+          "HumValueLow": {
+            "type": "number",
+            "dependencies": "HumiditySensor",
+            "required": false
+          },
+          "HumValueHigh": {
+            "type": "number",
+            "dependencies": "HumiditySensor",
+            "required": false
+          }
+        }
+      },
+      "Day": {
+        "type": "object",
+        "properties": {
+          "DayTimeStart": {
+            "type": "string",
+            "required": true
+          },
+          "DayTimeEnd": {
+            "type": "string",
+            "required": true
+          }
+        }
+      }
+    },
+    "required": true
+  },
+  "options": {
+    "fields": {
+      "MotionSensor": {
+        "label": "__l_Motion_Sensor__",
+        "type": "select",
+        "datasource": "namespaces",
+        "field": "optionLabels",
+        "optionLabels": "namespaces:devices_sensorBinary:deviceName"
+      },
+      "Dimmer": {
+        "label": "__l_Dimmer__",
+        "type": "select",
+        "datasource": "namespaces",
+        "field": "optionLabels",
+        "optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+      },
+      "Level": {
+        "label": "__l_Dimmer_Level__",
+        "type": "number",
+        "minimum": 0,
+        "maximum": 99,
+        "required": true
+      },
+      "Luminosity": {
+        "label": "__l_Luminosity__",
+        "fields": {
+          "LuminositySensor": {
+            "label": "__l_Luminosity_Sensor__",
+            "type": "select",
+            "datasource": "namespaces",
+            "field": "optionLabels",
+            "optionLabels": "namespaces:devices_sensorMultilevel:deviceName",
+            "required": true
+          },
+          "LuxValue": {
+            "label": "__l_Luminosity_Value__",
+            "required": true,
+            "minimum": 0,
+            "maximum": 99
+          }
+        }
+      },
+      "Humidity": {
+        "label": "__l_Humidity_Sensor__",
+        "fields": {
+          "HumiditySensor": {
+            "label": "__l_Humidity_Value__",
+            "type": "select",
+            "datasource": "namespaces",
+            "field": "optionLabels",
+            "optionLabels": "namespaces:devices_sensorMultilevel:deviceName",
+            "required": false
+          },
+          "Switch": {
+            "label": "__l_Switch__",
+            "type": "select",
+            "datasource": "namespaces",
+            "field": "optionLabels",
+            "optionLabels": "namespaces:devices_switchBinary:deviceName"
+          },
+          "HumValueLow": {
+            "label": "__l_Hum_Value_Low__",
+            "required": false,
+            "minimum": 0,
+            "maximum": 99
+          },
+          "HumValueHigh": {
+            "label": "__l_Hum_Value_High__",
+            "required": false,
+            "minimum": 0,
+            "maximum": 99
+          }
+        }
+      },
+      "Day": {
+        "label": "__l_Day__",
+        "fields": {
+          "DayTimeStart": {
+            "label": "__l_Start__",
+            "type": "time",
+            "maskString": "99:99",
+            "timeFormat": "hh:mm",
+            "timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
+          },
+          "DayTimeEnd": {
+            "label": "__l_End__",
+            "type": "time",
+            "maskString": "99:99",
+            "timeFormat": "hh:mm",
+            "timeFormatRegex": "/^(([0-1][0-9])|([2][0-3])):([0-5][0-9])$/"
+          }
+        }
+      }
+    }
+  }
+}
