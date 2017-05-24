@@ -184,4 +184,39 @@ function checkBoxtype (type) {
     }
 
     return match;
-}
+};
+
+function parseToObject (object){
+    return object && typeof object === "string" ? JSON.parse(object) : object;
+};
+
+function checkInternetConnection () {
+    var cn = true,
+        response = 'in progress',
+        d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+
+    // try to reach google to check for internet connection
+    http.request({
+      url:'https://google.com',
+      async: true,
+      success: function (res){
+          response = 'done';
+      },
+      error: function (res) {
+          response = 'failed';
+          cn = res.status >= 500? false: cn;
+      }
+    });
+
+    // wait for response
+    while ((new Date()).valueOf() < d && response === 'in progress') {
+        processPendingCallbacks();
+    }
+
+    if (response === 'in progress') {
+        response = 'failed';
+        cn = false;
+    }
+
+  return cn;
+};

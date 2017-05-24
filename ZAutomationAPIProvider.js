@@ -161,6 +161,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
         this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
+
+        this.router.post("/system/certfxAuth",this.ROLE.ANONYMOUS,this.certfxAuth);
     },
 
     // Used by the android app to request server status
@@ -243,7 +245,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             boxTypeIsCIT = false;
 
         try {
-            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body): this.req.body;
+            reqObj = parseToObject(this.req.body);
         } catch (ex) {
             return {
                 error: ex.message,
@@ -842,7 +844,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 code: 500
             },
-            moduleUrl = typeof this.req.body === 'string'? JSON.parse(this.req.body).moduleUrl : this.req.body.moduleUrl,
+            moduleUrl = parseToObject(this.req.body).moduleUrl,
             result = "",
             moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
@@ -885,7 +887,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 code: 500
             },
-            moduleUrl = typeof this.req.body === 'string'? JSON.parse(this.req.body).moduleUrl : this.req.body.moduleUrl,
+            moduleUrl = parseToObject(this.req.body).moduleUrl,
             result = "",
             moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
@@ -1012,7 +1014,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                reqObj = parseToObject(this.req.body),
                 tokenObj = loadObject('moduleTokens.json');
 
         if (tokenObj === null) {
@@ -1048,7 +1050,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                reqObj = parseToObject(this.req.body),
                 tokenObj = loadObject('moduleTokens.json');
 
         if (reqObj && reqObj.token && !!tokenObj && tokenObj.tokens) {
@@ -1927,8 +1929,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
               return chars;
             }
 
-            //this.reset();
-            reqObj = typeof this.req.body.backupFile.content === 'string'? JSON.parse(this.req.body.backupFile.content) : this.req.body.backupFile.content;
+            reqObj = parseToObject(this.req.body.backupFile.content);
 
             if (typeof reqObj.data === 'string') {
                 // new .zab files are base64 encoded, while old are not
@@ -1937,7 +1938,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
             // stop the controller
-
             this.controller.stop();
 
             for (var obj in reqObj.data) {
@@ -2339,7 +2339,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            reqObj = parseToObject(this.req.body),
             skin = null;
 
         skin = this.controller.setSkinState(skinName, reqObj);
@@ -2365,7 +2365,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            reqObj = parseToObject(this.req.body),
             result = "",
             skName = skinName || reqObj.name;
 
@@ -2497,7 +2497,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                reqObj = parseToObject(this.req.body),
                 tokenObj = loadObject('skinTokens.json');
 
         if (reqObj && reqObj.token) {
@@ -2542,7 +2542,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     data: null,
                     code: 500
                 },
-                reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+                reqObj = parseToObject(this.req.body),
                 tokenObj = loadObject('skinTokens.json');
 
         if (reqObj && reqObj.token && !!tokenObj && tokenObj.skinTokens) {
@@ -2679,7 +2679,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            reqObj = typeof this.req.body === 'string'? JSON.parse(this.req.body) : this.req.body,
+            reqObj = parseToObject(this.req.body),
             result = "",
             icName = iconName || reqObj.name,
             id = reqObj.id;
@@ -2774,7 +2774,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 "tz": ""
             };
 
-        reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+        reqObj = parseToObject(this.req.body);
 
         data.tz = reqObj.time_zone;
 
@@ -2898,7 +2898,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         return reply;
-    }, getSystemInfo: function() {
+    },
+    getSystemInfo: function() {
         var reply = {
                 error: null,
                 data: {},
@@ -2915,8 +2916,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 first_start_up: this.controller.config.first_start_up, 
                 count_of_reconnects: this.controller.config.count_of_reconnects,
                 current_firmware: version,
-                current_firmware_majurity: majurity
+                current_firmware_majurity: majurity,
+                remote_id: this.controller.getRemoteId(),
+                has_internet_connection: checkInternetConnection()
             };
+
+            // add more information if box is cit
+            if (checkBoxtype('cit')) {
+                _.extend(reply.data, {
+                    cit_identifier: this.controller.config.cit_identifier,
+                    cit_authorized: this.controller.config.cit_authorized,
+                    cit_license_countDown: zway? zway.controller.data.countDown.value : undefined
+                });
+            }
 
             reply.code = 200;
         } catch (e){
@@ -2968,7 +2980,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (fs.stat('lib/configAP.sh')) {
             try {
-                reqObj = typeof this.req.body === "string" ? JSON.parse(this.req.body) : this.req.body;
+                reqObj = parseToObject(this.req.body);
 
                 if(reqObj.password !== '') {
                     if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
@@ -3019,7 +3031,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 var retSsid = system("sh automation/lib/configAP.sh getSsid");
 
-                console.log(retSsid);
                 var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
                 reply.code = 200;
                 reply.data = {"ssid": ssid};
@@ -3046,7 +3057,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (fs.stat('lib/ntp.sh')) {
             try {
-                reqObj = typeof this.req.query === "string" ? JSON.parse(this.req.query) : this.req.query;
+                reqObj = parseToObject(this.req.query);
 
                 if (actions.indexOf(action) > -1 || (action == 'setDateTime' && reqObj.dateTime && dt_regex.exec(reqObj.dateTime))) {
 
@@ -3072,6 +3083,89 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } else {
             reply.error = 'Not Implemented';
             reply.code = 501;
+        }
+
+        return reply;
+    },
+    certfxAuth: function() {
+        var self = this,
+            reply = {
+                error: "Internal Server Error",
+                data: null,
+                code: 500
+            },
+            response = 'in progress';
+
+        try {
+            // check controller vendor (cit)
+            if (zway.controller.data.manufacturerId.value === 797 &&
+                zway.controller.data.manufacturerProductType.value === 257 &&
+                zway.controller.data.manufacturerProductId.value === 1) {
+
+                reqObj = parseToObject(this.req.body);
+
+                //check for request data first
+                if (reqObj.user && reqObj.user !== '' &&
+                    reqObj.pass && reqObj.pass !== '' &&
+                    reqObj.cit_identifier && reqObj.cit_identifier !== '') {
+
+                    var uuid = zway.controller.data.uuid.value;
+                    var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+
+                    http.request({
+                        url:encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + reqObj.user + "&pass=" + reqObj.pass + "&desc=" + reqObj.cit_identifier),
+                        async: true,
+                        success: function(resp) {
+                            r = parseToObject(resp);
+                            res = r.data? parseToObject(r.data) : null;
+
+                            // set authorized flag in controller config
+                            if (!!res && res.result !== undefined) {
+                                self.controller.config.cit_identifier = reqObj.cit_identifier;
+                                self.controller.config.cit_authorized = res.result;
+                                self.controller.saveConfig();
+                            }
+
+                            response = 'done';
+
+                            reply.code = r.status;
+                            reply.error = null;
+                            reply.data = res;
+                        },
+                        error: function(resp) {
+                            r = parseToObject(resp);
+                            res = r.data? parseToObject(r.data) : null;
+
+                            response = 'failed';
+
+                            reply.code = r.status;
+                            reply.error = r.error? r.error : r.status + ' ' + r.statusText;
+                            reply.data = res;
+                        }
+                    });
+
+                    // wait for response
+                    while ((new Date()).valueOf() < d && response === 'in progress') {
+                        processPendingCallbacks();
+                    }
+
+                    if (response === 'in progress') {
+                        response === 'failed'
+
+                        reply.code = 504;
+                        reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
+                    }
+                } else {
+                    reply.error = 'Bad Request. Please enter registered user, password and set a identifier name.';
+                    reply.code = 400;
+                }
+            } else {
+                reply.error = 'Not Implemented: This function is not supported by controller.';
+                reply.code = 501;
+            }
+        } catch(e) {
+            console.log(e.toString());
+            reply.error = 'Internal Server Error. ' + e.toString();
         }
 
         return reply;

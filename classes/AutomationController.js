@@ -718,11 +718,12 @@ AutomationController.prototype.instantiateModules = function () {
     var self = this,
         langFile = this.loadMainLang(),
         modules = Object.getOwnPropertyNames(this.modules),
-        requiredBaseModules = ["ZWave"],
+        requiredBaseModules = ["Cron","ZWave"],
         requiredWithDep = [];
 
     this.loadedModules = [];
 
+    modules.splice(modules.indexOf('Cron'), 1);
     modules.splice(modules.indexOf('ZWave'), 1);
 
     // get all required modules from dependencies
@@ -1177,7 +1178,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
             iconName,
             id,
             function(success) {
-                filelist = typeof success === 'string'? JSON.parse(success) : success;
+                filelist = parseToObject(success);
                 result = "done";
             },  function() {
                 result = "failed";

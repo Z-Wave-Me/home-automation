@@ -86,12 +86,14 @@ ZWave.prototype.updateList = function() {
 	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
 };
 
-ZWave.prototype.loadObject = function(name) {
-	return loadObject(this.config.name + "_" + name);
+ZWave.prototype.loadObject = function(name, zwayName) {
+    zwayName = zwayName? zwayName : this.config.name;
+	return loadObject(zwayName + "_" + name);
 };
 
-ZWave.prototype.saveObject = function(name, obj) {
-	saveObject(this.config.name + "_" + name, obj);
+ZWave.prototype.saveObject = function(name, obj, zwayName) {
+    zwayName = zwayName? zwayName : this.config.name;
+	return saveObject(zwayName + "_" + name, obj);
 };
 
 ZWave.prototype.init = function (config) {
@@ -165,6 +167,15 @@ ZWave.prototype.init = function (config) {
 	this.startBinding();
 	if (!this.zway) {
 		return;
+	}
+
+    // do license check if controller type CIT
+    if (zway.controller.data.manufacturerId.value === 797 &&
+		zway.controller.data.manufacturerProductType.value === 257 &&
+		zway.controller.data.manufacturerProductId.value === 1) {
+		// check if the controller license is still up to date
+		// and set update timer
+		this.certXFCheck();
 	}
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
@@ -256,6 +267,9 @@ ZWave.prototype.stop = function () {
 	this.stopBinding();
 
 	clearInterval(this.timer);
+
+    this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
+    this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
 
 	if (this._dataBind) {
 		this.controller.off("ZWave.dataBind", this._dataBind);
@@ -380,7 +394,7 @@ ZWave.prototype.CommunicationLogger = function() {
 				});
             }
 
-            this.saveObject("incomingPacket.json", _ipacket);
+            self.saveObject("incomingPacket.json", _ipacket);
 
             ipacket = [];
         }
@@ -394,12 +408,10 @@ ZWave.prototype.CommunicationLogger = function() {
                 })
             }
 
-            this.saveObject("originPackets.json", originPackets);
+            self.saveObject("originPackets.json", originPackets);
         }
 
 	};
-
-	zway.controller.data.incomingPacket.bind(inH);
 
 	outH = function () {
 
@@ -443,7 +455,7 @@ ZWave.prototype.CommunicationLogger = function() {
 				});
             }
 
-            this.saveObject("outgoingPacket.json", _opacket);
+            self.saveObject("outgoingPacket.json", _opacket);
 
             opacket = [];
         }
@@ -457,14 +469,27 @@ ZWave.prototype.CommunicationLogger = function() {
                 })
             }
 
-            this.saveObject("originPackets.json", originPackets);
+            self.saveObject("originPackets.json", originPackets);
         }
 	};
 
-	zway.controller.data.outgoingPacket.bind(outH);
+    // process incoming packages
+    zway.controller.data.incomingPacket.bind(inH);
+    // process outgoing packages
+    zway.controller.data.outgoingPacket.bind(outH);
+
+	// process communication if type CIT
+    /*if (this.isCIT){
+		// process incoming packages
+		zway.controller.data.incomingPacket.bind(inH);
+		// process outgoing packages
+		zway.controller.data.outgoingPacket.bind(outH);
+    }*/
 
     //check if controller supports background rssi
     if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+
+        // set time that will request RSSI stats every 30 s
         this.timer = setInterval(function() {
             try {
                 var data = self.loadObject("rssidata.json");
@@ -479,14 +504,13 @@ ZWave.prototype.CommunicationLogger = function() {
                     });
                 }
 
-                this.saveObject("rssidata.json", data);
+                self.saveObject("rssidata.json", data);
             } catch (e) {
                 console.log('Cannot fetch background RSSI. Error:', e.message);
             }
 
         }, 1000*30);
 	}
-
 
     // =================== helper functions ========================
 
@@ -741,6 +765,56 @@ ZWave.prototype.CommunicationLogger = function() {
     // =====================================================
 };
 
+ZWave.prototype.certXFCheck = function () {
+
+    // polling function
+    this.checkForCertFxLicense = function() {
+        zway.ZMECapabilities(null, function() {
+
+            // refresh caps
+            zway.ZMECapabilities();
+
+            if (zway.controller.data.countDown.value < 5) {
+                var capsNonce = zway.controller.data.capsNonce.value.map(function (i){
+                    return ("00" + i.toString(16)).slice(-2);
+                }).join("");
+
+                var uuid = zway.controller.data.uuid.value;
+
+                http.request({
+                    url: "https://CertXFer.Z-WaveAlliance.org:8443/CITAuth/CITAuth.aspx?uid=" + uuid + "&nonce=" + capsNonce,
+                    async: true,
+                    success: function(resp) {
+                        var key = resp.data.split(": ")[1].split(" ").map(function(i) { return parseInt(i,16); });
+                        zway.ZMECapabilities(key);
+
+                        // refresh caps
+                        zway.ZMECapabilities();
+                    },
+                    error: function(resp) {
+                        console.log(JSON.stringify(resp, null, 1));
+                    }
+                });
+            }
+        })
+    };
+
+    // add daily cron job
+    this.controller.emit("cron.addTask", "zwayCertXFCheck.poll", {
+        minute: 0, //[0,59,3]
+        hour: 0, //null
+        weekDay: [0,6,1], //null
+        day: null,
+        month: null
+    });
+
+    // add event listener
+    this.controller.on("zwayCertXFCheck.poll", this.checkForCertFxLicense);
+
+    // initial certXF check
+    this.checkForCertFxLicense();
+};
+
 // --------------- Public HTTP API -------------------
 
 
@@ -823,6 +897,7 @@ ZWave.prototype.defineHandlers = function () {
 	var postfix = this.postfix;
 	var expert_config = this.expert_config;
 	var self = this;
+	var zwayCfg = this.config;
 
     var ipacket = this.ipacket;
     var opacket = this.opacket;
@@ -1361,8 +1436,8 @@ ZWave.prototype.defineHandlers = function () {
                 "updateTime": null,
                 "data": []
             },
-            _ipacket = this.loadObject("incomingPacket.json"),
-            _opacket = this.loadObject("outgoingPacket.json"),
+            _ipacket = this.ZWave.prototype.loadObject('incomingPacket.json', zwayCfg.name),
+            _opacket = this.ZWave.prototype.loadObject('outgoingPacket.json', zwayCfg.name),
             filterObj = null;
 
 		if (request.query && request.query.filter) {
@@ -1473,7 +1548,7 @@ ZWave.prototype.defineHandlers = function () {
                 "code": 200,
                 "message": "200 OK",
                 "updateTime": Math.round((new Date()).getTime() / 1000),
-                data: loadObject('originPackets.json')
+                data: this.ZWave.prototype.loadObject('originPackets.json', zwayCfg.name)
             }
         };
     };
@@ -1507,7 +1582,7 @@ ZWave.prototype.defineHandlers = function () {
                     body.data = data;
 
                 } else {
-                    body.data = self.loadObject('rssidata.json');
+                    body.data = this.ZWave.prototype.loadObject('rssidata.json', zwayCfg.name);
                 }
 
                 if (!!body.data) {
@@ -1529,12 +1604,12 @@ ZWave.prototype.defineHandlers = function () {
                     };
                 }
 			} else {
-                body.code = 404;
-                body.message = 'This function is not supported by controller.';
+                body.code = 501;
+                body.message = 'Not implemented: This function is not supported by controller.';
 
                 return {
                     headers: headers,
-                    status: 404,
+                    status: 501,
                     body: body
                 };
 			}
@@ -2050,7 +2125,7 @@ ZWave.prototype.defineHandlers = function () {
 			var date = new Date();
 
 			try {
-				var reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+				var reqObj = parseToObject(request.body);
 			} catch(e) {
 				return { status: 400, body: e.toString() };
 			}
@@ -2116,7 +2191,7 @@ ZWave.prototype.defineHandlers = function () {
     this.ZWaveAPI.PostfixRemove = function(url, request) {
         if(request.method === "POST" && request.body) {
             var custom_postfix = loadObject("custompostfix.json"),
-                reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+                reqObj = parseToObject(request.body);
 
             if(!!custom_postfix) {
 
@@ -2174,42 +2249,29 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.ExpertConfigUpdate = function(url, request) {
-		var self = this,
-			reqObj;
+		var reqObj = {};
 
 		if (request.method === "POST" && request.body) {
-			reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
+			reqObj = parseToObject(request.body);
 
-			if(Object.keys(reqObj).length = 1) {
-				var keys = Object.keys(reqObj);
+			if(Object.keys(reqObj).length > 0) {
 
-				//if(expert_config.hasOwnProperty(keys[0])) {
-					_.assign(expert_config, reqObj);
+				_.assign(expert_config, reqObj);
 
-					this.saveObject("expertconfig.json", expert_config);
-					return {
-						status: 200,
-						body: "Done"
-					};
+                this.ZWave.prototype.saveObject('expertconfig.json', expert_config, zwayCfg.name);
 
-				//} else {
-				//	return { status: 404, body: "Property " + keys[0] + " not found" };
-				//}
+                return {
+					status: 200,
+					body: "Done"
+				};
 			}
-			//TODO multiple property update
-			/*
-			 for( key in keys) {
-			 if(expert_config.hasOwnProperty(keys[key])) {
-			 expert_config[keys[key]] = reqObj[keys[key]];
-			 }
-			 }*/
 		}
 		return { status: 400, body: "Invalid request" };
 	};
 
     this.ZWaveAPI.CallForAllNIF = function(url, request) {
         var req = request && request.body? request.body : request && request.data? request.data : undefined,
-            req = req && typeof req === 'string'? JSON.parse(req) : req,
+            req = parseToObject(req),
             delay = req && req.delay? req.delay :null,
             timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
             timer = null,
@@ -2291,7 +2353,7 @@ ZWave.prototype.defineHandlers = function () {
 
     this.ZWaveAPI.CheckAllLinks = function(url, request) {
         var req = request && request.body? request.body : request && request.data? request.data : undefined,
-            req = req && typeof req === 'string'? JSON.parse(req) : req,
+            req = parseToObject(req),
             delay = req && req.delay? req.delay :null,
             timeout = !!delay && parseInt(delay.toString(), 10) >= 1? parseInt(delay.toString(), 10) * 1000 : 2000,
             timer = null,
@@ -2364,7 +2426,7 @@ ZWave.prototype.defineHandlers = function () {
 			},
 			l = ['en','de'],  //this.controller.availableLang
             devInfo = {},
-        	reqObj = !request.query? undefined : (typeof request.query === "string" ? JSON.parse(request.query) : request.query);
+        	reqObj = !request.query? undefined : parseToObject(request.query);
 
 		try {
 
@@ -2437,7 +2499,7 @@ ZWave.prototype.defineHandlers = function () {
 					async: true,
 					success: function(res) {
 						if (res.data) {
-							data = typeof res.data === 'string'? JSON.parse(res.data) : res.data;
+							data = parseToObject(res.data);
                             blub.updateTime = (new Date()).getTime();
 
 							for (index in data) {
@@ -2489,7 +2551,7 @@ ZWave.prototype.defineHandlers = function () {
             },
 			// prepare request data
             req = request && request.query? request.query : undefined,
-            req = req && typeof req === 'string'? JSON.parse(req) : req,
+            req = parseToObject(req),
         	cntNodes = 0,
 			requestInterval = 10000, // wait 10 sec between each node reorganization
 			// check if all reorganizations of types have finished
@@ -2554,7 +2616,7 @@ ZWave.prototype.defineHandlers = function () {
         	self.reorgLog.push(entry);
 
             if (self.reorgLog.length > 0) {
-                self.saveObject('reorgLog', self.reorgLog);
+                this.ZWave.prototype.saveObject('reorgLog', self.reorgLog, zwayCfg.name);
 			}
 		}
 
@@ -2838,8 +2900,7 @@ ZWave.prototype.defineHandlers = function () {
     };
 
     this.ZWaveAPI.GetReorganizationLog = function(url, request) {
-        var self = this,
-            reply = {
+        var reply = {
                 status: 200,
                 headers: {
                     "Content-Type": "application/json",
@@ -2850,7 +2911,7 @@ ZWave.prototype.defineHandlers = function () {
                 },
                 body: null
             },
-            reorgLog = this.loadObject('reorgLog');
+            reorgLog = this.ZWave.prototype.loadObject('reorgLog', zwayCfg.name);
 
         reply.body = !!reorgLog? reorgLog : [];
 
