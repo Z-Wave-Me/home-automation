@@ -2922,9 +2922,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // add more information if box is cit
             if (checkBoxtype('cit')) {
                 _.extend(reply.data, {
-                    cit_identifier: this.controller.config.cit_identifier,
-                    cit_authorized: this.controller.config.cit_authorized,
-                    cit_license_countDown: zway? zway.controller.data.countDown.value : undefined
+                    cit_identifier: this.controller.config.cit_identifier || '',
+                    cit_authorized: this.controller.config.cit_authorized || false,
+                    cit_license_countDown: zway? zway.controller.data.countDown.value : null
                 });
             }
 
