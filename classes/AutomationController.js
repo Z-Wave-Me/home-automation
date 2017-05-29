@@ -1783,6 +1783,9 @@ AutomationController.prototype.createProfile = function (profile) {
         profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
     }
 
+    profile.salt = generateSalt();
+    profile.password = hashPassword(profile.password, profile.salt);
+
     this.profiles.push(profile);
 
     this.saveConfig();
@@ -1803,6 +1806,10 @@ AutomationController.prototype.updateProfile = function (object, id) {
                 this.profiles[index][property] = object[property];
             }
         }
+    }
+
+    if (!checkBoxtype('cit')){
+        this.addQRCode(p, object);
     }
     
     this.saveConfig();
@@ -1828,7 +1835,9 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
             p.login = object.login;
         }
 
-        this.addQRCode(p, object);
+        if (!checkBoxtype('cit')){
+            this.addQRCode(p, object);
+        }
 
         this.saveConfig();
         

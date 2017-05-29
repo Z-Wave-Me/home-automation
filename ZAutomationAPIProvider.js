@@ -259,7 +259,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         });
 
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
-        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || this.authCIT) {
+        if (profile &&
+            ((!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) ||
+            (this.authCIT() && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt))))) {
+
             if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
                 this.controller.addQRCode(profile, reqObj);
             }
@@ -3123,28 +3126,53 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                 self.controller.config.cit_authorized = res.result;
 
                                 // add default cit login if not already existing
-                                if (res.result && self.controller.profiles.filter(function (p) {
-                                        return p.login === reqObj.user;
-                                    }).length === 0) {
+                                if (res.result) {
+                                    if (self.controller.profiles.filter(function (p) {
+                                            return p.login === reqObj.user;
+                                        }).length === 0) {
 
-                                    // add cit user profile
-                                    self.controller.createProfile({
-                                        role: 1,
-                                        login: reqObj.user,
-                                        password: reqObj.pass,
-                                        email: '',
-                                        name: 'CIT Administrator',
-                                        lang: 'en',
-                                        color: '#dddddd',
-                                        dashboard: [],
-                                        interval: 2000,
-                                        rooms: [0],
-                                        expert_view: false,
-                                        hide_all_device_events: false,
-                                        hide_system_events: false,
-                                        hide_single_device_events: [],
-                                        skin: ''
-                                    });
+                                        // add cit user profile
+                                        self.controller.createProfile({
+                                            role: 1,
+                                            login: reqObj.user,
+                                            password: reqObj.pass,
+                                            email: '',
+                                            name: 'CIT Administrator',
+                                            lang: 'en',
+                                            color: '#dddddd',
+                                            dashboard: [],
+                                            interval: 2000,
+                                            rooms: [0],
+                                            expert_view: false,
+                                            hide_all_device_events: false,
+                                            hide_system_events: false,
+                                            hide_single_device_events: [],
+                                            skin: ''
+                                        });
+                                    }
+
+                                    // update default admin profile
+                                    prof = _.filter(self.controller.profiles, function (p) {
+                                            return p.login === 'admin' &&
+                                                p.password === 'admin';
+                                        });
+
+                                    if (prof.length > 0 ) {
+                                        var pwd = ''
+
+                                        try {
+                                            pwd = system('sh automation/lib/.system info');
+                                            pwd = pwd[1];
+                                        } catch (e){
+                                            pwd = prof[0].password;
+                                        }
+
+                                        // update default admin profile
+                                        self.controller.updateProfileAuth({
+                                            login: prof[0].login || 'admin',
+                                            password: pwd || 'admin'
+                                        }, prof[0].id);
+                                    }
                                 }
 
                                 self.controller.saveConfig();
@@ -3158,13 +3186,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         },
                         error: function(resp) {
                             r = parseToObject(resp);
-                            res = r.data? parseToObject(r.data) : null;
 
                             response = 'failed';
 
                             reply.code = r.status;
                             reply.error = r.error? r.error : r.status + ' ' + r.statusText;
-                            reply.data = res;
+                            reply.data = r.data;
                         }
                     });
 

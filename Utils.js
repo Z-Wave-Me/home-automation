@@ -175,7 +175,7 @@ function checkBoxtype (type) {
     var match = false;
 
     try {
-        var bT = system('cat /etc/z-way/box_type');
+        var bT = system('sh automation/lib/.system type');
 
         bT.forEach(function(bType){
             match = typeof bType === 'string' && (bType.indexOf(type) > -1 || bType === type)? true : false;
