@@ -241,8 +241,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
     },
     // Check if login exists and password is correct 
     verifyLogin: function() {
-        var reqObj,
-            boxTypeIsCIT = false;
+        var reqObj;
 
         try {
             reqObj = parseToObject(this.req.body);
@@ -259,11 +258,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             return profile.login === reqObj.login;
         });
 
-        boxTypeIsCIT = checkBoxtype('cit');
-
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
-        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || boxTypeIsCIT) {
-            if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
+        if (profile && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) || this.authCIT) {
+            if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
                 this.controller.addQRCode(profile, reqObj);
             }
             return this.setLogin(profile);
@@ -2918,7 +2915,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 current_firmware: version,
                 current_firmware_majurity: majurity,
                 remote_id: this.controller.getRemoteId(),
-                has_internet_connection: checkInternetConnection()
+                has_internet_connection: checkInternetConnection(),
+                firstaccess: this.controller.config.hasOwnProperty('firstaccess')? this.controller.config.firstaccess : true
             };
 
             // add more information if box is cit
@@ -3123,6 +3121,32 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             if (!!res && res.result !== undefined) {
                                 self.controller.config.cit_identifier = reqObj.cit_identifier;
                                 self.controller.config.cit_authorized = res.result;
+
+                                // add default cit login if not already existing
+                                if (res.result && self.controller.profiles.filter(function (p) {
+                                        return p.login === reqObj.user;
+                                    }).length === 0) {
+
+                                    // add cit user profile
+                                    self.controller.createProfile({
+                                        role: 1,
+                                        login: reqObj.user,
+                                        password: reqObj.pass,
+                                        email: '',
+                                        name: 'CIT Administrator',
+                                        lang: 'en',
+                                        color: '#dddddd',
+                                        dashboard: [],
+                                        interval: 2000,
+                                        rooms: [0],
+                                        expert_view: false,
+                                        hide_all_device_events: false,
+                                        hide_system_events: false,
+                                        hide_single_device_events: [],
+                                        skin: ''
+                                    });
+                                }
+
                                 self.controller.saveConfig();
                             }
 
@@ -3223,6 +3247,10 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
             return [];
         }
     }
+};
+
+ZAutomationAPIWebRequest.prototype.authCIT = function () {
+    return checkBoxtype('cit') && this.controller.config.cit_authorized;
 };
 
 ZAutomationAPIWebRequest.prototype.getProfileResponse = function (profileObj) {
