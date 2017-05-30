@@ -1357,7 +1357,20 @@ AutomationController.prototype.saveNotifications = function () {
 };
 
 AutomationController.prototype.loadNotifications = function () {
-    this.notifications = loadObject("notifications") || [];
+    notificationList = loadObject("notifications") || [];
+
+    //TODO enhance notifications handling
+    notificationCheck = fs.stat('storage/notifications-f37bd2f66651e7d46f6d38440f2bc5dd.json');
+
+    if (notificationList.length > 0 && !!notificationCheck && notificationCheck.size && notificationCheck.size > 500000) {
+        // hold only the last 500 entries
+        for (var i = (notificationList.length - 500); i <= (notificationList.length - 1); i++) {
+            this.notifications.push(notificationList[i]);
+        }
+    }
+
+    this.saveNotifications();
+    //this.notifications = loadObject("notifications") || [];
 };
 
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
