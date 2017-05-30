@@ -2918,7 +2918,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 current_firmware: version,
                 current_firmware_majurity: majurity,
                 remote_id: this.controller.getRemoteId(),
-                has_internet_connection: checkInternetConnection(),
                 firstaccess: this.controller.config.hasOwnProperty('firstaccess')? this.controller.config.firstaccess : true
             };
 
@@ -3095,7 +3094,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 data: null,
                 code: 500
             },
-            response = 'in progress';
+            response = 'in progress',
+            cit_server_reachable = checkInternetConnection('https://certxfer.z-wavealliance.org:8443'),
+            reqObj = parseToObject(this.req.body),
+            user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
+            pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined,
+            identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : (self.controller.config.cit_identifier? self.controller.config.cit_identifier : undefined);
 
         try {
             // check controller vendor (cit)
@@ -3103,108 +3107,139 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 zway.controller.data.manufacturerProductType.value === 257 &&
                 zway.controller.data.manufacturerProductId.value === 1) {
 
-                reqObj = parseToObject(this.req.body);
 
                 //check for request data first
-                if (reqObj.user && reqObj.user !== '' &&
-                    reqObj.pass && reqObj.pass !== '' &&
-                    reqObj.cit_identifier && reqObj.cit_identifier !== '') {
+                if (user && pass && cit_identifier) {
 
-                    var uuid = zway.controller.data.uuid.value;
-                    var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+                    // access to alliance if server is reachable
+                    if (cit_server_reachable){
+                        var uuid = zway.controller.data.uuid.value;
+                        var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 
-                    http.request({
-                        url:encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + reqObj.user + "&pass=" + reqObj.pass + "&desc=" + reqObj.cit_identifier),
-                        async: true,
-                        success: function(resp) {
-                            r = parseToObject(resp);
-                            res = r.data? parseToObject(r.data) : null;
+                        http.request({
+                            url:encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + reqObj.user + "&pass=" + reqObj.pass + "&desc=" + reqObj.cit_identifier),
+                            async: true,
+                            success: function(resp) {
+                                r = parseToObject(resp);
+                                res = r.data? parseToObject(r.data) : null;
 
-                            // set authorized flag in controller config
-                            if (!!res && res.result !== undefined) {
-                                self.controller.config.cit_identifier = reqObj.cit_identifier;
-                                self.controller.config.cit_authorized = res.result;
+                                // set authorized flag in controller config
+                                // add default cit profile
+                                // transform default login
+                                if (!!res && res.result !== undefined) {
 
-                                // add default cit login if not already existing
-                                if (res.result) {
-                                    if (self.controller.profiles.filter(function (p) {
-                                            return p.login === reqObj.user;
-                                        }).length === 0) {
+                                    if (!self.controller.config.cit_authorized) {
+                                        self.controller.config.cit_identifier = reqObj.cit_identifier;
+                                        self.controller.config.cit_authorized = res.result;
 
-                                        // add cit user profile
-                                        self.controller.createProfile({
-                                            role: 1,
-                                            login: reqObj.user,
-                                            password: reqObj.pass,
-                                            email: '',
-                                            name: 'CIT Administrator',
-                                            lang: 'en',
-                                            color: '#dddddd',
-                                            dashboard: [],
-                                            interval: 2000,
-                                            rooms: [0],
-                                            expert_view: false,
-                                            hide_all_device_events: false,
-                                            hide_system_events: false,
-                                            hide_single_device_events: [],
-                                            skin: ''
-                                        });
-                                    }
+                                        // add default cit login if not already existing
+                                        if (res.result) {
+                                            if (self.controller.profiles.filter(function (p) {
+                                                    return p.login === reqObj.user;
+                                                }).length === 0) {
 
-                                    // update default admin profile
-                                    prof = _.filter(self.controller.profiles, function (p) {
-                                            return p.login === 'admin' &&
-                                                p.password === 'admin';
-                                        });
+                                                // add cit user profile
+                                                self.controller.createProfile({
+                                                    role: 1,
+                                                    login: reqObj.user,
+                                                    password: reqObj.pass,
+                                                    email: '',
+                                                    name: 'CIT Administrator',
+                                                    lang: 'en',
+                                                    color: '#dddddd',
+                                                    dashboard: [],
+                                                    interval: 2000,
+                                                    rooms: [0],
+                                                    expert_view: false,
+                                                    hide_all_device_events: false,
+                                                    hide_system_events: false,
+                                                    hide_single_device_events: [],
+                                                    skin: ''
+                                                });
+                                            }
 
-                                    if (prof.length > 0 ) {
-                                        var pwd = ''
+                                            // update default admin profile
+                                            prof = _.filter(self.controller.profiles, function (p) {
+                                                return p.login === 'admin' &&
+                                                    p.password === 'admin';
+                                            });
 
-                                        try {
-                                            pwd = system('sh automation/lib/.system info');
-                                            pwd = pwd[1];
-                                        } catch (e){
-                                            pwd = prof[0].password;
+                                            if (prof.length > 0 ) {
+                                                var pwd = ''
+
+                                                try {
+                                                    pwd = system('sh automation/lib/.system info');
+                                                    pwd = pwd[1];
+                                                } catch (e){
+                                                    pwd = prof[0].password;
+                                                }
+
+                                                // update default admin profile
+                                                self.controller.updateProfileAuth({
+                                                    login: prof[0].login || 'admin',
+                                                    password: pwd || 'admin'
+                                                }, prof[0].id);
+                                            }
                                         }
 
+                                        self.controller.saveConfig();
+                                    } else {
                                         // update default admin profile
-                                        self.controller.updateProfileAuth({
-                                            login: prof[0].login || 'admin',
-                                            password: pwd || 'admin'
-                                        }, prof[0].id);
+                                        prof = _.filter(self.controller.profiles, function (p) {
+                                            return p.login === user;
+                                        });
+
+                                        if (prof.length > 0 ) {
+                                            // update default admin profile
+                                            self.controller.updateProfileAuth({
+                                                login: user,
+                                                password: pass
+                                            }, prof[0].id);
+                                        }
                                     }
                                 }
 
-                                self.controller.saveConfig();
+                                response = 'done';
+
+                                reply.code = r.status;
+                                reply.error = null;
+                                reply.data = res;
+                            },
+                            error: function(resp) {
+                                r = parseToObject(resp);
+
+                                response = 'failed';
+
+                                reply.code = r.status;
+                                reply.error = r.error? r.error : r.status + ' ' + r.statusText;
+                                reply.data = r.data;
                             }
+                        });
 
-                            response = 'done';
-
-                            reply.code = r.status;
-                            reply.error = null;
-                            reply.data = res;
-                        },
-                        error: function(resp) {
-                            r = parseToObject(resp);
-
-                            response = 'failed';
-
-                            reply.code = r.status;
-                            reply.error = r.error? r.error : r.status + ' ' + r.statusText;
-                            reply.data = r.data;
+                        // wait for response
+                        while ((new Date()).valueOf() < d && response === 'in progress') {
+                            processPendingCallbacks();
                         }
-                    });
 
-                    // wait for response
-                    while ((new Date()).valueOf() < d && response === 'in progress') {
-                        processPendingCallbacks();
-                    }
+                        if (response === 'in progress') {
+                            response === 'failed'
 
-                    if (response === 'in progress') {
-                        response === 'failed'
+                            reply.code = 504;
+                            reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
+                        }
+                    // forward local login if server isn't reachable but cit is registrated
+                    } else if (!cit_server_reachable && self.controller.config.cit_authorized){
+                        //TODO login
+                        // get user profile
+                        prof = _.filter(self.controller.profiles, function (p) {
+                            return p.login === user;
+                        });
 
-                        reply.code = 504;
-                        reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
+                        if (prof && this.authCIT() && prof.salt && prof.password === hashPassword(pass, prof.salt)) {
+                            reply = this.setLogin(prof);
+                        } else {
+                            reply = this.denyLogin();
+                        }
                     }
                 } else {
                     reply.error = 'Bad Request. Please enter registered user, password and set a identifier name.';
