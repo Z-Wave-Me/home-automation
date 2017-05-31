@@ -3099,7 +3099,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             reqObj = parseToObject(this.req.body),
             user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
             pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined,
-            identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : (self.controller.config.cit_identifier? self.controller.config.cit_identifier : undefined);
+            identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : (self.controller.config.cit_identifier && self.controller.config.cit_authorized? self.controller.config.cit_identifier : undefined);
 
         try {
             // check controller vendor (cit)
@@ -3109,7 +3109,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 
                 //check for request data first
-                if (user && pass && cit_identifier) {
+                if (user && pass && identifier) {
 
                     // access to alliance if server is reachable
                     if (cit_server_reachable){
@@ -3117,7 +3117,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 
                         http.request({
-                            url:encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + reqObj.user + "&pass=" + reqObj.pass + "&desc=" + reqObj.cit_identifier),
+                            url:"https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + reqObj.user + "&pass=" + reqObj.pass + "&desc=" + encodeURI(identifier),
                             async: true,
                             success: function(resp) {
                                 r = parseToObject(resp);
@@ -3228,18 +3228,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
                         }
                     // forward local login if server isn't reachable but cit is registrated
-                    } else if (!cit_server_reachable && self.controller.config.cit_authorized){
-                        //TODO login
-                        // get user profile
-                        prof = _.filter(self.controller.profiles, function (p) {
-                            return p.login === user;
-                        });
-
-                        if (prof && this.authCIT() && prof.salt && prof.password === hashPassword(pass, prof.salt)) {
-                            reply = this.setLogin(prof);
-                        } else {
-                            reply = this.denyLogin();
-                        }
+                    } else {
+                        reply.code = 504;
+                        reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
                     }
                 } else {
                     reply.error = 'Bad Request. Please enter registered user, password and set a identifier name.';

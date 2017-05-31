@@ -275,7 +275,7 @@ function parseToObject(object) {
 };
 
 function checkInternetConnection(host_url) {
-    var cn = true,
+    var cn = false,
         response = 'in progress',
         d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 
@@ -285,10 +285,10 @@ function checkInternetConnection(host_url) {
         async: true,
         success: function (res) {
             response = 'done';
+            cn = true;
         },
         error: function (res) {
             response = 'failed';
-            cn = res.status >= 500 ? false : cn;
         }
     });
 
@@ -299,7 +299,6 @@ function checkInternetConnection(host_url) {
 
     if (response === 'in progress') {
         response = 'failed';
-        cn = false;
     }
 
     return cn;
