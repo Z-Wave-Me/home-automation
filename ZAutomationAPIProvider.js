@@ -3119,19 +3119,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
                         var cit_user = user.toLowerCase();
 
-                        http.request({
-                            url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass + "&desc=" + identifier),
-                            async: true,
-                            success: function(resp) {
-                                r = parseToObject(resp);
-                                res = r.data? parseToObject(r.data) : null;
+                        if (!self.controller.config.cit_authorized) {
+                            http.request({
+                                url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass + "&desc=" + identifier),
+                                async: true,
+                                success: function (resp) {
+                                    r = parseToObject(resp);
+                                    res = r.data ? parseToObject(r.data) : null;
 
-                                // set authorized flag in controller config
-                                // add default cit profile
-                                // transform default login
-                                if (!!res && res.result !== undefined) {
-
-                                    if (!self.controller.config.cit_authorized) {
+                                    // set authorized flag in controller config
+                                    // add default cit profile
+                                    // transform default login
+                                    if (!!res && res.result !== undefined) {
+                                        // set cit authorization flag
                                         self.controller.config.cit_authorized = res.result;
 
                                         // add default cit login if not already existing
@@ -3161,67 +3161,98 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                                     skin: ''
                                                 });
                                             }
-
                                             /* TODO discuss how to implement it
+                                             // update default admin profile
+                                             prof = _.filter(self.controller.profiles, function (p) {
+                                             return p.login === 'admin' &&
+                                             p.password === 'admin';
+                                             });
+
+                                             if (prof.length > 0 ) {
+                                             var pwd = ''
+
+                                             try {
+                                             pwd = system('sh automation/lib/system.sh info');
+                                             pwd = pwd[1];
+                                             } catch (e){
+
+                                             }
+
+                                             if (pwd && !!pwd && pwd !== '') {
+                                             // update default admin profile
+                                             self.controller.updateProfileAuth({
+                                             login: prof[0].login,
+                                             password: pwd
+                                             }, prof[0].id);
+                                             }
+                                             }*/
+                                        }
+                                        self.controller.saveConfig();
+                                    }
+
+                                    response = 'done';
+
+                                    reply.code = r.status;
+                                    reply.error = null;
+                                    reply.data = res;
+                                },
+                                error: function (resp) {
+                                    r = parseToObject(resp);
+
+                                    response = 'failed';
+
+                                    reply.code = r.status;
+                                    reply.error = r.error ? r.error : r.status + ' ' + r.statusText;
+                                    reply.data = r.data;
+                                }
+                            });
+                        } else {
+                            http.request({
+                                url: "https://certxfer.z-wavealliance.org:8443/CITAuth/Auth.aspx?UID=" + uuid + "&user=" + user,
+                                async: true,
+                                success: function (resp) {
+                                    r = parseToObject(resp);
+                                    res = r.data ? parseToObject(r.data) : null;
+
+                                    // check authorization
+                                    if (!!res && res.result !== undefined) {
+                                        // set cit authorization flag
+                                        self.controller.config.cit_authorized = res.result;
+                                        // update cit profile if auth is ok
+                                        if (res.result) {
                                             // update default admin profile
                                             prof = _.filter(self.controller.profiles, function (p) {
-                                                return p.login === 'admin' &&
-                                                    p.password === 'admin';
+                                                return p.login === cit_user;
                                             });
 
-                                            if (prof.length > 0 ) {
-                                                var pwd = ''
-
-                                                try {
-                                                    pwd = system('sh automation/lib/system.sh info');
-                                                    pwd = pwd[1];
-                                                } catch (e){
-
-                                                }
-
-                                                if (pwd && !!pwd && pwd !== '') {
-                                                    // update default admin profile
-                                                    self.controller.updateProfileAuth({
-                                                        login: prof[0].login,
-                                                        password: pwd
-                                                    }, prof[0].id);
-                                                }
-                                            }*/
+                                            if (prof.length > 0) {
+                                                // update default admin profile
+                                                self.controller.updateProfileAuth({
+                                                    login: cit_user,
+                                                    password: pass
+                                                }, prof[0].id);
+                                            }
                                         }
-
                                         self.controller.saveConfig();
-                                    } else {
-                                        // update default admin profile
-                                        prof = _.filter(self.controller.profiles, function (p) {
-                                            return p.login === cit_user;
-                                        });
-
-                                        if (prof.length > 0 ) {
-                                            // update default admin profile
-                                            self.controller.updateProfileAuth({
-                                                login: cit_user,
-                                                password: pass
-                                            }, prof[0].id);
-                                        }
                                     }
+
+                                    response = 'done';
+
+                                    reply.code = r.status;
+                                    reply.error = null;
+                                    reply.data = res;
+                                },
+                                error: function (resp) {
+                                    r = parseToObject(resp);
+
+                                    response = 'failed';
+
+                                    reply.code = r.status;
+                                    reply.error = r.error ? r.error : r.status + ' ' + r.statusText;
+                                    reply.data = r.data;
                                 }
-
-                                response = 'done';
-
-                                reply.code = r.status;
-                                reply.error = null;
-                                reply.data = res;
-                            },
-                            error: function(resp) {
-                                r = parseToObject(resp);
-
-                                response = 'failed';
-
-                                reply.code = r.status;
-                                reply.error = r.error? r.error : r.status + ' ' + r.statusText;
-                                reply.data = r.data;
-                            }
-                        });
+                            });
+                        }
 
                         // wait for response
                         while ((new Date()).valueOf() < d && response === 'in progress') {
