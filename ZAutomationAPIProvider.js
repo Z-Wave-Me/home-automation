@@ -163,6 +163,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
 
         this.router.post("/system/certfxAuth",this.ROLE.ANONYMOUS,this.certfxAuth);
+        this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
+
     },
 
     // Used by the android app to request server status
@@ -3115,9 +3117,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     if (cit_server_reachable){
                         var uuid = zway.controller.data.uuid.value;
                         var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+                        var cit_user = user.toLowerCase();
 
                         http.request({
-                            url:"https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + reqObj.user + "&pass=" + reqObj.pass + "&desc=" + encodeURI(identifier),
+                            url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass + "&desc=" + identifier),
                             async: true,
                             success: function(resp) {
                                 r = parseToObject(resp);
@@ -3129,20 +3132,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                 if (!!res && res.result !== undefined) {
 
                                     if (!self.controller.config.cit_authorized) {
-                                        self.controller.config.cit_identifier = reqObj.cit_identifier;
                                         self.controller.config.cit_authorized = res.result;
 
                                         // add default cit login if not already existing
                                         if (res.result) {
+                                            self.controller.config.cit_identifier = identifier;
+
                                             if (self.controller.profiles.filter(function (p) {
-                                                    return p.login === reqObj.user;
+                                                    return p.login === cit_user;
                                                 }).length === 0) {
 
                                                 // add cit user profile
                                                 self.controller.createProfile({
                                                     role: 1,
-                                                    login: reqObj.user,
-                                                    password: reqObj.pass,
+                                                    login: cit_user,
+                                                    password: pass,
                                                     email: '',
                                                     name: 'CIT Administrator',
                                                     lang: 'en',
@@ -3158,6 +3162,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                                 });
                                             }
 
+                                            /* TODO discuss how to implement it
                                             // update default admin profile
                                             prof = _.filter(self.controller.profiles, function (p) {
                                                 return p.login === 'admin' &&
@@ -3168,31 +3173,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                                 var pwd = ''
 
                                                 try {
-                                                    pwd = system('sh automation/lib/.system info');
+                                                    pwd = system('sh automation/lib/system.sh info');
                                                     pwd = pwd[1];
                                                 } catch (e){
-                                                    pwd = prof[0].password;
+
                                                 }
 
-                                                // update default admin profile
-                                                self.controller.updateProfileAuth({
-                                                    login: prof[0].login || 'admin',
-                                                    password: pwd || 'admin'
-                                                }, prof[0].id);
-                                            }
+                                                if (pwd && !!pwd && pwd !== '') {
+                                                    // update default admin profile
+                                                    self.controller.updateProfileAuth({
+                                                        login: prof[0].login,
+                                                        password: pwd
+                                                    }, prof[0].id);
+                                                }
+                                            }*/
                                         }
 
                                         self.controller.saveConfig();
                                     } else {
                                         // update default admin profile
                                         prof = _.filter(self.controller.profiles, function (p) {
-                                            return p.login === user;
+                                            return p.login === cit_user;
                                         });
 
                                         if (prof.length > 0 ) {
                                             // update default admin profile
                                             self.controller.updateProfileAuth({
-                                                login: user,
+                                                login: cit_user,
                                                 password: pass
                                             }, prof[0].id);
                                         }
@@ -3229,6 +3236,90 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         }
                     // forward local login if server isn't reachable but cit is registrated
                     } else {
+                        reply.code = 504;
+                        reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
+                    }
+                } else {
+                    reply.error = 'Bad Request. Please enter registered user, password and set a identifier name.';
+                    reply.code = 400;
+                }
+            } else {
+                reply.error = 'Not Implemented: This function is not supported by controller.';
+                reply.code = 501;
+            }
+        } catch(e) {
+            console.log(e.toString());
+            reply.error = 'Internal Server Error. ' + e.toString();
+        }
+
+        return reply;
+    },
+    certfxUpdateIdentifier: function() {
+        var self = this,
+            reply = {
+                error: "Internal Server Error",
+                data: null,
+                code: 500
+            },
+            response = 'in progress',
+            reqObj = parseToObject(this.req.body),
+            user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
+            pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined,
+            identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : undefined;
+
+        try {
+            // check controller vendor (cit)
+            if (zway.controller.data.manufacturerId.value === 797 &&
+                zway.controller.data.manufacturerProductType.value === 257 &&
+                zway.controller.data.manufacturerProductId.value === 1) {
+
+
+                //check for request data first
+                if (user && pass && identifier) {
+
+                    // access to alliance if server is reachable
+                    var uuid = zway.controller.data.uuid.value;
+                    var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+
+                    http.request({
+                        url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass + "&desc=" + identifier),
+                        async: true,
+                        success: function(resp) {
+                            r = parseToObject(resp);
+                            res = r.data? parseToObject(r.data) : null;
+
+                            // check if CertXFer auth is ok
+                            if (!!res && res.result) {
+                                // store new identifier name
+                                self.controller.config.cit_identifier = identifier;
+                                self.controller.saveConfig();
+                            }
+
+                            response = 'done';
+
+                            reply.code = r.status;
+                            reply.error = null;
+                            reply.data = res;
+                        },
+                        error: function(resp) {
+                            r = parseToObject(resp);
+
+                            response = 'failed';
+
+                            reply.code = r.status;
+                            reply.error = r.error? r.error : r.status + ' ' + r.statusText;
+                            reply.data = r.data;
+                        }
+                    });
+
+                    // wait for response
+                    while ((new Date()).valueOf() < d && response === 'in progress') {
+                        processPendingCallbacks();
+                    }
+
+                    if (response === 'in progress') {
+                        response === 'failed'
+
                         reply.code = 504;
                         reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
                     }
