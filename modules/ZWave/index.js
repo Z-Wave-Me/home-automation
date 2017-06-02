@@ -2256,9 +2256,18 @@ ZWave.prototype.defineHandlers = function () {
 
 			if(Object.keys(reqObj).length > 0) {
 
-				_.assign(expert_config, reqObj);
+				self.expert_config = _.assign(self.expert_config,_.pick(reqObj,
+                    'debug',
+                    'network_name',
+                    'date_format',
+                    'time_format',
+                    'time_zone',
+                    'notes',
+                    'ssid_name',
+                    'currentDateTime',
+                    'cit_identifier'));
 
-                this.ZWave.prototype.saveObject('expertconfig.json', expert_config, zwayCfg.name);
+                this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
 
                 return {
 					status: 200,

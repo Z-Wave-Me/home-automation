@@ -2928,7 +2928,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 _.extend(reply.data, {
                     cit_identifier: this.controller.config.cit_identifier || '',
                     cit_authorized: this.controller.config.cit_authorized || false,
-                    cit_license_countDown: zway && zway.controller.data.countDown? zway.controller.data.countDown.value : null
+                    cit_license_countDown: zway && zway.controller.data.countDown? zway.controller.data.countDown.value : null,
+                    cit_server_reachable: checkInternetConnection('https://findcit.z-wavealliance.org')
                 });
             }
 
