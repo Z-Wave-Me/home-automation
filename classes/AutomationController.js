@@ -1856,6 +1856,19 @@ AutomationController.prototype.removeProfile = function (profileId) {
     this.saveConfig();
 };
 
+AutomationController.prototype.allowLoginForwarding = function (request) {
+    var forward = false;
+
+    // check for forwarding if license for controller is still active and forwarding is set
+    // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
+    if ((request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" })).length < 1 &&
+        this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0) {
+        forward = true;
+    }
+
+    return forward;
+};
+
 AutomationController.prototype.addQRCode = function(profile, obj) {
     var typeNumber = 15,
         errorCorrectionLevel = 'H',

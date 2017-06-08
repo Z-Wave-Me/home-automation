@@ -28,7 +28,8 @@ function ZAutomationAPIWebRequest (controller) {
         body: null
     };
     this.exclFromProfileRes = [
-        'password'
+        'password',
+        'salt'
     ];
 
     this.registerRoutes();
@@ -163,6 +164,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
 
         this.router.post("/system/certfxAuth",this.ROLE.ANONYMOUS,this.certfxAuth);
+        this.router.post("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxAuthForwarding);
+        this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
         this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
 
     },
@@ -261,14 +264,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         });
 
         //if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
-        if (profile &&
-            ((!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) ||
-            (this.authCIT() && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt))))) {
+        /*if (profile &&
+         ((!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) ||
+         (this.authCIT() && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt))))) {
+         */
 
-            if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-                this.controller.addQRCode(profile, reqObj);
+        if (profile) {
+            // check if the pwd matches
+            var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
+
+            // do login if
+            // - login & pwd match (no cit)
+            // - registered cit & login and pwd match
+            // - registered cit & login forwarding is active
+            if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) {
+
+                // set qr code only box is no CIT
+                if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
+                    this.controller.addQRCode(profile, reqObj);
+                }
+                return this.setLogin(profile);
+            } else {
+                return this.denyLogin();
             }
-            return this.setLogin(profile);
         } else {
             return this.denyLogin();
         }
@@ -286,7 +304,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         var sessionId = this.controller.auth.getSessionId(this.req);
 
         if (sessionId) {
-            session = this.req.headers.ZWAYSession;
+            //session = this.req.headers.ZWAYSession;
 
             reply.headers = {
                 "Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
@@ -294,11 +312,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
             reply.code = 200;
 
-            if (this.controller.auth.sessions[session]) {
-                delete this.controller.auth.sessions[session];
+            if (this.controller.auth.sessions[sessionId]) {
+                delete this.controller.auth.sessions[sessionId];
             }
         } else {
-            reply.error = 'Could not logout.';
+            reply.code = 404;
+            reply.error = 'Could not logout. No session found.';
         }
         
         return reply;
@@ -2931,6 +2950,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     cit_license_countDown: zway && zway.controller.data.countDown? zway.controller.data.countDown.value : null,
                     cit_server_reachable: checkInternetConnection('https://findcit.z-wavealliance.org')
                 });
+
+                if (this.controller.config.forwardCITAuth === true && this.controller.config.cit_authorized) {
+                    profile = _.filter(this.controller.profiles, function(p){
+                        return p.name === 'CIT Administrator';
+                    });
+
+                    if (profile[0]) {
+                        _.extend(reply.data, {
+                            cit_forward_auth: {
+                                user: profile[0].login,
+                                allowed: this.controller.allowLoginForwarding(this.req)
+                            }
+                        });
+                    }
+
+                }
             }
 
             reply.code = 200;
@@ -3209,7 +3244,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             });
                         } else {
                             http.request({
-                                url: "https://certxfer.z-wavealliance.org:8443/CITAuth/Auth.aspx?UID=" + uuid + "&user=" + user,
+                                url: "https://certxfer.z-wavealliance.org:8443/CITAuth/Auth.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass,
                                 async: true,
                                 success: function (resp) {
                                     r = parseToObject(resp);
@@ -3217,8 +3252,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                                     // check authorization
                                     if (!!res && res.result !== undefined) {
-                                        // set cit authorization flag
-                                        self.controller.config.cit_authorized = res.result;
                                         // update cit profile if auth is ok
                                         if (res.result) {
                                             // update default admin profile
@@ -3286,6 +3319,146 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
+    certfxAuthForwarding: function() {
+        var self = this,
+            reply = {
+                error: "Internal Server Error",
+                data: null,
+                code: 500
+            },
+            reqObj = parseToObject(this.req.body);
+
+        try {
+            // check controller vendor (cit)
+            if (zway.controller.data.manufacturerId.value === 797 &&
+                zway.controller.data.manufacturerProductType.value === 257 &&
+                zway.controller.data.manufacturerProductId.value === 1) {
+
+                //check for request data first
+                if (reqObj.hasOwnProperty('forwardCITAuth')) {
+
+                    self.controller.config.forwardCITAuth = reqObj.forwardCITAuth === true || reqObj.forwardCITAuth === 'true'? true : false;
+
+                    self.controller.saveConfig();
+
+                    reply.code = 200;
+                    reply.error = null;
+                    reply.message = '200 OK'
+                    reply.data = {
+                        forwardCITAuth: self.controller.config.forwardCITAuth
+                    };
+                } else {
+                    reply.error = 'Bad Request. Please enter forwardCITAuth = true/false.';
+                    reply.code = 400;
+                }
+            } else {
+                reply.error = 'Not Implemented: This function is not supported by controller.';
+                reply.code = 501;
+            }
+        } catch(e) {
+            console.log(e.toString());
+            reply.error = 'Internal Server Error. ' + e.toString();
+        }
+
+        return reply;
+    },
+    certfxUnregister: function() {
+        var self = this,
+            reply = {
+                error: "Internal Server Error",
+                data: null,
+                code: 500
+            },
+            response = 'in progress',
+            req_user = this.profileByUser(this.req.user),
+            reqObj = parseToObject(this.req.body),
+            user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
+            pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined;
+
+        try {
+            // check controller vendor (cit)
+            if (zway.controller.data.manufacturerId.value === 797 &&
+                zway.controller.data.manufacturerProductType.value === 257 &&
+                zway.controller.data.manufacturerProductId.value === 1) {
+
+                // check if posted login mtches with the requested one
+                if (req_user && req_user.login === user) {
+                    //check for request data first
+                    if (user && pass) {
+                        var uuid = zway.controller.data.uuid.value;
+                        var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+                        // try to unregister the CIT from user
+                        http.request({
+                            url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/UnReg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass),
+                            async: true,
+                            success: function(resp) {
+                                r = parseToObject(resp);
+                                res = r.data? parseToObject(r.data) : null;
+
+                                // check if CertXFer auth is ok
+                                if (!!res && res.result) {
+                                    // store new identifier name
+                                    self.controller.config.cit_identifier = '';
+                                    self.controller.config.cit_authorized = false;
+                                    self.controller.config.forwardCITAuth = false;
+
+                                    self.controller.removeProfile(req_user.id);
+                                    self.controller.saveConfig();
+
+                                    reply.message = "Your CIT was successfully unregistered. You'll be logged out in 3, 2, 1 ...";
+
+                                    setTimeout(function(){
+                                        self.doLogout();
+                                    }, 3000);
+                                }
+
+                                response = 'done';
+
+                                reply.code = r.status;
+                                reply.error = null;
+                                reply.data = res;
+                            },
+                            error: function(resp) {
+                                r = parseToObject(resp);
+
+                                response = 'failed';
+
+                                reply.code = r.status;
+                                reply.error = r.error? r.error : r.status + ' ' + r.statusText;
+                                reply.data = r.data;
+                            }
+                        });
+
+                        // wait for response
+                        while ((new Date()).valueOf() < d && response === 'in progress') {
+                            processPendingCallbacks();
+                        }
+
+                        if (response === 'in progress') {
+                            response === 'failed'
+
+                            reply.code = 504;
+                            reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
+                        }
+                    } else {
+                        reply.error = 'Bad Request. Please check your login or password.';
+                        reply.code = 400;
+                    }
+                } else {
+                    reply.error = 'Forbidden. You can only unregister your own user.';
+                    reply.code = 403;
+                }
+            } else {
+                reply.error = 'Not Implemented: This function is not supported by controller.';
+                reply.code = 501;
+            }
+        } catch(e) {
+            console.log(e.toString());
+            reply.error = 'Internal Server Error. ' + e.toString();
+        }
+
+        return reply;
+    },
     certfxUpdateIdentifier: function() {
         var self = this,
             reply = {
@@ -3295,8 +3468,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             response = 'in progress',
             reqObj = parseToObject(this.req.body),
-            user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
-            pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined,
+            req_user = this.profileByUser(this.req.user),
             identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : undefined;
 
         try {
@@ -3305,16 +3477,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 zway.controller.data.manufacturerProductType.value === 257 &&
                 zway.controller.data.manufacturerProductId.value === 1) {
 
-
                 //check for request data first
-                if (user && pass && identifier) {
+                if (req_user && req_user.login && identifier) {
 
                     // access to alliance if server is reachable
                     var uuid = zway.controller.data.uuid.value;
                     var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 
                     http.request({
-                        url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass + "&desc=" + identifier),
+                        url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + req_user.login + "&desc=" + identifier),
                         async: true,
                         success: function(resp) {
                             r = parseToObject(resp);
@@ -3426,7 +3597,12 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
 };
 
 ZAutomationAPIWebRequest.prototype.authCIT = function () {
-    return checkBoxtype('cit') && this.controller.config.cit_authorized;
+    var license = true;
+    // check for license countdown
+    if (zway && zway.controller.data.countDown) {
+        license = zway.controller.data.countDown.value > 0? true : false;
+    }
+    return checkBoxtype('cit') && this.controller.config.cit_authorized && license;
 };
 
 ZAutomationAPIWebRequest.prototype.getProfileResponse = function (profileObj) {
