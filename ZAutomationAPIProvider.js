@@ -164,7 +164,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
 
         this.router.post("/system/certfxAuth",this.ROLE.ANONYMOUS,this.certfxAuth);
-        this.router.post("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxAuthForwarding);
+        this.router.post("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxSetAuthForwarding);
+        this.router.get("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxGetAuthForwarding);
         this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
         this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
 
@@ -3319,7 +3320,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
-    certfxAuthForwarding: function() {
+    certfxSetAuthForwarding: function() {
         var self = this,
             reply = {
                 error: "Internal Server Error",
@@ -3351,6 +3352,37 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.error = 'Bad Request. Please enter forwardCITAuth = true/false.';
                     reply.code = 400;
                 }
+            } else {
+                reply.error = 'Not Implemented: This function is not supported by controller.';
+                reply.code = 501;
+            }
+        } catch(e) {
+            console.log(e.toString());
+            reply.error = 'Internal Server Error. ' + e.toString();
+        }
+
+        return reply;
+    },
+    certfxGetAuthForwarding: function() {
+        var self = this,
+            reply = {
+                error: "Internal Server Error",
+                data: null,
+                code: 500
+            };
+
+        try {
+            // check controller vendor (cit)
+            if (zway.controller.data.manufacturerId.value === 797 &&
+                zway.controller.data.manufacturerProductType.value === 257 &&
+                zway.controller.data.manufacturerProductId.value === 1) {
+
+                reply.code = 200;
+                reply.error = null;
+                reply.data = {
+                    forwardCITAuth: self.controller.config.forwardCITAuth? self.controller.config.forwardCITAuth : false
+                };
+
             } else {
                 reply.error = 'Not Implemented: This function is not supported by controller.';
                 reply.code = 501;

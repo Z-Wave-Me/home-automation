@@ -1857,12 +1857,27 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };
 
 AutomationController.prototype.allowLoginForwarding = function (request) {
-    var forward = false;
+    var forward = false,
+        find = false,
+        zbw_cookie;
+
+
+    // check if find.z-wave.me
+    if (request.headers['Cookie']) {
+        zbw_cookie = request.headers['Cookie'].split(";").map(function(el) {
+            return el.trim().split("=");
+        }).filter(function(el) {
+            return el[0] === "ZBW_SESSID"
+        })
+    }
+
+    find = zbw_cookie && zbw_cookie.length > 0;
+
+    console.log('find:', find);
 
     // check for forwarding if license for controller is still active and forwarding is set
     // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
-    if ((request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" })).length < 1 &&
-        this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0) {
+    if (this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0 && !find) {
         forward = true;
     }
 
