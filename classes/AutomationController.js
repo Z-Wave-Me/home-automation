@@ -1873,8 +1873,6 @@ AutomationController.prototype.allowLoginForwarding = function (request) {
 
     find = zbw_cookie && zbw_cookie.length > 0;
 
-    console.log('find:', find);
-
     // check for forwarding if license for controller is still active and forwarding is set
     // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
     if (this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0 && !find) {
