@@ -831,27 +831,33 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
     	RFRxLRCErrors: 0,
 		RFRxCRC16Errors: 0,
 		RFRxForeignHomeID: 0
-	}
+	};
 
-    // intervall function collecting network statistic data
-    this.statisticsIntervall = setInterval(function() {
-
-    	var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'];
+	this.updateNetStats = function () {
+        var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'];
 
         if (self.statistics.RFTxFrames > 32768) { // 2^15
             zway.ClearNetworkStats();
 
             stats.forEach(function(key) {
                 self.statistics[key] = zway.controller.data.statistics[key].value;
-			});
+            });
 
-		} else {
+        } else {
             zway.GetNetworkStats();
 
             stats.forEach(function(key) {
                 self.statistics[key] = self.statistics[key] + zway.controller.data.statistics[key].value;
             });
-		}
+        }
+	};
+
+    // initial call
+    this.updateNetStats();
+
+    // intervall function collecting network statistic data
+    this.statisticsIntervall = setInterval(function() {
+    	self.updateNetStats();
     }, 600 * 1000);
 };
 
