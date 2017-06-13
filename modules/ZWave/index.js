@@ -833,7 +833,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 		RFRxForeignHomeID: 0
 	}
 
-    // polling function
+    // intervall function collecting network statistic data
     this.statisticsIntervall = setInterval(function() {
 
     	var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'];
@@ -852,7 +852,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
                 self.statistics[key] = self.statistics[key] + zway.controller.data.statistics[key].value;
             });
 		}
-    }, 10 * 1000); //600*1000);
+    }, 600 * 1000);
 };
 
 // --------------- Public HTTP API -------------------
