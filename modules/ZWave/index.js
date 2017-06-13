@@ -176,6 +176,7 @@ ZWave.prototype.init = function (config) {
 		// check if the controller license is still up to date
 		// and set update timer
 		this.certXFCheck();
+        this.refreshStatisticsPeriodically();
 	}
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
@@ -276,6 +277,11 @@ ZWave.prototype.stop = function () {
 	}
 	if (this._dataUnbind) {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
+	}
+
+	if (this.statisticsIntervall) {
+		clearInterval(this.statisticsIntervall);
+        this.statisticsIntervall = undefined;
 	}
 };
 
@@ -815,6 +821,40 @@ ZWave.prototype.certXFCheck = function () {
     this.checkForCertFxLicense();
 };
 
+ZWave.prototype.refreshStatisticsPeriodically = function () {
+	var self = this;
+
+	this.statistics = {
+        RFTxFrames: 0,
+		RFTxLBTBackOffs: 0,
+    	RFRxFrames: 0,
+    	RFRxLRCErrors: 0,
+		RFRxCRC16Errors: 0,
+		RFRxForeignHomeID: 0
+	}
+
+    // polling function
+    this.statisticsIntervall = setInterval(function() {
+
+    	var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'];
+
+        if (self.statistics.RFTxFrames > 32768) { // 2^15
+            zway.ClearNetworkStats();
+
+            stats.forEach(function(key) {
+                self.statistics[key] = zway.controller.data.statistics[key].value;
+			});
+
+		} else {
+            zway.GetNetworkStats();
+
+            stats.forEach(function(key) {
+                self.statistics[key] = self.statistics[key] + zway.controller.data.statistics[key].value;
+            });
+		}
+    }, 10 * 1000); //600*1000);
+};
+
 // --------------- Public HTTP API -------------------
 
 
@@ -852,6 +892,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
     ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -889,6 +930,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
     ws.revokeExternalAccess(_name + ".sendZwayReport");
     ws.revokeExternalAccess(_name + ".NetworkReorganization");
     ws.revokeExternalAccess(_name + ".GetReorganizationLog");
+    ws.revokeExternalAccess(_name + ".GetStatisticsData");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -2926,6 +2968,20 @@ ZWave.prototype.defineHandlers = function () {
 
         return reply;
     }
+
+    this.ZWaveAPI.GetStatisticsData = function() {
+        return {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Authorization",
+                "Connection": "keep-alive"
+            },
+            body: self.statistics
+        };
+    };
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
