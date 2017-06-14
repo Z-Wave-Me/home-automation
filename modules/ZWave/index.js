@@ -267,7 +267,7 @@ ZWave.prototype.stop = function () {
 
 	this.stopBinding();
 
-	clearInterval(this.timer);
+	clearInterval(this.rssiTimer);
 
     this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
     this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
@@ -496,7 +496,7 @@ ZWave.prototype.CommunicationLogger = function() {
     if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
 
         // set time that will request RSSI stats every 30 s
-        this.timer = setInterval(function() {
+        this.rssiTimer = setInterval(function() {
             try {
                 var data = self.loadObject("rssidata.json");
 
@@ -834,22 +834,34 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	};
 
 	this.updateNetStats = function () {
-        var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'];
+		try {
+            var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
+                // get the biggest value of all stat params
+                maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key]}));
 
-        if (self.statistics.RFTxFrames > 32768) { // 2^15
-            zway.ClearNetworkStats();
+            // reset network statistics
+            if (maxPaketCnt > 32768) { // 2^15
+                zway.ClearNetworkStats(function(){
+                    stats.forEach(function(key) {
+                        self.statistics[key] = zway.controller.data.statistics[key].value;
+                    });
+                }, function(){});
+                // update network statistics
+            } else {
+                zway.GetNetworkStats(function(){
+                    stats.forEach(function(key) {
+                        self.statistics[key] = self.statistics[key] + zway.controller.data.statistics[key].value;
+                    });
+                }, function(){});
+            }
+		} catch (e){
+			console.log('Failed to update/remove network statistics.', e.toString());
 
-            stats.forEach(function(key) {
-                self.statistics[key] = zway.controller.data.statistics[key].value;
-            });
-
-        } else {
-            zway.GetNetworkStats();
-
-            stats.forEach(function(key) {
-                self.statistics[key] = self.statistics[key] + zway.controller.data.statistics[key].value;
-            });
-        }
+			if(this.statisticsIntervall) {
+				clearInterval(this.statisticsIntervall);
+                this.statisticsIntervall = undefined;
+			}
+		}
 	};
 
     // initial call
