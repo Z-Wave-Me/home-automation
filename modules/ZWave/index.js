@@ -837,20 +837,26 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 		try {
             var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
                 // get the biggest value of all stat params
-                maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key]}));
+                maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
 
             // reset network statistics
             if (maxPaketCnt > 32768) { // 2^15
                 zway.ClearNetworkStats(function(){
                     stats.forEach(function(key) {
-                        self.statistics[key] = zway.controller.data.statistics[key].value;
+                        self.statistics[key] = {
+                            value: zway.controller.data.statistics[key].value,
+							updateTime: zway.controller.data.statistics[key].updateTime
+                        }
                     });
                 }, function(){});
                 // update network statistics
             } else {
                 zway.GetNetworkStats(function(){
                     stats.forEach(function(key) {
-                        self.statistics[key] = self.statistics[key] + zway.controller.data.statistics[key].value;
+                        self.statistics[key] = {
+                        	value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
+							updateTime: zway.controller.data.statistics[key].updateTime
+						}
                     });
                 }, function(){});
             }
