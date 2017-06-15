@@ -1065,12 +1065,13 @@ ZWave.prototype.defineHandlers = function () {
 
 			// do backup
 			var data = zway.controller.Backup();
+			var filename = (checkBoxtype('cit')?"cit" : "z-way") + "-backup-" + ts + ".zbk"
 
             return {
 				status: 200,
 				headers: {
 					"Content-Type": "application/x-download",
-					"Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zbk",
+					"Content-Disposition": "attachment; filename=" + filename,
 					"Access-Control-Allow-Origin": "*",
 					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 					"Access-Control-Allow-Headers": "Authorization",
