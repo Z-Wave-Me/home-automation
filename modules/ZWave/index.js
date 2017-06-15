@@ -841,7 +841,9 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
             // reset network statistics
             if (maxPaketCnt > 32768) { // 2^15
-                zway.ClearNetworkStats(function(){
+                zway.ClearNetworkStats();
+
+				zway.GetNetworkStats(function(){
                     stats.forEach(function(key) {
                         self.statistics[key] = {
                             value: zway.controller.data.statistics[key].value,
