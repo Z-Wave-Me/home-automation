@@ -60,6 +60,7 @@ InbandNotifications.prototype.init = function (config) {
                 devName = vDev.get('metrics:title'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
+                location = vDev.get('location'),
                 eventType = function(){
                     if(vDev.get('metrics:probeTitle')){
                         return vDev.get('metrics:probeTitle').toLowerCase();
@@ -102,7 +103,8 @@ InbandNotifications.prototype.init = function (config) {
                         case 'toggleButton':
                             msg = {
                                 dev: devName,
-                                l:lvl
+                                l:lvl,
+                                location: location === 0? '' : location
                                 };
                             msgType = 'device-OnOff';
 
@@ -111,7 +113,8 @@ InbandNotifications.prototype.init = function (config) {
                         case 'switchMultilevel':
                             msg = {
                                 dev: devName,
-                                l: lvl + '%'
+                                l: lvl + '%',
+                                location: location === 0? '' : location
                                 };
                             msgType = 'device-status';
 
@@ -120,7 +123,8 @@ InbandNotifications.prototype.init = function (config) {
                         case 'sensorDiscrete':
                             msg = {
                                 dev: devName,
-                                l: lvl
+                                l: lvl,
+                                location: location === 0? '' : location
                             };
                             msgType = 'device-status';
 
@@ -132,7 +136,8 @@ InbandNotifications.prototype.init = function (config) {
                             if (!~devProbeType.indexOf('meterElectric_')){
                                 msg = {
                                     dev: devName,
-                                    l: lvl + scaleUnit? ' ' + scaleUnit: ''
+                                    l: lvl + (scaleUnit? ' ' + scaleUnit: ''),
+                                    location: location === 0? '' : location
                                 };
                                 msgType = 'device-' + eventType();
 
@@ -143,7 +148,8 @@ InbandNotifications.prototype.init = function (config) {
                             msg = {
                                 dev: devName,
                                 l: lvl,
-                                color: vDev.get('metrics:color')
+                                color: vDev.get('metrics:color'),
+                                location: location === 0? '' : location
                                 };
                             msgType = 'device-' + eventType();
 

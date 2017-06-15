@@ -718,11 +718,12 @@ AutomationController.prototype.instantiateModules = function () {
     var self = this,
         langFile = this.loadMainLang(),
         modules = Object.getOwnPropertyNames(this.modules),
-        requiredBaseModules = ["ZWave"],
+        requiredBaseModules = ["Cron","ZWave"],
         requiredWithDep = [];
 
     this.loadedModules = [];
 
+    modules.splice(modules.indexOf('Cron'), 1);
     modules.splice(modules.indexOf('ZWave'), 1);
 
     // get all required modules from dependencies
@@ -1177,7 +1178,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
             iconName,
             id,
             function(success) {
-                filelist = typeof success === 'string'? JSON.parse(success) : success;
+                filelist = parseToObject(success);
                 result = "done";
             },  function() {
                 result = "failed";
@@ -1782,6 +1783,9 @@ AutomationController.prototype.createProfile = function (profile) {
         profile.rooms = profile.rooms.indexOf(0) > -1? profile.rooms : profile.rooms.concat(globalRoom);
     }
 
+    profile.salt = generateSalt();
+    profile.password = hashPassword(profile.password, profile.salt);
+
     this.profiles.push(profile);
 
     this.saveConfig();
@@ -1802,6 +1806,10 @@ AutomationController.prototype.updateProfile = function (object, id) {
                 this.profiles[index][property] = object[property];
             }
         }
+    }
+
+    if (!checkBoxtype('cit')){
+        this.addQRCode(p, object);
     }
     
     this.saveConfig();
@@ -1827,7 +1835,9 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
             p.login = object.login;
         }
 
-        this.addQRCode(p, object);
+        if (!checkBoxtype('cit')){
+            this.addQRCode(p, object);
+        }
 
         this.saveConfig();
         
@@ -1844,6 +1854,32 @@ AutomationController.prototype.removeProfile = function (profileId) {
     });
 
     this.saveConfig();
+};
+
+AutomationController.prototype.allowLoginForwarding = function (request) {
+    var forward = false,
+        find = false,
+        zbw_cookie;
+
+
+    // check if find.z-wave.me
+    if (request.headers['Cookie']) {
+        zbw_cookie = request.headers['Cookie'].split(";").map(function(el) {
+            return el.trim().split("=");
+        }).filter(function(el) {
+            return el[0] === "ZBW_SESSID"
+        })
+    }
+
+    find = zbw_cookie && zbw_cookie.length > 0;
+
+    // check for forwarding if license for controller is still active and forwarding is set
+    // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
+    if (this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0 && !find) {
+        forward = true;
+    }
+
+    return forward;
 };
 
 AutomationController.prototype.addQRCode = function(profile, obj) {
