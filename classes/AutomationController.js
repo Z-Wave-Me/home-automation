@@ -1856,7 +1856,7 @@ AutomationController.prototype.removeProfile = function (profileId) {
     this.saveConfig();
 };
 
-AutomationController.prototype.allowLoginForwarding = function (request) {
+/*AutomationController.prototype.allowLoginForwarding = function (request) {
     var forward = false,
         find = false,
         zbw_cookie;
@@ -1880,7 +1880,7 @@ AutomationController.prototype.allowLoginForwarding = function (request) {
     }
 
     return forward;
-};
+};*/
 
 AutomationController.prototype.addQRCode = function(profile, obj) {
     var typeNumber = 15,

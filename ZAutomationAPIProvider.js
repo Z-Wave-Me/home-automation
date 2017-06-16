@@ -278,7 +278,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // - login & pwd match (no cit)
             // - registered cit & login and pwd match
             // - registered cit & login forwarding is active
-            if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) {
+            //if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
+            if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
 
                 // set qr code only box is no CIT
                 if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
