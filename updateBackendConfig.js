@@ -457,11 +457,11 @@
         }
 
         // set login forward to active by default
-        if (config.controller.forwardCITAuth === undefined  && checkBoxtype('cit')) {
+        /*if (config.controller.forwardCITAuth === undefined  && checkBoxtype('cit')) {
             config.controller.forwardCITAuth = true;
 
             saveObject('config.json', config);
-        }
+        }*/
     } catch (e) {
         console.log(e.toString());
     }

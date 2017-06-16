@@ -577,6 +577,7 @@ ZWave.prototype.CommunicationLogger = function() {
 					'0x8F.0x01', // 'M' => Multicommand
 					'0x98.0x81', // 'S' => Security
 					'0x98.0xC1', // 'S' => Security
+					'0x9F.0x03', // 'S2' => Security S2
 					'0x56.0x01'  // 'C' => CRC16
 			]
 			result= {
@@ -607,6 +608,9 @@ ZWave.prototype.CommunicationLogger = function() {
 						case '0x98.0x81':
 						case '0x98.0xC1':
 							result.encap = 'S'; // Security Encap
+							return;
+						case '0x9F.0x03':
+							result.encap = 'S2'; // Security S2 Encap
 							return;
 						case '0x56.0x01':
 							result.encap = 'C'; // CR16 Encap

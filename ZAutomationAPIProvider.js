@@ -3321,7 +3321,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
-    certfxSetAuthForwarding: function() {
+    /*certfxSetAuthForwarding: function() {
         var self = this,
             reply = {
                 error: "Internal Server Error",
@@ -3394,7 +3394,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         }
 
         return reply;
-    },
+    },*/
     certfxUnregister: function() {
         var self = this,
             reply = {
