@@ -6,13 +6,15 @@
 	"l_Level":"Dimmer levels for day and night",
 	"l_DayLevel":"Day Level",
 	"l_NightLevel":"Night Level",
+	"l_sendOnAfterLevel":"Send command ON after command Dim",
+	"h_sendOnAfterLevel":"For Z-Wave.Me Dimmer 3 gen need to send command ON to save it state.",
 	"l_Day":"The time interval when the light is switched on for Day Level",
 	"timeFormat":"hh:mm",
 	"l_DayTimeStart":"Start",
 	"l_DayTimeEnd":"End",
 	"l_DimmerButton":"Dimmer Button",
 	"l_MotionEventToStartTimer":"What event from the motion sensor to start the timer",
-	"l_timeout":"Timeout autooff in seconds",
-	"h_timeout":"To disable autoff set 0 or leave the field empty",
+	"l_timeout":"AutoOff timeout in seconds",
+	"h_timeout":"To disable AutoOff set 0 or leave the field empty",
 	"h_DimmerButton":"To generate dimmer button activate module SwitchControlGenerator and then press dimmer button"
 }
