@@ -1809,7 +1809,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
     }
 
     if (!checkBoxtype('cit')){
-        this.addQRCode(p, object);
+        this.addQRCode(profile, object);
     }
     
     this.saveConfig();
