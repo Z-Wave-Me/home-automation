@@ -169,6 +169,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
         this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
 
+        this.router.get("/devices/order", this.ROLE.ADMIN, this.orderDevices);
+        this.router.get("/devices/order/elements", this.ROLE.ADMIN, this.orderDevices);
+        this.router.get("/devices/order/dashboard", this.ROLE.ADMIN, this.orderDevices);
+        this.router.get("/devices/order/location/:id", this.ROLE.ADMIN, this.orderDevices);
+        this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
+
     },
 
     // Used by the android app to request server status
@@ -3713,3 +3719,55 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 };
+
+ZAutomationAPIWebRequest.prototype.orderDevices = function () {
+    var self = this,
+        reply = {
+            error: "Internal Server Error",
+            data: null,
+            code: 500
+        };
+
+    var order = self.controller.order;
+
+    reply.data = order;
+    reply.code = 200;
+
+    return reply;
+}
+
+ZAutomationAPIWebRequest.prototype.reorderDevices = function () {
+    var self = this,
+        reply = {
+            error: "Internal Server Error",
+            data: null,
+            code: 500
+        };
+
+    var reqObj = typeof this.req.body !== 'object' ? JSON.parse(this.req.body) : this.req.body;
+
+    var data = reqObj.data, // ordered list of devices
+        action = reqObj.action; // Dasboard, Elelements, Room(location)
+
+    if(self.controller.reoderDevices(data, action)) {
+        reply.error = "";
+        reply.data = "OK";
+        reply.code = 200;
+    }
+
+    //     a = self.controller.order.elements.indexOf(reqObj[0].id);
+    //     b = self.controller.order.elements.indexOf(reqObj[1].id);
+    //
+    // Array.prototype.swapItems = function(a, b){
+    //     this[a] = this.splice(b, 1, this[a])[0];
+    //     return this;
+    // }
+    //
+    //
+    // self.controller.order.elements = self.controller.order.elements.swapItems(a,b);
+    //
+
+    return reply;
+
+}
+

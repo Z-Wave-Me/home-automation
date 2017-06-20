@@ -30,7 +30,8 @@ VirtualDevice = function (options) {
             'visibility',
             'creationTime',
             'probeType',
-            'customIcons'
+            'customIcons',
+            'order'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -43,6 +44,11 @@ VirtualDevice = function (options) {
         visibility: visibility,
         probeType: probeType,
         customIcons: customicons,
+        order: {
+            location: 0,
+            elements: 0,
+            dashboard: 0
+        },
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -54,7 +60,12 @@ VirtualDevice = function (options) {
             visibility: visibility,
             creationTime: 0,
             probeType: probeType,
-            customIcons: customicons
+            customIcons: customicons,
+            order: {
+                location: 0,
+                elements: 0,
+                dashboard: 0
+            }
         },
         changed: {},
         overlay: options.overlay || {},

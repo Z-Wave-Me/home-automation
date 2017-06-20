@@ -41,6 +41,12 @@ function AutomationController() {
     this.modules = {};
     this.devices = new DevicesCollection(this);
 
+    this.order = {
+        locations: {},
+        elements: [],
+        dashboard: []
+    };
+
     this.notifications = [];
     this.lastStructureChangeTime = 0;
 
@@ -92,6 +98,19 @@ AutomationController.prototype.init = function () {
         self.devices.on('change:location', function (device) {
             ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, true);
+            var id = device.get('id');
+                locationId = device.get('location'),
+                order = device.get('order'),
+                count = 0;
+
+            self.devices.forEach(function(dev) {
+                if(dev.get('location') == locationId) {
+                    count++;
+                }
+            });
+
+            order.location = (count - 1);
+            device.set('order', order);
         });
 
         // update namespaces if device permanently_hidden status has changed
@@ -104,14 +123,57 @@ AutomationController.prototype.init = function () {
         self.devices.on('created', function (device) {
             ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
             pushNamespaces(device);
+
+            if(device.get('deviceType') !== 'battery') {
+
+                self.order.elements.push(device.get('id'));
+                self.order.elements.sort(function(a, b) {
+                    atime = self.devices.get(a).get('creationTime');
+                    btime = self.devices.get(b).get('creationTime');
+                    return atime > btime ? -1 : atime < btime ? 1 : 0;
+                });
+            }
         });
 
         self.devices.on('destroy', function (device) {
             ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
+
+            var id = device.get('id');
+
+            if(self.order.elements.indexOf(id) !== -1) {
+                self.order.elements.splice(id, 1);
+            }
+
+            if(self.order.dashboard.indexOf(id) !== -1) {
+                self.order.dashboard.splice(id, 1);
+            }
+
+            _.forEach(self.order.locations, function(location) {
+               if(location.indexOf(id) !== -1) {
+                   self.order.locations[Object.getOwnPropertyNames(location)].splice(id, 1);
+               }
+            });
+
         });
 
         self.devices.on('removed', function (device) {
             pushNamespaces(device);
+
+            var id = device.get('id');
+
+            if(self.order.elements.indexOf(id) !== -1) {
+                self.order.elements.splice(id, 1);
+            }
+
+            if(self.order.dashboard.indexOf(id) !== -1) {
+                self.order.dashboard.splice(id, 1);
+            }
+
+            _.forEach(self.order.locations, function(location) {
+                if(location.indexOf(id) !== -1) {
+                    self.order.locations[Object.getOwnPropertyNames(location)].splice(id, 1);
+                }
+            });
         });
 
         self.on("notifications.push", function (notice) {
@@ -2807,4 +2869,24 @@ AutomationController.prototype.getRemoteId = function() {
 
 AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
     return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
+};
+
+AutomationController.prototype.reoderDevices = function(list, action) {
+    var self = this,
+        result = false;
+    try {
+        _.each(list, function(id) {
+            var vDev = self.devices.get(id),
+                order = vDev.get('order');
+
+            order[action] = list.indexOf(id);
+
+            vDev.set('order', order);
+        });
+        result = true;
+    } catch(e) {
+        console.log(e);
+    }
+
+    return result;
 };
