@@ -45,7 +45,7 @@ VirtualDevice = function (options) {
         probeType: probeType,
         customIcons: customicons,
         order: {
-            location: 0,
+            room: 0,
             elements: 0,
             dashboard: 0
         },
@@ -62,7 +62,7 @@ VirtualDevice = function (options) {
             probeType: probeType,
             customIcons: customicons,
             order: {
-                location: 0,
+                room: 0,
                 elements: 0,
                 dashboard: 0
             }

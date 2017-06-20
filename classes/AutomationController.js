@@ -109,7 +109,7 @@ AutomationController.prototype.init = function () {
                 }
             });
 
-            order.location = (count - 1);
+            order.room = (count - 1);
             device.set('order', order);
         });
 
