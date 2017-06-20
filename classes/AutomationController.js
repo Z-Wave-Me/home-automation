@@ -160,6 +160,21 @@ AutomationController.prototype.init = function () {
             pushNamespaces(device);
 
             var id = device.get('id');
+            var locationId = device.get('location');
+
+            if(locationId !== 0) {
+                var location = self.locations.find(function (location) {
+                    return location.id === locationId;
+                });
+
+                if(location !== 'undefined') {
+                    var index = location.main_sensors.indexOf(id);
+                    location.main_sensors.splice(index, 1);
+                    self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
+                        console.log("Location ",data);
+                    });
+                }
+            }
 
             if(self.order.elements.indexOf(id) !== -1) {
                 self.order.elements.splice(id, 1);
@@ -1569,7 +1584,8 @@ AutomationController.prototype.addLocation = function (locProps, callback) {
             user_img: locProps.user_img || '',
             default_img: locProps.default_img || '',
             img_type: locProps.img_type || '',
-            show_background: locProps.show_background || false
+            show_background: locProps.show_background || false,
+            main_sensors: locProps.main_sensors ||  []
         };
            
         this.locations.push(location);
@@ -1614,7 +1630,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, callback) {
+AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, main_sensors, callback) {
     var langFile = this.loadMainLang(),
         locations = this.locations.filter(function (location) {
             return location.id === id;
@@ -1625,6 +1641,7 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
 
         location.title = title;
         location.show_background = show_background;
+        location.main_sensors = main_sensors;
         if (typeof user_img === 'string' && user_img.length > 0) {
             location.user_img = user_img;
         }
