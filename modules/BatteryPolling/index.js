@@ -1,7 +1,7 @@
 /*** BatteryPolling Z-Way HA module *******************************************
 
-Version: 2.0.1
-(c) Z-Wave.Me, 2014
+Version: 2.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Gregory Sitnin <sitnin@z-wave.me> nad Serguei Poltorak <ps@z-wave.me>
 Description:
@@ -48,7 +48,7 @@ BatteryPolling.prototype.init = function (config) {
             metrics: {
                 probeTitle: "Battery",
                 scaleTitle: "%",
-                title: "Battery digest " + this.id
+                title: self.getInstanceTitle()
             }
         },
         overlay: {},

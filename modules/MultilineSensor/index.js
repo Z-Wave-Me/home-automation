@@ -1,7 +1,7 @@
 /*** MultilineSensor Z-Way HA module *******************************************
 
-Version: 1.0.2
-(c) Z-Wave.Me, 2015
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Description:
@@ -140,7 +140,7 @@ MultilineSensor.prototype.init = function (config) {
         defaults: {
             metrics: {
                 multilineType: 'multilineSensor',
-                title: self.getInstanceTitle(this.id),
+                title: self.getInstanceTitle(),
                 icon: self.getIcon(deviceMetrics[0]),
                 level: self.getLevel(deviceMetrics[0]),
                 scaleTitle: self.getScaleTitle(deviceMetrics[0])
@@ -149,7 +149,7 @@ MultilineSensor.prototype.init = function (config) {
         overlay: {
             deviceType: 'sensorMultiline',
             metrics: {
-                title: self.getInstanceTitle(this.id),
+                title: self.getInstanceTitle(),
                 sensors: deviceMetrics,
                 icon: self.getIcon(deviceMetrics[0]),
                 level: self.getLevel(deviceMetrics[0]),
@@ -216,14 +216,6 @@ MultilineSensor.prototype.getScaleTitle = function (device) {
 
 MultilineSensor.prototype.getLevel = function (device) {
     return device && device.metrics.level? device.metrics.level : '';
-};
-
-MultilineSensor.prototype.getInstanceTitle = function (instanceId) {
-    var instanceTitle = this.controller.instances.filter(function (instance){
-        return instance.id === instanceId;
-    });
-
-    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : 'Multiline Sensor ' + this.id;
 };
 
 MultilineSensor.prototype.getTitle = function (device) {

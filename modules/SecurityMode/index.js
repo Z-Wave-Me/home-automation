@@ -1,7 +1,7 @@
 /*** SecurityMode Z-Way HA module *******************************************
 
-Version: 1.2.1
-(c) Z-Wave.Me, 2014
+Version: 1.3.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Authors: Poltorak Serguei <ps@z-wave.me>
          Yurkin Vitaliy   <aivs@z-wave.me>
@@ -53,9 +53,9 @@ SecurityMode.prototype.init = function (config) {
             defaults: {
                 deviceType: "switchBinary",
                 metrics: {
-                    level: 'off',
-                    icon: '',
-                    title: 'SecurityMode ' + this.id
+                    level: "off",
+                    icon: "switch",
+                    title: self.getInstanceTitle()
                 }
             },
             overlay: {},
