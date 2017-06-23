@@ -61,12 +61,16 @@ SmartLight.prototype.init = function (config) {
             // In the daytime or the dimmer Button pressed the light turns on for 100%  
             if ((nowTime >= self.Time_07_00 && nowTime <= self.Time_23_59) || self.dimmerButtonStatus === 1) {
                 self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
-                self.controller.devices.get(self.config.Dimmer).performCommand("on");
+                if (self.config.Level.sendOnAfterLevel) {
+                    self.controller.devices.get(self.config.Dimmer).performCommand("on");
+                }
             }
             // At night the light turns on for 20%
             else {
                 self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: nightLevel });
-                self.controller.devices.get(self.config.Dimmer).performCommand("on");
+                if (self.config.Level.sendOnAfterLevel) {
+                    self.controller.devices.get(self.config.Dimmer).performCommand("on");
+                }
             }
             // Disable timer when "on"
             if (self.config.timeout !==0 && typeof self.config.timeout !== 'undefined') {

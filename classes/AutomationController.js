@@ -41,6 +41,12 @@ function AutomationController() {
     this.modules = {};
     this.devices = new DevicesCollection(this);
 
+    this.order = {
+        locations: {},
+        elements: [],
+        dashboard: []
+    };
+
     this.notifications = [];
     this.lastStructureChangeTime = 0;
 
@@ -92,6 +98,19 @@ AutomationController.prototype.init = function () {
         self.devices.on('change:location', function (device) {
             ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, true);
+            var id = device.get('id');
+                locationId = device.get('location'),
+                order = device.get('order'),
+                count = 0;
+
+            self.devices.forEach(function(dev) {
+                if(dev.get('location') == locationId) {
+                    count++;
+                }
+            });
+
+            order.room = (count - 1);
+            device.set('order', order);
         });
 
         // update namespaces if device permanently_hidden status has changed
@@ -104,14 +123,72 @@ AutomationController.prototype.init = function () {
         self.devices.on('created', function (device) {
             ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
             pushNamespaces(device);
+
+            if(device.get('deviceType') !== 'battery') {
+
+                self.order.elements.push(device.get('id'));
+                self.order.elements.sort(function(a, b) {
+                    atime = self.devices.get(a).get('creationTime');
+                    btime = self.devices.get(b).get('creationTime');
+                    return atime > btime ? -1 : atime < btime ? 1 : 0;
+                });
+            }
         });
 
         self.devices.on('destroy', function (device) {
             ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
+
+            var id = device.get('id');
+
+            if(self.order.elements.indexOf(id) !== -1) {
+                self.order.elements.splice(id, 1);
+            }
+
+            if(self.order.dashboard.indexOf(id) !== -1) {
+                self.order.dashboard.splice(id, 1);
+            }
+
+            _.forEach(self.order.locations, function(location) {
+               if(location.indexOf(id) !== -1) {
+                   self.order.locations[Object.getOwnPropertyNames(location)].splice(id, 1);
+               }
+            });
+
         });
 
         self.devices.on('removed', function (device) {
             pushNamespaces(device);
+
+            var id = device.get('id');
+            var locationId = device.get('location');
+
+            if(locationId !== 0) {
+                var location = self.locations.find(function (location) {
+                    return location.id === locationId;
+                });
+
+                if(location !== 'undefined') {
+                    var index = location.main_sensors.indexOf(id);
+                    location.main_sensors.splice(index, 1);
+                    self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
+                        console.log("Location ",data);
+                    });
+                }
+            }
+
+            if(self.order.elements.indexOf(id) !== -1) {
+                self.order.elements.splice(id, 1);
+            }
+
+            if(self.order.dashboard.indexOf(id) !== -1) {
+                self.order.dashboard.splice(id, 1);
+            }
+
+            _.forEach(self.order.locations, function(location) {
+                if(location.indexOf(id) !== -1) {
+                    self.order.locations[Object.getOwnPropertyNames(location)].splice(id, 1);
+                }
+            });
         });
 
         self.on("notifications.push", function (notice) {
@@ -1507,7 +1584,8 @@ AutomationController.prototype.addLocation = function (locProps, callback) {
             user_img: locProps.user_img || '',
             default_img: locProps.default_img || '',
             img_type: locProps.img_type || '',
-            show_background: locProps.show_background || false
+            show_background: locProps.show_background || false,
+            main_sensors: locProps.main_sensors ||  []
         };
            
         this.locations.push(location);
@@ -1552,7 +1630,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, callback) {
+AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, main_sensors, callback) {
     var langFile = this.loadMainLang(),
         locations = this.locations.filter(function (location) {
             return location.id === id;
@@ -1563,6 +1641,7 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
 
         location.title = title;
         location.show_background = show_background;
+        location.main_sensors = main_sensors;
         if (typeof user_img === 'string' && user_img.length > 0) {
             location.user_img = user_img;
         }
@@ -1809,7 +1888,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
     }
 
     if (!checkBoxtype('cit')){
-        this.addQRCode(p, object);
+        this.addQRCode(profile, object);
     }
     
     this.saveConfig();
@@ -2807,4 +2886,24 @@ AutomationController.prototype.getRemoteId = function() {
 
 AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
     return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
+};
+
+AutomationController.prototype.reoderDevices = function(list, action) {
+    var self = this,
+        result = false;
+    try {
+        _.each(list, function(id) {
+            var vDev = self.devices.get(id),
+                order = vDev.get('order');
+
+            order[action] = list.indexOf(id);
+
+            vDev.set('order', order);
+        });
+        result = true;
+    } catch(e) {
+        console.log(e);
+    }
+
+    return result;
 };

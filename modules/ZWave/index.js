@@ -60,7 +60,16 @@ function ZWave (id, controller) {
 	};
 
 	this.default_expert_config = {
-		'debug' : false
+		'debug' : false,
+		'network_name': '',
+		'date_format': '',
+        'time_format': '',
+		'time_zone': '',
+        'notes': '',
+        'ssid_name': '',
+        'currentDateTime': '',
+        'cit_identifier': '',
+		'rss': ''
 	};
 
 }
@@ -2325,7 +2334,8 @@ ZWave.prototype.defineHandlers = function () {
                     'notes',
                     'ssid_name',
                     'currentDateTime',
-                    'cit_identifier'));
+                    'cit_identifier',
+					'rss'));
 
                 this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
 
