@@ -120,23 +120,24 @@ ZWave.prototype.init = function (config) {
 
 	this.ipacket = [];
 	this.opacket = [];
-    this.iPacketBuffer = {
-        lastUpdate: null,
-        packets: []
-    };
-    this.oPacketBuffer = {
-        lastUpdate: null,
-        packets: []
-    };
-    this.originPackets = this.loadObject('originPackets.json') || {
-        incoming: [],
-        outgoing: []
-    }
+	this.iPacketBuffer = {
+		lastUpdate: null,
+		packets: []
+	};
+	this.oPacketBuffer = {
+		lastUpdate: null,
+		packets: []
+	};
+	// store incoming and outgoing packets as they are
+	this.originPackets = this.loadObject('originPackets.json') || {
+		incoming: [],
+		outgoing: []
+	}
 
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
 
-    // add custom_postfix to postfix
+	// add custom_postfix to postfix
 	if(!!custom_postfix) {
         custom_fixes = custom_postfix.fixes;
         pfixes = this.postfix.fixes;
@@ -340,14 +341,14 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	var self = this,
 		zway = this.zway,
-        originPackets = this.originPackets,
-        iPacketBuffer = this.iPacketBuffer,
-        oPacketBuffer = this.oPacketBuffer,
+		originPackets = this.originPackets,
+		iPacketBuffer = this.iPacketBuffer,
+		oPacketBuffer = this.oPacketBuffer,
 		ipacket = this.ipacket,
 		opacket = this.opacket,
-        cmdClasses = this.cmdClasses,
-        cmdC = cmdClasses.zw_classes.cmd_class,
-        nodeid = zway.controller.data.nodeId.value;
+		cmdClasses = this.cmdClasses,
+		cmdC = cmdClasses.zw_classes.cmd_class,
+		nodeid = zway.controller.data.nodeId.value;
 
 	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
 	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
@@ -355,170 +356,156 @@ ZWave.prototype.CommunicationLogger = function() {
 	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
 
 	inH = function () {
+		console.debug("log incoming");//!!!
+		var data = this;
 
-        console.debug("log incoming");
-        var data = this;
+		if (!!originPackets) {
+			originPackets.incoming.push(data);
+		}
 
-        if (!!originPackets) {
-            originPackets.incoming.push(data);
-        }
+		var _data = data;
+		data = createIncomingEntry(data);
 
-        var _data = data;
-        data = createIncomingEntry(data);
+		if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id', 'rssi'), _.omit(data,'rssi'))){
+			console.debug("### IN: Not EQUAL ...");
 
-        if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id', 'rssi'), _.omit(data,'rssi'))){
-            console.debug("### IN: Not EQUAL ...");
+			var ms = (new Date).getMilliseconds().toString();
+			ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
+			var pId = parseInt(data.updateTime.toString() + ms, 10);
 
-            var ms = (new Date).getMilliseconds().toString();
-            ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
-            var pId = parseInt(data.updateTime.toString() + ms, 10);
+			data.id = pId;
 
-            data.id = pId;
+			console.debug("######### incoming ID:", data.id);
 
-            console.debug("######### incoming ID:", data.id);
-
-            iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
-            //console.debug('####=======>>## iPacketBuffer:', iPacketBuffer.packets);
-        } else {
+			iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
+			//console.debug('####=======>>## iPacketBuffer:', iPacketBuffer.packets);
+		} else {
 			console.debug("### IN: IS EQUAL!");
-        }
+		}
 
-        if (ipacket.length >= 50) {
+		if (ipacket.length >= 50) {
+			var _ipacket = self.loadObject("incomingPacket.json");
 
-            var _ipacket = self.loadObject("incomingPacket.json");
+			if (_ipacket === null) {
+				_ipacket = [];
+			}
 
-            if (_ipacket === null) {
-                _ipacket = [];
-            }
+			_ipacket = _ipacket.concat(ipacket);
 
-            _ipacket = _ipacket.concat(ipacket);
-
-            if (_ipacket.length > 100) {
-                console.debug('####=======>>## slice _ipacket ...');
+			if (_ipacket.length > 100) {
+				console.debug('####=======>>## slice _ipacket ...');
 				_ipacket = _.filter(_ipacket, function(entry){
 					return entry.id > ((new Date()).getTime() - 8640000);
 				});
-            }
+			}
 
-            self.saveObject("incomingPacket.json", _ipacket);
+			self.saveObject("incomingPacket.json", _ipacket);
 
-            ipacket = [];
-        }
+			ipacket = [];
+		}
 
-        if (originPackets.incoming.length % 100 === 0) {
-
-            if (originPackets.incoming.length > 100) {
+		if (originPackets.incoming.length % 100 === 0) {
+			if (originPackets.incoming.length > 100) {
 				console.debug('####=======>>## slice originPackets.incoming ...');
-                originPackets.incoming = _.filter(originPackets.incoming, function(inPacket) {
-                    return inPacket.updateTime > ((new Date()).getTime() - 8640000);
-                })
-            }
+				originPackets.incoming = _.filter(originPackets.incoming, function(inPacket) {
+					return inPacket.updateTime > ((new Date()).getTime() - 8640000);
+				})
+			}
 
-            self.saveObject("originPackets.json", originPackets);
-        }
+			self.saveObject("originPackets.json", originPackets);
+		}
 
 	};
 
 	outH = function () {
+		console.debug("log outgoing"); //!!!
+		var data = this;
 
-        console.debug("log outgoing");
-        var data = this;
+		if (!!originPackets) {
+			originPackets.outgoing.push(data);
+		}
 
-        if (!!originPackets) {
-            originPackets.outgoing.push(data);
-        }
+		var _data = data;
+		data = createOutgoingEntry(data);
 
-        var _data = data;
-        data = createOutgoingEntry(data);
+		if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id', 'rssi', 'hops', 'tries', 'speed'), _.omit(data,'rssi', 'hops', 'tries', 'speed'))){
+			console.debug("### OUT: Not EQUAL ...");
 
-        if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id', 'rssi', 'hops', 'tries', 'speed'), _.omit(data,'rssi', 'hops', 'tries', 'speed'))){
-            console.debug("### OUT: Not EQUAL ...");
+			var ms = (new Date).getMilliseconds().toString();
+			ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
+			var pId = parseInt(data.updateTime.toString() + ms, 10);
 
-            var ms = (new Date).getMilliseconds().toString();
-            ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
-            var pId = parseInt(data.updateTime.toString() + ms, 10);
+			data.id = pId;
 
-            data.id = pId;
+			oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
+		} else {
+			console.debug("### OUT: IS EQUAL!");
+		}
 
-            oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
-        } else {
-            console.debug("### OUT: IS EQUAL!");
-        }
+		if(opacket.length >= 50) {
+			var _opacket = self.loadObject("outgoingPacket.json");
 
-        if(opacket.length >= 50) {
-            var _opacket = self.loadObject("outgoingPacket.json");
+			if(_opacket === null) {
+				_opacket = [];
+			}
 
-            if(_opacket === null) {
-                _opacket = [];
-            }
+			_opacket = _opacket.concat(opacket);
 
-            _opacket = _opacket.concat(opacket);
-
-            if (_opacket.length > 100) {
-                console.debug('####=======>>## slice _opacket ...');
+			if (_opacket.length > 100) {
+				console.debug('####=======>>## slice _opacket ...');
 				_opacket = _.filter(_opacket, function(entry){
 					return entry.id > ((new Date()).getTime() - 8640000);
 				});
-            }
+			}
 
-            self.saveObject("outgoingPacket.json", _opacket);
+			self.saveObject("outgoingPacket.json", _opacket);
 
-            opacket = [];
-        }
+			opacket = [];
+		}
 
-        if (originPackets.outgoing.length % 50 === 0) {
+		if (originPackets.outgoing.length % 50 === 0) {
 
-            if (originPackets.outgoing.length > 100) {
+			if (originPackets.outgoing.length > 100) {
 				console.debug('####=======>>## slice originPackets.outgoing ...');
-                originPackets.outgoing = _.filter(originPackets.outgoing, function(outPacket) {
-                    return outPacket.updateTime > ((new Date()).getTime() - 8640000);
-                })
-            }
+				originPackets.outgoing = _.filter(originPackets.outgoing, function(outPacket) {
+					return outPacket.updateTime > ((new Date()).getTime() - 8640000);
+				})
+			}
 
-            self.saveObject("originPackets.json", originPackets);
-        }
+			self.saveObject("originPackets.json", originPackets);
+		}
 	};
 
-    // process incoming packages
-    zway.controller.data.incomingPacket.bind(inH);
-    // process outgoing packages
-    zway.controller.data.outgoingPacket.bind(outH);
+	// process incoming packages
+	zway.controller.data.incomingPacket.bind(inH);
+	// process outgoing packages
+	zway.controller.data.outgoingPacket.bind(outH);
 
-	// process communication if type CIT
-    /*if (this.isCIT){
-		// process incoming packages
-		zway.controller.data.incomingPacket.bind(inH);
-		// process outgoing packages
-		zway.controller.data.outgoingPacket.bind(outH);
-    }*/
+	//check if controller supports background rssi
+	if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+		// set time that will request RSSI stats every 30 s
+		this.rssiTimer = setInterval(function() {
+			try {
+				var data = self.loadObject("rssidata.json");
 
-    //check if controller supports background rssi
-    if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+				data = self.rssiData(data);
 
-        // set time that will request RSSI stats every 30 s
-        this.rssiTimer = setInterval(function() {
-            try {
-                var data = self.loadObject("rssidata.json");
+				// remove values older than 24h
+				if (data.length > 1440) {
+					var lastDay = now - 86400;
+					data = _.filter(data, function(entry){
+						return entry.time > lastDay;
+					});
+				}
 
-                data = self.rssiData(data);
-
-                // remove values older than 24h
-                if ( data.length > 1440){
-                    var lastDay = now - 86400;
-                    data = _.filter(data, function(entry){
-                        return entry.time > lastDay;
-                    });
-                }
-
-                self.saveObject("rssidata.json", data);
-            } catch (e) {
-                console.log('Cannot fetch background RSSI. Error:', e.message);
-            }
-
-        }, 1000*30);
+				self.saveObject("rssidata.json", data);
+			} catch (e) {
+				console.log('Cannot fetch background RSSI. Error:', e.message);
+			}
+		}, 1000*30);
 	}
 
-    // =================== helper functions ========================
+	// =================== helper functions ========================
 
     function prepareRSSI(rssiPacket) {
         var rssi = [];
