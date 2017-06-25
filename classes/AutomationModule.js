@@ -109,3 +109,13 @@ AutomationModule.prototype.getMeta = function () {
 AutomationModule.prototype.loadModuleJSON = function (filename) {
     return fs.loadJSON(this.meta.location + "/" + filename);
 };
+
+AutomationModule.prototype.getInstanceTitle = function () {
+    var instanceId = this.id;
+
+    var instanceTitle = this.controller.instances.filter(function (instance){
+        return instance.id === instanceId;
+    });
+
+    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : this.constructor.name + ' ' + instanceId;
+};

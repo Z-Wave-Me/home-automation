@@ -1,6 +1,6 @@
 /*** HTTPDevice Z-Way HA module *******************************************
 
-Version: 2.0.0
+Version: 2.1.0
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -30,48 +30,53 @@ HTTPDevice.prototype.init = function (config) {
 
     var self = this,
         icon = "",
-        probeType = "",
+        level = "",
+        scaleTitle = "",
         deviceType = this.config.deviceType;
         
     switch(deviceType) {
         case "sensorBinary":
+            icon = self.config.iconSensorBinary;
+            level = "off";
+            break;
         case "sensorMultilevel":
-            icon = "sensor";
+            icon = self.config.iconSensorMultilevel;
+            scaleTitle = this.config.scale_sensorMultilevel;
+            level = 0;
             break;
         case "switchBinary":
             icon = "switch";
+            level = "off";
             break;
         case "switchMultilevel":
             icon = "multilevel";
-            probeType = "multilevel";
+            level = 0;
             break;
         case "toggleButton":
-            icon = "";
+            icon = "gesture";
+            level = "on";
             break;
     }
     
-    var config_metrics = {};
-    
-    if (deviceType === "sensorMultilevel") {
-        config_metrics = { scaleTitle: this.config.scale_sensorMultilevel || "" };
-    }
-    if (deviceType === "sensorBinary") {
-        config_metrics = { scaleTitle: "" };
-    }
+    var defaults = {
+        metrics: {
+            title: self.getInstanceTitle()
+        }
+    };
+ 
+    var overlay = {
+            deviceType: deviceType,
+            metrics: {
+                icon: icon,
+                level: level,
+                scaleTitle: scaleTitle
+            }      
+    };
 
     var vDev = self.controller.devices.create({
         deviceId: "HTTP_Device_" + deviceType + "_" + this.id,
-        defaults: {
-            metrics: {
-                icon: icon,
-                title: 'HTTP device ' + this.id
-            }
-        },
-        overlay: {
-            deviceType: deviceType,
-            metrics: config_metrics,
-            probeType: probeType
-        },
+        defaults: defaults,
+        overlay: overlay,
         handler: function (command, args) {
             var vDevType = deviceType;
 

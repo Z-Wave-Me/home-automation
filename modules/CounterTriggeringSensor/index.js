@@ -1,7 +1,7 @@
 /*** Counter triggering binary sensor Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2015
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <aivs@z-wave.me>
 Description: The module considers how many times have triggered the sensor. 
@@ -35,8 +35,8 @@ CounterTriggeringSensor.prototype.init = function (config) {
             deviceType: "sensorMultilevel",
             metrics: {
                 level: this.config.initialValue,
-                icon: 'meter',
-                title: 'Counter Triggering ' + this.id,
+                icon: "meter",
+                title: self.getInstanceTitle()
             }
         },
         overlay: {

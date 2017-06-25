@@ -169,6 +169,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
         this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
 
+        this.router.get("/devices/order", this.ROLE.ADMIN, this.orderDevices);
+        this.router.get("/devices/order/elements", this.ROLE.ADMIN, this.orderDevices);
+        this.router.get("/devices/order/dashboard", this.ROLE.ADMIN, this.orderDevices);
+        this.router.get("/devices/order/location/:id", this.ROLE.ADMIN, this.orderDevices);
+        this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
+
     },
 
     // Used by the android app to request server status
@@ -278,7 +284,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // - login & pwd match (no cit)
             // - registered cit & login and pwd match
             // - registered cit & login forwarding is active
-            if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) {
+            //if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
+            if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
 
                 // set qr code only box is no CIT
                 if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
@@ -719,6 +726,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             default_img,
             img_type,
             show_background,
+            main_sensors,
             reply = {
                 error: null,
                 data: null,
@@ -742,10 +750,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 default_img = reqObj.default_img || '';
                 img_type = reqObj.img_type || '';
                 show_background = reqObj.show_background || false;
+                main_sensors = reqObj.main_sensors || [];
             }
 
             if (!!title && title.length > 0) {
-                this.controller.updateLocation(id, title, user_img, default_img, img_type,show_background, function (data) {
+                this.controller.updateLocation(id, title, user_img, default_img, img_type,show_background, main_sensors, function (data) {
                     if (data) {
                         reply.data = data;
                     } else {
@@ -3712,3 +3721,55 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 };
+
+ZAutomationAPIWebRequest.prototype.orderDevices = function () {
+    var self = this,
+        reply = {
+            error: "Internal Server Error",
+            data: null,
+            code: 500
+        };
+
+    var order = self.controller.order;
+
+    reply.data = order;
+    reply.code = 200;
+
+    return reply;
+}
+
+ZAutomationAPIWebRequest.prototype.reorderDevices = function () {
+    var self = this,
+        reply = {
+            error: "Internal Server Error",
+            data: null,
+            code: 500
+        };
+
+    var reqObj = typeof this.req.body !== 'object' ? JSON.parse(this.req.body) : this.req.body;
+
+    var data = reqObj.data, // ordered list of devices
+        action = reqObj.action; // Dasboard, Elelements, Room(location)
+
+    if(self.controller.reoderDevices(data, action)) {
+        reply.error = "";
+        reply.data = "OK";
+        reply.code = 200;
+    }
+
+    //     a = self.controller.order.elements.indexOf(reqObj[0].id);
+    //     b = self.controller.order.elements.indexOf(reqObj[1].id);
+    //
+    // Array.prototype.swapItems = function(a, b){
+    //     this[a] = this.splice(b, 1, this[a])[0];
+    //     return this;
+    // }
+    //
+    //
+    // self.controller.order.elements = self.controller.order.elements.swapItems(a,b);
+    //
+
+    return reply;
+
+}
+

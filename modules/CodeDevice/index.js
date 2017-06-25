@@ -1,7 +1,7 @@
 /*** CodeDevice Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
@@ -30,43 +30,48 @@ CodeDevice.prototype.init = function (config) {
 
     var self = this,
         icon = "",
+        level = "",
+        scaleTitle = "",
         deviceType = this.config.deviceType;
         
     switch(deviceType) {
         case "sensorBinary":
+            icon = self.config.iconSensorBinary;
+            level = "off";
+            break;
         case "sensorMultilevel":
-            icon = "sensor";
+            icon = self.config.iconSensorMultilevel;
+            scaleTitle = this.config.scale_sensorMultilevel;
+            level = 0;
             break;
         case "switchBinary":
             icon = "switch";
+            level = "off";
             break;
         case "switchMultilevel":
             icon = "multilevel";
+            level = 0;
             break;
         case "toggleButton":
-            icon = "";
+            icon = "gesture";
+            level = "on";
             break;
     }
     
     var defaults = {
         metrics: {
-            title: 'Code device ' + this.id
+            title: self.getInstanceTitle()
         }
     };
  
     var overlay = {
             deviceType: deviceType,
             metrics: {
-                icon: icon
+                icon: icon,
+                level: level,
+                scaleTitle: scaleTitle
             }      
     };
-       
-    if (deviceType === "sensorMultilevel") {
-        overlay.metrics.scaleTitle = this.config.scale_sensorMultilevel || "";
-    }
-    if (deviceType === "sensorBinary") {
-        overlay.metrics.scaleTitle = "";
-    }
 
     var vDev = self.controller.devices.create({
         deviceId: "Code_Device_" + deviceType + "_" + this.id,

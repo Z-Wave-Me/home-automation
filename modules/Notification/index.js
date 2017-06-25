@@ -1,7 +1,7 @@
 /*** Notification Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <ps@z-wave.me>
 Description:
@@ -35,9 +35,9 @@ Notification.prototype.init = function (config) {
         defaults: {
             deviceType: "toggleButton",
             metrics: {
-                level: 'on', // it is always on, but usefull to allow bind
-                icon: '',
-                title: 'Notification ' + this.id
+                level: "on", // it is always on, but usefull to allow bind
+                icon: "gesture",
+                title: self.getInstanceTitle()
             }
         },
         overlay: {},

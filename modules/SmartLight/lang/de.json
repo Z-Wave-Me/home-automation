@@ -6,13 +6,15 @@
 	"l_Level":"Dimmerlevel für Tag und Nacht",
 	"l_DayLevel":"Tageslicht",
 	"l_NightLevel":"Nachtlicht",
+	"l_sendOnAfterLevel":"Send command ON after command Dim",
+	"h_sendOnAfterLevel":"For Z-Wave.Me Dimmer 3 gen need to send command ON to save it state.",
 	"l_Day":"Tageszeiten zu denen das Tageslicht de/aktiviert wird:",
 	"timeFormat":"hh:mm",
 	"l_DayTimeStart":"Start",
 	"l_DayTimeEnd":"Ende",
 	"l_DimmerButton":"Dimmertaste",
 	"l_MotionEventToStartTimer":"What event from the motion sensor to start the timer",
-	"l_timeout":"Timeout autooff in seconds",
-	"h_timeout":"To disable autoff set 0 or leave the field empty",
+	"l_timeout":"AutoOff timeout in seconds",
+	"h_timeout":"To disable AutoOff set 0 or leave the field empty",
 	"h_DimmerButton":"Um eine Dimmertaste zu erzeugen, aktivieren Sie die App 'Erzeuge Schaltersteuerung' und drücken Sie dort auf 'Dimmer Button'."
 }
