@@ -3640,7 +3640,7 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
 ZAutomationAPIWebRequest.prototype.authCIT = function () {
     var license = true;
     // check for license countdown
-    if (zway && zway.controller.data.countDown) {
+    if (typeof zway !== undefined && zway.controller.data.countDown) {
         license = zway.controller.data.countDown.value > 0? true : false;
     }
     return checkBoxtype('cit') && this.controller.config.cit_authorized && license;
