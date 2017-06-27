@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
         "moduleName": "CodeDevice",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -15,29 +15,23 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-
 		"deviceType": "",
-
+		"iconSensorBinary": "",
+		"iconSensorMultilevel": "",
 		"setterOn_toggleButton": "",
-
 		"getter_sensorBinary": "",
 		"getterPollInterval_sensorBinary": 0,
-
 		"getter_sensorMultilevel": "",
 		"getterPollInterval_sensorMultilevel": 0,
 		"scale_sensorMultilevel": "",
-
 		"setterOn_switchBinary": "",
 		"setterOff_switchBinary": "",
 		"getter_switchBinary": "",
 		"getterPollInterval_switchBinary": 0,
-
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
 		"getterPollInterval_switchMultilevel": 0,
-
 		"updateOnAction": false,
-
 		"skipEventIfSameValue": false
 	},
 	"schema": {
@@ -49,13 +43,25 @@
 				"default": "toggleButton",
 				"required": true
 			},
-
+			"iconSensorBinary": {
+				"type": "string",
+				"enum": ["alarm", "motion", "smoke", "co", "flood","cooling","tamper","door"],
+				"default": "alarm", 
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"iconSensorMultilevel": {
+				"type": "string",
+				"enum": ["temperature", "luminosity", "energy", "humidity", "barometer","seismic","ultraviolet","acceleration_x","acceleration_y","acceleration_z"],
+				"default": "temperature", 
+				"required": true,
+				"dependencies": "deviceType"
+			},
 			"setterOn_toggleButton": {
 				"type": "string",
 				"required": true,
 				"dependencies": "deviceType"
 			},
-
 			"getter_sensorBinary": {
 				"type": "string",
 				"required": true,
@@ -66,7 +72,6 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"getter_sensorMultilevel": {
 				"type": "string",
 				"required": true,
@@ -82,7 +87,6 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"setterOn_switchBinary": {
 				"type": "string",
 				"required": true,
@@ -103,7 +107,6 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"setterLevel_switchMultilevel": {
 				"type": "string",
 				"required": true,
@@ -119,13 +122,11 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"updateOnAction": {
 				"type": "boolean",
 				"required": true,
 				"dependencies": "deviceType"
 			},
-
 			"skipEventIfSameValue": {
 				"type": "boolean",
 				"required": true
@@ -137,7 +138,20 @@
 			"deviceType": {
 				"type": "select"
 			},
-
+			"iconSensorBinary": {
+				"type": "select",
+				"label": "__l_icon__",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+			"iconSensorMultilevel": {
+				"type": "select",
+				"label": "__l_icon__",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
 			"setterOn_toggleButton": {
 				"label": "__l_setterOn_toggleButton__",
 				"placeholder": "somefunction()",
@@ -145,7 +159,6 @@
 					"deviceType": "toggleButton"
 				}
 			},
-
 			"getter_sensorBinary": {
 				"label": "__l_getter_value__",
 				"placeholder": "somefunction()",
@@ -161,7 +174,6 @@
 					"deviceType": "sensorBinary"
 				}
 			},
-
 			"getter_sensorMultilevel": {
 				"label": "__l_getter_value__",
 				"placeholder": "somefunction()",
@@ -183,7 +195,6 @@
 					"deviceType": "sensorMultilevel"
 				}
 			},
-
 			"setterOn_switchBinary": {
 				"label": "__l_setterOn_switchBinary__",
 				"placeholder": "somefunction(%%)",
@@ -215,7 +226,6 @@
 					"deviceType": "switchBinary"
 				}
 			},
-
 			"setterLevel_switchMultilevel": {
 				"label": "__l_setterLevel_switchMultilevel__",
 				"placeholder": "somefunction(%%)",
@@ -239,7 +249,6 @@
 					"deviceType": "switchMultilevel"
 				}
 			},
-
 			"updateOnAction": {
 				"type": "checkbox",
 				"rightLabel": "__rl_updateOnAction__",
@@ -248,7 +257,6 @@
 					"deviceType": [ "switchBinary", "switchMultilevel"]
 				}
 			},
-
 			"skipEventIfSameValue": {
 				"type": "checkbox",
 				"rightLabel": "__rl_skipEventIfSameValue__",

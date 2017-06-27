@@ -61,15 +61,15 @@ function ZWave (id, controller) {
 
 	this.default_expert_config = {
 		'debug' : false,
-		'network_name': '',
-		'date_format': '',
+        'network_name': '',
+        'date_format': '',
         'time_format': '',
-		'time_zone': '',
+        'time_zone': '',
         'notes': '',
         'ssid_name': '',
         'currentDateTime': '',
         'cit_identifier': '',
-		'rss': ''
+        'rss': ''
 	};
 
 }
@@ -825,12 +825,30 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	var self = this;
 
 	this.statistics = {
-        RFTxFrames: 0,
-		RFTxLBTBackOffs: 0,
-    	RFRxFrames: 0,
-    	RFRxLRCErrors: 0,
-		RFRxCRC16Errors: 0,
-		RFRxForeignHomeID: 0
+        RFTxFrames: {
+        	value: 0,
+            updateTime: 0
+		},
+		RFTxLBTBackOffs: {
+            value: 0,
+            updateTime: 0
+        },
+    	RFRxFrames: {
+            value: 0,
+            updateTime: 0
+        },
+    	RFRxLRCErrors: {
+            value: 0,
+            updateTime: 0
+        },
+		RFRxCRC16Errors: {
+            value: 0,
+            updateTime: 0
+        },
+		RFRxForeignHomeID: {
+            value: 0,
+            updateTime: 0
+        }
 	};
 
 	this.updateNetStats = function () {
@@ -2335,7 +2353,7 @@ ZWave.prototype.defineHandlers = function () {
                     'ssid_name',
                     'currentDateTime',
                     'cit_identifier',
-					'rss'));
+                    'rss'));
 
                 this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
 

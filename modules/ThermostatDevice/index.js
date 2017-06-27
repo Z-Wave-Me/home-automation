@@ -1,7 +1,7 @@
 /*** ThermostatDevice Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
@@ -39,8 +39,8 @@ ThermostatDevice.prototype.init = function (config) {
                 level: this.config.scale === 'C' ? 18 : 65,
                 min: this.config.scale === 'C' ? 5 : 41,
                 max: this.config.scale === 'C' ? 40 : 104,
-                icon: '',
-                title: 'Virtual Thermostat ' + this.id
+                icon: "thermostat",
+                title: self.getInstanceTitle()
             }
         },
         overlay: {},

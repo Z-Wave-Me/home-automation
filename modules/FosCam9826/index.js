@@ -1,7 +1,7 @@
 /*** FosCam9826 Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2013
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Stanislav Morozov <r3b@seoarmy.ru>
 Description:
@@ -78,8 +78,8 @@ _.extend(FosCam9826.prototype, {
             defaults: {
                 deviceType: "camera",
                 metrics: {
-                    icon: 'camera',
-                    title: 'FosCam9826 ' + this.id
+                    icon: "camera",
+                    title: self.getInstanceTitle()
                 }
             },
             overlay: {

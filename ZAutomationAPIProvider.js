@@ -169,12 +169,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
         this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
 
-        this.router.get("/devices/order", this.ROLE.ADMIN, this.orderDevices);
-        this.router.get("/devices/order/elements", this.ROLE.ADMIN, this.orderDevices);
-        this.router.get("/devices/order/dashboard", this.ROLE.ADMIN, this.orderDevices);
-        this.router.get("/devices/order/location/:id", this.ROLE.ADMIN, this.orderDevices);
         this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
-
     },
 
     // Used by the android app to request server status
@@ -3640,7 +3635,7 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
 ZAutomationAPIWebRequest.prototype.authCIT = function () {
     var license = true;
     // check for license countdown
-    if (zway && zway.controller.data.countDown) {
+    if (typeof zway !== undefined && zway.controller.data.countDown) {
         license = zway.controller.data.countDown.value > 0? true : false;
     }
     return checkBoxtype('cit') && this.controller.config.cit_authorized && license;
@@ -3721,22 +3716,6 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
         }
     }
 };
-
-ZAutomationAPIWebRequest.prototype.orderDevices = function () {
-    var self = this,
-        reply = {
-            error: "Internal Server Error",
-            data: null,
-            code: 500
-        };
-
-    var order = self.controller.order;
-
-    reply.data = order;
-    reply.code = 200;
-
-    return reply;
-}
 
 ZAutomationAPIWebRequest.prototype.reorderDevices = function () {
     var self = this,

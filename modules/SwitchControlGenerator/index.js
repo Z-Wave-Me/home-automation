@@ -1,7 +1,7 @@
 /*** SwitchControlGenerator Z-Way HA module *******************************************
 
-Version: 1.0.2
-(c) Z-Wave.Me, 2014
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
@@ -92,13 +92,16 @@ SwitchControlGenerator.prototype.init = function (config) {
                     defaults: {
                         deviceType: name[name.length-1] === "S" ? "toggleButton" : "switchControl",
                         metrics: {
-                            icon: '',
                             title: vendor + idString + "Button", // this is always not the initial creation, so the default title is already filled 
-                            level: "",
                             change: ""
                         }
                     },
-                    overlay: {},
+                    overlay: {
+                        metrics: {
+                            icon: "gesture",
+                            level: ""
+                        } 
+                    },
                     handler: self.widgetHandler,
                     moduleId: this.id
                 });
@@ -301,13 +304,16 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
             defaults: {
                 deviceType: type === "S" ? "toggleButton" : "switchControl",
                 metrics: {
-                    icon: '',
                     title: vendor + " (" + ids.slice(0, -1).join(".") + ") Button",
-                    level: "",
                     change: ""
                 }
             },
-            overlay: {},
+            overlay: {
+                metrics: {
+                    icon: "gesture",
+                    level: ""
+                } 
+            },
             handler: this.widgetHandler,
             moduleId: this.id
         });

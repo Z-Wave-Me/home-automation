@@ -1,6 +1,7 @@
 {
 	"m_title":"JavaScript устройство",
 	"m_descr":"Создание устройства основанного на JavaScript коде.",
+	"l_icon":"Иконка",
 	"l_setterOn_toggleButton":"Код для действия Включить",
 	"h_getter_sensorBinary":"Должен вернуть значение 'on' или 'off'",
 	"h_getter_sensorMultilevel":"Должен вернуть число",
