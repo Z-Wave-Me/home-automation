@@ -41,12 +41,6 @@ function AutomationController() {
     this.modules = {};
     this.devices = new DevicesCollection(this);
 
-    this.order = {
-        locations: {},
-        elements: [],
-        dashboard: []
-    };
-
     this.notifications = [];
     this.lastStructureChangeTime = 0;
 
@@ -123,36 +117,10 @@ AutomationController.prototype.init = function () {
         self.devices.on('created', function (device) {
             ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
             pushNamespaces(device);
-
-            if(device.get('deviceType') !== 'battery') {
-
-                self.order.elements.push(device.get('id'));
-                self.order.elements.sort(function(a, b) {
-                    atime = self.devices.get(a).get('creationTime');
-                    btime = self.devices.get(b).get('creationTime');
-                    return atime > btime ? -1 : atime < btime ? 1 : 0;
-                });
-            }
         });
 
         self.devices.on('destroy', function (device) {
             ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
-
-            var id = device.get('id');
-
-            if(self.order.elements.indexOf(id) !== -1) {
-                self.order.elements.splice(id, 1);
-            }
-
-            if(self.order.dashboard.indexOf(id) !== -1) {
-                self.order.dashboard.splice(id, 1);
-            }
-
-            _.forEach(self.order.locations, function(location) {
-               if(location.indexOf(id) !== -1) {
-                   self.order.locations[Object.getOwnPropertyNames(location)].splice(id, 1);
-               }
-            });
 
         });
 
@@ -163,32 +131,22 @@ AutomationController.prototype.init = function () {
             var locationId = device.get('location');
 
             if(locationId !== 0) {
-                var location = self.locations.find(function (location) {
+                var location = _.find(self.locations, function (location) {
                     return location.id === locationId;
                 });
 
                 if(location !== 'undefined') {
                     var index = location.main_sensors.indexOf(id);
-                    location.main_sensors.splice(index, 1);
-                    self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
-                        console.log("Location ",data);
-                    });
+                    if(index > -1) {
+                        location.main_sensors.splice(index, 1);
+                        self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
+                            if(!data) {
+                                console.log("Error location not exists");
+                            }
+                        });
+                    }
                 }
             }
-
-            if(self.order.elements.indexOf(id) !== -1) {
-                self.order.elements.splice(id, 1);
-            }
-
-            if(self.order.dashboard.indexOf(id) !== -1) {
-                self.order.dashboard.splice(id, 1);
-            }
-
-            _.forEach(self.order.locations, function(location) {
-                if(location.indexOf(id) !== -1) {
-                    self.order.locations[Object.getOwnPropertyNames(location)].splice(id, 1);
-                }
-            });
         });
 
         self.on("notifications.push", function (notice) {
