@@ -59,7 +59,7 @@ _.extend(Camera.prototype, {
                 deviceType: "camera",
                 metrics: {
                     icon: "camera",
-                    title: self.getInstanceTitle()
+                    title: that.getInstanceTitle()
                 }
             },
             overlay: {
