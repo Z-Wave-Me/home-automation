@@ -72,6 +72,33 @@ function ZWave (id, controller) {
         'rss': ''
 	};
 
+    this.statistics = {
+        RFTxFrames: {
+            value: 0,
+            updateTime: 0
+        },
+        RFTxLBTBackOffs: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxFrames: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxLRCErrors: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxCRC16Errors: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxForeignHomeID: {
+            value: 0,
+            updateTime: 0
+        }
+    };
+
 }
 
 // Module inheritance and setup
@@ -824,33 +851,6 @@ ZWave.prototype.certXFCheck = function () {
 ZWave.prototype.refreshStatisticsPeriodically = function () {
 	var self = this;
 
-	this.statistics = {
-        RFTxFrames: {
-        	value: 0,
-            updateTime: 0
-		},
-		RFTxLBTBackOffs: {
-            value: 0,
-            updateTime: 0
-        },
-    	RFRxFrames: {
-            value: 0,
-            updateTime: 0
-        },
-    	RFRxLRCErrors: {
-            value: 0,
-            updateTime: 0
-        },
-		RFRxCRC16Errors: {
-            value: 0,
-            updateTime: 0
-        },
-		RFRxForeignHomeID: {
-            value: 0,
-            updateTime: 0
-        }
-	};
-
 	this.updateNetStats = function () {
 		try {
             var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
@@ -892,11 +892,11 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
     // initial call
     this.updateNetStats();
-
-    // intervall function collecting network statistic data
-    this.statisticsIntervall = setInterval(function() {
-    	self.updateNetStats();
-    }, 600 * 1000);
+    
+	// intervall function collecting network statistic data
+	this.statisticsIntervall = setInterval(function() {
+		self.updateNetStats();
+	}, 600 * 1000);
 };
 
 // --------------- Public HTTP API -------------------
@@ -3016,7 +3016,7 @@ ZWave.prototype.defineHandlers = function () {
     }
 
     this.ZWaveAPI.GetStatisticsData = function() {
-        return {
+    	return {
             status: 200,
             headers: {
                 "Content-Type": "application/json",
