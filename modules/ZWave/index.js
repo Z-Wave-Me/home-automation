@@ -990,6 +990,8 @@ ZWave.prototype.defineHandlers = function () {
     var iPacketBuffer = this.iPacketBuffer;
     var oPacketBuffer = this.oPacketBuffer;
 
+    var statistics = this.statistics;
+
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
 	};
@@ -3017,7 +3019,7 @@ ZWave.prototype.defineHandlers = function () {
     }
 
     this.ZWaveAPI.GetStatisticsData = function() {
-    	return {
+        return {
             status: 200,
             headers: {
                 "Content-Type": "application/json",
@@ -3026,7 +3028,7 @@ ZWave.prototype.defineHandlers = function () {
                 "Access-Control-Allow-Headers": "Authorization",
                 "Connection": "keep-alive"
             },
-            body: self.statistics
+            body: statistics
         };
     };
 	/*
