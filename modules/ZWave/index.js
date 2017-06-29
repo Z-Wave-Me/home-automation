@@ -1172,6 +1172,7 @@ ZWave.prototype.defineHandlers = function () {
 			var now = new Date();
 			// create a timestamp in format yyyy-MM-dd-HH-mm
 			var ts = getHRDateformat(now);
+			var box_type = checkBoxtype('cit')? 'cit' : 'z-way';
 
 			// prepare system information
 			for (param in reqObj) {
@@ -1185,7 +1186,7 @@ ZWave.prototype.defineHandlers = function () {
 				// add backup with log
 				formElements.push({
 					name: 'log_name',
-					value: "report-z-way-backup-log-" + ts + ".tgz"
+					value: "report-"+ box_type +"-backup-log-" + ts + ".tgz"
 				},{
                     name: 'log_data',
                     value: Base64.encode(JSON.stringify(data))
