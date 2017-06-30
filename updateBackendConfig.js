@@ -2,9 +2,9 @@
 
 (function () {
   var config,
-      oldConfigJSON = JSON.stringify(config),
+      notifications,
+      oldConfigJSON,
       skins = loadObject("userSkins.json"),
-      notifications = loadObject("notifications"),
       storageContentList = loadObject("__storageContent"),
       loadDefaultCfg = function (e) {
           var cfg = null;
@@ -21,8 +21,18 @@
           return cfg;
       };
 
+  // cleanup notifications if too big (>1 MB)
+  var notificationCheck = fs.stat('storage/notifications-f37bd2f66651e7d46f6d38440f2bc5dd.json');
+
+  if (!!notificationCheck && notificationCheck.size && notificationCheck.size > 1000000) {
+    console.log('Reset notifications to avoid memory overkill ...')
+    notifications = [];
+    saveObject("notifications",[]);
+  }
+
   try {
       config = loadObject("config.json");
+      oldConfigJSON = JSON.stringify(config);
 
       if (!config || config === null) {
           config = loadDefaultCfg();
