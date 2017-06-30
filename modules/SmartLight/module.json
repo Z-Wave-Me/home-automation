@@ -58,6 +58,11 @@
 						"minimum": 0,
 						"maximum": 99,
 						"required": true
+					},
+					"sendOnAfterLevel": {
+						"type": "boolean",
+						"required": true,
+						"default" : false
 					}
 				}
 			},
@@ -118,6 +123,11 @@
 					},
 					"NightLevel": {
 						"label": "__l_NightLevel__"
+					},
+					"sendOnAfterLevel": {
+						"type": "checkbox",
+						"rightLabel": "__l_sendOnAfterLevel__",
+						"helper": "__h_sendOnAfterLevel__"
 					}
 				}
 			},

@@ -1,7 +1,7 @@
 /*** GroupDevices Z-Way HA module *******************************************
 
-Version: 2.0.0
-(c) Z-Wave.Me, 2015
+Version: 2.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
@@ -31,20 +31,40 @@ _module = GroupDevices;
 GroupDevices.prototype.init = function (config) {
     GroupDevices.super_.prototype.init.call(this, config);
 
-    var self = this;
+    var self = this,
+    icon = "",
+    level = "",
+    deviceType = this.config.isDimmable ? "switchMultilevel" : "switchBinary";
+
+    switch(deviceType) {
+        case "switchBinary":
+            icon = "switch";
+            level = "off";
+            break;
+        case "switchMultilevel":
+            icon = "multilevel";
+            level = 0;
+            break;
+    }
+
+    var defaults = {
+        metrics: {
+            title: self.getInstanceTitle()
+        }
+    };
+ 
+    var overlay = {
+            deviceType: deviceType,
+            metrics: {
+                icon: icon,
+                level: level
+            }      
+    };
 
     this.vDev = this.controller.devices.create({
         deviceId: "GroupDevices_" + this.id,
-        defaults: {
-            metrics: {
-                level: self.config.isDimmable ? 0 : "off",
-                icon: '',
-                title: 'Group ' + this.id
-            }
-        },
-        overlay: {
-            deviceType: this.config.isDimmable ? "switchMultilevel" : "switchBinary"
-        },
+        defaults: defaults,
+        overlay: overlay,
         handler: function(command, args) {
             self.config.devices.forEach(function(dev) {
                 var vDev = self.controller.devices.get(dev.device);

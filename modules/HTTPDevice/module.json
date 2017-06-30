@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName": "HTTPDevice",
-	"version": "1.0.0",
+	"version": "2.1.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -15,39 +15,31 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-
 		"deviceType": "toggleButton",
-
+		"iconSensorBinary": "",
+		"iconSensorMultilevel": "",
 		"setterOn_toggleButton": "",
-
 		"getter_sensorBinary": "",
 		"getterParser_sensorBinary": "",
 		"getterPollInterval_sensorBinary": 0,
-
 		"getter_sensorMultilevel": "",
 		"getterParser_sensorMultilevel": "",
 		"getterPollInterval_sensorMultilevel": 0,
 		"scale_sensorMultilevel": "",
-
 		"setterOn_switchBinary": "",
 		"setterOff_switchBinary": "",
 		"getter_switchBinary": "",
 		"getterParser_switchBinary": "",
 		"getterPollInterval_switchBinary": 0,
-
 		"setterLevel_switchMultilevel": "",
 		"getter_switchMultilevel": "",
 		"getterParser_switchMultilevel": "",
 		"getterPollInterval_switchMultilevel": 0,
-
 		"method": "GET",
         "contentType": "application/x-www-form-urlencoded",
         "data":"",
-
 		"updateOnAction": false,
-
 		"skipEventIfSameValue": false,
-
 		"login":"",
 		"password":""
 	},
@@ -59,13 +51,25 @@
 				"enum": ["toggleButton", "sensorBinary", "sensorMultilevel", "switchBinary", "switchMultilevel"],
 				"required": true
 			},
-
+			"iconSensorBinary": {
+				"type": "string",
+				"enum": ["alarm", "motion", "smoke", "co", "flood","cooling","tamper","door"],
+				"default": "alarm", 
+				"required": true,
+				"dependencies": "deviceType"
+			},
+			"iconSensorMultilevel": {
+				"type": "string",
+				"enum": ["temperature", "luminosity", "energy", "humidity", "barometer","seismic","ultraviolet","acceleration_x","acceleration_y","acceleration_z"],
+				"default": "temperature", 
+				"required": true,
+				"dependencies": "deviceType"
+			},
 			"setterOn_toggleButton": {
 				"type": "string",
 				"required": true,
 				"dependencies": "deviceType"
 			},
-
 			"getter_sensorBinary": {
 				"type": "string",
 				"required": true,
@@ -81,7 +85,6 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"getter_sensorMultilevel": {
 				"type": "string",
 				"required": true,
@@ -102,7 +105,6 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"setterOn_switchBinary": {
 				"type": "string",
 				"required": true,
@@ -128,7 +130,6 @@
 				"required": false,
 				"dependencies": "deviceType"
 			},
-
 			"setterLevel_switchMultilevel": {
 				"type": "string",
 				"required": true,
@@ -188,7 +189,20 @@
 			"deviceType": {
 				"type": "select"
 			},
-
+			"iconSensorBinary": {
+				"type": "select",
+				"label": "__l_icon__",
+				"dependencies": {
+					"deviceType": "sensorBinary"
+				}
+			},
+			"iconSensorMultilevel": {
+				"type": "select",
+				"label": "__l_icon__",
+				"dependencies": {
+					"deviceType": "sensorMultilevel"
+				}
+			},
 			"setterOn_toggleButton": {
 				"label": "__l_setterOn__",
 				"placeholder": "__p_setterOn__",
@@ -196,7 +210,6 @@
 					"deviceType": "toggleButton"
 				}
 			},
-
 			"getter_sensorBinary": {
 				"label": "__l_getter__",
 				"placeholder": "__p_getter__",
@@ -218,7 +231,6 @@
 					"deviceType": "sensorBinary"
 				}
 			},
-
 			"getter_sensorMultilevel": {
 				"label": "__l_getter__",
 				"placeholder": "__p_getter__",
@@ -246,7 +258,6 @@
 					"deviceType": "sensorMultilevel"
 				}
 			},
-
 			"setterOn_switchBinary": {
 				"label": "__l_setterOn__",
 				"placeholder": "__p_setterOn__",
@@ -282,7 +293,6 @@
 					"deviceType": "switchBinary"
 				}
 			},
-
 			"setterLevel_switchMultilevel": {
 				"label": "__l_setterLevel__",
 				"placeholder": "__p_setterLevel__",
@@ -332,7 +342,6 @@
 					"deviceType": [ "switchBinary", "switchMultilevel"]
 				}
 			},
-
 			"skipEventIfSameValue": {
 				"type": "checkbox",
 				"rightLabel": "__rl_skipEventIfSameValue__",

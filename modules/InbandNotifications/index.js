@@ -1,6 +1,6 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.1.0
+Version: 1.1.1
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -60,6 +60,8 @@ InbandNotifications.prototype.init = function (config) {
                 devName = vDev.get('metrics:title'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
+                location = vDev.get('location'),
+                customIcons = vDev.get('customIcons') !== {}? vDev.get('customIcons') : undefined,
                 eventType = function(){
                     if(vDev.get('metrics:probeTitle')){
                         return vDev.get('metrics:probeTitle').toLowerCase();
@@ -68,7 +70,12 @@ InbandNotifications.prototype.init = function (config) {
                     }
                 },
                 createItem = 0,
-                item, msg, msgType;
+                item, msg, msgType,
+                getCustomIcon = function(){
+                    return customIcons.level? customIcons.level[lvl] : customIcons.default;
+                };
+
+
 
             if(lastChanges.filter(function(o){
                             return o.id === devId;
@@ -102,7 +109,9 @@ InbandNotifications.prototype.init = function (config) {
                         case 'toggleButton':
                             msg = {
                                 dev: devName,
-                                l:lvl
+                                l:lvl,
+                                location: location === 0? '' : location,
+                                customIcon: getCustomIcon()
                                 };
                             msgType = 'device-OnOff';
 
@@ -111,7 +120,9 @@ InbandNotifications.prototype.init = function (config) {
                         case 'switchMultilevel':
                             msg = {
                                 dev: devName,
-                                l: lvl + '%'
+                                l: lvl + '%',
+                                location: location === 0? '' : location,
+                                customIcon: getCustomIcon()
                                 };
                             msgType = 'device-status';
 
@@ -120,7 +131,9 @@ InbandNotifications.prototype.init = function (config) {
                         case 'sensorDiscrete':
                             msg = {
                                 dev: devName,
-                                l: lvl
+                                l: lvl,
+                                location: location === 0? '' : location,
+                                customIcon: getCustomIcon()
                             };
                             msgType = 'device-status';
 
@@ -132,7 +145,9 @@ InbandNotifications.prototype.init = function (config) {
                             if (!~devProbeType.indexOf('meterElectric_')){
                                 msg = {
                                     dev: devName,
-                                    l: lvl + (scaleUnit? ' ' + scaleUnit: '')
+                                    l: lvl + (scaleUnit? ' ' + scaleUnit: ''),
+                                    location: location === 0? '' : location,
+                                    customIcon: getCustomIcon()
                                 };
                                 msgType = 'device-' + eventType();
 
@@ -143,7 +158,9 @@ InbandNotifications.prototype.init = function (config) {
                             msg = {
                                 dev: devName,
                                 l: lvl,
-                                color: vDev.get('metrics:color')
+                                color: vDev.get('metrics:color'),
+                                location: location === 0? '' : location,
+                                customIcon: getCustomIcon()
                                 };
                             msgType = 'device-' + eventType();
 

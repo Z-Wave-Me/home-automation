@@ -92,6 +92,19 @@ AutomationController.prototype.init = function () {
         self.devices.on('change:location', function (device) {
             ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()));
             pushNamespaces(device, true);
+            var id = device.get('id');
+                locationId = device.get('location'),
+                order = device.get('order'),
+                count = 0;
+
+            self.devices.forEach(function(dev) {
+                if(dev.get('location') == locationId) {
+                    count++;
+                }
+            });
+
+            order.room = (count - 1);
+            device.set('order', order);
         });
 
         // update namespaces if device permanently_hidden status has changed
@@ -108,10 +121,32 @@ AutomationController.prototype.init = function () {
 
         self.devices.on('destroy', function (device) {
             ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
+
         });
 
         self.devices.on('removed', function (device) {
             pushNamespaces(device);
+
+            var id = device.get('id');
+            var locationId = device.get('location');
+
+            if(locationId !== 0) {
+                var location = _.find(self.locations, function (location) {
+                    return location.id === locationId;
+                });
+
+                if(location !== 'undefined') {
+                    var index = location.main_sensors.indexOf(id);
+                    if(index > -1) {
+                        location.main_sensors.splice(index, 1);
+                        self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
+                            if(!data) {
+                                console.log("Error location not exists");
+                            }
+                        });
+                    }
+                }
+            }
         });
 
         self.on("notifications.push", function (notice) {
@@ -1520,7 +1555,8 @@ AutomationController.prototype.addLocation = function (locProps, callback) {
             user_img: locProps.user_img || '',
             default_img: locProps.default_img || '',
             img_type: locProps.img_type || '',
-            show_background: locProps.show_background || false
+            show_background: locProps.show_background || false,
+            main_sensors: locProps.main_sensors ||  []
         };
            
         this.locations.push(location);
@@ -1565,7 +1601,7 @@ AutomationController.prototype.removeLocation = function (id, callback) {
     }
 };
 
-AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, callback) {
+AutomationController.prototype.updateLocation = function (id, title, user_img, default_img, img_type,show_background, main_sensors, callback) {
     var langFile = this.loadMainLang(),
         locations = this.locations.filter(function (location) {
             return location.id === id;
@@ -1576,6 +1612,7 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
 
         location.title = title;
         location.show_background = show_background;
+        location.main_sensors = main_sensors;
         if (typeof user_img === 'string' && user_img.length > 0) {
             location.user_img = user_img;
         }
@@ -1822,7 +1859,7 @@ AutomationController.prototype.updateProfile = function (object, id) {
     }
 
     if (!checkBoxtype('cit')){
-        this.addQRCode(p, object);
+        this.addQRCode(profile, object);
     }
     
     this.saveConfig();
@@ -1868,6 +1905,32 @@ AutomationController.prototype.removeProfile = function (profileId) {
 
     this.saveConfig();
 };
+
+/*AutomationController.prototype.allowLoginForwarding = function (request) {
+    var forward = false,
+        find = false,
+        zbw_cookie;
+
+
+    // check if find.z-wave.me
+    if (request.headers['Cookie']) {
+        zbw_cookie = request.headers['Cookie'].split(";").map(function(el) {
+            return el.trim().split("=");
+        }).filter(function(el) {
+            return el[0] === "ZBW_SESSID"
+        })
+    }
+
+    find = zbw_cookie && zbw_cookie.length > 0;
+
+    // check for forwarding if license for controller is still active and forwarding is set
+    // dont' treat find.z-wave.me as local user (connection comes from local ssh server)
+    if (this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0 && !find) {
+        forward = true;
+    }
+
+    return forward;
+};*/
 
 AutomationController.prototype.addQRCode = function(profile, obj) {
     var typeNumber = 15,
@@ -2794,4 +2857,24 @@ AutomationController.prototype.getRemoteId = function() {
 
 AutomationController.prototype.getInstancesByModuleName = function(moduleName) {
     return Object.keys(this.registerInstances).map(function(id) { return controller.registerInstances[id]; }).filter(function(i) { return i.meta.id === moduleName; });
+};
+
+AutomationController.prototype.reoderDevices = function(list, action) {
+    var self = this,
+        result = false;
+    try {
+        _.each(list, function(id) {
+            var vDev = self.devices.get(id),
+                order = vDev.get('order');
+
+            order[action] = list.indexOf(id);
+
+            vDev.set('order', order);
+        });
+        result = true;
+    } catch(e) {
+        console.log(e);
+    }
+
+    return result;
 };

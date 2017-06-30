@@ -1,7 +1,7 @@
 /*** Camera Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2013
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Stanislav Morozov <r3b@seoarmy.ru>
 Description:
@@ -58,8 +58,8 @@ _.extend(Camera.prototype, {
             defaults: {
                 deviceType: "camera",
                 metrics: {
-                    icon: 'camera',
-                    title: 'Camera ' + this.id
+                    icon: "camera",
+                    title: that.getInstanceTitle()
                 }
             },
             overlay: {

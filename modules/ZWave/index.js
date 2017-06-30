@@ -60,8 +60,44 @@ function ZWave (id, controller) {
 	};
 
 	this.default_expert_config = {
-		'debug' : false
+		'debug' : false,
+        'network_name': '',
+        'date_format': '',
+        'time_format': '',
+        'time_zone': '',
+        'notes': '',
+        'ssid_name': '',
+        'currentDateTime': '',
+        'cit_identifier': '',
+        'rss': ''
 	};
+
+    this.statistics = {
+        RFTxFrames: {
+            value: 0,
+            updateTime: 0
+        },
+        RFTxLBTBackOffs: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxFrames: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxLRCErrors: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxCRC16Errors: {
+            value: 0,
+            updateTime: 0
+        },
+        RFRxForeignHomeID: {
+            value: 0,
+            updateTime: 0
+        }
+    };
 
 }
 
@@ -120,23 +156,24 @@ ZWave.prototype.init = function (config) {
 
 	this.ipacket = [];
 	this.opacket = [];
-    this.iPacketBuffer = {
-        lastUpdate: null,
-        packets: []
-    };
-    this.oPacketBuffer = {
-        lastUpdate: null,
-        packets: []
-    };
-    this.originPackets = this.loadObject('originPackets.json') || {
-        incoming: [],
-        outgoing: []
-    }
+	this.iPacketBuffer = {
+		lastUpdate: null,
+		packets: []
+	};
+	this.oPacketBuffer = {
+		lastUpdate: null,
+		packets: []
+	};
+	// store incoming and outgoing packets as they are
+	this.originPackets = this.loadObject('originPackets.json') || {
+		incoming: [],
+		outgoing: []
+	}
 
 	// select custompostfix.json
 	custom_postfix = loadObject("custompostfix.json");
 
-    // add custom_postfix to postfix
+	// add custom_postfix to postfix
 	if(!!custom_postfix) {
         custom_fixes = custom_postfix.fixes;
         pfixes = this.postfix.fixes;
@@ -176,6 +213,7 @@ ZWave.prototype.init = function (config) {
 		// check if the controller license is still up to date
 		// and set update timer
 		this.certXFCheck();
+        this.refreshStatisticsPeriodically();
 	}
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
@@ -266,7 +304,7 @@ ZWave.prototype.stop = function () {
 
 	this.stopBinding();
 
-	clearInterval(this.timer);
+	clearInterval(this.rssiTimer);
 
     this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
     this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
@@ -276,6 +314,11 @@ ZWave.prototype.stop = function () {
 	}
 	if (this._dataUnbind) {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
+	}
+
+	if (this.statisticsIntervall) {
+		clearInterval(this.statisticsIntervall);
+        this.statisticsIntervall = undefined;
 	}
 };
 
@@ -334,14 +377,14 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	var self = this,
 		zway = this.zway,
-        originPackets = this.originPackets,
-        iPacketBuffer = this.iPacketBuffer,
-        oPacketBuffer = this.oPacketBuffer,
+		originPackets = this.originPackets,
+		iPacketBuffer = this.iPacketBuffer,
+		oPacketBuffer = this.oPacketBuffer,
 		ipacket = this.ipacket,
 		opacket = this.opacket,
-        cmdClasses = this.cmdClasses,
-        cmdC = cmdClasses.zw_classes.cmd_class,
-        nodeid = zway.controller.data.nodeId.value;
+		cmdClasses = this.cmdClasses,
+		cmdC = cmdClasses.zw_classes.cmd_class,
+		nodeid = zway.controller.data.nodeId.value;
 
 	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
 	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
@@ -349,170 +392,156 @@ ZWave.prototype.CommunicationLogger = function() {
 	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
 
 	inH = function () {
+		console.debug("log incoming");//!!!
+		var data = this;
 
-        console.debug("log incoming");
-        var data = this;
+		if (!!originPackets) {
+			originPackets.incoming.push(data);
+		}
 
-        if (!!originPackets) {
-            originPackets.incoming.push(data);
-        }
+		var _data = data;
+		data = createIncomingEntry(data);
 
-        var _data = data;
-        data = createIncomingEntry(data);
+		if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id', 'rssi'), _.omit(data,'rssi'))){
+			console.debug("### IN: Not EQUAL ...");
 
-        if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id', 'rssi'), _.omit(data,'rssi'))){
-            console.debug("### IN: Not EQUAL ...");
+			var ms = (new Date).getMilliseconds().toString();
+			ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
+			var pId = parseInt(data.updateTime.toString() + ms, 10);
 
-            var ms = (new Date).getMilliseconds().toString();
-            ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
-            var pId = parseInt(data.updateTime.toString() + ms, 10);
+			data.id = pId;
 
-            data.id = pId;
+			console.debug("######### incoming ID:", data.id);
 
-            console.debug("######### incoming ID:", data.id);
-
-            iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
-            //console.debug('####=======>>## iPacketBuffer:', iPacketBuffer.packets);
-        } else {
+			iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
+			//console.debug('####=======>>## iPacketBuffer:', iPacketBuffer.packets);
+		} else {
 			console.debug("### IN: IS EQUAL!");
-        }
+		}
 
-        if (ipacket.length >= 50) {
+		if (ipacket.length >= 50) {
+			var _ipacket = self.loadObject("incomingPacket.json");
 
-            var _ipacket = self.loadObject("incomingPacket.json");
+			if (_ipacket === null) {
+				_ipacket = [];
+			}
 
-            if (_ipacket === null) {
-                _ipacket = [];
-            }
+			_ipacket = _ipacket.concat(ipacket);
 
-            _ipacket = _ipacket.concat(ipacket);
-
-            if (_ipacket.length > 100) {
-                console.debug('####=======>>## slice _ipacket ...');
+			if (_ipacket.length > 100) {
+				console.debug('####=======>>## slice _ipacket ...');
 				_ipacket = _.filter(_ipacket, function(entry){
 					return entry.id > ((new Date()).getTime() - 8640000);
 				});
-            }
+			}
 
-            self.saveObject("incomingPacket.json", _ipacket);
+			self.saveObject("incomingPacket.json", _ipacket);
 
-            ipacket = [];
-        }
+			ipacket = [];
+		}
 
-        if (originPackets.incoming.length % 100 === 0) {
-
-            if (originPackets.incoming.length > 100) {
+		if (originPackets.incoming.length % 100 === 0) {
+			if (originPackets.incoming.length > 100) {
 				console.debug('####=======>>## slice originPackets.incoming ...');
-                originPackets.incoming = _.filter(originPackets.incoming, function(inPacket) {
-                    return inPacket.updateTime > ((new Date()).getTime() - 8640000);
-                })
-            }
+				originPackets.incoming = _.filter(originPackets.incoming, function(inPacket) {
+					return inPacket.updateTime > ((new Date()).getTime() - 8640000);
+				})
+			}
 
-            self.saveObject("originPackets.json", originPackets);
-        }
+			self.saveObject("originPackets.json", originPackets);
+		}
 
 	};
 
 	outH = function () {
+		console.debug("log outgoing"); //!!!
+		var data = this;
 
-        console.debug("log outgoing");
-        var data = this;
+		if (!!originPackets) {
+			originPackets.outgoing.push(data);
+		}
 
-        if (!!originPackets) {
-            originPackets.outgoing.push(data);
-        }
+		var _data = data;
+		data = createOutgoingEntry(data);
 
-        var _data = data;
-        data = createOutgoingEntry(data);
+		if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id', 'rssi', 'hops', 'tries', 'speed'), _.omit(data,'rssi', 'hops', 'tries', 'speed'))){
+			console.debug("### OUT: Not EQUAL ...");
 
-        if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id', 'rssi', 'hops', 'tries', 'speed'), _.omit(data,'rssi', 'hops', 'tries', 'speed'))){
-            console.debug("### OUT: Not EQUAL ...");
+			var ms = (new Date).getMilliseconds().toString();
+			ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
+			var pId = parseInt(data.updateTime.toString() + ms, 10);
 
-            var ms = (new Date).getMilliseconds().toString();
-            ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
-            var pId = parseInt(data.updateTime.toString() + ms, 10);
+			data.id = pId;
 
-            data.id = pId;
+			oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
+		} else {
+			console.debug("### OUT: IS EQUAL!");
+		}
 
-            oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
-        } else {
-            console.debug("### OUT: IS EQUAL!");
-        }
+		if(opacket.length >= 50) {
+			var _opacket = self.loadObject("outgoingPacket.json");
 
-        if(opacket.length >= 50) {
-            var _opacket = self.loadObject("outgoingPacket.json");
+			if(_opacket === null) {
+				_opacket = [];
+			}
 
-            if(_opacket === null) {
-                _opacket = [];
-            }
+			_opacket = _opacket.concat(opacket);
 
-            _opacket = _opacket.concat(opacket);
-
-            if (_opacket.length > 100) {
-                console.debug('####=======>>## slice _opacket ...');
+			if (_opacket.length > 100) {
+				console.debug('####=======>>## slice _opacket ...');
 				_opacket = _.filter(_opacket, function(entry){
 					return entry.id > ((new Date()).getTime() - 8640000);
 				});
-            }
+			}
 
-            self.saveObject("outgoingPacket.json", _opacket);
+			self.saveObject("outgoingPacket.json", _opacket);
 
-            opacket = [];
-        }
+			opacket = [];
+		}
 
-        if (originPackets.outgoing.length % 50 === 0) {
+		if (originPackets.outgoing.length % 50 === 0) {
 
-            if (originPackets.outgoing.length > 100) {
+			if (originPackets.outgoing.length > 100) {
 				console.debug('####=======>>## slice originPackets.outgoing ...');
-                originPackets.outgoing = _.filter(originPackets.outgoing, function(outPacket) {
-                    return outPacket.updateTime > ((new Date()).getTime() - 8640000);
-                })
-            }
+				originPackets.outgoing = _.filter(originPackets.outgoing, function(outPacket) {
+					return outPacket.updateTime > ((new Date()).getTime() - 8640000);
+				})
+			}
 
-            self.saveObject("originPackets.json", originPackets);
-        }
+			self.saveObject("originPackets.json", originPackets);
+		}
 	};
 
-    // process incoming packages
-    zway.controller.data.incomingPacket.bind(inH);
-    // process outgoing packages
-    zway.controller.data.outgoingPacket.bind(outH);
+	// process incoming packages
+	zway.controller.data.incomingPacket.bind(inH);
+	// process outgoing packages
+	zway.controller.data.outgoingPacket.bind(outH);
 
-	// process communication if type CIT
-    /*if (this.isCIT){
-		// process incoming packages
-		zway.controller.data.incomingPacket.bind(inH);
-		// process outgoing packages
-		zway.controller.data.outgoingPacket.bind(outH);
-    }*/
+	//check if controller supports background rssi
+	if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+		// set time that will request RSSI stats every 30 s
+		this.rssiTimer = setInterval(function() {
+			try {
+				var data = self.loadObject("rssidata.json");
 
-    //check if controller supports background rssi
-    if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+				data = self.rssiData(data);
 
-        // set time that will request RSSI stats every 30 s
-        this.timer = setInterval(function() {
-            try {
-                var data = self.loadObject("rssidata.json");
+				// remove values older than 24h
+				if (data.length > 1440) {
+					var lastDay = now - 86400;
+					data = _.filter(data, function(entry){
+						return entry.time > lastDay;
+					});
+				}
 
-                data = self.rssiData(data);
-
-                // remove values older than 24h
-                if ( data.length > 1440){
-                    var lastDay = now - 86400;
-                    data = _.filter(data, function(entry){
-                        return entry.time > lastDay;
-                    });
-                }
-
-                self.saveObject("rssidata.json", data);
-            } catch (e) {
-                console.log('Cannot fetch background RSSI. Error:', e.message);
-            }
-
-        }, 1000*30);
+				self.saveObject("rssidata.json", data);
+			} catch (e) {
+				console.log('Cannot fetch background RSSI. Error:', e.message);
+			}
+		}, 1000*30);
 	}
 
-    // =================== helper functions ========================
+	// =================== helper functions ========================
 
     function prepareRSSI(rssiPacket) {
         var rssi = [];
@@ -571,6 +600,7 @@ ZWave.prototype.CommunicationLogger = function() {
 					'0x8F.0x01', // 'M' => Multicommand
 					'0x98.0x81', // 'S' => Security
 					'0x98.0xC1', // 'S' => Security
+					'0x9F.0x03', // 'S2' => Security S2
 					'0x56.0x01'  // 'C' => CRC16
 			]
 			result= {
@@ -601,6 +631,9 @@ ZWave.prototype.CommunicationLogger = function() {
 						case '0x98.0x81':
 						case '0x98.0xC1':
 							result.encap = 'S'; // Security Encap
+							return;
+						case '0x9F.0x03':
+							result.encap = 'S2'; // Security S2 Encap
 							return;
 						case '0x56.0x01':
 							result.encap = 'C'; // CR16 Encap
@@ -815,6 +848,57 @@ ZWave.prototype.certXFCheck = function () {
     this.checkForCertFxLicense();
 };
 
+ZWave.prototype.refreshStatisticsPeriodically = function () {
+	var self = this;
+
+	this.updateNetStats = function () {
+		try {
+            var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
+                // get the biggest value of all stat params
+                maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
+
+            // reset network statistics
+            if (maxPaketCnt > 32768) { // 2^15
+                zway.ClearNetworkStats();
+
+				zway.GetNetworkStats(function(){
+                    stats.forEach(function(key) {
+                        self.statistics[key] = {
+                            value: zway.controller.data.statistics[key].value,
+							updateTime: zway.controller.data.statistics[key].updateTime
+                        }
+                    });
+                }, function(){});
+                // update network statistics
+            } else {
+                zway.GetNetworkStats(function(){
+                    stats.forEach(function(key) {
+                        self.statistics[key] = {
+                        	value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
+							updateTime: zway.controller.data.statistics[key].updateTime
+						}
+                    });
+                }, function(){});
+            }
+		} catch (e){
+			console.log('Failed to update/remove network statistics.', e.toString());
+
+			if(this.statisticsIntervall) {
+				clearInterval(this.statisticsIntervall);
+                this.statisticsIntervall = undefined;
+			}
+		}
+	};
+
+    // initial call
+    this.updateNetStats();
+    
+	// intervall function collecting network statistic data
+	this.statisticsIntervall = setInterval(function() {
+		self.updateNetStats();
+	}, 600 * 1000);
+};
+
 // --------------- Public HTTP API -------------------
 
 
@@ -852,6 +936,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
     ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
     ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -889,6 +974,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
     ws.revokeExternalAccess(_name + ".sendZwayReport");
     ws.revokeExternalAccess(_name + ".NetworkReorganization");
     ws.revokeExternalAccess(_name + ".GetReorganizationLog");
+    ws.revokeExternalAccess(_name + ".GetStatisticsData");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -903,6 +989,8 @@ ZWave.prototype.defineHandlers = function () {
     var opacket = this.opacket;
     var iPacketBuffer = this.iPacketBuffer;
     var oPacketBuffer = this.oPacketBuffer;
+
+    var statistics = this.statistics;
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -997,12 +1085,13 @@ ZWave.prototype.defineHandlers = function () {
 
 			// do backup
 			var data = zway.controller.Backup();
+			var filename = (checkBoxtype('cit')?"cit" : "z-way") + "-backup-" + ts + ".zbk"
 
             return {
 				status: 200,
 				headers: {
 					"Content-Type": "application/x-download",
-					"Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zbk",
+					"Content-Disposition": "attachment; filename=" + filename,
 					"Access-Control-Allow-Origin": "*",
 					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
 					"Access-Control-Allow-Headers": "Authorization",
@@ -1085,6 +1174,7 @@ ZWave.prototype.defineHandlers = function () {
 			var now = new Date();
 			// create a timestamp in format yyyy-MM-dd-HH-mm
 			var ts = getHRDateformat(now);
+			var box_type = checkBoxtype('cit')? 'cit' : 'z-way';
 
 			// prepare system information
 			for (param in reqObj) {
@@ -1098,7 +1188,7 @@ ZWave.prototype.defineHandlers = function () {
 				// add backup with log
 				formElements.push({
 					name: 'log_name',
-					value: "report-z-way-backup-log-" + ts + ".tgz"
+					value: "report-"+ box_type +"-backup-log-" + ts + ".tgz"
 				},{
                     name: 'log_data',
                     value: Base64.encode(JSON.stringify(data))
@@ -2256,9 +2346,19 @@ ZWave.prototype.defineHandlers = function () {
 
 			if(Object.keys(reqObj).length > 0) {
 
-				_.assign(expert_config, reqObj);
+				self.expert_config = _.assign(self.expert_config,_.pick(reqObj,
+                    'debug',
+                    'network_name',
+                    'date_format',
+                    'time_format',
+                    'time_zone',
+                    'notes',
+                    'ssid_name',
+                    'currentDateTime',
+                    'cit_identifier',
+                    'rss'));
 
-                this.ZWave.prototype.saveObject('expertconfig.json', expert_config, zwayCfg.name);
+                this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
 
                 return {
 					status: 200,
@@ -2917,6 +3017,20 @@ ZWave.prototype.defineHandlers = function () {
 
         return reply;
     }
+
+    this.ZWaveAPI.GetStatisticsData = function() {
+        return {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+                "Access-Control-Allow-Headers": "Authorization",
+                "Connection": "keep-alive"
+            },
+            body: statistics
+        };
+    };
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {

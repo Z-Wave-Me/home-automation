@@ -6,7 +6,7 @@
     "homepage": "http://www.foscam.com/",
     "icon": "icon.png",
     "moduleName":"VistaCam",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "maturity": "stable",
     "repository": {
             "type": "git",
