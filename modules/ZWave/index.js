@@ -306,8 +306,13 @@ ZWave.prototype.stop = function () {
 
 	clearInterval(this.rssiTimer);
 
-    this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
-    this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
+    // do license check if controller type CIT and stop polling routine
+    if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
+        zway.controller.data.manufacturerProductType.value === 257 &&
+        zway.controller.data.manufacturerProductId.value === 1) {
+        this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
+        this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
+    }
 
 	if (this._dataBind) {
 		this.controller.off("ZWave.dataBind", this._dataBind);
@@ -2141,7 +2146,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		// update postfix JSON
 		http.request({
-			url: "http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
+			url: "http://manuals-backend.z-wave.info/make.php?mode=ui_postfix",//"http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
 		   	async: true,
 			success: function(res) {
 				if (res.data && res.data.fixes && res.data.fixes.length > 0 && res.data.last_update && res.data.last_update > postfix.last_update) {
@@ -2317,7 +2322,7 @@ ZWave.prototype.defineHandlers = function () {
             } else {
                 return {
                     status: 404,
-                    body: 'Custompostfix does not yet exit'
+                    body: 'Custompostfix does not yet exist'
                 };
             }
         }
@@ -4919,7 +4924,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									a_defaults.probeType = 'alarm_co';
 									break;
 								case 0x03: // CO2
-									a_defaults.metrics.icon = 'co';
+									a_defaults.metrics.icon = 'coo';
 									a_defaults.probeType = 'alarm_coo';
 									break;
 								case 0x04: // Heat
