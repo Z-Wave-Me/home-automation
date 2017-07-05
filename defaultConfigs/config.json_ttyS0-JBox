@@ -171,7 +171,7 @@
         "moduleId": "InfoWidget",
         "active": true,
         "title": "Cloud Backup Instructions",
-        "description": "Dieses Modul erzeugt ein Informations Widget.",
+        "description": "This module creates an information widget.",
         "params": {
             "widgets": [],
             "internationalize": true,
@@ -186,6 +186,16 @@
                 "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong>  Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
                 "imgURI": "app/img/icon_cloudbackup.png"
             }]
+        }
+    }, {
+        "id" : 13,
+        "moduleId" : "MobileAppSupport",
+        "active" : true,
+        "title" : "Mobile App Support",
+        "description": "This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).",
+        "params" : {
+            "devices" : [],
+            "logLevelContainer" : {}
         }
     }]
 }

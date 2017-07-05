@@ -165,7 +165,7 @@
        "moduleId": "InfoWidget",
        "active": true,
        "title": "Cloud Backup Instructions",
-       "description": "Dieses Modul erzeugt ein Informations Widget.",
+       "description": "This module creates an information widget.",
        "params": {
            "widgets": [],
            "internationalize": true,
@@ -181,5 +181,15 @@
                "imgURI": "app/img/icon_cloudbackup.png"
            }]
        }
-   }]
+   }, {
+        "id" : 11,
+        "moduleId" : "MobileAppSupport",
+        "active" : true,
+        "title" : "Mobile App Support",
+        "description": "This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).",
+        "params" : {
+            "devices" : [],
+            "logLevelContainer" : {}
+        }
+    }]
 }
