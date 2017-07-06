@@ -1844,10 +1844,6 @@ AutomationController.prototype.updateProfile = function (object, id) {
             }
         }
     }
-
-    if (!checkBoxtype('cit')){
-        this.addQRCode(profile, object);
-    }
     
     this.saveConfig();
     return this.profiles[index];
