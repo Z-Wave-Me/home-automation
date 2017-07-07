@@ -61,43 +61,43 @@ function ZWave (id, controller) {
 
 	this.default_expert_config = {
 		'debug' : false,
-        'network_name': '',
-        'date_format': '',
-        'time_format': '',
-        'time_zone': '',
-        'notes': '',
-        'ssid_name': '',
-        'currentDateTime': '',
-        'cit_identifier': '',
-        'rss': ''
+		'network_name': '',
+		'date_format': '',
+		'time_format': '',
+		'time_zone': '',
+		'notes': '',
+		'ssid_name': '',
+		'currentDateTime': '',
+		'cit_identifier': '',
+		'rss': ''
 	};
 
-    this.statistics = {
-        RFTxFrames: {
-            value: 0,
-            updateTime: 0
-        },
-        RFTxLBTBackOffs: {
-            value: 0,
-            updateTime: 0
-        },
-        RFRxFrames: {
-            value: 0,
-            updateTime: 0
-        },
-        RFRxLRCErrors: {
-            value: 0,
-            updateTime: 0
-        },
-        RFRxCRC16Errors: {
-            value: 0,
-            updateTime: 0
-        },
-        RFRxForeignHomeID: {
-            value: 0,
-            updateTime: 0
-        }
-    };
+	this.statistics = {
+		RFTxFrames: {
+			value: 0,
+			updateTime: 0
+		},
+		RFTxLBTBackOffs: {
+			value: 0,
+			updateTime: 0
+		},
+		RFRxFrames: {
+			value: 0,
+			updateTime: 0
+		},
+		RFRxLRCErrors: {
+			value: 0,
+			updateTime: 0
+		},
+		RFRxCRC16Errors: {
+			value: 0,
+			updateTime: 0
+		},
+		RFRxForeignHomeID: {
+			value: 0,
+			updateTime: 0
+		}
+	};
 
 }
 
@@ -123,12 +123,12 @@ ZWave.prototype.updateList = function() {
 };
 
 ZWave.prototype.loadObject = function(name, zwayName) {
-    zwayName = zwayName? zwayName : this.config.name;
+	zwayName = zwayName? zwayName : this.config.name;
 	return loadObject(zwayName + "_" + name);
 };
 
 ZWave.prototype.saveObject = function(name, obj, zwayName) {
-    zwayName = zwayName? zwayName : this.config.name;
+	zwayName = zwayName? zwayName : this.config.name;
 	return saveObject(zwayName + "_" + name, obj);
 };
 
@@ -175,28 +175,28 @@ ZWave.prototype.init = function (config) {
 
 	// add custom_postfix to postfix
 	if(!!custom_postfix) {
-        custom_fixes = custom_postfix.fixes;
-        pfixes = this.postfix.fixes;
+		custom_fixes = custom_postfix.fixes;
+		pfixes = this.postfix.fixes;
 
-        for(var x in custom_fixes) {
-            var z = 0;
-            for(var y in pfixes) {
-                if(custom_fixes[x].p_id === pfixes[y].p_id) {
-                    custom_fixes[x].id = pfixes[y].id;
-                    pfixes[y] = _.assign(pfixes[y], custom_fixes[x]);
-                    break;
-                }
-                z++;
-            }
+		for(var x in custom_fixes) {
+			var z = 0;
+			for(var y in pfixes) {
+				if(custom_fixes[x].p_id === pfixes[y].p_id) {
+					custom_fixes[x].id = pfixes[y].id;
+					pfixes[y] = _.assign(pfixes[y], custom_fixes[x]);
+					break;
+				}
+				z++;
+			}
 
-            if(z == pfixes.length) {
-                var id = Math.max.apply(Math, pfixes.map(function(fix) {
-                    return fix.id;
-                }));
-                custom_fixes[x].id = (id +1);
-                pfixes.push(custom_fixes[x]);
-            }
-        }
+			if(z == pfixes.length) {
+				var id = Math.max.apply(Math, pfixes.map(function(fix) {
+					return fix.id;
+				}));
+				custom_fixes[x].id = (id +1);
+				pfixes.push(custom_fixes[x]);
+			}
+		}
 
 		this.postfix.fixes = pfixes;
 	}
@@ -206,14 +206,14 @@ ZWave.prototype.init = function (config) {
 		return;
 	}
 
-    // do license check if controller type CIT
-    if (zway.controller.data.manufacturerId.value === 797 &&
+	// do license check if controller type CIT
+	if (zway.controller.data.manufacturerId.value === 797 &&
 		zway.controller.data.manufacturerProductType.value === 257 &&
 		zway.controller.data.manufacturerProductId.value === 1) {
 		// check if the controller license is still up to date
 		// and set update timer
 		this.certXFCheck();
-        this.refreshStatisticsPeriodically();
+		this.refreshStatisticsPeriodically();
 	}
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
@@ -252,7 +252,7 @@ ZWave.prototype.startBinding = function () {
 		}
 	} catch(e) {
 		var moduleName = this.getName(),
-		    langFile = self.controller.loadModuleLang(moduleName);
+			langFile = self.controller.loadModuleLang(moduleName);
 		
 		this.controller.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave", moduleName);
 		this.zway = null;
@@ -295,7 +295,7 @@ ZWave.prototype.startBinding = function () {
 		this.gateDevicesStart();
 	}
 
-    this.CommunicationLogger();
+	this.CommunicationLogger();
 };
 
 ZWave.prototype.stop = function () {
@@ -306,13 +306,13 @@ ZWave.prototype.stop = function () {
 
 	clearInterval(this.rssiTimer);
 
-    // do license check if controller type CIT and stop polling routine
-    if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
-        zway.controller.data.manufacturerProductType.value === 257 &&
-        zway.controller.data.manufacturerProductId.value === 1) {
-        this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
-        this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
-    }
+	// do license check if controller type CIT and stop polling routine
+	if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
+		zway.controller.data.manufacturerProductType.value === 257 &&
+		zway.controller.data.manufacturerProductId.value === 1) {
+		this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
+		this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
+	}
 
 	if (this._dataBind) {
 		this.controller.off("ZWave.dataBind", this._dataBind);
@@ -323,7 +323,7 @@ ZWave.prototype.stop = function () {
 
 	if (this.statisticsIntervall) {
 		clearInterval(this.statisticsIntervall);
-        this.statisticsIntervall = undefined;
+		this.statisticsIntervall = undefined;
 	}
 };
 
@@ -548,57 +548,57 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	// =================== helper functions ========================
 
-    function prepareRSSI(rssiPacket) {
-        var rssi = [];
+	function prepareRSSI(rssiPacket) {
+		var rssi = [];
 
-        if(_.isArray(rssiPacket)){
-            _.forEach(rssiPacket, function (rssiValue){
-                rssi.push(~(rssiValue - 128) + ' dBm'); // transform to two's (Zweierkomplement)
-            });
-        } else {
-            rssi = ~(rssiPacket - 128) + ' dBm';
-        }
+		if(_.isArray(rssiPacket)){
+			_.forEach(rssiPacket, function (rssiValue){
+				rssi.push(~(rssiValue - 128) + ' dBm'); // transform to two's (Zweierkomplement)
+			});
+		} else {
+			rssi = ~(rssiPacket - 128) + ' dBm';
+		}
 
 
-        return _.isArray(rssiPacket) && rssi.length < 1? '': rssi;
-    }
+		return _.isArray(rssiPacket) && rssi.length < 1? '': rssi;
+	}
 
-    function prepareValues(packetValue, packetType,encap,paramCnt) {
-        var pV = packetValue,
+	function prepareValues(packetValue, packetType,encap,paramCnt) {
+		var pV = packetValue,
 			shift = encap != 'S' && encap != ''? 2 : 0;
 
 		shift = encap === 'I'? 4 : shift;
 
-        if (_.isArray(packetValue)) {
-            if (packetType === 'out') {
-                if (packetValue.length >= 8) {
-                    pV = packetValue.slice(7 + shift, -1);
-                } else {
-                    pV = packetValue.length >= 6? packetValue.slice(5 + shift, -1): '';
-                }
-            } else {
+		if (_.isArray(packetValue)) {
+			if (packetType === 'out') {
+				if (packetValue.length >= 8) {
+					pV = packetValue.slice(7 + shift, -1);
+				} else {
+					pV = packetValue.length >= 6? packetValue.slice(5 + shift, -1): '';
+				}
+			} else {
 				if (encap !== '') {
 					pV = packetValue.length >= 5? packetValue.slice(4 + shift) : '';
 				} else {
 					pV = packetValue.length >= 3? packetValue.slice(2 + shift) : '';
 				}
-            }
+			}
 
 			if (pV.length === 1 && pV[0] === 0 && paramCnt === 0){
 				pV = [];
 			}
-        }
+		}
 
-        return pV;
-    };
+		return pV;
+	};
 
-    function packetApplication(packet, packetType) {
+	function packetApplication(packet, packetType) {
 
 		var cmdClassKey = 0,
-            cmdKey = 0,
-            ret = {},
-            findCmdClass = [],
-            _cmdClass = {},
+			cmdKey = 0,
+			ret = {},
+			findCmdClass = [],
+			_cmdClass = {},
 			encaps=[
 					'0x60.0x0D', // 'I' => Multichannel
 					'0x60.0x06', // 'I' => Multichannel
@@ -609,10 +609,10 @@ ZWave.prototype.CommunicationLogger = function() {
 					'0x56.0x01'  // 'C' => CRC16
 			]
 			result= {
-                encap: '',
-                application: '',
+				encap: '',
+				application: '',
 				params: 0
-            },
+			},
 			hexPString = [],
 			shift = 0,
 			_cmdClassObject = {};
@@ -659,28 +659,28 @@ ZWave.prototype.CommunicationLogger = function() {
 			}
 		});
 
-        if (packet.length >= 6 && packetType === 'out') {
-            cmdClassKey = hexPString[5 + shift];
-            cmdKey = hexPString[6  + shift];
-        } else {
-            cmdClassKey = hexPString[0 + shift];
-            cmdKey = hexPString[1 + shift];
-        }
+		if (packet.length >= 6 && packetType === 'out') {
+			cmdClassKey = hexPString[5 + shift];
+			cmdKey = hexPString[6  + shift];
+		} else {
+			cmdClassKey = hexPString[0 + shift];
+			cmdKey = hexPString[1 + shift];
+		}
 
-        findCmdClass = _.filter(cmdC, function (cc){
-            return cc['_key'] === cmdClassKey;
-        });
+		findCmdClass = _.filter(cmdC, function (cc){
+			return cc['_key'] === cmdClassKey;
+		});
 
-        if (findCmdClass.length < 1) {
+		if (findCmdClass.length < 1) {
 			if (packet.length > 0) {
 				result.application = 'NIF';
 				return result;
 			} else {
 				return;
 			}
-        }
+		}
 
-        // get latest version of filtered
+		// get latest version of filtered
 		var latestVersion = Math.max.apply(Math,findCmdClass.map(function(cc){return parseInt(cc['_version'], 10);})).toString();
 
 		_cmdClass = _.filter(findCmdClass, function (cc){
@@ -693,19 +693,19 @@ ZWave.prototype.CommunicationLogger = function() {
 			return;
 		}
 
-        if(_.isEmpty(_cmdClass)) {
-            return;
-        }
+		if(_.isEmpty(_cmdClass)) {
+			return;
+		}
 
-        if (_.isArray(_cmdClass.cmd)) {
-            ret = _.filter(_cmdClass.cmd, function (cmd){
-                return cmd['_key'] === cmdKey;
-            });
+		if (_.isArray(_cmdClass.cmd)) {
+			ret = _.filter(_cmdClass.cmd, function (cmd){
+				return cmd['_key'] === cmdKey;
+			});
 
-            ret = ret[0]? ret[0] : ret;
-        } else {
-            ret = _cmdClass.cmd;
-        }
+			ret = ret[0]? ret[0] : ret;
+		} else {
+			ret = _cmdClass.cmd;
+		}
 
 
 		if(typeof ret === "object" && ret.hasOwnProperty('_help') && (result.encap === '' || (result.encap != 'S' && result.encap != 'M'))) {
@@ -718,39 +718,39 @@ ZWave.prototype.CommunicationLogger = function() {
 			result.params = _cmdClass['param']? Object.keys(ret['param']).length : 0;
 		}
 
-        return result;
-    }
+		return result;
+	}
 
-    function decToHex(decimal, chars, x) {
-        var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
-        return (x || '') + hex;
-    };
+	function decToHex(decimal, chars, x) {
+		var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
+		return (x || '') + hex;
+	};
 
-    function createIncomingEntry(packet) {
-        var pA = _.isArray(packet.value)? packetApplication(packet.value, 'in'):'';
+	function createIncomingEntry(packet) {
+		var pA = _.isArray(packet.value)? packetApplication(packet.value, 'in'):'';
 
 		pA = pA? pA : '';
 
 		var obj = {
-            type: 'incoming',
-            updateTime: packet.updateTime,
-            bytes:packet.value,
-            src: packet.nodeId && packet.nodeId.value ? packet.nodeId.value : '',
-            rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : '',
+			type: 'incoming',
+			updateTime: packet.updateTime,
+			bytes:packet.value,
+			src: packet.nodeId && packet.nodeId.value ? packet.nodeId.value : '',
+			rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : '',
 			encaps: pA !== '' && pA.encap ? pA.encap : '',
-            dest: packet.dstNodeId? packet.dstNodeId.value : '',
-            application: pA !== '' && pA.application ? pA.application : ''
-        };
+			dest: packet.dstNodeId? packet.dstNodeId.value : '',
+			application: pA !== '' && pA.application ? pA.application : ''
+		};
 
-        obj.value = prepareValues(packet.value, 'in', obj.encaps, obj.params);
+		obj.value = prepareValues(packet.value, 'in', obj.encaps, obj.params);
 
-        console.debug("######### incoming APPLICATION:", obj.application, " || encap:", obj.encaps,"|| bytes:", packet.value);
+		console.debug("######### incoming APPLICATION:", obj.application, " || encap:", obj.encaps,"|| bytes:", packet.value);
 
-        return obj;
-    };
+		return obj;
+	};
 
-    function createOutgoingEntry(packet) {
-        var bytes = packet.value;
+	function createOutgoingEntry(packet) {
+		var bytes = packet.value;
 
 		(_.isArray(bytes)) ? bytes.unshift(0) : (bytes = '');	// prepend 1 byte
 
@@ -758,99 +758,99 @@ ZWave.prototype.CommunicationLogger = function() {
 
 		pA = pA? pA : '';
 
-        var obj = {
-            type: 'outgoing',
-            updateTime: packet.updateTime,
-            bytes:packet.value,
-            src: nodeid,
-            speed: packet.speed && packet.speed.value? packet.speed.value : '',
-            rssi: packet.returnRSSI && packet.returnRSSI.value? prepareRSSI(packet.returnRSSI.value) : '',
-            hops: packet.hops && packet.hops.value? packet.hops.value : '',
+		var obj = {
+			type: 'outgoing',
+			updateTime: packet.updateTime,
+			bytes:packet.value,
+			src: nodeid,
+			speed: packet.speed && packet.speed.value? packet.speed.value : '',
+			rssi: packet.returnRSSI && packet.returnRSSI.value? prepareRSSI(packet.returnRSSI.value) : '',
+			hops: packet.hops && packet.hops.value? packet.hops.value : '',
 			encaps: pA !== '' && pA.encap ? pA.encap : '',
-            tries: packet.tries && packet.tries.value? packet.tries.value : '',
-            dest: (_.isArray(packet.value)) ? packet.value[3] : '',
+			tries: packet.tries && packet.tries.value? packet.tries.value : '',
+			dest: (_.isArray(packet.value)) ? packet.value[3] : '',
 			application: pA !== '' && pA.application ? pA.application : ''
-        };
+		};
 
 		obj.value = prepareValues(bytes, 'out', obj.encaps, obj.params);
 
-        console.debug("######### outgoing APPLICATION:", obj.application, "|| encap:", obj.encaps,"|| bytes:", bytes);
+		console.debug("######### outgoing APPLICATION:", obj.application, "|| encap:", obj.encaps,"|| bytes:", bytes);
 
-        return obj;
-    };
+		return obj;
+	};
 
-    // handle packet buffer
-    function packetBuffer(bufferObject, packetData, packetType) {
-        var now = (new Date()).getTime();
+	// handle packet buffer
+	function packetBuffer(bufferObject, packetData, packetType) {
+		var now = (new Date()).getTime();
 
-        // add to in/outlists
-        if (packetType === 'out') {
-            opacket.push(packetData);
-        } else {
-            ipacket.push(packetData);
-        }
+		// add to in/outlists
+		if (packetType === 'out') {
+			opacket.push(packetData);
+		} else {
+			ipacket.push(packetData);
+		}
 
-        bufferObject.packets.push(packetData);
-        bufferObject.lastUpdate = now;
+		bufferObject.packets.push(packetData);
+		bufferObject.lastUpdate = now;
 
-        bufferObject.packets = _.filter(bufferObject.packets, function(packet){
-            return packet.id > (now - 15000);
-        });
+		bufferObject.packets = _.filter(bufferObject.packets, function(packet){
+			return packet.id > (now - 15000);
+		});
 
-        return bufferObject;
-    }
+		return bufferObject;
+	}
 
-    // =====================================================
+	// =====================================================
 };
 
 ZWave.prototype.certXFCheck = function () {
 
-    // polling function
-    this.checkForCertFxLicense = function() {
-        zway.ZMECapabilities(null, function() {
+	// polling function
+	this.checkForCertFxLicense = function() {
+		zway.ZMECapabilities(null, function() {
 
-            // refresh caps
-            zway.ZMECapabilities();
+			// refresh caps
+			zway.ZMECapabilities();
 
-            if (zway.controller.data.countDown.value < 5) {
-                var capsNonce = zway.controller.data.capsNonce.value.map(function (i){
-                    return ("00" + i.toString(16)).slice(-2);
-                }).join("");
+			if (zway.controller.data.countDown.value < 5) {
+				var capsNonce = zway.controller.data.capsNonce.value.map(function (i){
+					return ("00" + i.toString(16)).slice(-2);
+				}).join("");
 
-                var uuid = zway.controller.data.uuid.value;
+				var uuid = zway.controller.data.uuid.value;
 
-                http.request({
-                    url: "https://CertXFer.Z-WaveAlliance.org:8443/CITAuth/CITAuth.aspx?uid=" + uuid + "&nonce=" + capsNonce,
-                    async: true,
-                    success: function(resp) {
-                        var key = resp.data.split(": ")[1].split(" ").map(function(i) { return parseInt(i,16); });
-                        zway.ZMECapabilities(key);
+				http.request({
+					url: "https://CertXFer.Z-WaveAlliance.org:8443/CITAuth/CITAuth.aspx?uid=" + uuid + "&nonce=" + capsNonce,
+					async: true,
+					success: function(resp) {
+						var key = resp.data.split(": ")[1].split(" ").map(function(i) { return parseInt(i,16); });
+						zway.ZMECapabilities(key);
 
-                        // refresh caps
-                        zway.ZMECapabilities();
-                    },
-                    error: function(resp) {
-                        console.log(JSON.stringify(resp, null, 1));
-                    }
-                });
-            }
-        })
-    };
+						// refresh caps
+						zway.ZMECapabilities();
+					},
+					error: function(resp) {
+						console.log(JSON.stringify(resp, null, 1));
+					}
+				});
+			}
+		})
+	};
 
-    // add daily cron job
-    this.controller.emit("cron.addTask", "zwayCertXFCheck.poll", {
-        minute: 0, //[0,59,3]
-        hour: 0, //null
-        weekDay: [0,6,1], //null
-        day: null,
-        month: null
-    });
+	// add daily cron job
+	this.controller.emit("cron.addTask", "zwayCertXFCheck.poll", {
+		minute: 0, //[0,59,3]
+		hour: 0, //null
+		weekDay: [0,6,1], //null
+		day: null,
+		month: null
+	});
 
-    // add event listener
-    this.controller.on("zwayCertXFCheck.poll", this.checkForCertFxLicense);
+	// add event listener
+	this.controller.on("zwayCertXFCheck.poll", this.checkForCertFxLicense);
 
-    // initial certXF check
-    this.checkForCertFxLicense();
+	// initial certXF check
+	this.checkForCertFxLicense();
 };
 
 ZWave.prototype.refreshStatisticsPeriodically = function () {
@@ -858,46 +858,46 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
 	this.updateNetStats = function () {
 		try {
-            var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
-                // get the biggest value of all stat params
-                maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
+			var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
+				// get the biggest value of all stat params
+				maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
 
-            // reset network statistics
-            if (maxPaketCnt > 32768) { // 2^15
-                zway.ClearNetworkStats();
+			// reset network statistics
+			if (maxPaketCnt > 32768) { // 2^15
+				zway.ClearNetworkStats();
 
 				zway.GetNetworkStats(function(){
-                    stats.forEach(function(key) {
-                        self.statistics[key] = {
-                            value: zway.controller.data.statistics[key].value,
-							updateTime: zway.controller.data.statistics[key].updateTime
-                        }
-                    });
-                }, function(){});
-                // update network statistics
-            } else {
-                zway.GetNetworkStats(function(){
-                    stats.forEach(function(key) {
-                        self.statistics[key] = {
-                        	value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
+					stats.forEach(function(key) {
+						self.statistics[key] = {
+							value: zway.controller.data.statistics[key].value,
 							updateTime: zway.controller.data.statistics[key].updateTime
 						}
-                    });
-                }, function(){});
-            }
+					});
+				}, function(){});
+				// update network statistics
+			} else {
+				zway.GetNetworkStats(function(){
+					stats.forEach(function(key) {
+						self.statistics[key] = {
+							value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
+							updateTime: zway.controller.data.statistics[key].updateTime
+						}
+					});
+				}, function(){});
+			}
 		} catch (e){
 			console.log('Failed to update/remove network statistics.', e.toString());
 
 			if(this.statisticsIntervall) {
 				clearInterval(this.statisticsIntervall);
-                this.statisticsIntervall = undefined;
+				this.statisticsIntervall = undefined;
 			}
 		}
 	};
 
-    // initial call
-    this.updateNetStats();
-    
+	// initial call
+	this.updateNetStats();
+	
 	// intervall function collecting network statistic data
 	this.statisticsIntervall = setInterval(function() {
 		self.updateNetStats();
@@ -938,10 +938,10 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -976,10 +976,10 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".CheckAllLinks");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
 	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
-    ws.revokeExternalAccess(_name + ".sendZwayReport");
-    ws.revokeExternalAccess(_name + ".NetworkReorganization");
-    ws.revokeExternalAccess(_name + ".GetReorganizationLog");
-    ws.revokeExternalAccess(_name + ".GetStatisticsData");
+	ws.revokeExternalAccess(_name + ".sendZwayReport");
+	ws.revokeExternalAccess(_name + ".NetworkReorganization");
+	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
+	ws.revokeExternalAccess(_name + ".GetStatisticsData");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -990,12 +990,12 @@ ZWave.prototype.defineHandlers = function () {
 	var self = this;
 	var zwayCfg = this.config;
 
-    var ipacket = this.ipacket;
-    var opacket = this.opacket;
-    var iPacketBuffer = this.iPacketBuffer;
-    var oPacketBuffer = this.oPacketBuffer;
+	var ipacket = this.ipacket;
+	var opacket = this.opacket;
+	var iPacketBuffer = this.iPacketBuffer;
+	var oPacketBuffer = this.oPacketBuffer;
 
-    var statistics = this.statistics;
+	var statistics = this.statistics;
 
 	this.ZWaveAPI = function() {
 		return { status: 400, body: "Bad ZWaveAPI request " };
@@ -1084,7 +1084,7 @@ ZWave.prototype.defineHandlers = function () {
 		var now = new Date();
 
 		// create a timestamp in format yyyy-MM-dd-HH-mm
-        var ts = getHRDateformat(now);
+		var ts = getHRDateformat(now);
 
 		try {
 
@@ -1092,7 +1092,7 @@ ZWave.prototype.defineHandlers = function () {
 			var data = zway.controller.Backup();
 			var filename = (checkBoxtype('cit')?"cit" : "z-way") + "-backup-" + ts + ".zbk"
 
-            return {
+			return {
 				status: 200,
 				headers: {
 					"Content-Type": "application/x-download",
@@ -1109,42 +1109,42 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 
-    this.ZWaveAPI.sendZWayReport = function(url, request) {
-        var lines = '',
-            q = request.query,
-            testLines = function(lines) {
-                var l = parseInt(lines,10);
-                return l > 0 && l <= 20000 || false;
-            },
-            logAvailable = fs.stat('lib/fetchLog.sh'),
-            report_url = "https://service.z-wave.me/report/index.php",
-            ret = false,
-        	formElements = [],
+	this.ZWaveAPI.sendZWayReport = function(url, request) {
+		var lines = '',
+			q = request.query,
+			testLines = function(lines) {
+				var l = parseInt(lines,10);
+				return l > 0 && l <= 20000 || false;
+			},
+			logAvailable = fs.stat('lib/fetchLog.sh'),
+			report_url = "https://service.z-wave.me/report/index.php",
+			ret = false,
+			formElements = [],
 			reqObj = request.body? request.body : request.data,
 			data;
 
-        reqObj = reqObj && typeof reqObj !== 'string'? reqObj : JSON.parse(reqObj);
+		reqObj = reqObj && typeof reqObj !== 'string'? reqObj : JSON.parse(reqObj);
 
-        //TODO: Implement for Multiple zways
-        /*function createBackup(){
-        	var zwayBcp = {}
-            // do backup
-            global.ZWave.list().forEach(function(zwayName) {
-                var bcp = "",
-                    data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
+		//TODO: Implement for Multiple zways
+		/*function createBackup(){
+			var zwayBcp = {}
+			// do backup
+			global.ZWave.list().forEach(function(zwayName) {
+				var bcp = "",
+					data = new Uint8Array(global.ZWave[zwayName].zway.controller.Backup());
 
-                for(var i = 0; i < data.length; i++) {
-                    bcp += String.fromCharCode(data[i]);
-                }
+				for(var i = 0; i < data.length; i++) {
+					bcp += String.fromCharCode(data[i]);
+				}
 
-                zwayBcp[zwayName] = bcp;
-            });
+				zwayBcp[zwayName] = bcp;
+			});
 
-        	return zwayBcp;
+			return zwayBcp;
 		}*/
 
-        function createBackup(){
-            var zwayBcp = []
+		function createBackup(){
+			var zwayBcp = []
 
 			// do backup
 			var bcp = "",
@@ -1156,23 +1156,23 @@ ZWave.prototype.defineHandlers = function () {
 
 			zwayBcp = bcp;
 
-            return zwayBcp;
-        }
+			return zwayBcp;
+		}
 
-        if (q && logAvailable) {
-            lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines)? parseInt(q.lines,10) : lines;
-        }
+		if (q && logAvailable) {
+			lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines)? parseInt(q.lines,10) : lines;
+		}
 
 		if (logAvailable) {
 			//grep log and add to config/map
 			system("sh automation/lib/fetchLog.sh getLog " + lines);
 
-            data = createBackup();
+			data = createBackup();
 
 			//cleanup log's in config/map directory
 			system("sh automation/lib/fetchLog.sh removeLog");
 		} else {
-            data = createBackup();
+			data = createBackup();
 		}
 
 		try {
@@ -1195,8 +1195,8 @@ ZWave.prototype.defineHandlers = function () {
 					name: 'log_name',
 					value: "report-"+ box_type +"-backup-log-" + ts + ".tgz"
 				},{
-                    name: 'log_data',
-                    value: Base64.encode(JSON.stringify(data))
+					name: 'log_data',
+					value: Base64.encode(JSON.stringify(data))
 				});
 			}
 
@@ -1217,7 +1217,7 @@ ZWave.prototype.defineHandlers = function () {
 			return { status: 500, body: e.toString() }
 		}
 		return ret;
-    };
+	};
 
 	this.ZWaveAPI.Restore = function(url, request) {
 		if (request.method === "POST" && request.data && request.data && request.data.config_backup) {
@@ -1524,23 +1524,23 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.CommunicationHistory = function(url, request) {
 		var self = this,
-            packets = [],
-            body = {
-                "code": 200,
-                "message": "200 OK",
-                "updateTime": null,
-                "data": []
-            },
-            _ipacket = this.ZWave.prototype.loadObject('incomingPacket.json', zwayCfg.name),
-            _opacket = this.ZWave.prototype.loadObject('outgoingPacket.json', zwayCfg.name),
-            filterObj = null;
+			packets = [],
+			body = {
+				"code": 200,
+				"message": "200 OK",
+				"updateTime": null,
+				"data": []
+			},
+			_ipacket = this.ZWave.prototype.loadObject('incomingPacket.json', zwayCfg.name),
+			_opacket = this.ZWave.prototype.loadObject('outgoingPacket.json', zwayCfg.name),
+			filterObj = null;
 
 		if (request.query && request.query.filter) {
-            filterObj = typeof request.query.filter === 'string' ? JSON.parse(request.query.filter) : request.query.filter;
-        }
+			filterObj = typeof request.query.filter === 'string' ? JSON.parse(request.query.filter) : request.query.filter;
+		}
 
-        _ipacket = _.isNull(_ipacket)? ipacket : _ipacket.concat(ipacket);
-        _opacket = _.isNull(_opacket)? opacket : _opacket.concat(opacket);
+		_ipacket = _.isNull(_ipacket)? ipacket : _ipacket.concat(ipacket);
+		_opacket = _.isNull(_opacket)? opacket : _opacket.concat(opacket);
 
 		packets = packets.concat(_opacket, _ipacket);
 
@@ -1591,133 +1591,133 @@ ZWave.prototype.defineHandlers = function () {
 		};
 	};
 
-    this.ZWaveAPI.Zniffer = function() {
-        self = this,
-            packets = [],
-            body = {
-                "code": 200,
-                "message": "200 OK",
-                "updateTime": null,
-                "data": []
-            };
+	this.ZWaveAPI.Zniffer = function() {
+		self = this,
+			packets = [],
+			body = {
+				"code": 200,
+				"message": "200 OK",
+				"updateTime": null,
+				"data": []
+			};
 
-        packets = packets.concat(iPacketBuffer.packets, oPacketBuffer.packets);
+		packets = packets.concat(iPacketBuffer.packets, oPacketBuffer.packets);
 
-        packets = _.filter(packets, function(p){
-            return p.id > ((new Date()).getTime() - 10000);
-        });
+		packets = _.filter(packets, function(p){
+			return p.id > ((new Date()).getTime() - 10000);
+		});
 
-        if (packets.length > 0) {
+		if (packets.length > 0) {
 
-            body.updateTime = Math.round((new Date()).getTime()/1000);
+			body.updateTime = Math.round((new Date()).getTime()/1000);
 
-            packets = _.sortBy(packets, function(o) {return o.id});
-        }
-
-        body.data = packets;
-
-        return {
-            status: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Authorization",
-                "Content-Type": "application/json",
-                "Connection": "keep-alive"
-            },
-            body: body
-        };
-    }
-
-    this.ZWaveAPI.PacketLog = function() {
-        return {
-            status: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Authorization",
-                "Content-Type": "application/json",
-                "Connection": "keep-alive"
-            },
-            body: {
-                "code": 200,
-                "message": "200 OK",
-                "updateTime": Math.round((new Date()).getTime() / 1000),
-                data: this.ZWave.prototype.loadObject('originPackets.json', zwayCfg.name)
-            }
-        };
-    };
-
-
-    this.ZWaveAPI.RSSIGet = function(url, request) {
-        var headers = {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Authorization",
-                "Content-Type": "application/json",
-                "Connection": "keep-alive"
-            },
-            body = {
-                "code": 200,
-                "message": "200 OK",
-                "updateTime": Math.round((new Date()).getTime() / 1000),
-                "data": []
-            };
-
-        try {
-
-            //check if controller supports background rssi
-            if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
-                var par = url.split("/")[1];
-
-                if (par == "realtime") {
-
-                    data = ZWave.prototype.rssiData();
-
-                    body.data = data;
-
-                } else {
-                    body.data = this.ZWave.prototype.loadObject('rssidata.json', zwayCfg.name);
-                }
-
-                if (!!body.data) {
-
-                    return {
-                        headers: headers,
-                        status: 200,
-                        body: body
-                    };
-                } else {
-
-                    body.code = 404;
-                    body.message = '404 Not Found';
-
-                    return {
-                        headers: headers,
-                        status: 404,
-                        body: body
-                    };
-                }
-			} else {
-                body.code = 501;
-                body.message = 'Not implemented: This function is not supported by controller.';
-
-                return {
-                    headers: headers,
-                    status: 501,
-                    body: body
-                };
-			}
-        } catch (e) {
-            return {
-                headers: headers,
-                status: 500,
-                body: "Something went wrong:" + e.toString()
-            };
+			packets = _.sortBy(packets, function(o) {return o.id});
 		}
-    };
-    
-        this.ZWaveAPI.TestNode = function(url, request) {
+
+		body.data = packets;
+
+		return {
+			status: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body: body
+		};
+	}
+
+	this.ZWaveAPI.PacketLog = function() {
+		return {
+			status: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body: {
+				"code": 200,
+				"message": "200 OK",
+				"updateTime": Math.round((new Date()).getTime() / 1000),
+				data: this.ZWave.prototype.loadObject('originPackets.json', zwayCfg.name)
+			}
+		};
+	};
+
+
+	this.ZWaveAPI.RSSIGet = function(url, request) {
+		var headers = {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body = {
+				"code": 200,
+				"message": "200 OK",
+				"updateTime": Math.round((new Date()).getTime() / 1000),
+				"data": []
+			};
+
+		try {
+
+			//check if controller supports background rssi
+			if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
+				var par = url.split("/")[1];
+
+				if (par == "realtime") {
+
+					data = ZWave.prototype.rssiData();
+
+					body.data = data;
+
+				} else {
+					body.data = this.ZWave.prototype.loadObject('rssidata.json', zwayCfg.name);
+				}
+
+				if (!!body.data) {
+
+					return {
+						headers: headers,
+						status: 200,
+						body: body
+					};
+				} else {
+
+					body.code = 404;
+					body.message = '404 Not Found';
+
+					return {
+						headers: headers,
+						status: 404,
+						body: body
+					};
+				}
+			} else {
+				body.code = 501;
+				body.message = 'Not implemented: This function is not supported by controller.';
+
+				return {
+					headers: headers,
+					status: 501,
+					body: body
+				};
+			}
+		} catch (e) {
+			return {
+				headers: headers,
+				status: 500,
+				body: "Something went wrong:" + e.toString()
+			};
+		}
+	};
+	
+		this.ZWaveAPI.TestNode = function(url, request) {
 		try {
 			var nodeId = url.split("/")[1],
 				N = url.split("/")[2] || 10;
@@ -1808,20 +1808,20 @@ ZWave.prototype.defineHandlers = function () {
 				}
 				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 
-                return { status: 200, body: "Initiating update" };
+				return { status: 200, body: "Initiating update" };
 			} else if (data.url) {
 				var result = {
-                    status: 'in progress'
-                };
+					status: 'in progress'
+				};
 				var d = (new Date()).valueOf() + 300000; // wait no more than 5 min
 				// update firmware from url
 				http.request({
 					url: data.url,
 					headers: {
-                        "Access-Control-Allow-Origin": "*",
-                        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                        "Access-Control-Allow-Headers": "Authorization",
-                        "Connection": "keep-alive"
+						"Access-Control-Allow-Origin": "*",
+						"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+						"Access-Control-Allow-Headers": "Authorization",
+						"Connection": "keep-alive"
 					},
 					contentType: "application/octet-stream", // enforce binary response,
 					async: true,
@@ -1840,28 +1840,28 @@ ZWave.prototype.defineHandlers = function () {
 
 								result.status = 'done';
 						} catch (e) {
-                            result.error = 'Firmware download successful. Parsing has failed: ' + e.toString();
-                            result.status = 'fail';
-                            throw ('Firmware download successful. Parsing has failed: ' + e.toString());
+							result.error = 'Firmware download successful. Parsing has failed: ' + e.toString();
+							result.status = 'fail';
+							throw ('Firmware download successful. Parsing has failed: ' + e.toString());
 						}
 					},
 					error: function (res) {
-                        result.error = 'Failed to download firmware: ' + res.statusText;
-                        result.status = 'fail';
-                        throw ('Failed to download firmware: ' + res.statusText);
+						result.error = 'Failed to download firmware: ' + res.statusText;
+						result.status = 'fail';
+						throw ('Failed to download firmware: ' + res.statusText);
 					}
 				});
 
-                while ((new Date()).valueOf() < d &&  result.status === "in progress") {
-                    processPendingCallbacks();
-                }
+				while ((new Date()).valueOf() < d &&  result.status === "in progress") {
+					processPendingCallbacks();
+				}
 
-                result.status = result.status === 'in progress'? 'fail' : result.status;
+				result.status = result.status === 'in progress'? 'fail' : result.status;
 
-                if (result.status === 'fail') {
-                    return { status: 500, body: result.error };
+				if (result.status === 'fail') {
+					return { status: 500, body: result.error };
 				} else {
-                    return { status: 200, body: "Initiating update" };
+					return { status: 200, body: "Initiating update" };
 				}
 			}
 
@@ -1921,15 +1921,15 @@ ZWave.prototype.defineHandlers = function () {
 				}
 
 				var L = 32,
-				    bootloader_6_70 =
+					bootloader_6_70 =
 					zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
 					||
 					zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
 					||
 					parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71 // bootloader for 6.71 SDK
-				    ,
-				    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-				    data = bootloader_6_70 ? buf : buf.slice(0x1800);
+					,
+					addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+					data = bootloader_6_70 ? buf : buf.slice(0x1800);
 
 				for (var i = 0; i < data.byteLength; i += L) {
 					var arr = (new Uint8Array(data.slice(i, i+L)));
@@ -1954,15 +1954,15 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream",
 					success: function(response) {
 						var L = 32,
-						    bootloader_6_70 =
+							bootloader_6_70 =
 							zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
 							||
 							zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
 							||
 							parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71 // bootloader for 6.71 SDK
-						    ,
-						    addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-						    data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
+							,
+							addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
+							data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
 
 						for (var i = 0; i < data.byteLength; i += L) {
 							var arr = (new Uint8Array(data.slice(i, i+L)));
@@ -1987,8 +1987,8 @@ ZWave.prototype.defineHandlers = function () {
 					}
 				});
 			} else {
-                console.error("Wrong request. Failed to apply firmware.");
-                result = "failed";
+				console.error("Wrong request. Failed to apply firmware.");
+				result = "failed";
 			}
 			
 			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
@@ -2024,9 +2024,9 @@ ZWave.prototype.defineHandlers = function () {
 				}
 
 				var L = 32,
-				    seg = 6,	 // Функция бутлодера принимает номер сегмента
-				    addr = seg*0x800, // ==12k
-				    data = buf;
+					seg = 6,	 // Функция бутлодера принимает номер сегмента
+					addr = seg*0x800, // ==12k
+					data = buf;
 
 				for (var i = 0; i < data.byteLength; i += L) {
 					var arr = (new Uint8Array(data.slice(i, i+L)));
@@ -2054,9 +2054,9 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream",
 					success: function(response) {
 						var L = 32,
-						    seg = 6,	 // Функция бутлодера принимает номер сегмента
-						    addr = seg*0x800, // ==12k
-						    data = response.data;
+							seg = 6,	 // Функция бутлодера принимает номер сегмента
+							addr = seg*0x800, // ==12k
+							data = response.data;
 
 						for (var i = 0; i < data.byteLength; i += L) {
 							var arr = (new Uint8Array(data.slice(i, i+L)));
@@ -2084,9 +2084,9 @@ ZWave.prototype.defineHandlers = function () {
 					}
 				});
 			} else {
-                console.error("Wrong request. Failed to apply bootloader.");
-                result = "failed";
-            }
+				console.error("Wrong request. Failed to apply bootloader.");
+				result = "failed";
+			}
 
 			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
 			
@@ -2225,7 +2225,7 @@ ZWave.prototype.defineHandlers = function () {
 				return { status: 400, body: e.toString() };
 			}
 
-            var custom_postfix = loadObject("custompostfix.json");
+			var custom_postfix = loadObject("custompostfix.json");
 
 			if(custom_postfix === null) {
 
@@ -2283,53 +2283,53 @@ ZWave.prototype.defineHandlers = function () {
 		return { status: 400, body: "Invalid request" };
 	};
 
-    this.ZWaveAPI.PostfixRemove = function(url, request) {
-        if(request.method === "POST" && request.body) {
-            var custom_postfix = loadObject("custompostfix.json"),
-                reqObj = parseToObject(request.body);
+	this.ZWaveAPI.PostfixRemove = function(url, request) {
+		if(request.method === "POST" && request.body) {
+			var custom_postfix = loadObject("custompostfix.json"),
+				reqObj = parseToObject(request.body);
 
-            if(!!custom_postfix) {
+			if(!!custom_postfix) {
 
-                var fixes = custom_postfix.fixes,
-                    fix = fixes.filter(function(fix) {
-                        return fix.p_id === reqObj.p_id;
-                    });
+				var fixes = custom_postfix.fixes,
+					fix = fixes.filter(function(fix) {
+						return fix.p_id === reqObj.p_id;
+					});
 
-                if(!_.isEmpty(fix)) {
-                    fixes = _.reject(fixes ,function(fix) {
-                        return fix.p_id === reqObj.p_id;
-                    });
+				if(!_.isEmpty(fix)) {
+					fixes = _.reject(fixes ,function(fix) {
+						return fix.p_id === reqObj.p_id;
+					});
 
-                    custom_postfix.fixes = fixes;
+					custom_postfix.fixes = fixes;
 
-                    saveObject("custompostfix.json", custom_postfix);
+					saveObject("custompostfix.json", custom_postfix);
 
-                    setTimeout(function () {
-                        self.controller.reinitializeModule('ZWave', 'modules/');
-                    }, 3000);
+					setTimeout(function () {
+						self.controller.reinitializeModule('ZWave', 'modules/');
+					}, 3000);
 
-                    return {
-                        status: 200,
-                        body: 'Postfix with p_id: ' + reqObj.p_id + ' removed.\nZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
-                    };
+					return {
+						status: 200,
+						body: 'Postfix with p_id: ' + reqObj.p_id + ' removed.\nZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
+					};
 
-                } else {
-                    return {
-                        status: 404,
-                        body: 'Postfix with p_id: ' + reqObj.p_id + ' not found or already deleted'
-                    };
-                }
-            } else {
-                return {
-                    status: 404,
-                    body: 'Custompostfix does not yet exist'
-                };
-            }
-        }
-        return { status: 400, body: "Invalid request" };
-    };
+				} else {
+					return {
+						status: 404,
+						body: 'Postfix with p_id: ' + reqObj.p_id + ' not found or already deleted'
+					};
+				}
+			} else {
+				return {
+					status: 404,
+					body: 'Custompostfix does not yet exist'
+				};
+			}
+		}
+		return { status: 400, body: "Invalid request" };
+	};
 
-    this.ZWaveAPI.ExpertConfigGet = function() {
+	this.ZWaveAPI.ExpertConfigGet = function() {
 		return {
 			status: 200,
 			headers: {
@@ -2352,20 +2352,20 @@ ZWave.prototype.defineHandlers = function () {
 			if(Object.keys(reqObj).length > 0) {
 
 				self.expert_config = _.assign(self.expert_config,_.pick(reqObj,
-                    'debug',
-                    'network_name',
-                    'date_format',
-                    'time_format',
-                    'time_zone',
-                    'notes',
-                    'ssid_name',
-                    'currentDateTime',
-                    'cit_identifier',
-                    'rss'));
+					'debug',
+					'network_name',
+					'date_format',
+					'time_format',
+					'time_zone',
+					'notes',
+					'ssid_name',
+					'currentDateTime',
+					'cit_identifier',
+					'rss'));
 
-                this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
+				this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
 
-                return {
+				return {
 					status: 200,
 					body: "Done"
 				};
@@ -2374,151 +2374,151 @@ ZWave.prototype.defineHandlers = function () {
 		return { status: 400, body: "Invalid request" };
 	};
 
-    this.ZWaveAPI.CallForAllNIF = function(url, request) {
-        var req = request && request.body? request.body : request && request.data? request.data : undefined,
-            req = parseToObject(req),
-            delay = req && req.delay? req.delay :null,
-            timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
-            timer = null,
-            now = (new Date()).valueOf();
+	this.ZWaveAPI.CallForAllNIF = function(url, request) {
+		var req = request && request.body? request.body : request && request.data? request.data : undefined,
+			req = parseToObject(req),
+			delay = req && req.delay? req.delay :null,
+			timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
+			timer = null,
+			now = (new Date()).valueOf();
 
-        try {
-            var devices = Object.keys(zway.devices);
-            var ret = {
-                result: [],
-                runtime: 0
-            };
-            var dTS = '';
+		try {
+			var devices = Object.keys(zway.devices);
+			var ret = {
+				result: [],
+				runtime: 0
+			};
+			var dTS = '';
 
-            if(devices.length > 0) {
+			if(devices.length > 0) {
 
-                // do not send NIF to itself
-                devices.forEach(function (nodeId) {
-                    var request = "in progress",
-                        entry = {
-                            nodeId: nodeId,
-                            result: "",
-                            runtime: 0,
-                            isFLiRS: false,
-                            hasBattery: false
-                        },
-                        start = (new Date()).valueOf(),
-                        pendingDelay = start + timeout;
+				// do not send NIF to itself
+				devices.forEach(function (nodeId) {
+					var request = "in progress",
+						entry = {
+							nodeId: nodeId,
+							result: "",
+							runtime: 0,
+							isFLiRS: false,
+							hasBattery: false
+						},
+						start = (new Date()).valueOf(),
+						pendingDelay = start + timeout;
 
-                    if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
+					if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
 
-                        var isListening = zway.devices[nodeId].data.isListening.value;
-                        var isFLiRS = !isListening && (zway.devices[nodeId].data.sensor250.value || zway.devices[nodeId].data.sensor1000.value);
-                        var hasWakeup = 0x84 in zway.devices[nodeId].instances[0].commandClasses;
+						var isListening = zway.devices[nodeId].data.isListening.value;
+						var isFLiRS = !isListening && (zway.devices[nodeId].data.sensor250.value || zway.devices[nodeId].data.sensor1000.value);
+						var hasWakeup = 0x84 in zway.devices[nodeId].instances[0].commandClasses;
 
-                        console.log('Send NIF to node #' + nodeId + ' ...');
-                        zway.RequestNodeInformation(
-                            nodeId,
-                            function() {
-                                request = "done";
-                                entry.result = request;
-                                entry.runtime= ((new Date()).valueOf() - start) /1000;
-                                entry.isFLiRS = isFLiRS;
-                                entry.hasBattery = hasWakeup;
-                            },  function() {
-                                request = "failed";
-                                entry.result = request;
-                                entry.runtime= ((new Date()).valueOf() - start) /1000;
-                                entry.isFLiRS = isFLiRS;
-                                entry.hasBattery = hasWakeup;
-                            });
+						console.log('Send NIF to node #' + nodeId + ' ...');
+						zway.RequestNodeInformation(
+							nodeId,
+							function() {
+								request = "done";
+								entry.result = request;
+								entry.runtime= ((new Date()).valueOf() - start) /1000;
+								entry.isFLiRS = isFLiRS;
+								entry.hasBattery = hasWakeup;
+							},  function() {
+								request = "failed";
+								entry.result = request;
+								entry.runtime= ((new Date()).valueOf() - start) /1000;
+								entry.isFLiRS = isFLiRS;
+								entry.hasBattery = hasWakeup;
+							});
 
-                        while (request === "in progress" && (new Date()).valueOf() < pendingDelay && !isFLiRS) {
-                            processPendingCallbacks();
-                        }
+						while (request === "in progress" && (new Date()).valueOf() < pendingDelay && !isFLiRS) {
+							processPendingCallbacks();
+						}
 
-                        if (request === "in progress") {
-                            entry.result = hasWakeup? "waiting for wakeup" : "failed";
-                            entry.runtime= ((new Date()).valueOf() - start) /1000;
-                            entry.isFLiRS = isFLiRS;
-                            entry.hasBattery = hasWakeup;
-                        }
+						if (request === "in progress") {
+							entry.result = hasWakeup? "waiting for wakeup" : "failed";
+							entry.runtime= ((new Date()).valueOf() - start) /1000;
+							entry.isFLiRS = isFLiRS;
+							entry.hasBattery = hasWakeup;
+						}
 
-                        ret.result.push(entry);
-                    }
-                });
-            }
+						ret.result.push(entry);
+					}
+				});
+			}
 
-            ret.runtime = Math.floor(((new Date()).valueOf() - now)/1000);
-            ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
+			ret.runtime = Math.floor(((new Date()).valueOf() - now)/1000);
+			ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
 
-            return { status: 200, body: ret };
-        } catch (e) {
-            return { status: 500, body: e.toString() }
-        }
+			return { status: 200, body: ret };
+		} catch (e) {
+			return { status: 500, body: e.toString() }
+		}
 
-        return reply;
+		return reply;
 
-    };
+	};
 
-    this.ZWaveAPI.CheckAllLinks = function(url, request) {
-        var req = request && request.body? request.body : request && request.data? request.data : undefined,
-            req = parseToObject(req),
-            delay = req && req.delay? req.delay :null,
-            timeout = !!delay && parseInt(delay.toString(), 10) >= 1? parseInt(delay.toString(), 10) * 1000 : 2000,
-            timer = null,
-            nodeId = req && req.nodeId? req.nodeId : null;
+	this.ZWaveAPI.CheckAllLinks = function(url, request) {
+		var req = request && request.body? request.body : request && request.data? request.data : undefined,
+			req = parseToObject(req),
+			delay = req && req.delay? req.delay :null,
+			timeout = !!delay && parseInt(delay.toString(), 10) >= 1? parseInt(delay.toString(), 10) * 1000 : 2000,
+			timer = null,
+			nodeId = req && req.nodeId? req.nodeId : null;
 
-        try {
-            if(!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
-                var neighbours = zway.devices[nodeId].data.neighbours.value;
-                var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
-                var ret = {
-                	runtime: neighbours.length * (timeout /1000),
-                    link_test : 'TestNodeSet',
-                    srcNodeId: nodeId,
-                    dstNodeIds: neighbours,
+		try {
+			if(!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
+				var neighbours = zway.devices[nodeId].data.neighbours.value;
+				var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
+				var ret = {
+					runtime: neighbours.length * (timeout /1000),
+					link_test : 'TestNodeSet',
+					srcNodeId: nodeId,
+					dstNodeIds: neighbours,
 					test: []
 				};
-                if (supported) {
-                    neighbours.forEach(function (neighbour) {
-                        var start = (new Date()).valueOf();
-                        var item = {};
-                        var powerLvl = zway.devices[nodeId].instances[0].commandClasses[115];
+				if (supported) {
+					neighbours.forEach(function (neighbour) {
+						var start = (new Date()).valueOf();
+						var item = {};
+						var powerLvl = zway.devices[nodeId].instances[0].commandClasses[115];
 
-                        console.log('# Send TestNodeSet from #' + nodeId + ' to #' + neighbour);
-                        powerLvl.TestNodeSet(neighbour, 6, 20);
+						console.log('# Send TestNodeSet from #' + nodeId + ' to #' + neighbour);
+						powerLvl.TestNodeSet(neighbour, 6, 20);
 
-                        // wait 2 sec or more
-                        while ((new Date()).valueOf() < (start + timeout)) {
-                            processPendingCallbacks();
-                        }
+						// wait 2 sec or more
+						while ((new Date()).valueOf() < (start + timeout)) {
+							processPendingCallbacks();
+						}
 
-                        if (powerLvl.data[neighbour]) {
-                            item[neighbour] = {
-                                totalFrames: powerLvl.data[neighbour].totalFrames.value,
-                                acknowledgedFrames: powerLvl.data[neighbour].acknowledgedFrames.value
-                            }
-                        }
+						if (powerLvl.data[neighbour]) {
+							item[neighbour] = {
+								totalFrames: powerLvl.data[neighbour].totalFrames.value,
+								acknowledgedFrames: powerLvl.data[neighbour].acknowledgedFrames.value
+							}
+						}
 
-                        ret.test.push(item);
+						ret.test.push(item);
 
-                    });
+					});
 
-                    ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
+					ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
 
-                    return { status: 200, body: ret };
-                } else {
-                    return { status: 404, body: 'Not supported for this device.'};
+					return { status: 200, body: ret };
+				} else {
+					return { status: 404, body: 'Not supported for this device.'};
 				}
 
-            } else {
-                return { status: 404, body: 'Node not found.' };
-            }
-        } catch (e) {
-            return { status: 500, body: e.toString() };
-        }
+			} else {
+				return { status: 404, body: 'Node not found.' };
+			}
+		} catch (e) {
+			return { status: 500, body: e.toString() };
+		}
 
-        return reply;
-    };
+		return reply;
+	};
 
 	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
-        var reply = {
+		var reply = {
 				status: 200,
 				headers: {
 					"Content-Type": "application/json",
@@ -2530,8 +2530,8 @@ ZWave.prototype.defineHandlers = function () {
 				body: null
 			},
 			l = ['en','de'],  //this.controller.availableLang
-            devInfo = {},
-        	reqObj = !request.query? undefined : parseToObject(request.query);
+			devInfo = {},
+			reqObj = !request.query? undefined : parseToObject(request.query);
 
 		try {
 
@@ -2542,30 +2542,30 @@ ZWave.prototype.defineHandlers = function () {
 				reply.message = 'Language not found. English is used instead.';
 			}
 
-            devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
+			devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
 
 
 			if (devInfo === null) {
-                reply.status = 404;
-                reply.message = 'No list of Z-Wave devices found. Please try to download them first.';
+				reply.status = 404;
+				reply.message = 'No list of Z-Wave devices found. Please try to download them first.';
 			} else {
-                reply.body = devInfo;
+				reply.body = devInfo;
 
-                if (!!devID) {
-                    reply.body = _.find(devInfo.zwave_devices, function(dev) {
-                        return dev['Product_Code'] === devID;
-                    });
+				if (!!devID) {
+					reply.body = _.find(devInfo.zwave_devices, function(dev) {
+						return dev['Product_Code'] === devID;
+					});
 
-                    if (!reply.body) {
-                       reply.status = 404;
-                       reply.message = 'No ZWave devices found. Please try to download them first.';
-                       reply.body = null;
+					if (!reply.body) {
+					   reply.status = 404;
+					   reply.message = 'No ZWave devices found. Please try to download them first.';
+					   reply.body = null;
 					}
 				}
 			}
 		} catch (e) {
-            reply.status = 500;
-            reply.message = 'Something went wrong:' + e.message;
+			reply.status = 500;
+			reply.message = 'Something went wrong:' + e.message;
 		}
 
 		return reply;
@@ -2592,7 +2592,7 @@ ZWave.prototype.defineHandlers = function () {
 			// update postfix JSON
 			l.forEach(function(lang) {
 				var obj = {},
-                	blub = {
+					blub = {
 						updateTime: '',
 						zwave_devices: []
 					};
@@ -2605,10 +2605,10 @@ ZWave.prototype.defineHandlers = function () {
 					success: function(res) {
 						if (res.data) {
 							data = parseToObject(res.data);
-                            blub.updateTime = (new Date()).getTime();
+							blub.updateTime = (new Date()).getTime();
 
 							for (index in data) {
-                                blub.zwave_devices.push(data[index]);
+								blub.zwave_devices.push(data[index]);
 							}
 
 							saveObject(lang +'.devices.json', blub);
@@ -2641,125 +2641,125 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
-    this.ZWaveAPI.NetworkReorganization = function(url, request) {
-        var self = this,
-            reply = {
-                status: 500,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                    "Access-Control-Allow-Headers": "Authorization",
-                    "Connection": "close"
-                },
-                body: null
-            },
+	this.ZWaveAPI.NetworkReorganization = function(url, request) {
+		var self = this,
+			reply = {
+				status: 500,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "close"
+				},
+				body: null
+			},
 			// prepare request data
-            req = request && request.query? request.query : undefined,
-            req = parseToObject(req),
-        	cntNodes = 0,
+			req = request && request.query? request.query : undefined,
+			req = parseToObject(req),
+			cntNodes = 0,
 			requestInterval = 10000, // wait 10 sec between each node reorganization
 			// check if all reorganizations of types have finished
 			finished = function () {
-        		var f = true;
+				var f = true;
 				Object.keys(self.progress).forEach(function(type){
-                    f = !self.progress[type] || (self.progress[type] && self.progress[type].pendingCbk.length < 1 );
+					f = !self.progress[type] || (self.progress[type] && self.progress[type].pendingCbk.length < 1 );
 					if (!f) {
-                    	return;
+						return;
 					}
 				});
-                return f;
+				return f;
 			},
-            reorgMain, reorgBattery;
+			reorgMain, reorgBattery;
 
-        // reorganization log array
-        self.reorgLog = [];
+		// reorganization log array
+		self.reorgLog = [];
 		// warpper that includes all node responses
-        self.nodeRes = {};
-        // object that shows progress of each container
-        self.progress = {};
+		self.nodeRes = {};
+		// object that shows progress of each container
+		self.progress = {};
 		// outstanding node objects of reorganization interval
-        self.nodesPending = [];
+		self.nodesPending = [];
 		// timeout for reorg interval
-        self.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
+		self.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
 		// load module language keys
-        self.langFile = self.controller.loadModuleLang('ZWave');
+		self.langFile = self.controller.loadModuleLang('ZWave');
 		// prepare request properties
-        reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
-        reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
+		reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
+		reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
 
-        /*
-        * Add a progress container of special type to progress object
-        */
-        function addTypeToProgress (type, reorg) {
-            if(!self.progress[type]) {
-                self.progress[type] = {
-                    reorg: reorg,
-                    status: '',
-                    pendingCbk: [],
-                    timeout: [],
-                    all: [],
-                    intervalNodesPending: [],
-                    nodesPending: []
-                };
-            }
+		/*
+		* Add a progress container of special type to progress object
+		*/
+		function addTypeToProgress (type, reorg) {
+			if(!self.progress[type]) {
+				self.progress[type] = {
+					reorg: reorg,
+					status: '',
+					pendingCbk: [],
+					timeout: [],
+					all: [],
+					intervalNodesPending: [],
+					nodesPending: []
+				};
+			}
 		};
 
 		/*
 		 * Add a log entry to reorgLog array
 		 */
-        function addLog (message, nodeId) {
-        	var entry = {
-        		timestamp: (new Date()).valueOf(),
+		function addLog (message, nodeId) {
+			var entry = {
+				timestamp: (new Date()).valueOf(),
 				message: message,
 				node: nodeId? nodeId : undefined,
 				type: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].type : undefined,
-                status: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].status : undefined,
-                tries: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].tries : undefined
+				status: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].status : undefined,
+				tries: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].tries : undefined
 			};
 
-        	self.reorgLog.push(entry);
+			self.reorgLog.push(entry);
 
-            if (self.reorgLog.length > 0) {
-                this.ZWave.prototype.saveObject('reorgLog', self.reorgLog, zwayCfg.name);
+			if (self.reorgLog.length > 0) {
+				this.ZWave.prototype.saveObject('reorgLog', self.reorgLog, zwayCfg.name);
 			}
 		}
 
 		/*
 		 * Remove pending node after done/failed/timeout
 		 */
-        function removeFromPending (type,nodeId) {
-            if (self.progress[type].pendingCbk.indexOf(nodeId) > -1) {
-                self.progress[type].pendingCbk = self.progress[type].pendingCbk.filter(function(node) {
-                    return	node != nodeId;
-                });
-            }
-        }
+		function removeFromPending (type,nodeId) {
+			if (self.progress[type].pendingCbk.indexOf(nodeId) > -1) {
+				self.progress[type].pendingCbk = self.progress[type].pendingCbk.filter(function(node) {
+					return	node != nodeId;
+				});
+			}
+		}
 
 		/*
 		 * Remove pending node after delayed done/failed callback from timeout list
 		 */
-        function removeFromTimeout (type,nodeId) {
-            if(self.progress[type].timeout.indexOf(nodeId) > -1) {
-                self.progress[type].timeout = self.progress[type].timeout.filter(function(node) {
-                    return	node != nodeId;
-                });
-            }
-        }
+		function removeFromTimeout (type,nodeId) {
+			if(self.progress[type].timeout.indexOf(nodeId) > -1) {
+				self.progress[type].timeout = self.progress[type].timeout.filter(function(node) {
+					return	node != nodeId;
+				});
+			}
+		}
 
 		/*
 		 * Trigger reorganization of a node and define their callback functions
 		 */
-        function doReorg(nodeId, type){
+		function doReorg(nodeId, type){
 
 			// add single node status
-            if (!self.nodeRes[nodeId]) {
-                self.nodeRes[nodeId] = {
-                    status: "in progress",
-                    type: type,
-                    tries: 0,
-                    timeout: 0
-                };
+			if (!self.nodeRes[nodeId]) {
+				self.nodeRes[nodeId] = {
+					status: "in progress",
+					type: type,
+					tries: 0,
+					timeout: 0
+				};
 			}
 
 			/*
@@ -2769,22 +2769,22 @@ ZWave.prototype.defineHandlers = function () {
 			 * - update pending/timeout arrays
 			 */
 			var succesCbk = function() {
-                var message = '#'+nodeId+' ('+type+') ';
+				var message = '#'+nodeId+' ('+type+') ';
 
-                self.nodeRes[nodeId] = _.extend(self.nodeRes[nodeId],{
+				self.nodeRes[nodeId] = _.extend(self.nodeRes[nodeId],{
 					status: 'done',
 					type: type,
 					tries: self.nodeRes[nodeId].tries
 				});
 
-                zway.GetRoutingTableLine(nodeId);
+				zway.GetRoutingTableLine(nodeId);
 
-                addLog(message + '... '+self.langFile.reorg +' '+self.langFile.reorg_success, nodeId);
+				addLog(message + '... '+self.langFile.reorg +' '+self.langFile.reorg_success, nodeId);
 
-                removeFromPending(type, nodeId);
-                removeFromTimeout(type, nodeId);
+				removeFromPending(type, nodeId);
+				removeFromTimeout(type, nodeId);
 
-                i=4;
+				i=4;
 			};
 
 			/*
@@ -2799,23 +2799,23 @@ ZWave.prototype.defineHandlers = function () {
 					tries = 0;
 
 				self.nodeRes[nodeId] = _.extend(self.nodeRes[nodeId],{
-                    status: 'failed',
-                    type: type,
-                    tries: self.nodeRes[nodeId].tries + 1
-                });
+					status: 'failed',
+					type: type,
+					tries: self.nodeRes[nodeId].tries + 1
+				});
 
-                tries = self.nodeRes[nodeId].tries;
+				tries = self.nodeRes[nodeId].tries;
 
-                if (type === 'main' && tries < 3) {
-                        addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed + ' ' + self.langFile.reorg_next_try);
-                        reorgUpdate(nodeId);
+				if (type === 'main' && tries < 3) {
+						addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed + ' ' + self.langFile.reorg_next_try);
+						reorgUpdate(nodeId);
 				} else {
-                    message = type === 'main'? self.langFile.reorg_all_tries_failed : '... '+self.langFile.reorg +' '+self.langFile.reorg_failed;
+					message = type === 'main'? self.langFile.reorg_all_tries_failed : '... '+self.langFile.reorg +' '+self.langFile.reorg_failed;
 
-                    addLog(preMessage + message, nodeId);
+					addLog(preMessage + message, nodeId);
 
-                    removeFromPending(type, nodeId);
-                    removeFromTimeout(type, nodeId);
+					removeFromPending(type, nodeId);
+					removeFromTimeout(type, nodeId);
 				}
 			};
 
@@ -2824,56 +2824,56 @@ ZWave.prototype.defineHandlers = function () {
 			 * - set callback timeout of 15 sec
 			 * - respond immediately if it fails
 			 */
-            var reorgUpdate = function (nodeId){
-                try {
-                    self.nodeRes[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
-                    zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
-                } catch (e) {
-                    console.log(self.langFile.reorg_err_node+nodeId+': ' + e.message);
-                    self.nodeRes[nodeId].status = 'failed';
-                    removeFromPending(type, nodeId);
-                    addLog('#'+nodeId+' ('+self.nodeRes[nodeId].type+') ... '+self.langFile.reorg +' '+self.langFile.reorg_failed, nodeId);
-                }
-            }
+			var reorgUpdate = function (nodeId){
+				try {
+					self.nodeRes[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
+					zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
+				} catch (e) {
+					console.log(self.langFile.reorg_err_node+nodeId+': ' + e.message);
+					self.nodeRes[nodeId].status = 'failed';
+					removeFromPending(type, nodeId);
+					addLog('#'+nodeId+' ('+self.nodeRes[nodeId].type+') ... '+self.langFile.reorg +' '+self.langFile.reorg_failed, nodeId);
+				}
+			}
 
-            // initial reorganization request
-            reorgUpdate(nodeId);
+			// initial reorganization request
+			reorgUpdate(nodeId);
 		}
 
 		/*
 		 * reorganize each outstanding node step by step and remove it from list
 		 */
 		function nodeReorg(){
-            var nodeId = self.nodesPending[0].nodeId,
-                type = self.nodesPending[0].type,
-                currProgressType = self.progress[type],
-                all = currProgressType.all,
-                intervalNodesPending = currProgressType.intervalNodesPending,
-                status = currProgressType.status,
-                reorg = currProgressType.reorg,
-                key = self.langFile['reorg_all_'+type]? self.langFile['reorg_all_'+type] : self.langFile['reorg_all'] + self.langFile[type] + ': ';
+			var nodeId = self.nodesPending[0].nodeId,
+				type = self.nodesPending[0].type,
+				currProgressType = self.progress[type],
+				all = currProgressType.all,
+				intervalNodesPending = currProgressType.intervalNodesPending,
+				status = currProgressType.status,
+				reorg = currProgressType.reorg,
+				key = self.langFile['reorg_all_'+type]? self.langFile['reorg_all_'+type] : self.langFile['reorg_all'] + self.langFile[type] + ': ';
 
-            if(all.length > 0 && all.length === intervalNodesPending.length) {
-                addLog(key + JSON.stringify(all));
-            } else if (intervalNodesPending.length < 1 && status === 'in progress' && reorg) {
-                self.progress[type].status = 'done';
-                addLog(self.langFile.reorg_of + self.langFile[type] + ' ' + self.langFile.reorg_complete);
-            }
+			if(all.length > 0 && all.length === intervalNodesPending.length) {
+				addLog(key + JSON.stringify(all));
+			} else if (intervalNodesPending.length < 1 && status === 'in progress' && reorg) {
+				self.progress[type].status = 'done';
+				addLog(self.langFile.reorg_of + self.langFile[type] + ' ' + self.langFile.reorg_complete);
+			}
 
-            // do reorg for node
-            doReorg(nodeId, type);
+			// do reorg for node
+			doReorg(nodeId, type);
 
-            // remove node from intervalNodesPending
-            if (self.progress[type].intervalNodesPending.indexOf(nodeId) > -1) {
-                self.progress[type].intervalNodesPending = self.progress[type].intervalNodesPending.filter(function(node) {
-                    return	node != nodeId;
-                });
-            }
+			// remove node from intervalNodesPending
+			if (self.progress[type].intervalNodesPending.indexOf(nodeId) > -1) {
+				self.progress[type].intervalNodesPending = self.progress[type].intervalNodesPending.filter(function(node) {
+					return	node != nodeId;
+				});
+			}
 
-            // remove first entry from outstanding nodes list
-            self.nodesPending = self.nodesPending.filter(function(entry){
-                return !_.isEqual(entry,{nodeId:nodeId,type:type})
-            });
+			// remove first entry from outstanding nodes list
+			self.nodesPending = self.nodesPending.filter(function(entry){
+				return !_.isEqual(entry,{nodeId:nodeId,type:type})
+			});
 		};
 
 		var initialMsg = reorgBattery && reorgMain? self.langFile.reorg_with_battery : reorgBattery && !reorgMain? self.langFile.reorg_battery_only : self.langFile.reorg_without_battery;
@@ -2884,7 +2884,7 @@ ZWave.prototype.defineHandlers = function () {
 		// go through all zway devices and push them in their type specific progress container
 		Object.keys(zway.devices).forEach(function(nodeId) {
 			var node = zway.devices[nodeId],
-                isListening = node.data.isListening.value,
+				isListening = node.data.isListening.value,
 				isMain = (isListening && node.data.isRouting.value) || (isListening && !node.data.isRouting.value),
 				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
 				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value),
@@ -2893,105 +2893,105 @@ ZWave.prototype.defineHandlers = function () {
 				type = isBattery && !isFLiRS? 'battery': (isFLiRS? 'flirs': 'main');
 
 			if (add){
-                addTypeToProgress(type,add);
-                self.progress[type].all.push(nodeId);
-                // add list of pending nodes for callback
-                self.progress[type].pendingCbk = self.progress[type].all;
-                // add list of pending nodes for interval
-                self.progress[type].intervalNodesPending = self.progress[type].all;
-                // add node/type object to type specific list of outstanding nodes - is necessary for interval progress chain
-                self.progress[type].nodesPending.push({nodeId: nodeId, type: type});
-                cntNodes++;
+				addTypeToProgress(type,add);
+				self.progress[type].all.push(nodeId);
+				// add list of pending nodes for callback
+				self.progress[type].pendingCbk = self.progress[type].all;
+				// add list of pending nodes for interval
+				self.progress[type].intervalNodesPending = self.progress[type].all;
+				// add node/type object to type specific list of outstanding nodes - is necessary for interval progress chain
+				self.progress[type].nodesPending.push({nodeId: nodeId, type: type});
+				cntNodes++;
 			}
 		});
 
 		// set initial status of progress container
-        if (self.progress['main']) {
-            self.progress['main'].status = 'in progress';
-        } else if (self.progress['battery']) {
-            self.progress['battery'].status = 'in progress';
-        }
+		if (self.progress['main']) {
+			self.progress['main'].status = 'in progress';
+		} else if (self.progress['battery']) {
+			self.progress['battery'].status = 'in progress';
+		}
 
-        // merge all lists with node/type objects of outstanding node together
-        Object.keys(self.progress).forEach(function(type){
-            self.nodesPending = _.uniq(self.nodesPending.concat(self.progress[type].nodesPending));
+		// merge all lists with node/type objects of outstanding node together
+		Object.keys(self.progress).forEach(function(type){
+			self.nodesPending = _.uniq(self.nodesPending.concat(self.progress[type].nodesPending));
 		});
 
-        // initial reorganization of first node
-        if (self.nodesPending[0]) {
-            nodeReorg();
-        }
+		// initial reorganization of first node
+		if (self.nodesPending[0]) {
+			nodeReorg();
+		}
 
-        // process interval that starts reorganization of each node after 10 sec
-        this.progressInterval = setInterval(function(){
-            if (self.nodesPending[0]) {
-            	nodeReorg();
-            } else {
-                clearInterval(self.progressInterval);
-                self.progressInterval = null;
-                self.nodesPending = [];
+		// process interval that starts reorganization of each node after 10 sec
+		this.progressInterval = setInterval(function(){
+			if (self.nodesPending[0]) {
+				nodeReorg();
+			} else {
+				clearInterval(self.progressInterval);
+				self.progressInterval = null;
+				self.nodesPending = [];
 			}
-        }, requestInterval);
+		}, requestInterval);
 
-         /*
-         * Global reorganization interval that checks for:
+		 /*
+		 * Global reorganization interval that checks for:
 		 * - callback timeouts
 		 * - whole reorganization progress has timed out
 		 * - whole reorganization progress has finished
 		 */
-        this.reorgInterval = setInterval(function(){
-            var nodes = [],
-                cntNodes = Object.keys(self.nodeRes).length,
+		this.reorgInterval = setInterval(function(){
+			var nodes = [],
+				cntNodes = Object.keys(self.nodeRes).length,
 				now = (new Date()).valueOf();
 
-            Object.keys(self.nodeRes).forEach(function(nodeId){
-            	var nodeRes = self.nodeRes[nodeId],
+			Object.keys(self.nodeRes).forEach(function(nodeId){
+				var nodeRes = self.nodeRes[nodeId],
 					type = nodeRes.type,
 					status = nodeRes.status,
 					currArr = self.progress[type];
 
-            	if (nodes.indexOf(nodeId) < 0) {
+				if (nodes.indexOf(nodeId) < 0) {
 
-            		if (status !== 'in progress') {
-                        nodes.push(nodeId);
-                    } else if (status === 'in progress' && nodeRes.timeout < now) {
-                        self.nodeRes[nodeId].status = 'timeout';
-                        addLog('#'+nodeId+' ('+type+') ... ' +self.langFile.reorg_timeout, nodeId);
-                        removeFromPending(type, nodeId);
-                        nodes.push(nodeId);
-                        currArr.timeout.push(nodeId);
-                    } else {
-                    	if (currArr.pendingCbk.indexOf(nodeId) < 0) {
-                            currArr.pendingCbk.push(nodeId);
+					if (status !== 'in progress') {
+						nodes.push(nodeId);
+					} else if (status === 'in progress' && nodeRes.timeout < now) {
+						self.nodeRes[nodeId].status = 'timeout';
+						addLog('#'+nodeId+' ('+type+') ... ' +self.langFile.reorg_timeout, nodeId);
+						removeFromPending(type, nodeId);
+						nodes.push(nodeId);
+						currArr.timeout.push(nodeId);
+					} else {
+						if (currArr.pendingCbk.indexOf(nodeId) < 0) {
+							currArr.pendingCbk.push(nodeId);
 						}
 					}
 				}
 			});
 
-            // remove all
-            if (self.reorgInterval &&
+			// remove all
+			if (self.reorgInterval &&
 				(nodes.length >= cntNodes && finished()) ||
 				self.reorgIntervalTimeout < now) {
 
-            	var allTimeout = [];
+				var allTimeout = [];
 
-                Object.keys(self.progress).forEach(function (type) {
-                    allTimeout = _.uniq(allTimeout.concat(self.progress[type].timeout));
+				Object.keys(self.progress).forEach(function (type) {
+					allTimeout = _.uniq(allTimeout.concat(self.progress[type].timeout));
 				});
 
-                if (self.reorgIntervalTimeout < now) {
-                    addLog(self.langFile.reorg_timeout+' ... '+self.langFile.reorg_canceled);
-                    addLog('finished');
-                } else {
-                	if (allTimeout && allTimeout.length > 0) {
-                        addLog(self.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
+				if (self.reorgIntervalTimeout < now) {
+					addLog(self.langFile.reorg_timeout+' ... '+self.langFile.reorg_canceled);
+					addLog('finished');
+				} else {
+					if (allTimeout && allTimeout.length > 0) {
+						addLog(self.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
 					}
-                    addLog(self.langFile.reorg+' '+self.langFile.reorg_complete);
-                    addLog('finished');
-                }
+					addLog(self.langFile.reorg+' '+self.langFile.reorg_complete);
+					addLog('finished');
+				}
 
-            	clearInterval(self.reorgInterval);
-            }
+				clearInterval(self.reorgInterval);
+			}
 		}, 5000);
 
 		if(self.nodeRes) {
@@ -3001,41 +3001,41 @@ ZWave.prototype.defineHandlers = function () {
 			};
 		}
 
-        return reply;
-    };
+		return reply;
+	};
 
-    this.ZWaveAPI.GetReorganizationLog = function(url, request) {
-        var reply = {
-                status: 200,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                    "Access-Control-Allow-Headers": "Authorization",
-                    "Connection": "close"
-                },
-                body: null
-            },
-            reorgLog = this.ZWave.prototype.loadObject('reorgLog', zwayCfg.name);
+	this.ZWaveAPI.GetReorganizationLog = function(url, request) {
+		var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "close"
+				},
+				body: null
+			},
+			reorgLog = this.ZWave.prototype.loadObject('reorgLog', zwayCfg.name);
 
-        reply.body = !!reorgLog? reorgLog : [];
+		reply.body = !!reorgLog? reorgLog : [];
 
-        return reply;
-    }
+		return reply;
+	}
 
-    this.ZWaveAPI.GetStatisticsData = function() {
-        return {
-            status: 200,
-            headers: {
-                "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-                "Access-Control-Allow-Headers": "Authorization",
-                "Connection": "keep-alive"
-            },
-            body: statistics
-        };
-    };
+	this.ZWaveAPI.GetStatisticsData = function() {
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Connection": "keep-alive"
+			},
+			body: statistics
+		};
+	};
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
@@ -3224,7 +3224,7 @@ ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, comm
 ZWave.prototype.dataUnbind = function(dataBindings) {
 	dataBindings.forEach(function (item) {
 		var ctrlBind = ! ("nodeId" in item),
-		    devBind = ! ("instanceId" in item);
+			devBind = ! ("instanceId" in item);
 
 		if (item.zway && item.zway.isRunning() && (ctrlBind || (item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))))) {
 			var data = ctrlBind ? item.zway.controller.data : (devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data),
@@ -3294,8 +3294,8 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-	    moduleName = this.getName(),
-	    langFile = this.controller.loadModuleLang(moduleName);
+		moduleName = this.getName(),
+		langFile = this.controller.loadModuleLang(moduleName);
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
@@ -3483,7 +3483,7 @@ ZWave.prototype.gateDevicesStart = function () {
 								// works of course only during inclusion - after restart hidden elements are visible again
 								if (!!nodeId && c.data.lastIncludedDevice.value === nodeId) {
 									var intDone = deviceCC.data.interviewDone.value;
-									    intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
+										intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
 
 									// wait till interview is done
 									while ((new Date()).valueOf() < intDelay &&  intDone === false) {
@@ -3627,7 +3627,7 @@ ZWave.prototype.gateDevicesStart = function () {
 
 	self.dataBind(self.gateDataBinding, self.zway, "lastExcludedDevice", function(type) {
 		var _id = this.value,
-		    _toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0; }).map(function(el) { return el.id; });
+			_toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0; }).map(function(el) { return el.id; });
 
 		_toRemove.forEach(function (name) {
 			self.controller.devices.remove(name);
@@ -3765,9 +3765,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 		function postfixLog(devId, changeObj) {
 
-            // console output
-            console.log('#######################', 'Apply postfix for:', devId,'################################');
-            console.log('###');
+			// console output
+			console.log('#######################', 'Apply postfix for:', devId,'################################');
+			console.log('###');
 
 			try {
 				if (changeObj.noVDev) {
@@ -3781,8 +3781,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				console.log('Error in postfix log:', e.toString());
 			}
 
-            console.log('###');
-            console.log('########################################################################################');
+			console.log('###');
+			console.log('########################################################################################');
 		}
 
 		function applyPostfix(defaultObj, changeObj, devId, devIdNI) {
@@ -4008,7 +4008,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 					// check if it should be created
 					if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
-             			defaults = {
+			 			defaults = {
 							deviceType: "switchMultilevel",
 							probeType: '',
 							metrics: {
@@ -5103,7 +5103,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: 'gesture',
 					level: '',
 					title: compileTitle('Sensor', 'Control', vDevIdNI),
-                    state: '',
+					state: '',
 					/* GESTURES (state):
 					 * hold,
 					 * press / tap (cnt),
@@ -5201,7 +5201,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
 				if (this.value) {
 					var moduleName = self.getName(),
-					    langFile = self.controller.loadModuleLang(moduleName);
+						langFile = self.controller.loadModuleLang(moduleName);
 					
 					self.controller.addNotification("error", langFile.err_reset + nodeId, "connection", moduleName);
 				}
@@ -5209,8 +5209,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 	} catch (e) {
 		var moduleName = this.getName(),
-		    langFile = this.controller.loadModuleLang(moduleName),
-		    values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
+			langFile = this.controller.loadModuleLang(moduleName),
+			values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
 		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
 		console.log(e.stack);
@@ -5233,22 +5233,22 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 };
 
 ZWave.prototype.rssiData = function(data) {
-    var now = Math.round((new Date()).getTime()/1000);
+	var now = Math.round((new Date()).getTime()/1000);
 
-    var data = data? data : [];
+	var data = data? data : [];
 
-    zway.GetBackgroundRSSI();
+	zway.GetBackgroundRSSI();
 
-    var rssi = zway.controller.data.statistics.backgroundRSSI;
+	var rssi = zway.controller.data.statistics.backgroundRSSI;
 
-    var d = {
-        "time": now,
-        "channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-        "channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-        "channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
-    };
+	var d = {
+		"time": now,
+		"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
+		"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
+		"channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+	};
 
-    data.push(d);
+	data.push(d);
 
-    return data;
+	return data;
 }
