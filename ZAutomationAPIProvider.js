@@ -169,6 +169,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
         this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
 
+        this.router.get("/system/zwave/deviceInfoGet",this.ROLE.ADMIN, this.zwaveDeviceInfoGet);
+        this.router.get("/system/zwave/deviceInfoUpdate",this.ROLE.ADMIN, this.zwaveDeviceInfoUpdate);
+
         this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
     },
 
@@ -3573,6 +3576,116 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
         } catch(e) {
             console.log(e.toString());
             reply.error = 'Internal Server Error. ' + e.toString();
+        }
+
+        return reply;
+    },
+    zwaveDeviceInfoGet: function() {
+        var reply = {
+                error: null,
+                code: 500,
+                data: null
+            },
+            l = ['en','de'],  //this.controller.availableLang
+            devInfo = {},
+            reqObj = !this.req.query? undefined : parseToObject(this.req.query);
+
+        try {
+
+            devID = reqObj && reqObj.id? reqObj.id : null;
+            language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1? reqObj.lang : 'en';
+
+            if (reqObj && reqObj.lang && l.indexOf(reqObj.lang) === -1) {
+                reply.message = 'Language not found. English is used instead.';
+            }
+
+            devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
+
+
+            if (devInfo === null) {
+                reply.code = 404;
+                reply.error = 'No list of Z-Wave devices found. Please try to download them first.';
+            } else {
+                reply.data = devInfo;
+                reply.code = 200;
+
+                if (!!devID) {
+                    reply.data = _.find(devInfo.zwave_devices, function(dev) {
+                        return dev['Product_Code'] === devID;
+                    });
+
+                    if (!reply.data) {
+                        reply.code = 404;
+                        reply.error = 'No ZWave devices found. Please try to download them first.';
+                        reply.data = null;
+                    }
+                }
+            }
+        } catch (e) {
+            reply.error = 'Something went wrong:' + e.message;
+        }
+
+        return reply;
+    },
+    zwaveDeviceInfoUpdate: function() {
+        var self = this,
+            result = [],
+            l = ['en','de'],  //this.controller.availableLang,
+            reply = {
+                error: null,
+                code: 500,
+                data: null
+            },
+            delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+
+        try {
+            // update postfix JSON
+            l.forEach(function(lang) {
+                var obj = {},
+                    list = {
+                        updateTime: '',
+                        zwave_devices: []
+                    };
+
+                obj[lang] = false;
+
+                http.request({
+                    url: "http://manuals-backend.z-wave.info/make.php?lang=" + lang + "&mode=ui_devices",
+                    async: true,
+                    success: function(res) {
+                        if (res.data) {
+                            data = parseToObject(res.data);
+                            list.updateTime = (new Date()).getTime();
+
+                            for (index in data) {
+                                list.zwave_devices.push(data[index]);
+                            }
+
+                            saveObject(lang +'.devices.json', list);
+                            obj[lang] = true;
+                        }
+
+                        result.push(obj);
+                    },
+                    error: function() {
+                        self.controller.addNotification('ZWave device list for lang:' + lang + ' not found.');
+                        result.push(obj);
+                    }
+                });
+            });
+
+            while (result.length < l.length && (new Date()).valueOf() < delay) {
+                processPendingCallbacks();
+            }
+
+            if(result) {
+                reply.code = 200;
+                reply.data = result;
+            }
+
+        } catch (e) {
+            this.controller.addNotification('Error has occured during updating the ZWave devices list');
+            reply.error = 'Something went wrong:' + e.message;
         }
 
         return reply;
