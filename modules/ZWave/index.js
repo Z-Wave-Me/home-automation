@@ -122,14 +122,12 @@ ZWave.prototype.updateList = function() {
 	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
 };
 
-ZWave.prototype.loadObject = function(name, zwayName) {
-	zwayName = zwayName? zwayName : this.config.name;
-	return loadObject(zwayName + "_" + name);
+ZWave.prototype.loadObject = function(name) {
+	return loadObject(this.config.name + "_" + name);
 };
 
-ZWave.prototype.saveObject = function(name, obj, zwayName) {
-	zwayName = zwayName? zwayName : this.config.name;
-	return saveObject(zwayName + "_" + name, obj);
+ZWave.prototype.saveObject = function(name, obj) {
+	return saveObject(this.config.name + "_" + name, obj);
 };
 
 ZWave.prototype.init = function (config) {
@@ -139,6 +137,7 @@ ZWave.prototype.init = function (config) {
 
 	// select the latest updated postfix.json
 	this.postfix = this.loadModuleJSON("postfix.json");
+	// postfix is common for all ZWave bindings
 	updatedPostfix = loadObject("postfix.json");
 
 	if (!!updatedPostfix && updatedPostfix.last_update && this.postfix.last_update && updatedPostfix.last_update > this.postfix.last_update) {
@@ -147,55 +146,44 @@ ZWave.prototype.init = function (config) {
 
 	this.expert_config = this.loadObject("expertconfig.json");
 
-	if(!!!this.expert_config) {
+	if (!!!this.expert_config) {
 		this.expert_config = self.default_expert_config;
 		this.saveObject("expertconfig.json", this.expert_config);
 	}
 
-	this.cmdClasses = this.loadModuleJSON("cmd_classes.json");
+	this.cmdClasses = this.loadModuleJSON("cmd_classes.json").zw_classes.cmd_class;
 
-	this.ipacket = [];
-	this.opacket = [];
-	this.iPacketBuffer = {
-		lastUpdate: null,
-		packets: []
-	};
-	this.oPacketBuffer = {
-		lastUpdate: null,
-		packets: []
-	};
-	// store incoming and outgoing packets as they are
+	// store parsed incoming and outgoing packets (for Zniffer)
+	this.parsedPackets = [];
+	
+	// store incoming and outgoing packets as they are (for PacketLog)
 	this.originPackets = this.loadObject('originPackets.json') || {
 		incoming: [],
 		outgoing: []
 	}
 
 	// select custompostfix.json
-	custom_postfix = loadObject("custompostfix.json");
+	var custom_postfix = loadObject("custompostfix.json");
 
 	// add custom_postfix to postfix
-	if(!!custom_postfix) {
-		custom_fixes = custom_postfix.fixes;
-		pfixes = this.postfix.fixes;
+	if (!!custom_postfix) {
+		var custom_fixes = custom_postfix.fixes;
+		var pfixes = this.postfix.fixes;
 
-		for(var x in custom_fixes) {
-			var z = 0;
-			for(var y in pfixes) {
-				if(custom_fixes[x].p_id === pfixes[y].p_id) {
+		for (var x in custom_fixes) {
+			for (var y in pfixes) {
+				if (custom_fixes[x].p_id === pfixes[y].p_id) {
 					custom_fixes[x].id = pfixes[y].id;
-					pfixes[y] = _.assign(pfixes[y], custom_fixes[x]);
+					_.assign(pfixes[y], custom_fixes[x]);
 					break;
 				}
-				z++;
 			}
 
-			if(z == pfixes.length) {
-				var id = Math.max.apply(Math, pfixes.map(function(fix) {
-					return fix.id;
-				}));
-				custom_fixes[x].id = (id +1);
-				pfixes.push(custom_fixes[x]);
-			}
+			var id = Math.max.apply(Math, pfixes.map(function(fix) {
+				return fix.id;
+			}));
+			custom_fixes[x].id = (id + 1);
+			pfixes.push(custom_fixes[x]);
 		}
 
 		this.postfix.fixes = pfixes;
@@ -213,8 +201,9 @@ ZWave.prototype.init = function (config) {
 		// check if the controller license is still up to date
 		// and set update timer
 		this.certXFCheck();
-		this.refreshStatisticsPeriodically();
 	}
+
+	this.refreshStatisticsPeriodically();
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
 		if (zwayName === self.config.name && self.zway) {
@@ -304,7 +293,7 @@ ZWave.prototype.stop = function () {
 
 	this.stopBinding();
 
-	clearInterval(this.rssiTimer);
+	if (this.rssiTimer) clearInterval(this.rssiTimer);
 
 	// do license check if controller type CIT and stop polling routine
 	if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
@@ -321,9 +310,9 @@ ZWave.prototype.stop = function () {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
 	}
 
-	if (this.statisticsIntervall) {
-		clearInterval(this.statisticsIntervall);
-		this.statisticsIntervall = undefined;
+	if (this.statisticsInterval) {
+		clearInterval(this.statisticsInterval);
+		this.statisticsInterval = undefined;
 	}
 };
 
@@ -518,28 +507,28 @@ ZWave.prototype.CommunicationLogger = function() {
 	};
 
 	// process incoming packages
-	zway.controller.data.incomingPacket.bind(inH);
+	this.zway.controller.data.incomingPacket.bind(inH);
 	// process outgoing packages
-	zway.controller.data.outgoingPacket.bind(outH);
+	this.zway.controller.data.outgoingPacket.bind(outH);
 
-	//check if controller supports background rssi
-	if (zway.controller.data.capabilities.value.indexOf(59) > -1) {
-		// set time that will request RSSI stats every 30 s
+	// check if controller supports background rssi
+	if (this.zway.controller.data.capabilities.value.indexOf(59) > -1) {
+		// set timer that will request RSSI stats every 30 s
 		this.rssiTimer = setInterval(function() {
 			try {
-				var data = self.loadObject("rssidata.json");
+				self.updateRSSIData(function(newValue) {
+					var data = self.loadObject("rssidata.json");
+					data.push(newValue);
 
-				data = self.rssiData(data);
-
-				// remove values older than 24h
-				if (data.length > 1440) {
-					var lastDay = now - 86400;
-					data = _.filter(data, function(entry){
-						return entry.time > lastDay;
-					});
-				}
-
-				self.saveObject("rssidata.json", data);
+					// remove values older than 24h
+					if (data.length > 1440) {
+						var lastDay = now - 86400;
+						data = _.filter(data, function(entry){
+							return entry.time > lastDay;
+						});
+					}
+					self.saveObject("rssidata.json", data);
+				});
 			} catch (e) {
 				console.log('Cannot fetch background RSSI. Error:', e.message);
 			}
@@ -560,258 +549,176 @@ ZWave.prototype.CommunicationLogger = function() {
 		}
 
 
-		return _.isArray(rssiPacket) && rssi.length < 1? '': rssi;
+		return (_.isArray(rssiPacket) && rssi.length < 1) ? '' : rssi;
 	}
 
-	function prepareValues(packetValue, packetType,encap,paramCnt) {
-		var pV = packetValue,
-			shift = encap != 'S' && encap != ''? 2 : 0;
-
-		shift = encap === 'I'? 4 : shift;
-
-		if (_.isArray(packetValue)) {
-			if (packetType === 'out') {
-				if (packetValue.length >= 8) {
-					pV = packetValue.slice(7 + shift, -1);
-				} else {
-					pV = packetValue.length >= 6? packetValue.slice(5 + shift, -1): '';
-				}
-			} else {
-				if (encap !== '') {
-					pV = packetValue.length >= 5? packetValue.slice(4 + shift) : '';
-				} else {
-					pV = packetValue.length >= 3? packetValue.slice(2 + shift) : '';
-				}
-			}
-
-			if (pV.length === 1 && pV[0] === 0 && paramCnt === 0){
-				pV = [];
-			}
-		}
-
-		return pV;
-	};
-
 	function packetApplication(packet, packetType) {
-
 		var cmdClassKey = 0,
 			cmdKey = 0,
-			ret = {},
-			findCmdClass = [],
-			_cmdClass = {},
-			encaps=[
-					'0x60.0x0D', // 'I' => Multichannel
-					'0x60.0x06', // 'I' => Multichannel
-					'0x8F.0x01', // 'M' => Multicommand
-					'0x98.0x81', // 'S' => Security
-					'0x98.0xC1', // 'S' => Security
-					'0x9F.0x03', // 'S2' => Security S2
-					'0x56.0x01'  // 'C' => CRC16
-			]
-			result= {
+			encaps = [
+				{ cc: 0x60, cmd: 0x0D, head: 4, tail: 0, srcI: 2, dstI: 3, encap:  'I' }, // MultiChannel
+				{ cc: 0x60, cmd: 0x06, head: 3, tail: 0, srcI: 0, dstI: 2, encap:  'I' }, // MultiInstance
+				{ cc: 0x8F, cmd: 0x01, head: 2, tail: 0, srcI: 0, dstI: 0, encap:  'M' }, // MultiCommand
+				{ cc: 0x98, cmd: 0x81, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
+				{ cc: 0x98, cmd: 0xC1, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
+				{ cc: 0x9F, cmd: 0x03, head: 0, tail: 0, srcI: 0, dstI: 0, encap: 'S2' }, // Security S2
+				{ cc: 0x56, cmd: 0x01, head: 2, tail: 2, srcI: 0, dstI: 0, encap:  'C' }  // CRC16
+			],
+			result = {
+				src: packetType === 'in' ? packet.nodeId.value : self.zway.controller.data.nodeId.value,
+				dst: packetType === 'in' ? packet.dstNodeId.value : packet.nodeId.value,
 				encap: '',
-				application: '',
-				params: 0
-			},
-			hexPString = [],
-			shift = 0,
-			_cmdClassObject = {};
+				application: ''
+			};
+		
+		if (packetType === 'in' && packet.frameType.value === "Node Info") {
+			result.application = 'NIF (' + packet.value.slice(3).map(decToHex).join(', ') + ')';
+			return result;
+		}
+		
+		var payload = packet.value.slice(packetType === 'in' ? 0 : 4, packetType === 'in' ? undefined : -1);
 
-		packet.forEach(function(p, i){
-			var hex = decToHex(p, 2, '0x');
-			hexPString.push(hex);
-		});
-
-		hexPString.forEach(function(p,i){
-
-			if (hexPString[i+1] != undefined) {
-				var capString = hexPString[i]+'.'+hexPString[i+1];
-
-				if (encaps.indexOf(capString) > -1) {
-					switch(capString) {
-						case '0x8F.0x01':
-							result.encap = 'M'; // Multi Cmd Encap
-							shift = 2; // shift to decode CC and CC Cmd
-							return;
-						case '0x98.0x81':
-						case '0x98.0xC1':
-							result.encap = 'S'; // Security Encap
-							return;
-						case '0x9F.0x03':
-							result.encap = 'S2'; // Security S2 Encap
-							return;
-						case '0x56.0x01':
-							result.encap = 'C'; // CR16 Encap
-							shift = 2; // shift to decode CC and CC Cmd
-							return;
-						case '0x60.0x06':
-							result.encap = 'I'; // Multi Instance Encap
-							shift = 3; // shift to decode CC and CC Cmd
-							return;
-						case '0x60.0x0D':
-							result.encap = 'I'; // Multi Channel Encap
-							shift = 4; // shift to decode CC and CC Cmd
-							return;
+		var multiCmd = false;
+		
+		var decapsulated = true;
+		while (decapsulated) {
+			decapsulated = false;
+			for (var i = 0; i < encaps.length; i++) {
+				if (payload[0] === encaps[i].cc && payload[1] === encaps[i].cmd) {
+					// get channels
+					if (encaps[i].dstI !== 0 && encaps[i].srcI !== 0) {
+						result.dst += ":" + payload[encaps[i].dstI];
+						result.src += ":" + payload[encaps[i].srcI];
+					} else if (encaps[i].dstI !== 0) {
+						// in MultiInstance v1 there is only remote side channel ID
+						if (packetType === 'in') {
+							result.src += ":" + payload[encaps[i].dstI];
+						} else {
+							result.dst += ":" + payload[encaps[i].dstI];
+						}
 					}
+					// get inner payload
+					if (encaps[i].head === 0) {
+						// work with decrypted packet
+						payload = packet.securePayload.value;
+					} else {
+						payload = payload.slice(encaps[i].head, encaps[i].tail === 0 ? undefined : -encaps[i].tail);
+					}
+					result.encap = result.encap + " " + encaps[i].encap;
+					if (encaps[i].cc === 0x8F) {
+						multiCmd = true;
+						decapsulated = false;
+					} else {
+						decapsulated = true; // try next decapsulation
+					}
+					break;
 				}
-			} else {
-				return;
-			}
-		});
-
-		if (packet.length >= 6 && packetType === 'out') {
-			cmdClassKey = hexPString[5 + shift];
-			cmdKey = hexPString[6  + shift];
-		} else {
-			cmdClassKey = hexPString[0 + shift];
-			cmdKey = hexPString[1 + shift];
-		}
-
-		findCmdClass = _.filter(cmdC, function (cc){
-			return cc['_key'] === cmdClassKey;
-		});
-
-		if (findCmdClass.length < 1) {
-			if (packet.length > 0) {
-				result.application = 'NIF';
-				return result;
-			} else {
-				return;
 			}
 		}
-
-		// get latest version of filtered
-		var latestVersion = Math.max.apply(Math,findCmdClass.map(function(cc){return parseInt(cc['_version'], 10);})).toString();
-
-		_cmdClass = _.filter(findCmdClass, function (cc){
-			return cc['_version'] === latestVersion;
-		});
-
-		if (_cmdClass[0]) {
-			_cmdClass = _cmdClass[0];
+		
+		if (multiCmd) {
+			var n = payload[0];
+			var s = 2;
+			for (var j = 0; j < n; j++) {
+				result.application += (j ? ', ' : '') + decodePayload(payload.slice(s, s + payload[s - 1]));
+				s += payload[s - 1] + 1;
+			}
 		} else {
-			return;
+			result.application = decodePayload(payload);
 		}
-
-		if(_.isEmpty(_cmdClass)) {
-			return;
-		}
-
-		if (_.isArray(_cmdClass.cmd)) {
-			ret = _.filter(_cmdClass.cmd, function (cmd){
-				return cmd['_key'] === cmdKey;
-			});
-
-			ret = ret[0]? ret[0] : ret;
-		} else {
-			ret = _cmdClass.cmd;
-		}
-
-
-		if(typeof ret === "object" && ret.hasOwnProperty('_help') && (result.encap === '' || (result.encap != 'S' && result.encap != 'M'))) {
-			result.application = ret['_help'] || '';
-			result.params = ret['param']? Object.keys(ret['param']).length : 0;
-		}
-
-		if (_cmdClass['_help'] && _cmdClass['_help'] !== '' && result.application === '' && result.encap === '') {
-			result.application = _cmdClass['_help'].substring(14) + ': ' + cmdKey;
-			result.params = _cmdClass['param']? Object.keys(ret['param']).length : 0;
-		}
-
 		return result;
 	}
 
-	function decToHex(decimal, chars, x) {
-		var hex = (decimal + Math.pow(16, chars)).toString(16).slice(-chars).toUpperCase();
-		return (x || '') + hex;
-	};
-
-	function createIncomingEntry(packet) {
-		var pA = _.isArray(packet.value)? packetApplication(packet.value, 'in'):'';
-
-		pA = pA? pA : '';
-
-		var obj = {
-			type: 'incoming',
-			updateTime: packet.updateTime,
-			bytes:packet.value,
-			src: packet.nodeId && packet.nodeId.value ? packet.nodeId.value : '',
-			rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : '',
-			encaps: pA !== '' && pA.encap ? pA.encap : '',
-			dest: packet.dstNodeId? packet.dstNodeId.value : '',
-			application: pA !== '' && pA.application ? pA.application : ''
-		};
-
-		obj.value = prepareValues(packet.value, 'in', obj.encaps, obj.params);
-
-		console.debug("######### incoming APPLICATION:", obj.application, " || encap:", obj.encaps,"|| bytes:", packet.value);
-
-		return obj;
-	};
-
-	function createOutgoingEntry(packet) {
-		var bytes = packet.value;
-
-		(_.isArray(bytes)) ? bytes.unshift(0) : (bytes = '');	// prepend 1 byte
-
-		var pA = bytes !== ''? packetApplication(bytes, 'out') : '';
-
-		pA = pA? pA : '';
-
-		var obj = {
-			type: 'outgoing',
-			updateTime: packet.updateTime,
-			bytes:packet.value,
-			src: nodeid,
-			speed: packet.speed && packet.speed.value? packet.speed.value : '',
-			rssi: packet.returnRSSI && packet.returnRSSI.value? prepareRSSI(packet.returnRSSI.value) : '',
-			hops: packet.hops && packet.hops.value? packet.hops.value : '',
-			encaps: pA !== '' && pA.encap ? pA.encap : '',
-			tries: packet.tries && packet.tries.value? packet.tries.value : '',
-			dest: (_.isArray(packet.value)) ? packet.value[3] : '',
-			application: pA !== '' && pA.application ? pA.application : ''
-		};
-
-		obj.value = prepareValues(bytes, 'out', obj.encaps, obj.params);
-
-		console.debug("######### outgoing APPLICATION:", obj.application, "|| encap:", obj.encaps,"|| bytes:", bytes);
-
-		return obj;
-	};
-
-	// handle packet buffer
-	function packetBuffer(bufferObject, packetData, packetType) {
-		var now = (new Date()).getTime();
-
-		// add to in/outlists
-		if (packetType === 'out') {
-			opacket.push(packetData);
-		} else {
-			ipacket.push(packetData);
+	function decodePayload(payload) {
+		if (payload.length == 0) {
+			return "";
 		}
-
-		bufferObject.packets.push(packetData);
-		bufferObject.lastUpdate = now;
-
-		bufferObject.packets = _.filter(bufferObject.packets, function(packet){
-			return packet.id > (now - 15000);
+		
+		var ccId = "0x" + decToHex(payload[0]);
+		
+		// match CC
+		var findCmdClass = _.filter(self.cmdClasses, function (cc){
+			return cc['_key'] === ccId;
 		});
 
-		return bufferObject;
+		// get latest version of filtered
+		var latestVersion = Math.max.apply(Math, findCmdClass.map(function(cc) { return parseInt(cc['_version'], 10); })).toString();
+
+		// match CC of the last version
+		var _cmdClass = _.filter(findCmdClass, function (cc) {
+			return cc['_version'] === latestVersion;
+		})[0];
+
+		if (!_cmdClass || _.isEmpty(_cmdClass)) {
+			return 'Unknow commad (' + payload.map(decToHex).join(', ') + ')';
+		}
+
+		var ccCmd = "0x" + decToHex(payload[1]);
+		
+		var cmd;
+		if (_.isArray(_cmdClass.cmd)) {
+			cmd = _.filter(_cmdClass.cmd, function (cmd) {
+				return cmd['_key'] === ccCmd;
+			})[0];
+		} else {
+			cmd = _cmdClass.cmd;
+		}
+		
+		var description = "Unknow command";
+		
+		if (typeof cmd === "object" && cmd.hasOwnProperty('_help') && cmd['_help'] !== '') {
+			description = cmd['_help'];
+			payload = payload.slice(2);
+		} else if (_cmdClass['_help'] && _cmdClass['_help'] !== '') {
+			description = _cmdClass['_help'];
+			payload = payload.slice(1);
+		}
+		
+		return description + (payload.length ? ' (' + payload.map(decToHex).join(', ') + ')' : '');
 	}
 
-	// =====================================================
+
+	function decToHex(decimal) {
+		return ("00" + decimal.toString(16).toUpperCase()).slice(-2);
+	}
+
+	function createIncomingEntry(packet) {
+		var pA = packetApplication(packet, 'in');
+		return {
+			type: 'incoming',
+			updateTime: packet.updateTime,
+			src: pA.src,
+			dest: pA.dst,
+			rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : '',
+			encaps: pA.encap,
+			application: pA.application
+		};
+	}
+
+	function createOutgoingEntry(packet) {
+		var pA = packetApplication(packet, 'out');
+		return {
+			type: 'outgoing',
+			updateTime: packet.updateTime,
+			speed: packet.speed && packet.speed.value ? packet.speed.value : '',
+			rssi: packet.returnRSSI && packet.returnRSSI.value ? prepareRSSI(packet.returnRSSI.value) : '',
+			hops: packet.hops && packet.hops.value ? packet.hops.value : '',
+			tries: packet.tries && packet.tries.value ? packet.tries.value : '',
+			src: pA.src,
+			dest: pA.dst,
+			rssi: packet.RSSI && packet.RSSI.value ? prepareRSSI(packet.RSSI.value) : '',
+			encaps: pA.encap,
+			application: pA.application
+		};
+	}
 };
 
 ZWave.prototype.certXFCheck = function () {
-
+	var zway = this.zway;
+	
 	// polling function
 	this.checkForCertFxLicense = function() {
 		zway.ZMECapabilities(null, function() {
-
-			// refresh caps
-			zway.ZMECapabilities();
-
 			if (zway.controller.data.countDown.value < 5) {
 				var capsNonce = zway.controller.data.capsNonce.value.map(function (i){
 					return ("00" + i.toString(16)).slice(-2);
@@ -839,9 +746,9 @@ ZWave.prototype.certXFCheck = function () {
 
 	// add daily cron job
 	this.controller.emit("cron.addTask", "zwayCertXFCheck.poll", {
-		minute: 0, //[0,59,3]
-		hour: 0, //null
-		weekDay: [0,6,1], //null
+		minute: 0,
+		hour: 0,
+		weekDay: null,
 		day: null,
 		month: null
 	});
@@ -858,7 +765,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
 	this.updateNetStats = function () {
 		try {
-			var stats = ['RFTxFrames','RFTxLBTBackOffs','RFRxFrames','RFRxLRCErrors','RFRxCRC16Errors','RFRxForeignHomeID'],
+			var stats = ['RFTxFrames', 'RFTxLBTBackOffs', 'RFRxFrames', 'RFRxLRCErrors', 'RFRxCRC16Errors', 'RFRxForeignHomeID'],
 				// get the biggest value of all stat params
 				maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
 
@@ -873,7 +780,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 							updateTime: zway.controller.data.statistics[key].updateTime
 						}
 					});
-				}, function(){});
+				});
 				// update network statistics
 			} else {
 				zway.GetNetworkStats(function(){
@@ -883,14 +790,14 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 							updateTime: zway.controller.data.statistics[key].updateTime
 						}
 					});
-				}, function(){});
+				});
 			}
 		} catch (e){
 			console.log('Failed to update/remove network statistics.', e.toString());
 
-			if(this.statisticsIntervall) {
-				clearInterval(this.statisticsIntervall);
-				this.statisticsIntervall = undefined;
+			if (this.statisticsInterval) {
+				clearInterval(this.statisticsInterval);
+				this.statisticsInterval = undefined;
 			}
 		}
 	};
@@ -899,7 +806,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	this.updateNetStats();
 	
 	// intervall function collecting network statistic data
-	this.statisticsIntervall = setInterval(function() {
+	this.statisticsInterval = setInterval(function() {
 		self.updateNetStats();
 	}, 600 * 1000);
 };
@@ -986,9 +893,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 ZWave.prototype.defineHandlers = function () {
 	var zway = this.zway;
 	var postfix = this.postfix;
-	var expert_config = this.expert_config;
 	var self = this;
-	var zwayCfg = this.config;
 
 	var ipacket = this.ipacket;
 	var opacket = this.opacket;
@@ -1549,13 +1454,12 @@ ZWave.prototype.defineHandlers = function () {
 			body.updateTime = Math.round((new Date()).getTime()/1000);
 
 			if(!_.isNull(filterObj)) {
-
 				if (filterObj.src.value != "") {
-					filter = packets.filter(function (p) {
+					var filter = packets.filter(function (p) {
 						// filter by array of sources
 						var srcs =  filterObj.src.value.split(',');
 
-						if(parseInt(filterObj.src.show) === 1) {
+						if (parseInt(filterObj.src.show) === 1) {
 							return srcs.indexOf(p.src.toString()) > -1;
 						} else {
 							return srcs.indexOf(p.src.toString()) < 0;
@@ -1570,7 +1474,7 @@ ZWave.prototype.defineHandlers = function () {
 						// filter by array of destinations
 						var dests =  filterObj.dest.value.split(',');
 
-						if(parseInt(filterObj.dest.show) === 1) {
+						if (parseInt(filterObj.dest.show) === 1) {
 							return dests.indexOf(p.dest.toString()) > -1;
 						} else {
 							return dests.indexOf(p.dest.toString()) < 0;
@@ -1627,7 +1531,7 @@ ZWave.prototype.defineHandlers = function () {
 			},
 			body: body
 		};
-	}
+	};
 
 	this.ZWaveAPI.PacketLog = function() {
 		return {
@@ -1643,7 +1547,7 @@ ZWave.prototype.defineHandlers = function () {
 				"code": 200,
 				"message": "200 OK",
 				"updateTime": Math.round((new Date()).getTime() / 1000),
-				data: this.ZWave.prototype.loadObject('originPackets.json', zwayCfg.name)
+				data: self.loadObject('originPackets.json')
 			}
 		};
 	};
@@ -1671,24 +1575,18 @@ ZWave.prototype.defineHandlers = function () {
 				var par = url.split("/")[1];
 
 				if (par == "realtime") {
-
-					data = ZWave.prototype.rssiData();
-
-					body.data = data;
-
+					body.data = self.lastRSSIData();
 				} else {
-					body.data = this.ZWave.prototype.loadObject('rssidata.json', zwayCfg.name);
+					body.data = self.loadObject('rssidata.json');
 				}
 
 				if (!!body.data) {
-
 					return {
 						headers: headers,
 						status: 200,
 						body: body
 					};
 				} else {
-
 					body.code = 404;
 					body.message = '404 Not Found';
 
@@ -1717,7 +1615,7 @@ ZWave.prototype.defineHandlers = function () {
 		}
 	};
 	
-		this.ZWaveAPI.TestNode = function(url, request) {
+	this.ZWaveAPI.TestNode = function(url, request) {
 		try {
 			var nodeId = url.split("/")[1],
 				N = url.split("/")[2] || 10;
@@ -2107,12 +2005,12 @@ ZWave.prototype.defineHandlers = function () {
 		
 		var show = request.query ? request.query : null;
 
-		if (!!postfix) {
+		if (!!self.postfix) {
 
-			pfix = postfix;
+			pfix = self.postfix;
 
 			if (show === 'false') {
-				pfix = postfix.fixes? postfix.fixes : postfix;
+				pfix = self.postfix.fixes? self.postfix.fixes : self.postfix;
 
 				pfix = pfix.map(function (fix) { 
 						return { p_id: fix.p_id, product: fix.product }
@@ -2140,8 +2038,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.PostfixUpdate = function(url, request) {
-		var self = this,
-			success,
+		var success,
 			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
 
 		// update postfix JSON
@@ -2284,18 +2181,18 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.PostfixRemove = function(url, request) {
-		if(request.method === "POST" && request.body) {
+		if (request.method === "POST" && request.body) {
 			var custom_postfix = loadObject("custompostfix.json"),
 				reqObj = parseToObject(request.body);
 
-			if(!!custom_postfix) {
+			if (!!custom_postfix) {
 
 				var fixes = custom_postfix.fixes,
 					fix = fixes.filter(function(fix) {
 						return fix.p_id === reqObj.p_id;
 					});
 
-				if(!_.isEmpty(fix)) {
+				if (!_.isEmpty(fix)) {
 					fixes = _.reject(fixes ,function(fix) {
 						return fix.p_id === reqObj.p_id;
 					});
@@ -2339,7 +2236,7 @@ ZWave.prototype.defineHandlers = function () {
 				"Access-Control-Allow-Headers": "Authorization",
 				"Connection": "close"
 			},
-			body: expert_config
+			body: self.expert_config
 		};
 	};
 
@@ -2363,7 +2260,7 @@ ZWave.prototype.defineHandlers = function () {
 					'cit_identifier',
 					'rss'));
 
-				this.ZWave.prototype.saveObject('expertconfig.json', self.expert_config, zwayCfg.name);
+				self.saveObject('expertconfig.json', self.expert_config);
 
 				return {
 					status: 200,
@@ -2465,7 +2362,7 @@ ZWave.prototype.defineHandlers = function () {
 			nodeId = req && req.nodeId? req.nodeId : null;
 
 		try {
-			if(!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
+			if (!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
 				var neighbours = zway.devices[nodeId].data.neighbours.value;
 				var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
 				var ret = {
@@ -2572,8 +2469,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.ZWaveDeviceInfoUpdate = function() {
-		var self = this,
-			result = [],
+		var result = [],
 			l = ['en','de'],  //this.controller.availableLang,
 			reply = {
 				status: 500,
@@ -2642,7 +2538,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.NetworkReorganization = function(url, request) {
-		var self = this,
+		var reorgState = {}, // local object that will store the reorg results - should be reworked TODO(!!!!)
 			reply = {
 				status: 500,
 				headers: {
@@ -2662,8 +2558,8 @@ ZWave.prototype.defineHandlers = function () {
 			// check if all reorganizations of types have finished
 			finished = function () {
 				var f = true;
-				Object.keys(self.progress).forEach(function(type){
-					f = !self.progress[type] || (self.progress[type] && self.progress[type].pendingCbk.length < 1 );
+				Object.keys(reorgState.progress).forEach(function(type){
+					f = !reorgState.progress[type] || (reorgState.progress[type] && reorgState.progress[type].pendingCbk.length < 1 );
 					if (!f) {
 						return;
 					}
@@ -2673,17 +2569,17 @@ ZWave.prototype.defineHandlers = function () {
 			reorgMain, reorgBattery;
 
 		// reorganization log array
-		self.reorgLog = [];
+		reorgState.reorgLog = [];
 		// warpper that includes all node responses
-		self.nodeRes = {};
+		reorgState.nodeRes = {};
 		// object that shows progress of each container
-		self.progress = {};
+		reorgState.progress = {};
 		// outstanding node objects of reorganization interval
-		self.nodesPending = [];
+		reorgState.nodesPending = [];
 		// timeout for reorg interval
-		self.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
+		reorgState.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
 		// load module language keys
-		self.langFile = self.controller.loadModuleLang('ZWave');
+		reorgState.langFile = self.controller.loadModuleLang('ZWave');
 		// prepare request properties
 		reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
 		reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
@@ -2692,8 +2588,8 @@ ZWave.prototype.defineHandlers = function () {
 		* Add a progress container of special type to progress object
 		*/
 		function addTypeToProgress (type, reorg) {
-			if(!self.progress[type]) {
-				self.progress[type] = {
+			if (!reorgState.progress[type]) {
+				reorgState.progress[type] = {
 					reorg: reorg,
 					status: '',
 					pendingCbk: [],
@@ -2713,15 +2609,15 @@ ZWave.prototype.defineHandlers = function () {
 				timestamp: (new Date()).valueOf(),
 				message: message,
 				node: nodeId? nodeId : undefined,
-				type: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].type : undefined,
-				status: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].status : undefined,
-				tries: nodeId && self.nodeRes[nodeId]? self.nodeRes[nodeId].tries : undefined
+				type: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].type : undefined,
+				status: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].status : undefined,
+				tries: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].tries : undefined
 			};
 
-			self.reorgLog.push(entry);
+			reorgState.reorgLog.push(entry);
 
-			if (self.reorgLog.length > 0) {
-				this.ZWave.prototype.saveObject('reorgLog', self.reorgLog, zwayCfg.name);
+			if (reorgState.reorgLog.length > 0) {
+				self.saveObject('reorgLog', reorgState.reorgLog);
 			}
 		}
 
@@ -2729,8 +2625,8 @@ ZWave.prototype.defineHandlers = function () {
 		 * Remove pending node after done/failed/timeout
 		 */
 		function removeFromPending (type,nodeId) {
-			if (self.progress[type].pendingCbk.indexOf(nodeId) > -1) {
-				self.progress[type].pendingCbk = self.progress[type].pendingCbk.filter(function(node) {
+			if (reorgState.progress[type].pendingCbk.indexOf(nodeId) > -1) {
+				reorgState.progress[type].pendingCbk = reorgState.progress[type].pendingCbk.filter(function(node) {
 					return	node != nodeId;
 				});
 			}
@@ -2740,8 +2636,8 @@ ZWave.prototype.defineHandlers = function () {
 		 * Remove pending node after delayed done/failed callback from timeout list
 		 */
 		function removeFromTimeout (type,nodeId) {
-			if(self.progress[type].timeout.indexOf(nodeId) > -1) {
-				self.progress[type].timeout = self.progress[type].timeout.filter(function(node) {
+			if (reorgState.progress[type].timeout.indexOf(nodeId) > -1) {
+				reorgState.progress[type].timeout = reorgState.progress[type].timeout.filter(function(node) {
 					return	node != nodeId;
 				});
 			}
@@ -2753,8 +2649,8 @@ ZWave.prototype.defineHandlers = function () {
 		function doReorg(nodeId, type){
 
 			// add single node status
-			if (!self.nodeRes[nodeId]) {
-				self.nodeRes[nodeId] = {
+			if (!reorgState.nodeRes[nodeId]) {
+				reorgState.nodeRes[nodeId] = {
 					status: "in progress",
 					type: type,
 					tries: 0,
@@ -2771,15 +2667,15 @@ ZWave.prototype.defineHandlers = function () {
 			var succesCbk = function() {
 				var message = '#'+nodeId+' ('+type+') ';
 
-				self.nodeRes[nodeId] = _.extend(self.nodeRes[nodeId],{
+				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId],{
 					status: 'done',
 					type: type,
-					tries: self.nodeRes[nodeId].tries
+					tries: reorgState.nodeRes[nodeId].tries
 				});
 
 				zway.GetRoutingTableLine(nodeId);
 
-				addLog(message + '... '+self.langFile.reorg +' '+self.langFile.reorg_success, nodeId);
+				addLog(message + '... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_success, nodeId);
 
 				removeFromPending(type, nodeId);
 				removeFromTimeout(type, nodeId);
@@ -2798,19 +2694,19 @@ ZWave.prototype.defineHandlers = function () {
 					message='',
 					tries = 0;
 
-				self.nodeRes[nodeId] = _.extend(self.nodeRes[nodeId],{
+				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId],{
 					status: 'failed',
 					type: type,
-					tries: self.nodeRes[nodeId].tries + 1
+					tries: reorgState.nodeRes[nodeId].tries + 1
 				});
 
-				tries = self.nodeRes[nodeId].tries;
+				tries = reorgState.nodeRes[nodeId].tries;
 
 				if (type === 'main' && tries < 3) {
-						addLog(preMessage + '... ' + tries + self.langFile.reorg_try_failed + ' ' + self.langFile.reorg_next_try);
+						addLog(preMessage + '... ' + tries + reorgState.langFile.reorg_try_failed + ' ' + reorgState.langFile.reorg_next_try);
 						reorgUpdate(nodeId);
 				} else {
-					message = type === 'main'? self.langFile.reorg_all_tries_failed : '... '+self.langFile.reorg +' '+self.langFile.reorg_failed;
+					message = type === 'main' ? reorgState.langFile.reorg_all_tries_failed : '... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_failed;
 
 					addLog(preMessage + message, nodeId);
 
@@ -2826,13 +2722,13 @@ ZWave.prototype.defineHandlers = function () {
 			 */
 			var reorgUpdate = function (nodeId){
 				try {
-					self.nodeRes[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
+					reorgState.nodeRes[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
 					zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
 				} catch (e) {
-					console.log(self.langFile.reorg_err_node+nodeId+': ' + e.message);
-					self.nodeRes[nodeId].status = 'failed';
+					console.log(reorgState.langFile.reorg_err_node + nodeId + ': ' + e.message);
+					reorgState.nodeRes[nodeId].status = 'failed';
 					removeFromPending(type, nodeId);
-					addLog('#'+nodeId+' ('+self.nodeRes[nodeId].type+') ... '+self.langFile.reorg +' '+self.langFile.reorg_failed, nodeId);
+					addLog('#'+nodeId+' ('+reorgState.nodeRes[nodeId].type+') ... '+reorgState.langFile.reorg +' '+reorgState.langFile.reorg_failed, nodeId);
 				}
 			}
 
@@ -2844,42 +2740,42 @@ ZWave.prototype.defineHandlers = function () {
 		 * reorganize each outstanding node step by step and remove it from list
 		 */
 		function nodeReorg(){
-			var nodeId = self.nodesPending[0].nodeId,
-				type = self.nodesPending[0].type,
-				currProgressType = self.progress[type],
+			var nodeId = reorgState.nodesPending[0].nodeId,
+				type = reorgState.nodesPending[0].type,
+				currProgressType = reorgState.progress[type],
 				all = currProgressType.all,
 				intervalNodesPending = currProgressType.intervalNodesPending,
 				status = currProgressType.status,
 				reorg = currProgressType.reorg,
-				key = self.langFile['reorg_all_'+type]? self.langFile['reorg_all_'+type] : self.langFile['reorg_all'] + self.langFile[type] + ': ';
+				key = reorgState.langFile['reorg_all_'+type] ? reorgState.langFile['reorg_all_'+type] : reorgState.langFile['reorg_all'] + reorgState.langFile[type] + ': ';
 
 			if(all.length > 0 && all.length === intervalNodesPending.length) {
 				addLog(key + JSON.stringify(all));
 			} else if (intervalNodesPending.length < 1 && status === 'in progress' && reorg) {
-				self.progress[type].status = 'done';
-				addLog(self.langFile.reorg_of + self.langFile[type] + ' ' + self.langFile.reorg_complete);
+				reorgState.progress[type].status = 'done';
+				addLog(reorgState.langFile.reorg_of + reorgState.langFile[type] + ' ' + reorgState.langFile.reorg_complete);
 			}
 
 			// do reorg for node
 			doReorg(nodeId, type);
 
 			// remove node from intervalNodesPending
-			if (self.progress[type].intervalNodesPending.indexOf(nodeId) > -1) {
-				self.progress[type].intervalNodesPending = self.progress[type].intervalNodesPending.filter(function(node) {
+			if (reorgState.progress[type].intervalNodesPending.indexOf(nodeId) > -1) {
+				reorgState.progress[type].intervalNodesPending = reorgState.progress[type].intervalNodesPending.filter(function(node) {
 					return	node != nodeId;
 				});
 			}
 
 			// remove first entry from outstanding nodes list
-			self.nodesPending = self.nodesPending.filter(function(entry){
+			reorgState.nodesPending = reorgState.nodesPending.filter(function(entry){
 				return !_.isEqual(entry,{nodeId:nodeId,type:type})
 			});
 		};
 
-		var initialMsg = reorgBattery && reorgMain? self.langFile.reorg_with_battery : reorgBattery && !reorgMain? self.langFile.reorg_battery_only : self.langFile.reorg_without_battery;
+		var initialMsg = reorgBattery && reorgMain? reorgState.langFile.reorg_with_battery : reorgBattery && !reorgMain? reorgState.langFile.reorg_battery_only : reorgState.langFile.reorg_without_battery;
 
 		// add initial message to reorganization log
-		addLog(self.langFile.reorg_started + initialMsg);
+		addLog(reorgState.langFile.reorg_started + initialMsg);
 
 		// go through all zway devices and push them in their type specific progress container
 		Object.keys(zway.devices).forEach(function(nodeId) {
@@ -2894,42 +2790,43 @@ ZWave.prototype.defineHandlers = function () {
 
 			if (add){
 				addTypeToProgress(type,add);
-				self.progress[type].all.push(nodeId);
+				reorgState.progress[type].all.push(nodeId);
 				// add list of pending nodes for callback
-				self.progress[type].pendingCbk = self.progress[type].all;
+				reorgState.progress[type].pendingCbk = reorgState.progress[type].all;
 				// add list of pending nodes for interval
-				self.progress[type].intervalNodesPending = self.progress[type].all;
+				reorgState.progress[type].intervalNodesPending = reorgState.progress[type].all;
 				// add node/type object to type specific list of outstanding nodes - is necessary for interval progress chain
-				self.progress[type].nodesPending.push({nodeId: nodeId, type: type});
+				reorgState.progress[type].nodesPending.push({nodeId: nodeId, type: type});
 				cntNodes++;
 			}
 		});
 
 		// set initial status of progress container
-		if (self.progress['main']) {
-			self.progress['main'].status = 'in progress';
-		} else if (self.progress['battery']) {
-			self.progress['battery'].status = 'in progress';
+		if (reorgState.progress['main']) {
+			reorgState.progress['main'].status = 'in progress';
+		} else if (reorgState.progress['battery']) {
+			reorgState.progress['battery'].status = 'in progress';
 		}
 
 		// merge all lists with node/type objects of outstanding node together
-		Object.keys(self.progress).forEach(function(type){
-			self.nodesPending = _.uniq(self.nodesPending.concat(self.progress[type].nodesPending));
+		Object.keys(reorgState.progress).forEach(function(type){
+			reorgState.nodesPending = _.uniq(reorgState.nodesPending.concat(reorgState.progress[type].nodesPending));
 		});
 
 		// initial reorganization of first node
-		if (self.nodesPending[0]) {
+		if (reorgState.nodesPending[0]) {
 			nodeReorg();
 		}
 
 		// process interval that starts reorganization of each node after 10 sec
-		this.progressInterval = setInterval(function(){
-			if (self.nodesPending[0]) {
+		// TODO(!!!) this has to be changed from global handler to the local one
+		this.progressInterval = setInterval(function() {
+			if (reorgState.nodesPending[0]) {
 				nodeReorg();
 			} else {
-				clearInterval(self.progressInterval);
-				self.progressInterval = null;
-				self.nodesPending = [];
+				clearInterval(reorgState.progressInterval);
+				reorgState.progressInterval = null;
+				reorgState.nodesPending = [];
 			}
 		}, requestInterval);
 
@@ -2939,24 +2836,25 @@ ZWave.prototype.defineHandlers = function () {
 		 * - whole reorganization progress has timed out
 		 * - whole reorganization progress has finished
 		 */
+		// TODO(!!!) this has to be changed from global handler to the local one
 		this.reorgInterval = setInterval(function(){
 			var nodes = [],
-				cntNodes = Object.keys(self.nodeRes).length,
+				cntNodes = Object.keys(reorgState.nodeRes).length,
 				now = (new Date()).valueOf();
 
-			Object.keys(self.nodeRes).forEach(function(nodeId){
-				var nodeRes = self.nodeRes[nodeId],
+			Object.keys(reorgState.nodeRes).forEach(function(nodeId){
+				var nodeRes = reorgState.nodeRes[nodeId],
 					type = nodeRes.type,
 					status = nodeRes.status,
-					currArr = self.progress[type];
+					currArr = reorgState.progress[type];
 
 				if (nodes.indexOf(nodeId) < 0) {
 
 					if (status !== 'in progress') {
 						nodes.push(nodeId);
 					} else if (status === 'in progress' && nodeRes.timeout < now) {
-						self.nodeRes[nodeId].status = 'timeout';
-						addLog('#'+nodeId+' ('+type+') ... ' +self.langFile.reorg_timeout, nodeId);
+						reorgState.nodeRes[nodeId].status = 'timeout';
+						addLog('#'+nodeId+' ('+type+') ... ' +reorgState.langFile.reorg_timeout, nodeId);
 						removeFromPending(type, nodeId);
 						nodes.push(nodeId);
 						currArr.timeout.push(nodeId);
@@ -2969,35 +2867,35 @@ ZWave.prototype.defineHandlers = function () {
 			});
 
 			// remove all
-			if (self.reorgInterval &&
+			if (reorgState.reorgInterval &&
 				(nodes.length >= cntNodes && finished()) ||
-				self.reorgIntervalTimeout < now) {
+				reorgState.reorgIntervalTimeout < now) {
 
 				var allTimeout = [];
 
-				Object.keys(self.progress).forEach(function (type) {
-					allTimeout = _.uniq(allTimeout.concat(self.progress[type].timeout));
+				Object.keys(reorgState.progress).forEach(function (type) {
+					allTimeout = _.uniq(allTimeout.concat(reorgState.progress[type].timeout));
 				});
 
-				if (self.reorgIntervalTimeout < now) {
-					addLog(self.langFile.reorg_timeout+' ... '+self.langFile.reorg_canceled);
+				if (reorgState.reorgIntervalTimeout < now) {
+					addLog(reorgState.langFile.reorg_timeout+' ... '+reorgState.langFile.reorg_canceled);
 					addLog('finished');
 				} else {
 					if (allTimeout && allTimeout.length > 0) {
-						addLog(self.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
+						addLog(reorgState.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
 					}
-					addLog(self.langFile.reorg+' '+self.langFile.reorg_complete);
+					addLog(reorgState.langFile.reorg+' '+reorgState.langFile.reorg_complete);
 					addLog('finished');
 				}
 
-				clearInterval(self.reorgInterval);
+				clearInterval(reorgState.reorgInterval);
 			}
 		}, 5000);
 
-		if(self.nodeRes) {
+		if (reorgState.nodeRes) {
 			reply.status = 201;
 			reply.body = {
-				data: self.langFile.reorg + initialMsg + self.langFile.reorg_starting
+				data: reorgState.langFile.reorg + initialMsg + reorgState.langFile.reorg_starting
 			};
 		}
 
@@ -3016,7 +2914,7 @@ ZWave.prototype.defineHandlers = function () {
 				},
 				body: null
 			},
-			reorgLog = this.ZWave.prototype.loadObject('reorgLog', zwayCfg.name);
+			reorgLog = self.loadObject('reorgLog');
 
 		reply.body = !!reorgLog? reorgLog : [];
 
@@ -5232,23 +5130,21 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 	this.controller.devices.remove(vDevId);
 };
 
-ZWave.prototype.rssiData = function(data) {
-	var now = Math.round((new Date()).getTime()/1000);
+ZWave.prototype.lastRSSIData = function() {
+	var rssi = this.zway.controller.data.statistics.backgroundRSSI;
 
-	var data = data? data : [];
-
-	zway.GetBackgroundRSSI();
-
-	var rssi = zway.controller.data.statistics.backgroundRSSI;
-
-	var d = {
-		"time": now,
-		"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value)? rssi.channel1.value - 256 : null,
-		"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value)? rssi.channel2.value - 256 : null,
-		"channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value)? rssi.channel3.value - 256 : null
+	return {
+		"time": Math.round((new Date()).getTime()/1000),
+		"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value) ? rssi.channel1.value - 256 : null,
+		"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value) ? rssi.channel2.value - 256 : null,
+		"channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value) ? rssi.channel3.value - 256 : null
 	};
+};
 
-	data.push(d);
-
-	return data;
-}
+ZWave.prototype.updateRSSIData = function(callback) {
+	var self = this;
+	
+	zway.GetBackgroundRSSI(function() {
+		callback(self.lastRSSIData());
+	});
+};
