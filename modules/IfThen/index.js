@@ -1,7 +1,7 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.4.1
-(c) Z-Wave.Me, 2015
+Version: 2.5.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Description:
