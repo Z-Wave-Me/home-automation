@@ -63,6 +63,7 @@ if (!config && config === null) {
     executeFile(config.libPath + "/IntelHex2bin.js");
     executeFile(config.libPath + "/base64.js");
     executeFile(config.libPath + "/qrcode.js");
+    executeFile(config.libPath + "/LimitedArray.js");
 
     //--- Load Automation subsystem classes
     executeFile(config.classesPath + "/VirtualDevice.js");

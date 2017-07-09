@@ -154,13 +154,30 @@ ZWave.prototype.init = function (config) {
 	this.cmdClasses = this.loadModuleJSON("cmd_classes.json").zw_classes.cmd_class;
 
 	// store parsed incoming and outgoing packets (for Zniffer)
-	this.parsedPackets = [];
+	this.parsedPackets = new LimitedArray(
+		self.loadObject("parsedPackets.json"),
+		function(arr) {
+			self.saveObject("parsedPackets.json", arr);
+		},
+		100, // check it every 100 packets
+		10000, // save up to 10000 packets
+		function(element) { // save last day only
+			return element.id > ((new Date()).getTime() - 86400*1000);
+		}
+	);
 	
 	// store incoming and outgoing packets as they are (for PacketLog)
-	this.originPackets = this.loadObject('originPackets.json') || {
-		incoming: [],
-		outgoing: []
-	}
+	this.originPackets = new LimitedArray(
+		self.loadObject("originPackets.json"),
+		function(arr) {
+			self.saveObject("originPackets.json", arr);
+		},
+		100, // check it every 100 packets
+		10000, // save up to 10000 packets
+		function(element) { // save last day only
+			return element.updateTime > ((new Date()).getTime() - 86400);
+		}
+	);
 
 	// select custompostfix.json
 	var custom_postfix = loadObject("custompostfix.json");
@@ -291,6 +308,11 @@ ZWave.prototype.stop = function () {
 	console.log("--- ZWave.stop()");
 	ZWave.super_.prototype.stop.call(this);
 
+	this.originPackets.finalize();
+	this.originPackets = null;
+	this.parsedPackets.finalize();
+	this.parsedPackets = null;
+
 	this.stopBinding();
 
 	if (this.rssiTimer) clearInterval(this.rssiTimer);
@@ -368,142 +390,32 @@ ZWave.prototype.terminating = function () {
 };
 
 ZWave.prototype.CommunicationLogger = function() {
-
 	var self = this,
-		zway = this.zway,
-		originPackets = this.originPackets,
-		iPacketBuffer = this.iPacketBuffer,
-		oPacketBuffer = this.oPacketBuffer,
-		ipacket = this.ipacket,
-		opacket = this.opacket,
-		cmdClasses = this.cmdClasses,
-		cmdC = cmdClasses.zw_classes.cmd_class,
-		nodeid = zway.controller.data.nodeId.value;
+		zway = this.zway;
 
-	avg = function(arr) { var ret = arr.reduce(function(a, b) { return a + b; }, 0); return ret/arr.length; };
-	stddev = function(arr) { var _avg = avg(arr); ret = arr.reduce(function(p, c) { return p + (c-_avg)*(c-_avg); }, 0); return Math.sqrt(ret)/arr.length; };
-	uniq = function(arr) { return arr.filter(function(value, index, self) { return self.indexOf(value) === index; }); };
-	group = function(arr) { var ret = {}; arr.map(function(x) { if (ret[x]) ret[x]++; else ret[x] = 1; }); return ret; };
-
-	inH = function () {
-		console.debug("log incoming");//!!!
+	var inH = function () {
 		var data = this;
 
-		if (!!originPackets) {
-			originPackets.incoming.push(data);
-		}
+		// save the packet as it is
+		data.direction = "input";
+		self.originPackets.push(data);
 
-		var _data = data;
 		data = createIncomingEntry(data);
+		data.id = data.updateTime * 1000 + (new Date).getMilliseconds();
 
-		if (!_.isEqual(_.omit(ipacket[ipacket.length-1], 'id', 'rssi'), _.omit(data,'rssi'))){
-			console.debug("### IN: Not EQUAL ...");
-
-			var ms = (new Date).getMilliseconds().toString();
-			ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
-			var pId = parseInt(data.updateTime.toString() + ms, 10);
-
-			data.id = pId;
-
-			console.debug("######### incoming ID:", data.id);
-
-			iPacketBuffer = packetBuffer(iPacketBuffer, data, 'in');
-			//console.debug('####=======>>## iPacketBuffer:', iPacketBuffer.packets);
-		} else {
-			console.debug("### IN: IS EQUAL!");
-		}
-
-		if (ipacket.length >= 50) {
-			var _ipacket = self.loadObject("incomingPacket.json");
-
-			if (_ipacket === null) {
-				_ipacket = [];
-			}
-
-			_ipacket = _ipacket.concat(ipacket);
-
-			if (_ipacket.length > 100) {
-				console.debug('####=======>>## slice _ipacket ...');
-				_ipacket = _.filter(_ipacket, function(entry){
-					return entry.id > ((new Date()).getTime() - 8640000);
-				});
-			}
-
-			self.saveObject("incomingPacket.json", _ipacket);
-
-			ipacket = [];
-		}
-
-		if (originPackets.incoming.length % 100 === 0) {
-			if (originPackets.incoming.length > 100) {
-				console.debug('####=======>>## slice originPackets.incoming ...');
-				originPackets.incoming = _.filter(originPackets.incoming, function(inPacket) {
-					return inPacket.updateTime > ((new Date()).getTime() - 8640000);
-				})
-			}
-
-			self.saveObject("originPackets.json", originPackets);
-		}
-
+		self.parsedPackets.push(data);
 	};
 
-	outH = function () {
-		console.debug("log outgoing"); //!!!
+	var outH = function () {
 		var data = this;
 
-		if (!!originPackets) {
-			originPackets.outgoing.push(data);
-		}
+		data.direction = "output";
+		self.originPackets.push(data);
 
-		var _data = data;
 		data = createOutgoingEntry(data);
+		data.id = data.updateTime * 1000 + (new Date).getMilliseconds();
 
-		if (!_.isEqual(_.omit(opacket[opacket.length-1], 'id', 'rssi', 'hops', 'tries', 'speed'), _.omit(data,'rssi', 'hops', 'tries', 'speed'))){
-			console.debug("### OUT: Not EQUAL ...");
-
-			var ms = (new Date).getMilliseconds().toString();
-			ms = ms.length === 1? '00' + ms: (ms.length === 2? '0' + ms : ms );
-			var pId = parseInt(data.updateTime.toString() + ms, 10);
-
-			data.id = pId;
-
-			oPacketBuffer = packetBuffer(oPacketBuffer, data, 'out');
-		} else {
-			console.debug("### OUT: IS EQUAL!");
-		}
-
-		if(opacket.length >= 50) {
-			var _opacket = self.loadObject("outgoingPacket.json");
-
-			if(_opacket === null) {
-				_opacket = [];
-			}
-
-			_opacket = _opacket.concat(opacket);
-
-			if (_opacket.length > 100) {
-				console.debug('####=======>>## slice _opacket ...');
-				_opacket = _.filter(_opacket, function(entry){
-					return entry.id > ((new Date()).getTime() - 8640000);
-				});
-			}
-
-			self.saveObject("outgoingPacket.json", _opacket);
-
-			opacket = [];
-		}
-
-		if (originPackets.outgoing.length % 50 === 0) {
-
-			if (originPackets.outgoing.length > 100) {
-				console.debug('####=======>>## slice originPackets.outgoing ...');
-				originPackets.outgoing = _.filter(originPackets.outgoing, function(outPacket) {
-					return outPacket.updateTime > ((new Date()).getTime() - 8640000);
-				})
-			}
-
-			self.saveObject("originPackets.json", originPackets);
-		}
+		self.parsedPackets.push(data);
 	};
 
 	// process incoming packages
@@ -537,25 +449,25 @@ ZWave.prototype.CommunicationLogger = function() {
 
 	// =================== helper functions ========================
 
+	function RSSItoText(rssiValue) {
+		if (rssiValue === 125) return "too low";
+		if (rssiValue === 126) return "too high";
+		if (rssiValue === 127) return "";
+		if (rssiValue > 10 && rssiValue < 128) return "invalid";
+		if (rssiValue > 127) rssiValue -= 256;
+		return rssiValue.toString(10) + ' dBm';
+	}
+	
 	function prepareRSSI(rssiPacket) {
-		var rssi = [];
-
 		if(_.isArray(rssiPacket)){
-			_.forEach(rssiPacket, function (rssiValue){
-				rssi.push(~(rssiValue - 128) + ' dBm'); // transform to two's (Zweierkomplement)
-			});
+			return rssiPacket.map(RSSItoText);
 		} else {
-			rssi = ~(rssiPacket - 128) + ' dBm';
+			return RSSItoText(rssiPacket);
 		}
-
-
-		return (_.isArray(rssiPacket) && rssi.length < 1) ? '' : rssi;
 	}
 
 	function packetApplication(packet, packetType) {
-		var cmdClassKey = 0,
-			cmdKey = 0,
-			encaps = [
+		var encaps = [
 				{ cc: 0x60, cmd: 0x0D, head: 4, tail: 0, srcI: 2, dstI: 3, encap:  'I' }, // MultiChannel
 				{ cc: 0x60, cmd: 0x06, head: 3, tail: 0, srcI: 0, dstI: 2, encap:  'I' }, // MultiInstance
 				{ cc: 0x8F, cmd: 0x01, head: 2, tail: 0, srcI: 0, dstI: 0, encap:  'M' }, // MultiCommand
@@ -653,6 +565,10 @@ ZWave.prototype.CommunicationLogger = function() {
 			return 'Unknow commad (' + payload.map(decToHex).join(', ') + ')';
 		}
 
+		if (payload.length == 1) {
+			return _cmdClass['_help'];
+		}
+		
 		var ccCmd = "0x" + decToHex(payload[1]);
 		
 		var cmd;
@@ -1428,31 +1344,22 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.CommunicationHistory = function(url, request) {
-		var self = this,
-			packets = [],
-			body = {
+		var body = {
 				"code": 200,
 				"message": "200 OK",
 				"updateTime": null,
 				"data": []
 			},
-			_ipacket = this.ZWave.prototype.loadObject('incomingPacket.json', zwayCfg.name),
-			_opacket = this.ZWave.prototype.loadObject('outgoingPacket.json', zwayCfg.name),
+			packets = self.loadObject('parsedPackets.json'),
 			filterObj = null;
 
 		if (request.query && request.query.filter) {
 			filterObj = typeof request.query.filter === 'string' ? JSON.parse(request.query.filter) : request.query.filter;
 		}
 
-		_ipacket = _.isNull(_ipacket)? ipacket : _ipacket.concat(ipacket);
-		_opacket = _.isNull(_opacket)? opacket : _opacket.concat(opacket);
-
-		packets = packets.concat(_opacket, _ipacket);
+		packets = _.isNull(packets) ? self.parsedPackets.get() : packets.concat(self.parsedPackets.get());
 
 		if(!_.isEmpty(packets)) {
-
-			body.updateTime = Math.round((new Date()).getTime()/1000);
-
 			if(!_.isNull(filterObj)) {
 				if (filterObj.src.value != "") {
 					var filter = packets.filter(function (p) {
@@ -1487,6 +1394,7 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		}
 
+		body.updateTime = Math.round((new Date()).getTime() / 1000);
 		body.data = packets;
 
 		return {
@@ -1496,29 +1404,20 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.Zniffer = function() {
-		self = this,
-			packets = [],
-			body = {
+		var body = {
 				"code": 200,
 				"message": "200 OK",
 				"updateTime": null,
 				"data": []
 			};
 
-		packets = packets.concat(iPacketBuffer.packets, oPacketBuffer.packets);
-
-		packets = _.filter(packets, function(p){
+		// TODO(!!!) may be report only updates since last body.updateTime ?
+		body.data = _.filter(self.parsedPackets.get(), function(p) {
 			return p.id > ((new Date()).getTime() - 10000);
 		});
 
-		if (packets.length > 0) {
-
-			body.updateTime = Math.round((new Date()).getTime()/1000);
-
-			packets = _.sortBy(packets, function(o) {return o.id});
-		}
-
-		body.data = packets;
+		body.updateTime = Math.round((new Date()).getTime() / 1000);
+		body.data.reverse(); // newer on top
 
 		return {
 			status: 200,
