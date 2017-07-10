@@ -936,8 +936,6 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".ExpertConfigUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CallForAllNIF", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CheckAllLinks", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-	ws.allowExternalAccess(_name + ".ZWaveDeviceInfoUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -974,8 +972,6 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".ExpertConfigUpdate");
 	ws.revokeExternalAccess(_name + ".CallForAllNIF");
 	ws.revokeExternalAccess(_name + ".CheckAllLinks");
-	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoGet");
-	ws.revokeExternalAccess(_name + ".ZWaveDeviceInfoUpdate");
 	ws.revokeExternalAccess(_name + ".sendZwayReport");
 	ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
@@ -2512,130 +2508,6 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		} catch (e) {
 			return { status: 500, body: e.toString() };
-		}
-
-		return reply;
-	};
-
-	this.ZWaveAPI.ZWaveDeviceInfoGet = function(url, request) {
-		var reply = {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "close"
-				},
-				body: null
-			},
-			l = ['en','de'],  //this.controller.availableLang
-			devInfo = {},
-			reqObj = !request.query? undefined : parseToObject(request.query);
-
-		try {
-
-			devID = reqObj && reqObj.id? reqObj.id : null;
-			language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1? reqObj.lang : 'en';
-
-			if (reqObj && reqObj.lang && l.indexOf(reqObj.lang) === -1) {
-				reply.message = 'Language not found. English is used instead.';
-			}
-
-			devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
-
-
-			if (devInfo === null) {
-				reply.status = 404;
-				reply.message = 'No list of Z-Wave devices found. Please try to download them first.';
-			} else {
-				reply.body = devInfo;
-
-				if (!!devID) {
-					reply.body = _.find(devInfo.zwave_devices, function(dev) {
-						return dev['Product_Code'] === devID;
-					});
-
-					if (!reply.body) {
-					   reply.status = 404;
-					   reply.message = 'No ZWave devices found. Please try to download them first.';
-					   reply.body = null;
-					}
-				}
-			}
-		} catch (e) {
-			reply.status = 500;
-			reply.message = 'Something went wrong:' + e.message;
-		}
-
-		return reply;
-	};
-
-	this.ZWaveAPI.ZWaveDeviceInfoUpdate = function() {
-		var self = this,
-			result = [],
-			l = ['en','de'],  //this.controller.availableLang,
-			reply = {
-				status: 500,
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "close"
-				},
-				body: null
-			},
-			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
-
-		try {
-			// update postfix JSON
-			l.forEach(function(lang) {
-				var obj = {},
-					blub = {
-						updateTime: '',
-						zwave_devices: []
-					};
-
-				obj[lang] = false;
-
-				http.request({
-					url: "http://manuals-backend.z-wave.info/make.php?lang=" + lang + "&mode=ui_devices",
-					async: true,
-					success: function(res) {
-						if (res.data) {
-							data = parseToObject(res.data);
-							blub.updateTime = (new Date()).getTime();
-
-							for (index in data) {
-								blub.zwave_devices.push(data[index]);
-							}
-
-							saveObject(lang +'.devices.json', blub);
-							obj[lang] = true;
-						}
-
-						result.push(obj);
-					},
-					error: function() {
-						console.log('ZWave device list for lang:' + lang + ' not found.');
-						result.push(obj);
-					}
-				});
-			});
-
-			while (result.length < l.length && (new Date()).valueOf() < delay) {
-				processPendingCallbacks();
-			}
-
-			if(result) {
-				reply.status = 200;
-				reply.body = result;
-			}
-
-		} catch (e) {
-			console.log('Error has occured during updating the ZWave devices list');
-			reply.message = 'Something went wrong:' + e.message;
 		}
 
 		return reply;
