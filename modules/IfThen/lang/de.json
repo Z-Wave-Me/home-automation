@@ -32,5 +32,7 @@
 	"l_green":"Grün",
 	"l_blue":"Blau",
 	"colors":"Farben",
-	"h_color":"Wählen Sie einen Wert von 0 - 255"
+	"h_color":"Wählen Sie einen Wert von 0 - 255",
+	"l_sendAction":"Sende kein 'An' Kommando, wenn das Gerät bereits aktiviert ist. Das Gleiche gilt für 'Aus'.",
+	"h_sendAction":"Verhindert überflüssige Befehle im Netzwerk."
 }

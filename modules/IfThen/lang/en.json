@@ -33,5 +33,7 @@
 	"l_green":"Green",
 	"l_blue":"Blue",
 	"colors":"Colors",
-	"h_color":"Choose a value from 0 - 255"
+	"h_color":"Choose a value from 0 - 255",
+	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
+	"h_sendAction":"Need to avoid flooding the network."
 }
