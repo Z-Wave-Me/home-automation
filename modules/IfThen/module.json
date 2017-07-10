@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName": "IfThen",
-	"version": "2.4.1",
+	"version": "2.5.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -199,6 +199,11 @@
 									"type": "integer",
 									"enum": ["off", "on"],
 									"required": true
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						},
@@ -223,6 +228,11 @@
 									"minimum": 0,
 									"maximum": 99,
 									"required": true
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						},
@@ -240,6 +250,11 @@
 									"type": "integer",
 									"enum": ["close", "open"],
 									"required": true
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						},
@@ -313,6 +328,11 @@
 										26.5,
 										27
 									]
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						},
@@ -355,6 +375,11 @@
 											"required": true
 										}
 									}
+								},
+								"sendAction": {
+									"type": "boolean",
+									"required": true,
+									"default" : false
 								}
 							}
 						}
@@ -559,6 +584,11 @@
 									"status": {
 										"label": "__l_action__",
 										"optionLabels": ["__off__", "__on__"]
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							},
@@ -585,6 +615,11 @@
 										"dependencies": {
 											"status": ["level"]
 										}
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							},
@@ -605,6 +640,11 @@
 									"status": {
 										"label": "__l_action__",
 										"optionLabels": ["__close__", "__open__"]
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							},
@@ -642,6 +682,11 @@
 									"status": {
 										"type":"select",
 										"label": "__l_level__"
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							},
@@ -683,6 +728,11 @@
 												"helper": "__h_color__"
 											}
 										}
+									},
+									"sendAction": {
+										"type": "checkbox",
+										"rightLabel": "__l_sendAction__",
+										"helper": "__h_sendAction__"
 									}
 								}
 							}
