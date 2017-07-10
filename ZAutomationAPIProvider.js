@@ -171,6 +171,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         this.router.get("/system/zwave/deviceInfoGet",this.ROLE.ADMIN, this.zwaveDeviceInfoGet);
         this.router.get("/system/zwave/deviceInfoUpdate",this.ROLE.ADMIN, this.zwaveDeviceInfoUpdate);
+        this.router.get("/system/zwave/vendorsInfoGet",this.ROLE.ADMIN, this.zwaveVendorsInfoGet);
+        this.router.get("/system/zwave/vendorsInfoUpdate",this.ROLE.ADMIN, this.zwaveVendorsInfoUpdate);
 
         this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
     },
@@ -3616,7 +3618,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                     if (!reply.data) {
                         reply.code = 404;
-                        reply.error = 'No ZWave devices found. Please try to download them first.';
+                        reply.error = 'No Z-Wave device with ' + devID +  ' found.';
                         reply.data = null;
                     }
                 }
@@ -3668,7 +3670,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         result.push(obj);
                     },
                     error: function() {
-                        self.controller.addNotification('ZWave device list for lang:' + lang + ' not found.');
+                        self.controller.addNotification('Z-Wave device list for lang:' + lang + ' not found.');
                         result.push(obj);
                     }
                 });
@@ -3684,7 +3686,103 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
         } catch (e) {
-            this.controller.addNotification('Error has occured during updating the ZWave devices list');
+            this.controller.addNotification('Error has occured during updating the Z-Wave devices list');
+            reply.error = 'Something went wrong:' + e.message;
+        }
+
+        return reply;
+    },
+    zwaveVendorsInfoGet: function() {
+        var reply = {
+                error: null,
+                code: 500,
+                data: null
+            },
+            devInfo = {},
+            reqObj = !this.req.query? undefined : parseToObject(this.req.query);
+
+        try {
+
+            vendorID = reqObj && reqObj.id? reqObj.id : null;
+
+            devInfo = loadObject('zwave_vendors.json');
+
+            if (devInfo === null) {
+                reply.code = 404;
+                reply.error = 'No list of Z-Wave vendors found. Please try to download them first.';
+            } else {
+                reply.data = devInfo;
+                reply.code = 200;
+
+                if (devInfo.zwave_vendors[vendorID]) {
+                    reply.data = devInfo.zwave_vendors[vendorID];
+                } else if (reqObj.id) {
+                    reply.code = 404;
+                    reply.error = 'No Z-Wave vendor with id "' + vendorID +  '" found.';
+                    reply.data = null;
+                }
+            }
+        } catch (e) {
+            reply.error = 'Something went wrong:' + e.message;
+        }
+
+        return reply;
+    },
+    zwaveVendorsInfoUpdate: function() {
+        var self = this,
+            result = 'in progress',
+            reply = {
+                error: null,
+                code: 500,
+                data: null
+            },
+            delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+
+        try {
+            // update postfix JSON
+            var list = {
+                    updateTime: '',
+                    zwave_vendors: {}
+                };
+
+            http.request({
+                url: "http://manuals-backend.z-wave.info/make.php?mode=brand",
+                async: true,
+                success: function(res) {
+                    if (res.data) {
+                        list.updateTime = (new Date()).getTime();
+                        list.zwave_vendors = parseToObject(res.data);
+
+                        saveObject('zwave_vendors.json', list);
+
+                        result = 'done';
+
+                        reply.code = 200;
+                        reply.data = list;
+                    }
+                },
+                error: function(e) {
+                    var msg = 'Z-Wave vendors list could not be updated. Error: ' +e.toString();
+                    self.controller.addNotification(msg);
+
+                    result = 'failed';
+
+                    reply.code = e.status;
+                    reply.error = msg;
+                    reply.data = e.data;
+                }
+            });
+
+            while (result === 'in progress' && (new Date()).valueOf() < delay) {
+                processPendingCallbacks();
+            }
+
+            if(result === 'in progress') {
+                result = 'failed';
+            }
+
+        } catch (e) {
+            this.controller.addNotification('Error has occured during updating the Z-Wave devices list');
             reply.error = 'Something went wrong:' + e.message;
         }
 
