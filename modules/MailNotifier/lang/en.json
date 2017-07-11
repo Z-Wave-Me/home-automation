@@ -1,0 +1,12 @@
+{
+  "m_title": "E-mail ME",
+  "m_descr": "This app allows you to send notifications by e-mail. <br/> A virtual device is generated, that will send you an e-mail to the deposited adress with each command 'on'.<br/> With the checkbox you are able to hide the widget in elements view.",
+  "rl_hidden":"Hide the created widget on elements view.",
+  "l_mail_message":"Message",
+  "h_mail_message":"Content of the E-Mail.",
+  "l_mail_to": "Mail Address",
+  "h_mail_to": "The mail address, that should receive the notifications.",
+  "subject": "Z-Way Notification",
+  "l_subject": "Subject",
+  "h_subject": "The subject of the E-Mail."
+}
