@@ -175,7 +175,7 @@ ZWave.prototype.init = function (config) {
 		100, // check it every 100 packets
 		10000, // save up to 10000 packets
 		function(element) { // save last day only
-			return element.updateTime > ((new Date()).getTime() - 86400);
+			return element.updateTime > ((new Date()).getTime()/1000 - 86400);
 		}
 	);
 
