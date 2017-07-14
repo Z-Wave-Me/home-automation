@@ -119,3 +119,11 @@ AutomationModule.prototype.getInstanceTitle = function () {
 
     return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : this.constructor.name + ' ' + instanceId;
 };
+
+AutomationModule.prototype.loadModuleLang = function () {
+    this.controller.loadModuleLang(this.getName());
+};
+
+AutomationModule.prototype.addNotification = function (severity, message, type) {
+    this.controller.addNotification(severity, message, type, this.getName());
+};

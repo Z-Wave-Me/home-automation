@@ -1023,14 +1023,14 @@ ZWave.prototype.defineHandlers = function () {
 
 			res = formRequest.send(formElements, "POST", report_url);
 
-			if(res.status === -1) { //error e.g. no connection to server
-				self.controller.addNotification("error", res.statusText, "module", self.id);
+			if (res.status === -1) { //error e.g. no connection to server
+				self.addNotification("error", res.statusText, "module");
 			} else {
 				if(res.status === 200) {
 					ret = true;
-					self.controller.addNotification("info", res.data.message, "module", self.id);
+					self.addNotification("info", res.data.message, "module");
 				} else {
-					self.controller.addNotification("error", res.data.message, "module", self.id);
+					self.addNotification("error", res.data.message, "module");
 				}
 			}
 
@@ -3091,15 +3091,14 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-		moduleName = this.getName(),
-		langFile = this.controller.loadModuleLang(moduleName);
+		langFile = this.loadModuleLang();
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			self.controller.addNotification("error", langFile.err_connct + values, "connection", moduleName);
+			self.addNotification("error", langFile.err_connct + values, "connection");
 		}
 	} else {
-		self.controller.addNotification("notification", langFile.dev_btl + values, "connection", moduleName);
+		self.addNotification("notification", langFile.dev_btl + values, "connection");
 	}
 };
 
@@ -4997,19 +4996,16 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
 				if (this.value) {
-					var moduleName = self.getName(),
-						langFile = self.controller.loadModuleLang(moduleName);
-					
-					self.controller.addNotification("error", langFile.err_reset + nodeId, "connection", moduleName);
+					var langFile = self.loadModuleLang();
+					self.addNotification("error", langFile.err_reset + nodeId, "connection");
 				}
 			});
 		}
 	} catch (e) {
-		var moduleName = this.getName(),
-			langFile = this.controller.loadModuleLang(moduleName),
+		var langFile = this.loadModuleLang(),
 			values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
-		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
+		this.addNotification("error", langFile.err_dev_create + values, "core");
 		console.log(e.stack);
 	}
 };
