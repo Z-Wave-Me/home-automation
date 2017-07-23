@@ -393,9 +393,11 @@ ZWave.prototype.CommunicationLogger = function() {
 	var self = this,
 		zway = this.zway;
 
-	var inH = function () {
+	var inH = function (type) {
 		var data = this;
-
+		
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		
 		// save the packet as it is
 		data.direction = "input";
 		self.originPackets.push(data);
@@ -406,9 +408,11 @@ ZWave.prototype.CommunicationLogger = function() {
 		self.parsedPackets.push(data);
 	};
 
-	var outH = function () {
+	var outH = function (type) {
 		var data = this;
-
+		
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		
 		data.direction = "output";
 		self.originPackets.push(data);
 
@@ -1433,6 +1437,10 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.PacketLog = function() {
+		var packets = self.loadObject('originPackets.json');
+		
+		packets = _.isNull(packets) ? self.originPackets.get() : packets.concat(self.originPackets.get());
+		
 		return {
 			status: 200,
 			headers: {
@@ -1446,7 +1454,7 @@ ZWave.prototype.defineHandlers = function () {
 				"code": 200,
 				"message": "200 OK",
 				"updateTime": Math.round((new Date()).getTime() / 1000),
-				data: self.loadObject('originPackets.json')
+				data: packets
 			}
 		};
 	};
@@ -2478,7 +2486,7 @@ ZWave.prototype.defineHandlers = function () {
 		// timeout for reorg interval
 		reorgState.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
 		// load module language keys
-		reorgState.langFile = self.controller.loadModuleLang('ZWave');
+		reorgState.langFile = self.loadModuleLang();
 		// prepare request properties
 		reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
 		reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
@@ -5039,7 +5047,7 @@ ZWave.prototype.lastRSSIData = function() {
 ZWave.prototype.updateRSSIData = function(callback) {
 	var self = this;
 	
-	zway.GetBackgroundRSSI(function() {
+	this.zway.GetBackgroundRSSI(function() {
 		callback(self.lastRSSIData());
 	});
 };

@@ -121,7 +121,7 @@ AutomationModule.prototype.getInstanceTitle = function () {
 };
 
 AutomationModule.prototype.loadModuleLang = function () {
-    this.controller.loadModuleLang(this.getName());
+    return this.controller.loadModuleLang(this.getName());
 };
 
 AutomationModule.prototype.addNotification = function (severity, message, type) {
