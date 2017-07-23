@@ -69,8 +69,7 @@ EnOcean.prototype.init = function (config) {
 
 EnOcean.prototype.startBinding = function () {
 	var self = this,
-		moduleName = "EnOcean",
-		langFile = self.controller.loadModuleLang(moduleName);
+		langFile = self.loadModuleLang();
 
 	try {
 		this.zeno = new EnoceanBinding(this.config.name, this.config.port, {
@@ -87,7 +86,7 @@ EnOcean.prototype.startBinding = function () {
 			throw e1;
 		}
 	} catch(e) {
-		this.controller.addNotification("critical", langFile.err_binding_start + e.toString(), "enocean", moduleName);
+		this.addNotification("critical", langFile.err_binding_start + e.toString(), "enocean");
 		this.zeno = null;
 		return;
 	}
@@ -610,11 +609,10 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySensor("contact", "door", "Door Sensor");
 		}
 	} catch (e) {
-		var moduleName = "EnOcean",
-		langFile = this.controller.loadModuleLang(moduleName),
-	   	values = nodeId + ": " + e.toString();
+		var langFile = this.loadModuleLang(),
+			values = nodeId + ": " + e.toString();
 			
-		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
+		this.addNotification("error", langFile.err_dev_create + values, "core");
 		console.log(e.stack);
 	}
 };

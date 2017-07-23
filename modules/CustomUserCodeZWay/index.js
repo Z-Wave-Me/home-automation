@@ -46,10 +46,9 @@ CustomUserCodeZWay.prototype.init = function (config) {
         //try {
             executeJS(self.config.customCodeOnLoad);
         //} catch (e) {
-        //      var  moduleName = "CustomUserCodeZWay",
-        //           langFile = self.controller.loadModuleLang(moduleName);
+        //    var langFile = this.loadModuleLang();
         //           
-        //    controller.addNotification("warning", langFile.err_load, "module", moduleName);
+        //    this.addNotification("warning", langFile.err_load, "module");
         //}
     };
 
@@ -64,10 +63,9 @@ CustomUserCodeZWay.prototype.init = function (config) {
         //try {
             executeJS(self.config.customCodeOnUnload);
         //} catch (e) {
-        //      var  moduleName = "CustomUserCodeZWay",
-        //           langFile = self.controller.loadModuleLang(moduleName);
+        //    var langFile = this.loadModuleLang();
         //           
-        //    controller.addNotification("warning", langFile.err_load, "module", moduleName);
+        //    this.addNotification("warning", langFile.err_load, "module");
         //}
     };
 

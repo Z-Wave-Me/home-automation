@@ -20,13 +20,12 @@ _module = CloudBackup;
 CloudBackup.prototype.init = function(config) {
     CloudBackup.super_.prototype.init.call(this, config);
 
-    this.moduleName = "CloudBackup";
     this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate";
     this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate";
     this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate";
 
     var self = this,
-        langFile = self.controller.loadModuleLang(this.moduleName);
+        langFile = self.loadModuleLang();
 
     // load remote_id
     try {
@@ -77,13 +76,13 @@ CloudBackup.prototype.init = function(config) {
                 res = formRequest.send(formElements, "POST", self.backupcreate_url);
 
                 if(res.status === -1) { //error e.g. no connection to server
-                    self.controller.addNotification("error", res.statusText, "module", self.moduleName);
+                    self.addNotification("error", res.statusText, "module");
                 } else {
                     if(res.status === 200) {
                         ret = true;
-                        self.controller.addNotification("info", res.data.message, "module", self.moduleName);
+                        self.addNotification("info", res.data.message, "module");
                     } else {
-                        self.controller.addNotification("error", res.data.message, "module", self.moduleName);
+                        self.addNotification("error", res.data.message, "module");
                     }
                 }
 
@@ -201,9 +200,9 @@ CloudBackup.prototype.userCreate = function() {
 
     /*if(res.data.status === 200) {
         self.config.user_active = true
-        self.controller.addNotification("info", res.data.message, "core", this.moduleName);
+        self.addNotification("info", res.data.message, "core");
     } else {
-        self.controller.addNotification("error", res.data.message, "core", this.moduleName);
+        self.addNotification("error", res.data.message, "core");
     }*/
 };
 
@@ -237,10 +236,10 @@ CloudBackup.prototype.userUpdate = function() {
     }
     /*if(res.data.status === 200) {
         console.log(res.data.message);
-        //self.controller.addNotification("info", "User update "+res.data.message, "core", this.moduleName);
+        //self.addNotification("info", "User update "+res.data.message, "core");
     } else {
         console.log(res.data.message);
-        //self.controller.addNotification("error", res.data.message, "core", this.moduleName);
+        //self.addNotification("error", res.data.message, "core");
     }*/
 };
 

@@ -68,7 +68,7 @@ BatteryPolling.prototype.init = function (config) {
         self.vDev.set("metrics:level", self.minimalBatteryValue());
         if (vDev.get("metrics:level") <= self.config.warningLevel) {
             var values = vDev.get("metrics:title"),
-                langFile = self.controller.loadModuleLang("BatteryPolling");
+                langFile = self.loadModuleLang();
                 
             self.controller.addNotification("warning", langFile.warning + values, "battery", self.vDev.get(id));
         }

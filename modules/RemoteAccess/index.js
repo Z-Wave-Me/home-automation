@@ -29,7 +29,7 @@ RemoteAccess.prototype.init = function (config) {
     RemoteAccess.super_.prototype.init.call(this, config);
 
     var self = this,
-        langFile = self.controller.loadModuleLang("RemoteAccess");
+        langFile = self.loadModuleLang();
 
     this.path = self.config.path;
     this.zbw = null;
@@ -70,8 +70,8 @@ RemoteAccess.prototype.init = function (config) {
                     clearInterval(self.zbwTimer);
                     self.zbwTimer = undefined;
                     
-                    self.controller.addNotification("warning", langFile.zbw_service_timeout, "module", "RemoteAccess");
-                    self.controller.addNotification("error", langFile.load_zbw_error, "module", "RemoteAccess");
+                    self.addNotification("warning", langFile.zbw_service_timeout, "module");
+                    self.addNotification("error", langFile.load_zbw_error, "module");
                     
                     console.log(langFile.load_zbw_error,'Error:', e.message);
                 }
@@ -112,7 +112,7 @@ RemoteAccess.prototype.init = function (config) {
             clearInterval(self.serviceTimer);
             self.serviceTimer = undefined;
 
-            self.controller.addNotification("warning", langFile.zbw_service_timeout, "module", "RemoteAccess");
+            self.addNotification("warning", langFile.zbw_service_timeout, "module");
         }
     };
 
@@ -150,7 +150,7 @@ RemoteAccess.prototype.startRemoteAccess = function (config, zbw, langFile) {
             self.config.sshStatus = zbw.getSshStatus();
             self.config.zbwStatus = zbw.getStatus();
         } catch(e) {
-            self.controller.addNotification("warning", langFile.setup_config_zbw_error + e.message, "module", "RemoteAccess");
+            self.addNotification("warning", langFile.setup_config_zbw_error + e.message, "module");
         }
     };
 
@@ -196,10 +196,10 @@ RemoteAccess.prototype.startRemoteAccess = function (config, zbw, langFile) {
             }
 
             if(raSshStatus !== self.config.sshStatus || raStatus !== self.config.zbwStatus || password) {
-                self.controller.addNotification("notification", langFile.config_changed_successful, "module", "RemoteAccess");
+                self.addNotification("notification", langFile.config_changed_successful, "module");
             }
         } catch(e) {
-            self.controller.addNotification("error", langFile.config_changed_error + e.message, "module", "RemoteAccess");
+            self.addNotification("error", langFile.config_changed_error + e.message, "module");
         } 
     };  
     

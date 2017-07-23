@@ -74,8 +74,7 @@ OpenWeather.prototype.stop = function () {
 
 OpenWeather.prototype.fetchExtendedWeather = function(instance) {
     var self = instance,
-        moduleName = "OpenWeather",
-        langFile = self.controller.loadModuleLang(moduleName),
+        langFile = self.loadModuleLang(),
         lang = self.controller.defaultLang;
     
     http.request({
@@ -98,11 +97,11 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
                 self.vDev.set("metrics:country", country);
                 self.vDev.set("metrics:flag", flag);
             } catch (e) {
-                self.controller.addNotification("error", langFile.err_parse, "module", moduleName);
+                self.addNotification("error", langFile.err_parse, "module");
             }
         },
         error: function() {
-            self.controller.addNotification("error", langFile.err_fetch, "module", moduleName);
+            self.addNotification("error", langFile.err_fetch, "module");
         }
     });
 };
