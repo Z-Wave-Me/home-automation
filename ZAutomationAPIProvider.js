@@ -1965,6 +1965,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             if (typeof reqObj.data === 'string') {
                 // new .zab files are base64 encoded, while old are not
                 decodeData = Base64.decode(reqObj.data);
+                // to JSON
                 reqObj.data = JSON.parse(decodeData);
             }
 
@@ -1972,8 +1973,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             this.controller.stop();
 
             for (var obj in reqObj.data) {
-                var dontSave = ["__ZWay","__EnOcean","__userModules","notifications","8084AccessTimeout","__userSkins"]; // objects that should be ignored 
-                
+                var dontSave = [
+                    "__ZWay",
+                    "__EnOcean",
+                    "__userModules",
+                    "notifications",
+                    "8084AccessTimeout",
+                    "__userSkins",
+                    "rssidata.json",
+                    "reorgLog",
+                    "incomingPacket.json",
+                    "outgoingPacket.json",
+                    "originPackets.json",
+                    "zway_incomingPacket.json",
+                    "zway_outgoingPacket.json",
+                    "zway_originPackets.json",
+                    "zway_reorgLog",
+                    "zway_rssidata.json",
+                    "de.devices.json",
+                    "en.devices.json",
+                    "zwave_vendors.json",
+                    "history"
+                    ]; // objects that should be ignored
+
                 if (dontSave.indexOf(obj) === -1) {
                     saveObject(obj, reqObj.data[obj]);
                 }
