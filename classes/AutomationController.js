@@ -296,6 +296,10 @@ AutomationController.prototype.stop = function () {
 
     this._loadedSingletons = [];
 
+    // save notifications on automation shut down
+    this.notifications.finalize();
+    this.notifications = null;
+
     // Notify core
     this.emit("core.stop");
 };
@@ -1394,7 +1398,27 @@ AutomationController.prototype.saveNotifications = function () {
 };
 
 AutomationController.prototype.loadNotifications = function () {
-    this.notifications = loadObject("notifications") || [];
+    //this.notifications = loadObject("notifications") || [];
+
+    this.notifications = new LimitedArray(
+        loadObject("notifications") || [],
+        function (arr) {
+            saveObject('notifications', arr);
+        },
+        25, // check it every 25 packets
+        5000, // save up to 5000 packets
+        function (notification){
+            var now = new Date(),
+                startOfDay = now.setHours(0,0,0,0),
+                s_tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6, // fallback for older versions
+                ms_tsSevenDaysBefore = Math.floor(startOfDay) - 86400000*6;
+
+            console.log('---------- all notifications older than 7 days deleted ----------');
+
+            return (notification.id.toString().length <= 10 && notification.id >= s_tsSevenDaysBefore) ||
+                (notification.id.toString().length > 10 && notification.id >= ms_tsSevenDaysBefore);
+        }
+    );
 };
 
 AutomationController.prototype.addNotification = function (severity, message, type, source) {
@@ -1416,7 +1440,7 @@ AutomationController.prototype.addNotification = function (severity, message, ty
     }
 
     this.notifications.push(notice);
-    //this.saveNotifications();
+
     this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
     console.log("Notification:", severity, "(" + type + "):", msg);
 };
@@ -1428,20 +1452,18 @@ AutomationController.prototype.deleteNotifications = function (ts, before, callb
 
     if (ts !== 0) {
         if (before) {
-            newNotificationList = this.notifications.filter(function (notification) {
+            newNotificationList = this.notifications.get().filter(function (notification) {
                 return notification.id >= ts;
             });
             console.log('---------- all notifications before ' + ts + ' deleted ----------');
         } else {
-            newNotificationList = this.notifications.filter(function (notification) {
+            newNotificationList = this.notifications.get().filter(function (notification) {
                 return notification.id !== ts;
             });
             console.log('---------- notification with id ' + ts + ' deleted ----------');
         }
 
-        this.notifications = newNotificationList;
-
-        this.saveNotifications();
+        this.notifications.set(newNotificationList);
 
         if (typeof callback === 'function') {
             callback(true);
@@ -1451,11 +1473,9 @@ AutomationController.prototype.deleteNotifications = function (ts, before, callb
 
 AutomationController.prototype.deleteAllRedeemedNotifications = function (callback) {
     try {
-        this.notifications = this.notifications.filter(function(notification) {
+        this.notifications.set(this.notifications.get().filter(function(notification) {
             return !notification.redeemed;
-        });
-
-        this.saveNotifications();
+        }));
 
         if (typeof callback === 'function') {
             callback(true);
@@ -1474,13 +1494,11 @@ AutomationController.prototype.redeemNotification = function (id, redeemed, call
         id = id || 0;
 
     if (id > 0) {
-        this.notifications.forEach(function(notification) {
+        this.notifications.set(this.notifications.get().forEach(function(notification) {
             if (notification.id === id) {
                 notification.redeemed = r;
             }
-        });
-
-        this.saveNotifications();
+        }));
 
         if (typeof callback === 'function') {
             callback(true);
@@ -1492,13 +1510,11 @@ AutomationController.prototype.redeemAllNotifications = function (redeemed, call
     var r = redeemed || true;
 
     try {
-        this.notifications.forEach(function(notification) {
+        this.notifications.set(this.notifications.get().forEach(function(notification) {
             if (!notification.redeemed) {
                 notification.redeemed = r;
             }
-        });
-
-        this.saveNotifications();
+        }));
 
         if (typeof callback === 'function') {
             callback(true);
@@ -1631,13 +1647,13 @@ AutomationController.prototype.listNotifications = function (since, to) {
     since = parseInt(since) || 0;
     to = parseInt(to) || Math.floor(now.getTime() /1000);
 
-    return this.notifications.filter(function (notification) {
+    return this.notifications.get().filter(function (notification) {
         return notification.id >= since && notification.id <= to;
     });
 };
 
 AutomationController.prototype.getNotification = function (id) {
-    var filteredNotifications = this.notifications.filter(function (notification) {
+    var filteredNotifications = this.notifications.get().filter(function (notification) {
         return parseInt(notification.id) === parseInt(id);
     });
 
@@ -1645,16 +1661,16 @@ AutomationController.prototype.getNotification = function (id) {
 };
 
 AutomationController.prototype.updateNotification = function (id, object, callback) {
-    var filteredNotifications = _.find(this.notifications, function (notification) {
+    var filteredNotifications = _.find(this.notifications.get(), function (notification) {
             return parseInt(notification.id) === parseInt(id);
         }),
-        index = this.notifications.indexOf(filteredNotifications);
+        index = this.notifications.get().indexOf(filteredNotifications);
 
     if (object.hasOwnProperty('redeemed')) {
-        this.notifications[index].redeemed = object.redeemed;
-        this.saveNotifications();
+        this.notifications.get()[index].redeemed = object.redeemed;
+        
         if (typeof callback === 'function') {
-            callback(this.notifications[index]);
+            callback(this.notifications.get()[index]);
         }
     } else {
         if (typeof callback === 'function') {

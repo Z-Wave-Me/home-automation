@@ -448,7 +448,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         if (notificationId) {
 
-            notification = this.controller.notifications.filter(function (notification) {
+            notification = this.controller.notifications.get().filter(function (notification) {
                 return notification.id === notificationId && // filter by id
                         test(notification); // check against 2nd filter
             });
@@ -461,7 +461,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
         } else {
-            notifications = this.controller.notifications.filter(function (notification) {
+            notifications = this.controller.notifications.get().filter(function (notification) {
                 return  notification.id >= since && notification.id <= to && // filter by time
                         test(notification); // check against 2nd filter
             });

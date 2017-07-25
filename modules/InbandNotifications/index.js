@@ -31,24 +31,6 @@ _module = InbandNotifications;
 InbandNotifications.prototype.init = function (config) {
     InbandNotifications.super_.prototype.init.call(this, config);
 
-    // add cron schedule every day
-    this.controller.emit("cron.addTask", "inbandNotifierDeleteNotifications.poll", {
-        minute: 0,
-        hour: 0,
-        weekDay: [0,6,1],
-        day: null,
-        month: null
-    });
-
-    // add cron schedule every day
-    this.controller.emit("cron.addTask", "inbandNotifierSaveNotifications.poll", {
-        minute: 0,
-        hour: [0,23,1],
-        weekDay: null,
-        day: null,
-        month: null
-    });
-
     var self = this,
         lastChanges = [];
 
@@ -176,49 +158,14 @@ InbandNotifications.prototype.init = function (config) {
         }     
     };
 
-    this.onPollDeleteNotifications = function () {
-
-        var now = new Date(),
-            startOfDay = now.setHours(0,0,0,0),
-            s_tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6, // fallback for older versions
-            ms_tsSevenDaysBefore = Math.floor(startOfDay) - 86400000*6;
-
-        self.controller.notifications = _.filter(self.controller.notifications, function (n) {
-           return (n.id.toString().length <= 10 && n.id >= s_tsSevenDaysBefore) ||
-                    (n.id.toString().length > 10 && n.id >= ms_tsSevenDaysBefore);
-        });
-
-        console.log('---------- all notifications older than 7 days deleted ----------');
-
-        self.controller.saveNotifications();
-    };
-
-    this.onPollSaveNotifications = function () {
-        self.controller.saveNotifications();
-    };
-
     // Setup metric update event listener
     self.controller.devices.on('change:metrics:level', self.writeNotification);
-    
-    self.controller.on("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
-    self.controller.on("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
-
-    //initial cleanup of all notifications
-    self.onPollDeleteNotifications();
-    // initial saving of notifications
-    self.controller.saveNotifications();
 };
 
 InbandNotifications.prototype.stop = function () {
     var self = this;       
 
     self.controller.devices.off('change:metrics:level', self.writeNotification);
-    
-    self.controller.emit("cron.removeTask", "inbandNotifierDeleteNotifications.poll");
-    self.controller.off("inbandNotifierDeleteNotifications.poll", this.onPollDeleteNotifications);
-    
-    self.controller.emit("cron.removeTask", "inbandNotifierSaveNotifications.poll");
-    self.controller.off("inbandNotifierSaveNotifications.poll", this.onPollSaveNotifications);
 
     InbandNotifications.super_.prototype.stop.call(this);
 };
@@ -226,19 +173,3 @@ InbandNotifications.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
-
-InbandNotifications.prototype.deviceCollector = function(deviceType){
-    var allDevices = this.controller.devices,
-        filteredDevices = [];
-    
-    if(deviceType === 'all'){
-        return allDevices;
-    } else {   
-        
-        filteredDevices = allDevices.filter(function (vDev){
-            return vDev.get('deviceType') === deviceType;
-        });        
-
-        return filteredDevices;  
-    }      
-};
