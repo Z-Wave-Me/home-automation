@@ -153,32 +153,6 @@ ZWave.prototype.init = function (config) {
 
 	this.cmdClasses = this.loadModuleJSON("cmd_classes.json").zw_classes.cmd_class;
 
-	// store parsed incoming and outgoing packets (for Zniffer)
-	this.parsedPackets = new LimitedArray(
-		self.loadObject("parsedPackets.json"),
-		function(arr) {
-			self.saveObject("parsedPackets.json", arr);
-		},
-		100, // check it every 100 packets
-		10000, // save up to 10000 packets
-		function(element) { // save last day only
-			return element.id > ((new Date()).getTime() - 86400*1000);
-		}
-	);
-
-	// store incoming and outgoing packets as they are (for PacketLog)
-	this.originPackets = new LimitedArray(
-		self.loadObject("originPackets.json"),
-		function(arr) {
-			self.saveObject("originPackets.json", arr);
-		},
-		100, // check it every 100 packets
-		10000, // save up to 10000 packets
-		function(element) { // save last day only
-			return element.updateTime > ((new Date()).getTime() - 86400);
-		}
-	);
-
 	// select custompostfix.json
 	var custom_postfix = loadObject("custompostfix.json");
 
@@ -206,21 +180,12 @@ ZWave.prototype.init = function (config) {
 		this.postfix.fixes = pfixes;
 	}
 
+	this.restartBindingCounter = 0;
+	
 	this.startBinding();
 	if (!this.zway) {
 		return;
 	}
-
-	// do license check if controller type CIT
-	if (zway.controller.data.manufacturerId.value === 797 &&
-		zway.controller.data.manufacturerProductType.value === 257 &&
-		zway.controller.data.manufacturerProductId.value === 1) {
-		// check if the controller license is still up to date
-		// and set update timer
-		this.certXFCheck();
-	}
-
-	this.refreshStatisticsPeriodically();
 
 	this._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
 		if (zwayName === self.config.name && self.zway) {
@@ -254,17 +219,18 @@ ZWave.prototype.startBinding = function () {
 			this.zway.discover();
 		} catch (e1) {
 			this.zway.stop();
-			throw e1;
+			this.tryRestartLater(e1);
+			return;
 		}
 	} catch(e) {
-		var moduleName = this.getName(),
-			langFile = self.controller.loadModuleLang(moduleName);
-		
-		this.controller.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave", moduleName);
 		this.zway = null;
+		this.tryRestartLater(e);
 		return;
 	}
 
+	// started
+	this.restartBindingCounter = 0;
+	
 	this.fastAccess = false;
 	if (!global.zway) {
 		// this is the first zway - make fast shortcut
@@ -301,6 +267,43 @@ ZWave.prototype.startBinding = function () {
 		this.gateDevicesStart();
 	}
 
+	// store parsed incoming and outgoing packets (for Zniffer)
+	this.parsedPackets = new LimitedArray(
+		self.loadObject("parsedPackets.json"),
+		function(arr) {
+			self.saveObject("parsedPackets.json", arr);
+		},
+		100, // check it every 100 packets
+		10000, // save up to 10000 packets
+		function(element) { // save last day only
+			return element.id > ((new Date()).getTime() - 86400*1000);
+		}
+	);
+	
+	// store incoming and outgoing packets as they are (for PacketLog)
+	this.originPackets = new LimitedArray(
+		self.loadObject("originPackets.json"),
+		function(arr) {
+			self.saveObject("originPackets.json", arr);
+		},
+		100, // check it every 100 packets
+		10000, // save up to 10000 packets
+		function(element) { // save last day only
+			return element.updateTime > ((new Date()).getTime()/1000 - 86400);
+		}
+	);
+
+	// do license check if controller type CIT
+	if (this.zway.controller.data.manufacturerId.value === 797 &&
+		this.zway.controller.data.manufacturerProductType.value === 257 &&
+		this.zway.controller.data.manufacturerProductId.value === 1) {
+		// check if the controller license is still up to date
+		// and set update timer
+		this.certXFCheck();
+	}
+
+	this.refreshStatisticsPeriodically();
+
 	this.CommunicationLogger();
 };
 
@@ -308,33 +311,13 @@ ZWave.prototype.stop = function () {
 	console.log("--- ZWave.stop()");
 	ZWave.super_.prototype.stop.call(this);
 
-	this.originPackets.finalize();
-	this.originPackets = null;
-	this.parsedPackets.finalize();
-	this.parsedPackets = null;
-
 	this.stopBinding();
-
-	if (this.rssiTimer) clearInterval(this.rssiTimer);
-
-	// do license check if controller type CIT and stop polling routine
-	if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
-		zway.controller.data.manufacturerProductType.value === 257 &&
-		zway.controller.data.manufacturerProductId.value === 1) {
-		this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
-		this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
-	}
 
 	if (this._dataBind) {
 		this.controller.off("ZWave.dataBind", this._dataBind);
 	}
 	if (this._dataUnbind) {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
-	}
-
-	if (this.statisticsInterval) {
-		clearInterval(this.statisticsInterval);
-		this.statisticsInterval = undefined;
 	}
 };
 
@@ -359,9 +342,35 @@ ZWave.prototype.stopBinding = function () {
 	if (this.config.enableAPI !== false) {
 		this.externalAPIRevoke(this.config.name);
 	}
+	
 	if (global.ZWave) {
 		delete global.ZWave[this.config.name];
 		this.updateList();
+	}
+	
+	// clear statistics of packets
+	this.originPackets.finalize();
+	this.originPackets = null;
+	this.parsedPackets.finalize();
+	this.parsedPackets = null;
+
+	// clear timers
+	if (this.rssiTimer) {
+		clearInterval(this.rssiTimer);
+		this.rssiTimer = undefined;
+	}
+
+	if (this.statisticsInterval) {
+		clearInterval(this.statisticsInterval);
+		this.statisticsInterval = undefined;
+	}
+
+	// do license check if controller type CIT and stop polling routine
+	if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
+		zway.controller.data.manufacturerProductType.value === 257 &&
+		zway.controller.data.manufacturerProductId.value === 1) {
+		this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
+		this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
 	}
 
 	this.stopped = true;
@@ -375,17 +384,34 @@ ZWave.prototype.stopBinding = function () {
 	}
 };
 
+ZWave.prototype.tryRestartLater = function (e) {
+	var delay = 10;
+	
+	if (this.restartBindingCounter < 5) {
+		var self = this;
+
+		console.log("Trying to restart Z-Wave binding in " + delay + " seconds");
+		this.restartBindingCounter++;
+
+		setTimeout(function() {
+			// retry open after N seconds
+			console.log("Restarting Z-Wave binding");
+			self.startBinding();
+		}, delay * 1000);
+		
+	} else {
+		var langFile = this.loadModuleLang();
+		
+		console.log("Tried " + this.restartBindingCounter + " times without success. Stopping tries.");
+		this.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave");
+	}
+};
+		
 ZWave.prototype.terminating = function () {
 	if (!this.stopped) {
 		console.log("Terminating Z-Wave binding");
 		this.stopBinding();
-
-		var self = this;
-		setTimeout(function() {
-			// retry open after 10 seconds
-			console.log("Restarting Z-Wave binding");
-			self.startBinding();
-		}, 10000);
+		this.tryRestartLater();
 	}
 };
 
@@ -393,9 +419,11 @@ ZWave.prototype.CommunicationLogger = function() {
 	var self = this,
 		zway = this.zway;
 
-	var inH = function () {
+	var inH = function (type) {
 		var data = this;
-
+		
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		
 		// save the packet as it is
 		data.direction = "input";
 		self.originPackets.push(data);
@@ -406,9 +434,11 @@ ZWave.prototype.CommunicationLogger = function() {
 		self.parsedPackets.push(data);
 	};
 
-	var outH = function () {
+	var outH = function (type) {
 		var data = this;
-
+		
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+		
 		data.direction = "output";
 		self.originPackets.push(data);
 
@@ -1019,14 +1049,14 @@ ZWave.prototype.defineHandlers = function () {
 
 			res = formRequest.send(formElements, "POST", report_url);
 
-			if(res.status === -1) { //error e.g. no connection to server
-				self.controller.addNotification("error", res.statusText, "module", self.id);
+			if (res.status === -1) { //error e.g. no connection to server
+				self.addNotification("error", res.statusText, "module");
 			} else {
 				if(res.status === 200) {
 					ret = true;
-					self.controller.addNotification("info", res.data.message, "module", self.id);
+					self.addNotification("info", res.data.message, "module");
 				} else {
-					self.controller.addNotification("error", res.data.message, "module", self.id);
+					self.addNotification("error", res.data.message, "module");
 				}
 			}
 
@@ -1429,6 +1459,10 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.PacketLog = function() {
+		var packets = self.loadObject('originPackets.json');
+		
+		packets = _.isNull(packets) ? self.originPackets.get() : packets.concat(self.originPackets.get());
+		
 		return {
 			status: 200,
 			headers: {
@@ -1442,7 +1476,7 @@ ZWave.prototype.defineHandlers = function () {
 				"code": 200,
 				"message": "200 OK",
 				"updateTime": Math.round((new Date()).getTime() / 1000),
-				data: self.loadObject('originPackets.json')
+				data: packets
 			}
 		};
 	};
@@ -2351,7 +2385,7 @@ ZWave.prototype.defineHandlers = function () {
 		// timeout for reorg interval
 		reorgState.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
 		// load module language keys
-		reorgState.langFile = self.controller.loadModuleLang('ZWave');
+		reorgState.langFile = self.loadModuleLang();
 		// prepare request properties
 		reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
 		reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
@@ -2964,15 +2998,14 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 	var values = nodeId.toString(10),
-		moduleName = this.getName(),
-		langFile = this.controller.loadModuleLang(moduleName);
+		langFile = this.loadModuleLang();
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			self.controller.addNotification("error", langFile.err_connct + values, "connection", moduleName);
+			self.addNotification("error", langFile.err_connct + values, "connection");
 		}
 	} else {
-		self.controller.addNotification("notification", langFile.dev_btl + values, "connection", moduleName);
+		self.addNotification("notification", langFile.dev_btl + values, "connection");
 	}
 };
 
@@ -4882,19 +4915,16 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
 				if (this.value) {
-					var moduleName = self.getName(),
-						langFile = self.controller.loadModuleLang(moduleName);
-					
-					self.controller.addNotification("error", langFile.err_reset + nodeId, "connection", moduleName);
+					var langFile = self.loadModuleLang();
+					self.addNotification("error", langFile.err_reset + nodeId, "connection");
 				}
 			});
 		}
 	} catch (e) {
-		var moduleName = this.getName(),
-			langFile = this.controller.loadModuleLang(moduleName),
+		var langFile = this.loadModuleLang(),
 			values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 			
-		controller.addNotification("error", langFile.err_dev_create + values, "core", moduleName);
+		this.addNotification("error", langFile.err_dev_create + values, "core");
 		console.log(e.stack);
 	}
 };
@@ -4927,8 +4957,8 @@ ZWave.prototype.lastRSSIData = function() {
 
 ZWave.prototype.updateRSSIData = function(callback) {
 	var self = this;
-
-	zway.GetBackgroundRSSI(function() {
+	
+	this.zway.GetBackgroundRSSI(function() {
 		callback(self.lastRSSIData());
 	});
 };

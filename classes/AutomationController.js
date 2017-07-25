@@ -2708,12 +2708,32 @@ AutomationController.prototype.createBackup = function() {
         skins = [],
         result = null;
 
-    var list = loadObject("__storageContent");
+    var list = loadObject("__storageContent"),
+        excludedFiles = [
+            "notifications",
+            "8084AccessTimeout",
+            "expertconfig.json",
+            "rssidata.json",
+            "reorgLog",
+            "incomingPacket.json",
+            "outgoingPacket.json",
+            "originPackets.json",
+            "zway_incomingPacket.json",
+            "zway_outgoingPacket.json",
+            "zway_originPackets.json",
+            "zway_reorgLog",
+            "zway_rssidata.json",
+            "de.devices.json",
+            "en.devices.json",
+            "zwave_vendors.json",
+            "history"
+        ];
 
     try {
         // save all objects in storage
         for (var ind in list) {
-            if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
+            //if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
+            if (excludedFiles.indexOf(list[ind]) === -1) {
                 backupJSON[list[ind]] = loadObject(list[ind]);
             }
         }

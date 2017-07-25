@@ -326,9 +326,8 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
     var vDev = this.controller.devices.get(name);
     
     if (vDev === null) {
-        var moduleName = "SwitchControlGenerator",
-            langFile = this.controller.loadModuleLang(moduleName);
-        this.controller.addNotification("critical", langFile.err, "controller", moduleName);
+        var langFile = this.loadModuleLang();
+        this.addNotification("critical", langFile.err, "controller");
         return;
     }
     

@@ -187,8 +187,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
     var self = this,
         deviceType = vDev.get("deviceType"),
         url = this.config["setter" + action + "_" + deviceType],
-        moduleName = "HTTPDevice",
-        langFile = self.controller.loadModuleLang(moduleName);
+        langFile = self.loadModuleLang();
     
     if (!!url) {
     	if (subst !== null) {
@@ -199,7 +198,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
             method: this.config.method,
             async: true,
             error: function(response) {
-                self.controller.addNotification("error", langFile.err_req + response.statusText, "module", moduleName);
+                self.addNotification("error", langFile.err_req + response.statusText, "module");
             }
         };
         // With Content type

@@ -49,7 +49,7 @@ _.extend(DeviceHistory.prototype, {
         var self = this,
             // define excluded device types
             exclDevTypes = ['battery','text','camera','switchRGBW','sensorMultiline'],
-            langFile = this.controller.loadModuleLang('DeviceHistory');
+            langFile = this.loadModuleLang();
 
         this.history = loadObject('history') || [];
         this.switchHistory = [];
@@ -286,7 +286,7 @@ _.extend(DeviceHistory.prototype, {
             
             } catch(e){
                 console.log("Cannot store history of device '" + dev.get('metrics:title') + "' because:", e.toString());
-                self.controller.addNotification('error', langFile.err_store_history + dev.get('metrics:title') + " ERROR:", e.toString(), 'module', 'DeviceHistory');
+                self.addNotification('error', langFile.err_store_history + dev.get('metrics:title') + " ERROR:", e.toString(), 'module');
             }
         };
 

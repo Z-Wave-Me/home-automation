@@ -202,7 +202,7 @@ SecurityMode.prototype.testRule = function (tree) {
         }
 
         // Send Notification
-        self.controller.addNotification("warning", self.message, "module", "SecurityMode");
+        self.addNotification("warning", self.message, "module");
         self.controller.emit('SecurityMode.alert', self);
 
         tree.action.switches && tree.action.switches.forEach(function(devState) {

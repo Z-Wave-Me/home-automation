@@ -164,8 +164,7 @@ PhilioHW.prototype.roundLED = function() {
 
 PhilioHW.prototype.registerButtons = function(zwayName) {
     var self = this,
-        moduleName = this.getName(),
-        langFile = this.controller.loadModuleLang(moduleName);
+        langFile = this.loadModuleLang();
 
     // get current power state and buttons states
     if (!self.config.no_battery) {
@@ -238,11 +237,11 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
             switch (this.value) {
                 case 0:
-                    global.controller.addNotification("critical", langFile.tamper_triggered, "controller", moduleName);
+                    self.addNotification("critical", langFile.tamper_triggered, "controller");
                     tamperDev.set("metrics:level", "on");
                     break;
                 case 2:
-                    global.controller.addNotification("notification", langFile.tamper_idle, "controller", moduleName);
+                    self.addNotification("notification", langFile.tamper_idle, "controller");
                     tamperDev.set("metrics:level", "off");
                     break;
             }
@@ -307,7 +306,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
     if (!self.config.no_battery) {
         this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryLevel", function(type) {
             if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
-                global.controller.addNotification("notification", langFile.remaining_battery_level + (this.value * 10) + "%", "controller", moduleName);
+                self.addNotification("notification", langFile.remaining_battery_level + (this.value * 10) + "%", "controller");
                 batteryLevelDev.set("metrics:level", (this.value * 10));
             }
         }, "");
@@ -315,14 +314,14 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
         this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.powerFail", function(type) {
             if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
                 if (this.value) {
-                    global.controller.addNotification("critical", langFile.power_failure, "controller", moduleName);
+                    self.addNotification("critical", langFile.power_failure, "controller");
                     powerFailureDev.set("metrics:level", "on");
                     if (self.batteryTimer) clearInterval(self.batteryTimer);
                     self.batteryTimer = setInterval(function() {
                             global.ZWave[zwayName].zway.ZMEPHIGetPower();
                     }, 60*1000);
                 } else {
-                    global.controller.addNotification("notification", langFile.power_recovery, "controller", moduleName);
+                    self.addNotification("notification", langFile.power_recovery, "controller");
                     powerFailureDev.set("metrics:level", "off");
                     if (self.batteryTimer) clearInterval(self.batteryTimer);
                     self.batteryTimer = setInterval(function() {
@@ -335,7 +334,7 @@ PhilioHW.prototype.registerButtons = function(zwayName) {
 
         this.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, "philiohw.batteryFail", function(type) {
             if (this.value) {
-                global.controller.addNotification("critical", langFile.battery_falure, "controller", moduleName);
+                self.addNotification("critical", langFile.battery_falure, "controller");
                 batteryLevelDev.set("metrics:level", 0);
             }
         }, "");
