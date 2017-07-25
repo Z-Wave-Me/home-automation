@@ -3624,7 +3624,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						icon: 'multilevel',
 						title: compileTitle('Color', vDevIdNI),
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
-						level: 'off'
+						level: 'off',
+						oldColor: {}
 					}
 				}
 
@@ -3638,15 +3639,21 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					defaults: defaults,
 					overlay: {},
 					handler:  function (command, args) {
-						var color = {r: 0, g: 0, b: 0};
+						var color = {r: 0, g: 0, b: 0},
+							oldColor = vDev_rgb.get('metrics:oldColor');
 						if (command === "on") {
-							color.r = color.g = color.b = 255;
+							if(!_.isEmpty(oldColor)) {
+								color = oldColor;
+							} else {
+                                color.r = color.g = color.b = 255;
+							}
 						} else if (command === "off") {
 							color.r = color.g = color.b = 0;
 						} else if (command === "exact") {
 							color.r = parseInt(args.red, 10);
 							color.g = parseInt(args.green, 10);
 							color.b = parseInt(args.blue, 10);
+                            vDev_rgb.set('metrics:oldColor', color);
 						}
 						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
 					},
@@ -3684,7 +3691,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							metrics: {
 								icon: 'multilevel',
 								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
-								level: 'off'
+								level: 'off',
+								oldLevel: 'off'
 							}
 						}
 
@@ -3716,7 +3724,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							defaults: defaults,
 							overlay: {},
 							handler: function(command, args) {
-								var newVal;
+								var newVal,
+									oldVal = vDev.get('metircs:level');
+
 								// up, down for Blinds
 								if ("on" === command || "up" === command) {
 									newVal = 255;
@@ -3765,10 +3775,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								}
 
 								if (0 === newVal || !!newVal) {
-									if ("exactSmooth" === command)
-										cc.Set(colorId, newVal, args.duration);
-									else
-										cc.Set(colorId, newVal);
+									if ("exactSmooth" === command) {
+                                        cc.Set(colorId, newVal, args.duration);
+                                    } else {
+                                        cc.Set(colorId, newVal);
+                                    }
+                                    vDev.set('metrics:oldLevel', newVal);
 								}
 							},
 							moduleId: self.id
