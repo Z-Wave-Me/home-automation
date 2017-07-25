@@ -58,6 +58,7 @@ InbandNotifications.prototype.init = function (config) {
                 devType = vDev.get('deviceType'),
                 devProbeType = vDev.get('probeType'),
                 devName = vDev.get('metrics:title'),
+                devLocation = vDev.get('location'),
                 scaleUnit = vDev.get('metrics:scaleTitle'),
                 lvl = vDev.get('metrics:level'),
                 location = vDev.get('location'),
@@ -76,6 +77,13 @@ InbandNotifications.prototype.init = function (config) {
                 };
 
 
+
+            if (devLocation) {
+                var location = self.controller.getLocation(self.controller.locations, devLocation);
+                if (location) {
+                  devName = location.title + ' - ' + devName;
+                }
+            }
 
             if(lastChanges.filter(function(o){
                             return o.id === devId;
