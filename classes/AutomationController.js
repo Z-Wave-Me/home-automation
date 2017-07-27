@@ -1393,10 +1393,6 @@ AutomationController.prototype.clearVdevInfo = function (id) {
     this.saveConfig();
 };
 
-AutomationController.prototype.saveNotifications = function () {
-    saveObject("notifications", this.notifications);
-};
-
 AutomationController.prototype.loadNotifications = function () {
     //this.notifications = loadObject("notifications") || [];
 
@@ -1412,8 +1408,6 @@ AutomationController.prototype.loadNotifications = function () {
                 startOfDay = now.setHours(0,0,0,0),
                 s_tsSevenDaysBefore = Math.floor(startOfDay /1000) - 86400*6, // fallback for older versions
                 ms_tsSevenDaysBefore = Math.floor(startOfDay) - 86400000*6;
-
-            console.log('---------- all notifications older than 7 days deleted ----------');
 
             return (notification.id.toString().length <= 10 && notification.id >= s_tsSevenDaysBefore) ||
                 (notification.id.toString().length > 10 && notification.id >= ms_tsSevenDaysBefore);
