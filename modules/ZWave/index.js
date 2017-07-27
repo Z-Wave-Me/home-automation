@@ -390,12 +390,12 @@ ZWave.prototype.tryRestartLater = function (e) {
 	if (this.restartBindingCounter < 5) {
 		var self = this;
 
-		console.log("Trying to restart Z-Wave binding in " + delay + " seconds");
+		console.log("Trying to restart Z-Wave binding (" + this.config.name + ") in " + delay + " seconds");
 		this.restartBindingCounter++;
 
 		setTimeout(function() {
 			// retry open after N seconds
-			console.log("Restarting Z-Wave binding");
+			console.log("Restarting Z-Wave binding (" + self.config.name + ")");
 			self.startBinding();
 		}, delay * 1000);
 		

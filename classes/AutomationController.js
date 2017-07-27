@@ -1405,8 +1405,8 @@ AutomationController.prototype.loadNotifications = function () {
         function (arr) {
             saveObject('notifications', arr);
         },
-        25, // check it every 25 packets
-        5000, // save up to 5000 packets
+        25, // check it every 25 notifications
+        5000, // save up to 5000 notifications
         function (notification){
             var now = new Date(),
                 startOfDay = now.setHours(0,0,0,0),
