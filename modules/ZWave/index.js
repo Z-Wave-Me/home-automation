@@ -349,10 +349,14 @@ ZWave.prototype.stopBinding = function () {
 	}
 	
 	// clear statistics of packets
-	this.originPackets.finalize();
-	this.originPackets = null;
-	this.parsedPackets.finalize();
-	this.parsedPackets = null;
+	if (this.originPackets) {
+		this.originPackets.finalize();
+		this.originPackets = null;
+	}
+	if (this.parsedPackets) {
+		this.parsedPackets.finalize();
+		this.parsedPackets = null;
+	}
 
 	// clear timers
 	if (this.rssiTimer) {
@@ -459,7 +463,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		this.rssiTimer = setInterval(function() {
 			try {
 				self.updateRSSIData(function(newValue) {
-					var data = self.loadObject("rssidata.json");
+					var data = self.loadObject("rssidata.json") || [];
 					data.push(newValue);
 
 					// remove values older than 24h
