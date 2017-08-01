@@ -219,11 +219,13 @@ ZWave.prototype.startBinding = function () {
 			this.zway.discover();
 		} catch (e1) {
 			this.zway.stop();
+			console.log(e1);
 			this.tryRestartLater(e1);
 			return;
 		}
 	} catch(e) {
 		this.zway = null;
+		console.log(e);
 		this.tryRestartLater(e);
 		return;
 	}
