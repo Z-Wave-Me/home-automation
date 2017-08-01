@@ -1,3 +1,76 @@
+#28.07.2017
+Changes:
+* saving of notifications / z-way data refactored
+  * now manged by LimitedArray Constructor
+  * notifications file will be cleared on startup if > 1MB - this should avoid z-way-server startup problems 
+* enable RSSI check only if implemented
+* ZWave
+  * ZWave module specific files are now per instance
+  * Replaced global vars by local
+  * Better Z-Wave Binding restart code to try 10 times
+  * save old color for switchRGBW in vdev, save old level for switchMultilevel (probeType: switchColor_soft_white, _cold_white, _red, _green, _blue)
+* load Cron as first module, to allow cronjob in ZWave module
+* Update IntelHex2bin.js
+* add app MobileAppSupport as system-app
+* add email.me as system-app
+* loadModuleLang refactored
+* extract unnecessary files from backup file .zab to reduce size
+* remove deprecated saveNotifications() function
+
+Features:
+* Support to show html page placed in folder MODULE_NAME/htdocs. You can open html page MODULE_NAME/htdocs/table.html from address: ZAutomation/api/v1/load/modulemedia/MODULE_NAME/table.html
+* BE support for background room images
+* Utils
+  * internet check added
+  * string to object parser added (and refactored in HA)
+* location added to device-info notifications
+* add periodically update of network statistics data
+* BE support for Drag and Drop
+* BE support for room main sensors (three sensors that can be assigned to room in UI)
+* Modules
+  * Icons and Title name fix for modules which generate vDevs
+* New constructor function LimitedArray added (lib/LimitedArray.js)
+
+Bugfix:
+* memory problems caused by huge amount of data
+* fix zbw inquery #431
+* UZB/RaZ upgrade fixes
+* Fix updates of manufacturerId = 0 (Sigma Designs) products
+* Fixed IntelHex converter
+* Remove QR code update on profile meta data update
+
+ZWaveAPI:
+* PacketLog API added
+
+ZAutomationAPI:
+* add api to control ntp service
+* certfxAuth api added
+* move api's zwaveDeviceInfoGet and zwaveDeviceInfoUpdate out of ZWave module into ZAutomation API
+* vendor db API added
+
+Modules:
+* HTTPDevice
+  * Added fields Content type and Data
+* InbandNotifications
+  * fix undefined scale unit of device info log
+  * fix empty level in device-info notification
+  * expand device events to include default custom icon information
+  * refactored -> remove saving and polling
+* ZWave
+  * inject zway config to ZWaveAPI
+  * expertsettings expanded + API changed
+  * zwaveDeviceInfoGet and zwaveDeviceInfoUpdate API's removed
+* SmartLight
+  * add support for old Z-Wave.Me Dimmers
+* IfThen 2.5.0
+  * Don't send On command, if device is already turned On, similarly for Off
+ 
+CIT
+* authentication added
+* profile management added
+* system/info API adjusted
+* configuration added (ntp, wifi, CIT name, TZ)
+
 # 18.04.2017 v2.3.4
 Changes:
 * NetworkReorganization API refactored
