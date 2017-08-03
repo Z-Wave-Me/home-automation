@@ -219,11 +219,13 @@ ZWave.prototype.startBinding = function () {
 			this.zway.discover();
 		} catch (e1) {
 			this.zway.stop();
+			console.log(e1);
 			this.tryRestartLater(e1);
 			return;
 		}
 	} catch(e) {
 		this.zway = null;
+		console.log(e);
 		this.tryRestartLater(e);
 		return;
 	}
@@ -274,7 +276,7 @@ ZWave.prototype.startBinding = function () {
 			self.saveObject("parsedPackets.json", arr);
 		},
 		100, // check it every 100 packets
-		10000, // save up to 10000 packets
+		5000, // save up to 5000 packets
 		function(element) { // save last day only
 			return element.id > ((new Date()).getTime() - 86400*1000);
 		}
@@ -287,7 +289,7 @@ ZWave.prototype.startBinding = function () {
 			self.saveObject("originPackets.json", arr);
 		},
 		100, // check it every 100 packets
-		10000, // save up to 10000 packets
+		5000, // save up to 5000 packets
 		function(element) { // save last day only
 			return element.updateTime > ((new Date()).getTime()/1000 - 86400);
 		}
@@ -349,10 +351,14 @@ ZWave.prototype.stopBinding = function () {
 	}
 	
 	// clear statistics of packets
-	this.originPackets.finalize();
-	this.originPackets = null;
-	this.parsedPackets.finalize();
-	this.parsedPackets = null;
+	if (this.originPackets) {
+		this.originPackets.finalize();
+		this.originPackets = null;
+	}
+	if (this.parsedPackets) {
+		this.parsedPackets.finalize();
+		this.parsedPackets = null;
+	}
 
 	// clear timers
 	if (this.rssiTimer) {
@@ -426,7 +432,14 @@ ZWave.prototype.CommunicationLogger = function() {
 		
 		// save the packet as it is
 		data.direction = "input";
-		self.originPackets.push(data);
+		self.originPackets.push({
+			"updateTime": data.updateTime,
+			"nodeId": data.nodeId.value,
+			"dstNodeId": data.dstNodeId.value,
+			"RSSI": data.RSSI.value,
+			"frameType": data.frameType.value,
+			"value": data.value
+		});
 
 		data = createIncomingEntry(data);
 		data.id = data.updateTime * 1000 + (new Date).getMilliseconds();
@@ -440,7 +453,22 @@ ZWave.prototype.CommunicationLogger = function() {
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		
 		data.direction = "output";
-		self.originPackets.push(data);
+		self.originPackets.push({
+			"updateTime": data.updateTime,
+			"delivered": data.delivered.value,
+			"deliveryTime": data.deliveryTime.value,
+			"packetLength": data.packetLength.value,
+			"nodeId": data.nodeId.value,
+			"returnRSSI": data.returnRSSI.value,
+			"hops": data.hops.value,
+			"returnChannel": data.returnChannel.value,
+			"txChannel": data.txChannel.value,
+			"speed": data.speed.value,
+			"schemeState": data.schemeState.value,
+			"tries": data.tries.value,
+			"lastFailPath": data.lastFailPath.value,
+			"value": data.value
+		});
 
 		data = createOutgoingEntry(data);
 		data.id = data.updateTime * 1000 + (new Date).getMilliseconds();
@@ -459,7 +487,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		this.rssiTimer = setInterval(function() {
 			try {
 				self.updateRSSIData(function(newValue) {
-					var data = self.loadObject("rssidata.json");
+					var data = self.loadObject("rssidata.json") || [];
 					data.push(newValue);
 
 					// remove values older than 24h
@@ -1376,14 +1404,12 @@ ZWave.prototype.defineHandlers = function () {
 				"updateTime": null,
 				"data": []
 			},
-			packets = self.loadObject('parsedPackets.json'),
+			packets = self.parsedPackets.get(),
 			filterObj = null;
 
 		if (request.query && request.query.filter) {
 			filterObj = typeof request.query.filter === 'string' ? JSON.parse(request.query.filter) : request.query.filter;
 		}
-
-		packets = _.isNull(packets) ? self.parsedPackets.get() : packets.concat(self.parsedPackets.get());
 
 		if(!_.isEmpty(packets)) {
 			if(!_.isNull(filterObj)) {
@@ -1459,10 +1485,6 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.PacketLog = function() {
-		var packets = self.loadObject('originPackets.json');
-		
-		packets = _.isNull(packets) ? self.originPackets.get() : packets.concat(self.originPackets.get());
-		
 		return {
 			status: 200,
 			headers: {
@@ -1476,7 +1498,7 @@ ZWave.prototype.defineHandlers = function () {
 				"code": 200,
 				"message": "200 OK",
 				"updateTime": Math.round((new Date()).getTime() / 1000),
-				data: packets
+				data: self.originPackets.get()
 			}
 		};
 	};
