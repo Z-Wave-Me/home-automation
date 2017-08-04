@@ -1989,7 +1989,8 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 devProbeType = vDev.get('probeType'),
                 devEntry = {
                     deviceId: vDev.id,
-                    deviceName: vDev.get('metrics:title')
+                    deviceName: vDev.get('metrics:title'),
+                    deviceLocationTitle: location.title === 'globalRoom'? '' : location.title
                 },
                 addRemoveEntry = function (entryArr) {
                     var exists = [];
@@ -2006,6 +2007,10 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                         // change existing deviceName
                         if (!_.isEqual(exists[0]['deviceName'], devEntry['deviceName'])) {
                             exists[0]['deviceName'] = devEntry['deviceName'];
+                        }
+                        // change existing deviceLocationTitle
+                        if (!_.isEqual(exists[0]['deviceLocationTitle'], devEntry['deviceLocationTitle'])) {
+                            exists[0]['deviceLocationTitle'] = devEntry['deviceLocationTitle'];
                         }
                     } else if (devStillExists === null || devHidden) {
                         // remove entry
