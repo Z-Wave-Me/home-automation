@@ -3530,7 +3530,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			defaults = {
 				deviceType: "switchBinary",
 				metrics: {
-					icon: 'switch',
+					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
 					title: compileTitle('Switch', vDevIdNI)
 				}
 			};
@@ -3566,13 +3566,26 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}, "value");
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
-			var isMotor = this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value);
+			var icon;
+			var title;
+			var probeType = 'multilevel';
+			if (this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value)) {
+				icon = 'blinds'; // or alternatively window
+				probeType = 'motor';
+				title = compileTitle('Blind', vDevIdNI);
+			} else if (this.zway.devices[nodeId].data.genericType.value === 0x11 && this.zway.devices[nodeId].data.specificType.value == 0x08) {
+				icon = 'fan';
+				title = compileTitle('Fan', vDevIdNI);
+			} else {
+				icon = 'multilevel';
+				title = compileTitle('Dimmer', vDevIdNI);
+			}
 			defaults = {
 				deviceType: "switchMultilevel",
-				probeType: isMotor ? 'motor' : 'multilevel',
+				probeType: probeType,
 				metrics: {
-					icon: isMotor ? 'blinds' : 'multilevel',
-					title: compileTitle(isMotor ? 'Blind' : 'Dimmer', vDevIdNI)
+					icon: icon,
+					title: title,
 				}
 			};
 
