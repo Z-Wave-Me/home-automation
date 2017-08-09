@@ -410,6 +410,9 @@ _.extend(DeviceHistory.prototype, {
         this.controller.emit("cron.removeTask", "saveHistory.poll");
         this.controller.off("saveHistory.poll", self.saveHistory);
 
+        this.controller.devices.off('created', self.addListenerToBinaryVDevs);
+        this.controller.devices.off('removed', self.removeFromDevList);
+
         DeviceHistory.super_.prototype.stop.call(this);
     },
     // ----------------------------------------------------------------------------
