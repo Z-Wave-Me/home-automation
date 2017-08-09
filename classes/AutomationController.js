@@ -1989,8 +1989,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                 devProbeType = vDev.get('probeType'),
                 devEntry = {
                     deviceId: vDev.id,
-                    deviceName: vDev.get('metrics:title'),
-                    deviceLocationTitle: location.title === 'globalRoom'? '' : location.title
+                    deviceName: vDev.get('metrics:title')
                 },
                 addRemoveEntry = function (entryArr) {
                     var exists = [];
@@ -2007,10 +2006,6 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
                         // change existing deviceName
                         if (!_.isEqual(exists[0]['deviceName'], devEntry['deviceName'])) {
                             exists[0]['deviceName'] = devEntry['deviceName'];
-                        }
-                        // change existing deviceLocationTitle
-                        if (!_.isEqual(exists[0]['deviceLocationTitle'], devEntry['deviceLocationTitle'])) {
-                            exists[0]['deviceLocationTitle'] = devEntry['deviceLocationTitle'];
                         }
                     } else if (devStillExists === null || devHidden) {
                         // remove entry
@@ -2183,14 +2178,15 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
     }
 };
 
-AutomationController.prototype.getListNamespaces = function (path, namespacesObj) {
+AutomationController.prototype.getListNamespaces = function (path, namespacesObj, setLocationTitle) {
     var self = this,
         result = [],
         namespaces = namespacesObj,
         path = path || null,
         pathArr = [],
         namespacesPath = '',
-        nspc;
+        nspc,
+        v = setLocationTitle? setLocationTitle : false;
 
     this.getNspcDevAll = function(nspcObj) {
         var devicesAll = [],
@@ -2209,6 +2205,24 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
         }
 
         return devicesAll;
+    };
+
+    // map all entries (deviceName, deviceId)
+    // if deviceName add also location title
+    mapEntries = function (list){
+        // return list of entries
+        return _.map(list, function(entry){
+            var locationTitle = '';
+
+            if (setLocationTitle) {
+                var vDev = self.devices.get(entry.deviceId),
+                    location = self.getLocation(self.locations, vDev.get('location'));
+
+                locationTitle = currPath === 'deviceName' && !!location && location && location.title !== 'globalRoom'? location.title.toUpperCase() + ' - ' : '';
+            }
+
+            return locationTitle + entry[currPath];
+        });
     };
 
     if (!!path && namespaces) {
@@ -2242,15 +2256,13 @@ AutomationController.prototype.getListNamespaces = function (path, namespacesObj
                 } else if (!nspc[currPath] && ~lastPath.indexOf(currPath)) {
                     result = self.getNspcDevAll(nspc);
 
-                    result = result.map(function(entry){
-                        return entry[currPath];
-                    });
+                    result = mapEntries(result);
                 // add backward compatibility
                 } else if (~lastPath.indexOf(currPath)) {
 
                     if (_.isArray(nspc)){
                         // map all device id's or device names
-                        result = _.map(nspc, function(entry) { return entry[currPath] });
+                        result = mapEntries(nspc);
                     }
                 } else if (!nspc[currPath] && nspc['devices_all'] && i < 1) {
                     nspc = nspc['devices_all'];
@@ -2574,7 +2586,7 @@ AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
                         path = flr.substring(id[0].length + 1).replace(/:/gi, '.');
 
                         // get namespaces
-                        nspc = self.getListNamespaces(path, self.namespaces);
+                        nspc = self.getListNamespaces(path, self.namespaces, true);
                         if (nspc) {
                             namespaces = namespaces.concat(nspc);
                         }
