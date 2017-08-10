@@ -3276,7 +3276,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                             });
                         } else {
                             http.request({
-                                url: "https://certxfer.z-wavealliance.org:8443/CITAuth/Auth.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass,
+                                url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Auth.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass),
                                 async: true,
                                 success: function (resp) {
                                     r = parseToObject(resp);
