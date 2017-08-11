@@ -2209,7 +2209,10 @@ ZWave.prototype.defineHandlers = function () {
 					'ssid_name',
 					'currentDateTime',
 					'cit_identifier',
-					'rss'));
+					'rss',
+					'node_positions',
+					'routemap_img'
+				));
 
 				self.saveObject('expertconfig.json', self.expert_config);
 
