@@ -3260,6 +3260,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                                     response = 'done';
 
+                                    if (res.hasOwnProperty('result') && !res.result) {
+                                        _.extend(res, {key: 'cit_initialize_login_failed'});
+                                    }
+
                                     reply.code = r.status;
                                     reply.error = null;
                                     reply.data = res;
@@ -3303,6 +3307,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                                     }
 
                                     response = 'done';
+
+                                    if (res.hasOwnProperty('result') && !res.result) {
+                                        _.extend(res, {key: 'cit_login_failed'});
+                                    }
 
                                     reply.code = r.status;
                                     reply.error = null;

@@ -1,4 +1,21 @@
-#28.07.2017
+#XX.08.2017 v2.3.6
+Changes:
+* show more logs on ZWaveBinding error
+* Refactored PacketLog to make it work faster and take smaller RAM/FLASH
+* add location title in front of device names within module configuration dropdowns
+
+Fixes:
+* fixed LimitedArray class
+
+Modules:
+* DeviceHistory:
+  * remove listeners on stop
+
+CIT:
+* fix missing encodeURI
+* send language keys for failed login feedback
+
+#28.07.2017 v2.3.5
 Changes:
 * saving of notifications / z-way data refactored
   * now manged by LimitedArray Constructor
