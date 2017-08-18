@@ -3,6 +3,105 @@ Changes:
 * show more logs on ZWaveBinding error
 * Refactored PacketLog to make it work faster and take smaller RAM/FLASH
 * add location title in front of device names within module configuration dropdowns
+* postfix.json updated (changed or added):
+  * Popp 10 year smoke detector with siren
+  * Fibaro Door/Window Sensor G5
+  * Popp Thermostat
+  * Philio PST02-5B Motion Sensor
+  * Philio PAT02-5C Flood Sensor
+  * Foxx Project Range Extender
+  * Foxx Project Smart Switch Gen5
+  * WiDom Universal Double Switch
+  * MCO Home Fan Coil Thermostat (4-pipe)
+  * MCO Home Fan Coil Thermostat (2-pipe)
+  * TKB Plug Dimmer French
+  * Fibaro Door/Window Sensor G3
+  * Fibaro Single Switch 2
+  * Fibaro Double Switch 2
+  * NodOn Micro Smart Plug
+  * Aeotec Door/Window Sensor Gen5
+  * Popp Water Sensor
+  * Qubino Dimmerinsert 0-10V
+  * Aeotec Home Energy Meter - Gen5
+  * PAN16 Smart Energy Plug In Switch
+  * Eurotronic Spirit
+  * EVERSPRING ON/OFF Switch/Screw-In
+  * Aeotec Smart Switch 6
+  * Philio Motionsensor
+  * Fibaro Dimmer 2
+  * Aeotec Heavy Duty Switch
+  * MCOHome Thermostat MH7-WH-EU
+  * Aeotec WallMote Quad
+  * POPP Plug Dimmer
+  * Aeotec WallMote Dual
+  * TKB Plug Dimmer German
+  * Fibaro Keyfob
+  * Fibaro Wall Plug FGWPx-102
+  * Fibaro Universalsensor with Binary Input
+  * Popp Wall Plug Switch Outdoor IP44
+  * Popp Flow Stop
+  * Qubino Relay Insert 1*2,3 kW
+  * Vision Shock Sensor
+  * Popp Radiator Thermostat
+  * AEOTEC LED BULB
+  * Qubino RGBW Dimmer
+  * Vision DC/AC Power Siren
+  * Danfoss Radiator Thermostat
+  * Fibaro RGBW Module
+  * Vision Security Siren G5
+  * Qubino Weatherstation
+  * Domitech ZBulb
+  * Z-Wave.Me Wall Remote
+  * POPP Wall_C Forever - Wall Remote
+  * MCOHome Thermostat MH7-EH-EU
+  * Aeotec Nano Switch 1 Relay
+  * Aeotec Home Energy Meter - Gen5
+  * Aeotec Nano Dimmer ZW111
+  * Popp Z-Rain
+  * Aeotec Nano Switch
+  * Z-Wave.Me Funkwandschalter
+  * Fibaro CO Sensor
+  * Zipato Bulb 2
+  * Devolo Door/Window Contact
+  * Popp Solar Outdoor Siren
+  * Qubino PWM Thermostat
+  * WiDom Energy Driven Switch S/C
+  * Secure Water Meter
+  * Qubino Flush 1 Relay
+  * Qubinio Flush2 Relays
+  * TKB Home Wall Plug Switch
+  * MCO Home MH-S314 EU (UK)
+  * MCO Home CO2 Monitor
+  * MCO Home MH-S412
+  * MCO Home MH-S411
+  * MCO Home MH-S412 UK
+  * Philio 2-in-1 Sensor - Temperature and Humidity
+  * Philio 3-in-1 Sensor - Flood, Temperature and Humidity
+  * Qubino Roller Shutter Insert 2*1 kW with energy meter
+  * Qubino Dimmerinsert with energy meter
+  * Qubino Roller Shutter Insert 12-24V DC
+  * Philio Relay Insert Blind
+  * Aeotec LED Strip
+  * EverSpring Motion Sensor SP816
+  * Fibaro Door/Window Sensor 2
+  * MCOHome Thermostat MH7H-XH-EU
+  * TKB Home Power Meter Socket
+  * Everspring Door/ Window Sensor
+  * Philio Double Relay Insert 2*1.5 KW with Metering Function
+  * Danfoss Hydronic Controller
+  * Secure Z-Wave controlled Boiler Actuator (2 Channels)
+  * Secure Electronic Room Thermostat with Temperature Sensor
+  * Secure Temperature and Humidity Sensor
+  * Popp 10 year smoke detector
+  * Vision Door Lock with Handle
+  * Vision Garage Door Sensor
+  * TKB Digital Heating Thermostat
+  * Remotec IR Extender ZXT-120
+  * Fakro Electric actuator
+  * Everspring mini Plug
+  * Aeonlabs Minimote
+  * Aeonlabs Minimote
+  * POPP Keypad
 
 Fixes:
 * fixed LimitedArray class
