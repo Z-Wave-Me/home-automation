@@ -17,12 +17,8 @@ function modulePostRender(control) {
                                     notification.forEach(function (device, index) {
                                         if (typeof response.data.params.notification[index].device.mail_to_select !== 'undefined') {
                                             fillDropDown(profilesResponse.data, response.data.params.notification[index].device.mail_to_select);
-                                            EnDisableToggle(index, 'mail_select');
-                                        } else if (typeof response.data.params.notification[index].device.mail_to_input !== 'undefined') {
-                                            EnDisableToggle(index, 'mail_input');
-                                        } else {
+                                        } else if (typeof response.data.params.notification[index].device.mail_to_input === 'undefined') {
                                             fillDropDown(profilesResponse.data, false);
-                                            EnDisableToggle(index, 'phone_select');
                                         }
                                     })
                                 });
@@ -78,25 +74,11 @@ function modulePostRender(control) {
         });
 
         $(document).on("change", "select[name=notification_" + id + "_device_target]", function () {
-            if ($(this).val() === '') {
-                $(this).parent().parent().parent().find(".mail_input").children().prop('disabled', false);
-                $(this).parent().parent().parent().find(".mail_select").children().prop('disabled', false);
-                $(this).parent().parent().parent().parent().parent().parent().find(".not_message").children().prop('disabled', true);
-            } else {
-                $(this).parent().parent().parent().find(".mail_input").children().prop('disabled', true);
-                $(this).parent().parent().parent().find(".mail_select").children().prop('disabled', true);
-                $(this).parent().parent().parent().parent().parent().parent().find(".not_message").children().prop('disabled', false);
-            }
+            $(this).parent().parent().parent().parent().parent().parent().find(".not_message").children().prop('disabled', ($(this).val() === ''));
         });
 
         $(document).on("change", "select[name=notification_" + id + "_device_mail_to_select]", function () {
-            if ($(this).val() === '') {
-                $(this).parent().parent().parent().find(".phone_select").children().prop('disabled', false);
-                $(this).parent().parent().parent().parent().parent().parent().find(".not_message").children().prop('disabled', true);
-            } else {
-                $(this).parent().parent().parent().find(".phone_select").children().prop('disabled', true);
-                $(this).parent().parent().parent().parent().parent().parent().find(".not_message").children().prop('disabled', false);
-            }
+            $(this).parent().parent().parent().parent().parent().parent().find(".not_message").children().prop('disabled', ($(this).val() === ''));
         })
     });
 }
@@ -121,28 +103,9 @@ function fillDropDown(profiles, selectedMail) {
         $(".mail_input").hide();
         $(".mail_select").show();
     }
-};
+}
 
 function showInputField() {
     $(".mail_input").hide();
     $(".mail_select").show();
-};
-
-/*
-Function to Toggle enable state of phone or mail elements. Given class is set to enable!
- */
-function EnDisableToggle(elementId, elementClass) {
-    var phone = $(document).find(".phone_select");
-    var mail_s = $(document).find(".mail_select");
-    var mail_i = $(document).find(".mail_input");
-
-    if (elementClass === 'phone_select') {
-        $(phone[elementId]).children().prop('disabled', false);
-        $(mail_s[elementId]).children().prop('disabled', true);
-        $(mail_i[elementId]).children().prop('disabled', true);
-    } else if (elementClass === 'mail_input' || elementClass === 'mail_select') {
-        $(phone[elementId]).children().prop('disabled', true);
-        $(mail_s[elementId]).children().prop('disabled', false);
-        $(mail_i[elementId]).children().prop('disabled', false);
-    }
 }

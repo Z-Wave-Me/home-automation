@@ -1,3 +1,5 @@
+v1.3.1
+- allow push and mail with same notification
 v1.3.0
 - adding push and/or mail notification
 

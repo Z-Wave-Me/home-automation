@@ -1,6 +1,6 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.3.0
+Version: 1.3.1
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
@@ -222,9 +222,10 @@ LogicalRules.prototype.testRule = function (tree) {
 
         if (res && self.config.notification.length !== 0) {
             self.config.notification.forEach(function (notification) {
-                if(typeof notification.device.target !== 'undefined' && typeof notification.device.mail_to_input === 'undefined' && typeof notification.device.mail_to_select === 'undefined') {
+                if(typeof notification.device.target !== 'undefined') {
                     self.addNotification('push.notification', typeof notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets) : notification.message, notification.device.target);
-                } else if (typeof notification.device.target === 'undefined' && (typeof notification.device.mail_to_input !== 'undefined' || typeof notification.device.mail_to_select !== 'undefined')) {
+                }
+                if (typeof notification.device.mail_to_input !== 'undefined' || typeof notification.device.mail_to_select !== 'undefined') {
                     var mail_to = '';
                     if(typeof notification.device.mail_to_select !== 'undefined')
                     {
