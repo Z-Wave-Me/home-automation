@@ -1,9 +1,10 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.2.2
-(c) Z-Wave.Me, 2014
+Version: 1.3.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
+Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
 Description:
     Implements logical rules and activates scene on rule match.
 ******************************************************************************/
