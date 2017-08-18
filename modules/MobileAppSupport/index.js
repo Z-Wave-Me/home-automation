@@ -1,9 +1,10 @@
 /* Mobile App Support
  *
- * Version: 1.0.0
+ * Version: 1.1.5
  * 2017
  *
  * Author: Patrick Hecker <pah111kg@fh-zwickau.de>
+ * Changed: Hans-Christian Göckeritz <hcg@zwave.de>
  */
 function MobileAppSupport (id, controller) {
     MobileAppSupport.super_.call(this, id, controller);
@@ -60,14 +61,14 @@ MobileAppSupport.prototype.init = function (config) {
                 if (args.token && args.hubId && args.title && args.os) {
                     var app = self.generateApp(args.token, args.hubId, args.title, args.os);
                     var status = self.registerApp(app);
-                    if(status == 1) {
+                    if(status === 1) {
                         console.log("(Mobile App Support) App registered: " + app.title);
 
                         // create virtual device for phone
                         self.createMobileAppSupportPhone(app.token, app.hubId, app.title, app.os);
 
                         return { 'code': 1, 'message': 'OK' }
-                    } else if(status == 0) {
+                    } else if(status === 0) {
                         // update title
                         self.updateApp(app);
 
@@ -88,7 +89,7 @@ MobileAppSupport.prototype.init = function (config) {
                         console.log("(Mobile App Support) App active state updated: " + app.title);
                         return { 'code': 1, 'message': 'OK' }
                     } else {
-                        console.log("(Mobile App Support) Update active state: app doesn't exist")
+                        console.log("(Mobile App Support) Update active state: app doesn't exist");
                         return { 'code': 3, 'message': "Update active state: app doesn't exist" }
                     }
                 } else {
@@ -150,11 +151,11 @@ MobileAppSupport.prototype.init = function (config) {
         // workaround for unaccessible properties
         var deviceCopy = JSON.parse(JSON.stringify(device));
 
-        if (deviceCopy.permanently_hidden == false && deviceCopy.visibility == true) {
+        if (deviceCopy.permanently_hidden === false && deviceCopy.visibility === true) {
             var appData = self.getAllApp();
 
             appData.forEach(function(it) {
-                if (it.active == "1" && it.os == self.ANDROID) {
+                if (it.active === "1" && it.os === self.ANDROID) {
                     console.log("(Mobile App Support) Notify listener (DeviceUpdate): " + deviceCopy.metrics.title + " - " + deviceCopy.metrics.level);
 
                     var message = {
@@ -164,7 +165,7 @@ MobileAppSupport.prototype.init = function (config) {
                             data: device,
                             hubId: it.hubId
                         }
-                    }
+                    };
 
                     self.notifyListener(message, it.os);
                 }
@@ -172,31 +173,42 @@ MobileAppSupport.prototype.init = function (config) {
         } else {
             console.log("(Mobile App Support) Notify listener (DeviceUpdate) skipped");
         }
-    }
+    };
     self.controller.devices.on('change:metrics:level', self.deviceUpdatesCallbackWrapper);
 
-    // notification updates only for android
     // wrap method with a function
-    self.notificationUpdatesCallbackWrapper = function(notification) {
-        var appData = self.getAllApp();
-
-        appData.forEach(function(it) {
-            if (it.active == "1" && it.os == self.ANDROID) {
-                console.log("(Mobile App Support) Notify listener (NotificationUpdate)");
-
-                var message = {
-                    to: it.token,
-                    data: {
-                        type: "notification:add",
-                        data: notification,
-                        hubId: it.hubId
-                    }
-                }
-
-                self.notifyListener(message, it.os);
+    this.notificationUpdatesCallbackWrapper = function(notification) {
+        // conditions for external notifications
+        if(notification.level === 'push.notification'){
+            var vDev = self.controller.devices.get(notification.type);
+            if (vDev !== null) {
+                vDev.performCommand('alarm', {message: notification.message});
             }
-        });
-    }
+        } else {
+            var appData = self.getAllApp();
+
+            // push notification to configured devices
+            appData.forEach(function (it) {
+                if (it.active === "1") {
+                    console.log("(Mobile App Support) Notify listener (NotificationUpdate)");
+
+                    var message;
+                    if (it.os === self.ANDROID) {
+                        message = {
+                            to: it.token,
+                            data: {
+                                type: "notification:add",
+                                data: notification,
+                                hubId: it.hubId
+                            }
+                        }
+                    }
+
+                    self.notifyListener(message, it.os);
+                }
+            });
+        }
+    };
     self.controller.on('notifications.push', self.notificationUpdatesCallbackWrapper);
 
     self.vDev = vDev;
@@ -204,109 +216,109 @@ MobileAppSupport.prototype.init = function (config) {
     // event forwarding
     this.handler = this.onNotificationHandler();
 
-    if (typeof config.logLevelContainer.logLevel != 'undefined') {
+    if (typeof config.logLevelContainer.logLevel !== 'undefined') {
         this.logLevel = config.logLevelContainer.logLevel.split(',');
     } else {
         this.logLevel = [];
     }
 
-    this.devices = [],
+    this.devices = [];
     this.collectMessages = [];
 
     if (config.devices) {
         config.devices.forEach(function(device){
             var deviceId, level, message, comparator;
-            if (typeof device.dev_toggleButton != 'undefined'){
+            if (typeof device.dev_toggleButton !== 'undefined'){
                 deviceId = device.dev_toggleButton.dev_select;
                 level = device.dev_toggleButton.dev_logLevel;
                 message = device.dev_toggleButton.dev_message;
-                if (typeof device.dev_toggleButton.dev_matchValue != 'undefined')
+                if (typeof device.dev_toggleButton.dev_matchValue !== 'undefined' && device.dev_toggleButton.dev_matchValue !== 'all')
                     comparator = "=='"+device.dev_toggleButton.dev_matchValue + "'";
                 else
                     comparator = null;
-            } else if (typeof device.dev_switchControl != 'undefined'){
+            } else if (typeof device.dev_switchControl !== 'undefined'){
                 deviceId = device.dev_switchControl.dev_select;
                 level = device.dev_switchControl.dev_logLevel;
                 message = device.dev_switchControl.dev_message;
-                if (typeof device.dev_switchControl.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_switchControl.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_switchControl.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_switchControl.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_switchControl.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_switchControl.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_switchControl.dev_matchValue.dev_matchValueOperation + device.dev_switchControl.dev_matchValue.dev_matchValueOperand;
                 } else
                     comparator = null;
-            } else if (typeof device.dev_switchBinary != 'undefined'){
+            } else if (typeof device.dev_switchBinary !== 'undefined'){
                 deviceId = device.dev_switchBinary.dev_select;
                 level = device.dev_switchBinary.dev_logLevel;
                 message = device.dev_switchBinary.dev_message;
-                if (typeof device.dev_switchBinary.dev_matchValue != 'undefined')
+                if (typeof device.dev_switchBinary.dev_matchValue !== 'undefined' && device.dev_switchBinary.dev_matchValue !== 'all')
                     comparator = "=='"+device.dev_switchBinary.dev_matchValue + "'";
                 else
                     comparator = null;
-            } else if (typeof device.dev_switchMultilevel != 'undefined'){
+            } else if (typeof device.dev_switchMultilevel !== 'undefined'){
                 deviceId = device.dev_switchMultilevel.dev_select;
                 level = device.dev_switchMultilevel.dev_logLevel;
                 message = device.dev_switchMultilevel.dev_message;
-                if (typeof device.dev_switchMultilevel.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_switchMultilevel.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_switchMultilevel.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_switchMultilevel.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_switchMultilevel.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_switchMultilevel.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_switchMultilevel.dev_matchValue.dev_matchValueOperation + device.dev_switchMultilevel.dev_matchValue.dev_matchValueOperand;
                 } else
                     comparator = null;
-            } else if (typeof device.dev_sensorBinary != 'undefined'){
+            } else if (typeof device.dev_sensorBinary !== 'undefined'){
                 deviceId = device.dev_sensorBinary.dev_select;
                 level = device.dev_sensorBinary.dev_logLevel;
                 message = device.dev_sensorBinary.dev_message;
-                if (typeof device.dev_sensorBinary.dev_matchValue != 'undefined')
+                if (typeof device.dev_sensorBinary.dev_matchValue !== 'undefined' && device.dev_sensorBinary.dev_matchValue !== 'all')
                     comparator = "=='"+device.dev_sensorBinary.dev_matchValue + "'";
                 else
                     comparator = null;
-            } else if (typeof device.dev_sensorMultilevel != 'undefined'){
+            } else if (typeof device.dev_sensorMultilevel !== 'undefined'){
                 deviceId = device.dev_sensorMultilevel.dev_select;
                 level = device.dev_sensorMultilevel.dev_logLevel;
                 message = device.dev_sensorMultilevel.dev_message;
-                if (typeof device.dev_sensorMultilevel.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_sensorMultilevel.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_sensorMultilevel.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_sensorMultilevel.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_sensorMultilevel.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_sensorMultilevel.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_sensorMultilevel.dev_matchValue.dev_matchValueOperation + device.dev_sensorMultilevel.dev_matchValue.dev_matchValueOperand;
                 } else
                     comparator = null;
-            } else if (typeof device.dev_sensorMultiline != 'undefined'){
+            } else if (typeof device.dev_sensorMultiline !== 'undefined'){
                 deviceId = device.dev_sensorMultiline.dev_select;
                 level = device.dev_sensorMultiline.dev_logLevel;
                 message = device.dev_sensorMultiline.dev_message;
-                if (typeof device.dev_sensorMultiline.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_sensorMultiline.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_sensorMultiline.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_sensorMultiline.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_sensorMultiline.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_sensorMultiline.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_sensorMultiline.dev_matchValue.dev_matchValueOperation + device.dev_sensorMultiline.dev_matchValue.dev_matchValueOperand;
                 } else
                     comparator = null;
-            } else if (typeof device.dev_fan != 'undefined'){
+            } else if (typeof device.dev_fan !== 'undefined'){
                 deviceId = device.dev_fan.dev_select;
                 level = device.dev_fan.dev_logLevel;
                 message = device.dev_fan.dev_message;
-                if (typeof device.dev_fan.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_fan.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_fan.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_fan.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_fan.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_fan.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_fan.dev_matchValue.dev_matchValueOperation + device.dev_fan.dev_matchValue.dev_matchValueOperand;
                 } else
                     comparator = null;
-            } else if (typeof device.dev_doorLock != 'undefined'){
+            } else if (typeof device.dev_doorLock !== 'undefined'){
                 deviceId = device.dev_doorLock.dev_select;
                 level = device.dev_doorLock.dev_logLevel;
                 message = device.dev_doorLock.dev_message;
-                if (typeof device.dev_doorLock.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_doorLock.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_doorLock.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_doorLock.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_doorLock.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_doorLock.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_doorLock.dev_matchValue.dev_matchValueOperation + device.dev_doorLock.dev_matchValue.dev_matchValueOperand;
                 } else
                     comparator = null;
-            } else if (typeof device.dev_thermostat != 'undefined'){
+            } else if (typeof device.dev_thermostat !== 'undefined'){
                 deviceId = device.dev_thermostat.dev_select;
                 level = device.dev_thermostat.dev_logLevel;
                 message = device.dev_thermostat.dev_message;
-                if (typeof device.dev_thermostat.dev_matchValue != 'undefined') {
-                    if ((typeof device.dev_thermostat.dev_matchValue.dev_matchValueOperation != 'undefined')&&
-                        (typeof device.dev_thermostat.dev_matchValue.dev_matchValueOperand != 'undefined'))
+                if (typeof device.dev_thermostat.dev_matchValue !== 'undefined') {
+                    if ((typeof device.dev_thermostat.dev_matchValue.dev_matchValueOperation !== 'undefined')&&
+                        (typeof device.dev_thermostat.dev_matchValue.dev_matchValueOperand !== 'undefined'))
                         comparator = device.dev_thermostat.dev_matchValue.dev_matchValueOperation + device.dev_thermostat.dev_matchValueOperand;
                 } else
                     comparator = null;
@@ -337,9 +349,9 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
     self.controller.devices.forEach(function(vDev) {
         var metrics = vDev.get("metrics");
         if (metrics && metrics.deviceToken) {
-            if (vDev.id.indexOf("MobileAppSupportPhone") !=-1 && metrics.deviceToken != deviceToken) { // same title and different device tokens -> other installation
+            if (vDev.id.indexOf("MobileAppSupportPhone") !==-1 && metrics.deviceToken !== deviceToken) { // same title and different device tokens -> other installation
                 counter++;
-            } else if (metrics.deviceToken == deviceToken) { // different device tokens
+            } else if (metrics.deviceToken === deviceToken) { // different device tokens
                 mobileAppSupportPhoneExist = true;
             }
         }
@@ -351,20 +363,22 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 
     // create virtual device
     var vDev = self.controller.devices.create({
-        deviceId: 'MobileAppSupportPhone-' + title + "-" + counter,
+        deviceId: 'Phone-' + title + "-" + counter,
         defaults: {
             metrics: {
-                title: 'Mobile App Support - Phone ' + title + " " + counter,
+                title: 'Phone: ' + title + " " + counter,
                 deviceToken: deviceToken,
                 hubId: hubId,
                 os: os
             }
         },
         overlay: {
-            deviceType: 'mobileAppSupportPhone',
-            visibility: false,
+            deviceType: 'toggleButton',
+            probeType: 'notification_push',
+            visibility: true,
             metrics: {
-                title: 'Mobile App Support - Phone ' + title + " " + counter,
+                title: 'Phone: ' + title + " " + counter,
+				icon: "/ZAutomation/api/v1/load/modulemedia/MobileAppSupport/icon.png",
                 deviceToken: deviceToken,
                 hubId: hubId,
                 os: os
@@ -380,7 +394,7 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
                 if (alarmMessage && deviceToken && hubId && os) {
                     var message;
 
-                    if (os == self.ANDROID) {
+                    if (os === self.ANDROID) {
                         message = {
                             to: deviceToken,
                             data: {
@@ -389,7 +403,7 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
                                 hubId: hubId
                             }
                         }
-                    } else if (os == self.IOS) {
+                    } else if (os === self.IOS) {
                         message = {
                             to: deviceToken,
                             notification: {
@@ -405,20 +419,54 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
                 } else {
                     console.log("(Mobile App Support) Phone: Error occurrd during alarm command handling!");
                 }
-			}
+			} else if (command === "on") {
+                var deviceToken = this.get("metrics").deviceToken;
+                var hubId = this.get("metrics").hubId;
+                var os = this.get("metrics").os;
+
+                if (deviceToken && hubId && os) {
+                    var message;
+
+                    if (os === self.ANDROID) {
+                        message = {
+                            to: deviceToken,
+                            data: {
+                                type: "alarm:message",
+                                data: "This is a push test on the phone: " + title,
+                                hubId: hubId
+                            }
+                        }
+                    } else if (os === self.IOS) {
+                        message = {
+                            to: deviceToken,
+                            notification: {
+                                title: "Z-Way Control",
+                                body: "This is a push test on the phone: " + title
+                            }
+                        }
+                    }
+
+                    if (message) {
+                        console.log("Mobile App Support) Phone: Sending push test to: " + title);
+                        self.notifyListener(message, os);
+                    }
+                } else {
+                    console.log("(Mobile App Support) Phone: Error occurrd during alarm command handling!");
+                }
+            }
         },
         moduleId: self.id
     });
-}
+};
 
 MobileAppSupport.prototype.notifyListener = function(message, os) {
     var self = this;
 
     var fcmToken;
 
-    if (os == self.ANDROID) {
+    if (os === self.ANDROID) {
         fcmToken = self.FCM_ANDROID_TOKEN;
-    } else if (os == self.IOS) {
+    } else if (os === self.IOS) {
         fcmToken = self.FCM_IOS_TOKEN;
     }
 
@@ -446,7 +494,7 @@ MobileAppSupport.prototype.notifyListener = function(message, os) {
             console.log("(Mobile App Support) Exception during notify listener.");
         }
     }
-}
+};
 
 MobileAppSupport.prototype.removeCallbacks = function () {
     var self = this;
@@ -462,7 +510,7 @@ MobileAppSupport.prototype.removeCallbacks = function () {
         self.controller.off("notifications.push", self.notificationUpdatesCallbackWrapper);
         self.notificationUpdatesCallbackWrapper = {};
     }
-}
+};
 
 MobileAppSupport.prototype.stop = function () {
     var self = this;
@@ -515,7 +563,7 @@ MobileAppSupport.prototype.registerApp = function (app) {
 
         return 1;
     }
-}
+};
 
 /**
  * Update app to db-file
@@ -540,7 +588,7 @@ MobileAppSupport.prototype.getApp = function (token) {
     } else {
         return app;
     }
-}
+};
 
 /**
  * Update app to db-file
@@ -575,7 +623,7 @@ MobileAppSupport.prototype.updateApp = function (app) {
 
         return 1;
     }
-}
+};
 
 /**
  * Removes app from db-file
@@ -604,7 +652,7 @@ MobileAppSupport.prototype.removeApp = function (token) {
     } else {
         return null; // no db-file
     }
-}
+};
 
 /**
  * Returns an array of app from db-file
@@ -621,7 +669,7 @@ MobileAppSupport.prototype.getAllApp = function () {
     } else {
         return [];
     }
-}
+};
 
 /**
  * The method provides a factory for app
@@ -646,7 +694,7 @@ MobileAppSupport.prototype.generateApp = function (token, hubId, title, os) {
         'created':          new Date(),
         'modified':         new Date()
     }
-}
+};
 
 /**
  * toString-Method for app
@@ -666,7 +714,7 @@ MobileAppSupport.prototype.toStringApp = function (app) {
         + ":" + app.lastStatus
         + ":" + app.created
         + ":" + app.modified;
-}
+};
 
 /*
  * event forwarding
@@ -679,9 +727,9 @@ MobileAppSupport.prototype.onNotificationHandler = function () {
         var sendMessage = false, deviceMessage = "", value;
         if (self.logLevel.length > 0) {
             self.logLevel.forEach(function (level) {
-                if (((level == "errors")&&((notice.level == "critical")||(notice.level == "error")))||
-                    ((level == "notifications")&&((notice.level == "notification")||(notice.level == "device-info")))||
-                    ((level == "warnings")&&(notice.level == "warning"))) {
+                if (((level === "errors")&&((notice.level === "critical")||(notice.level === "error")))||
+                    ((level === "notifications")&&((notice.level === "notification")||(notice.level === "device-info")))||
+                    ((level === "warnings")&&(notice.level === "warning"))) {
                     sendMessage = true;
                 }
             });
@@ -690,20 +738,20 @@ MobileAppSupport.prototype.onNotificationHandler = function () {
             self.devices.forEach(function (device) {
                 // additional condition: if device registered multiple with different comparators
                 // only one matches ...
-                if (notice.source == device.id && sendMessage == false) {
-                    if (((device.level == "errors")&&((notice.level == "critical")||(notice.level == "error")))||
-                       ((device.level == "notifications")&&((notice.level == "notification")||(notice.level == "device-info")))||
-                       ((device.level == "warnings")&&(notice.level == "warning"))) {
+                if (notice.source === device.id && sendMessage === false) {
+                    if (((device.level === "errors")&&((notice.level === "critical")||(notice.level === "error")))||
+                       ((device.level === "notifications")&&((notice.level === "notification")||(notice.level === "device-info")))||
+                       ((device.level === "warnings")&&(notice.level === "warning"))) {
                         sendMessage = true;
                         deviceMessage = device.message;
-                        if (device.comparator != null) {
+                        if (device.comparator !== null) {
                             value = parseFloat(notice.message.l);
                             if (isNaN(value)) {
-                                if (eval("'" + notice.message.l + "'" + device.comparator) == false) {
+                                if (eval("'" + notice.message.l + "'" + device.comparator) === false) {
                                     sendMessage = false;
                                 }
                             } else {
-                                if (eval(value+device.comparator) == false) {
+                                if (eval(value+device.comparator) === false) {
                                     sendMessage = false;
                                 }
                             }
@@ -713,9 +761,9 @@ MobileAppSupport.prototype.onNotificationHandler = function () {
             });
         }
 
-        if (sendMessage === true) {
+        if (sendMessage) {
             // add to message collection
-            if (deviceMessage != "") {
+            if (typeof deviceMessage !== 'undefined' && deviceMessage !== "") {
                 // self.collectMessages.push(deviceMessage);
                 self.sendPushMessage(deviceMessage);
             } else {
@@ -741,7 +789,7 @@ MobileAppSupport.prototype.sendPushMessage = function (notification) {
     appData.forEach(function(it) {
         var message;
 
-        if (it.os == self.ANDROID) {
+        if (it.os === self.ANDROID) {
             message = {
                 to: it.token,
                 data: {
@@ -750,7 +798,7 @@ MobileAppSupport.prototype.sendPushMessage = function (notification) {
                     hubId: it.hubId
                 }
             }
-        } else if (it.os == self.IOS) {
+        } else if (it.os === self.IOS) {
             message = {
                 to: it.token,
                 notification: {
@@ -780,7 +828,7 @@ MobileAppSupport.prototype.sendPushMessageWithDelay = function () {
             appData.forEach(function(it) {
                 var message;
 
-                if (it.os == self.ANDROID) {
+                if (it.os === self.ANDROID) {
                     message = {
                         to: it.token,
                         data: {
@@ -789,7 +837,7 @@ MobileAppSupport.prototype.sendPushMessageWithDelay = function () {
                             hubId: it.hubId
                         }
                     }
-                } else if (it.os == self.IOS) {
+                } else if (it.os === self.IOS) {
                     message = {
                         to: it.token,
                         notification: {
