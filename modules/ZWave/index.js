@@ -488,6 +488,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			try {
 				self.updateRSSIData(function(newValue) {
 					var data = self.loadObject("rssidata.json") || [];
+					if (!data) data = [];
 					data.push(newValue);
 
 					// remove values older than 24h
