@@ -1,10 +1,9 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.3.1
-(c) Z-Wave.Me, 2017
+Version: 1.2.2
+(c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
-Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
 Description:
     Implements logical rules and activates scene on rule match.
 ******************************************************************************/
@@ -39,7 +38,7 @@ LogicalRules.prototype.init = function (config) {
 
     var self = this;
     
-    this.config.conditions.tests.forEach(function(test) {
+    this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
             self.attachDetach(test.testBinary, true);
         } else if (test.testType === "multilevel") {
@@ -47,22 +46,20 @@ LogicalRules.prototype.init = function (config) {
         } else if (test.testType === "remote") {
             self.attachDetach(test.testRemote, true);
         } else if (test.testType === "nested") {
-            test.testNested.conditions.tests.forEach(function(xtest) {
+            test.testNested.tests.forEach(function(xtest) {
                 if (xtest.testType === "binary") {
                     self.attachDetach(xtest.testBinary, true);
                 } else if (xtest.testType === "multilevel") {
                     self.attachDetach(xtest.testMultilevel, true);
                 } else if (xtest.testType === "remote") {
                     self.attachDetach(xtest.testRemote, true);
-                } else if ( xtest.testType === "time") {
-                    self.attachDetach(xtest.testTime, true);
                 }
             });
         }
     });    
 
-    if (this.config.triggers.eventSource) {
-        this.config.triggers.eventSource.forEach(function(scene) {
+    if (this.config.eventSource) {
+        this.config.eventSource.forEach(function(scene) {
             self.controller.devices.on(scene, "change:metrics:level", self._testRule);
         });
     }
@@ -71,13 +68,13 @@ LogicalRules.prototype.init = function (config) {
 LogicalRules.prototype.stop = function () {
     var self = this;
     
-    if (this.config.triggers.eventSource) {
-        this.config.triggers.eventSource.forEach(function(scene) {
+    if (this.config.eventSource) {
+        this.config.eventSource.forEach(function(scene) {
             self.controller.devices.off(scene, "change:metrics:level", self._testRule);
         });
     }
      
-    this.config.conditions.tests.forEach(function(test) {
+    this.config.tests.forEach(function(test) {
         if (test.testType === "binary") {
             self.attachDetach(test.testBinary, false);
         } else if (test.testType === "multilevel") {
@@ -85,17 +82,14 @@ LogicalRules.prototype.stop = function () {
         } else if (test.testType === "remote") {
             self.attachDetach(test.testRemote, false);
         } else if (test.testType === "nested") {
-            test.testNested.conditions.tests.forEach(function(xtest) {
+            test.testNested.tests.forEach(function(xtest) {
                 if (xtest.testType === "binary") {
                     self.attachDetach(xtest.testBinary, false);
                 } else if (xtest.testType === "multilevel") {
                     self.attachDetach(xtest.testMultilevel, false);
                 } else if (xtest.testType === "remote") {
                     self.attachDetach(xtest.testRemote, false);
-                } else if(xtest.testType === "time") {
-		    self.attachDetach(xtest.testTime, false);	
-		}
-			
+                }
             });
         }
     });
@@ -110,7 +104,7 @@ LogicalRules.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
-    if (this.config.triggers.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
+    if (this.config.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
         return;
     }
     
@@ -128,18 +122,17 @@ LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
 
 LogicalRules.prototype.testRule = function (tree) {
     var res = null,
-        topLevel = !tree,
-        self = this,
-        send_notification = false;
+        topLevel = !tree;
+        self = this;
     
     if (!tree) {
         tree = this.config;
     }
     
-    if (tree.conditions.logicalOperator === "and") {
+    if (tree.logicalOperator === "and") {
         res = true;
     
-        tree.conditions.tests.forEach(function(test) {
+        tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
                 res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
@@ -155,10 +148,10 @@ LogicalRules.prototype.testRule = function (tree) {
                 res = res && self.testRule(test.testNested);
             }
         });
-    } else if (tree.conditions.logicalOperator === "or") {
+    } else if (tree.logicalOperator === "or") {
         res = false;
     
-        tree.conditions.tests.forEach(function(test) {
+        tree.tests.forEach(function(test) {
             if (test.testType === "multilevel") {
                 res = res || self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
             } else if (test.testType === "binary") {
@@ -175,16 +168,12 @@ LogicalRules.prototype.testRule = function (tree) {
             }
         });
     }
-    else if (tree.conditions.logicalOperator === " none")
-    {
-        self.controller.addNotification("error", langFile.WrongOperator, "module", "LogicalRules");
-    }
     
     if (topLevel && res) {
         tree.action.switches && tree.action.switches.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
                     vDev.performCommand(devState.status);
                 }
             }
@@ -192,7 +181,7 @@ LogicalRules.prototype.testRule = function (tree) {
         tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
                     vDev.performCommand("exact", { level: devState.status });
                 }
             }
@@ -200,7 +189,7 @@ LogicalRules.prototype.testRule = function (tree) {
         tree.action.thermostats && tree.action.thermostats.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
                     vDev.performCommand("exact", { level: devState.status });
                 }
             }
@@ -208,7 +197,7 @@ LogicalRules.prototype.testRule = function (tree) {
         tree.action.locks && tree.action.locks.forEach(function(devState) {
             var vDev = self.controller.devices.get(devState.device);
             if (vDev) {
-                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
+                if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
                     vDev.performCommand(devState.status);
                 }
             }
@@ -219,28 +208,6 @@ LogicalRules.prototype.testRule = function (tree) {
                 vDev.performCommand("on");
             }
         });
-
-        if (res && self.config.notification.length !== 0) {
-            self.config.notification.forEach(function (notification) {
-                if(typeof notification.device.target !== 'undefined') {
-                    self.addNotification('push.notification', typeof notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets) : notification.message, notification.device.target);
-                }
-                if (typeof notification.device.mail_to_input !== 'undefined' || typeof notification.device.mail_to_select !== 'undefined') {
-                    var mail_to = '';
-                    if(typeof notification.device.mail_to_select !== 'undefined')
-                    {
-                        mail_to = notification.device.mail_to_select;
-                    }
-                    else if (typeof notification.device.mail_to_input !== 'undefined')
-                    {
-                        mail_to = notification.device.mail_to_input;
-                    }
-                    if (typeof mail_to !== 'undefined' || mail_to !== '') {
-                        self.addNotification('mail.notification', typeof notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets) : notification.message, mail_to);
-                    }
-                }
-            })
-        }
     }
 
     return res;

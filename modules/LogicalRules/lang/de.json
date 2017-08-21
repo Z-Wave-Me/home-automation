@@ -1,7 +1,7 @@
 {
 	"m_title":"Logische Regel",
 	"m_descr":"Diese App ist die bei Weitestem komplexeste aber auch leistungsfähigste App, die in Ihrem Gateway vorinstalliert ist.Sie erlaubt die logische Kombination mehrerer Zustände und Ereignisse zur Verwendung der Booleschen Befehle UND, ODER und NICHT. Zur Verwendung dieses Widgets benötigen Sie das Grundwissen über Boolesche Logik und/ oder Softwareentwicklung.Bitte beachten Sie, dass die Booleschen Logik letztendlich auf die Auslösung einer Aktion hinaus läuft. Das heißt, Sie benötigen zumindest ein (dynamisches) Ursprungsereignis, welches wesentlich mehr (statische) Statusinformation auslöst, von denen Sie die Aktion abhängig machen können. Es ist nicht angebracht, zwei Ereignisse zu kombinieren, da die finale Aktion nur eintritt, wenn beide Ereignisse zur gleichen Zeit auftreten. Das ist eher unwahrscheinlich. Der Unterschied zwischen einem dynamischen Ereignis und einem statischen Zustand kann mit der Verwendung eines einfachen Bewegungssensors erklärt werden. Das dynamische Ereignis ist der Moment, wenn der Bewegungssensor auslöst. Der statische Zustand ist die Information, dass der Bewegungssensor sich aktuell im auslösenden Status befindet (eine Bewegung erkannt hat und einige Sekunden wartet, bevor er wieder in den inaktiven Modus zurückkehrt).<br><br>Einstellungen: Wählen Sie Statusinformation und Ereignis, welche Sie sinnvoll mit einander kombinieren wollen und wählen Sie den Booleschen Befehl, diese zu verbinden.",
-	"rl_options":"Führe eine Regelprüfung bei jeder Änderung eines Zustandes der unter 'Bedingungen' gelisteten Geräte durch.",
+	"rl_options":"Führe eine Regelprüfung bei jeder Änderung eines Zustandes, der unter 'Bedingungen' gelisteten Geräte durch.",
 	"l_eventSource":"Führe eine Regelprüfung bei der Aktivierung folgender Szenen durch:",
 	"l_logicalOperator":"Boolescher Operator",
 	"h_logicalOperator":"Diese Option verknüpft alle folgenden Bedingungen mit einer logischen OR (ODER) oder AND (UND) Regel. Bei OR wird die Aktion ausgeführt, wenn mindestens eine Bedingung zutrifft. Bei AND wird die Aktion nur ausgeführt, wenn alle Bedingung zutreffen.",
@@ -33,19 +33,5 @@
 	"h_testNested": "Erzeugt weitere verschachtelte Bedingungen - logische Schreibweise: A AND B AND (C OR D). Die zusätzliche verschachtelte Bedingung ist (C OR D). Eine Aktion wird also nur dann ausgelöst, wenn die Bedingungen A und B sowie entweder die Bedingung C oder D gemeinsam erfüllt sind. Beispiel: Wenn außen der Lichtsensor A > 80% und der Temperatursensor B > 26°C und (Zeit < 12:00 Uhr oder Zeit > 14:00 Uhr) dann wird die Jalousie im Wohnzimmer auf 50% gesetzt.",
 	"l_sendAction":"Sende kein 'An' Kommando, wenn das Gerät bereits aktiviert ist. Das Gleiche gilt für 'Aus'.",
 	"h_sendAction":"Verhindert überflüssige Befehle im Netzwerk.",
-	"h_testTime":"Diese Bedingung überprüft, ob die aktuelle Zeit Kleiner-Gleich oder Größer-Gleich der eingegebenen ist. Z.B aktuelle Zeit: 09:00 und Bedingung: >= 10:00 würde ein 'false' zurückliefern und die Regel nicht auslösen. 24-h-Format - hh:mm",
-	"l_triggers": "Wie wird die Regel ausgelöst",
-	"l_conditions": "Bedingungen zum Auslösen",
-	"p_select": " Bitte auswählen",
-	"WrongOperator": "Wählen Sie einen gültigen Operator aus",
-	"l_notification":"Benachrichtigung",
-	"l_notification_message":"Nachricht",
-	"h_notification_message":"Inhalt der Benachrichtigung.",
-	"l_notification_target":"Ziel",
-	"l_notification_phone":"Phone",
-	"l_notification_mail":"Email",
-	"l_choose_target":"--- Ziel wählen ---",
-	"h_nomail":"Aktuell ist keine Benachrichtigung über Email möglich, da die EMailMe-App nicht installiert/aktiviert ist.",
-	"b_createmail": "Aktiviere EMailMe",
-	"m_createmail": "ACHTUNG!<br />Beim Verlassen des Konfigurationsfensters gehen alle bisherigen Einstellungen verloren.<br /><br />HINWEIS:<br />Sie können mit 'Abbrechen' ohne die Konfiguration der EMailMe-App fortfahren, diese im Nachgang anlegen und anschließend in der Logische Regel Konfiguration hinzufügen."
+	"h_testTime":"Diese Bedingung überprüft, ob die aktuelle Zeit Kleiner-Gleich oder Größer-Gleich der eingegebenen ist. Z.B aktuelle Zeit: 09:00 und Bedingung: >= 10:00 würde ein 'false' zurückliefern und die Regel nicht auslösen. 24-h-Format - hh:mm"
 }
