@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
     "moduleName":"LogicalRules",
-	"version": "1.2.2",
+	"version": "1.3.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -17,32 +17,26 @@
 		"description": "__m_descr__",
 		"triggerOnDevicesChange": true,
 		"eventSource": [],
-		"logicalOperator": "and",
+		"logicalOperator": " none",
 		"tests": [],
-		"action": {}
+		"action": {},
+		"notification": [],
+		"mail_helper": "__h_nomail__",
+		"mail_button": "__b_createmail__",
+		"mail_confirm": "__m_createmail__"
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
-			"triggerOnDevicesChange": {
-				"type": "boolean",
-				"default": true
-			},
-			"eventSource": {
-				"type": "array",
-				"items": {
-					"field": "enum",
-					"datasource": "namespaces",
-					"enum": "namespaces:devices_toggleButton:deviceId",
-					"required": true
-				}
-			},
-			"logicalOperator": {
-				"type": "string",
-				"enum": ["and", "or"],
-				"default": "and",
-				"required": true
-			},
+			"conditions": {
+				"type": "object",
+				"properties": {
+					"logicalOperator": {
+						"type": "string",
+						"enum": [" none", "and", "or"],
+						"default": " none",
+						"required": true
+					},
 			"tests": {
 				"type": "array",
 				"items": {
@@ -131,12 +125,15 @@
 							"type": "object",
 							"dependencies": "testType",
 							"properties": {
-								"logicalOperator": {
-									"type": "string",
-									"enum": ["and", "or"],
-									"default": "or",
-									"required": true
-								},
+								"conditions": {
+									"type": "object",
+										"properties": {
+											"logicalOperator": {
+												"type": "string",
+												"enum": ["and", "or"],
+												"default": "or",
+												"required": true
+											},
 								"tests": {
 									"type": "array",
 									"items": {
@@ -220,13 +217,14 @@
 												}
 											}
 										}
+										}}
 									}
 								}
 							}
 						}
 					}
 				}
-			},
+			}}},
 			"action": {
 				"type": "object",
 				"properties": {
@@ -339,34 +337,68 @@
 					}
 				},
 				"required": false
+			},
+			"triggers": {
+				"type": "object",
+				"properties": {
+					"triggerOnDevicesChange": {
+						"type": "boolean",
+						"default": true
+					},
+					"eventSource": {
+						"type": "array",
+						"items": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_toggleButton:deviceId",
+							"required": true
+						}
+					}
+				}
+			},
+			"notification": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"type": "object",
+							"title": "__l_notification_target__",
+							"properties": {
+								"target": {
+									"type": "string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_toggleButton:notification:push:deviceId",
+									"required": false
+								},
+								"mail_to_input": {
+									"required": false
+								},
+								"mail_to_select": {
+									"required": false
+								}
+							}
+						},
+						"message": {
+							"required": true
+						}
+					}
+				}
 			}
 		}
 	},
 	"options": {
 		"renderform": "true",
 		"fields": {
-			"triggerOnDevicesChange": {
-				"type": "checkbox",
-				"rightLabel": "__rl_options__"
-			},
-			"eventSource": {
-				"label": "__l_eventSource__",
-				"datasource": "namespaces",
+			"conditions": {
+				"label": "__l_conditions__",
 				"fields": {
-					"item": {
-						"type": "select",
-						"datasource": "namespaces",
-						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_toggleButton:deviceName"
-					}
-				}
-			},
-			"logicalOperator": {
-				"label": "__l_logicalOperator__",
-				"optionLabels":["__and__", "__or__"],
-				"helper":"__h_logicalOperator__",
-				"type": "select"
-			},
+					"logicalOperator": {
+						"label": "__l_logicalOperator__",
+						"optionLabels":["__p_select__", "__and__", "__or__"],
+						"helper":"__h_logicalOperator__",
+						"type": "select"
+					},
 			"tests": {
 				"label": "__l_tests__",
 				"fields": {
@@ -453,12 +485,15 @@
 								},
 								"helper":"__h_testNested__",
 								"fields": {
-									"logicalOperator": {
-										"label": "__l_logicalOperator__",
-										"optionLabels":["__and__", "__or__"],
-										"helper":"__h_logicalOperator__",
-										"type": "select"
-									},
+									"conditions": {
+										"label": "__l_conditions__",
+										"fields": {
+											"logicalOperator": {
+												"label": "__l_logicalOperator__",
+												"optionLabels":["__and__", "__or__"],
+												"helper":"__h_logicalOperator__",
+												"type": "select"
+											},
 									"tests": {
 										"fields": {
 											"item": {
@@ -542,12 +577,13 @@
 											}
 										}
 									}
+									}}
 								}
 							}
 						}
 					}
 				}
-			},
+			}}},
 			"action": {
 				"label": "__l_action__",
 				"fields": {
@@ -663,7 +699,69 @@
 						}
 					}
 				}
+			},
+			"triggers": {
+				"label": "__l_triggers__",
+				"fields": {
+					"triggerOnDevicesChange": {
+						"type": "checkbox",
+						"rightLabel": "__rl_options__"
+					},
+					"eventSource": {
+						"label": "__l_eventSource__",
+						"datasource": "namespaces",
+						"fields": {
+							"item": {
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+							}
+						}
+					}
+				}
+			},
+			"notification": {
+				"label": "__l_notification__",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"fields": {
+									"target": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_target__",
+										"label": "__l_notification_phone__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_toggleButton:notification:push:deviceId",
+										"fieldClass": "phone_select"
+									},
+									"mail_to_input": {
+										"label": "__l_notification_mail__",
+										"fieldClass": "mail_input"
+									},
+									"mail_to_select": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_target__",
+										"label": "__l_notification_mail__",
+										"fieldClass": "mail_select"
+									}
+								}
+							},
+							"message": {
+								"type": "textarea",
+								"label": "__l_notification_message__",
+								"helper": "__h_notification_message__",
+								"fieldClass": "not_message"
+							}
+						}
+					}
+				}
 			}
 		}
-	}
+	},
+	"postRender": "loadFunction:postRender.js"
 }

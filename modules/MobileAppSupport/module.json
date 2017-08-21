@@ -6,8 +6,8 @@
 	"homepage": "http://sensor.fh-zwickau.de",
 	"icon": "icon.png",
         "moduleName": "MobileAppSupport",
-	"version": "1.0.1",
-	"maturity": "beta",
+	"version": "1.1.5",
+	"maturity": "stable",
 	"defaults" : {
 		"title" : "__m_title__",
 		"description" : "__m_descr__",
@@ -81,11 +81,12 @@
 		                  "dependencies": "dev_logLevel",
 		                  "type": "string",
 		                  "enum": [
+							"all",
 		                    "on",
 		                    "off"
 		                  ],
 		                  "title": "__l_dev_matchValue__",
-		                  "required": false
+		                  "required": true
 		                }
 		              }
 		            },
@@ -167,11 +168,12 @@
 		                  "dependencies": "dev_logLevel",
 		                  "type": "string",
 		                  "enum": [
+							"all",
 		                    "on",
 		                    "off"
 		                  ],
 		                  "title": "__l_dev_matchValue__",
-		                  "required": false
+		                  "required": true
 		                }
 		              }
 		            },
@@ -253,11 +255,12 @@
 		                  "dependencies": "dev_logLevel",
 		                  "type": "string",
 		                  "enum": [
+							"all",
 		                    "on",
 		                    "off"
 		                  ],
 		                  "title": "__l_dev_matchValue__",
-		                  "required": false
+		                  "required": true
 		                }
 		              }
 		            },
@@ -582,6 +585,7 @@
 						  "helper": "__h_dev_matchValue__",
 						  "type": "select",
 						  "optionLabels": [
+							"All",
 							"On",
 							"Off"
 						  ]
@@ -671,6 +675,7 @@
 						  "helper": "__h_dev_matchValue__",
 						  "type": "select",
 						  "optionLabels": [
+							"All",
 							"On",
 							"Off"
 						  ]
@@ -760,6 +765,7 @@
 						  "helper": "__h_dev_matchValue__",
 						  "type": "select",
 						  "optionLabels": [
+							"All",
 							"On",
 							"Off"
 						  ]

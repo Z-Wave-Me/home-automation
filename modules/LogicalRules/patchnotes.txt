@@ -1,3 +1,8 @@
+v1.3.1
+- allow push and mail with same notification
+v1.3.0
+- adding push and/or mail notification
+
 v1.2.2
 - german translations added
 - helper label for time condition added
