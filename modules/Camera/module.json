@@ -16,6 +16,7 @@
         "title": "__m_title__",
         "description": "__m_descr__",
 	"url": "",
+    "screenUrl": "",
 	"zoomInUrl": "",
 	"zoomOutUrl": "",
 	"leftUrl": "",
@@ -32,6 +33,10 @@
         "type": "object",
         "properties": {
             "url": {
+                "format": "uri",
+                "required": true
+            },
+            "screenUrl": {
                 "format": "uri",
                 "required": true
             },
@@ -92,6 +97,11 @@
                 "label": "__l_cam_url__",
                 "type": "url",
                 "required": true
+            },
+            "screenUrl": {
+                "label": "__l_screen_url__",
+                "type": "url",
+                "required": false
             },
             "zoomInUrl": {
                 "label": "__l_zoomin__",

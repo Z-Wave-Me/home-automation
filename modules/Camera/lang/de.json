@@ -2,6 +2,7 @@
   "m_title":"Web Kamera",
   "m_descr":"Dieses Modul konfiguriert die eingebundene Kamera und erstellt ein virtuelles Gerät.",
   "l_cam_url": "URL - Kamera",
+  "l_screen_url": "URL - Screenshot",
   "l_zoomin": "URL - Herein zommen",
   "l_zoomout": "URL - Heraus zoomen",
   "l_left": "URL - Drehung nach links",

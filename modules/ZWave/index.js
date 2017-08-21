@@ -3992,6 +3992,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 9) {
 							defaults.metrics.icon = "barometer";
 							defaults.probeType = defaults.metrics.icon;
+                        } else if (sensorTypeId === 12) {
+                            defaults.metrics.icon = "rain";
+                            defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 25) {
 							defaults.metrics.icon = "seismic";
 							defaults.probeType = defaults.metrics.icon;

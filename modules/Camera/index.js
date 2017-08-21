@@ -47,10 +47,11 @@ _.extend(Camera.prototype, {
                 }
             });
         };
-        
-        
+
+        this.screen_url = "/" + vDevId + "/screen";
+        ws.proxify(this.screen_url, config.screenUrl, config.user, config.password);
+
         this.proxy_url = "/" + vDevId + "/stream";
-        
         ws.proxify(this.proxy_url, config.url, config.user, config.password);
 
         this.vDev = this.controller.devices.create({
@@ -65,6 +66,7 @@ _.extend(Camera.prototype, {
             overlay: {
                 metrics: {
                     url: this.proxy_url,
+                    screenUrl: this.screen_url,
                     hasZoomIn: !!config.zoomInUrl,
                     hasZoomOut: !!config.zoomOutUrl,
                     hasLeft: !!config.leftUrl,
@@ -96,7 +98,7 @@ _.extend(Camera.prototype, {
                 } else if (command == "close") {
                     url = config.closeUrl;
                     opener(command);
-                }
+                };
 
                 if (url) {
                     http.request({
