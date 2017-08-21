@@ -2652,7 +2652,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		// process interval that starts reorganization of each node after 10 sec
 		// TODO(!!!) this has to be changed from global handler to the local one
-		this.progressInterval = setInterval(function() {
+        reorgState.progressInterval = setInterval(function() {
 			if (reorgState.nodesPending[0]) {
 				nodeReorg();
 			} else {
@@ -2669,7 +2669,7 @@ ZWave.prototype.defineHandlers = function () {
 		 * - whole reorganization progress has finished
 		 */
 		// TODO(!!!) this has to be changed from global handler to the local one
-		this.reorgInterval = setInterval(function(){
+        reorgState.reorgInterval = setInterval(function(){
 			var nodes = [],
 				cntNodes = Object.keys(reorgState.nodeRes).length,
 				now = (new Date()).valueOf();
