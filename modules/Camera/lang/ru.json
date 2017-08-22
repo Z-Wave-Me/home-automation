@@ -2,6 +2,7 @@
 	"m_title":"Web Камера",
 	"m_descr":"Этот модуль позволяет настроить управление камерой.",
 	"l_cam_url":"URL Камеры",
+	"l_screen_url": "URL Screenshot",
 	"l_zoomin":"URL Приблизить",
 	"l_zoomout":"URL Отдалить",
 	"l_left":"URL Влево",

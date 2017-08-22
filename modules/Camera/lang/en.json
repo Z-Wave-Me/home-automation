@@ -2,6 +2,7 @@
 	"m_title":"Web Camera",
 	"m_descr":"This module include configuration for a camera and create camera device.",
 	"l_cam_url":"Camera URL",
+	"l_screen_url": "Screenshot URL",
 	"l_zoomin":"ZoomIn URL",
 	"l_zoomout":"ZoomOut URL",
 	"l_left":"Left URL",
