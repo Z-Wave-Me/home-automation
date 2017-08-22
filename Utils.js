@@ -303,3 +303,15 @@ function checkInternetConnection(host_url) {
 
     return cn;
 };
+
+/*
+* check for true / false
+* also if the variable is from type string e.g. 'true' / 'false'
+*/
+function retBoolean(boolean) {
+    if (boolean === true || boolean === 'true') {
+        return true;
+    } else {
+        return false;
+    }
+};

@@ -1484,31 +1484,38 @@ AutomationController.prototype.deleteAllRedeemedNotifications = function (callba
 };
 
 AutomationController.prototype.redeemNotification = function (id, redeemed, callback) {
-    var r = redeemed || true,
+    var r = redeemed !== undefined? redeemed : true;
         id = id || 0;
 
     if (id > 0) {
-        this.notifications.set(this.notifications.get().forEach(function(notification) {
-            if (notification.id === id) {
-                notification.redeemed = r;
-            }
-        }));
+        var notifications = this.notifications.get(),
+            index= _.findIndex(notifications, { id: id });
+
+        notifications[index].redeemed = r;
+
+        this.notifications.set(notifications);
 
         if (typeof callback === 'function') {
             callback(true);
+        }
+    } else {
+        if (typeof callback === 'function') {
+            callback(false);
         }
     }
 };
 
 AutomationController.prototype.redeemAllNotifications = function (redeemed, callback) {
-    var r = redeemed || true;
+    var r = redeemed !== undefined? redeemed : true;
 
     try {
-        this.notifications.set(this.notifications.get().forEach(function(notification) {
-            if (!notification.redeemed) {
-                notification.redeemed = r;
-            }
-        }));
+        var notifications = this.notifications.get();
+
+        _.forEach(notifications, function (notification) {
+            notification.redeemed = r;
+        });
+
+        this.notifications.set(notifications);
 
         if (typeof callback === 'function') {
             callback(true);

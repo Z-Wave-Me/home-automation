@@ -528,8 +528,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 error: "Something went wrong."
             };
 
-        redeemed = this.req.query.hasOwnProperty("set_redeemed") ? Boolean(this.req.query.set_redeemed) : true;
-        all = this.req.query.hasOwnProperty("all") ? Boolean(this.req.query.all) : false;
+        redeemed = this.req.body.hasOwnProperty("set_redeemed")? retBoolean(this.req.body.set_redeemed) : false;
+        all = this.req.body.hasOwnProperty("all")? retBoolean(this.req.body.all) : false;
 
         if (!all) {
             this.controller.redeemNotification(id, redeemed, function (notice) {
@@ -537,6 +537,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     reply.code = 204;
                     reply.data = null;
                     reply.error = null;
+                } else {
+                    reply.code = 404;
+                    reply.data = null;
+                    reply.error = 'Notification not found.';
                 }
             });
         } else {
