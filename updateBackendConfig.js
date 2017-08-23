@@ -452,6 +452,74 @@
       }
     }
 
+    // set up email address to post installed E-Mail ME app
+    try {
+        if (!config.controller.emailInitialActivated) {
+            var indexProfile = -1,
+                listEmailApps = [];
+
+            // get index of admin profile
+            config.profiles.forEach(function (profile, profIndex){
+                if (profile.login === 'admin' && profile.email !== '') {
+                    indexProfile = profIndex;
+                }
+            });
+
+            // get all E-mail ME instances
+            config.instances.forEach(function (instance, index){
+                if (instance.moduleId === 'MailNotifier') {
+                    listEmailApps.push({
+                        instance: instance,
+                        index: index
+                    });
+                }
+            });
+
+            if (indexProfile > -1) {
+                var email = config.profiles[indexProfile].email;
+
+                // filter for Email Me app with empty entries
+                var hasEmptyEmailApp = listEmailApps.filter(function (entry){
+                    return entry.instance.moduleId === 'MailNotifier' &&
+                        entry.instance.params.mail_to_input === '' &&
+                        entry.instance.params.mail_to_select === ''
+                });
+
+                // add Email ME if there is no Email ME app
+                if (listEmailApps.length === 0) {
+                    var maxInstanceId = Math.max.apply(null, config.instances.map(function(el) {
+                        return el.id;
+                    }));
+
+                    console.log("Adding module E-mail ME for mail address:", email);
+                    config.instances.push({
+                        "id": maxInstanceId + 1,
+                        "moduleId": "MailNotifier",
+                        "active": true,
+                        "title": "Send Email Notification",
+                        "description": "This app allows you to send notifications by e-mail.\n(Added by default)",
+                        "params": {
+                            "hide": false,
+                            "subject": "Z-Way Notification",
+                            "mail_to_input": "",
+                            "mail_to_select": email,
+                            "mail_message": "Dear Smart Home UI user, <br>the app 'E-mail ME' allows you to send notifications by e-mail. <br>This app is preinstalled to make your entry in the Smart Home UI more comfortable. <br> By default the given e-mail address is used that you've entered during the initialisation.<br> If you haven't already set an e-mail address to your account, you can check the settings of E-mail ME app under Menu > Apps > Active > E-mail ME to change this.<br>In this menu you can also deactivate or remove this app at any time.<br> Have fun!"
+                        }
+                    });
+                // transform Email ME app if it is empty
+                } else if (listEmailApps.length === 1 && hasEmptyEmailApp[0]) {
+                    config.instances[hasEmptyEmailApp[0].index].params.mail_to_select = email;
+                }
+
+                // set transformation flag and save config
+                config.controller.emailInitialActivated = true;
+                saveObject('config.json', config);
+            }
+        }
+    } catch(e) {
+        console.log(e.toString());
+    }
+
     try {
         // once remove unnecessary modules from cit-installation
         if (!config.controller.instancesTransformed && checkBoxtype('cit')) {
