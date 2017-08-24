@@ -2010,6 +2010,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                     "zway_incomingPacket.json",
                     "zway_outgoingPacket.json",
                     "zway_originPackets.json",
+                    "zway_parsedPackets.json",
                     "zway_reorgLog",
                     "zway_rssidata.json",
                     "de.devices.json",
