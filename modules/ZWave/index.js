@@ -4001,6 +4001,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						} else if (sensorTypeId === 27) {
 							defaults.metrics.icon = "ultraviolet";
 							defaults.probeType = defaults.metrics.icon;
+                        } else if (sensorTypeId === 40) {
+                            defaults.metrics.icon = "co";
+                            defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 52) {
 							defaults.metrics.icon = "acceleration_x";
 							defaults.probeType = defaults.metrics.icon;
@@ -4660,28 +4663,28 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							// we handle only few Notification Types
 							switch (notificationTypeId) {
 								case 0x01: // Smoke
-									a_defaults.metrics.icon = 'smoke';
-									a_defaults.probeType = 'alarm_smoke';
+									a_defaults.metrics.icon = 'alarm_smoke';
+									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x02: // CO
-									a_defaults.metrics.icon = 'co';
-									a_defaults.probeType = 'alarm_co';
+									a_defaults.metrics.icon = 'alarm_co';
+									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x03: // CO2
-									a_defaults.metrics.icon = 'coo';
-									a_defaults.probeType = 'alarm_coo';
+									a_defaults.metrics.icon = 'alarm_coo';
+									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x04: // Heat
 									a_defaults.metrics.icon = 'alarm';
 									a_defaults.probeType = 'alarm_heat';
 									break;
 								case 0x05: // Water
-									a_defaults.metrics.icon = 'flood';
-									a_defaults.probeType = 'alarm_flood';
+									a_defaults.metrics.icon = 'alarm_flood';
+									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x07: // Home Security (Burglar)
-									a_defaults.metrics.icon = 'smoke';
-									a_defaults.probeType = 'alarm_burglar';
+									a_defaults.metrics.icon = 'alarm_burglar';
+									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x08: // Power
 									a_defaults.metrics.icon = 'alarm';

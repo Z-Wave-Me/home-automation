@@ -1,9 +1,10 @@
 /*** LightScene Z-Way HA module *******************************************
 
-Version: 1.1.0
+Version: 1.1.1
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
+Changed: Michael Hensche <mh@zwave.eu>
 Description:
     Implements light scene based on virtual devices of type dimmer, switch or anothe scene
 ******************************************************************************/
@@ -36,7 +37,7 @@ LightScene.prototype.init = function (config) {
             deviceType: "toggleButton",
             metrics: {
                 level: "on", // it is always on, but usefull to allow bind
-                icon: "gesture",
+                icon: "scene",
                 title: self.getInstanceTitle()
             }
         },
