@@ -4683,8 +4683,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x07: // Home Security (Burglar)
-									a_defaults.metrics.icon = 'smoke';
-									a_defaults.probeType = 'alarm_burglar';
+									a_defaults.metrics.icon = 'alarm_burglar';
+									a_defaults.probeType = a_defaults.metrics.icon;
 									break;
 								case 0x08: // Power
 									a_defaults.metrics.icon = 'alarm';
