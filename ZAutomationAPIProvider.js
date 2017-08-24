@@ -1971,6 +1971,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 }
             };
 
+        // get flag that network information should be overwritten
+        allowTopoRestore = this.req.body.hasOwnProperty("overwriteNetwork") ? retBoolean(this.req.body.overwriteNetwork) : false;
+
         try {
             function utf8Decode(bytes) {
               var chars = [];
@@ -1989,6 +1992,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 decodeData = Base64.decode(reqObj.data);
                 // to JSON
                 reqObj.data = JSON.parse(decodeData);
+            }
+
+            // check if data is not empty
+            if (!reqObj.data) {
+                // missing file
+                reply.code = 400;
+                reply.error = "Bad Request. Please input a .zab backup file.";
+
+                return reply;
             }
 
             // stop the controller
@@ -2030,7 +2042,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // restore Z-Wave and EnOcean
             !!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
                 var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
-                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, false);
+                global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, allowTopoRestore);
             });
 
             /* TODO
