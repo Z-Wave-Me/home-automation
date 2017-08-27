@@ -11,7 +11,7 @@ Description:
 /*
 
     TODO
-    
+
     Add periodic M-SEARCH if needed
 */
 
@@ -22,7 +22,7 @@ Description:
 function Sonos (id, controller) {
     // Call superconstructor first (AutomationModule)
     Sonos.super_.call(this, id, controller);
-    
+
     this.players = [];
     this.subscribeTimer = [];
     this.hostnames = {};
@@ -40,7 +40,7 @@ Sonos.prototype.init = function (config) {
     Sonos.super_.prototype.init.call(this, config);
 
     var self = this;
- 
+
     this.householdFinder();
     this.playersFinder();
     this.notifier();
@@ -52,7 +52,7 @@ Sonos.prototype.init = function (config) {
 
 Sonos.prototype.stop = function () {
     var self = this;
-    
+
     this.sockHouseholdFinder && this.sockHouseholdFinder.close();
     this.sockHouseholdFinder = null;
     this.sockPlayerFinder && this.sockPlayerFinder.close();
@@ -64,11 +64,11 @@ Sonos.prototype.stop = function () {
         self.controller.devices.remove("Sonos_Device_Play_" + player.host + "_" + self.id);
         self.controller.devices.remove("Sonos_Device_Volume_" + player.host + "_" + self.id);
     });
-    
+
     this.subscribeTimer.forEach(function(timer) {
         clearInterval(timer);
     });
-    
+
     Sonos.super_.prototype.stop.call(this);
 };
 
@@ -78,7 +78,7 @@ Sonos.prototype.stop = function () {
 
 Sonos.prototype.householdFinder = function () {
     var self = this;
- 
+
     var sockHouseholdFinder = new sockets.udp();
     sockHouseholdFinder.reusable();
     sockHouseholdFinder.bind("255.255.255.255", 6969);
@@ -90,9 +90,9 @@ Sonos.prototype.householdFinder = function () {
         pos += 9;
         pos += 1 + arr[pos];
         pos += 2;
-        
+
         var household = String.fromCharCode.apply(null, arr.subarray(pos + 1, pos + 1 + arr[pos]));
-        
+
         if (self.config.households.filter(function(el) { return el == household; }).length === 0) {
             console.log("Detected Sonos Household:", household);
             self.config.households.push(household);
@@ -102,13 +102,13 @@ Sonos.prototype.householdFinder = function () {
     };
     sockHouseholdFinder.listen();
     console.log("Waiting for Sonos to send announcement");
-    
+
     this.sockHouseholdFinder = sockHouseholdFinder;
 };
 
 Sonos.prototype.playersFinder = function () {
     var self = this;
-    
+
     var sockPlayerFinder = new sockets.udp();
     sockPlayerFinder.reusable();
     sockPlayerFinder.onrecv = function(data, host, port) {
@@ -134,7 +134,7 @@ Sonos.prototype.playersFinderLookup = function (household) {
 
 Sonos.prototype.checkPlayer = function(household, host, metadata) {
     var self = this;
-    
+
     if (!this.hostnames[household]) {
         this.detectHostname(household, host);
     }
@@ -144,7 +144,7 @@ Sonos.prototype.checkPlayer = function(household, host, metadata) {
         household: household,
         host: host
     });
-    
+
     http.request({
         url: metadata,
         async: true,
@@ -162,12 +162,12 @@ Sonos.prototype.checkPlayer = function(household, host, metadata) {
         error: function(response) {
             console.log("Failed to fetch Sonos metadata from", host);
         }
-    });    
+    });
 };
 
 Sonos.prototype.detectHostname = function(household, host) {
     var self = this;
-    
+
     var sockHost = new sockets.tcp();
     sockHost.onclose = function (remoteHost, remotePort, localHost, localPort) {
         if (localHost && self.hostnames[household] !== localHost) {
@@ -183,7 +183,7 @@ Sonos.prototype.detectHostname = function(household, host) {
 
 Sonos.prototype.renderPlayer = function(household, host) {
     var self = this;
-    
+
     var vDevP = self.controller.devices.create({
         deviceId: "Sonos_Device_Play_" + host + "_" + this.id,
         defaults: {
@@ -219,10 +219,44 @@ Sonos.prototype.renderPlayer = function(household, host) {
         },
         moduleId: this.id
     });
-    
+
+    var vDevPre = self.controller.devices.create({
+       deviceId: 'Sonos_Device_Previous_' + host + '_' + this.id,
+       defaults: {
+         deviceType: 'toggleButton',
+         metrics: {
+           title: 'Sonos Previous ' + host + ' ' + this.id,
+           icon: '',
+           level: 'on'
+         }
+       },
+       overlay: {},
+       handler: function (command, args) {
+         self.action(host, 'Previous');
+       },
+       moduleId: this.id
+     });
+
+     var vDevN = self.controller.devices.create({
+       deviceId: 'Sonos_Device_Next_' + host + '_' + this.id,
+       defaults: {
+         deviceType: 'toggleButton',
+         metrics: {
+           title: 'Sonos Next ' + host + ' ' + this.id,
+           icon: '',
+           level: 'on'
+         }
+       },
+       overlay: {},
+       handler: function (command, args) {
+         self.action(host, 'Next');
+       },
+       moduleId: this.id
+     });
+
     // subscribe to notifications
     this.subscribe(household, host);
-    
+
     // repeat subscription every hour
     this.subscribeTimer.push(setInterval(function() {
         self.subscribe(household, host);
@@ -231,7 +265,7 @@ Sonos.prototype.renderPlayer = function(household, host) {
 
 Sonos.prototype.subscribe = function (household, host) {
     var self = this;
-    
+
     [
         "/MediaRenderer/AVTransport/Event",
         "/MediaRenderer/RenderingControl/Event"
@@ -263,7 +297,7 @@ Sonos.prototype.subscribe = function (household, host) {
 
 Sonos.prototype.notifier = function () {
     var self = this;
-    
+
     var sockNotifier = new sockets.tcp();
     sockNotifier.reusable();
     sockNotifier.bind(3400);
@@ -319,8 +353,8 @@ Sonos.prototype.action = function (host, action) {
     http.request({
         async: true,
         headers: {
-            'Content-Type': 'text/xml', 
-            'SOAPACTION': 'urn:schemas-upnp-org:service:AVTransport:1#' + action  
+            'Content-Type': 'text/xml',
+            'SOAPACTION': 'urn:schemas-upnp-org:service:AVTransport:1#' + action
         },
         url: "http://" + host + ":1400/MediaRenderer/AVTransport/Control",
         method: 'POST',
@@ -335,7 +369,7 @@ Sonos.prototype.action = function (host, action) {
             </s:Envelope>',
         error: function(response) {
             console.log("Can not make request: " + response.statusText);
-        } 
+        }
     });
 };
 
@@ -343,7 +377,7 @@ Sonos.prototype.volume = function (host, level) {
     http.request({
         async: true,
         headers: {
-            'Content-Type': 'text/xml', 
+            'Content-Type': 'text/xml',
             'SOAPACTION': 'urn:schemas-upnp-org:service:RenderingControl:1#SetVolume'
         },
         url: "http://" + host + ":1400/MediaRenderer/RenderingControl/Control",
@@ -360,6 +394,6 @@ Sonos.prototype.volume = function (host, level) {
             </s:Envelope>',
         error: function(response) {
             console.log("Can not make request: " + response.statusText);
-        } 
+        }
     });
 };
