@@ -4613,8 +4613,26 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
+                            maskArrayToTypes = function (bitmaskArray) {
+                                var types = [], n = 0;
+
+                                bitmaskArray.forEach(function(bitmask, i) {
+                                    n = i * 8;
+                                    while (bitmask) {
+                                        if (bitmask & 0x01) {
+                                            types.push(n);
+                                        }
+                                        n++;
+                                        bitmask >>= 1;
+                                    }
+                                });
+
+                                return types;
+                            };
+
 							var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
-							if (notificationTypeId === 0x06 && (cc.data[notificationTypeId].eventMask.value & ((1 << DOOR_OPEN) | (1 << DOOR_CLOSE)))) { // Very special case of Door
+							var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
+							if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1)) { // Very special case of Door
 								a_defaults.metrics.icon = 'door';
 
 								var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
@@ -4706,20 +4724,6 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									return; // skip this type
 							}
 
-							maskToTypes = function (bitmask) {
-								var types = [], n = 0;
-
-								while (bitmask) {
-									if (bitmask & 0x01) {
-										types.push(n);
-									}
-									n++;
-									bitmask >>= 1;
-								}
-
-								return types;
-							};
-
 							// handle 0xFE unknown
 							// special case by Sigma for Unknown event - not listed in eventMask
 							// the vDev for this event will be created on the fly
@@ -4780,7 +4784,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								}
 							}
 
-							maskToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
+							maskArrayToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
 
 								eventTypeId = parseInt(eventTypeId, 10);
 
