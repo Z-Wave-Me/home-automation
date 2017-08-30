@@ -3784,7 +3784,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							overlay: {},
 							handler: function(command, args) {
 								var newVal,
-									oldVal = vDev.get('metircs:level');
+									oldVal = this.get('metrics:level');			
 
 								// up, down for Blinds
 								if ("on" === command || "up" === command) {
@@ -3839,7 +3839,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
                                     } else {
                                         cc.Set(colorId, newVal);
                                     }
-                                    vDev.set('metrics:oldLevel', newVal);
+								}
+
+								if (oldVal != newVal) {
+									this.set('metrics:oldLevel',oldVal);
 								}
 							},
 							moduleId: self.id
