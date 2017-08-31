@@ -98,7 +98,7 @@
               "minutes": "59",
               "scheduler": "3"
           }
-      }, {
+    }, {
          "id": 4,
          "moduleId": "InfoWidget",
          "active": true,
@@ -119,5 +119,5 @@
                  "imgURI": "app/img/icon_cloudbackup.png"
              }]
          }
-     }]
+    }]
 }

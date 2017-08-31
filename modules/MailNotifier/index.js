@@ -1,9 +1,11 @@
 /*** MailNotifier Z-Way HA module *******************************************
 
- Version: 1.0.9
- (c) Z-Wave.Me, 2016
+ Version: 1.2.0
+ (c) Z-Wave.Me, 2017
  -----------------------------------------------------------------------------
  Author: Niels Roche <nir@zwave.eu>
+ Changed: Marcel Kermer <mk@zwave.eu>
+ Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
  Description:
  This module allows to send notifications via mail.
 
@@ -29,11 +31,23 @@ _module = MailNotifier;
 MailNotifier.prototype.init = function (config) {
     MailNotifier.super_.prototype.init.call(this, config);
 
-
-
     this.remote_id = this.controller.getRemoteId;
     this.subject = config.subject;
-    this.mail_to = config.mail_to_select !== "" ? config.mail_to_select : config.mail_to_input;
+
+    // TODO check for undefined e-mail
+    // first check input
+    if (config.mail_to_input !== "" && config.allow_input)
+    {
+        this.mail_to = config.mail_to_input;
+    }
+    // use select field if assigned
+    else if(config.mail_to_select !== "")
+    {
+        this.mail_to = config.mail_to_select;
+    }
+
+
+    //console.log(this.mail_to);
     this.message = config.mail_message;
     this.collectMessages = 0;
 
@@ -54,16 +68,27 @@ MailNotifier.prototype.init = function (config) {
             probeType: 'notification_email'
         },
         handler: function(command, args) {
-
+            var send_mail = false;
             if (command !== 'update') {
-                if (command === "on") {
-
+                if (send_mail |= command === "on") {
                     self.collectMessages++;
+                    self.message = self.config.mail_message;
+                    self.mail_to = self.config.mail_to_input === '' ? self.config.mail_to_select : self.config.mail_to_input;
+                } else if (send_mail |= command === "send") {
+                    self.collectMessages++;
+                    self.message = args.message;
+                    self.mail_to = args.mail_to;
+                }
 
-                    // add delay timer if not existing
-                    if(!self.timer){
-                        self.sendSendMessageWithDelay();
-                    }
+                // TODO check for mail address
+                if (!self.mail_to || self.mail_to === '') {
+                    self.addNotification('error', 'Missing receiver e-mail address. Please check your configuration in the following app instance: ' + self.config.title, 'module', 'MailNotifier');
+                    return;
+                }
+
+                // add delay timer if not existing
+                if(!self.timer && send_mail){
+                    self.sendSendMessageWithDelay();
                 }
             }
         },
@@ -76,10 +101,38 @@ MailNotifier.prototype.init = function (config) {
         this.vDev.set('visibility', true, {silent: true});
     }
 
+    // wrap method with a function
+    this.notificationMailWrapper = function(notification) {
+        if (notification.level === 'mail.notification'){
+            var instance = self.controller.instances.filter(function (instance){
+                return instance.params.mail_to_select === notification.type;
+            });
+
+            if(typeof instance[0] !== 'undefined') {
+                var new_vDev = self.controller.devices.get(instance[0].moduleId + '_' + instance[0].id);
+
+                if (instance[0].id === self.vDev.get('creatorId')) {
+                    new_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
+                }
+            } else {
+                var def_instance = self.controller.instances.filter(function (instance){
+                    return instance.moduleId === 'MailNotifier';
+                });
+                if(typeof def_instance[0] !== 'undefined') {
+                    var def_vDev = self.controller.devices.get(def_instance[0].moduleId + '_' + def_instance[0].id);
+
+                    if (def_instance[0].id === self.vDev.get('creatorId')) {
+                        def_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
+                    }
+                }
+            }
+        }
+    };
+
+    self.controller.on('notifications.push', self.notificationMailWrapper);
 };
 
 MailNotifier.prototype.stop = function () {
-
     if (this.vDev) {
         this.controller.devices.remove(this.vDev.id);
         this.vDev = null;
@@ -90,6 +143,7 @@ MailNotifier.prototype.stop = function () {
         this.timer = undefined;
     }
 
+    this.controller.off('notifications.push', this.notificationMailWrapper);
     MailNotifier.super_.prototype.stop.call(this);
 };
 
@@ -119,7 +173,7 @@ MailNotifier.prototype.sendSendMessageWithDelay = function () {
                     "Content-Type": "application/x-www-form-urlencoded"
                 },
                 error: function(response) {
-                    console.log("MailNotifier-ERROR: " + response.message);
+                    console.log("MailNotifier-ERROR: " + typeof response !== 'string'? JSON.stringify(response) : response);
                 }
             });
 
@@ -131,13 +185,4 @@ MailNotifier.prototype.sendSendMessageWithDelay = function () {
             }
         }
     }, 5000);
-};
-
-
-MailNotifier.prototype.getInstanceTitle = function (instanceId) {
-    var instanceTitle = this.controller.instances.filter(function (instance){
-        return instance.id === instanceId;
-    });
-
-    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : 'Mail Notifier ' + this.id;
 };

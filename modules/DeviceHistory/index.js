@@ -286,7 +286,7 @@ _.extend(DeviceHistory.prototype, {
             
             } catch(e){
                 console.log("Cannot store history of device '" + dev.get('metrics:title') + "' because:", e.toString());
-                self.addNotification('error', langFile.err_store_history + dev.get('metrics:title') + " ERROR:", e.toString(), 'module');
+                self.addNotification('error', langFile.err_store_history + dev.get('metrics:title') + " ERROR: " + e.toString(), 'module', 'DeviceHistory');
             }
         };
 

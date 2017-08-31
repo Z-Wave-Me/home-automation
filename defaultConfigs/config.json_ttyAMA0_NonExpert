@@ -170,5 +170,18 @@
             "devices" : [],
             "logLevelContainer" : {}
         }
+    }, {
+        "id": 11,
+        "moduleId": "MailNotifier",
+        "active": true,
+        "title": "Send Email Notification",
+        "description": "This app allows you to send notifications by e-mail.\n(Added by default)",
+        "params": {
+            "hide": false,
+            "subject": "Z-Way Notification",
+            "mail_to_input": "",
+            "mail_to_select": "",
+            "mail_message": "Dear Smart Home UI user, <br>the app 'E-mail ME' allows you to send notifications by e-mail. <br>This app is preinstalled to make your entry in the Smart Home UI more comfortable. <br> By default the given e-mail address is used that you've entered during the initialisation.<br> If you haven't already set an e-mail address to your account, you can check the settings of E-mail ME app under Menu > Apps > Active > E-mail ME to change this.<br>In this menu you can also deactivate or remove this app at any time.<br> Have fun!"
+        }
     }]
 }

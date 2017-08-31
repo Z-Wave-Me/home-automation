@@ -8,5 +8,6 @@
   "h_mail_to": "The mail address, that should receive the notifications.",
   "subject": "Z-Way Notification",
   "l_subject": "Subject",
-  "h_subject": "The subject of the E-Mail."
+  "h_subject": "The subject of the E-Mail.",
+  "rl_allow_input": "Use an other E-Mail address:"
 }

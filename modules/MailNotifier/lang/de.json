@@ -8,5 +8,6 @@
   "h_mail_to": "Die Mail-Adresse, an welche die Benachrichtigungen gesendet werden sollen.",
   "subject": "Z-Way Benachrichtigung",
   "l_subject": "Betreff",
-  "h_subject": "Der Betreff der E-Mail."
+  "h_subject": "Der Betreff der E-Mail.",
+  "rl_allow_input": "Eine andere E-Mail-Adresse verwenden:"
 }
