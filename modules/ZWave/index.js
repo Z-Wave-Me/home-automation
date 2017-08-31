@@ -27,14 +27,14 @@ function ZWave (id, controller) {
 	};
 
 	this.ZWAY_DATA_CHANGE_TYPE = {
-		"Updated": 0x01,       // Value updated or child created
+		"Updated": 0x01,	   // Value updated or child created
 		"Invalidated": 0x02,   // Value invalidated
-		"Deleted": 0x03,       // Data holder deleted - callback is called last time before being deleted
+		"Deleted": 0x03,	   // Data holder deleted - callback is called last time before being deleted
 		"ChildCreated": 0x04,  // New direct child node created
 
 		// ORed flags
 		"PhantomUpdate": 0x40, // Data holder updated with same value (only updateTime changed)
-		"ChildEvent": 0x80     // Event from child node
+		"ChildEvent": 0x80	 // Event from child node
 	};
 
 	this.CC = {
@@ -2652,7 +2652,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		// process interval that starts reorganization of each node after 10 sec
 		// TODO(!!!) this has to be changed from global handler to the local one
-        reorgState.progressInterval = setInterval(function() {
+		reorgState.progressInterval = setInterval(function() {
 			if (reorgState.nodesPending[0]) {
 				nodeReorg();
 			} else {
@@ -2669,7 +2669,7 @@ ZWave.prototype.defineHandlers = function () {
 		 * - whole reorganization progress has finished
 		 */
 		// TODO(!!!) this has to be changed from global handler to the local one
-        reorgState.reorgInterval = setInterval(function(){
+		reorgState.reorgInterval = setInterval(function(){
 			var nodes = [],
 				cntNodes = Object.keys(reorgState.nodeRes).length,
 				now = (new Date()).valueOf();
@@ -2878,8 +2878,8 @@ ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId,
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
 	// three prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
-	//  (dataBindings, zway, nodeId,                             path, func)
-	//  (dataBindings, zway,                                     path, func) // bind to controller data
+	//  (dataBindings, zway, nodeId,							 path, func)
+	//  (dataBindings, zway,									 path, func) // bind to controller data
 
 	var pathArr = [],
 		data = null,
@@ -3704,7 +3704,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							if(!_.isEmpty(oldColor)) {
 								color = oldColor;
 							} else {
-                                color.r = color.g = color.b = 255;
+								color.r = color.g = color.b = 255;
 							}
 						} else if (command === "off") {
 							color.r = color.g = color.b = 0;
@@ -3712,7 +3712,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							color.r = parseInt(args.red, 10);
 							color.g = parseInt(args.green, 10);
 							color.b = parseInt(args.blue, 10);
-                            vDev_rgb.set('metrics:oldColor', color);
+							vDev_rgb.set('metrics:oldColor', color);
 						}
 						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
 					},
@@ -3784,7 +3784,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							overlay: {},
 							handler: function(command, args) {
 								var newVal,
-									oldVal = vDev.get('metircs:level');
+									oldVal = this.get('metrics:level');			
 
 								// up, down for Blinds
 								if ("on" === command || "up" === command) {
@@ -3835,11 +3835,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 								if (0 === newVal || !!newVal) {
 									if ("exactSmooth" === command) {
-                                        cc.Set(colorId, newVal, args.duration);
-                                    } else {
-                                        cc.Set(colorId, newVal);
-                                    }
-                                    vDev.set('metrics:oldLevel', newVal);
+										cc.Set(colorId, newVal, args.duration);
+									} else {
+										cc.Set(colorId, newVal);
+									}
+								}
+
+								if (oldVal != newVal) {
+									this.set('metrics:oldLevel',oldVal);
 								}
 							},
 							moduleId: self.id
@@ -4613,22 +4616,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
-                            maskArrayToTypes = function (bitmaskArray) {
-                                var types = [], n = 0;
+							maskArrayToTypes = function (bitmaskArray) {
+								var types = [], n = 0;
 
-                                bitmaskArray.forEach(function(bitmask, i) {
-                                    n = i * 8;
-                                    while (bitmask) {
-                                        if (bitmask & 0x01) {
-                                            types.push(n);
-                                        }
-                                        n++;
-                                        bitmask >>= 1;
-                                    }
-                                });
+								bitmaskArray.forEach(function(bitmask, i) {
+									n = i * 8;
+									while (bitmask) {
+										if (bitmask & 0x01) {
+											types.push(n);
+										}
+										n++;
+										bitmask >>= 1;
+									}
+								});
 
-                                return types;
-                            };
+								return types;
+							};
 
 							var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
 							var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
