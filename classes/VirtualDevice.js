@@ -31,7 +31,8 @@ VirtualDevice = function (options) {
             'creationTime',
             'probeType',
             'customIcons',
-            'order'
+            'order',
+            'removed'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -49,6 +50,7 @@ VirtualDevice = function (options) {
             elements: 0,
             dashboard: 0
         },
+        removed: false,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -65,7 +67,8 @@ VirtualDevice = function (options) {
                 rooms: 0,
                 elements: 0,
                 dashboard: 0
-            }
+            },
+            removed: false
         },
         changed: {},
         overlay: options.overlay || {},

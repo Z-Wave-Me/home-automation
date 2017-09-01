@@ -11,6 +11,7 @@ Changes:
 * add "zway_parsedPackets.json" to blacklists, to be ignored during backup / restore
 * add topology restore flag to ZAutomation restore api
 * add support for fan and siren (pull request #439 by maros)
+* add removed flag to vDevs
 * postfix.json updated (changed or added):
   * Popp 10 year smoke detector with siren
   * Fibaro Door/Window Sensor G5
@@ -141,6 +142,7 @@ Modules:
   * Added previous and next song functionality to sonos module (pull request #446 by vuza)
 * OpenWeather:
   * Added clouds info to metrics:zwaveOpenWeather (pull request #438 by RobertGebauer)
+  * Added optional sunset / sunrise widget (inspired by pull request #229 from manyosit)
 
 CIT:
 * fix missing encodeURI
