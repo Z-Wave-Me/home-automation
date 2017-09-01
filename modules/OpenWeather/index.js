@@ -85,8 +85,9 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
                 var main = res.data.main,
                     weather = res.data.weather,
                     wind = res.data.wind,
+                    clouds = res.data.clouds,
                     country = res.data.sys.country,
-                    weatherData = {'main': main,'weather': weather, 'wind': wind},
+                    weatherData = {'main': main,'weather': weather, 'wind': wind, 'clouds': clouds},
                     temp = Math.round((self.config.units === "celsius" ? main.temp - 273.15 : main.temp * 1.8 - 459.67) * 10) / 10,
                     icon = "http://openweathermap.org/img/w/" + weather[0].icon + ".png",
                     flag = "http://openweathermap.org/images/flags/" + country.toLowerCase() + ".png";
