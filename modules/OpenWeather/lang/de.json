@@ -8,5 +8,8 @@
 	"p_city": "Berlin",
 	"temp":"Temperatur",
 	"err_parse":"Fehler beim Einlesen der Wetterinformationen.",
-	"err_fetch":"Fehler beim Aktualisieren der Wetterinformationen."
+	"err_fetch":"Fehler beim Aktualisieren der Wetterinformationen.",
+	"h_api":"Gehen Sie auf die URL: https://openweathermap.org/appid#get und folgen Sie den Anweisungen, um ein OpenWeather-Token zu erstellen.",
+	"rl_show_daylight":"Tageslichtsensor anzeigen",
+	"h_show_daylight":"Erzeugt einen binären Sensor, der sich je nach Sonnenauf- oder Sonnenuntergangszeit ein- (Tageslicht ein) oder ausschaltet (Tageslicht aus)."
 }

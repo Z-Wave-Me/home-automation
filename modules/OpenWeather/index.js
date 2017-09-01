@@ -1,12 +1,13 @@
 /*** OpenWeather Extended Z-Way HA module *******************************************
 
-Version: 1.0.1
+Version: 1.2.0
 (c) Z-Wave.Me, 2014
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@z-wave.me>
 Description:
     This module creates weather widget that shows you 
     in addition to the temperature also humidity, pressure etc.
+    You can also add a daylight widget that delivers on/off based on sunrise/sunset
 
 ******************************************************************************/
 
@@ -32,7 +33,7 @@ OpenWeather.prototype.init = function (config) {
 
     var self = this;
 
-    this.vDev = self.controller.devices.create({
+    this.vDevWeather = self.controller.devices.create({
         deviceId: "OpenWeather_" + this.id,
         defaults: {
             deviceType: "sensorMultiline",
@@ -49,6 +50,24 @@ OpenWeather.prototype.init = function (config) {
         },
         moduleId: this.id
     });
+    
+    if (config.show_daylight) {
+        this.vDevDayLight = self.controller.devices.create({
+             deviceId: "OpenWeatherDaylight_" + this.id,
+             defaults: {
+                 deviceType: "sensorBinary",
+                 metrics: {
+                     probeTitle: 'daylight'
+                 }
+             },
+             overlay: {
+                 metrics: {
+                     title: this.config.city + " Daylight"
+                 }
+             },
+             moduleId: this.id
+         });
+    }
 
     this.timer = setInterval(function() {
         self.fetchExtendedWeather(self);
@@ -62,10 +81,15 @@ OpenWeather.prototype.stop = function () {
     if (this.timer)
         clearInterval(this.timer);
         
-    if (this.vDev) {
-        this.controller.devices.remove(this.vDev.id);
-        this.vDev = null;
+    if (this.vDevWeather) {
+        this.controller.devices.remove(this.vDevWeather.id);
+        this.vDevWeather = null;
     }
+    
+    if (this.vDevDayLight) {
+         this.controller.devices.remove(this.vDevDayLight.id);
+         this.vDevDayLight = null;
+     }
 };
 
 // ----------------------------------------------------------------------------
@@ -90,13 +114,29 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
                     weatherData = {'main': main,'weather': weather, 'wind': wind, 'clouds': clouds},
                     temp = Math.round((self.config.units === "celsius" ? main.temp - 273.15 : main.temp * 1.8 - 459.67) * 10) / 10,
                     icon = "http://openweathermap.org/img/w/" + weather[0].icon + ".png",
-                    flag = "http://openweathermap.org/images/flags/" + country.toLowerCase() + ".png";
+                    flag = "http://openweathermap.org/images/flags/" + country.toLowerCase() + ".png",
+                    sunrise = Math.round(res.data.sys.sunrise) * 1000,
+                    icon_sunrise = "http://openweathermap.org/img/w/01d.png",
+                    sunset = Math.round(res.data.sys.sunset) * 1000,
+                    icon_sunset = "http://openweathermap.org/img/w/01n.png";
+                
+                if (self.vDevDayLight) {
+                    var now = new Date().getTime();
+                    
+                    if (now > sunrise && now < sunset) {
+                        self.vDevDayLight.set("metrics:level", "on");
+                        self.vDevDayLight.set("metrics:icon", icon_sunrise);
+                    } else {
+                        self.vDevDayLight.set("metrics:level", "off");
+                        self.vDevDayLight.set("metrics:icon", icon_sunset);
+                    }
+                }
 
-                self.vDev.set("metrics:zwaveOpenWeather", weatherData);
-                self.vDev.set("metrics:level", temp);
-                self.vDev.set("metrics:icon", icon);
-                self.vDev.set("metrics:country", country);
-                self.vDev.set("metrics:flag", flag);
+                self.vDevWeather.set("metrics:zwaveOpenWeather", weatherData);
+                self.vDevWeather.set("metrics:level", temp);
+                self.vDevWeather.set("metrics:icon", icon);
+                self.vDevWeather.set("metrics:country", country);
+                self.vDevWeather.set("metrics:flag", flag);
             } catch (e) {
                 self.addNotification("error", langFile.err_parse, "module");
             }

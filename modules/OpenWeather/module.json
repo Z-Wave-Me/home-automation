@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName":"OpenWeather",
-    "version": "1.0.1",
+    "version": "1.2.0",
     "maturity": "stable",
     "repository": {
             "type": "git",
@@ -16,8 +16,9 @@
         "title": "__m_title__",
         "description": "__m_descr__",
         "units": "celsius",
-    	"city": "",
-    	"country": ""
+        "city": "",
+        "country": "",
+        "show_daylight": false
     },
     "schema": {
         "type": "object",
@@ -32,12 +33,16 @@
             },
             "units": {
                 "type": "select",
-		"enum": ["celsius", "fahrenheit"],
+                "enum": ["celsius", "fahrenheit"],
                 "required": true
             },
              "api": {
                 "type": "string",
                 "required": true
+            },
+            "show_daylight": {
+                "type": "boolean",
+                "required": false
             }
         },
         "required": true
@@ -46,11 +51,11 @@
         "fields": {
             "city": {
                 "label": "__l_city__",
-		"placeholder": "__p_city__"
+        "placeholder": "__p_city__"
             },
             "country": {
                 "label": "__l_country__",
-		"placeholder": "__p_country__"
+        "placeholder": "__p_country__"
             },
             "units": {
                 "label": "__l_units__",
@@ -58,7 +63,13 @@
             },
             "api": {
                 "label": "API-Key",
-                "placeholder": "API-Key"
+                "placeholder": "API-Key",
+                "helper":"__h_api__"
+            },
+            "show_daylight": {
+                "type": "checkbox",
+                "rightLabel":"__rl_show_daylight__",
+                "helper":"__h_show_daylight__"
             }
         }
     }
