@@ -1,8 +1,16 @@
-#XX.08.2017 v2.3.6
+#XX.09.2017 v2.3.6
 Changes:
 * show more logs on ZWaveBinding error
 * Refactored PacketLog to make it work faster and take smaller RAM/FLASH
 * add location title in front of device names within module configuration dropdowns
+* Modified MobileAppSupport and LogicalRules apps to push user defined notifications
+* add rain and co sensor types
+* updated underscore.js to v1.8.3,
+* add auto installer for E-Mail Me instance (is added automatically after z-way f/w upgrade if e-mail under My Settings was set and no instance is already existing)
+* E-Mail Me instance is added automatically during initial setup - e-mail is set during initial login
+* add "zway_parsedPackets.json" to blacklists, to be ignored during backup / restore
+* add topology restore flag to ZAutomation restore api
+* add support for fan and siren (pull request #439 by maros)
 * postfix.json updated (changed or added):
   * Popp 10 year smoke detector with siren
   * Fibaro Door/Window Sensor G5
@@ -105,10 +113,34 @@ Changes:
 
 Fixes:
 * fixed LimitedArray class
+* fix rssi output
+* fix endless timeout entries of reorganization
+* fix #442: Uncaught TypeError: Cannot read property 'filter' of undefined when getting notifications
+* fix not working set of old multilevel value
 
 Modules:
 * DeviceHistory:
   * remove listeners on stop
+  * fix notification bug in DeviceHistory app 
+* MobileAppSupport:
+  * modified to push user defined notifications
+* LogicalRules:
+  * modified to push user defined notifications
+* Camera:
+  * add screen URl for new camera view
+* ZWave:
+  * add rain and co sensor types
+  * add replace smoke image with burglar image for burglar events
+  * fix not working set of old multilevel valu
+* MailNotifier v1.2.0:
+  * extend handler to send mails initialized by IfThen and LogicalRule
+  * add checkbox to allow using an alternative email address next to the preconfigured addresses in user settings
+* LightScene v1.1.1:
+  * change icon type gesture to new type scene
+* Sonos:
+  * Added previous and next song functionality to sonos module (pull request #446 by vuza)
+* OpenWeather:
+  * Added clouds info to metrics:zwaveOpenWeather (pull request #438 by RobertGebauer)
 
 CIT:
 * fix missing encodeURI
