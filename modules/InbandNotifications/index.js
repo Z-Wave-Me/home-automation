@@ -35,7 +35,7 @@ InbandNotifications.prototype.init = function (config) {
         lastChanges = [];
 
     this.writeNotification = function (vDev) {
-        if(!Boolean(vDev.get('permanently_hidden'))){
+        if (!Boolean(vDev.get('permanently_hidden')) && !Boolean(vDev.get('removed'))){ // write notification if vdev is active - not permanently hidden or removed
             var devId = vDev.get('id'),
                 devType = vDev.get('deviceType'),
                 devProbeType = vDev.get('probeType'),
@@ -45,9 +45,9 @@ InbandNotifications.prototype.init = function (config) {
                 location = vDev.get('location'),
                 customIcons = vDev.get('customIcons') !== {}? vDev.get('customIcons') : undefined,
                 eventType = function(){
-                    if(vDev.get('metrics:probeTitle')){
+                    if (vDev.get('metrics:probeTitle')){
                         return vDev.get('metrics:probeTitle').toLowerCase();
-                    }else {
+                    } else {
                         return 'status';
                     }
                 },

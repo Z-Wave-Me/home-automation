@@ -113,6 +113,12 @@ AutomationController.prototype.init = function () {
             pushNamespaces(device, false);
         });
 
+        // update namespaces if device removed status has changed
+        self.devices.on('change:removed', function (device) {
+            ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()));
+            pushNamespaces(device, false);
+        });
+
         // update namespaces if structure of devices collection changed
         self.devices.on('created', function (device) {
             ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
@@ -1983,7 +1989,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
         locNspcArr = [],
         devLocation = device.get('location'),
         location = that.getLocation(that.locations, devLocation),
-        devHidden = device.get('permanently_hidden');
+        devHidden = device.get('permanently_hidden') || device.get('removed');
 
         if (!!location && !location.namespaces) {
             location.namespaces = [];
@@ -2131,7 +2137,7 @@ AutomationController.prototype.generateNamespaces = function (callback, device, 
         };
 
         // only triggered if there is no explicite location change - 
-        // on device: created, removed, destroy, change:metrics:title, change:permanently_hidden
+        // on device: created, removed, destroy, change:metrics:title, change:permanently_hidden, change:removed
         // usual update of global namespaces
         // first setup of location namespace 
         if (!locationNspcOnly) {

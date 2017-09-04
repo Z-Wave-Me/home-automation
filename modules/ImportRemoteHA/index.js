@@ -138,7 +138,8 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
                         probeType: item.probeType,
                         metrics: item.metrics,
                         visibility: item.visibility,
-                        permanently_hidden: item.permanently_hidden
+                        permanently_hidden: item.permanently_hidden,
+                        removed: item.removed
                     },
                     handler: function(command, args) {
                         self.handleCommand(this, command, args);

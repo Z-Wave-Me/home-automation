@@ -3993,43 +3993,34 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
 						defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
 						defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
+						
 						if (sensorTypeId === 1) {
 							defaults.metrics.icon = "temperature";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 3) {
 							defaults.metrics.icon = "luminosity";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 4 || sensorTypeId === 15 || sensorTypeId === 16) {
 							defaults.metrics.icon = "energy";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 5) {
 							defaults.metrics.icon = "humidity";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 9) {
 							defaults.metrics.icon = "barometer";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 12) {
 							defaults.metrics.icon = "rain";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 25) {
 							defaults.metrics.icon = "seismic";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 27) {
 							defaults.metrics.icon = "ultraviolet";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 40) {
 							defaults.metrics.icon = "co";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 52) {
 							defaults.metrics.icon = "acceleration_x";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 53) {
 							defaults.metrics.icon = "acceleration_y";
-							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 54) {
 							defaults.metrics.icon = "acceleration_z";
-							defaults.probeType = defaults.metrics.icon;
 						}
+
+						defaults.probeType = defaults.metrics.icon;
 
 						// apply postfix if available
 						if (changeVDev[cVDId]) {
