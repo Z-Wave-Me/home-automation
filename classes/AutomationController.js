@@ -1030,11 +1030,7 @@ AutomationController.prototype.deleteInstance = function (id) {
         self = this;
     
     // get all devices created by instance 
-    instDevices = _.map(this.devices.filter(function (dev) {
-        return dev.get('creatorId') === id;
-    }), function (dev) {
-        return dev.id;
-    });
+    instDevices = this.devices.filterByCreatorId(id);
     
     this.removeInstance(id);
 
@@ -1044,10 +1040,11 @@ AutomationController.prototype.deleteInstance = function (id) {
 
     // cleanup 
     if (instDevices.length > 0) {
-        instDevices.forEach(function (id) {
+        instDevices.forEach(function (vDev) {
             // check for vDevInfo entry
-            if (self.vdevInfo[id]) {
-                self.devices.cleanup(id);
+            if (self.vdevInfo[vDev.id]) {
+                self.devices.remove(vDev.id);
+                self.devices.cleanup(vDev.id);
             }
         });
     }

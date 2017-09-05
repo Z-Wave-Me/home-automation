@@ -13,6 +13,7 @@ VirtualDevice = function (options) {
         permHidden = options.defaults.hasOwnProperty('permanently_hidden')? options.defaults.permanently_hidden : false,
         visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true,
         customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {};
+        isFailed = options.defaults.hasOwnProperty('isFailed')? options.defaults.isFailed : false,
 
     _.extend(this, options, {
         id: options.deviceId,
@@ -32,7 +33,8 @@ VirtualDevice = function (options) {
             'probeType',
             'customIcons',
             'order',
-            'removed'
+            'removed',
+            'isFailed'
         ],
         collection: options.controller.devices,
         metrics: {},
@@ -68,7 +70,8 @@ VirtualDevice = function (options) {
                 elements: 0,
                 dashboard: 0
             },
-            removed: false
+            removed: false,
+            isFailed: isFailed
         },
         changed: {},
         overlay: options.overlay || {},

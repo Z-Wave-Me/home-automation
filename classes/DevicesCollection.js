@@ -214,5 +214,49 @@ _.extend(DevicesCollection.prototype, {
         }
         
         return EventEmitter2.prototype.off.call(this, vDevId + args[0], args[1]);
+    },
+    // filter vDevs by nodeId and zway name
+    filterByNode: function (nodeId, zwayName) {
+        var self = this,
+            getNodeVDevs = [],
+            nodeId = nodeId,
+            zwayName = zwayName,
+            listZwayNames = ZWave.list().map(function(name) { return name });
+
+        // filter all nodes
+        if (!zwayName) {
+            matches = [];
+
+            // prepare vDev id prefixes
+            listZwayNames.forEach(function (name) {
+               matches.push("ZWayVDev_" + name + "_" + nodeId);
+            });
+
+            // get all vDev's by node
+            matches.forEach(function (vDevIdPrefix) {
+                getNodeVDevs = getNodeVDevs.concat(_.filter(self.models, function(vDev){
+                    return vDev.id.indexOf(vDevIdPrefix) > -1;
+                }));
+            });
+        // filter all nodes by zway name
+        } else if (zwayName && listZwayNames.indexOf(zwayName) > -1){
+            vDevIdPrefix = "ZWayVDev_" + zwayName + "_" + nodeId;
+            
+            getNodeVDevs = _.filter(this.models, function(vDev) {
+                return vDev.id.indexOf(vDevIdPrefix) > -1;
+            });
+        }
+
+        return getNodeVDevs;
+    },
+    // filter vDevs by creator id
+    filterByCreatorId: function (instanceId) {
+        var instanceVDevs = [];
+
+        instanceVDevs = _.filter(this.models,function (dev) {
+            return dev.get('creatorId') === instanceId;
+        });
+
+        return instanceVDevs;
     }
 });

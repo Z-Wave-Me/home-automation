@@ -3009,6 +3009,10 @@ ZWave.prototype.deadDetectionStop = function () {
 ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	var self = this;
 	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) {
+		
+		// set failed (true/false) flag to all node vDevs
+		self.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
+		
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
 			self.deadDetectionCheckDevice(self, arg);
@@ -3034,6 +3038,21 @@ ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 		self.addNotification("notification", langFile.dev_btl + values, "connection");
 	}
 };
+
+ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
+	var self = this,
+		nodeId = nodeId,
+		getNodeVDevs = [];
+
+	getNodeVDevs = this.controller.devices.filterByNode(nodeId, this.config.name).map(function(vDev){ 
+		return vDev.id; 
+	});
+
+	// set vDev isFailed state
+	getNodeVDevs.forEach(function(vDevId) {
+		self.controller.devices.get(vDevId).set('isFailed', isFailed);
+	});
+}
 
 
 // ----------------- Devices Creator ---------------
@@ -3953,8 +3972,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											vDev.set("metrics:level", this.value ? "on" : "off");
 										}
 									} catch (e) {
-									}
-									;
+									};
 								}
 							}, "value");
 						}
@@ -4995,6 +5013,8 @@ ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClas
 
 	this.controller.devices.remove(vDevId);
 };
+
+// ----------------- RSSI functions -----------------
 
 ZWave.prototype.lastRSSIData = function() {
 	var rssi = this.zway.controller.data.statistics.backgroundRSSI;
