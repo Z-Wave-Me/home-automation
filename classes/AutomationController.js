@@ -1413,7 +1413,7 @@ AutomationController.prototype.loadNotifications = function () {
             saveObject('notifications', arr);
         },
         25, // check it every 25 notifications
-        5000, // save up to 5000 notifications
+        2500, // save up to 2500 notifications
         function (notification){
             var now = new Date(),
                 startOfDay = now.setHours(0,0,0,0),
