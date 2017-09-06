@@ -195,6 +195,9 @@ ZWave.prototype.init = function (config) {
 	this._dataUnbind = function(dataBindings) {
 		self.dataUnbind(dataBindings);
 	};
+
+	// check periodically if nodes are failed to mark their vDevs as failed too
+	this.failedNodeCheck();
 		
 	this.controller.on("ZWave.dataBind", this._dataBind);
 	this.controller.on("ZWave.dataUnbind", this._dataUnbind);
@@ -378,6 +381,8 @@ ZWave.prototype.stopBinding = function () {
 		this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
 		this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
 	}
+
+	this.controller.off("checkForfailedNode.poll", this.checkForfailedNode);
 
 	this.stopped = true;
 	if (this.zway) {
@@ -733,6 +738,50 @@ ZWave.prototype.certXFCheck = function () {
 
 	// initial certXF check
 	this.checkForCertFxLicense();
+};
+
+ZWave.prototype.failedNodeCheck = function () {
+	var self = this,
+		zway = this.zway;
+
+	// polling function
+	this.checkForfailedNode = function() {
+		try {
+			Object.keys(zway.devices).forEach(function(nodeId) {
+				var wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
+					isFailedNode = zway.devices[nodeId].data.isFailed.value || false,
+					now = Math.floor(Date.now()/1000);
+
+				if (wakeupCC) {
+
+					wakeupInterval = wakeupCC.data.interval.value;
+					lastWakeup = wakeupCC.data.lastWakeup.value;
+
+					// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
+					if (lastWakeup < (now - (3*wakeupInterval)) || isFailedNode) {
+						zway.IsFailedNode(nodeId);
+					}
+				}
+			});
+		} catch (e) {
+			console.log("Failed to check if node is failed. ERROR:", e.toString());
+		}
+	};
+
+	// add cron job that is triggered each 10 min
+	this.controller.emit("cron.addTask", "checkForfailedNode.poll", {
+		minute: [0, 59, 10],
+		hour: null,
+		weekDay: null,
+		day: null,
+		month: null
+	});
+
+	// add event listener
+	this.controller.on("checkForfailedNode.poll", this.checkForfailedNode);
+
+	// initial failed node check
+	this.checkForfailedNode();
 };
 
 ZWave.prototype.refreshStatisticsPeriodically = function () {
@@ -3044,15 +3093,13 @@ ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
 		nodeId = nodeId,
 		getNodeVDevs = [];
 
-	getNodeVDevs = this.controller.devices.filterByNode(nodeId, this.config.name).map(function(vDev){ 
-		return vDev.id; 
-	});
+	getNodeVDevs = this.controller.devices.filterByNode(nodeId, this.config.name);
 
 	// set vDev isFailed state
-	getNodeVDevs.forEach(function(vDevId) {
-		self.controller.devices.get(vDevId).set('isFailed', isFailed);
+	getNodeVDevs.forEach(function(vDev) {
+		vDev.set('isFailed', isFailed);
 	});
-}
+};
 
 
 // ----------------- Devices Creator ---------------
