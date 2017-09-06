@@ -3125,15 +3125,15 @@ ZWave.prototype.gateDevicesStart = function () {
 
 					// set device config by entering (runs once after inclusion):
 					// instId ... instance ID
-					// parameter ... id of the parameter that should be changed
-					// value ... new value
+					// parameter ... id of the parameter that should be changed. Can be 0 ... 0xff
+					// value ... new value. Can be 0 ... 0xffffffff
 					// size ... 0 for auto or 1, 2, 4 (Byte)
 					function setConfig (instId, parameter, value, size) {
-						var parameter = parseInt(parameter) || null,
-							value = parseInt(value) || null,
-							size = parseInt(size) || null;
+						var parameter = Number.isInteger(parseInt(parameter)) ? parseInt(parameter) : null,
+						value = Number.isInteger(parseInt(value)) ? parseInt(value) : null,
+						size = parseInt(size) || null; 
 
-						if(instId === instanceId && !!parameter && !!value && !!size){
+						if(instId === instanceId && parameter !== null && !!value !== null && size !== null){
 							// set config after inclusion only and if it doesn't exist or isn't equal
 							if(commandClassId === 112 && deviceCC && c.data.lastIncludedDevice.value === nodeId && (!deviceCC.data[parameter] || (deviceCC.data[parameter] && deviceCC.data[parameter].val.value !== value))){
 								deviceCC.Set(parameter, value, size);

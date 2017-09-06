@@ -869,10 +869,21 @@ AutomationController.prototype.listInstances = function (){
 }
 
 AutomationController.prototype.createInstance = function (reqObj) {
+
+    getNextId = function() {
+        var id = 0;
+        self.instances.forEach(function (instance) {
+            if (instance.id > id) {
+                id = instance.id;
+            }
+        });
+        return id+1;
+    }
+
     //var instance = this.instantiateModule(id, className, config),
     var self = this,
         langFile = this.loadMainLang(),
-        id = self.instances.length ? self.instances[self.instances.length - 1].id + 1 : 1,
+        id = getNextId(),
         instance = null,
         module = _.find(self.modules, function (module) {
             return module.meta.id === reqObj.moduleId;
@@ -1408,7 +1419,7 @@ AutomationController.prototype.loadNotifications = function () {
             saveObject('notifications', arr);
         },
         25, // check it every 25 notifications
-        5000, // save up to 5000 notifications
+        2500, // save up to 2500 notifications
         function (notification){
             var now = new Date(),
                 startOfDay = now.setHours(0,0,0,0),
