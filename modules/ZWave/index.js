@@ -780,15 +780,20 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 				zway.devices[nodeId].SendNoOperation();
             	zway.devices[nodeId].WakeupQueue();
 			}
-		}
-	}
+		} else {
+	    	zway.devices[nodeId].SendNoOperation();
+	    	zway.IsFailedNode(nodeId);
+	    }
+	};
 
 	try {
 		if (typeof nodeId === 'number') {
 			checkFailed(nodeId);
 		} else {
 			Object.keys(zway.devices).forEach(function(nodeId) {
-				checkFailed(nodeId);
+				if (nodeId != zway.controller.data.nodeId.value) {
+			    	checkFailed(nodeId);
+			    }
 			});
 		}
 	} catch (e) {
