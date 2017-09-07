@@ -12,8 +12,9 @@ VirtualDevice = function (options) {
     var probeType = options.defaults.probeType? options.defaults.probeType : (options.overlay.probeType? options.overlay.probeType : ''),
         permHidden = options.defaults.hasOwnProperty('permanently_hidden')? options.defaults.permanently_hidden : false,
         visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true,
-        customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {};
-        isFailed = options.defaults.hasOwnProperty('isFailed')? options.defaults.isFailed : false,
+        customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {},
+        removed = options.defaults.hasOwnProperty('removed')? options.defaults.removed : false,
+        isFailed = options.defaults.hasOwnProperty('isFailed')? options.defaults.isFailed : false;
 
     _.extend(this, options, {
         id: options.deviceId,
@@ -42,17 +43,6 @@ VirtualDevice = function (options) {
         location: 0,
         tags: [],
         updateTime: 0,
-        h: options.controller.hashCode(options.deviceId),
-        hasHistory: false,
-        visibility: visibility,
-        probeType: probeType,
-        customIcons: customicons,
-        order: {
-            rooms: 0,
-            elements: 0,
-            dashboard: 0
-        },
-        removed: false,
         attributes: {
             id: options.deviceId,
             metrics: this.metrics,
@@ -70,7 +60,7 @@ VirtualDevice = function (options) {
                 elements: 0,
                 dashboard: 0
             },
-            removed: false,
+            removed: removed,
             isFailed: isFailed
         },
         changed: {},

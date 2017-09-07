@@ -69,10 +69,11 @@ _.extend(DeviceHistory.prototype, {
         });
 
         this.allDevices = this.controller.devices.filter(function(dev){
-            return  dev.get('permanently_hidden') === false &&                  // only none permanently_hidden devices
-                    _.unique(config.devices).indexOf(dev.id) === -1 &&     //in module excluded devices
-                    exclDevTypes.indexOf(dev.get('deviceType')) === -1 &&       //excluded device types
-                    self.exclSensors.indexOf(dev.id) === -1;                         //excluded sensors
+            return  dev.get('permanently_hidden') === false &&              // only none permanently_hidden devices
+                    dev.get('removed') === false &&                         // only none removed devices
+                    _.unique(config.devices).indexOf(dev.id) === -1 &&      //in module excluded devices
+                    exclDevTypes.indexOf(dev.get('deviceType')) === -1 &&   //excluded device types
+                    self.exclSensors.indexOf(dev.id) === -1;                //excluded sensors
         });
 
         this.addListenerToBinaryVDevs = function(vDev) {
@@ -80,13 +81,14 @@ _.extend(DeviceHistory.prototype, {
                 devType = vDev.get('deviceType'),
                 pushed = false;
             
-            if ((vDev.get('permanently_hidden') === false &&        // only none permanently_hidden devices
-                _.unique(config.devices).indexOf(id) === -1 &&      //in module excluded devices
-                    exclDevTypes.indexOf(devType) === -1 &&         //excluded device types
-                        self.exclSensors.indexOf(id) === -1) &&     //excluded sensors
-                            _.findIndex(self.allDevices, function(dev, index, array) {
-                               return dev.id === id;
-                            }) < 0) {
+            if ((vDev.get('permanently_hidden') === false &&                // only none permanently_hidden devices
+                    dev.get('removed') === false &&                         // only none removed devices
+                         _.unique(config.devices).indexOf(id) === -1 &&     //in module excluded devices
+                            exclDevTypes.indexOf(devType) === -1 &&         //excluded device types
+                                self.exclSensors.indexOf(id) === -1) &&     //excluded sensors
+                                    _.findIndex(self.allDevices, function(dev, index, array) {
+                                       return dev.id === id;
+                                    }) < 0) {
                 
                 if(vDev.get("hasHistory") === false){
                     vDev.set("hasHistory", true, { silent: true });
