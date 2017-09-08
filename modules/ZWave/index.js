@@ -773,7 +773,7 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 		if (wakeupCC) {
 
 			wakeupInterval = wakeupCC.data.interval.value;
-			lastWakeup = wakeupCC.data.lastWakeup.value;
+			lastWakeup = !!wakeupCC.data.lastWakeup.value? wakeupCC.data.lastWakeup.value : wakeupCC.data.lastSleep.value;
 
 			// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
 			if (lastWakeup < (now - (3*wakeupInterval)) || isFailedNode) {
@@ -3077,7 +3077,9 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) {
 		
 		// set failed (true/false) flag to all node vDevs
-		self.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
+		if (self.zway && self.zway.devices[nodeId]) {
+			self.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
+		}
 		
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {

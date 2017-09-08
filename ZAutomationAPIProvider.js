@@ -2033,6 +2033,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 if (dontSave.indexOf(obj) === -1) {
                     saveObject(obj, reqObj.data[obj]);
+                    console.log('Restore', obj, '... done');
                 }
             }
 
