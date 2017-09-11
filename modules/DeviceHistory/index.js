@@ -82,7 +82,7 @@ _.extend(DeviceHistory.prototype, {
                 pushed = false;
             
             if ((vDev.get('permanently_hidden') === false &&                // only none permanently_hidden devices
-                    dev.get('removed') === false &&                         // only none removed devices
+                    vDev.get('removed') === false &&                         // only none removed devices
                          _.unique(config.devices).indexOf(id) === -1 &&     //in module excluded devices
                             exclDevTypes.indexOf(devType) === -1 &&         //excluded device types
                                 self.exclSensors.indexOf(id) === -1) &&     //excluded sensors
