@@ -770,20 +770,22 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 			isFailedNode = zway.devices[nodeId].data.isFailed.value || false,
 			now = Math.floor(Date.now()/1000);
 
-		if (wakeupCC) {
+		if (zway.devices[nodeId].data.deviceTypeString.value !== 'Portable Remote Controller') {
+			if (wakeupCC) {
 
-			wakeupInterval = wakeupCC.data.interval.value;
-			lastWakeup = !!wakeupCC.data.lastWakeup.value? wakeupCC.data.lastWakeup.value : wakeupCC.data.lastSleep.value;
+				wakeupInterval = wakeupCC.data.interval.value;
+				lastWakeup = !!wakeupCC.data.lastWakeup.value && wakeupCC.data.lastWakeup.value > 0? wakeupCC.data.lastWakeup.value : wakeupCC.data.lastSleep.value;
 
-			// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
-			if (lastWakeup < (now - (3*wakeupInterval)) || isFailedNode) {
-				zway.devices[nodeId].SendNoOperation();
-            	zway.devices[nodeId].WakeupQueue();
-			}
-		} else {
-	    	zway.devices[nodeId].SendNoOperation();
-	    	zway.IsFailedNode(nodeId);
-	    }
+				// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
+				if (lastWakeup < (now - (3*wakeupInterval)) || isFailedNode) {
+					zway.devices[nodeId].SendNoOperation();
+	            	zway.devices[nodeId].WakeupQueue();
+				}
+			} else {
+		    	zway.devices[nodeId].SendNoOperation();
+		    	zway.IsFailedNode(nodeId);
+		    }
+		}	
 	};
 
 	try {
