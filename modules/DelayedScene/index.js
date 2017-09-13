@@ -5,7 +5,7 @@ Version: 1.0.0
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
-    Implements light scene based on virtual devices of type dimmer, switch or anothe scene
+	Implements light scene based on virtual devices of type dimmer, switch or anothe scene
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -13,8 +13,8 @@ Description:
 // ----------------------------------------------------------------------------
 
 function DelayedScene (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    DelayedScene.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	DelayedScene.super_.call(this, id, controller);
 }
 
 inherits(DelayedScene, AutomationModule);
@@ -26,39 +26,39 @@ _module = DelayedScene;
 // ----------------------------------------------------------------------------
 
 DelayedScene.prototype.init = function (config) {
-    DelayedScene.super_.prototype.init.call(this, config);
+	DelayedScene.super_.prototype.init.call(this, config);
 
-    var self = this;
+	var self = this;
 
-    this.timer = null;
-    
-    this.timerHandler = this.handler;
+	this.timer = null;
+	
+	this.timerHandler = this.handler;
 
-    this.triggerHandler = function() {
-        if (self.config.singleTimer && self.timer) {	
-            clearTimeout(self.timer);
-        }
-        self.timer = setTimeout(function() {
-            self.timerHandler();
-        }, self.config.delay * 1000);
-        // we do not care about clearing setTimouts in non-singleTimer mode. Just emptying handler if need.
-        // If someone knows how to track many handlers and remove them from a list upon fire - you are welcome to improve the code.
-    };
+	this.triggerHandler = function() {
+		if (self.config.singleTimer && self.timer) {	
+			clearTimeout(self.timer);
+		}
+		self.timer = setTimeout(function() {
+			self.timerHandler();
+		}, self.config.delay * 1000);
+		// we do not care about clearing setTimouts in non-singleTimer mode. Just emptying handler if need.
+		// If someone knows how to track many handlers and remove them from a list upon fire - you are welcome to improve the code.
+	};
 
-    this.controller.devices.on(this.config.triggerScene, "change:metrics:level", this.triggerHandler);
+	this.controller.devices.on(this.config.triggerScene, "change:metrics:level", this.triggerHandler);
 };
 
-DelayedScene.prototype.stop = function () {    
-    this.controller.devices.off(this.config.triggerScene, "change:metrics:level", this.triggerHandler);
+DelayedScene.prototype.stop = function () {	
+	this.controller.devices.off(this.config.triggerScene, "change:metrics:level", this.triggerHandler);
 
-    if (this.timer) {
-        clearTimeout(this.timer);
-    }
-    
-    this.timerHandler = function () {}; // this is to clear actions on all remaining setTimouts without clearing them.
-    // We are emtying not the prototype, but function on instance
+	if (this.timer) {
+		clearTimeout(this.timer);
+	}
+	
+	this.timerHandler = function () {}; // this is to clear actions on all remaining setTimouts without clearing them.
+	// We are emtying not the prototype, but function on instance
 
-    DelayedScene.super_.prototype.stop.call(this);
+	DelayedScene.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
@@ -66,8 +66,8 @@ DelayedScene.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 DelayedScene.prototype.handler = function() {
-    var vDev = this.controller.devices.get(this.config.delayedScene);
-    if (vDev) {
-        vDev.performCommand("on");
-    }
+	var vDev = this.controller.devices.get(this.config.delayedScene);
+	if (vDev) {
+		vDev.performCommand("on");
+	}
 };

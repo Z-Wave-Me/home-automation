@@ -24,14 +24,14 @@ function EnOcean (id, controller) {
 	};
 
 	this.ZWAY_DATA_CHANGE_TYPE = {
-		"Updated": 0x01,       // Value updated or child created
+		"Updated": 0x01,	   // Value updated or child created
 		"Invalidated": 0x02,   // Value invalidated
-		"Deleted": 0x03,       // Data holder deleted - callback is called last time before being deleted
+		"Deleted": 0x03,	   // Data holder deleted - callback is called last time before being deleted
 		"ChildCreated": 0x04,  // New direct child node created
 
 		// ORed flags
 		"PhantomUpdate": 0x40, // Data holder updated with same value (only updateTime changed)
-		"ChildEvent": 0x80     // Event from child node
+		"ChildEvent": 0x80	 // Event from child node
 	};
 }
 
@@ -458,20 +458,20 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "switchControl",
 					metrics: {
-                                                level: '',
-                                                icon: '',
-                                                title: 'Right Rocker',
-                                                change: ''
+												level: '',
+												icon: '',
+												title: 'Right Rocker',
+												change: ''
 					}
 				},
 				overlay: {},
 				handler: function(command) {
-                                        if (command === "on" || command === "off") {
-                                                this.set("metrics:level", command);
-                                        }
-                                        if (command === "upstart" || command === "upstop" || command === "downstart" || command === "downstop") {
-                                                this.set("metrics:change", command);
-                                        }
+										if (command === "on" || command === "off") {
+												this.set("metrics:level", command);
+										}
+										if (command === "upstart" || command === "upstop" || command === "downstart" || command === "downstop") {
+												this.set("metrics:change", command);
+										}
 				},
 				moduleId: self.id
 			}),
@@ -604,7 +604,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 
 		if (matchDevice(0xa5, 0x10, 0x0a)) {
 			// Temperature Sensor, Set Point Adjust and Single Inpu
-                        thermostat("setpoint", "heat", '°C', "Set Point Control");
+						thermostat("setpoint", "heat", '°C', "Set Point Control");
 			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
 			binarySensor("contact", "door", "Door Sensor");
 		}

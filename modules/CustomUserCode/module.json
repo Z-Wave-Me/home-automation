@@ -1,39 +1,39 @@
 {
-    "singleton": false,
-    "dependencies": [],
-    "category": "developers_stuff",
-    "author": "Z-Wave.Me",
-    "homepage": "http://razberry.z-wave.me",
-    "icon": "icon.png",
-    "moduleName": "CustomUserCode",
-    "version": "1.0.0",
-    "maturity": "stable",
-    "repository": {
-            "type": "git",
-            "source": "https://github.com/Z-Wave-Me/home-automation"
-    },
-    "defaults": {
-    	"title": "__m_title__",
-    	"description": "__m_descr__",
-    	"customCode": ""
-    },
-    "schema": {
-        "type": "object",
-        "properties": {
-            "customCode": {
-                "type": "string"
-            }
-        },
-        "required": false
-    },
-    "options": {
-        "toolbarSticky": true,
-        "fields": {
-            "customCode": {
-                "type": "textarea",
-                "label": "__l_options__",
-		        "cols": 40
-            }
-        }
-    }
+	"singleton": false,
+	"dependencies": [],
+	"category": "developers_stuff",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "CustomUserCode",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+			"type": "git",
+			"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"customCode": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"customCode": {
+				"type": "string"
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"toolbarSticky": true,
+		"fields": {
+			"customCode": {
+				"type": "textarea",
+				"label": "__l_options__",
+				"cols": 40
+			}
+		}
+	}
 }

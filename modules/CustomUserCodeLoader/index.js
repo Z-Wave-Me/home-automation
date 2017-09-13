@@ -6,7 +6,7 @@ Version: 1.0.0
 -------------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
-    This module executes custom JS code listed in configuration parameters.
+	This module executes custom JS code listed in configuration parameters.
 
 ******************************************************************************/
 
@@ -15,8 +15,8 @@ Description:
 // ----------------------------------------------------------------------------
 
 function CustomUserCodeLoader (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    CustomUserCodeLoader.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	CustomUserCodeLoader.super_.call(this, id, controller);
 }
 
 inherits(CustomUserCodeLoader, AutomationModule);
@@ -28,19 +28,19 @@ _module = CustomUserCodeLoader;
 // ----------------------------------------------------------------------------
 
 CustomUserCodeLoader.prototype.init = function (config) {
-    // Call superclass' init (this will process config argument and so on)
-    CustomUserCodeLoader.super_.prototype.init.call(this, config);
+	// Call superclass' init (this will process config argument and so on)
+	CustomUserCodeLoader.super_.prototype.init.call(this, config);
 
-    this.config.customCodeFiles.forEach(function (file) {
-        if (!file)
-            return;
-        var stat = fs.stat(file);
-        if (stat && stat.type === "file") {
-            executeFile(file);
-        } else {
-            console.log("File " + file + " not found");
-        }
-    });
+	this.config.customCodeFiles.forEach(function (file) {
+		if (!file)
+			return;
+		var stat = fs.stat(file);
+		if (stat && stat.type === "file") {
+			executeFile(file);
+		} else {
+			console.log("File " + file + " not found");
+		}
+	});
 };
 
 // ----------------------------------------------------------------------------

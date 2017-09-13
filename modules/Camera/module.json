@@ -1,22 +1,22 @@
 {
-    "singleton": false,
-    "dependencies": [],
-    "category": "surveillance",
-    "author": "Z-Wave.Me",
-    "homepage": "http://razberry.z-wave.me",
-    "icon": "icon.png",
-    "moduleName":"Camera",
-    "version": "1.1.0",
-    "maturity": "stable",
-    "repository": {
-            "type": "git",
-            "source": "https://github.com/Z-Wave-Me/home-automation"
-    },
-    "defaults": {
-        "title": "__m_title__",
-        "description": "__m_descr__",
+	"singleton": false,
+	"dependencies": [],
+	"category": "surveillance",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName":"Camera",
+	"version": "1.1.0",
+	"maturity": "stable",
+	"repository": {
+			"type": "git",
+			"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
 	"url": "",
-    "screenUrl": "",
+	"screenUrl": "",
 	"zoomInUrl": "",
 	"zoomOutUrl": "",
 	"leftUrl": "",
@@ -28,142 +28,142 @@
 	"user": "",
 	"password": "",
 	"doorDevices": []
-    },
-    "schema": {
-        "type": "object",
-        "properties": {
-            "url": {
-                "format": "uri",
-                "required": true
-            },
-            "screenUrl": {
-                "format": "uri",
-                "required": true
-            },
-            "zoomInUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "zoomOutUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "leftUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "rightUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "upUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "downUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "openUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "closeUrl": {
-                "format": "uri",
-                "required": false
-            },
-            "user": {
-                "required": false
-            },
-            "password": {
-                "format": "password",
-                "required": false
-            },
-            "doorDevices": {
-                "type": "array",
-                "items": {
-                    "field": "enum",
-                    "datasource": "namespaces",
-                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
-                    "required": false
-                }
-            }
-        },
-        "required": false
-    },
-    "options": {
-        "fields": {
-            "url": {
-                "label": "__l_cam_url__",
-                "type": "url",
-                "required": true
-            },
-            "screenUrl": {
-                "label": "__l_screen_url__",
-                "type": "url",
-                "required": false
-            },
-            "zoomInUrl": {
-                "label": "__l_zoomin__",
-                "type": "url",
-                "required": false
-            },
-            "zoomOutUrl": {
-                "label": "__l_zoomout__",
-                "type": "url",
-                "required": false
-            },
-            "leftUrl": {
-                "label": "__l_left__",
-                "type": "url",
-                "required": false
-            },
-            "rightUrl": {
-                "label": "__l_right__",
-                "type": "url",
-                "required": false
-            },
-            "upUrl": {
-                "label": "__l_up__",
-                "type": "url",
-                "required": false
-            },
-            "downUrl": {
-                "label": "__l_down__",
-                "type": "url",
-                "required": false
-            },
-            "openUrl": {
-                "label": "__l_open__",
-                "type": "url",
-                "required": false
-            },
-            "closeUrl": {
-                "label": "__l_close__",
-                "type": "url",
-                "required": false
-            },
-            "user": {
-                "label": "__l_user__",
-		        "helper": "__h_http_auth__",
-                "required": false
-            },
-            "password": {
-                "label": "__l_pw__",
-		        "helper": "__h_http_auth__",
-                "required": false
-            },
-            "doorDevices": {
-                "label": "__l_door_dev__",
-                "fields": {
-                    "item": {
-			        "type": "select",
-                        "datasource": "namespaces",
-                        "field": "optionLabels",
-                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
-                    }
-                }
-            }
-        }
-    }
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"url": {
+				"format": "uri",
+				"required": true
+			},
+			"screenUrl": {
+				"format": "uri",
+				"required": true
+			},
+			"zoomInUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"zoomOutUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"leftUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"rightUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"upUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"downUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"openUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"closeUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"user": {
+				"required": false
+			},
+			"password": {
+				"format": "password",
+				"required": false
+			},
+			"doorDevices": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
+					"required": false
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"url": {
+				"label": "__l_cam_url__",
+				"type": "url",
+				"required": true
+			},
+			"screenUrl": {
+				"label": "__l_screen_url__",
+				"type": "url",
+				"required": false
+			},
+			"zoomInUrl": {
+				"label": "__l_zoomin__",
+				"type": "url",
+				"required": false
+			},
+			"zoomOutUrl": {
+				"label": "__l_zoomout__",
+				"type": "url",
+				"required": false
+			},
+			"leftUrl": {
+				"label": "__l_left__",
+				"type": "url",
+				"required": false
+			},
+			"rightUrl": {
+				"label": "__l_right__",
+				"type": "url",
+				"required": false
+			},
+			"upUrl": {
+				"label": "__l_up__",
+				"type": "url",
+				"required": false
+			},
+			"downUrl": {
+				"label": "__l_down__",
+				"type": "url",
+				"required": false
+			},
+			"openUrl": {
+				"label": "__l_open__",
+				"type": "url",
+				"required": false
+			},
+			"closeUrl": {
+				"label": "__l_close__",
+				"type": "url",
+				"required": false
+			},
+			"user": {
+				"label": "__l_user__",
+				"helper": "__h_http_auth__",
+				"required": false
+			},
+			"password": {
+				"label": "__l_pw__",
+				"helper": "__h_http_auth__",
+				"required": false
+			},
+			"doorDevices": {
+				"label": "__l_door_dev__",
+				"fields": {
+					"item": {
+					"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
+					}
+				}
+			}
+		}
+	}
 }

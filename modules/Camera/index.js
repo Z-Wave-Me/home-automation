@@ -5,7 +5,7 @@ Version: 1.1.0
 -----------------------------------------------------------------------------
 Author: Stanislav Morozov <r3b@seoarmy.ru>
 Description:
-    This module stores params of camera
+	This module stores params of camera
 
 ******************************************************************************/
 
@@ -14,8 +14,8 @@ Description:
 // ----------------------------------------------------------------------------
 
 function Camera (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    Camera.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	Camera.super_.call(this, id, controller);
 }
 
 inherits(Camera, AutomationModule);
@@ -27,101 +27,101 @@ _module = Camera;
 // ----------------------------------------------------------------------------
 
 _.extend(Camera.prototype, {
-    init: function (config) {
-        Camera.super_.prototype.init.call(this, config);
+	init: function (config) {
+		Camera.super_.prototype.init.call(this, config);
 
-        var that = this,
-            vDevId = "CameraDevice_" + this.id;
-        
-        var opener = function(command) {
-            config.doorDevices.forEach(function(el) {
-                var vDev = that.controller.devices.get(el);
-                
-                if (vDev) {
-                    var type = vDev.get("deviceType");
-                    if (type === "switchBinary" || "switchMultilevel") {
-                        vDev.performCommand(command == "open" ? "on" : "off");
-                    } else if (type === "doorlock") {
-                            vDev.performCommand(command);
-                    }
-                }
-            });
-        };
+		var that = this,
+			vDevId = "CameraDevice_" + this.id;
+		
+		var opener = function(command) {
+			config.doorDevices.forEach(function(el) {
+				var vDev = that.controller.devices.get(el);
+				
+				if (vDev) {
+					var type = vDev.get("deviceType");
+					if (type === "switchBinary" || "switchMultilevel") {
+						vDev.performCommand(command == "open" ? "on" : "off");
+					} else if (type === "doorlock") {
+							vDev.performCommand(command);
+					}
+				}
+			});
+		};
 
-        this.screen_url = "/" + vDevId + "/screen";
-        ws.proxify(this.screen_url, config.screenUrl, config.user, config.password);
+		this.screen_url = "/" + vDevId + "/screen";
+		ws.proxify(this.screen_url, config.screenUrl, config.user, config.password);
 
-        this.proxy_url = "/" + vDevId + "/stream";
-        ws.proxify(this.proxy_url, config.url, config.user, config.password);
+		this.proxy_url = "/" + vDevId + "/stream";
+		ws.proxify(this.proxy_url, config.url, config.user, config.password);
 
-        this.vDev = this.controller.devices.create({
-            deviceId: vDevId,
-            defaults: {
-                deviceType: "camera",
-                metrics: {
-                    icon: "camera",
-                    title: that.getInstanceTitle()
-                }
-            },
-            overlay: {
-                metrics: {
-                    url: this.proxy_url,
-                    screenUrl: this.screen_url,
-                    hasZoomIn: !!config.zoomInUrl,
-                    hasZoomOut: !!config.zoomOutUrl,
-                    hasLeft: !!config.leftUrl,
-                    hasRight: !!config.rightUrl,
-                    hasUp: !!config.upUrl,
-                    hasDown: !!config.downUrl,
-                    hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
-                    hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length)
-                }
-            },
-            handler: function(command) {
-                var url = null;
+		this.vDev = this.controller.devices.create({
+			deviceId: vDevId,
+			defaults: {
+				deviceType: "camera",
+				metrics: {
+					icon: "camera",
+					title: that.getInstanceTitle()
+				}
+			},
+			overlay: {
+				metrics: {
+					url: this.proxy_url,
+					screenUrl: this.screen_url,
+					hasZoomIn: !!config.zoomInUrl,
+					hasZoomOut: !!config.zoomOutUrl,
+					hasLeft: !!config.leftUrl,
+					hasRight: !!config.rightUrl,
+					hasUp: !!config.upUrl,
+					hasDown: !!config.downUrl,
+					hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
+					hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length)
+				}
+			},
+			handler: function(command) {
+				var url = null;
 
-                if (command == "zoomIn") {
-                    url = config.zoomInUrl;
-                } else if (command == "zoomOut") {
-                    url = config.zoomOutUrl;
-                } else if (command == "left") {
-                    url = config.leftUrl;
-                } else if (command == "right") {
-                    url = config.rightUrl;
-                } else if (command == "up") {
-                    url = config.upUrl;
-                } else if (command == "down") {
-                    url = config.downUrl;
-                } else if (command == "open") {
-                    url = config.openUrl;
-                    opener(command);
-                } else if (command == "close") {
-                    url = config.closeUrl;
-                    opener(command);
-                };
+				if (command == "zoomIn") {
+					url = config.zoomInUrl;
+				} else if (command == "zoomOut") {
+					url = config.zoomOutUrl;
+				} else if (command == "left") {
+					url = config.leftUrl;
+				} else if (command == "right") {
+					url = config.rightUrl;
+				} else if (command == "up") {
+					url = config.upUrl;
+				} else if (command == "down") {
+					url = config.downUrl;
+				} else if (command == "open") {
+					url = config.openUrl;
+					opener(command);
+				} else if (command == "close") {
+					url = config.closeUrl;
+					opener(command);
+				};
 
-                if (url) {
-                    http.request({
-                        url: url,
-                        async: true,
-                        auth: {
-                            login: config.user,
-                            password: config.password
-                        }
-                    });
-                }
-            },
-            moduleId: this.id
-        });
-    },
-    stop: function () {
-        Camera.super_.prototype.stop.call(this);
+				if (url) {
+					http.request({
+						url: url,
+						async: true,
+						auth: {
+							login: config.user,
+							password: config.password
+						}
+					});
+				}
+			},
+			moduleId: this.id
+		});
+	},
+	stop: function () {
+		Camera.super_.prototype.stop.call(this);
 
-        ws.proxify(this.proxy_url, null);
-        
-        if (this.vDev) {
-            this.controller.devices.remove(this.vDev.id);
-            this.vDev = null;
-        }
-    }
+		ws.proxify(this.proxy_url, null);
+		
+		if (this.vDev) {
+			this.controller.devices.remove(this.vDev.id);
+			this.vDev = null;
+		}
+	}
 });

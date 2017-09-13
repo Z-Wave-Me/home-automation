@@ -5,7 +5,7 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
-    "moduleName":"SecurityMode",
+	"moduleName":"SecurityMode",
 	"version": "1.3.0",
 	"maturity": "stable",
 	"repository": {
@@ -21,8 +21,8 @@
 			"message" : "__action_msg__",
 			"phone": "",
 			"api_key_sms": "",
-			"email" : "",        
-	        "api_key_email": ""	
+			"email" : "",		
+			"api_key_email": ""	
 		}
 	},
 	"schema": {
@@ -99,32 +99,32 @@
 					}
 				}
 			},
-            "timeout": {
-                "type": "number",
-                "required": true
-            },
+			"timeout": {
+				"type": "number",
+				"required": true
+			},
 			"action": {
 				"type": "object",
 				"properties": {
 					"message": {
 						"type": "string",
-		                "required": true
+						"required": true
 					},
 					"phone": {
-		                "required": false,
-		                "pattern": "[1-9][0-9]*"
-		            },
-		            "api_key_sms": {
-		                "required": false,
-		                "pattern": "[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"
-		            },
-		            "email": {
-						"type": "string",
-		                "required": false
+						"required": false,
+						"pattern": "[1-9][0-9]*"
 					},
-		            "api_key_email": {
-		                "required": false		            
-		            },
+					"api_key_sms": {
+						"required": false,
+						"pattern": "[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}"
+					},
+					"email": {
+						"type": "string",
+						"required": false
+					},
+					"api_key_email": {
+						"required": false					
+					},
 					"switches": {
 						"type": "array",
 						"items": {
@@ -263,9 +263,9 @@
 				}
 			},
 			"timeout": {
-            	"label": "__l_timeout__",
-            	"helper": "__h_timeout__"
-            },
+				"label": "__l_timeout__",
+				"helper": "__h_timeout__"
+			},
 			"action": {
 				"label": "__l_action__",
 				"fields": {
@@ -273,19 +273,19 @@
 						"label": "__l_message__"
 					},
 					"phone": {
-		                "label": "__l_phone__"
-		            },
-		            "api_key_sms": {
-		                "label": "__l_api_key_sms__",
+						"label": "__l_phone__"
+					},
+					"api_key_sms": {
+						"label": "__l_api_key_sms__",
 						"helper": "__h_api_key_sms__"
-		            },
+					},
 					"email": {
 						"label": "__l_email__"
 					},
 					"api_key_email": {
-		                "label": "__l_api_key_email__",
+						"label": "__l_api_key_email__",
 						"helper": "__h_api_key_email__"
-		            },
+					},
 					"switches": {
 						"label": "__l_switches__",
 						"fields": {

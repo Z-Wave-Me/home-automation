@@ -6,7 +6,7 @@ Version: 1.0.0
 -------------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
-    This module executes custom JS code listed in configuration parameters.
+	This module executes custom JS code listed in configuration parameters.
 
 ******************************************************************************/
 
@@ -15,8 +15,8 @@ Description:
 // ----------------------------------------------------------------------------
 
 function CustomUserCode (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    CustomUserCode.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	CustomUserCode.super_.call(this, id, controller);
 }
 
 inherits(CustomUserCode, AutomationModule);
@@ -28,18 +28,18 @@ _module = CustomUserCode;
 // ----------------------------------------------------------------------------
 
 CustomUserCode.prototype.init = function (config) {
-    // Call superclass' init (this will process config argument and so on)
-    CustomUserCode.super_.prototype.init.call(this, config);
+	// Call superclass' init (this will process config argument and so on)
+	CustomUserCode.super_.prototype.init.call(this, config);
 
-    // TODO: executeJS errors are impossible to catch!
-    //try {
-        executeJS(this.config.customCode);
-    //} catch (e) {
-    //      var langFile = this.loadModuleLang(),
-    //           values = this.get("metrics:title");
-    //           
-    //    this.addNotification("warning", langFile.err_load + values, "module");
-    //}
+	// TODO: executeJS errors are impossible to catch!
+	//try {
+		executeJS(this.config.customCode);
+	//} catch (e) {
+	//	  var langFile = this.loadModuleLang(),
+	//		   values = this.get("metrics:title");
+	//		   
+	//	this.addNotification("warning", langFile.err_load + values, "module");
+	//}
 };
 
 // ----------------------------------------------------------------------------

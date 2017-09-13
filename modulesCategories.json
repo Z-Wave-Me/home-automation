@@ -1,258 +1,258 @@
 {
-    "de": [
-        {
-            "id": "basic_gateway_modules",
-            "name": "Basis Module",
-            "description": "Basis Gateway Module",
-            "icon": ""
-        },
-        {
-            "id": "legacy_products_workaround",
-            "name": "Produkte / Workaround",
-            "description": "Ältere Produkte / Workaround",
-            "icon": ""
-        },
-        {
-            "id": "support_external_ui",
-            "name": "Ext. UI´s",
-            "description": "Unterstützung externer UI´s",
-            "icon": ""
-        },
-        {
-            "id": "support_external_dev",
-            "name": "Ext. Geräte/Dienste",
-            "description": "Unterstützung von externen Geräten/Diensten",
-            "icon": ""
-        },
-        {
-            "id": "automation_basic",
-            "name": "Automation Grundlagen",
-            "description": "Automation Grundlagen",
-            "icon": ""
-        },
-        {
-            "id": "device_enhancements",
-            "name": "Geräte-Erweiterungen",
-            "description": "Geräte-Erweiterungen",
-            "icon": ""
-        },
-        {
-            "id": "developers_stuff",
-            "name": "Entwickler Module",
-            "description": "Entwickler Module",
-            "icon": ""
-        },
-        {
-            "id": "complex_applications",
-            "name": "Komplexe Anwendungen",
-            "description": "Komplexe Anwendungen",
-            "icon": ""
-        },
-        {
-            "id": "automation",
-            "name": "Automation",
-            "description": "Automation ",
-            "icon": ""
-        },
-        {
-            "id": "security",
-            "name": "Sicherheit",
-            "description": "Verbessert Sicherheit",
-            "icon": ""
-        },
-        {
-            "id": "peripherals",
-            "name": "Peripheriegeräte",
-            "description": "Z-Wave und andere Peripheriegeräte",
-            "icon": ""
-        },
-        {
-            "id": "surveillance",
-            "name": "Video Überwachung",
-            "description": "Unterstützung für Kameras",
-            "icon": ""
-        },
-        {
-            "id": "logging",
-            "name": "Datenspeicherung",
-            "description": "Datenspeichern für Drittanbieter-anwendungen",
-            "icon": ""
-        },
-        {
-            "id": "scripting",
-            "name": "Skripte",
-            "description": "Skripte",
-            "icon": ""
-        },
-        {
-            "id": "devices",
-            "name": "Geräte",
-            "description": "Geräte",
-            "icon": ""
-        },
-        {
-            "id": "scheduling",
-            "name": "Ablaufsteuerung",
-            "description": "Zeitgesteuerte Abläufe",
-            "icon": ""
-        },
-        {
-            "id": "climate",
-            "name": "Klima",
-            "description": "Klima",
-            "icon": ""
-        },
-        {
-            "id": "environment",
-            "name": "Umgebung",
-            "description": "Umgebungsbezogene Daten",
-            "icon": ""
-        },
-        {
-            "id": "scenes",
-            "name": "Szenen",
-            "description": "Lichtszenen",
-            "icon": ""
-        },
-        {
-            "id": "notifications",
-            "name": "Benachrichtigungen",
-            "description": "SMS, E-mail und Push benachrichtigung",
-            "icon": ""
-        },
-        {
-            "id": "tagging",
-            "name": "Markierung",
-            "description": "Markieren/Taggen von Elementen",
-            "icon": ""
-        }
-    ],
-    "en": [
-        {
-            "id": "basic_gateway_modules",
-            "name": "Basic Modules",
-            "description": "Basic Gateway Modules",
-            "icon": ""
-        },
-        {
-            "id": "legacy_products_workaround",
-            "name": "Products / Workaround",
-            "description": "Legacy Products / Workaround",
-            "icon": ""
-        },
-        {
-            "id": "support_external_ui",
-            "name": "Ext. UIs",
-            "description": "Support of external UIs",
-            "icon": ""
-        },
-        {
-            "id": "support_external_dev",
-            "name": "Ext. Devices/Services",
-            "description": "Support of external Devices/Services",
-            "icon": ""
-        },
-        {
-            "id": "automation_basic",
-            "name": "Automation Basics",
-            "description": "Automation Basics",
-            "icon": ""
-        },
-        {
-            "id": "device_enhancements",
-            "name": "Device enhancements",
-            "description": "Device enhancements",
-            "icon": ""
-        },
-        {
-            "id": "developers_stuff",
-            "name": "Developers Stuff",
-            "description": "Developers Stuff",
-            "icon": ""
-        },
-        {
-            "id": "complex_applications",
-            "name": "Complex Applications",
-            "description": "Complex Applications",
-            "icon": ""
-        },
-        {
-            "id": "automation",
-            "name": "Automation",
-            "description": "Create home automation rules",
-            "icon": ""
-        },
-        {
-            "id": "security",
-            "name": "Security",
-            "description": "Enhance security",
-            "icon": ""
-        },
-        {
-            "id": "peripherals",
-            "name": "Peripherals",
-            "description": "Z-Wave and other peripherals",
-            "icon": ""
-        },
-        {
-            "id": "surveillance",
-            "name": "Video surveillance",
-            "description": "Support for cameras",
-            "icon": ""
-        },
-        {
-            "id": "logging",
-            "name": "Data logging",
-            "description": "Logging to third party services",
-            "icon": ""
-        },
-        {
-            "id": "scripting",
-            "name": "Scripting",
-            "description": "Create custom scripts",
-            "icon": ""
-        },
-        {
-            "id": "devices",
-            "name": "Devices",
-            "description": "Create devices",
-            "icon": ""
-        },
-        {
-            "id": "scheduling",
-            "name": "Schedulers",
-            "description": "Time related functions",
-            "icon": ""
-        },
-        {
-            "id": "climate",
-            "name": "Climate",
-            "description": "Climate control",
-            "icon": ""
-        },
-        {
-            "id": "environment",
-            "name": "Environment",
-            "description": "Environment related data",
-            "icon": ""
-        },
-        {
-            "id": "scenes",
-            "name": "Scenes",
-            "description": "Light scenes",
-            "icon": ""
-        },
-        {
-            "id": "notifications",
-            "name": "Notifications",
-            "description": "SMS, E-mail and push notifications",
-            "icon": ""
-        },
-        {
-            "id": "tagging",
-            "name": "Tagging",
-            "description": "Tagging widgets",
-            "icon": ""
-        }
-    ]
+	"de": [
+		{
+			"id": "basic_gateway_modules",
+			"name": "Basis Module",
+			"description": "Basis Gateway Module",
+			"icon": ""
+		},
+		{
+			"id": "legacy_products_workaround",
+			"name": "Produkte / Workaround",
+			"description": "Ältere Produkte / Workaround",
+			"icon": ""
+		},
+		{
+			"id": "support_external_ui",
+			"name": "Ext. UI´s",
+			"description": "Unterstützung externer UI´s",
+			"icon": ""
+		},
+		{
+			"id": "support_external_dev",
+			"name": "Ext. Geräte/Dienste",
+			"description": "Unterstützung von externen Geräten/Diensten",
+			"icon": ""
+		},
+		{
+			"id": "automation_basic",
+			"name": "Automation Grundlagen",
+			"description": "Automation Grundlagen",
+			"icon": ""
+		},
+		{
+			"id": "device_enhancements",
+			"name": "Geräte-Erweiterungen",
+			"description": "Geräte-Erweiterungen",
+			"icon": ""
+		},
+		{
+			"id": "developers_stuff",
+			"name": "Entwickler Module",
+			"description": "Entwickler Module",
+			"icon": ""
+		},
+		{
+			"id": "complex_applications",
+			"name": "Komplexe Anwendungen",
+			"description": "Komplexe Anwendungen",
+			"icon": ""
+		},
+		{
+			"id": "automation",
+			"name": "Automation",
+			"description": "Automation ",
+			"icon": ""
+		},
+		{
+			"id": "security",
+			"name": "Sicherheit",
+			"description": "Verbessert Sicherheit",
+			"icon": ""
+		},
+		{
+			"id": "peripherals",
+			"name": "Peripheriegeräte",
+			"description": "Z-Wave und andere Peripheriegeräte",
+			"icon": ""
+		},
+		{
+			"id": "surveillance",
+			"name": "Video Überwachung",
+			"description": "Unterstützung für Kameras",
+			"icon": ""
+		},
+		{
+			"id": "logging",
+			"name": "Datenspeicherung",
+			"description": "Datenspeichern für Drittanbieter-anwendungen",
+			"icon": ""
+		},
+		{
+			"id": "scripting",
+			"name": "Skripte",
+			"description": "Skripte",
+			"icon": ""
+		},
+		{
+			"id": "devices",
+			"name": "Geräte",
+			"description": "Geräte",
+			"icon": ""
+		},
+		{
+			"id": "scheduling",
+			"name": "Ablaufsteuerung",
+			"description": "Zeitgesteuerte Abläufe",
+			"icon": ""
+		},
+		{
+			"id": "climate",
+			"name": "Klima",
+			"description": "Klima",
+			"icon": ""
+		},
+		{
+			"id": "environment",
+			"name": "Umgebung",
+			"description": "Umgebungsbezogene Daten",
+			"icon": ""
+		},
+		{
+			"id": "scenes",
+			"name": "Szenen",
+			"description": "Lichtszenen",
+			"icon": ""
+		},
+		{
+			"id": "notifications",
+			"name": "Benachrichtigungen",
+			"description": "SMS, E-mail und Push benachrichtigung",
+			"icon": ""
+		},
+		{
+			"id": "tagging",
+			"name": "Markierung",
+			"description": "Markieren/Taggen von Elementen",
+			"icon": ""
+		}
+	],
+	"en": [
+		{
+			"id": "basic_gateway_modules",
+			"name": "Basic Modules",
+			"description": "Basic Gateway Modules",
+			"icon": ""
+		},
+		{
+			"id": "legacy_products_workaround",
+			"name": "Products / Workaround",
+			"description": "Legacy Products / Workaround",
+			"icon": ""
+		},
+		{
+			"id": "support_external_ui",
+			"name": "Ext. UIs",
+			"description": "Support of external UIs",
+			"icon": ""
+		},
+		{
+			"id": "support_external_dev",
+			"name": "Ext. Devices/Services",
+			"description": "Support of external Devices/Services",
+			"icon": ""
+		},
+		{
+			"id": "automation_basic",
+			"name": "Automation Basics",
+			"description": "Automation Basics",
+			"icon": ""
+		},
+		{
+			"id": "device_enhancements",
+			"name": "Device enhancements",
+			"description": "Device enhancements",
+			"icon": ""
+		},
+		{
+			"id": "developers_stuff",
+			"name": "Developers Stuff",
+			"description": "Developers Stuff",
+			"icon": ""
+		},
+		{
+			"id": "complex_applications",
+			"name": "Complex Applications",
+			"description": "Complex Applications",
+			"icon": ""
+		},
+		{
+			"id": "automation",
+			"name": "Automation",
+			"description": "Create home automation rules",
+			"icon": ""
+		},
+		{
+			"id": "security",
+			"name": "Security",
+			"description": "Enhance security",
+			"icon": ""
+		},
+		{
+			"id": "peripherals",
+			"name": "Peripherals",
+			"description": "Z-Wave and other peripherals",
+			"icon": ""
+		},
+		{
+			"id": "surveillance",
+			"name": "Video surveillance",
+			"description": "Support for cameras",
+			"icon": ""
+		},
+		{
+			"id": "logging",
+			"name": "Data logging",
+			"description": "Logging to third party services",
+			"icon": ""
+		},
+		{
+			"id": "scripting",
+			"name": "Scripting",
+			"description": "Create custom scripts",
+			"icon": ""
+		},
+		{
+			"id": "devices",
+			"name": "Devices",
+			"description": "Create devices",
+			"icon": ""
+		},
+		{
+			"id": "scheduling",
+			"name": "Schedulers",
+			"description": "Time related functions",
+			"icon": ""
+		},
+		{
+			"id": "climate",
+			"name": "Climate",
+			"description": "Climate control",
+			"icon": ""
+		},
+		{
+			"id": "environment",
+			"name": "Environment",
+			"description": "Environment related data",
+			"icon": ""
+		},
+		{
+			"id": "scenes",
+			"name": "Scenes",
+			"description": "Light scenes",
+			"icon": ""
+		},
+		{
+			"id": "notifications",
+			"name": "Notifications",
+			"description": "SMS, E-mail and push notifications",
+			"icon": ""
+		},
+		{
+			"id": "tagging",
+			"name": "Tagging",
+			"description": "Tagging widgets",
+			"icon": ""
+		}
+	]
 }  

@@ -8,122 +8,122 @@ Copyright: (c) ZWave.Me, 2013
 ******************************************************************************/
 
 AutomationModule = function (id, controller) {
-    var self = this;
+	var self = this;
 
-    this.id = id;
-    this.controller = controller;
-    this.meta = this.getMeta();
+	this.id = id;
+	this.controller = controller;
+	this.meta = this.getMeta();
 
-    this.actions = {};
-    this.actionFuncs = {};
-    this.metrics = {};
+	this.actions = {};
+	this.actionFuncs = {};
+	this.metrics = {};
 
-    this.config = {};
+	this.config = {};
 };
 
 AutomationModule.prototype.defaultConfig = function (config) {
-    var result = {},
-        self = this;
+	var result = {},
+		self = this;
 
-    if (this.meta.hasOwnProperty("defaults") && _.isObject(this.meta.defaults)) {
-        Object.keys(_.omit(this.meta.defaults, 'title', 'description')).forEach(function (key) {
-            result[key] = self.meta.defaults[key];
-        });
-    }
+	if (this.meta.hasOwnProperty("defaults") && _.isObject(this.meta.defaults)) {
+		Object.keys(_.omit(this.meta.defaults, 'title', 'description')).forEach(function (key) {
+			result[key] = self.meta.defaults[key];
+		});
+	}
 
-    if (!!config) {
-        Object.keys(config).forEach(function (key) {
-            result[key] = config[key];
-        });
-    }
+	if (!!config) {
+		Object.keys(config).forEach(function (key) {
+			result[key] = config[key];
+		});
+	}
 
-    return result;
+	return result;
 };
 
 AutomationModule.prototype.init = function (config) {
-    console.log("--- Starting module " + this.meta.defaults.title);
-    if (!!config) {
-        this.saveNewConfig(config);
-    } else {
-        this.loadConfig();
-    }
+	console.log("--- Starting module " + this.meta.defaults.title);
+	if (!!config) {
+		this.saveNewConfig(config);
+	} else {
+		this.loadConfig();
+	}
 };
 
 AutomationModule.prototype.saveNewConfig = function (config) {
-    if (!!config) {
-        this.config = this.defaultConfig(config);
-        this.saveConfig();
-    }
+	if (!!config) {
+		this.config = this.defaultConfig(config);
+		this.saveConfig();
+	}
 };
 
 AutomationModule.prototype.stop = function () {
-    console.log("--- Stopping module " + this.meta.defaults.title);
+	console.log("--- Stopping module " + this.meta.defaults.title);
 };
 
 AutomationModule.prototype.loadConfig = function () {
-    var self = this;
-    var cfg = loadObject("cfg"+this.id);
-    if ("object" === typeof cfg) {
-        Object.keys(cfg).forEach(function (key) {
-            self.config[key] = cfg[key];
-        });
-    }
+	var self = this;
+	var cfg = loadObject("cfg"+this.id);
+	if ("object" === typeof cfg) {
+		Object.keys(cfg).forEach(function (key) {
+			self.config[key] = cfg[key];
+		});
+	}
 };
 
 AutomationModule.prototype.saveConfig = function (config) {
-    var that = this,
-        index = this.controller.instances.indexOf(_.find(this.controller.instances, function (model) { return model.id === that.id; }));
+	var that = this,
+		index = this.controller.instances.indexOf(_.find(this.controller.instances, function (model) { return model.id === that.id; }));
 
-    this.controller.instances[index].params = config || this.config;
-    this.controller.saveConfig();
+	this.controller.instances[index].params = config || this.config;
+	this.controller.saveConfig();
 };
 
 AutomationModule.prototype.getName = function() {
-    return /(\w+)\(/.exec(this.constructor.toString())[1];
+	return /(\w+)\(/.exec(this.constructor.toString())[1];
 };
 
 // This method returns JSON representation
 AutomationModule.prototype.toJSON = function () {
-    return {
-        module: this.getName(),
-        id: this.id,
-        config: this.config
-    };
+	return {
+		module: this.getName(),
+		id: this.id,
+		config: this.config
+	};
 };
 
 AutomationModule.prototype.runAction = function (actionId, args, callback) {
-    // Run action function with actionId on instance if exists
-    if (this.actionFuncs.hasOwnProperty(actionId)) {
-        this.actionFuncs[actionId].call(this, args, callback);
-    }
+	// Run action function with actionId on instance if exists
+	if (this.actionFuncs.hasOwnProperty(actionId)) {
+		this.actionFuncs[actionId].call(this, args, callback);
+	}
 };
 
 AutomationModule.prototype.getMeta = function () {
-    if (!this.meta) {
-        this.meta =  this.controller.getModuleData(this.constructor.name);
-        this.meta.id = this.constructor.name;
-    }
-    return this.meta;
+	if (!this.meta) {
+		this.meta =  this.controller.getModuleData(this.constructor.name);
+		this.meta.id = this.constructor.name;
+	}
+	return this.meta;
 };
 
 AutomationModule.prototype.loadModuleJSON = function (filename) {
-    return fs.loadJSON(this.meta.location + "/" + filename);
+	return fs.loadJSON(this.meta.location + "/" + filename);
 };
 
 AutomationModule.prototype.getInstanceTitle = function () {
-    var instanceId = this.id;
+	var instanceId = this.id;
 
-    var instanceTitle = this.controller.instances.filter(function (instance){
-        return instance.id === instanceId;
-    });
+	var instanceTitle = this.controller.instances.filter(function (instance){
+		return instance.id === instanceId;
+	});
 
-    return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : this.constructor.name + ' ' + instanceId;
+	return instanceTitle[0] && instanceTitle[0].title? instanceTitle[0].title : this.constructor.name + ' ' + instanceId;
 };
 
 AutomationModule.prototype.loadModuleLang = function () {
-    return this.controller.loadModuleLang(this.getName());
+	return this.controller.loadModuleLang(this.getName());
 };
 
 AutomationModule.prototype.addNotification = function (severity, message, type) {
-    this.controller.addNotification(severity, message, type, this.getName());
+	this.controller.addNotification(severity, message, type, this.getName());
 };

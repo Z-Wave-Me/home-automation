@@ -1,123 +1,123 @@
 {
-    "controller": {},
-    "vdevInfo": {},
-    "locations": [{
-        "id": 0,
-        "title": "globalRoom",
-        "user_img": "",
-        "default_img": "",
-        "img_type": ""
-    }],
-    "profiles": [{
-        "id": 1,
-        "role": 1,
-        "login": "admin",
-        "password": "admin",
-        "name": "Administrator",
-        "lang": "en",
-        "color": "#dddddd",
-        "dashboard": [],
-        "interval": 2000,
-        "rooms": [0],
-        "expert_view": true,
-        "hide_all_device_events": false,
-        "hide_system_events": false,
-        "hide_single_device_events": [],
-        "skin": "default",
-        "qrcode": ""
-    }, {
-        "id": 2,
-        "role": 3,
-        "login": "local",
-        "password": "local",
-        "name": "Local User",
-        "lang": "en",
-        "color": "#dddddd",
-        "dashboard": [],
-        "interval": 2000,
-        "rooms": [0],
-        "expert_view": true,
-        "hide_all_device_events": false,
-        "hide_system_events": false,
-        "hide_single_device_events": [],
-        "skin": "default",
-        "qrcode": ""
-    }],
-    "instances": [{
-        "id": 1,
-        "moduleId": "ZWave",
-        "params": {
-            "name": "zway",
-            "port": "/dev/ttyUSB0",
-            "enableAPI": true,
-            "publicAPI": true,
-            "createVDev": false,
-            "config": "config",
-            "translations": "translations",
-            "ZDDX": "ZDDX"
-        },
-        "active": true,
-        "title": "Z-Wave Network Access",
-        "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)"
-    }, {
-        "id": 2,
-        "moduleId": "InfoWidget",
-        "active": true,
-        "title": "Dear Expert User",
-        "description": "Dieses Modul erzeugt ein Informations Widget.",
-        "params": {
-            "widgets": [],
-            "internationalize": true,
-            "widgetsInt": [{
-                "lang": "en",
-                "headline": "Dear Expert User",
-                "text": "<center>If you still want to use ExpertUI please go, after you are successfully logged in, to <br><strong> Menu > Open ExpertUI </strong> <br> or call <br><strong> http://MYRASP:8083/expert </strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
-                "imgURI": "app/img/logo-z-wave-z-only.png"
-            }, {
-                "lang": "de",
-                "headline": "Lieber Expert User",
-                "text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte, nachdem Sie sich erfolgreich angemeldet haben, auf <br><strong> Menü > Öffne ExpertUI </strong> <br> oder rufen Sie <br><strong> http://MYRASP:8083/expert </strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
-                "imgURI": "app/img/logo-z-wave-z-only.png"
-            }]
-        }
-    },{
-          "id": 3,
-          "moduleId": "CloudBackup",
-          "active": true,
-          "title": "CloudBackup",
-          "description": "Gives possibility to upload and store your backups on the remote server.",
-          "params": {
-              "api": "/CloudBackupAPI/Backup",
-              "user_active": false,
-              "email": "",
-              "email_log": "0",
-              "remoteid": null,
-              "days": "28",
-              "weekDays": null,
-              "hours": "23",
-              "minutes": "59",
-              "scheduler": "3"
-          }
-    }, {
-         "id": 4,
-         "moduleId": "InfoWidget",
-         "active": true,
-         "title": "Cloud Backup Instructions",
-         "description": "Dieses Modul erzeugt ein Informations Widget.",
-         "params": {
-             "widgets": [],
-             "internationalize": true,
-             "widgetsInt": [{
-                 "lang": "en",
-                 "headline": "Cloud Backup Instructions",
-                 "text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
-                 "imgURI": "app/img/icon_cloudbackup.png"
-             }, {
-                 "lang": "de",
-                 "headline": "Cloud Backup Anleitung",
-                 "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong>  Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
-                 "imgURI": "app/img/icon_cloudbackup.png"
-             }]
-         }
-    }]
+	"controller": {},
+	"vdevInfo": {},
+	"locations": [{
+		"id": 0,
+		"title": "globalRoom",
+		"user_img": "",
+		"default_img": "",
+		"img_type": ""
+	}],
+	"profiles": [{
+		"id": 1,
+		"role": 1,
+		"login": "admin",
+		"password": "admin",
+		"name": "Administrator",
+		"lang": "en",
+		"color": "#dddddd",
+		"dashboard": [],
+		"interval": 2000,
+		"rooms": [0],
+		"expert_view": true,
+		"hide_all_device_events": false,
+		"hide_system_events": false,
+		"hide_single_device_events": [],
+		"skin": "default",
+		"qrcode": ""
+	}, {
+		"id": 2,
+		"role": 3,
+		"login": "local",
+		"password": "local",
+		"name": "Local User",
+		"lang": "en",
+		"color": "#dddddd",
+		"dashboard": [],
+		"interval": 2000,
+		"rooms": [0],
+		"expert_view": true,
+		"hide_all_device_events": false,
+		"hide_system_events": false,
+		"hide_single_device_events": [],
+		"skin": "default",
+		"qrcode": ""
+	}],
+	"instances": [{
+		"id": 1,
+		"moduleId": "ZWave",
+		"params": {
+			"name": "zway",
+			"port": "/dev/ttyUSB0",
+			"enableAPI": true,
+			"publicAPI": true,
+			"createVDev": false,
+			"config": "config",
+			"translations": "translations",
+			"ZDDX": "ZDDX"
+		},
+		"active": true,
+		"title": "Z-Wave Network Access",
+		"description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)"
+	}, {
+		"id": 2,
+		"moduleId": "InfoWidget",
+		"active": true,
+		"title": "Dear Expert User",
+		"description": "Dieses Modul erzeugt ein Informations Widget.",
+		"params": {
+			"widgets": [],
+			"internationalize": true,
+			"widgetsInt": [{
+				"lang": "en",
+				"headline": "Dear Expert User",
+				"text": "<center>If you still want to use ExpertUI please go, after you are successfully logged in, to <br><strong> Menu > Open ExpertUI </strong> <br> or call <br><strong> http://MYRASP:8083/expert </strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
+				"imgURI": "app/img/logo-z-wave-z-only.png"
+			}, {
+				"lang": "de",
+				"headline": "Lieber Expert User",
+				"text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte, nachdem Sie sich erfolgreich angemeldet haben, auf <br><strong> Menü > Öffne ExpertUI </strong> <br> oder rufen Sie <br><strong> http://MYRASP:8083/expert </strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
+				"imgURI": "app/img/logo-z-wave-z-only.png"
+			}]
+		}
+	},{
+		  "id": 3,
+		  "moduleId": "CloudBackup",
+		  "active": true,
+		  "title": "CloudBackup",
+		  "description": "Gives possibility to upload and store your backups on the remote server.",
+		  "params": {
+			  "api": "/CloudBackupAPI/Backup",
+			  "user_active": false,
+			  "email": "",
+			  "email_log": "0",
+			  "remoteid": null,
+			  "days": "28",
+			  "weekDays": null,
+			  "hours": "23",
+			  "minutes": "59",
+			  "scheduler": "3"
+		  }
+	}, {
+		 "id": 4,
+		 "moduleId": "InfoWidget",
+		 "active": true,
+		 "title": "Cloud Backup Instructions",
+		 "description": "Dieses Modul erzeugt ein Informations Widget.",
+		 "params": {
+			 "widgets": [],
+			 "internationalize": true,
+			 "widgetsInt": [{
+				 "lang": "en",
+				 "headline": "Cloud Backup Instructions",
+				 "text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
+				 "imgURI": "app/img/icon_cloudbackup.png"
+			 }, {
+				 "lang": "de",
+				 "headline": "Cloud Backup Anleitung",
+				 "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong>  Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
+				 "imgURI": "app/img/icon_cloudbackup.png"
+			 }]
+		 }
+	}]
 }

@@ -1,59 +1,59 @@
 {
-    "singleton": false,
-    "dependencies": [],
-    "category": "device_enhancements",
-    "author": "Z-Wave.Me",
-    "homepage": "http://razberry.z-wave.me",
-    "icon": "icon.png",
-    "moduleName": "AutoOff",
-    "version": "1.0.2",
-    "maturity": "stable",
-    "repository": {
-        "type": "git",
-        "source": "https://github.com/Z-Wave-Me/home-automation"
-    },
-    "defaults": {
-        "title": "__m_title__",
-        "description": "__m_descr__",
-        "timeout": 5,
+	"singleton": false,
+	"dependencies": [],
+	"category": "device_enhancements",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "AutoOff",
+	"version": "1.0.2",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"timeout": 5,
 	"ignoreUpdates": false,
-        "device": ""
-    },
-    "schema": {
-        "type": "object",
-        "properties": {
-            "device": {
-                "field": "enum",
-                "datasource": "namespaces",
-                "enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
-                "required": true
-            },
-            "timeout": {
-                "type": "number",
-                "required": true
-            },
-            "ignoreUpdates": {
-                "type": "boolean"
-            }
-        },
-        "required": false
-    },
-    "options": {
-        "fields": {
-            "device": {
-                "label": "__l_dev__",
-                "datasource": "namespaces",
-                "field": "optionLabels",
-                "optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
-            },
-            "timeout": {
-                "label": "__l_timeout__"
-            },
-            "ignoreUpdates": {
-                "type": "checkbox",
-                "rightLabel": "__rl_ignoreUpdates__",
-                "helper": "__h_ignoreUpdates__"
-            }
-        }
-    }
+		"device": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"device": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
+				"required": true
+			},
+			"timeout": {
+				"type": "number",
+				"required": true
+			},
+			"ignoreUpdates": {
+				"type": "boolean"
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"device": {
+				"label": "__l_dev__",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
+			},
+			"timeout": {
+				"label": "__l_timeout__"
+			},
+			"ignoreUpdates": {
+				"type": "checkbox",
+				"rightLabel": "__rl_ignoreUpdates__",
+				"helper": "__h_ignoreUpdates__"
+			}
+		}
+	}
 }

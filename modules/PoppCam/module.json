@@ -1,76 +1,76 @@
 {
-    "singleton": false,
-    "dependencies": [],
-    "category": "surveillance",
-    "author": "Z-Wave.Me",
-    "homepage": "http://www.foscam.com/",
-    "icon": "icon.png",
-    "moduleName":"PoppCam",
-    "version": "1.1.0",
-    "maturity": "stable",
-    "repository": {
-            "type": "git",
-            "source": "https://github.com/Z-Wave-Me/home-automation"
-    },
-    "defaults": {
-        "title": "__m_title__",
-        "description": "__m_descr__",
+	"singleton": false,
+	"dependencies": [],
+	"category": "surveillance",
+	"author": "Z-Wave.Me",
+	"homepage": "http://www.foscam.com/",
+	"icon": "icon.png",
+	"moduleName":"PoppCam",
+	"version": "1.1.0",
+	"maturity": "stable",
+	"repository": {
+			"type": "git",
+			"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
 	"url": "",
 	"doorDevices": []
-    },
-    "schema": {
-        "type": "object",
-        "properties": {
-            "url": {
-                "required": true
-            },
-            "user": {
-                "required": false
-            },
-            "password": {
-                "format": "password",
-                "required": false
-            },
-            "doorDevices": {
-                "type": "array",
-                "items": {
-                    "field": "enum",
-                    "datasource": "namespaces",
-                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
-                    "required": false
-                }
-            }
-        },
-        "required": false
-    },
-    "options": {
-        "fields": {
-            "url": {
-                "label": "__l_ip__",
-				"helper": "__h_ip__",                
-                "required": true
-            },
-            "user": {
-                "label": "__l_user__",
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"url": {
+				"required": true
+			},
+			"user": {
+				"required": false
+			},
+			"password": {
+				"format": "password",
+				"required": false
+			},
+			"doorDevices": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId",
+					"required": false
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"url": {
+				"label": "__l_ip__",
+				"helper": "__h_ip__",				
+				"required": true
+			},
+			"user": {
+				"label": "__l_user__",
 				"helper": "__h_user__",
-                "required": false
-            },
-            "password": {
-                "label": "__l_pw__",
+				"required": false
+			},
+			"password": {
+				"label": "__l_pw__",
 				"helper": "__h_pw__",
-                "required": false
-            },
-            "doorDevices": {
-                "label": "__l_door_dev__",
-                "fields": {
-                    "item": {
+				"required": false
+			},
+			"doorDevices": {
+				"label": "__l_door_dev__",
+				"fields": {
+					"item": {
 			"type": "select",
-                        "datasource": "namespaces",
-                        "field": "optionLabels",
-                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
-                    }
-                }
-            }
-        }
-    }
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName"
+					}
+				}
+			}
+		}
+	}
 }

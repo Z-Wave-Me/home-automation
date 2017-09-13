@@ -6,9 +6,9 @@
  -----------------------------------------------------------------------------
  Author: Gregory Sitnin <sitnin@z-wave.me> and Poltorak Serguei <ps@z-wave.me>
  Description:
-     This module listens given VirtualDevice (which MUSt be typed as switch)
-     level metric update events and switches off device after configured
-     timeout if this device has been switched on.
+	 This module listens given VirtualDevice (which MUSt be typed as switch)
+	 level metric update events and switches off device after configured
+	 timeout if this device has been switched on.
 
 ******************************************************************************/
 
@@ -17,11 +17,11 @@
 // ----------------------------------------------------------------------------
 
 function AutoOff (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    AutoOff.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	AutoOff.super_.call(this, id, controller);
 
-    // Create instance variables
-    this.timer = null;
+	// Create instance variables
+	this.timer = null;
 };
 
 inherits(AutoOff, AutomationModule);
@@ -33,58 +33,58 @@ _module = AutoOff;
 // ----------------------------------------------------------------------------
 
 AutoOff.prototype.init = function (config) {
-    // Call superclass' init (this will process config argument and so on)
-    AutoOff.super_.prototype.init.call(this, config);
+	// Call superclass' init (this will process config argument and so on)
+	AutoOff.super_.prototype.init.call(this, config);
 
-    // Remember "this" for detached callbacks (such as event listener callbacks)
-    var self = this;
+	// Remember "this" for detached callbacks (such as event listener callbacks)
+	var self = this;
 
-    this.handler = function (vDev) {
-        var value = vDev.get("metrics:level");
-        
-        if ("on" === value || (parseInt(value) && value > 0)) {
-            // Device reported "on", set (or reset) timer to new timeout
-            
-            if (self.timer && self.config.ignoreUpdates) {
-                // We ignore updates and do not restart the timer, keeping the old one running
-                return;
-            }
+	this.handler = function (vDev) {
+		var value = vDev.get("metrics:level");
+		
+		if ("on" === value || (parseInt(value) && value > 0)) {
+			// Device reported "on", set (or reset) timer to new timeout
+			
+			if (self.timer && self.config.ignoreUpdates) {
+				// We ignore updates and do not restart the timer, keeping the old one running
+				return;
+			}
 
-            if (self.timer) {
-                // Timer is set, so we destroy it
-                clearTimeout(self.timer);
-                self.timer = null;
-            }
-            // Notice: self.config.timeout set in seconds
-            self.timer = setTimeout(function () {
-                // Timeout fired, so we send "off" command to the virtual device
-                // (every switch device should handle it)
-                vDev.performCommand("off");
-                // And clearing out this.timer variable
-                self.timer = null;
-            }, self.config.timeout*1000);
-        } else {
-            // Turned off
-            if (self.timer) {
-                // Timer is set, so we destroy it
-                clearTimeout(self.timer);
-                self.timer = null;
-            }
-        }
-    };
+			if (self.timer) {
+				// Timer is set, so we destroy it
+				clearTimeout(self.timer);
+				self.timer = null;
+			}
+			// Notice: self.config.timeout set in seconds
+			self.timer = setTimeout(function () {
+				// Timeout fired, so we send "off" command to the virtual device
+				// (every switch device should handle it)
+				vDev.performCommand("off");
+				// And clearing out this.timer variable
+				self.timer = null;
+			}, self.config.timeout*1000);
+		} else {
+			// Turned off
+			if (self.timer) {
+				// Timer is set, so we destroy it
+				clearTimeout(self.timer);
+				self.timer = null;
+			}
+		}
+	};
 
-    // Setup metric update event listener
-    this.controller.devices.on(this.config.device, 'change:metrics:level', this.handler);
+	// Setup metric update event listener
+	this.controller.devices.on(this.config.device, 'change:metrics:level', this.handler);
 };
 
 AutoOff.prototype.stop = function () {
-    AutoOff.super_.prototype.stop.call(this);
+	AutoOff.super_.prototype.stop.call(this);
 
-    if (this.timer){
-        clearTimeout(this.timer);
-    }
-    
-    this.controller.devices.off(this.config.device, 'change:metrics:level', this.handler);
+	if (this.timer){
+		clearTimeout(this.timer);
+	}
+	
+	this.controller.devices.off(this.config.device, 'change:metrics:level', this.handler);
 };
 // ----------------------------------------------------------------------------
 // --- Module methods

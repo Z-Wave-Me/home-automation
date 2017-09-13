@@ -1,210 +1,210 @@
 {
-    "controller": {
-        "initial": true
-    },
-    "vdevInfo": {},
-    "locations": [{
-        "id": 0,
-        "title": "globalRoom",
-        "user_img": "",
-        "default_img": "",
-        "img_type": ""
-    }],
-    "profiles": [{
-        "id": 1,
-        "role": 1,
-        "login": "admin",
-        "password": "admin",
-        "name": "Administrator",
-        "lang": "en",
-        "color": "#dddddd",
-        "dashboard": [],
-        "interval": 2000,
-        "rooms": [0],
-        "expert_view": true,
-        "hide_all_device_events": false,
-        "hide_system_events": false,
-        "hide_single_device_events": [],
-        "skin": "default",
-        "qrcode": ""
-    }, {
-        "id": 2,
-        "role": 3,
-        "login": "local",
-        "password": "local",
-        "name": "Local User",
-        "lang": "en",
-        "color": "#dddddd",
-        "dashboard": [],
-        "interval": 2000,
-        "rooms": [0],
-        "expert_view": true,
-        "hide_all_device_events": false,
-        "hide_system_events": false,
-        "hide_single_device_events": [],
-        "skin": "default",
-        "qrcode": ""
-    }],
-    "instances": [{
-        "id": 1,
-        "moduleId": "ZWave",
-        "params": {
-            "name": "zway",
-            "port": "/dev/ttyACM0",
-            "enableAPI": true,
-            "publicAPI": false,
-            "createVDev": true,
-            "config": "config",
-            "translations": "translations",
-            "ZDDX": "ZDDX"
-        },
-        "active": true,
-        "title": "Z-Wave Network Access",
-        "description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)"
-    }, {
-        "id": 2,
-        "moduleId": "Cron",
-        "params": {},
-        "active": true,
-        "title": "System Clock (CRON)",
-        "description": "Scheduler used by other modules\n(Added by default)"
-    }, {
-        "id": 3,
-        "moduleId": "InbandNotifications",
-        "params": {},
-        "active": true,
-        "title": "Inband Notifier",
-        "description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
-    }, {
-        "id": 4,
-        "moduleId": "RemoteAccess",
-        "active": true,
-        "title": "Remote Access",
-        "description": "Is necessary to configure remote access in SmartHome UI.\n(Added by default)",
-        "params": {
-            "path": "",
-            "userId": "",
-            "actStatus": true,
-            "sshStatus": false,
-            "zbwStatus": true,
-            "pass": "",
-            "lastChange": {}
-        }
-    }, {
-        "id": 5,
-        "moduleId": "InfoWidget",
-        "active": true,
-        "title": "Dear Expert User",
-        "description": "Dieses Modul erzeugt ein Informations Widget.",
-        "params": {
-            "widgets": [],
-            "internationalize": true,
-            "widgetsInt": [{
-                "lang": "en",
-                "headline": "Dear Expert User",
-                "text": "<center>If you still want to use ExpertUI please go, after you are successfully logged in, to <br><strong> Menu > Devices > Manage with ExpertUI </strong> <br> or call <br><strong> http://MYRASP:8083/expert </strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
-                "imgURI": "app/img/logo-z-wave-z-only.png"
-            }, {
-                "lang": "de",
-                "headline": "Lieber Expert User",
-                "text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte, nachdem Sie sich erfolgreich angemeldet haben, auf <br><strong> Menü > Geräte > Verwaltung mit ExpertUI </strong> <br> oder rufen Sie <br><strong> http://MYRASP:8083/expert </strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
-                "imgURI": "app/img/logo-z-wave-z-only.png"
-            }]
-        }
-    }, {
-        "id": 6,
-        "moduleId": "SensorsPolling",
-        "active": true,
-        "title": "Periodical Sensor Polling",
-        "description": "Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.\n(Added by default)",
-        "params": {
-            "pollDevsWithBatteries": false,
-            "devices": [],
-            "devicesWithBattery": [],
-            "period": "10"
-        }
-    }, {
-        "id": 7,
-        "moduleId": "BatteryPolling",
-        "active": true,
-        "title": "Battery Polling",
-        "description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
-        "params": {
-            "launchWeekDay": 0,
-            "warningLevel": "20"
-        }
-    }, {
-        "id": 8,
-        "moduleId": "SwitchControlGenerator",
-        "active": true,
-        "title": "Trap events from Remotes and Sensors",
-        "description": "",
-        "params": {
-            "trapNew": true,
-            "banned": [],
-            "generated": []
-        }
-    }, {
-        "id": 9,
-        "moduleId": "CloudBackup",
-        "active": true,
-        "title": "CloudBackup",
-        "description": "Gives possibility to upload and store your backups on the remote server.\n(Added by default)",
-        "params": {
-            "api": "/CloudBackupAPI/Backup",
-            "user_active": false,
-            "email": "",
-            "email_log": "0",
-            "remoteid": null,
-            "days": "28",
-            "weekDays": null,
-            "hours": "23",
-            "minutes": "59",
-            "scheduler": "3"
-        }
-    }, {
-       "id": 10,
-       "moduleId": "InfoWidget",
-       "active": true,
-       "title": "Cloud Backup Instructions",
-       "description": "This module creates an information widget.\n(Added by default)",
-       "params": {
-           "widgets": [],
-           "internationalize": true,
-           "widgetsInt": [{
-               "lang": "en",
-               "headline": "Cloud Backup Instructions",
-               "text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
-               "imgURI": "app/img/icon_cloudbackup.png"
-           }, {
-               "lang": "de",
-               "headline": "Cloud Backup Anleitung",
-               "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong>  Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
-               "imgURI": "app/img/icon_cloudbackup.png"
-           }]
-       }
+	"controller": {
+		"initial": true
+	},
+	"vdevInfo": {},
+	"locations": [{
+		"id": 0,
+		"title": "globalRoom",
+		"user_img": "",
+		"default_img": "",
+		"img_type": ""
+	}],
+	"profiles": [{
+		"id": 1,
+		"role": 1,
+		"login": "admin",
+		"password": "admin",
+		"name": "Administrator",
+		"lang": "en",
+		"color": "#dddddd",
+		"dashboard": [],
+		"interval": 2000,
+		"rooms": [0],
+		"expert_view": true,
+		"hide_all_device_events": false,
+		"hide_system_events": false,
+		"hide_single_device_events": [],
+		"skin": "default",
+		"qrcode": ""
+	}, {
+		"id": 2,
+		"role": 3,
+		"login": "local",
+		"password": "local",
+		"name": "Local User",
+		"lang": "en",
+		"color": "#dddddd",
+		"dashboard": [],
+		"interval": 2000,
+		"rooms": [0],
+		"expert_view": true,
+		"hide_all_device_events": false,
+		"hide_system_events": false,
+		"hide_single_device_events": [],
+		"skin": "default",
+		"qrcode": ""
+	}],
+	"instances": [{
+		"id": 1,
+		"moduleId": "ZWave",
+		"params": {
+			"name": "zway",
+			"port": "/dev/ttyACM0",
+			"enableAPI": true,
+			"publicAPI": false,
+			"createVDev": true,
+			"config": "config",
+			"translations": "translations",
+			"ZDDX": "ZDDX"
+		},
+		"active": true,
+		"title": "Z-Wave Network Access",
+		"description": "Allows accessing Z-Wave devices from attached Z-Wave transceiver.\n(Added by default)"
+	}, {
+		"id": 2,
+		"moduleId": "Cron",
+		"params": {},
+		"active": true,
+		"title": "System Clock (CRON)",
+		"description": "Scheduler used by other modules\n(Added by default)"
+	}, {
+		"id": 3,
+		"moduleId": "InbandNotifications",
+		"params": {},
+		"active": true,
+		"title": "Inband Notifier",
+		"description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
+	}, {
+		"id": 4,
+		"moduleId": "RemoteAccess",
+		"active": true,
+		"title": "Remote Access",
+		"description": "Is necessary to configure remote access in SmartHome UI.\n(Added by default)",
+		"params": {
+			"path": "",
+			"userId": "",
+			"actStatus": true,
+			"sshStatus": false,
+			"zbwStatus": true,
+			"pass": "",
+			"lastChange": {}
+		}
+	}, {
+		"id": 5,
+		"moduleId": "InfoWidget",
+		"active": true,
+		"title": "Dear Expert User",
+		"description": "Dieses Modul erzeugt ein Informations Widget.",
+		"params": {
+			"widgets": [],
+			"internationalize": true,
+			"widgetsInt": [{
+				"lang": "en",
+				"headline": "Dear Expert User",
+				"text": "<center>If you still want to use ExpertUI please go, after you are successfully logged in, to <br><strong> Menu > Devices > Manage with ExpertUI </strong> <br> or call <br><strong> http://MYRASP:8083/expert </strong><br> in your browser. <br> <br>You could hide or remove this widget in menu <br><strong>Apps > Active Tab</strong>. </center>",
+				"imgURI": "app/img/logo-z-wave-z-only.png"
+			}, {
+				"lang": "de",
+				"headline": "Lieber Expert User",
+				"text": "<center>Wenn Sie weiterhin die ExpertUI nutzen möchten, dann klicken Sie bitte, nachdem Sie sich erfolgreich angemeldet haben, auf <br><strong> Menü > Geräte > Verwaltung mit ExpertUI </strong> <br> oder rufen Sie <br><strong> http://MYRASP:8083/expert </strong><br> in Ihrem Browser auf. <br> <br>Sie können dieses Element im Menü <br><strong>Anwendungen > Aktiv</strong><br> auschalten oder entfernen.</center>",
+				"imgURI": "app/img/logo-z-wave-z-only.png"
+			}]
+		}
+	}, {
+		"id": 6,
+		"moduleId": "SensorsPolling",
+		"active": true,
+		"title": "Periodical Sensor Polling",
+		"description": "Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.\n(Added by default)",
+		"params": {
+			"pollDevsWithBatteries": false,
+			"devices": [],
+			"devicesWithBattery": [],
+			"period": "10"
+		}
+	}, {
+		"id": 7,
+		"moduleId": "BatteryPolling",
+		"active": true,
+		"title": "Battery Polling",
+		"description": "Set up an interval that regularly polls the battery status of a battery devices.\n(Added by default)",
+		"params": {
+			"launchWeekDay": 0,
+			"warningLevel": "20"
+		}
+	}, {
+		"id": 8,
+		"moduleId": "SwitchControlGenerator",
+		"active": true,
+		"title": "Trap events from Remotes and Sensors",
+		"description": "",
+		"params": {
+			"trapNew": true,
+			"banned": [],
+			"generated": []
+		}
+	}, {
+		"id": 9,
+		"moduleId": "CloudBackup",
+		"active": true,
+		"title": "CloudBackup",
+		"description": "Gives possibility to upload and store your backups on the remote server.\n(Added by default)",
+		"params": {
+			"api": "/CloudBackupAPI/Backup",
+			"user_active": false,
+			"email": "",
+			"email_log": "0",
+			"remoteid": null,
+			"days": "28",
+			"weekDays": null,
+			"hours": "23",
+			"minutes": "59",
+			"scheduler": "3"
+		}
+	}, {
+	   "id": 10,
+	   "moduleId": "InfoWidget",
+	   "active": true,
+	   "title": "Cloud Backup Instructions",
+	   "description": "This module creates an information widget.\n(Added by default)",
+	   "params": {
+		   "widgets": [],
+		   "internationalize": true,
+		   "widgetsInt": [{
+			   "lang": "en",
+			   "headline": "Cloud Backup Instructions",
+			   "text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
+			   "imgURI": "app/img/icon_cloudbackup.png"
+		   }, {
+			   "lang": "de",
+			   "headline": "Cloud Backup Anleitung",
+			   "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong>  Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
+			   "imgURI": "app/img/icon_cloudbackup.png"
+		   }]
+	   }
    }, {
-        "id" : 11,
-        "moduleId" : "MobileAppSupport",
-        "active" : true,
-        "title" : "Mobile App Support",
-        "description": "This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).\n(Added by default)",
-        "params" : {
-            "devices" : [],
-            "logLevelContainer" : {}
-        }
+		"id" : 11,
+		"moduleId" : "MobileAppSupport",
+		"active" : true,
+		"title" : "Mobile App Support",
+		"description": "This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).\n(Added by default)",
+		"params" : {
+			"devices" : [],
+			"logLevelContainer" : {}
+		}
    }, {
-        "id": 12,
-        "moduleId": "MailNotifier",
-        "active": true,
-        "title": "Send Email Notification",
-        "description": "This app allows you to send notifications by e-mail.\n(Added by default)",
-        "params": {
-           "hide": false,
-           "subject": "Z-Way Notification",
-           "mail_to_input": "",
-           "mail_to_select": "",
-           "mail_message": "Dear Smart Home UI user, <br>the app 'E-mail ME' allows you to send notifications by e-mail. <br>This app is preinstalled to make your entry in the Smart Home UI more comfortable. <br> By default the given e-mail address is used that you've entered during the initialisation.<br> If you haven't already set an e-mail address to your account, you can check the settings of E-mail ME app under Menu > Apps > Active > E-mail ME to change this.<br>In this menu you can also deactivate or remove this app at any time.<br> Have fun!"
-        }
+		"id": 12,
+		"moduleId": "MailNotifier",
+		"active": true,
+		"title": "Send Email Notification",
+		"description": "This app allows you to send notifications by e-mail.\n(Added by default)",
+		"params": {
+		   "hide": false,
+		   "subject": "Z-Way Notification",
+		   "mail_to_input": "",
+		   "mail_to_select": "",
+		   "mail_message": "Dear Smart Home UI user, <br>the app 'E-mail ME' allows you to send notifications by e-mail. <br>This app is preinstalled to make your entry in the Smart Home UI more comfortable. <br> By default the given e-mail address is used that you've entered during the initialisation.<br> If you haven't already set an e-mail address to your account, you can check the settings of E-mail ME app under Menu > Apps > Active > E-mail ME to change this.<br>In this menu you can also deactivate or remove this app at any time.<br> Have fun!"
+		}
    }]
 }

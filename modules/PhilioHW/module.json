@@ -5,7 +5,7 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://www.z-wave.me",
 	"icon": "icon.png",
-        "moduleName":"PhilioHW",
+		"moduleName":"PhilioHW",
 	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {

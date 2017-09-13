@@ -5,7 +5,7 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
-    "moduleName": "HTTPDevice",
+	"moduleName": "HTTPDevice",
 	"version": "2.1.0",
 	"maturity": "stable",
 	"repository": {
@@ -36,8 +36,8 @@
 		"getterParser_switchMultilevel": "",
 		"getterPollInterval_switchMultilevel": 0,
 		"method": "GET",
-        "contentType": "application/x-www-form-urlencoded",
-        "data":"",
+		"contentType": "application/x-www-form-urlencoded",
+		"data":"",
 		"updateOnAction": false,
 		"skipEventIfSameValue": false,
 		"login":"",
@@ -156,13 +156,13 @@
 				"enum": ["GET", "POST"]
 			},
 			"contentType": {
-                "type": "string",
-                "required": true
-            },
-            "data":{
-                "type": "string",
-                "required": false
-            },
+				"type": "string",
+				"required": true
+			},
+			"data":{
+				"type": "string",
+				"required": false
+			},
 			"updateOnAction": {
 				"type": "boolean",
 				"required": true,
@@ -326,14 +326,14 @@
 				"label": "__l_method__",
 				"type": "select"
 			},
-            "contentType": {
-                "label": "__l_contentType__",
-                "helper": "__h_contentType__"
-            },
-            "data":{
-                "label": "__l_data__",
-                "helper": "__h_data__"
-            },
+			"contentType": {
+				"label": "__l_contentType__",
+				"helper": "__h_contentType__"
+			},
+			"data":{
+				"label": "__l_data__",
+				"helper": "__h_data__"
+			},
 			"updateOnAction": {
 				"type": "checkbox",
 				"rightLabel": "__rl_updateOnAction__",

@@ -16,8 +16,8 @@
 // ----------------------------------------------------------------------------
 
 function MailNotifier (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    MailNotifier.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	MailNotifier.super_.call(this, id, controller);
 }
 
 inherits(MailNotifier, AutomationModule);
@@ -29,122 +29,122 @@ _module = MailNotifier;
 // ----------------------------------------------------------------------------
 
 MailNotifier.prototype.init = function (config) {
-    MailNotifier.super_.prototype.init.call(this, config);
+	MailNotifier.super_.prototype.init.call(this, config);
 
-    this.remote_id = this.controller.getRemoteId;
-    this.subject = config.subject;
+	this.remote_id = this.controller.getRemoteId;
+	this.subject = config.subject;
 
-    // TODO check for undefined e-mail
-    // first check input
-    if (config.mail_to_input !== "" && config.allow_input)
-    {
-        this.mail_to = config.mail_to_input;
-    }
-    // use select field if assigned
-    else if(config.mail_to_select !== "")
-    {
-        this.mail_to = config.mail_to_select;
-    }
+	// TODO check for undefined e-mail
+	// first check input
+	if (config.mail_to_input !== "" && config.allow_input)
+	{
+		this.mail_to = config.mail_to_input;
+	}
+	// use select field if assigned
+	else if(config.mail_to_select !== "")
+	{
+		this.mail_to = config.mail_to_select;
+	}
 
 
-    //console.log(this.mail_to);
-    this.message = config.mail_message;
-    this.collectMessages = 0;
+	//console.log(this.mail_to);
+	this.message = config.mail_message;
+	this.collectMessages = 0;
 
-    var self = this;
+	var self = this;
 
-    this.vDev = this.controller.devices.create({
-        deviceId: "MailNotifier_" + this.id,
-        defaults: {
-            metrics: {
-                level: 'on',
-                title: self.getInstanceTitle(this.id),
-                icon: "/ZAutomation/api/v1/load/modulemedia/MailNotifier/icon.png",
-                message: ""
-            }
-        },
-        overlay: {
-            deviceType: 'toggleButton',
-            probeType: 'notification_email'
-        },
-        handler: function(command, args) {
-            var send_mail = false;
-            if (command !== 'update') {
-                if (send_mail |= command === "on") {
-                    self.collectMessages++;
-                    self.message = self.config.mail_message;
-                    self.mail_to = self.config.mail_to_input === '' ? self.config.mail_to_select : self.config.mail_to_input;
-                } else if (send_mail |= command === "send") {
-                    self.collectMessages++;
-                    self.message = args.message;
-                    self.mail_to = args.mail_to;
-                }
+	this.vDev = this.controller.devices.create({
+		deviceId: "MailNotifier_" + this.id,
+		defaults: {
+			metrics: {
+				level: 'on',
+				title: self.getInstanceTitle(this.id),
+				icon: "/ZAutomation/api/v1/load/modulemedia/MailNotifier/icon.png",
+				message: ""
+			}
+		},
+		overlay: {
+			deviceType: 'toggleButton',
+			probeType: 'notification_email'
+		},
+		handler: function(command, args) {
+			var send_mail = false;
+			if (command !== 'update') {
+				if (send_mail |= command === "on") {
+					self.collectMessages++;
+					self.message = self.config.mail_message;
+					self.mail_to = self.config.mail_to_input === '' ? self.config.mail_to_select : self.config.mail_to_input;
+				} else if (send_mail |= command === "send") {
+					self.collectMessages++;
+					self.message = args.message;
+					self.mail_to = args.mail_to;
+				}
 
-                // TODO check for mail address
-                if (!self.mail_to || self.mail_to === '') {
-                    self.addNotification('error', 'Missing receiver e-mail address. Please check your configuration in the following app instance: ' + self.config.title, 'module', 'MailNotifier');
-                    return;
-                }
+				// TODO check for mail address
+				if (!self.mail_to || self.mail_to === '') {
+					self.addNotification('error', 'Missing receiver e-mail address. Please check your configuration in the following app instance: ' + self.config.title, 'module', 'MailNotifier');
+					return;
+				}
 
-                // add delay timer if not existing
-                if(!self.timer && send_mail){
-                    self.sendSendMessageWithDelay();
-                }
-            }
-        },
-        moduleId: this.id
-    });
+				// add delay timer if not existing
+				if(!self.timer && send_mail){
+					self.sendSendMessageWithDelay();
+				}
+			}
+		},
+		moduleId: this.id
+	});
 
-    if (config.hide === true) {
-        this.vDev.set('visibility', false, {silent: true});
-    } else {
-        this.vDev.set('visibility', true, {silent: true});
-    }
+	if (config.hide === true) {
+		this.vDev.set('visibility', false, {silent: true});
+	} else {
+		this.vDev.set('visibility', true, {silent: true});
+	}
 
-    // wrap method with a function
-    this.notificationMailWrapper = function(notification) {
-        if (notification.level === 'mail.notification'){
-            var instance = self.controller.instances.filter(function (instance){
-                return instance.params.mail_to_select === notification.type;
-            });
+	// wrap method with a function
+	this.notificationMailWrapper = function(notification) {
+		if (notification.level === 'mail.notification'){
+			var instance = self.controller.instances.filter(function (instance){
+				return instance.params.mail_to_select === notification.type;
+			});
 
-            if(typeof instance[0] !== 'undefined') {
-                var new_vDev = self.controller.devices.get(instance[0].moduleId + '_' + instance[0].id);
+			if(typeof instance[0] !== 'undefined') {
+				var new_vDev = self.controller.devices.get(instance[0].moduleId + '_' + instance[0].id);
 
-                if (instance[0].id === self.vDev.get('creatorId')) {
-                    new_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
-                }
-            } else {
-                var def_instance = self.controller.instances.filter(function (instance){
-                    return instance.moduleId === 'MailNotifier';
-                });
-                if(typeof def_instance[0] !== 'undefined') {
-                    var def_vDev = self.controller.devices.get(def_instance[0].moduleId + '_' + def_instance[0].id);
+				if (instance[0].id === self.vDev.get('creatorId')) {
+					new_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
+				}
+			} else {
+				var def_instance = self.controller.instances.filter(function (instance){
+					return instance.moduleId === 'MailNotifier';
+				});
+				if(typeof def_instance[0] !== 'undefined') {
+					var def_vDev = self.controller.devices.get(def_instance[0].moduleId + '_' + def_instance[0].id);
 
-                    if (def_instance[0].id === self.vDev.get('creatorId')) {
-                        def_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
-                    }
-                }
-            }
-        }
-    };
+					if (def_instance[0].id === self.vDev.get('creatorId')) {
+						def_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
+					}
+				}
+			}
+		}
+	};
 
-    self.controller.on('notifications.push', self.notificationMailWrapper);
+	self.controller.on('notifications.push', self.notificationMailWrapper);
 };
 
 MailNotifier.prototype.stop = function () {
-    if (this.vDev) {
-        this.controller.devices.remove(this.vDev.id);
-        this.vDev = null;
-    }
+	if (this.vDev) {
+		this.controller.devices.remove(this.vDev.id);
+		this.vDev = null;
+	}
 
-    if (this.timer) {
-        clearInterval(this.timer);
-        this.timer = undefined;
-    }
+	if (this.timer) {
+		clearInterval(this.timer);
+		this.timer = undefined;
+	}
 
-    this.controller.off('notifications.push', this.notificationMailWrapper);
-    MailNotifier.super_.prototype.stop.call(this);
+	this.controller.off('notifications.push', this.notificationMailWrapper);
+	MailNotifier.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
@@ -152,37 +152,37 @@ MailNotifier.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 MailNotifier.prototype.sendSendMessageWithDelay = function () {
-    var self = this;
+	var self = this;
 
-    this.timer = setInterval( function() {
+	this.timer = setInterval( function() {
 
-        if (self.collectMessages > 0) {
+		if (self.collectMessages > 0) {
 
-            http.request({
-                method: "POST",
-                url: "https://service.z-wave.me/emailnotification/index.php",
-                async: true,
-                data: {
-                    remote_id: self.remote_id,
-                    mail_to: self.mail_to,
-                    subject: self.subject,
-                    message: self.vDev.get('metrics:message') !== ''? self.vDev.get('metrics:message') : self.message,
-                    language: self.controller.defaultLang
-                },
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                error: function(response) {
-                    console.log("MailNotifier-ERROR: " + typeof response !== 'string'? JSON.stringify(response) : response);
-                }
-            });
+			http.request({
+				method: "POST",
+				url: "https://service.z-wave.me/emailnotification/index.php",
+				async: true,
+				data: {
+					remote_id: self.remote_id,
+					mail_to: self.mail_to,
+					subject: self.subject,
+					message: self.vDev.get('metrics:message') !== ''? self.vDev.get('metrics:message') : self.message,
+					language: self.controller.defaultLang
+				},
+				headers: {
+					"Content-Type": "application/x-www-form-urlencoded"
+				},
+				error: function(response) {
+					console.log("MailNotifier-ERROR: " + typeof response !== 'string'? JSON.stringify(response) : response);
+				}
+			});
 
-            self.collectMessages--;
-        } else {
-            if (self.timer) {
-                clearInterval(self.timer);
-                self.timer = undefined;
-            }
-        }
-    }, 5000);
+			self.collectMessages--;
+		} else {
+			if (self.timer) {
+				clearInterval(self.timer);
+				self.timer = undefined;
+			}
+		}
+	}, 5000);
 };

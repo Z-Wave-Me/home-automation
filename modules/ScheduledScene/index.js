@@ -5,7 +5,7 @@ Version: 2.1.2
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
-    This executes scene by cron
+	This executes scene by cron
 
 ******************************************************************************/
 
@@ -14,8 +14,8 @@ Description:
 // ----------------------------------------------------------------------------
 
 function ScheduledScene (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    ScheduledScene.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	ScheduledScene.super_.call(this, id, controller);
 }
 
 inherits(ScheduledScene, AutomationModule);
@@ -27,87 +27,87 @@ _module = ScheduledScene;
 // ----------------------------------------------------------------------------
 
 ScheduledScene.prototype.init = function (config) {
-    ScheduledScene.super_.prototype.init.call(this, config);
+	ScheduledScene.super_.prototype.init.call(this, config);
 
-    var self = this;
+	var self = this;
 
-    this.runScene = function() {
-        if (_.isArray(self.config.switches)) {
-            self.config.switches.forEach(function(devState) {
-                var vDev = self.controller.devices.get(devState.device);
-                if (vDev) {
-                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                        vDev.performCommand(devState.status);
-                    }
-                }
-            });
-        }
-        if (_.isArray(self.config.thermostats)) {
-            self.config.thermostats.forEach(function(devState) {
-                var vDev = self.controller.devices.get(devState.device);
-                if (vDev) {
-                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                        vDev.performCommand("exact", { level: devState.status });
-                    }
-                }
-            });
-        }
-        if (_.isArray(self.config.dimmers)) {
-            self.config.dimmers.forEach(function(devState) {
-                var vDev = self.controller.devices.get(devState.device);
-                if (vDev) {
-                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                        vDev.performCommand("exact", { level: devState.status });
-                    }
-                }
-            });
-        }
-        if (_.isArray(self.config.locks)) {
-            self.config.locks.forEach(function(devState) {
-                var vDev = self.controller.devices.get(devState.device);
-                if (vDev) {
-                    if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
-                        vDev.performCommand(devState.status);
-                    }
-                }
-            });
-        }
-        if (_.isArray(self.config.scenes)) {
-            self.config.scenes.forEach(function(scene) {
-                var vDev = self.controller.devices.get(scene);
-                if (vDev) {
-                    vDev.performCommand("on");
-                }
-            });
-        }
-    };
+	this.runScene = function() {
+		if (_.isArray(self.config.switches)) {
+			self.config.switches.forEach(function(devState) {
+				var vDev = self.controller.devices.get(devState.device);
+				if (vDev) {
+					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+						vDev.performCommand(devState.status);
+					}
+				}
+			});
+		}
+		if (_.isArray(self.config.thermostats)) {
+			self.config.thermostats.forEach(function(devState) {
+				var vDev = self.controller.devices.get(devState.device);
+				if (vDev) {
+					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+						vDev.performCommand("exact", { level: devState.status });
+					}
+				}
+			});
+		}
+		if (_.isArray(self.config.dimmers)) {
+			self.config.dimmers.forEach(function(devState) {
+				var vDev = self.controller.devices.get(devState.device);
+				if (vDev) {
+					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+						vDev.performCommand("exact", { level: devState.status });
+					}
+				}
+			});
+		}
+		if (_.isArray(self.config.locks)) {
+			self.config.locks.forEach(function(devState) {
+				var vDev = self.controller.devices.get(devState.device);
+				if (vDev) {
+					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+						vDev.performCommand(devState.status);
+					}
+				}
+			});
+		}
+		if (_.isArray(self.config.scenes)) {
+			self.config.scenes.forEach(function(scene) {
+				var vDev = self.controller.devices.get(scene);
+				if (vDev) {
+					vDev.performCommand("on");
+				}
+			});
+		}
+	};
 
-    // set up cron handler
-    this.controller.on("scheduledScene.run."+self.id, this.runScene);
+	// set up cron handler
+	this.controller.on("scheduledScene.run."+self.id, this.runScene);
 
-    // add cron schedule
-    var wds = this.config.weekdays.map(function(x) { return parseInt(x, 10); });
-    
-    if (wds.length == 7) {
-        wds = [null]; // same as all - hack to add single cron record. NB! changes type of wd elements from integer to null
-    }
-    
-    wds.forEach(function(wd) {
-        this.controller.emit("cron.addTask", "scheduledScene.run."+self.id, {
-            minute: parseInt(self.config.time.split(":")[1], 10),
-            hour: parseInt(self.config.time.split(":")[0], 10),
-            weekDay: wd,
-            day: null,
-            month: null
-        });
-    });
+	// add cron schedule
+	var wds = this.config.weekdays.map(function(x) { return parseInt(x, 10); });
+	
+	if (wds.length == 7) {
+		wds = [null]; // same as all - hack to add single cron record. NB! changes type of wd elements from integer to null
+	}
+	
+	wds.forEach(function(wd) {
+		this.controller.emit("cron.addTask", "scheduledScene.run."+self.id, {
+			minute: parseInt(self.config.time.split(":")[1], 10),
+			hour: parseInt(self.config.time.split(":")[0], 10),
+			weekDay: wd,
+			day: null,
+			month: null
+		});
+	});
 };
 
 ScheduledScene.prototype.stop = function () {
-    ScheduledScene.super_.prototype.stop.call(this);
+	ScheduledScene.super_.prototype.stop.call(this);
 
-    this.controller.emit("cron.removeTask", "scheduledScene.run."+this.id);
-    this.controller.off("scheduledScene.run."+this.id, this.runScene);
+	this.controller.emit("cron.removeTask", "scheduledScene.run."+this.id);
+	this.controller.off("scheduledScene.run."+this.id, this.runScene);
 };
 
 // ----------------------------------------------------------------------------

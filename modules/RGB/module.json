@@ -5,7 +5,7 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
-        "moduleName":"RGB",
+		"moduleName":"RGB",
 	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {

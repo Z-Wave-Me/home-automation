@@ -25,18 +25,18 @@
 	},
 	"schema": {
 		"type": "object",
-        "properties": {
-            "path": {
-                "required": false
-            }
-        }
-    },
-    "options": {
-        "fields": {
-            "path": {
-                "label": "__l_ra_path__",
+		"properties": {
+			"path": {
+				"required": false
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"path": {
+				"label": "__l_ra_path__",
 				"helper": "__h_ra_path__"
-            }
-        }
-    }
+			}
+		}
+	}
 }

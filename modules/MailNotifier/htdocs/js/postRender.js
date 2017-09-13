@@ -44,13 +44,13 @@ function fillDropDown(profiles, selectedMail) {
 		}
 
 		$("div[data-alpaca-field-name='mail_to_input'] label").hide();
-		$("div[data-alpaca-field-name='mail_to_select']").show();        
+		$("div[data-alpaca-field-name='mail_to_select']").show();		
 	}
 };
 
 function showInputField() {
 	$("div[data-alpaca-field-name='mail_to_select']").hide();
-    $("div[data-alpaca-field-name='allow_input'] input[name='allow_input']").prop('checked', true);
-    $("div[data-alpaca-field-name='allow_input']").css('visibility', 'hidden');
+	$("div[data-alpaca-field-name='allow_input'] input[name='allow_input']").prop('checked', true);
+	$("div[data-alpaca-field-name='allow_input']").css('visibility', 'hidden');
 	$("div[data-alpaca-field-name='mail_to_input']").show();
 };

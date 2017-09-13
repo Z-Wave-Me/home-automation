@@ -12,19 +12,19 @@
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 function SmartLight (id, controller) {
-    // Call superconstructor first (AutomationModule)
-    SmartLight.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	SmartLight.super_.call(this, id, controller);
 
-    // by default dimmer button status not pressed
-    this.dimmerButtonStatus = 0;
+	// by default dimmer button status not pressed
+	this.dimmerButtonStatus = 0;
 
-    // Sensor Enable or Disable
-    this.sensorEnable = 1;
+	// Sensor Enable or Disable
+	this.sensorEnable = 1;
 
-    this.timerSmartLight = null;
+	this.timerSmartLight = null;
 
-    // Create instance variables
-    this.timerAutoOff = null;
+	// Create instance variables
+	this.timerAutoOff = null;
 };
 
 inherits(SmartLight, AutomationModule);
@@ -34,146 +34,146 @@ _module = SmartLight;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 SmartLight.prototype.init = function (config) {
-    // Call superclass' init (this will process config argument and so on)
-    SmartLight.super_.prototype.init.call(this, config);
+	// Call superclass' init (this will process config argument and so on)
+	SmartLight.super_.prototype.init.call(this, config);
 
-    var self = this;
+	var self = this;
 
-    // Dimmer levels for day and night
-    var dayLevel = this.config.Level.DayLevel;
-    var nightLevel = this.config.Level.NightLevel;
+	// Dimmer levels for day and night
+	var dayLevel = this.config.Level.DayLevel;
+	var nightLevel = this.config.Level.NightLevel;
 
-    // Day start
-    var time_07_00_arr = this.config.Day.DayTimeStart.split(":").map(function(x) { return parseInt(x, 10); });
-    this.Time_07_00 = time_07_00_arr[0] * 60 + time_07_00_arr[1];
-    // Day end
-    var time_23_59_arr = this.config.Day.DayTimeEnd.split(":").map(function(x) { return parseInt(x, 10); });
-    this.Time_23_59 = time_23_59_arr[0] * 60 + time_23_59_arr[1];
+	// Day start
+	var time_07_00_arr = this.config.Day.DayTimeStart.split(":").map(function(x) { return parseInt(x, 10); });
+	this.Time_07_00 = time_07_00_arr[0] * 60 + time_07_00_arr[1];
+	// Day end
+	var time_23_59_arr = this.config.Day.DayTimeEnd.split(":").map(function(x) { return parseInt(x, 10); });
+	this.Time_23_59 = time_23_59_arr[0] * 60 + time_23_59_arr[1];
 
-    // handler for Sensor
-    this.sensorTriggered = function (Sensor) {
-        // Now Time in minutes
-        var nowDate = new Date();
-        var nowTime = nowDate.getHours() * 60 + nowDate.getMinutes();
+	// handler for Sensor
+	this.sensorTriggered = function (Sensor) {
+		// Now Time in minutes
+		var nowDate = new Date();
+		var nowTime = nowDate.getHours() * 60 + nowDate.getMinutes();
 
-        // Check Motion Sensor and turn on light
-        if ((Sensor.get("metrics:level") == "on") && self.sensorEnable === 1) {
-            // In the daytime or the dimmer Button pressed the light turns on for 100%  
-            if ((nowTime >= self.Time_07_00 && nowTime <= self.Time_23_59) || self.dimmerButtonStatus === 1) {
-                self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
-                if (self.config.Level.sendOnAfterLevel) {
-                    self.controller.devices.get(self.config.Dimmer).performCommand("on");
-                }
-            }
-            // At night the light turns on for 20%
-            else {
-                self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: nightLevel });
-                if (self.config.Level.sendOnAfterLevel) {
-                    self.controller.devices.get(self.config.Dimmer).performCommand("on");
-                }
-            }
-            // Disable timer when "on"
-            if (self.config.timeout !==0 && typeof self.config.timeout !== 'undefined') {
-                if (self.timerAutoOff) {
-                    // Timer is set, so we destroy it
-                    clearTimeout(self.timerAutoOff);
-                }
-            }
-        }
-        else if (self.sensorEnable === 0) {
-            console.log("Sensor Disabled for 1 minute");
-        }
+		// Check Motion Sensor and turn on light
+		if ((Sensor.get("metrics:level") == "on") && self.sensorEnable === 1) {
+			// In the daytime or the dimmer Button pressed the light turns on for 100%  
+			if ((nowTime >= self.Time_07_00 && nowTime <= self.Time_23_59) || self.dimmerButtonStatus === 1) {
+				self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
+				if (self.config.Level.sendOnAfterLevel) {
+					self.controller.devices.get(self.config.Dimmer).performCommand("on");
+				}
+			}
+			// At night the light turns on for 20%
+			else {
+				self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: nightLevel });
+				if (self.config.Level.sendOnAfterLevel) {
+					self.controller.devices.get(self.config.Dimmer).performCommand("on");
+				}
+			}
+			// Disable timer when "on"
+			if (self.config.timeout !==0 && typeof self.config.timeout !== 'undefined') {
+				if (self.timerAutoOff) {
+					// Timer is set, so we destroy it
+					clearTimeout(self.timerAutoOff);
+				}
+			}
+		}
+		else if (self.sensorEnable === 0) {
+			console.log("Sensor Disabled for 1 minute");
+		}
 
-        // Start autoOff only when motion send "on" or "off"
-        if ((Sensor.get("metrics:level") == self.config.MotionEventToStartTimer) && self.sensorEnable === 1) {
-            // If timeout setted, start timer autooff
-            if (self.config.timeout !==0 && typeof self.config.timeout !== 'undefined') {
-                if (self.timerAutoOff) {
-                    // Timer is set, so we destroy it
-                    clearTimeout(self.timerAutoOff);
-                }
-                console.log("start AutoOff with "+ self.config.MotionEventToStartTimer);
-                self.timerAutoOff = setTimeout(function () {
-                    // Timeout fired, so we send "off" command to the virtual device
-                    self.controller.devices.get(self.config.Dimmer).performCommand("off");
-                    // And clearing out this.timer variable
-                    self.timerAutoOff = null;
-                }, self.config.timeout*1000);
-            }    
-        }
-        else if (self.sensorEnable === 0) {
-            console.log("Sensor Disabled for 1 minute");
-        }
-    };
+		// Start autoOff only when motion send "on" or "off"
+		if ((Sensor.get("metrics:level") == self.config.MotionEventToStartTimer) && self.sensorEnable === 1) {
+			// If timeout setted, start timer autooff
+			if (self.config.timeout !==0 && typeof self.config.timeout !== 'undefined') {
+				if (self.timerAutoOff) {
+					// Timer is set, so we destroy it
+					clearTimeout(self.timerAutoOff);
+				}
+				console.log("start AutoOff with "+ self.config.MotionEventToStartTimer);
+				self.timerAutoOff = setTimeout(function () {
+					// Timeout fired, so we send "off" command to the virtual device
+					self.controller.devices.get(self.config.Dimmer).performCommand("off");
+					// And clearing out this.timer variable
+					self.timerAutoOff = null;
+				}, self.config.timeout*1000);
+			}	
+		}
+		else if (self.sensorEnable === 0) {
+			console.log("Sensor Disabled for 1 minute");
+		}
+	};
 
-    // handler for Dimmer Light 
-    this.dimmerLevelChanged = function (Dimmer) {
-        // when light off, dimmer button status not pressed
-        if (self.controller.devices.get(self.config.Dimmer).get("metrics:level") === 0) {
-            self.dimmerButtonStatus = 0;
-        }
-    };
+	// handler for Dimmer Light 
+	this.dimmerLevelChanged = function (Dimmer) {
+		// when light off, dimmer button status not pressed
+		if (self.controller.devices.get(self.config.Dimmer).get("metrics:level") === 0) {
+			self.dimmerButtonStatus = 0;
+		}
+	};
 
-    // handler for Dimmer Button
-    this.dimmerButtonPressed = function (DimmerButton) {
-        // if pressed up, turn on the light
-        console.log("button pressed");
-        if (DimmerButton.get("metrics:level")=== "on") {
-            self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
-            self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 255 });
-            self.dimmerButtonStatus = 1; 
-            if (self.timerSmartLight) {
-                // Timer is set, so we destroy it
-                clearTimeout(self.timerSmartLight);
-            }
-            self.sensorEnable = 1;
-        } 
-        // if pressed down, turn off the light and does not respond to the sensor one minute
-        else if (DimmerButton.get("metrics:level")=== "off") {
-            console.log("Sensor Disabled for 1 minute");
-            self.controller.devices.get(self.config.Dimmer).performCommand("off");
-            self.sensorEnable = 0;
+	// handler for Dimmer Button
+	this.dimmerButtonPressed = function (DimmerButton) {
+		// if pressed up, turn on the light
+		console.log("button pressed");
+		if (DimmerButton.get("metrics:level")=== "on") {
+			self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: dayLevel });
+			self.controller.devices.get(self.config.Dimmer).performCommand("exact", { level: 255 });
+			self.dimmerButtonStatus = 1; 
+			if (self.timerSmartLight) {
+				// Timer is set, so we destroy it
+				clearTimeout(self.timerSmartLight);
+			}
+			self.sensorEnable = 1;
+		} 
+		// if pressed down, turn off the light and does not respond to the sensor one minute
+		else if (DimmerButton.get("metrics:level")=== "off") {
+			console.log("Sensor Disabled for 1 minute");
+			self.controller.devices.get(self.config.Dimmer).performCommand("off");
+			self.sensorEnable = 0;
 
-            if (self.timerSmartLight) {
-            // Timer is set, so we destroy it
-            clearTimeout(self.timerSmartLight);
-            }
+			if (self.timerSmartLight) {
+			// Timer is set, so we destroy it
+			clearTimeout(self.timerSmartLight);
+			}
 
-            // pressed down, set (or reset) timer to new timeout
-            self.timerSmartLight = setTimeout(function () {
-                self.sensorEnable = 1;
-                console.log("Sensor Enabled");
-                // And clearing out this.timer variable
-                self.timerSmartLight = null;
-            }, 60*1000);
-        } 
-    };
+			// pressed down, set (or reset) timer to new timeout
+			self.timerSmartLight = setTimeout(function () {
+				self.sensorEnable = 1;
+				console.log("Sensor Enabled");
+				// And clearing out this.timer variable
+				self.timerSmartLight = null;
+			}, 60*1000);
+		} 
+	};
 
-    // Setup metric update event listener
-    this.controller.devices.on(this.config.MotionSensor, 'change:metrics:level', this.sensorTriggered);
-    this.controller.devices.on(this.config.Dimmer, 'change:metrics:level', this.dimmerLevelChanged);
-    // Check if Dimmer Button exist
-    if (this.config.DimmerButton) {
-        this.controller.devices.on(this.config.DimmerButton, 'change:metrics:level', this.dimmerButtonPressed);
-    }
+	// Setup metric update event listener
+	this.controller.devices.on(this.config.MotionSensor, 'change:metrics:level', this.sensorTriggered);
+	this.controller.devices.on(this.config.Dimmer, 'change:metrics:level', this.dimmerLevelChanged);
+	// Check if Dimmer Button exist
+	if (this.config.DimmerButton) {
+		this.controller.devices.on(this.config.DimmerButton, 'change:metrics:level', this.dimmerButtonPressed);
+	}
 };
 
 SmartLight.prototype.stop = function () {
-    SmartLight.super_.prototype.stop.call(this);
+	SmartLight.super_.prototype.stop.call(this);
 
-    if (this.timerAutoOff){
-        clearTimeout(this.timerAutoOff);
-    }
+	if (this.timerAutoOff){
+		clearTimeout(this.timerAutoOff);
+	}
 
-    if (this.timerSmartLight) {
-        clearTimeout(this.timerSmartLight);
-    }
+	if (this.timerSmartLight) {
+		clearTimeout(this.timerSmartLight);
+	}
 
-    this.controller.devices.off(this.config.MotionSensor, 'change:metrics:level', this.sensorTriggered);
-    this.controller.devices.off(this.config.Dimmer, 'change:metrics:level', this.dimmerLevelChanged);
+	this.controller.devices.off(this.config.MotionSensor, 'change:metrics:level', this.sensorTriggered);
+	this.controller.devices.off(this.config.Dimmer, 'change:metrics:level', this.dimmerLevelChanged);
 
-    // Check if Dimmer Button exist
-    if (this.config.DimmerButton) {
-        this.controller.devices.off(this.config.DimmerButton, 'change:metrics:level', this.dimmerButtonPressed);
-    }
+	// Check if Dimmer Button exist
+	if (this.config.DimmerButton) {
+		this.controller.devices.off(this.config.DimmerButton, 'change:metrics:level', this.dimmerButtonPressed);
+	}
 };

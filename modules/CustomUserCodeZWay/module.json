@@ -1,62 +1,62 @@
 {
-    "singleton": false,
-    "dependencies": [],
-    "category": "developers_stuff",
-    "author": "Z-Wave.Me",
-    "homepage": "http://razberry.z-wave.me",
-    "icon": "icon.png",
-    "moduleName": "CustomUserCodeZWay",
-    "version": "1.0.0",
-    "maturity": "stable",
-    "repository": {
-            "type": "git",
-            "source": "https://github.com/Z-Wave-Me/home-automation"
-    },
-    "defaults": {
-    	"title": "__m_title__",
-    	"description": "__m_descr__",
-    	"zway": "",
-    	"customCodeOnLoad": "",
-    	"customCodeOnUnload": ""
-    },
-    "schema": {
-        "type": "object",
-        "properties": {
-            "zway": {
-            	"field": "enum",
-            	"datasource": "namespaces",
-            	"enum": "namespaces:zways:zwayName",
-            	"required": true
-            },
-            "customCodeOnLoad": {
-                "type": "string"
-            },
-            "customCodeOnUnload": {
-                "type": "string"
-            }
-        },
-        "required": false
-    },
-    "options": {
-        "toolbarSticky": true,
-        "fields": {
-            "zway": {
-                "type": "select",
+	"singleton": false,
+	"dependencies": [],
+	"category": "developers_stuff",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "CustomUserCodeZWay",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+			"type": "git",
+			"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"zway": "",
+		"customCodeOnLoad": "",
+		"customCodeOnUnload": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"zway": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:zways:zwayName",
+				"required": true
+			},
+			"customCodeOnLoad": {
+				"type": "string"
+			},
+			"customCodeOnUnload": {
+				"type": "string"
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"toolbarSticky": true,
+		"fields": {
+			"zway": {
+				"type": "select",
 		"label": "__l_choose_zway__",
-                "datasource": "namespaces",
-                "field": "optionLabels",
-                "optionLabels": "namespaces:zways:zwayName"
-            },
-            "customCodeOnLoad": {
-                "type": "textarea",
-                "label": "__l_customCodeOnLoad__",
-		    "cols": 40
-            },
-            "customCodeOnUnload": {
-                "type": "textarea",
-                "label": "__l_customCodeOnUnload__",
-		    "cols": 40
-            }
-        }
-    }
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:zways:zwayName"
+			},
+			"customCodeOnLoad": {
+				"type": "textarea",
+				"label": "__l_customCodeOnLoad__",
+			"cols": 40
+			},
+			"customCodeOnUnload": {
+				"type": "textarea",
+				"label": "__l_customCodeOnUnload__",
+			"cols": 40
+			}
+		}
+	}
 }
