@@ -35,7 +35,7 @@ InbandNotifications.prototype.init = function (config) {
 		lastChanges = [];
 
 	this.writeNotification = function (vDev) {
-		if (!Boolean(vDev.get('permanently_hidden')) && !Boolean(vDev.get('removed'))){ // write notification if vdev is active - not permanently hidden or removed
+		if (!Boolean(vDev.get('permanently_hidden')) && !Boolean(vDev.get('metrics:removed'))){ // write notification if vdev is active - not permanently hidden or removed
 			var devId = vDev.get('id'),
 				devType = vDev.get('deviceType'),
 				devProbeType = vDev.get('probeType'),
