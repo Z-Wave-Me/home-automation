@@ -22,7 +22,6 @@
 	"switchControl": "Кнопка (Включить/Выключить/Level)",
 	"sensorBinary": "Бинарный датчик",
 	"l_choose":"--- Выберите тип устройства ---",
-	"l_choose":"--- Выберите тип устройства ---",
 	"l_choose_dev":"--- Выберите устройство ---",
 	"l_choose_controller_action":"--- Choose a controller action ---",
 	"l_controller_action":"Controller Actions",
@@ -35,5 +34,14 @@
 	"colors":"Цвет",
 	"h_color":"Выберите значение 0 - 255",
 	"l_sendAction":"Не отправлять команду ВКЛ, если устройство уже включено, аналогично для ВЫКЛ",
-	"h_sendAction":"Нужно чтобы не забивать сеть."
+	"h_sendAction":"Нужно чтобы не забивать сеть.",
+	"l_notification_message":"Message",
+	"h_notification_message":"Content of the notification.",
+	"l_notification_target":"Target",
+	"l_notification_device":"Device",
+	"l_notification_mail":"Email",
+	"l_choose_target":"--- Choose a target ---",
+	"h_nomail":"Currently, no email notification is possible because the EMailMe app is not installed/activated.",
+	"b_createmail": "Activate EMailMe",
+	"m_createmail": "ATTENTION! <br /> When leaving the current configuration, all previous settings are lost. <br /><br /> NOTE: <br /> You can continue with 'Cancel' without configuring the EMailMe app, create it afterwards, and add it then in the If -> Then configuration."
 }

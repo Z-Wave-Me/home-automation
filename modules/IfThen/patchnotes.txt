@@ -1,3 +1,9 @@
+v2.5.0
+- notification as part of If/Then
+v2.4.5
+- allow push and mail with same notification
+v2.4.4
+- adding push and/or mail notification
 v2.4.1
 - adding support for sensorDiscrete
 - adding support for switchRGBW
