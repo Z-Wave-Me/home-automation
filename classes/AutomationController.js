@@ -105,6 +105,24 @@ AutomationController.prototype.init = function () {
 
 			order.room = (count - 1);
 			device.set('order', order);
+
+            var location = _.find(self.locations, function(loc) {
+                if(loc.id !== 0) {
+                    var index = loc.main_sensors.indexOf(id); 
+                    if(index > -1) {
+                        return loc;
+                    }        
+                }       
+            });
+            
+            if(location !== undefined) {
+                location.main_sensors.splice(index, 1);
+                self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function (data) {
+                    if (!data) {
+                        console.log("Error location not exists");
+                    }
+                });
+            }        
 		});
 
 		// update namespaces if device permanently_hidden status has changed
