@@ -12,3 +12,4 @@ blub
 userModules/
 .idea
 *.iml
+sftp-config.json

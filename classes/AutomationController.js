@@ -42,6 +42,7 @@ function AutomationController() {
 	this.devices = new DevicesCollection(this);
 
 	this.notifications = [];
+	this.history = [];
 	this.lastStructureChangeTime = 0;
 
 	this._loadedSingletons = [];
@@ -1405,9 +1406,9 @@ AutomationController.prototype.setVdevInfo = function (id, device) {
 					"permanently_hidden", 
 					"creationTime", 
 					"customIcons", 
-					"order", 
-					"removed", 
-					"isFailed");
+					"order",
+					"visibility",
+					"hasHistory");
 	this.saveConfig();
 	return this.vdevInfo[id];
 };
@@ -1705,9 +1706,12 @@ AutomationController.prototype.updateNotification = function (id, object, callba
 };
 
 AutomationController.prototype.listHistories = function () {
-	var self = this;
+	return this.history;
+};
 
-	return self.history;
+AutomationController.prototype.setHistory = function () {
+	this.history = loadObject('history') || [];
+	return this.history;
 };
 
 AutomationController.prototype.deleteDevHistory = function (vDevId) {
@@ -1780,22 +1784,12 @@ AutomationController.prototype.getDevHistory = function (dev, since, show) {
 					l += range[j]['l'];
 				}
 
-				switch(dev[0]['dT']){
-					case 'sensorBinary':
-					case 'switchBinary':
-					case 'doorlock':
-					case 'toggleButton':
-						l = 0 < (l/cnt) && (l/cnt) < 1? 0.5 : (l/cnt); // set 0, 0.5 or 1 if status is binary
-						break;
-					default:
-						l = l /cnt;
+				l = l /cnt;
 						
-						if(l === +l && l !== (l|0)) { // round to one position after '.'
-							l = l.toFixed(1);
-						}
-						break;
+				if(l === +l && l !== (l|0)) { // round to one position after '.'
+					l = l.toFixed(1);
 				}
-			}else {
+			} else {
 				l = null;
 			}			
 

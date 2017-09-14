@@ -1,3 +1,7 @@
+v1.3.0
+- remove support of virtual devices with binary states, because SHUI view has changed and makes it unecessary
+- minor refactoring
+
 v1.2.1
 - type switchControl added
 - bugfix: preselecting virtual devices to add history
