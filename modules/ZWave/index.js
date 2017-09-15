@@ -274,6 +274,11 @@ ZWave.prototype.startBinding = function () {
 		this.gateDevicesStart();
 	}
 
+	// save data every hour for hot start
+	this.saveDataXMLTimer = setInterval(function() {
+		self.zway.devices.SaveData();
+	}, 3600*1000);
+
 	// store parsed incoming and outgoing packets (for Zniffer)
 	this.parsedPackets = new LimitedArray(
 		self.loadObject("parsedPackets.json"),
@@ -377,6 +382,11 @@ ZWave.prototype.stopBinding = function () {
 	if (this.statisticsInterval) {
 		clearInterval(this.statisticsInterval);
 		this.statisticsInterval = undefined;
+	}
+	
+	if (this.saveDataXMLTimer) {
+		clearInterval(this.saveDataXMLTimer);
+		this.saveDataXMLTimer = undefined;
 	}
 
 	// do license check if controller type CIT and stop polling routine
