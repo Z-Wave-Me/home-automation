@@ -203,8 +203,6 @@ ZWave.prototype.init = function (config) {
 
 	// check periodically if nodes are failed to mark their vDevs as failed too
 	this.failedNodeCheck();
-
-	this.controller.on("ZWave.nodeWakeupConfiguration.success",this.checkForfailedNode);
 };
 
 ZWave.prototype.startBinding = function () {
@@ -328,7 +326,6 @@ ZWave.prototype.stop = function () {
 	}
 
 	this.controller.off("checkForfailedNode.poll", this.checkForfailedNode);
-	this.controller.off("ZWave.nodeWakeupConfiguration.success",this.checkForfailedNode);
 };
 
 ZWave.prototype.stopBinding = function () {
@@ -744,8 +741,7 @@ ZWave.prototype.certXFCheck = function () {
 };
 
 ZWave.prototype.failedNodeCheck = function () {
-	var self = this,
-		zway = this.zway;
+	var self = this;
 
 	// add cron job that is triggered each 10 min
 	this.controller.emit("cron.addTask", "checkForfailedNode.poll", {
@@ -757,16 +753,14 @@ ZWave.prototype.failedNodeCheck = function () {
 	});
 
 	// add event listener
-	this.controller.on("checkForfailedNode.poll", this.checkForfailedNode);
-
-	// initial failed node check
-	this.checkForfailedNode();
+	this.controller.on("checkForfailedNode.poll", self.checkForfailedNode);
 };
 
 ZWave.prototype.checkForfailedNode = function(nodeId) {
-	
-	var checkFailed = function (nodeId) {
-		var wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
+	var self = this;
+	this.checkFailed = function (nodeId) {
+		var devData = zway.devices[nodeId].data,
+			wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
 			isFailedNode = zway.devices[nodeId].data.isFailed.value || false,
 			now = Math.floor(Date.now()/1000);
 
@@ -774,27 +768,24 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 			if (wakeupCC) {
 
 				wakeupInterval = wakeupCC.data.interval.value;
-				lastWakeup = !!wakeupCC.data.lastWakeup.value && wakeupCC.data.lastWakeup.value > 0? wakeupCC.data.lastWakeup.value : wakeupCC.data.lastSleep.value;
-
+				
 				// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
-				if (lastWakeup < (now - (3*wakeupInterval)) || isFailedNode) {
-					zway.devices[nodeId].SendNoOperation();
-					zway.devices[nodeId].WakeupQueue();
+				if (!!wakeupInterval && (_.max([devData.lastReceived.updateTime, devData.lastSend.updateTime]) < now - 3 * wakeupInterval)) {
+					self.vDevFailedDetection(nodeId, true);
+					// bind on last receive
+					devData.lastReceived.bind(self.vDevFailedDetection(nodeId, false), self, false);
 				}
-			} else {
-				zway.devices[nodeId].SendNoOperation();
-				zway.IsFailedNode(nodeId);
 			}
 		}   
 	};
 
 	try {
 		if (typeof nodeId === 'number') {
-			checkFailed(nodeId);
+			self.checkFailed(nodeId);
 		} else {
 			Object.keys(zway.devices).forEach(function(nodeId) {
 				if (nodeId != zway.controller.data.nodeId.value) {
-					checkFailed(nodeId);
+					self.checkFailed(nodeId);
 				}
 			});
 		}
@@ -3080,7 +3071,7 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 		
 		// set failed (true/false) flag to all node vDevs
 		if (self.zway && self.zway.devices[nodeId]) {
-			self.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
+			self.controller.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
 		}
 		
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
@@ -3108,20 +3099,6 @@ ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 		self.addNotification("notification", langFile.dev_btl + values, "connection");
 	}
 };
-
-ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
-	var self = this,
-		nodeId = nodeId,
-		getNodeVDevs = [];
-
-	getNodeVDevs = this.controller.devices.filterByNode(nodeId, this.config.name);
-
-	// set vDev isFailed state
-	getNodeVDevs.forEach(function(vDev) {
-		vDev.set('isFailed', isFailed);
-	});
-};
-
 
 // ----------------- Devices Creator ---------------
 
@@ -3436,10 +3413,6 @@ ZWave.prototype.gateDevicesStart = function () {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}
 			}, "value");
-
-			if (commandClassId === 0x84) {
-				self.controller.emit("ZWave.nodeWakeupConfiguration.success", nodeId, self.config.name);
-			}
 		} else {
 			self.parseDelCommandClass(nodeId, instanceId, commandClassId);
 		}
