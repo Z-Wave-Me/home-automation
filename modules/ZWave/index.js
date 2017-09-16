@@ -755,8 +755,8 @@ ZWave.prototype.failedNodeCheck = function () {
 
 	// add cron job that is triggered each 10 min
 	this.controller.emit("cron.addTask", "checkForfailedNode.poll", {
-		minute: [0, 59, 10],
-		hour: null,
+		minute: 0,
+		hour: 0,
 		weekDay: null,
 		day: null,
 		month: null
