@@ -1197,7 +1197,7 @@
 			"product": "Philio Motionsensor",
 			"apply_postfix": "1",
 			"preInterview": [],
-			"postInterview": ["renameNode,Philio Motionsensor", "noVDev,0-113-7" "setConfig(0,7,22,1)", "setConfig(0,11,0,1)", "setConfig(0,12,1,1)", "setConfig(0,13,1,1)", "setConfig(0,20,10,1)"],
+			"postInterview": ["renameNode,Philio Motionsensor", "noVDev,0-113-7", "setConfig(0,7,22,1)", "setConfig(0,11,0,1)", "setConfig(0,12,1,1)", "setConfig(0,13,1,1)", "setConfig(0,20,10,1)"],
 			"author_last_update": "2017-09-06 13:35:39",
 			"author": "SPRSAIVS",
 			"tester": "AIVS",
