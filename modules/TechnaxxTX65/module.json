@@ -1,0 +1,81 @@
+{
+    "singleton": false,
+    "dependencies": [],
+    "category": "surveillance",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "icon.png",
+    "moduleName":"TechnaxxTX65",
+    "version": "0.0.1",
+    "maturity": "beta",
+    "repository": {
+            "type": "git",
+            "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "__m_title__",
+        "description": "__m_descr__",
+        "ip": "",
+        "streamUrl": "/cgi-bin/mjpg/video.cgi?channel=0&subtype=1",
+        "screenUrl": "/cgi-bin/snapshot.cgi?",
+        "user": "",
+        "password": "",
+        "doorDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "ip": {
+                "format": "uri",
+                "required": true
+            },
+            "user": {
+                "required": false
+            },
+            "password": {
+                "format": "password",
+                "required": false
+            },
+            "doorDevices": {
+                "type": "array",
+                "items": {
+                    "field": "enum",
+                    "datasource": "namespaces",
+                    "enum": "namespaces:devices_doorlock:deviceId,namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
+                    "required": false
+                }
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "ip": {
+                "label": "__l_cam_ip__",
+                "type": "url",
+                "required": true
+            },
+            "user": {
+                "label": "__l_user__",
+		        "helper": "__h_http_auth__",
+                "required": false
+            },
+            "password": {
+                "label": "__l_pw__",
+		        "helper": "__h_http_auth__",
+                "required": false
+            },
+            "doorDevices": {
+                "label": "__l_door_dev__",
+                "fields": {
+                    "item": {
+			        "type": "select",
+                        "datasource": "namespaces",
+                        "field": "optionLabels",
+                        "optionLabels": "namespaces:devices_doorlock:deviceName,namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
+                    }
+                }
+            }
+        }
+    }
+}

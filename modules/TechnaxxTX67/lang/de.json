@@ -1,0 +1,9 @@
+{
+  "m_title":"Technaxx TX-67",
+  "m_descr":"Unterstützt die Technaxx TX-67 Outdoor Kamera",
+  "l_cam_url": "Kamera IP URL",
+  "l_user": "Benutzername für HTTP Authentifizierung",
+  "h_http_auth": "Lassen Sie das Feld frei, wenn die Kamera nicht mit einem Passwort geschütztt ist.",
+  "l_pw":"Passwort für HTTP Authentifiziereung.",
+  "l_door_dev": "Door device"
+}
