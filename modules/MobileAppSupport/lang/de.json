@@ -1,16 +1,12 @@
 {
 	"m_title":"Handy App Unterstützung",
 	"m_descr":"Dieses Modul wird von der Handy App (Android, iOS) benötigt. Statusaktualisierungen aller Geräte und Ereignisse werden zur Laufzeit zum Handy gesendet. Zusätzliche Benachrichtigungen können konfiguriert werden, die im Hintergrund gesendet werden. Derzeit wird eine Event-Weiterleitung unterstützt (die gleiche Funktionalität wie bei dem Pushbullet Modul).",
-
 	"unselected": "--- Bitte auswählen ---",
 	"errors": "Alle Fehlermeldungen",
 	"warnings": "Alle Warnmeldungen",
-	"notifications": "Alle Benachrichtigungen",
-
 	"l_logLevelContainer": "Benachrichtigungsklassen für die Event-Weiterleitung",
 	"l_logLevel": "Die Einstellungen weiter unten werden deaktiviert, sobald diese Optionen aktiviert werden. Also entweder alle Benachrichtigungen oder eine benutzerdefinierte Auswahl!",
 	"h_logLevel": "Wählen Sie aus, über welche Art von Benachrichtigungen Sie informiert werden wollen.",
-
 	"l_devices": "Zusätzliche Geräte",
 	"h_devices": "Wählen Sie hier weitere Geräte und jeweils die Benachrichtigungsklasse aus.",
 	"d_devices": "Gerät",
@@ -43,5 +39,8 @@
 	"l_sensorMultiline": "Multiline-Sensoren",
 	"l_fan": "Ventilatoren",
 	"l_doorLock": "Türschlösser",
-	"l_thermostat": "Thermostate"
+	"l_thermostat": "Thermostate",
+	"l_phones": "Mobilgeräte",
+	"l_found_phones": "vorhandene Geräte",
+	"m_del_phone": "Wollen Sie das ausgewählte Mobilgerät wirklich aus Ihrer Konfiguration löschen?"
 }

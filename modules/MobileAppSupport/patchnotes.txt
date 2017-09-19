@@ -1,0 +1,12 @@
+<<<<<<< HEAD
+v1.2.2
+- add presence widget for LOCAL(mobile phone WLAN) or REMOTE (mobile phone mobile) 
+
+=======
+>>>>>>> a938fb00b978cc1bd9bf51516261acd7e6c77a7a
+v1.2.0
+- removed "all notification option"
+- add menu section for deleting unnecessary mobile devices
+
+v1.1.6
+- extend handler to send push notifications initialized by IfThen and LogicalRule

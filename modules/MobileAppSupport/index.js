@@ -1,17 +1,18 @@
 /* Mobile App Support
  *
- * Version: 1.1.5
  * 2017
  *
  * Author: Patrick Hecker <pah111kg@fh-zwickau.de>
- * Changed: Hans-Christian Göckeritz <hcg@zwave.de>
+ * Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
+ * Changed: Michael Hensche <mh@zwave.eu>
+ * Changed: Marcel Kermer <mk@zwave.eu>
  */
 function MobileAppSupport (id, controller) {
 	MobileAppSupport.super_.call(this, id, controller);
 
 	var self = this;
 
-	self.DB_NAME		= "MobileAppSupport";
+	self.DB_NAME        = "MobileAppSupport";
 	self.DB_TABLE_APP   = "MobileAppSupport_App_v100";  // filename
 
 	self.ANDROID = "android";
@@ -126,11 +127,42 @@ MobileAppSupport.prototype.init = function (config) {
 
 					console.log('(Mobile App Support) Remove all: ' + self.toStringApp(it));
 				});
+			} else if(command === "clearOne") {
+				/* remove phoneApp data */
+				self.getAllApp().forEach(function(it) {
+					if(it.title === args.title) {
+						self.removeApp(it.token);
+					}
+				});
+				/* remove phone vDev */
+				self.controller.devices.remove(args.id);
+				/* remove from current configuration page */
+				self.config.phones.table = self.config.phones.table.filter(function(p) {
+					return p.phones_title !== args.title
+				});
 
 				return {
 					'code': 1,
 					'message': 'OK'
 				}
+			} else if(command === "setConnection") {
+				console.log("setConnection", JSON.stringify(args));
+
+				var vDevId = 'Phone-' + args.name + '-0-presence',
+					ret = {
+						'code': 1,
+						'message': 'OK'    
+					}
+				
+				vDev  = self.controller.devices.get(vDevId);
+				if(vDev) {
+					vDev.set('metrics:currentScene', args.connection);
+					vDev.set('metrics:level', args.connection);
+				} else {
+					ret.code = 2;
+					ret.message = "Error - Device not found";
+				}    
+				return ret;
 			}
 		},
 		moduleId: self.id
@@ -457,7 +489,55 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 		},
 		moduleId: self.id
 	});
+
+	// create presence device for mobile phone
+	self.createPresenceMobilePhone(title, counter);
+
+	/* Add device ID to MobileAppSupport instance */
+	var known_phone = false;
+	self.config.phones.table.forEach(function(phones) {
+		known_phone |= phones.phones_dev === vDev.deviceId;
+	});
+	if(!known_phone) {
+		console.log('Add device to instance: ', vDev.deviceId);
+		self.config.phones.table.push({"phones_dev": vDev.deviceId, "phones_title": title})
+	}
 };
+
+
+MobileAppSupport.prototype.createPresenceMobilePhone = function(title, counter) {
+	var self = this;
+
+	// create virtual device
+	var vDev = self.controller.devices.create({
+		deviceId: 'Phone-' + title + "-" + counter +'-presence',
+		defaults: {
+			deviceType: 'sensorDiscrete',
+			metrics: {
+				title: 'Phone: ' + title + " " + counter + " presence",
+				icon: "/ZAutomation/api/v1/load/modulemedia/MobileAppSupport/phone_local.png",
+				type: "C",
+				currentScene: "LOCAL",
+				level: "LOCAL"
+			}
+		},
+		overlay: {},
+		handler: function (command, args) {},
+		moduleId: self.id
+	});
+
+	if(vDev) {
+		self.controller.devices.on(vDev.id, "change:metrics:currentScene", function(vDev) {
+			console.log("cahnge currentScene");
+			var state = vDev.get("metrics:currentScene");
+			if(state === "LOCAL") {
+				vDev.set("metrics:icon", "/ZAutomation/api/v1/load/modulemedia/MobileAppSupport/phone_local.png");
+			} else if(state === "REMOTE") {
+				vDev.set("metrics:icon", "/ZAutomation/api/v1/load/modulemedia/MobileAppSupport/phone_remote.png");
+			}       
+		});
+	}
+}; 
 
 MobileAppSupport.prototype.notifyListener = function(message, os) {
 	var self = this;
@@ -684,15 +764,15 @@ MobileAppSupport.prototype.generateApp = function (token, hubId, title, os) {
 	var self = this;
 
 	return {
-		'token':			token,
-		'hubId':			hubId,
-		'title':			title,
-		'os':			   os,
-		'active':		   "0",
+		'token':            token,
+		'hubId':            hubId,
+		'title':            title,
+		'os':               os,
+		'active':           "0",
 		'lastNotification': new Date(),
-		'lastStatus':	   'Unknown',
-		'created':		  new Date(),
-		'modified':		 new Date()
+		'lastStatus':       'Unknown',
+		'created':          new Date(),
+		'modified':         new Date()
 	}
 };
 
@@ -773,7 +853,7 @@ MobileAppSupport.prototype.onNotificationHandler = function () {
 
 			// add delay timer if not existing
 			// if(!self.timer){
-			//	self.sendPushMessageWithDelay();
+			//    self.sendPushMessageWithDelay();
 			//}
 		}
 	};
