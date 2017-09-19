@@ -27,7 +27,7 @@ function AutomationController() {
 	];
 	this.config = config.controller || {};
 	this.debug = false;
-	this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se', 'fr']; // will be updated by correct ISO language codes in future
+	this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se', 'fr', 'es']; // will be updated by correct ISO language codes in future
 	this.defaultLang = 'en';
 	this.profiles = config.profiles;
 	this.instances = config.instances;
