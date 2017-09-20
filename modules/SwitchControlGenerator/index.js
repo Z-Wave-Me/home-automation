@@ -82,7 +82,8 @@ SwitchControlGenerator.prototype.init = function (config) {
 					ids = name.split('_').pop().split('-').slice(0, -1);
 					idString = ids && ids.length > 0? " (" + ids.join(".") + ") " : idString;
 
-					var v = zway.devices[ids[0]].data.vendorString.value;
+					var v = zway.devices[ids[0]].data.vendorString.value,
+						isFailed = zway.devices[ids[0]].data.isFailed.value;
 					vendor = !!v? v : vendor;
 				} catch (e) {
 				}
@@ -93,7 +94,8 @@ SwitchControlGenerator.prototype.init = function (config) {
 						deviceType: name[name.length-1] === "S" ? "toggleButton" : "switchControl",
 						metrics: {
 							title: vendor + idString + "Button", // this is always not the initial creation, so the default title is already filled 
-							change: ""
+							change: "",
+							isFailed: isFailed
 						}
 					},
 					overlay: {
@@ -294,7 +296,9 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
 
 		var vendor = "";
 		try {
-			var v = global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value;
+			var v = global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value,
+				isFailed = global.ZWave[zwayName].zway.devices[ids[0]].data.isFailed.value;
+
 			vendor = !!v? v : vendor;
 		} catch (e) {
 		}
@@ -305,7 +309,8 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
 				deviceType: type === "S" ? "toggleButton" : "switchControl",
 				metrics: {
 					title: vendor + " (" + ids.slice(0, -1).join(".") + ") Button",
-					change: ""
+					change: "",
+					isFailed: isFailed
 				}
 			},
 			overlay: {

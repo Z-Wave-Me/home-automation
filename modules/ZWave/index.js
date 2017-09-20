@@ -3480,7 +3480,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		vDevIdC = commandClassId,
 		vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
 		changeDevId = vDevIdNI + separ + vDevIdC,
-		defaults;
+		defaults,
+		isFailed = this.zway.devices[nodeId].data.isFailed.value || false;
 		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
 	try {
@@ -3609,7 +3610,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceType: "switchBinary",
 				metrics: {
 					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
-					title: compileTitle('Switch', vDevIdNI)
+					title: compileTitle('Switch', vDevIdNI),
+					isFailed: isFailed
 				}
 			};
 
@@ -3664,6 +3666,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: icon,
 					title: title,
+					isFailed: isFailed
 				}
 			};
 
@@ -3771,7 +3774,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						title: compileTitle('Color', vDevIdNI),
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 						level: 'off',
-						oldColor: {}
+						oldColor: {},
+						isFailed: isFailed
 					}
 				}
 
@@ -3838,7 +3842,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								icon: 'multilevel',
 								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 								level: 'off',
-								oldLevel: 'off'
+								oldLevel: 'off',
+								isFailed: isFailed
 							}
 						}
 
@@ -3960,7 +3965,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					scaleTitle: '',
 					icon: '',
 					level: '',
-					title: ''
+					title: '',
+					isFailed: isFailed
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -4050,7 +4056,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					scaleTitle: '',
 					level: '',
 					icon: '',
-					title: ''
+					title: '',
+					isFailed: isFailed
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -4145,7 +4152,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					scaleTitle: '',
 					level: '',
 					icon: 'meter',
-					title: ''
+					title: '',
+					isFailed: isFailed
 				}
 			};
 
@@ -4279,7 +4287,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					scaleTitle: '',
 					level: '',
 					icon: 'meter',
-					title: compileTitle('Meter', 'Pulse', vDevIdNI)
+					title: compileTitle('Meter', 'Pulse', vDevIdNI),
+					isFailed: isFailed
 				}
 			};
 
@@ -4329,7 +4338,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					scaleTitle: '%',
 					level: '',
 					icon: 'battery',
-					title: compileTitle('Battery', vDevIdNI)
+					title: compileTitle('Battery', vDevIdNI),
+					isFailed: isFailed
 				}
 			};
 
@@ -4366,7 +4376,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					level: '',
 					icon: 'door',
-					title: compileTitle('Door Lock', vDevIdNI)
+					title: compileTitle('Door Lock', vDevIdNI),
+					isFailed: isFailed
+
 				}
 			};
 
@@ -4404,7 +4416,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					level: '',
 					icon: 'door',
-					title: compileTitle('Garage Door', vDevIdNI)
+					title: compileTitle('Garage Door', vDevIdNI),
+					isFailed: isFailed
 				}
 			};
 
@@ -4459,7 +4472,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						probeType:'thermostat_mode',
 						metrics: {
 							icon: 'thermostat',
-							title: compileTitle("Thermostat operation", vDevIdNI)
+							title: compileTitle("Thermostat operation", vDevIdNI),
+							isFailed: isFailed
 						}
 					};
 
@@ -4527,7 +4541,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										min: DH.min ? DH.min.value : (DH.scale.value === 0 ? 5 : 41),
 										max: DH.max ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
 										icon: 'thermostat',
-										title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI)
+										title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI),
+										isFailed: isFailed
 								}
 							}
 
@@ -4573,7 +4588,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: 'alarm',
 					level: 'off',
-					title: ''
+					title: '',
+					isFailed: isFailed
 				}
 			};
 
@@ -4681,7 +4697,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: 'alarm',
 					level: 'off',
-					title: ''
+					title: '',
+					isFailed: isFailed
 				}
 			};
 			Object.keys(cc.data).forEach(function (notificationTypeId) {
@@ -4949,7 +4966,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					 * swipe_bottom_right_to_top_left
 					 */
 					currentScene: '',
-					discreteStates: {}
+					discreteStates: {},
+					isFailed: isFailed
 				}
 			};
 
