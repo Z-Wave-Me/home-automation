@@ -12,6 +12,11 @@ Changes:
 * add topology restore flag to ZAutomation restore api
 * add support for fan and siren (pull request #439 by maros)
 * add removed flag to vDevs
+* add vDevs of failed nodes will be marked as metrics.isFailed:true now
+* nodes with WakeUp CC - except portable remotes - will be checked once a day if they are failed (no wake up during a specific interval)
+* add filterByNode() and filterByCreatorId() to DeviceCollection.js
+* add modules to support Technaxx TX65, TX66, TX67 cams 
+* add spanish translation
 * postfix.json updated (changed or added):
   * Popp 10 year smoke detector with siren
   * Fibaro Door/Window Sensor G5
@@ -117,14 +122,22 @@ Fixes:
 * fix rssi output
 * fix endless timeout entries of reorganization
 * fix #442: Uncaught TypeError: Cannot read property 'filter' of undefined when getting notifications
-* fix not working set of old multilevel value
+* ZWave: fix not working set of old multilevel value
+* ZWave: fixed that value and parameter not managed to 0
+* fix not working Hide and hasHistory of elements is after z-way restart
+* fix deleting room sensors from location is vdev moved to new location
+* fix dublicated id's if instances are cloned
+* limit max size of notifications to 2500. Old limit (5000) allowed file size over 1MB that resulted in complete cleared file after z-way restart
+* fix d&d settings are lost after z-way reboot
 
 Modules:
 * DeviceHistory:
   * remove listeners on stop
-  * fix notification bug in DeviceHistory app 
-* MobileAppSupport:
+  * fix notification bug in DeviceHistory app
+  * remove binary support from DeviceHistory app - it's handles by UI now with a better readable event list
+* MobileAppSupport v1.2.2:
   * modified to push user defined notifications
+  * add remote/local indentification
 * LogicalRules:
   * modified to push user defined notifications
 * Camera:
@@ -132,7 +145,10 @@ Modules:
 * ZWave:
   * add rain and co sensor types
   * add replace smoke image with burglar image for burglar events
-  * fix not working set of old multilevel valu
+  * fix not working set of old multilevel values
+  * fixed that value and parameter not managed to 0
+  * add isFailed flag to zway vDevs
+  * add SaveData to save once per hour
 * MailNotifier v1.2.0:
   * extend handler to send mails initialized by IfThen and LogicalRule
   * add checkbox to allow using an alternative email address next to the preconfigured addresses in user settings
@@ -143,6 +159,8 @@ Modules:
 * OpenWeather:
   * Added clouds info to metrics:zwaveOpenWeather (pull request #438 by RobertGebauer)
   * Added optional sunset / sunrise widget (inspired by pull request #229 from manyosit)
+* If/Then v2.5.0
+  * allow use of mail and push notifications if condition is triggered
 
 CIT:
 * fix missing encodeURI
