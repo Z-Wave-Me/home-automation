@@ -1,5 +1,5 @@
 {
-	"last_update": 1505484428,
+	"last_update": 1506514146,
 	"fixes": [{
 			"id": "3",
 			"p_id": "277.256.259",
@@ -819,13 +819,13 @@
 			"product": "Swiid Cord Switch",
 			"apply_postfix": "1",
 			"preInterview": [],
-			"postInterview": ["renameNode,Swiid Cord Switch"],
-			"author_last_update": "2016-11-07 13:27:51",
-			"author": "SP",
-			"tester": "",
-			"tester_last_update": "0000-00-00 00:00:00",
-			"commentary": "",
-			"created": "2016-11-07 13:27:51"
+			"postInterview": ["renameNode,Swiid Cord Switch", "rename,0-37,Switch"],
+			"author_last_update": "2017-09-18 15:33:31",
+			"author": "SP, RS",
+			"tester": "RS",
+			"tester_last_update": "2017-09-18 15:33:31",
+			"commentary": "RS: rename deviceID",
+			"created": "2017-09-18 15:33:31"
 		}, {
 			"id": "105",
 			"p_id": "271.1538.4097",
@@ -1211,13 +1211,13 @@
 			"product": "Fibaro Dimmer 2",
 			"apply_postfix": "1",
 			"preInterview": [],
-			"postInterview": ["noVDev,2-38", "noVDev,0-113", "noVDev,1-113", "noVDev,1-38", "noVDev,1-50", "noVDev,1-49", "rename,0-50-0,Total consumption", "rename,0-50-2,Current consumption", "noVDev,0-49", "renameNode,Fibaro Dimmer 2"],
+			"postInterview": ["renameNode,Fibaro Dimmer 2", "noVDev,1-50-2", "noVDev,0-38", "noVDev,0-50-2", "noVDev,0-50-0", "noVDev,0-49", "noVDev,0-113", "hide,1-113-8-9", "hide,1-113-8-4", "hide,1-113-9-1", "hide,1-113-8-5", "hide,1-113-8-8", "hide,1-113-8-6", "hide,2-38", "hide,1-113-4-2", "rename,1-49-4,Current consumption", "rename,1-50-0,Total consumption"],
 			"author_last_update": "2017-01-23 11:36:59",
 			"author": "SP",
 			"tester": "SP",
-			"tester_last_update": "2017-01-23 11:36:59",
+			"tester_last_update": "2017-09-18 11:57:04",
 			"commentary": "deactivate instance one and two, rename Energy Meters, rename Nodes",
-			"created": "2017-01-23 11:36:59"
+			"created": "2017-09-18 11:57:04"
 		}, {
 			"id": "136",
 			"p_id": "134.3.78",
@@ -2233,7 +2233,7 @@
 			"product": "Everspring mini Plug",
 			"apply_postfix": "1",
 			"preInterview": [],
-			"postInterview": ["renameNode.Everspring mini Plug"],
+			"postInterview": ["renameNode,Everspring mini Plug"],
 			"author_last_update": "2017-07-20 12:14:04",
 			"author": "SP",
 			"tester": "SP",
@@ -2366,6 +2366,48 @@
 			"tester_last_update": "2017-08-28 10:16:29",
 			"commentary": "rename Node, disable instance 0 and 3",
 			"created": "2017-08-28 10:16:29"
+		}, {
+			"id": "218",
+			"p_id": "138.21.257",
+			"p_sku": "BENECR2450",
+			"product": "BeNext Panic Watch",
+			"apply_postfix": "1",
+			"preInterview": [],
+			"postInterview": ["renameNode,BeNext Panic Watch", "rename,0-48-1,Panic Button", "icon,0-48-1,switch"],
+			"author_last_update": "2017-09-18 11:19:54",
+			"author": "RS",
+			"tester": "RS",
+			"tester_last_update": "2017-09-18 11:19:54",
+			"commentary": "RS: rename, set icon",
+			"created": "2017-09-18 11:19:54"
+		}, {
+			"id": "219",
+			"p_id": "265.8195.775",
+			"p_sku": "VISEZS5101-5",
+			"product": "Vision Shock Sensor",
+			"apply_postfix": "1",
+			"preInterview": [],
+			"postInterview": ["renameNode,Vision Shock Sensor", "rename,0-113-7-2,Vibration", "rename,0-113-7-3,Tamper"],
+			"author_last_update": "2017-09-20 15:33:57",
+			"author": "SP",
+			"tester": "SP",
+			"tester_last_update": "2017-09-20 15:33:57",
+			"commentary": "rename node and device",
+			"created": "2017-09-20 15:33:57"
+		}, {
+			"id": "220",
+			"p_id": "270.9.1",
+			"p_sku": "POLELOCKV3",
+			"product": "",
+			"apply_postfix": "1",
+			"preInterview": ["oly Control Dana Lock V"],
+			"postInterview": ["renameNode, Danalock V3"],
+			"author_last_update": "2017-09-27 10:08:08",
+			"author": "SP",
+			"tester": "SP",
+			"tester_last_update": "2017-09-27 10:08:08",
+			"commentary": "rename Node",
+			"created": "2017-09-27 10:08:08"
 		}
 	]
 }
