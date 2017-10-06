@@ -62,11 +62,11 @@ Sonos.prototype.stop = function () {
 	this.sockNotifier = null;
 
 	this.players.forEach(function(player) {
-		self.controller.devices.remove('Sonos_Device_' + host + '_' + this.id);
-		self.controller.devices.remove('Sonos_Device_Play_' + host + '_' + self.id);
-		self.controller.devices.remove('Sonos_Device_Volume_' + host + '_' + self.id);
-		self.controller.devices.remove('Sonos_Device_Previous_' + host + '_' + self.id);
-		self.controller.devices.remove('Sonos_Device_Next_' + host + '_' + self.id);
+		self.controller.devices.remove('Sonos_Device_' + player.host + '_' + this.id);
+		self.controller.devices.remove('Sonos_Device_Play_' + player.host + '_' + self.id);
+		self.controller.devices.remove('Sonos_Device_Volume_' + player.host + '_' + self.id);
+		self.controller.devices.remove('Sonos_Device_Previous_' + player.host + '_' + self.id);
+		self.controller.devices.remove('Sonos_Device_Next_' + player.host + '_' + self.id);
 	});
 
 	this.subscribeTimer.forEach(function(timer) {
