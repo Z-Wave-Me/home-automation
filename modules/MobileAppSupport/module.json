@@ -6,7 +6,7 @@
 	"homepage": "http://z-wave.me",
 	"icon": "icon.png",
 	"moduleName": "MobileAppSupport",
-	"version": "1.2.3",
+	"version": "1.2.4",
 	"maturity": "stable",
 	"defaults": {
 		"title": "__m_title__",

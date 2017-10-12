@@ -136,6 +136,7 @@ MobileAppSupport.prototype.init = function (config) {
 				});
 				/* remove phone vDev */
 				self.controller.devices.remove(args.id);
+				self.controller.devices.remove(args.id + '-presence');
 				/* remove from current configuration page */
 				self.config.phones.table = self.config.phones.table.filter(function(p) {
 					return p.phones_title !== args.title
@@ -449,7 +450,7 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 						self.notifyListener(message, os);
 					}
 				} else {
-					console.log("(Mobile App Support) Phone: Error occurrd during alarm command handling!");
+					console.log("(Mobile App Support) Phone: Error occurred during alarm command handling!");
 				}
 			} else if (command === "on") {
 				var deviceToken = this.get("metrics").deviceToken;
@@ -495,12 +496,16 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 
 	/* Add device ID to MobileAppSupport instance */
 	var known_phone = false;
-	self.config.phones.table.forEach(function(phones) {
-		known_phone |= phones.phones_dev === vDev.deviceId;
-	});
-	if(!known_phone) {
-		console.log('Add device to instance: ', vDev.deviceId);
-		self.config.phones.table.push({"phones_dev": vDev.deviceId, "phones_title": title})
+
+	if(typeof(self.config.phones) !== 'undefined')
+	{
+		self.config.phones.table.forEach(function(phones) {
+			known_phone |= phones.phones_dev === vDev.deviceId;
+		});
+		if(!known_phone) {
+			console.log('Add device to instance: ', vDev.deviceId);
+			self.config.phones.table.push({"phones_dev": vDev.deviceId, "phones_title": title})
+		}
 	}
 };
 
