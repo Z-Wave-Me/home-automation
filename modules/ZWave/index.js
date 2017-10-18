@@ -72,6 +72,7 @@ function ZWave (id, controller) {
 		'rss': ''
 	};
 
+	// z-way statistics
 	this.statistics = {
 		RFTxFrames: {
 			value: 0,
@@ -98,7 +99,6 @@ function ZWave (id, controller) {
 			updateTime: 0
 		}
 	};
-
 }
 
 // Module inheritance and setup
@@ -155,6 +155,9 @@ ZWave.prototype.init = function (config) {
 
 	// select custompostfix.json
 	var custom_postfix = loadObject("custompostfix.json");
+
+	// DSK collector
+	this.dskCollection = this.loadObject("dskCollection") || [];
 
 	// add custom_postfix to postfix
 	if (!!custom_postfix) {
@@ -855,6 +858,41 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	}, 600 * 1000);
 };
 
+ZWave.prototype.addDSKEntry = function (entry) {
+	if (entry && !!entry) {
+		this.dskCollection.push(entry);
+		this.saveObject("dskCollection",this.dskCollection);
+	}
+	/*if (entry.id && !this.dskCollector[entry.id]) {
+		this.dskCollection[entry.id] = {
+			description: entry.DESCRIPTION,
+			releaseDate: entry.RELEASEDATE,
+			author: entry.AUTHOR,
+			uuid16Format: entry.UUID16FORMAT,
+			qrCode: entry.QRCODE // 0-11 , 12-42 > DSK
+			labelControl: entry.LABELCONTROL
+			manufacturerName: entry.MANUFACTURERNAME
+			productName: entry.PRODUCTNAME
+			productVersion: entry.PRODUCTVERSION
+		};
+
+		this.saveObject("dskCollection",this.dskCollection);
+	}*/
+}
+
+ZWave.prototype.removeDSKEntry = function (entryID) {
+	this.dskCollection = _.filter(this.dskCollection, function(id){
+		return id !== entryID;
+	});
+
+	this.saveObject("dskCollection",this.dskCollection);
+}
+
+ZWave.prototype.getDSKCollection = function () {
+
+	return this.dskCollection;
+}
+
 // --------------- Public HTTP API -------------------
 
 
@@ -890,7 +928,9 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetDSKCollection", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".RemoveDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".AddDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -927,6 +967,9 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	ws.revokeExternalAccess(_name + ".GetStatisticsData");
+	ws.revokeExternalAccess(_name + ".GetDSKCollection");
+	ws.revokeExternalAccess(_name + ".RemoveDSKEntry");
+	ws.revokeExternalAccess(_name + ".AddDSKEntry");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -2834,6 +2877,74 @@ ZWave.prototype.defineHandlers = function () {
 			},
 			body: statistics
 		};
+	};
+
+	this.ZWaveAPI.GetDSKCollection = function(url,request) {
+		var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: self.getDSKCollection()
+			};
+
+		return reply;
+	};
+
+	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null//this.dskCollection
+			}
+
+		try {
+			self.removeDSKEntry(req.dsk);
+			reply.body = self.dskCollection;
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong.'
+		}
+
+		return reply;
+	};
+
+	this.ZWaveAPI.AddDSKEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null//this.dskCollection
+			}
+
+		try {
+			self.addDSKEntry(req.dsk);
+			reply.body = self.dskCollection;
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong.'
+		}
+
+		return reply;
 	};
 	/*
 	// -- not used -- //
