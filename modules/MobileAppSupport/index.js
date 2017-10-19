@@ -19,7 +19,7 @@ function MobileAppSupport (id, controller) {
 	self.IOS = "ios";
 
 	self.FCM_ANDROID_TOKEN = "AAAA8nWqXJU:APA91bFZwwNpcfQRjjsmU6LMv0LhEw4XoqCqOhyINwJQI2BOGCoFQAK1PcbVy-W9jtnqb4f0DoH6yGSi3Opc_v9T6uDinCL373CMjorKZk8mCkK8CknxCA2JC2T5YiuEWnkz-6Ng2IPD";
-	self.FCM_IOS_TOKEN = "AAAA8nWqXJU:APA91bE8we7hPUylPcvG_WsPD5_akKUnhvYMXnxO35grpj5XC7he-TnZ4eJT38JDEXwEUbxd1ad-tsn50uSb48kT1_X-WJUEXIfiJscMp750kaU_DzbVQyRul2OsYfW_5cmET7p_6xhf";
+	self.FCM_IOS_TOKEN = "AAAA8nWqXJU:APA91bHLng5bi0STgF3ojBVsu-vMjM2ut7ywHjR1LIYHZWRLzWPMh1Fm6tGXNis6v3z7PF0NI9ouUiJO4YmMhWWTwWFBsjtXFsiuDYWDTJA7N82d6Ger9bNtL7dzjmk_s4iy6Egt7Qjc";
 
 	// stores object references of callback functions for removing event listener
 	self.deviceUpdatesCallbackWrapper = {};
@@ -450,7 +450,7 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 						self.notifyListener(message, os);
 					}
 				} else {
-					console.log("(Mobile App Support) Phone: Error occurred during alarm command handling!");
+					console.log("(Mobile App Support) Phone: Error occurrd during alarm command handling!");
 				}
 			} else if (command === "on") {
 				var deviceToken = this.get("metrics").deviceToken;
@@ -496,16 +496,12 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 
 	/* Add device ID to MobileAppSupport instance */
 	var known_phone = false;
-
-	if(typeof(self.config.phones) !== 'undefined')
-	{
-		self.config.phones.table.forEach(function(phones) {
-			known_phone |= phones.phones_dev === vDev.deviceId;
-		});
-		if(!known_phone) {
-			console.log('Add device to instance: ', vDev.deviceId);
-			self.config.phones.table.push({"phones_dev": vDev.deviceId, "phones_title": title})
-		}
+	self.config.phones.table.forEach(function(phones) {
+		known_phone |= phones.phones_dev === vDev.deviceId;
+	});
+	if(!known_phone) {
+		console.log('Add device to instance: ', vDev.deviceId);
+		self.config.phones.table.push({"phones_dev": vDev.deviceId, "phones_title": title})
 	}
 };
 
