@@ -4570,7 +4570,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									} else {
 										try {
 											if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-												t_vDev[mode].set("metrics:level", this.value);
+												if (t_vDev[mode].get('metrics:level') !== this.value) {
+													t_vDev[mode].set("metrics:level", this.value);
+												}
 											}
 										} catch (e) {
 										}
