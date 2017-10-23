@@ -1,4 +1,4 @@
-Z-Way Home Automation Engine v2.3.5
+Z-Way Home Automation Engine v2.3.6
 ====================================
 
 # Introduction #
@@ -11,9 +11,12 @@ Z-Way Home Automation Engine v2.3.5
 ## Pull Requests
 For a better integration during running developments, please use [Home Automation develop branch](https://github.com/Z-Wave-Me/home-automation/tree/develop) for your pull requests.
 
+## New complete Documentation:
+* [Z-Way Essentials](https://github.com/Z-Wave-Me/Z-Way-Manual/raw/3.0/ZWayManual.pdf) (PDF)
+
 ## Home Automation Documentation's : 
 * https://github.com/Z-Wave-Me/home-automation/wiki
-* [Z-Wave.Me Developers Documentation](https://github.com/Z-Wave-Me/Z-Way-Manual/raw/master/zwayDev.pdf) (PDF)
+* [old Z-Wave.Me Developers Documentation](https://github.com/Z-Wave-Me/Z-Way-Manual/raw/master/zwayDev.pdf) (PDF)
 * see also documentations on [http://razberry.z-wave.me](http://razberry.z-wave.me/index.php?id=5) for more information
 
 ## API Documentation:
