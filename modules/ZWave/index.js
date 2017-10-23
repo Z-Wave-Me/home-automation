@@ -2907,12 +2907,12 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: null//this.dskCollection
+				body: null
 			}
 
 		try {
 			self.removeDSKEntry(req.dsk);
-			reply.body = self.dskCollection;
+			reply.body = req.dsk;
 		} catch (e) {
 			reply.status = 500;
 			reply.message = 'Something went wrong.'
@@ -2933,12 +2933,12 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: null//this.dskCollection
+				body: null
 			}
 
 		try {
 			self.addDSKEntry(req.dsk);
-			reply.body = self.dskCollection;
+			reply.body = req.dsk;
 		} catch (e) {
 			reply.status = 500;
 			reply.message = 'Something went wrong.'
