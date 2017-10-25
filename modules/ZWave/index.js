@@ -860,29 +860,73 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
 ZWave.prototype.addDSKEntry = function (entry) {
 	if (entry && !!entry) {
-		this.dskCollection.push(entry);
-		this.saveObject("dskCollection",this.dskCollection);
-	}
-	/*if (entry.id && !this.dskCollector[entry.id]) {
-		this.dskCollection[entry.id] = {
-			description: entry.DESCRIPTION,
-			releaseDate: entry.RELEASEDATE,
-			author: entry.AUTHOR,
-			uuid16Format: entry.UUID16FORMAT,
-			qrCode: entry.QRCODE // 0-11 , 12-42 > DSK
-			labelControl: entry.LABELCONTROL
-			manufacturerName: entry.MANUFACTURERNAME
-			productName: entry.PRODUCTNAME
-			productVersion: entry.PRODUCTVERSION
-		};
+		var transformedEntry = {
+				timestamp: (new Date()).valueOf(),
+				ZW_QR: entry
+			},
+			pos = [2,2,5,3,40,2,2,'ZW_QR_TLVVAL_PRODUCTTYPE',2,2,'ZW_QR_TLVVAL_PRODUCTID',2,2,'ZW_QR_TLVVAL_UUID16'],
+			keys = [
+			'ZW_QR_LEADIN',
+			'ZW_QR_VERSION',
+			'ZW_QR_CHKSUM',
+			'ZW_S2_REQ_KEYS',
+			'ZW_QR_DSK',
+			'ZW_QR_TLVTYPE_PRODUCTTYPE',
+			'ZW_QR_TLVLEN_PRODUCTTYPE',
+			'ZW_QR_TLVVAL_PRODUCTTYPE',
+			'ZW_QR_TLVTYPE_PRODUCTID',
+			'ZW_QR_TLVLEN_PRODUCTID',
+			'ZW_QR_TLVVAL_PRODUCTID',
+			'ZW_QR_TLVTYPE_UUID16',
+			'ZW_QR_TLVLEN_UUID16',
+			'ZW_QR_TLVVAL_UUID16'
+			],
+			currPos = 0,
+			valLength = 0;
+
+		_.forEach(pos, function(l, index) {
+			// set value end position
+			valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
+			
+			// add entry key
+			transformedEntry[keys[index]] = entry.substring(currPos,valueEndPos);
+			
+			// decide on pos how to raise currPos number
+			if(!_.isNumber(pos[index+1])) {
+				valLength = parseInt(entry.substring(currPos,currPos+2), 10);
+				currPos = currPos + l;
+			} else {
+				currPos = keys[index] === l? currPos + valLength : currPos + l;
+			}
+		});
+
+		this.dskCollection.push(transformedEntry);
+
+		// add DSK to provisioning list
+		try {
+			/*controllerNode = zway.controller.data.nodeId.value;
+			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
+			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
+			dskProvisioningList.push(transformedEntry.ZW_QR_DSK.replace(/(.{5})/g,"$&"+"-").slice(0, -1));
+
+			// update provisioning list
+			zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+
+			// save z-way data
+			zway.devices.SaveData();
+		} catch (e) {
+			//self.controller.addNotification();
+			console.log('DSK error:', e.toString());
+		}
+		
 
 		this.saveObject("dskCollection",this.dskCollection);
-	}*/
+	}
 }
 
 ZWave.prototype.removeDSKEntry = function (entryID) {
-	this.dskCollection = _.filter(this.dskCollection, function(id){
-		return id !== entryID;
+	this.dskCollection = _.filter(this.dskCollection, function(qrObject){
+		return qrObject.ZW_QR !== entryID;
 	});
 
 	this.saveObject("dskCollection",this.dskCollection);
@@ -928,6 +972,8 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".sendZWayReport", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetDSKProvisioningList", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetDSKCollection", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RemoveDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".AddDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -967,6 +1013,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	ws.revokeExternalAccess(_name + ".GetStatisticsData");
+	ws.revokeExternalAccess(_name + ".GetDSKProvisioningList");
 	ws.revokeExternalAccess(_name + ".GetDSKCollection");
 	ws.revokeExternalAccess(_name + ".RemoveDSKEntry");
 	ws.revokeExternalAccess(_name + ".AddDSKEntry");
@@ -2877,6 +2924,31 @@ ZWave.prototype.defineHandlers = function () {
 			},
 			body: statistics
 		};
+	};
+
+	this.ZWaveAPI.GetDSKProvisioningList = function(url,request) {
+		var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null
+			};
+
+		try {
+			reply.body = zway.controller.data.smartStart.dskProvisioningList.value || [];
+		} catch (e) {
+			_.extend(reply,{
+				status: 500,
+				error: 'Something went wrong. ERROR: ' + e.toString()
+			});
+		}
+
+		return reply;
 	};
 
 	this.ZWaveAPI.GetDSKCollection = function(url,request) {
