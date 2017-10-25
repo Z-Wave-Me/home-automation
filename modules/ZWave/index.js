@@ -860,6 +860,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
 ZWave.prototype.addDSKEntry = function (entry) {
 	if (entry && !!entry) {
+
 		var transformedEntry = {
 				timestamp: (new Date()).valueOf(),
 				ZW_QR: entry
@@ -925,9 +926,33 @@ ZWave.prototype.addDSKEntry = function (entry) {
 }
 
 ZWave.prototype.removeDSKEntry = function (entryID) {
+	var entryDSK = '';
+	
 	this.dskCollection = _.filter(this.dskCollection, function(qrObject){
+		if (qrObject.ZW_QR === entryID) {
+			entryDSK = qrObject.ZW_QR_DSK.replace(/(.{5})/g,"$&"+"-").slice(0, -1);
+		}
 		return qrObject.ZW_QR !== entryID;
 	});
+
+	// remove DSK from provisioning list
+	try {
+		/*controllerNode = zway.controller.data.nodeId.value;
+		dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
+		dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
+		dskProvisioningList = _.filter(dskProvisioningList, function(dsk){
+			return dsk !== entryDSK;
+		});
+
+		// update provisioning list
+		zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+
+		// save z-way data
+		zway.devices.SaveData();
+	} catch (e) {
+		//self.controller.addNotification();
+		console.log('DSK error:', e.toString());
+	}
 
 	this.saveObject("dskCollection",this.dskCollection);
 }
@@ -974,6 +999,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetDSKProvisioningList", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".AddDSKProvisioningEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetDSKCollection", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RemoveDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".AddDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -1014,6 +1040,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	ws.revokeExternalAccess(_name + ".GetStatisticsData");
 	ws.revokeExternalAccess(_name + ".GetDSKProvisioningList");
+	ws.revokeExternalAccess(_name + ".AddDSKProvisioningEntry");
 	ws.revokeExternalAccess(_name + ".GetDSKCollection");
 	ws.revokeExternalAccess(_name + ".RemoveDSKEntry");
 	ws.revokeExternalAccess(_name + ".AddDSKEntry");
@@ -2936,7 +2963,9 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: null
+				body: null,
+				error: null,
+				message: null
 			};
 
 		try {
@@ -2946,6 +2975,55 @@ ZWave.prototype.defineHandlers = function () {
 				status: 500,
 				error: 'Something went wrong. ERROR: ' + e.toString()
 			});
+		}
+
+		return reply;
+	};
+
+	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			}
+
+		try {
+			/*controllerNode = zway.controller.data.nodeId.value;
+			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
+			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
+			
+			//if (_.findIndex(dskProvisioningList, function(dsk) {return dsk === req.dsk;}) < 0) {
+				//self.addDSKEntry(req.dsk);
+
+				// add DSK to provisioning list
+				dskProvisioningList.push(req.dsk);
+
+				// update provisioning list
+				zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+
+				// save z-way data
+				zway.devices.SaveData();
+
+
+				reply.body = [req.dsk];
+			/*} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}*/
+			
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
 		}
 
 		return reply;
@@ -2961,7 +3039,9 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: self.getDSKCollection()
+				body: self.getDSKCollection(),
+				error: null,
+				message: null
 			};
 
 		return reply;
@@ -2979,7 +3059,9 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: null
+				body: null,
+				error: null,
+				message: null
 			}
 
 		try {
@@ -2987,7 +3069,7 @@ ZWave.prototype.defineHandlers = function () {
 			reply.body = req.dsk;
 		} catch (e) {
 			reply.status = 500;
-			reply.message = 'Something went wrong.'
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
 		}
 
 		return reply;
@@ -3005,15 +3087,23 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: null
+				body: null,
+				error: null,
+				message: null
 			}
 
 		try {
-			self.addDSKEntry(req.dsk);
-			reply.body = req.dsk;
+			//if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.ZW_QR === req.dsk;}) < 0) {
+				self.addDSKEntry(req.dsk);
+				reply.body = req.dsk;
+			/*} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}*/
+			
 		} catch (e) {
 			reply.status = 500;
-			reply.message = 'Something went wrong.'
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
 		}
 
 		return reply;
