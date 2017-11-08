@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName": "IfThen",
-	"version": "2.5.0",
+	"version": "2.5.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -61,7 +61,6 @@
 							},
 							"status": {
 								"type": "integer",
-								"minimum": 0,
 								"required": true
 							}
 						}
