@@ -2416,7 +2416,27 @@ AutomationController.prototype.getModuleData = function (moduleName) {
 		data = self.modules[moduleName].meta;
 	}
 
+	data.options = this.replaceModuleFormData(data.options, ['dataSource']);
+
 	return data;
+};
+
+AutomationController.prototype.replaceModuleFormData = function (obj, keys) {
+	var objects = [];
+	for (var i in obj) {
+		if (!obj.hasOwnProperty(i))
+			continue;
+		if (typeof obj[i] == 'object') {
+			objects = objects.concat(this.replaceModuleFormData(obj[i], keys));
+		} else if (~keys.indexOf(i) && !Array.isArray(obj[i]) &&
+			typeof obj[i] === 'string' &&
+			obj[i].indexOf("function") === 0) {
+			// overwrite old string with function evaluation
+			// we can only pass a function as string in JSON ==> doing a real function
+			obj[i] = new Function('return ' + obj[i])()();
+		}
+	}
+	return obj;
 };
 
 AutomationController.prototype.replaceNamespaceFilters = function (moduleMeta) {
