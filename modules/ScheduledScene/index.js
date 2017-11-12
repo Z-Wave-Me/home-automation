@@ -77,7 +77,7 @@ ScheduledScene.prototype.init = function (config) {
 			dimmersArray = self.config.devices.dimmers;
 		}
 		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.devices.dimmers)) {
+		if (_.isArray(self.config.dimmers)) {
 			dimmersArray = self.config.dimmers;
 		}
 
@@ -97,7 +97,7 @@ ScheduledScene.prototype.init = function (config) {
 			locksArray = self.config.devices.locks;
 		}
 		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.devices.locks)) {
+		if (_.isArray(self.config.locks)) {
 			locksArray = self.config.locks;
 		}
 
@@ -117,7 +117,7 @@ ScheduledScene.prototype.init = function (config) {
 			scenesArray = self.config.devices.scenes;
 		}
 		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.devices.scenes)) {
+		if (_.isArray(self.config.scenes)) {
 			scenesArray = self.config.scenes;
 		}
 
