@@ -273,7 +273,7 @@
 			"product": "Philio PST02-5B Motion Sensor",
 			"apply_postfix": "0",
 			"preInterview": [],
-			"postInterview": ["noVDev,0-113", "hide,0-48-8", "setConfig(0,7,22,1);", "setCCData(0,132,'security','value',false);", "renameNode,Philio PST02-5B Motion Sensor", "setConfig(0,13,1,1)", "setConfig(0,14,1,1)", "setConfig(0,15,0,1)", "setConfig(0,20,10,1)"],
+			"postInterview": ["noVDev,0-113", "hide,0-48-8", "setConfig(0,7,22,1);", "setCCData(0,132,'security','value',false);", "renameNode,Philio PST02-5B Motion Sensor", "setConfig(0,11,0,1)", "setConfig(0,12,1,1)", "setConfig(0,13,1,1)", "setConfig(0,20,10,1)"],
 			"author_last_update": "2017-09-06 13:48:34",
 			"author": "NIRAIVS",
 			"tester": "AIVS",
