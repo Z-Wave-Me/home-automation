@@ -1,4 +1,4 @@
-/*** ScheduledScene Z-Way HA module *******************************************
+/*** Schedules Z-Way HA module *******************************************
 
 Version: 2.2
 (c) Z-Wave.Me, 2017
@@ -13,21 +13,21 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function ScheduledScene (id, controller) {
+function Schedules (id, controller) {
 	// Call superconstructor first (AutomationModule)
-	ScheduledScene.super_.call(this, id, controller);
+	Schedules.super_.call(this, id, controller);
 }
 
-inherits(ScheduledScene, AutomationModule);
+inherits(Schedules, AutomationModule);
 
-_module = ScheduledScene;
+_module = Schedules;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-ScheduledScene.prototype.init = function (config) {
-	ScheduledScene.super_.prototype.init.call(this, config);
+Schedules.prototype.init = function (config) {
+	Schedules.super_.prototype.init.call(this, config);
 
 	var self = this;
 
@@ -166,8 +166,8 @@ ScheduledScene.prototype.init = function (config) {
 	});
 };
 
-ScheduledScene.prototype.stop = function () {
-	ScheduledScene.super_.prototype.stop.call(this);
+Schedules.prototype.stop = function () {
+	Schedules.super_.prototype.stop.call(this);
 
 	this.controller.emit("cron.removeTask", "scheduledScene.run."+this.id);
 	this.controller.off("scheduledScene.run."+this.id, this.runScene);

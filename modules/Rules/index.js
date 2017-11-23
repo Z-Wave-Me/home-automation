@@ -1,4 +1,4 @@
-/*** IfThen Z-Way HA module *******************************************
+/*** Rules Z-Way HA module *******************************************
 
 Version: 2.5.1
 (c) Z-Wave.Me, 2017
@@ -14,21 +14,21 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function IfThen (id, controller) {
+function Rules (id, controller) {
 	// Call superconstructor first (AutomationModule)
-	IfThen.super_.call(this, id, controller);
+	Rules.super_.call(this, id, controller);
 }
 
-inherits(IfThen, AutomationModule);
+inherits(Rules, AutomationModule);
 
-_module = IfThen;
+_module = Rules;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-IfThen.prototype.init = function (config) {
-	IfThen.super_.prototype.init.call(this, config);
+Rules.prototype.init = function (config) {
+	Rules.super_.prototype.init.call(this, config);
 
 	var self = this,
 		ifElement = self.config.sourceDevice[self.config.sourceDevice.filterIf];
@@ -109,13 +109,13 @@ IfThen.prototype.init = function (config) {
 	}
 };
 
-IfThen.prototype.stop = function () {
+Rules.prototype.stop = function () {
 	var self = this;
 	
 	// remove event listener
 	self.controller.devices.off(self.config.sourceDevice[self.config.sourceDevice.filterIf].device,'change:metrics:level', self.handlerLevel);
 
-	IfThen.super_.prototype.stop.call(this);
+	Rules.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------

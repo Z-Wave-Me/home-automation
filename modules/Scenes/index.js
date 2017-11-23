@@ -1,4 +1,4 @@
-/*** LightScene Z-Way HA module *******************************************
+/*** Scenes Z-Way HA module *******************************************
 
 Version: 1.1.1
 (c) Z-Wave.Me, 2017
@@ -13,26 +13,26 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function LightScene (id, controller) {
+function Scenes (id, controller) {
 	// Call superconstructor first (AutomationModule)
-	LightScene.super_.call(this, id, controller);
+	Scenes.super_.call(this, id, controller);
 }
 
-inherits(LightScene, AutomationModule);
+inherits(Scenes, AutomationModule);
 
-_module = LightScene;
+_module = Scenes;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-LightScene.prototype.init = function (config) {
-	LightScene.super_.prototype.init.call(this, config);
+Scenes.prototype.init = function (config) {
+	Scenes.super_.prototype.init.call(this, config);
 
 	var self = this;
 
 	this.vDev = this.controller.devices.create({
-		deviceId: "LightScene_" + this.id,
+		deviceId: "Scenes_" + this.id,
 		defaults: {
 			deviceType: "toggleButton",
 			metrics: {
@@ -90,13 +90,13 @@ LightScene.prototype.init = function (config) {
 	});
 };
 
-LightScene.prototype.stop = function () {
+Scenes.prototype.stop = function () {
 	if (this.vDev) {
 		this.controller.devices.remove(this.vDev.id);
 		this.vDev = null;
 	}
 
-	LightScene.super_.prototype.stop.call(this);
+	Scenes.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
