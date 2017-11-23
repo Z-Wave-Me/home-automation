@@ -1,0 +1,251 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "automation_basic",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName":"LightScene",
+	"version": "1.1.1",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"switches": [],
+		"dimmers": [],
+		"thermostats": [],
+		"locks":[],
+		"scenes": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"switches": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchBinary:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "integer",
+							"required": true,
+							"enum": ["off", "on"]
+						},
+						"sendAction": {
+							"type": "boolean",
+							"required": true,
+							"default" : false
+						}
+					}
+				}
+			},
+			"dimmers": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_switchMultilevel:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 99,
+							"required": true
+						},
+						"sendAction": {
+							"type": "boolean",
+							"required": true,
+							"default" : false
+						}
+					}
+				}
+			},
+			"thermostats": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_thermostat:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 99,
+							"required": true
+						},
+						"sendAction": {
+							"type": "boolean",
+							"required": true,
+							"default" : false
+						}
+					}
+				}
+			},
+			"locks": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"device": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:devices_doorlock:deviceId",
+							"required": true
+						},
+						"status": {
+							"type": "string",
+							"required": true,
+							"enum": ["close", "open"],
+							"default" : "open"
+						},
+						"sendAction": {
+							"type": "boolean",
+							"required": true,
+							"default" : false
+						}
+					}
+				}
+			},
+			"scenes": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_toggleButton:deviceId",
+					"required": true
+				}
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"switches": {
+				"label": "__l_switches__",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchBinary:deviceName"
+							},
+							"status": {
+								"label": "",
+								"optionLabels": ["__off__", "__on__"]
+							},
+							"sendAction": {
+								"type": "checkbox",
+								"rightLabel": "__l_sendAction__",
+								"helper": "__h_sendAction__"
+							}
+						}
+					}
+				}
+			},
+			"dimmers": {
+				"label": "__l_dimmers__",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+							},
+							"status": {
+								"label": "__l_level__"
+							},
+							"sendAction": {
+								"type": "checkbox",
+								"rightLabel": "__l_sendAction__",
+								"helper": "__h_sendAction__"
+							}
+						}
+					}
+				}
+			},
+			"thermostats": {
+				"label": "__l_thermostats__",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_thermostat:deviceName"
+							},
+							"status": {
+								"label": "__l_temperature__"
+							},
+							"sendAction": {
+								"type": "checkbox",
+								"rightLabel": "__l_sendAction__",
+								"helper": "__h_sendAction__"
+							}
+						}
+					}
+				}
+			},
+			"locks": {
+				"label": "__l_locks__",
+				"fields": {
+					"item": {
+						"fields": {
+							"device": {
+								"label": "",
+								"type": "select",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_doorlock:deviceName"
+							},
+							"status": {
+								"label": "",
+								"optionLabels": ["__close__", "__open__"]
+							},
+							"sendAction": {
+								"type": "checkbox",
+								"rightLabel": "__l_sendAction__",
+								"helper": "__h_sendAction__"
+							}
+						}
+					}
+				}
+			},
+			"scenes": {
+				"label": "__l_scenes__",
+				"fields": {
+					"item": {
+						"type": "select",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_toggleButton:deviceName"
+					}
+				}
+			}
+		}
+	}
+}
