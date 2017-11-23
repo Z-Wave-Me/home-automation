@@ -771,6 +771,7 @@ ZWave.prototype.failedNodeCheck = function () {
 
 ZWave.prototype.checkForfailedNode = function(nodeId) {
 	var self = this;
+	var zway = this.zway;
 	this.checkFailed = function (nodeId) {
 		var devData = zway.devices[nodeId].data,
 			wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
@@ -809,6 +810,7 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 
 ZWave.prototype.refreshStatisticsPeriodically = function () {
 	var self = this;
+	var zway = this.zway;
 
 	this.updateNetStats = function () {
 		try {
@@ -859,9 +861,16 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 };
 
 ZWave.prototype.addDSKEntry = function (entry) {
+	var zway = this.zway,
+		successful = false;
+	
 	if (entry && !!entry) {
 
 		var transformedEntry = {
+				id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
+				isSmartStart: false,
+				state: 'pending',
+				nodeId: null,
 				timestamp: (new Date()).valueOf(),
 				ZW_QR: entry
 			},
@@ -884,82 +893,153 @@ ZWave.prototype.addDSKEntry = function (entry) {
 			],
 			currPos = 0,
 			valLength = 0;
-
-		_.forEach(pos, function(l, index) {
-			// set value end position
-			valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
-			
-			// add entry key
-			transformedEntry[keys[index]] = entry.substring(currPos,valueEndPos);
-			
-			// decide on pos how to raise currPos number
-			if(!_.isNumber(pos[index+1])) {
-				valLength = parseInt(entry.substring(currPos,currPos+2), 10);
-				currPos = currPos + l;
-			} else {
-				currPos = keys[index] === l? currPos + valLength : currPos + l;
-			}
-		});
-
-		this.dskCollection.push(transformedEntry);
-
-		// add DSK to provisioning list
 		try {
-			/*controllerNode = zway.controller.data.nodeId.value;
-			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
-			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
-			dskProvisioningList.push(transformedEntry.ZW_QR_DSK.replace(/(.{5})/g,"$&"+"-").slice(0, -1));
 
-			// update provisioning list
-			zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+			// check if entry is no smart start entry
+			if (entry.length === 47 && entry.split('-').length > 0) {
+				transformedEntry['ZW_QR_DSK'] = entry;
+			// is smart entry
+			} else {
+				transformedEntry.isSmartStart = true;
+				
+				_.forEach(pos, function(l, index) {
+					// set value end position
+					valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
 
-			// save z-way data
-			zway.devices.SaveData();
-		} catch (e) {
-			//self.controller.addNotification();
-			console.log('DSK error:', e.toString());
-		}
+					// transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format / set value
+					value = keys[index] === 'ZW_QR_DSK'? entry.substring(currPos,valueEndPos).replace(/(.{5})/g,"$&"+"-").slice(0, -1) : entry.substring(currPos,valueEndPos);
+					
+					// add entry key
+					transformedEntry[keys[index]] = value;
+					
+					// decide on pos how to raise currPos number
+					if(!_.isNumber(pos[index+1])) {
+						valLength = parseInt(entry.substring(currPos,currPos+2), 10);
+						currPos = currPos + l;
+					} else {
+						currPos = keys[index] === l? currPos + valLength : currPos + l;
+					}
+				});
+			}
+
+			// add new entry to dsk collection
+			this.dskCollection.push(transformedEntry);		
 		
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
 
-		this.saveObject("dskCollection",this.dskCollection);
-	}
-}
+			// add DSK to provisioning list
+			dskProvisioningList.push(transformedEntry.ZW_QR_DSK);
 
-ZWave.prototype.removeDSKEntry = function (entryID) {
-	var entryDSK = '';
-	
-	this.dskCollection = _.filter(this.dskCollection, function(qrObject){
-		if (qrObject.ZW_QR === entryID) {
-			entryDSK = qrObject.ZW_QR_DSK.replace(/(.{5})/g,"$&"+"-").slice(0, -1);
+			// save dskProvisioningList
+			this.saveDSKProvisioningList(dskProvisioningList);
+
+			// save dsk collection
+			this.saveObject("dskCollection",this.dskCollection);
+		} catch (e) {
+			this.addNotification("error", 'Add DSK entry error: '+ e.toString(), "module");
 		}
-		return qrObject.ZW_QR !== entryID;
-	});
+	}
+
+	return successful;
+};
+
+ZWave.prototype.updateDSKEntry = function (dskEntry) {
+	var zway = this.zway,
+		oldDSKEntry = {},
+		entryIndex = _.findIndex(this.dskCollection, function(entry){
+			return entry.id === dskEntry.id;
+		}),
+		successful = false;
 
 	// remove DSK from provisioning list
 	try {
-		/*controllerNode = zway.controller.data.nodeId.value;
-		dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
-		dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
-		dskProvisioningList = _.filter(dskProvisioningList, function(dsk){
-			return dsk !== entryDSK;
-		});
+		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
+			// fetch old DSK entry
+			oldDSKEntry = this.dskCollection[entryIndex];
+			
+			// replace old DSK entry
+			this.dskCollection[entryIndex] = dskEntry;
 
-		// update provisioning list
-		zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
 
-		// save z-way data
-		zway.devices.SaveData();
+			// update provisioning list
+			dskIndex = _.findIndex(dskProvisioningList, function(entry){
+				return oldDSKEntry['ZW_QR_DSK'] === entry;
+			});
+			
+			if (dskIndex > -1 && dskProvisioningList[dskIndex]) {
+				dskProvisioningList[dskIndex] = dskEntry['ZW_QR_DSK'];
+			} else {
+				dskProvisioningList.push(dskEntry['ZW_QR_DSK']);
+			}
+
+			// save dskProvisioningList
+			this.saveDSKProvisioningList(dskProvisioningList);
+
+			// save dsk collection
+			this.saveObject("dskCollection",this.dskCollection);
+
+			successful = true;
+		}
 	} catch (e) {
-		//self.controller.addNotification();
-		console.log('DSK error:', e.toString());
+		this.addNotification("error", 'Update DSK entry error: '+ e.toString(), "module");
 	}
 
-	this.saveObject("dskCollection",this.dskCollection);
-}
+	return successful;
+};
 
-ZWave.prototype.getDSKCollection = function () {
+ZWave.prototype.removeDSKEntry = function (dskEntryID) {
+	var zway = this.zway,
+		oldDSKEntry = {},
+		entryIndex = _.findIndex(this.dskCollection, function(entry){
+			return entry.id === dskEntryID;
+		}),
+		successful = false;
 
-	return this.dskCollection;
+	// remove DSK from provisioning list
+	try {
+		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
+			// fetch old DSK entry
+			oldDSKEntry = this.dskCollection[entryIndex];
+			
+			// remove DSK entry
+			this.dskCollection.splice(entryIndex, 1);
+
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
+
+			// remove from provisioning list
+			dskProvisioningList = _.filter(dskProvisioningList, function(dsk){
+				return dsk !== oldDSKEntry['ZW_QR_DSK'];
+			});
+
+			// save dskProvisioningList
+			this.saveDSKProvisioningList(dskProvisioningList);
+
+			// save dsk collection
+			this.saveObject("dskCollection",this.dskCollection);
+
+			successful = true;
+		}
+	} catch (e) {
+		this.addNotification("error", 'Remove DSK entry error: '+ e.toString(), "module");
+	}
+
+	return successful;
+};
+
+ZWave.prototype.getDSKCollection = function (dskEntryID) {
+	if (dskEntryID) {
+		var dskEntry = _.filter(this.dskCollection, function(dskEntry){
+			return dskEntry.id === dskEntryID || dskEntry.id === parseInt(dskEntryID, 10);
+		});
+
+		return dskEntry[0]? dskEntry[0] : []; 
+	} else {
+		return this.dskCollection;
+	}
 }
 
 // --------------- Public HTTP API -------------------
@@ -1003,6 +1083,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".GetDSKCollection", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RemoveDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".AddDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".UpdateDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -1044,6 +1125,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".GetDSKCollection");
 	ws.revokeExternalAccess(_name + ".RemoveDSKEntry");
 	ws.revokeExternalAccess(_name + ".AddDSKEntry");
+	ws.revokeExternalAccess(_name + ".UpdateDSKEntry");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -3029,8 +3111,10 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
-	this.ZWaveAPI.GetDSKCollection = function(url,request) {
-		var reply = {
+	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			reply = {
 				status: 200,
 				headers: {
 					"Content-Type": "application/json",
@@ -3039,7 +3123,56 @@ ZWave.prototype.defineHandlers = function () {
 					"Access-Control-Allow-Headers": "Authorization",
 					"Connection": "keep-alive"
 				},
-				body: self.getDSKCollection(),
+				body: null,
+				error: null,
+				message: null
+			}
+
+		try {
+			/*controllerNode = zway.controller.data.nodeId.value;
+			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
+			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
+			
+			//if (_.findIndex(dskProvisioningList, function(dsk) {return dsk === req.dsk;}) < 0) {
+				//self.addDSKEntry(req.dsk);
+
+				// add DSK to provisioning list
+				dskProvisioningList.push(req.dsk);
+
+				// update provisioning list
+				zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+
+				// save z-way data
+				zway.devices.SaveData();
+
+
+				reply.body = [req.dsk];
+			/*} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}*/
+			
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+		}
+
+		return reply;
+	};
+
+	this.ZWaveAPI.GetDSKCollection = function(url,request) {
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			id = req && req.id? req.id : false,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: self.getDSKCollection(id),
 				error: null,
 				message: null
 			};
@@ -4843,9 +4976,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									} else {
 										try {
 											if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-												if (t_vDev[mode].get('metrics:level') !== this.value) {
-													t_vDev[mode].set("metrics:level", this.value);
-												}
+												t_vDev[mode].set("metrics:level", this.value);
 											}
 										} catch (e) {
 										}
@@ -5372,4 +5503,34 @@ ZWave.prototype.updateRSSIData = function(callback) {
 	this.zway.GetBackgroundRSSI(function() {
 		callback(self.lastRSSIData());
 	});
+};
+
+ZWave.prototype.getDSKProvisioningList = function() {
+	var zway = this.zway;
+	
+	/* TODO
+	// get controller node
+	var controllerNode = zway.controller.data.nodeId.value;
+	// return DSK provisioning list
+	return zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];
+	*/
+
+	return zway.controller.data.smartStart.dskProvisioningList.value || [];
+};
+
+
+ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
+	var zway = this.zway;
+
+	/* TODO
+	// get controller node
+	var controllerNode = zway.controller.data.nodeId.value;
+	// update provisioning list
+	zway.devices[controllerNode].data.smartStart.dskProvisioningList.value = dskProvisioningList;
+	*/
+
+	// update provisioning list
+	zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+	// save z-way data
+	zway.devices.SaveData();
 };

@@ -315,3 +315,29 @@ function retBoolean(boolean) {
 		return false;
 	}
 };
+
+/*
+* find the smallest not assigned value (integer) of a specific key within array objects
+*/
+function findSmallestNotAssignedIntegerValue (array, key) {
+	var value = 1,
+		maxValue = null,
+		listValues = [];
+
+	listValues = array.map(function(entry) {
+		return Number.isInteger(entry[key])? entry[key] : parseInt(entry[key],10);
+	});
+
+	maxValue = Math.max.apply(null, listValues);
+
+	for (var i = 1; i <= maxValue; i++) {
+		if (listValues.indexOf(i) < 0) {
+			value = i;
+			break;
+		} else if (i == maxValue) {
+			value = i + 1;
+		}
+	}
+
+	return value;
+};
