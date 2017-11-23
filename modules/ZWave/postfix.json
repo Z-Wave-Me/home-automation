@@ -269,17 +269,17 @@
 		}, {
 			"id": "49",
 			"p_id": "316.2.13",
-			"p_sku": "PHIEPAT02-B",
+			"p_sku": "PHIEPST02-B",
 			"product": "Philio PST02-5B Motion Sensor",
 			"apply_postfix": "0",
 			"preInterview": [],
-			"postInterview": ["noVDev,0-113", "setConfig(0,7,22,1);", "setCCData(0,132,'security','value',false);", "renameNode,Philio PST02-5B Motion Sensor", "setConfig(0,13,1,1)", "setConfig(0,14,1,1)", "setConfig(0,15,0,1)", "setConfig(0,20,10,1)"],
-			"author_last_update": "2017-09-06 13:48:34",
-			"author": "NIRAIVS",
-			"tester": "AIVS",
-			"tester_last_update": "2017-09-06 13:48:34",
-			"commentary": "don't create Alarm devices,change node name, change configuration,set wakeup to unsecure",
-			"created": "2017-06-12 16:10:17"
+			"postInterview": ["noVDev,0-113", "setConfig(0,7,20,1);", "emulateOff,0-48-12,60000", "setCCData(0,132,'security','value',false);", "renameNode,Philio PST02-5B Motion Sensor", "setConfig(0,4,100,1)", "setConfig(0,12,1,1)", "setConfig(0,13,1,1)", "setConfig(0,20,10,1)"],
+			"author_last_update": "2017-11-23 01:28:34",
+			"author": "NIRAIVSPS",
+			"tester": "PS",
+			"tester_last_update": "2017-11-23 01:28:34",
+			"commentary": "don't create Alarm devices,change node name, change configuration,set wakeup to unsecure,auto off motion after 1 minute of no motion",
+			"created": "2017-09-28 09:25:18"
 		}, {
 			"id": "50",
 			"p_id": "316.2.33",
