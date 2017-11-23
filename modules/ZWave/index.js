@@ -3388,6 +3388,18 @@ ZWave.prototype.gateDevicesStart = function () {
 														}
 
 														break;
+													case 'emulateOff':
+														if (splittedEntry[1] && splittedEntry[2]) {
+															var nId = nodeId + '-' + splittedEntry[1];
+															
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
+															}
+															
+															changeVDev[nId].emulateOff = splittedEntry[2];
+														}
+
+														break;
 													default:
 														eval(entry);
 												}
@@ -4022,20 +4034,43 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							},
 							moduleId: self.id
 						});
+						
 
 						if (vDev) {
+							if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+								vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
+							}
+							
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function (type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + sensorTypeId);
 								} else {
 									try {
 										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-											vDev.set("metrics:level", this.value ? "on" : "off");
+											if (vDev.__emulateOff_timeout) {
+												if (this.value && (vDev.get("metrics:level") !== "on" || !vDev.__emulateOff_timer)) {
+													vDev.set("metrics:level", this.value ? "on" : "off");
+													vDev.__emulateOff_timer && clearTimeout(vDev.__emulateOff_timer);
+													vDev.__emulateOff_timer = setTimeout(function() {
+														vDev.set("metrics:level", this.value ? "on" : "off");
+														vDev.__emulateOff_timer = 0;
+													}, vDev.__emulateOff_timeout);
+												}
+											} else {
+												vDev.set("metrics:level", this.value ? "on" : "off");
+											}
 										}
 									} catch (e) {
 									};
 								}
 							}, "value");
+							
+							if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+								// on start we need to kick the timer
+								if (vDev.get("metrics:level") === "on") {
+									self.zway.devices[nodeId].instances[instanceId].commandClasses[commandClassId].data[sensorTypeId].level.value = true;
+								}
+							}
 						}
 					}
 				}
