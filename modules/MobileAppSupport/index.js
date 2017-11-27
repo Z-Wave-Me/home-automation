@@ -19,7 +19,7 @@ function MobileAppSupport (id, controller) {
 	self.IOS = "ios";
 
 	self.FCM_ANDROID_TOKEN = "AAAA8nWqXJU:APA91bFZwwNpcfQRjjsmU6LMv0LhEw4XoqCqOhyINwJQI2BOGCoFQAK1PcbVy-W9jtnqb4f0DoH6yGSi3Opc_v9T6uDinCL373CMjorKZk8mCkK8CknxCA2JC2T5YiuEWnkz-6Ng2IPD";
-	self.FCM_IOS_TOKEN = "AAAA8nWqXJU:APA91bE8we7hPUylPcvG_WsPD5_akKUnhvYMXnxO35grpj5XC7he-TnZ4eJT38JDEXwEUbxd1ad-tsn50uSb48kT1_X-WJUEXIfiJscMp750kaU_DzbVQyRul2OsYfW_5cmET7p_6xhf";
+	self.FCM_IOS_TOKEN = "AAAA8nWqXJU:APA91bHLng5bi0STgF3ojBVsu-vMjM2ut7ywHjR1LIYHZWRLzWPMh1Fm6tGXNis6v3z7PF0NI9ouUiJO4YmMhWWTwWFBsjtXFsiuDYWDTJA7N82d6Ger9bNtL7dzjmk_s4iy6Egt7Qjc";
 
 	// stores object references of callback functions for removing event listener
 	self.deviceUpdatesCallbackWrapper = {};
@@ -136,6 +136,7 @@ MobileAppSupport.prototype.init = function (config) {
 				});
 				/* remove phone vDev */
 				self.controller.devices.remove(args.id);
+				self.controller.devices.remove(args.id + '-presence');
 				/* remove from current configuration page */
 				self.config.phones.table = self.config.phones.table.filter(function(p) {
 					return p.phones_title !== args.title

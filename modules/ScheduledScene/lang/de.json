@@ -12,6 +12,8 @@
 	"l_switches":"Schalter:",
 	"on":"An",
 	"off":"Aus",
+	"l_times":"Zeiten",
+	"l_devices":"Geräte und Szenen",
 	"l_dimmers":"Dimmer/Motorsteuerungen:",
 	"l_level":"Level",
 	"l_scenes":"Aktionen/Szenen die aktiviert werden sollen:",

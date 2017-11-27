@@ -1,13 +1,16 @@
 {
 	"m_title":"Mobile App Support",
 	"m_descr":"This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).",
+
 	"unselected": "--- please select ---",
 	"errors": "all error messages",
 	"warnings": "all warnings",
 	"notifications": "all notifications",
+
 	"l_logLevelContainer": "Notification classes for event forwarding",
 	"l_logLevel": "The granular selection of the devices below is disabled when the corresponding option is activated. So either all devices or a detailed selection!",
 	"h_logLevel": "Select, which kind of notifications you would be informed.",
+
 	"l_devices": "Additional devices for event forwarding",
 	"h_devices": "Select additional devices and a notification-class for each of them.",
 	"d_devices": "Device",
@@ -21,7 +24,7 @@
 	"h_dev_matchValueOperation": "Select an operator that should be used to compare the device state with the following value.",
 	"l_dev_matchValueOperand": "Value",
 	"h_dev_matchValueOperand": "Enter a numeric value that should be compared to the device state. A notification is send if the comparison return true.",
-	"filter_devices_toggleButton": "Toggle Button",
+	"filter_devices_toggleButton": "Scenes",
 	"filter_devices_switchControl": "Switch Control",
 	"filter_devices_switchBinary": "Switch Binary",
 	"filter_devices_switchMultilevel": "Switch Multilevel",
@@ -31,7 +34,7 @@
 	"filter_devices_fan": "Fan",
 	"filter_devices_doorLock": "Doorlock",
 	"filter_devices_thermostat": "Thermostat",
-	"l_ToggleButton": "Toggle Button",
+	"l_ToggleButton": "Scenes",
 	"l_switchControl": "Switch Control",
 	"l_switchBinary": "Switch Binary",
 	"l_switchMultilevel": "Switch Multilevel",
@@ -41,6 +44,7 @@
 	"l_fan": "Fan",
 	"l_doorLock": "Doorlock",
 	"l_thermostat": "Thermostat",
+
 	"l_phones": "Mobile Devices",
 	"l_found_phones": "available mobile devices",
 	"m_del_phone": "Do you really want to delete this mobile device from your current configuration?"

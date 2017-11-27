@@ -1,4 +1,4 @@
-#27.09.2017 v2.3.6
+#04.10.2017 v2.3.6
 Changes:
 * show more logs on ZWaveBinding error
 * Refactored PacketLog to make it work faster and take smaller RAM/FLASH

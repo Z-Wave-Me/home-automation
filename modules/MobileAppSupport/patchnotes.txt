@@ -1,3 +1,10 @@
+v1.2.5
+- iOS authentication token updated
+
+v1.2.4
+- bugfix catches undefined-error occurred during adding first mobile device
+- bugfix removing mobile device deletes LOCAL widget
+
 v1.2.2
 - add presence widget for LOCAL(mobile phone WLAN) or REMOTE (mobile phone mobile) 
 
