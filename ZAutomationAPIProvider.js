@@ -2877,7 +2877,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		saveObject('8084AccessTimeout', 10);
 		var res = http.request(req);
 
-		if(res.status === 200) {
+		if(res.status === 200 || res.status === 303) {
 			reply.code = 200;
 			reply.data = res.statusText;
 
