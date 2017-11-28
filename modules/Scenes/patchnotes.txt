@@ -1,0 +1,2 @@
+v1.1.1
+- change icon type form gesture to new icon type scene
