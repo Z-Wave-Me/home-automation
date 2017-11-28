@@ -3064,7 +3064,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3113,7 +3113,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3161,7 +3161,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.GetDSKCollection = function(url,request) {
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
 			id = req && req.id? req.id : false,
 			reply = {
 				status: 200,
@@ -3182,7 +3182,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3210,7 +3210,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
 			reply = {
 				status: 200,
 				headers: {
