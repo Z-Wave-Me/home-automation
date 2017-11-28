@@ -3215,12 +3215,12 @@ ZWave.prototype.defineHandlers = function () {
 				if (success) {
 					reply.body = req;
 				} else {
-					reply.status = 404;
-					reply.message = 'Not found - DSK entry does not exist';
+					reply.status = 500;
+					reply.message = 'Something went wrong.';
 				}
 			} else {
-				reply.status = 409;
-				reply.message = 'Conflict - DSK entry already exists';
+				reply.status = 404;
+				reply.message = 'Not found - DSK entry does not exist';
 			}
 		} catch (e) {
 			reply.status = 500;
