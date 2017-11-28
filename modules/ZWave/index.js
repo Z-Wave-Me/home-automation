@@ -936,6 +936,7 @@ ZWave.prototype.addDSKEntry = function (entry) {
 
 			// save dsk collection
 			this.saveObject("dskCollection",this.dskCollection);
+			successful = true;
 		} catch (e) {
 			this.addNotification("error", 'Add DSK entry error: '+ e.toString(), "module");
 		}
@@ -994,7 +995,7 @@ ZWave.prototype.removeDSKEntry = function (dskEntryID) {
 	var zway = this.zway,
 		oldDSKEntry = {},
 		entryIndex = _.findIndex(this.dskCollection, function(entry){
-			return entry.id === dskEntryID;
+			return entry.id === dskEntryID || entry.id === parseInt(dskEntryID, 10);
 		}),
 		successful = false;
 
@@ -3064,7 +3065,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
+		var req = request && request.query? parseToObject(request.query) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3083,74 +3084,16 @@ ZWave.prototype.defineHandlers = function () {
 			/*controllerNode = zway.controller.data.nodeId.value;
 			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
 			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
-			
-			//if (_.findIndex(dskProvisioningList, function(dsk) {return dsk === req.dsk;}) < 0) {
-				//self.addDSKEntry(req.dsk);
+			dskProvisioningList.push(req.dsk);
 
-				// add DSK to provisioning list
-				dskProvisioningList.push(req.dsk);
+			// update provisioning list
+			zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
 
-				// update provisioning list
-				zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
-
-				// save z-way data
-				zway.devices.SaveData();
+			// save z-way data
+			zway.devices.SaveData();
 
 
-				reply.body = [req.dsk];
-			/*} else {
-				reply.status = 409;
-				reply.message = 'Conflict - DSK entry already exists';
-			}*/
-			
-		} catch (e) {
-			reply.status = 500;
-			reply.message = 'Something went wrong. ERROR: ' +e.toString();
-		}
-
-		return reply;
-	};
-
-	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
-		// prepare request data
-		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
-			reply = {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
-				},
-				body: null,
-				error: null,
-				message: null
-			}
-
-		try {
-			/*controllerNode = zway.controller.data.nodeId.value;
-			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
-			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
-			
-			//if (_.findIndex(dskProvisioningList, function(dsk) {return dsk === req.dsk;}) < 0) {
-				//self.addDSKEntry(req.dsk);
-
-				// add DSK to provisioning list
-				dskProvisioningList.push(req.dsk);
-
-				// update provisioning list
-				zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
-
-				// save z-way data
-				zway.devices.SaveData();
-
-
-				reply.body = [req.dsk];
-			/*} else {
-				reply.status = 409;
-				reply.message = 'Conflict - DSK entry already exists';
-			}*/
+			reply.body = [req.dsk];
 			
 		} catch (e) {
 			reply.status = 500;
@@ -3161,7 +3104,7 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.GetDSKCollection = function(url,request) {
-		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
+		var req = request && request.query? parseToObject(request.query) : undefined,
 			id = req && req.id? req.id : false,
 			reply = {
 				status: 200,
@@ -3182,9 +3125,9 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
+		var req = request && request.query? parseToObject(request.query) : undefined,
 			reply = {
-				status: 200,
+				status: 201,
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*",
@@ -3198,8 +3141,14 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 		try {
-			self.removeDSKEntry(req.dsk);
-			reply.body = req.dsk;
+			var success = self.removeDSKEntry(parseInt(req.id,10));
+
+			if (success) {
+				reply.body = req.id;
+			} else {
+				reply.status = 404;
+				reply.message = 'Not found - DSK entry does not exist';
+			}
 		} catch (e) {
 			reply.status = 500;
 			reply.message = 'Something went wrong. ERROR: ' +e.toString();
@@ -3210,7 +3159,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(decodeURI(request.query)) : undefined,
+		var req = request && request.query? parseToObject(request.query) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3226,14 +3175,53 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 		try {
-			//if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.ZW_QR === req.dsk;}) < 0) {
+			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.ZW_QR === req.dsk;}) < 0) {
 				self.addDSKEntry(req.dsk);
 				reply.body = req.dsk;
-			/*} else {
+			} else {
 				reply.status = 409;
 				reply.message = 'Conflict - DSK entry already exists';
-			}*/
+			}
 			
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+		}
+
+		return reply;
+	};
+
+	this.ZWaveAPI.UpdateDSKEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.body? parseToObject(request.body) : undefined,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			}
+
+		try {
+			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.id === req.id;}) > -1) {
+				var success = self.updateDSKEntry(req);
+
+				if (success) {
+					reply.body = req;
+				} else {
+					reply.status = 404;
+					reply.message = 'Not found - DSK entry does not exist';
+				}
+			} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}
 		} catch (e) {
 			reply.status = 500;
 			reply.message = 'Something went wrong. ERROR: ' +e.toString();
