@@ -1,7 +1,7 @@
 /*** AutoLock Z-Way Home Automation module *************************************
 
- Version: 1.1.1
- (c) Z-Wave.Me, 2014
+ Version: 1.2
+ (c) Z-Wave.Me, 2017
 
  -----------------------------------------------------------------------------
  Author: Yurkin Vitaliy <aivs@z-wave.me>
@@ -35,22 +35,29 @@ AutoLock.prototype.init = function (config) {
 	// handler - it is a name of your function
 	this.handler = function (vDev) {
 		var nowSensorStatus = vDev.get("metrics:level");
-
-		console.log("----------------------------- AutoLock", self.config.BinarySensor, "=", nowSensorStatus);
-
 		// Clear delay if door opened
 		if (nowSensorStatus === "on") {
-			console.log("Clear delay");
 			clearTimeout(self.timer);
 		}
 		
 		// Close lock if sensor false
 		if (nowSensorStatus === "off") {
 			// Start Timer
-			console.log("Start delay");
 			self.timer = setTimeout(function () {
-				// Close lock 
-				self.controller.devices.get(self.config.DoorLock).performCommand("close");
+				var vDevDoorLock = self.controller.devices.get(self.config.DoorLock);
+				var doorLockState = vDevDoorLock.get("metrics:level");
+				var doorLockDeviceType = vDevDoorLock.get("deviceType");
+				
+				// Check lock, if already closed don't send command
+				if (!(self.config.doNotSendCommand && (doorLockState == "close" || doorLockState == "on"))) {
+					// Close lock 
+					if (doorLockDeviceType == "doorlock") {
+						self.controller.devices.get(self.config.DoorLock).performCommand("close");	
+					}
+					if (doorLockDeviceType == "switchBinary") {
+						self.controller.devices.get(self.config.DoorLock).performCommand("on");	
+					}
+				}
 				// And clearing out this.timer variable
 				self.timer = null;
 			}, self.config.delay*1000);
