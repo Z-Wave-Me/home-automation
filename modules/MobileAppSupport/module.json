@@ -6,7 +6,7 @@
   "homepage": "http://z-wave.me",
   "icon": "icon.png",
   "moduleName": "MobileAppSupport",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "maturity": "stable",
   "defaults": {
 	"title": "__m_title__",
@@ -519,11 +519,12 @@
 			  "properties": {
 				"phones_dev": {
 				  "type": "string",
-				  "title": "__l_found_phones__",
+				  "title": "__l_phones_id__",
 				  "readonly": true
 				},
 				"phones_title": {
 				  "type": "string",
+				  "title": "__l_phones_title__",
 				  "readonly": true
 				}
 			  }

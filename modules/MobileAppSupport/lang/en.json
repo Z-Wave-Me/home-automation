@@ -46,6 +46,7 @@
 	"l_thermostat": "Thermostat",
 
 	"l_phones": "Mobile Devices",
-	"l_found_phones": "available mobile devices",
+	"l_phones_id": "Devices ID",
+	"l_phones_title": "Devices Title",
 	"m_del_phone": "Do you really want to delete this mobile device from your current configuration?"
 }
