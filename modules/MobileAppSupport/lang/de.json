@@ -5,6 +5,7 @@
 	"unselected": "--- Bitte auswählen ---",
 	"errors": "Alle Fehlermeldungen",
 	"warnings": "Alle Warnmeldungen",
+	"notifications": "Alle Benachrichtigungen",
 
 	"l_logLevelContainer": "Benachrichtigungsklassen für die Event-Weiterleitung",
 	"l_logLevel": "Die Einstellungen weiter unten werden deaktiviert, sobald diese Optionen aktiviert werden. Also entweder alle Benachrichtigungen oder eine benutzerdefinierte Auswahl!",
