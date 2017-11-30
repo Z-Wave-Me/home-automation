@@ -1,0 +1,17 @@
+{
+	"m_title":"Szene",
+	"m_descr":"Die Lichtszene ist eine Basisfunktion des Smart Home. Mit nur einem Klick werden mehrere Geräte in einen individuellen Status geschalten. In Verwendung weiterer Apps wie “Delayed Scene” oder “Scheduled Scene” kann diese Szene automatisch in Abhängigkeit von generierten Ereignissen im Smart Home aktiviert werden. Die App erstellt ein neues Element zur Szenenauslösung. Der Einstelldialog ermöglicht die Auswahl von mehreren Schaltern und Dimmern sowie die Definition des gewünschten Schaltzustands eines jeden ausgewählten Gerätes.Desweiteren ist es möglich, andere Szenen als Teil dieser Szene auszulösen.Bitte beachten Sie, dass Dimmer einen Wert zwischen ‘0‘ und ‘100‘ bedürfen, während dessen bei Schaltungen zwischen ‘an‘ und ‘aus‘ gewählt wird. <br><br>Einstellungen:<br><ul><li>Wählen Sie alle Schalter, die zur Szene gehören sollen und definierten Sie den Schaltstatus als ‘an’ oder ‘aus’.</li><li>Wählen Sie alle Dimmer, die zur Szene gehören sollen und definieren Sie den Dimmpegel als einen Wert zwischen 0 und 100.</li><li>Auf Wunsch wählen Sie weitere Szenen, die mit dieser Szene ausgelöst werden sollen.</li></ul><br>Anwendung: Der Button auf dem Szenenelement aktiviert die definierte Szene. ",
+	"l_switches":"Schalter:",
+	"on":"An",
+	"off":"Aus",
+	"l_dimmers":"Dimmer/Motorsteuerungen:",
+	"l_level":"Level",
+	"l_scenes":"Aktionen/Szenen die aktiviert werden sollen:",
+	"l_thermostats":"Thermostate",
+	"l_temperature":"Temperatur",
+	"l_locks":"Türschlösser",
+	"close":"Verriegelt",
+	"open":"Entriegelt",
+	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
+	"h_sendAction":"Need to avoid flooding the network."
+}

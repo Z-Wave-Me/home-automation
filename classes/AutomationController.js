@@ -1970,6 +1970,11 @@ AutomationController.prototype.removeProfile = function (profileId) {
 	return forward;
 };*/
 
+AutomationController.prototype.getIPAddress = function() {
+	var ip = system('hostname -I')[1].replace(/[\s\n]/g, '');
+	return ip;
+}
+
 AutomationController.prototype.addQRCode = function(profile, obj) {
 	var typeNumber = 15,
 		errorCorrectionLevel = 'H',
@@ -1987,6 +1992,7 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
 	data.passwd = obj.password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
+	data.ip = this.getIPAddress();
 
 	var qr = qrcode(typeNumber, errorCorrectionLevel);
 
