@@ -6,7 +6,7 @@
     "homepage": "http://www.tp-link.com/",
     "state": null,
     "icon": "icon.png",
-    "moduleName":"TPLinkPlug",
+    "moduleName":"TPLinkHS100",
     "version": "1.0.0",
     "maturity": "stable",
     "repository": {

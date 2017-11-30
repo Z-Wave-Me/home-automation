@@ -1,6 +1,0 @@
-{
-	"m_title":"TP-Link WLAN Plug",
-	"m_descr":"This app allows you to control your TP-Link HS100 and HS110 WLAN plugs. Simply enter the IP address of the completely configured WLAN plug.",
-	"ip":"Plug IP URL",
-	"h_ip":"in the format '192.168.0.50'"
-}

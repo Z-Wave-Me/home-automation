@@ -1,11 +1,11 @@
-/*** TPLinkPlug Z-Way HA module *******************************************
+/*** TPLinkHS110 Z-Way HA module *******************************************
 
 Version: 1.0.0
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Karsten Reichel <kar@zwave.eu>
 Description:
-	This module allows to switch the TP-Link HS100 and HS110 plugs.
+	This module allows to switch the TP-Link HS110 plug.
 
 ******************************************************************************/
 
@@ -14,23 +14,23 @@ Description:
 // ----------------------------------------------------------------------------
 
 
-function TPLinkPlug (id, controller) {
+function TPLinkHS110 (id, controller) {
 	// Call superconstructor first (AutomationModule)
-	TPLinkPlug.super_.call(this, id, controller);
+	TPLinkHS110.super_.call(this, id, controller);
 }
 
-inherits(TPLinkPlug, AutomationModule);
+inherits(TPLinkHS110, AutomationModule);
 
-_module = TPLinkPlug;
+_module = TPLinkHS110;
 
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-TPLinkPlug.prototype.init = function (config) {
-	TPLinkPlug.super_.prototype.init.call(this, config);
+TPLinkHS110.prototype.init = function (config) {
+	TPLinkHS110.super_.prototype.init.call(this, config);
 		
-		vDevId = "TPLinkPlug_" + this.id;
+		vDevId = "TPLinkHS110_" + this.id;
 			
 		this.commands = {
 			on: 	'{"system":{"set_relay_state":{"state":1}}}',
@@ -101,12 +101,12 @@ TPLinkPlug.prototype.init = function (config) {
 		});
 };
 
-TPLinkPlug.prototype.stop = function () {
+TPLinkHS110.prototype.stop = function () {
 
 	if (this.vDev) {
 		this.controller.devices.remove(this.vDev.id);
 		this.vDev = null;
 	}
 
-	TPLinkPlug.super_.prototype.stop.call(this);
+	TPLinkHS110.super_.prototype.stop.call(this);
 };
