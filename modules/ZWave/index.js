@@ -883,25 +883,24 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				'ZW_QR_VERSION', 			//2
 				'ZW_QR_CHKSUM',				//5
 				'ZW_S2_REQ_KEYS',			//3
-				'ZW_QR_DSK',				//40
-				'01' = [ // TlvType = ProductType [value]
-					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE',		//5
-					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE'
-					'length': [5,5]	//5
+				'ZW_QR_DSK'
 				],
-				'02' = [ // TlvType = ProductID [value]
-					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID',		//5
-					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE',			//5
-					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID',			//5
-					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION',  //5
-					'length': [5,5,5,5]	//5
+			types = {
+				'01': [ // TlvType = ProductType [value]
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE':5,
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE':5,
+					],
+				'02': [ // TlvType = ProductID [value]
+					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID':5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE':5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID':5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION':5
 				],
-				'06' = [ // TlvType = UUID16 [value]
-					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT',			//2
-					'ZW_QR_TLVVAL_UUID16_UUIDDATA',
-					'length': [2,4]					//40
+				'06': [ // TlvType = UUID16 [value]
+					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT':2,
+					'ZW_QR_TLVVAL_UUID16_UUIDDATA':40
 				]
-			],
+			},
 			currPos = 0,
 			valLength = 0;
 		try {
@@ -3116,7 +3115,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.body? parseToObject(request.body) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3210,7 +3209,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.body? parseToObject(request.body) : undefined,
 			reply = {
 				status: 200,
 				headers: {
