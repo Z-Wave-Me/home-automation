@@ -862,7 +862,8 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
 ZWave.prototype.addDSKEntry = function (entry) {
 	var zway = this.zway,
-		successful = false;
+		successful = false,
+		tlvString = '';
 	
 	if (entry && !!entry) {
 
@@ -874,22 +875,32 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				timestamp: (new Date()).valueOf(),
 				ZW_QR: entry
 			},
-			pos = [2,2,5,3,40,2,2,'ZW_QR_TLVVAL_PRODUCTTYPE',2,2,'ZW_QR_TLVVAL_PRODUCTID',2,2,'ZW_QR_TLVVAL_UUID16'],
+			pos = [2,2,5,3,40],
+			//tlv = [2,2,'ZW_QR_TLVVAL_PRODUCTTYPE',2,2,'ZW_QR_TLVVAL_PRODUCTID',2,2,'ZW_QR_TLVVAL_UUID16'],
+			tlv = [2,2,null],
 			keys = [
-			'ZW_QR_LEADIN',
-			'ZW_QR_VERSION',
-			'ZW_QR_CHKSUM',
-			'ZW_S2_REQ_KEYS',
-			'ZW_QR_DSK',
-			'ZW_QR_TLVTYPE_PRODUCTTYPE',
-			'ZW_QR_TLVLEN_PRODUCTTYPE',
-			'ZW_QR_TLVVAL_PRODUCTTYPE',
-			'ZW_QR_TLVTYPE_PRODUCTID',
-			'ZW_QR_TLVLEN_PRODUCTID',
-			'ZW_QR_TLVVAL_PRODUCTID',
-			'ZW_QR_TLVTYPE_UUID16',
-			'ZW_QR_TLVLEN_UUID16',
-			'ZW_QR_TLVVAL_UUID16'
+				'ZW_QR_LEADIN', 			//2
+				'ZW_QR_VERSION', 			//2
+				'ZW_QR_CHKSUM',				//5
+				'ZW_S2_REQ_KEYS',			//3
+				'ZW_QR_DSK',				//40
+				'01' = [ // TlvType = ProductType [value]
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE',		//5
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE'
+					'length': [5,5]	//5
+				],
+				'02' = [ // TlvType = ProductID [value]
+					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID',		//5
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE',			//5
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID',			//5
+					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION',  //5
+					'length': [5,5,5,5]	//5
+				],
+				'06' = [ // TlvType = UUID16 [value]
+					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT',			//2
+					'ZW_QR_TLVVAL_UUID16_UUIDDATA',
+					'length': [2,4]					//40
+				]
 			],
 			currPos = 0,
 			valLength = 0;
@@ -913,13 +924,53 @@ ZWave.prototype.addDSKEntry = function (entry) {
 					transformedEntry[keys[index]] = value;
 					
 					// decide on pos how to raise currPos number
-					if(!_.isNumber(pos[index+1])) {
+					/*if(!_.isNumber(pos[index+1])) {
 						valLength = parseInt(entry.substring(currPos,currPos+2), 10);
 						currPos = currPos + l;
-					} else {
+					} else {*/
 						currPos = keys[index] === l? currPos + valLength : currPos + l;
-					}
+					//}
 				});
+
+				tlvString = entry.substring(51,entry.length-1);
+				console.log('tlvString:', tlvString);
+
+				/*
+				 * Do while loop as long the QR string is empty
+				 */
+				while (tlvString.length > 0) {
+					currPos = 0;
+					valLength = 0;
+					var type = null;
+
+					tlv.forEach(function (length, index) {
+						// set value end position
+						valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
+
+						// transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format / set value
+						value = entry.substring(currPos,valueEndPos);
+						
+						if (index = 0) {
+							type = value;
+						}
+
+						if (length === null) {
+							// add entry key
+						    transformedEntry[keys[type]] = value;
+						}
+						
+						// decide on pos how to raise currPos number
+						if(!_.isNumber(tlv[index+1])) {
+							valLength = parseInt(entry.substring(currPos,currPos+2), 10);
+							currPos = currPos + l;
+						} else {
+							currPos = keys[index] === l? currPos + valLength : currPos + l;
+						}
+					});
+
+					tlvString = tlvString.substring(4+valLength,tlvString.length-1);
+					console.log('tlvString:', tlvString);
+				}
 			}
 
 			// add new entry to dsk collection
