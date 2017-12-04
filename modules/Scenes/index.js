@@ -43,7 +43,7 @@ Scenes.prototype.init = function (config) {
 			}
 		},
 		overlay: {},
-		handler: function (command, args) {
+		handler: function (command) {
 			if (command !== 'on') return;
 
 			self.config.switches.forEach(function(devState) {
