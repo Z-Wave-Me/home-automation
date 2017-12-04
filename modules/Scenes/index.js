@@ -35,6 +35,7 @@ Scenes.prototype.init = function (config) {
 		deviceId: "Scenes_" + this.id,
 		defaults: {
 			deviceType: "toggleButton",
+			customIcons: { "default": self.config.customicon.table[0].icon },
 			metrics: {
 				level: "on", // it is always on, but usefull to allow bind
 				icon: "scene",
@@ -42,7 +43,7 @@ Scenes.prototype.init = function (config) {
 			}
 		},
 		overlay: {},
-		handler: function (command) {
+		handler: function (command, args) {
 			if (command !== 'on') return;
 
 			self.config.switches.forEach(function(devState) {
