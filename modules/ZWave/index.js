@@ -886,24 +886,24 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				'ZW_QR_DSK'
 				],
 			types = {
-				'01': [ // TlvType = ProductType [value]
+				'01': { // TlvType = ProductType [value]
 					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE':5,
 					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE':5,
-					],
-				'02': [ // TlvType = ProductID [value]
+					},
+				'02': { // TlvType = ProductID [value]
 					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID':5,
 					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE':5,
 					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID':5,
 					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION':5
-				],
-				'06': [ // TlvType = UUID16 [value]
+				},
+				'06': { // TlvType = UUID16 [value]
 					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT':2,
 					'ZW_QR_TLVVAL_UUID16_UUIDDATA':40
-				]
+				}
 			},
 			currPos = 0,
 			valLength = 0;
-		try {
+		/*try {*/
 
 			// check if entry is no smart start entry
 			if (entry.length === 47 && entry.split('-').length > 0) {
@@ -931,7 +931,7 @@ ZWave.prototype.addDSKEntry = function (entry) {
 					//}
 				});
 
-				tlvString = entry.substring(51,entry.length-1);
+				tlvString = entry.substring(52);
 				console.log('tlvString:', tlvString);
 
 				/*
@@ -942,32 +942,32 @@ ZWave.prototype.addDSKEntry = function (entry) {
 					valLength = 0;
 					var type = null;
 
-					tlv.forEach(function (length, index) {
+					tlv.forEach(function (l, index) {
 						// set value end position
 						valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
 
 						// transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format / set value
-						value = entry.substring(currPos,valueEndPos);
+						value = tlvString.substring(currPos,valueEndPos);
 						
-						if (index = 0) {
+						if (index === 0) {
 							type = value;
 						}
 
-						if (length === null) {
+						if (l === null) {
 							// add entry key
 						    transformedEntry[keys[type]] = value;
 						}
 						
 						// decide on pos how to raise currPos number
 						if(!_.isNumber(tlv[index+1])) {
-							valLength = parseInt(entry.substring(currPos,currPos+2), 10);
+							valLength = parseInt(tlvString.substring(currPos,currPos+2), 10);
 							currPos = currPos + l;
 						} else {
 							currPos = keys[index] === l? currPos + valLength : currPos + l;
 						}
 					});
 
-					tlvString = tlvString.substring(4+valLength,tlvString.length-1);
+					tlvString = tlvString.substring(4+valLength);
 					console.log('tlvString:', tlvString);
 				}
 			}
@@ -987,9 +987,9 @@ ZWave.prototype.addDSKEntry = function (entry) {
 			// save dsk collection
 			this.saveObject("dskCollection",this.dskCollection);
 			successful = true;
-		} catch (e) {
+		/*} catch (e) {
 			this.addNotification("error", 'Add DSK entry error: '+ e.toString(), "module");
-		}
+		}*/
 	}
 
 	return successful;
@@ -3115,7 +3115,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.body? parseToObject(request.body) : undefined,
+		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
 			reply = {
 				status: 200,
 				headers: {
@@ -3209,7 +3209,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.AddDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.body? parseToObject(request.body) : undefined,
+		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
 			reply = {
 				status: 200,
 				headers: {
@@ -3243,7 +3243,7 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.UpdateDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.body? parseToObject(request.body) : undefined,
+		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
 			reply = {
 				status: 200,
 				headers: {
