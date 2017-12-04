@@ -873,7 +873,8 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				state: 'pending',
 				nodeId: null,
 				timestamp: (new Date()).valueOf(),
-				ZW_QR: entry
+				ZW_QR: entry,
+				p_id: ''
 			},
 			pos = [2,2,5,3,40],
 			//tlv = [2,2,'ZW_QR_TLVVAL_PRODUCTTYPE',2,2,'ZW_QR_TLVVAL_PRODUCTID',2,2,'ZW_QR_TLVVAL_UUID16'],
@@ -886,7 +887,7 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				'ZW_QR_DSK'
 				],
 			types = {
-				'01': { // TlvType = ProductType [value]
+				'00': { // TlvType = ProductType [value]
 					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE':5,
 					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE':5,
 					},
@@ -902,8 +903,18 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				}
 			},
 			currPos = 0,
-			valLength = 0;
-		/*try {*/
+			valLength = 0
+			setTypeEntries = function(type, value){
+				var length = 0;
+
+				if (types[type]) {
+					Object.keys(types[type]).forEach(function(key, index){
+						transformedEntry[key] = value.substring(length, (length +types[type][key]));
+						length = length +types[type][key];
+					});
+				}
+			};
+		try {
 
 			// check if entry is no smart start entry
 			if (entry.length === 47 && entry.split('-').length > 0) {
@@ -922,17 +933,10 @@ ZWave.prototype.addDSKEntry = function (entry) {
 					// add entry key
 					transformedEntry[keys[index]] = value;
 					
-					// decide on pos how to raise currPos number
-					/*if(!_.isNumber(pos[index+1])) {
-						valLength = parseInt(entry.substring(currPos,currPos+2), 10);
-						currPos = currPos + l;
-					} else {*/
-						currPos = keys[index] === l? currPos + valLength : currPos + l;
-					//}
+					currPos = keys[index] === l? currPos + valLength : currPos + l;
 				});
 
 				tlvString = entry.substring(52);
-				console.log('tlvString:', tlvString);
 
 				/*
 				 * Do while loop as long the QR string is empty
@@ -940,13 +944,13 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				while (tlvString.length > 0) {
 					currPos = 0;
 					valLength = 0;
-					var type = null;
+					type = null;
+					tlvKeys = ['TlvType','TlvLength','TlvValue'];
 
 					tlv.forEach(function (l, index) {
 						// set value end position
 						valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
 
-						// transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format / set value
 						value = tlvString.substring(currPos,valueEndPos);
 						
 						if (index === 0) {
@@ -955,11 +959,21 @@ ZWave.prototype.addDSKEntry = function (entry) {
 
 						if (l === null) {
 							// add entry key
-						    transformedEntry[keys[type]] = value;
+						    setTypeEntries(type, value);
+
+						    if (type === '02') {
+						    	transformedEntry['p_id'] = value.replace(/(.{5})/g,"$&"+".").slice(0, -1);
+						    }
+						}
+
+						if (!types[type]) {
+
+							// add entry key
+							transformedEntry[type+'_'+tlvKeys[index]] = value;
 						}
 						
 						// decide on pos how to raise currPos number
-						if(!_.isNumber(tlv[index+1])) {
+						if(!_.isNumber(tlv[index+1]) && tlv[index+1] === null) {
 							valLength = parseInt(tlvString.substring(currPos,currPos+2), 10);
 							currPos = currPos + l;
 						} else {
@@ -968,13 +982,12 @@ ZWave.prototype.addDSKEntry = function (entry) {
 					});
 
 					tlvString = tlvString.substring(4+valLength);
-					console.log('tlvString:', tlvString);
 				}
 			}
 
 			// add new entry to dsk collection
-			this.dskCollection.push(transformedEntry);		
-		
+			this.dskCollection.push(transformedEntry);
+
 			// get dskProvisioningList
 			dskProvisioningList = this.getDSKProvisioningList();
 
@@ -987,9 +1000,9 @@ ZWave.prototype.addDSKEntry = function (entry) {
 			// save dsk collection
 			this.saveObject("dskCollection",this.dskCollection);
 			successful = true;
-		/*} catch (e) {
+		} catch (e) {
 			this.addNotification("error", 'Add DSK entry error: '+ e.toString(), "module");
-		}*/
+		}
 	}
 
 	return successful;
@@ -3191,10 +3204,24 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 		try {
-			var success = self.removeDSKEntry(parseInt(req.id,10));
+			if (req['all'] === 'true' || req['all'] === true) {
+			
+				// remove all DSK entry
+				self.dskCollection = []
+
+				// save dskProvisioningList
+				self.saveDSKProvisioningList([]);
+
+				// save dsk collection
+				self.saveObject("dskCollection",self.dskCollection);
+
+				success = true;
+			} else {
+				var success = self.removeDSKEntry(parseInt(req.id,10));
+			}			
 
 			if (success) {
-				reply.body = req.id;
+				reply.body = req['all']? self.dskCollection : req.id;
 			} else {
 				reply.status = 404;
 				reply.message = 'Not found - DSK entry does not exist';
