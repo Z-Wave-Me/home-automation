@@ -3166,7 +3166,7 @@ ZWave.prototype.defineHandlers = function () {
 			};
 
 		try {
-			reply.body = this.getDSKProvisioningList();
+			reply.body = self.getDSKProvisioningList();
 		} catch (e) {
 			_.extend(reply,{
 				status: 500,
@@ -3199,13 +3199,13 @@ ZWave.prototype.defineHandlers = function () {
 
 		try {
 			// get dskProvisioningList
-			dskProvisioningList = this.getDSKProvisioningList();
+			dskProvisioningList = self.getDSKProvisioningList();
 			// add DSK
 			if (dskProvisioningList.indexOf(req.dsk) < 0) {
 				dskProvisioningList.push(req.dsk);
 				
 				// save dskProvisioningList
-				this.saveDSKProvisioningList(dskProvisioningList);
+				self.saveDSKProvisioningList(dskProvisioningList);
 				
 				reply.body = [req.dsk];
 			} else {
