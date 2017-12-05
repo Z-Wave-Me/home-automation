@@ -860,13 +860,18 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	}, 600 * 1000);
 };
 
+/*
+ * this function uses the S2 or Smart Start QR code information
+ * to generate readable entries in this.dskCollection
+ * DSKs of new entries will also be added automatically to the provisioning list
+ */
 ZWave.prototype.addDSKEntry = function (entry) {
 	var zway = this.zway,
 		successful = false,
 		tlvString = '';
 	
 	if (entry && !!entry) {
-
+		// setup basic values for each QR code entry
 		var transformedEntry = {
 				id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
 				isSmartStart: false,
@@ -876,16 +881,20 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				ZW_QR: entry,
 				p_id: ''
 			},
+			// array with length values of the first 5 leading static QR code values
 			pos = [2,2,5,3,40],
-			//tlv = [2,2,'ZW_QR_TLVVAL_PRODUCTTYPE',2,2,'ZW_QR_TLVVAL_PRODUCTID',2,2,'ZW_QR_TLVVAL_UUID16'],
+			// length values of generic TLV parts 
 			tlv = [2,2,null],
+			// keys of the first 5 leading static QR code values
 			keys = [
-				'ZW_QR_LEADIN', 			//2
-				'ZW_QR_VERSION', 			//2
-				'ZW_QR_CHKSUM',				//5
-				'ZW_S2_REQ_KEYS',			//3
+				'ZW_QR_LEADIN',
+				'ZW_QR_VERSION',
+				'ZW_QR_CHKSUM',
+				'ZW_S2_REQ_KEYS',
 				'ZW_QR_DSK'
 				],
+			// type array with all known types and their special value subdivisions
+			// all unknown types will be handled generic, see further below
 			types = {
 				'00': { // TlvType = ProductType [value]
 					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE':5,
@@ -903,7 +912,8 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				}
 			},
 			currPos = 0,
-			valLength = 0
+			valLength = 0,
+			// function that will generate entries for known types
 			setTypeEntries = function(type, value){
 				var length = 0;
 
@@ -917,70 +927,94 @@ ZWave.prototype.addDSKEntry = function (entry) {
 		try {
 
 			// check if entry is no smart start entry
+			// only DSK will be added as entry
 			if (entry.length === 47 && entry.split('-').length > 0) {
 				transformedEntry['ZW_QR_DSK'] = entry;
-			// is smart entry
+			// otherwise it is a smart entry
+			// do some more voodoo to preparate smart start entry
 			} else {
 				transformedEntry.isSmartStart = true;
 				
+				// fill all keys for the first 5 leading static QR code values
 				_.forEach(pos, function(l, index) {
-					// set value end position
+					// get value end position
+					// for substring
 					valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
 
-					// transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format / set value
+					// cut out value
+					// if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
 					value = keys[index] === 'ZW_QR_DSK'? entry.substring(currPos,valueEndPos).replace(/(.{5})/g,"$&"+"-").slice(0, -1) : entry.substring(currPos,valueEndPos);
 					
-					// add entry key
+					// assign value to leading key
 					transformedEntry[keys[index]] = value;
 					
 					currPos = keys[index] === l? currPos + valLength : currPos + l;
 				});
 
+				// get all remaining TLV values
 				tlvString = entry.substring(52);
 
 				/*
-				 * Do while loop as long the QR string is empty
+				 * Do while loop and cut out and transform all TLV entries piece by piece
+				 * until the QR string is empty
 				 */
 				while (tlvString.length > 0) {
 					currPos = 0;
 					valLength = 0;
 					type = null;
+					// keys for generic TLV entries
 					tlvKeys = ['TlvType','TlvLength','TlvValue'];
 
+					// use array with length values of generic TLV parts
+					// to walk through each TLV entry
 					tlv.forEach(function (l, index) {
-						// set value end position
+						// get value end position
+						// for substring
 						valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
 
+						// cut out value
 						value = tlvString.substring(currPos,valueEndPos);
 						
+						// if it is the first TLV entry - set the type
 						if (index === 0) {
 							type = value;
 						}
 
+						// if TLV value is null call function for preparing 
+						// the TLV value entries 
 						if (l === null) {
-							// add entry key
+							// add TLV value keys
 						    setTypeEntries(type, value);
 
+						    // if TLV type is '02'
+						    // set also the p_id
 						    if (type === '02') {
 						    	transformedEntry['p_id'] = value.replace(/(.{5})/g,"$&"+".").slice(0, -1);
 						    }
 						}
 
+						// if the type is unknown
+						// create generic tranformation by using
+						// keys for generic TLV entries and adding their type in front of the key
+						// devided by underscore
 						if (!types[type]) {
 
-							// add entry key
+							// add tlv entry key
 							transformedEntry[type+'_'+tlvKeys[index]] = value;
 						}
 						
-						// decide on pos how to raise currPos number
+						// if the length of the next value is defined by the predecessor value
+						// set valLength to it's correct length for next transformation step
 						if(!_.isNumber(tlv[index+1]) && tlv[index+1] === null) {
 							valLength = parseInt(tlvString.substring(currPos,currPos+2), 10);
 							currPos = currPos + l;
+						// otherwise simply raise it by length value
 						} else {
 							currPos = keys[index] === l? currPos + valLength : currPos + l;
 						}
 					});
 
+					// cut out the current finished TLV entry from tlvString
 					tlvString = tlvString.substring(4+valLength);
 				}
 			}
@@ -1008,6 +1042,10 @@ ZWave.prototype.addDSKEntry = function (entry) {
 	return successful;
 };
 
+/*
+ * this function allows you to update a S2 or Smart Start QR code entry from this.dskCollection
+ * DSKs of changed entries will also be changed automatically in the provisioning list
+ */
 ZWave.prototype.updateDSKEntry = function (dskEntry) {
 	var zway = this.zway,
 		oldDSKEntry = {},
@@ -1016,8 +1054,9 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
 		}),
 		successful = false;
 
-	// remove DSK from provisioning list
+	// update DSK in provisioning list and this.dskCollection
 	try {
+		// check this entry id already exists
 		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
 			// fetch old DSK entry
 			oldDSKEntry = this.dskCollection[entryIndex];
@@ -1033,6 +1072,7 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
 				return oldDSKEntry['ZW_QR_DSK'] === entry;
 			});
 			
+			// replace the provisioning list entry
 			if (dskIndex > -1 && dskProvisioningList[dskIndex]) {
 				dskProvisioningList[dskIndex] = dskEntry['ZW_QR_DSK'];
 			} else {
@@ -1054,6 +1094,10 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
 	return successful;
 };
 
+/*
+ * this function allows you to remove a S2 or Smart Start QR code entry from this.dskCollection
+ * DSKs of removed entries will also be removed automatically from the provisioning list
+ */
 ZWave.prototype.removeDSKEntry = function (dskEntryID) {
 	var zway = this.zway,
 		oldDSKEntry = {},
@@ -1094,6 +1138,10 @@ ZWave.prototype.removeDSKEntry = function (dskEntryID) {
 	return successful;
 };
 
+/*
+ * this function allows you to get all S2 or Smart Start QR code entries from this.dskCollection
+ * or excactly one specified by it's entry id
+ */
 ZWave.prototype.getDSKCollection = function (dskEntryID) {
 	if (dskEntryID) {
 		var dskEntry = _.filter(this.dskCollection, function(dskEntry){
@@ -3099,6 +3147,9 @@ ZWave.prototype.defineHandlers = function () {
 		};
 	};
 
+	/*
+	 * show DSK z-way provisioning list
+	 */
 	this.ZWaveAPI.GetDSKProvisioningList = function(url,request) {
 		var reply = {
 				status: 200,
@@ -3115,7 +3166,7 @@ ZWave.prototype.defineHandlers = function () {
 			};
 
 		try {
-			reply.body = zway.controller.data.smartStart.dskProvisioningList.value || [];
+			reply.body = this.getDSKProvisioningList();
 		} catch (e) {
 			_.extend(reply,{
 				status: 500,
@@ -3126,6 +3177,9 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+	/*
+	 * add DSK to z-way provisioning list
+	 */
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
 		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
@@ -3144,20 +3198,20 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 		try {
-			/*controllerNode = zway.controller.data.nodeId.value;
-			dskProvisioningList = zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];*/
-			dskProvisioningList = zway.controller.data.smartStart.dskProvisioningList.value || [];
-			dskProvisioningList.push(req.dsk);
-
-			// update provisioning list
-			zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
-
-			// save z-way data
-			zway.devices.SaveData();
-
-
-			reply.body = [req.dsk];
-			
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
+			// add DSK
+			if (dskProvisioningList.indexOf(req.dsk) < 0) {
+				dskProvisioningList.push(req.dsk);
+				
+				// save dskProvisioningList
+				this.saveDSKProvisioningList(dskProvisioningList);
+				
+				reply.body = [req.dsk];
+			} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}
 		} catch (e) {
 			reply.status = 500;
 			reply.message = 'Something went wrong. ERROR: ' +e.toString();
@@ -3166,6 +3220,10 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+	/*
+	 * show all prepared QR code DSK entries or one specific by it's id
+	 * this.dskCollection list is used 
+	 */
 	this.ZWaveAPI.GetDSKCollection = function(url,request) {
 		var req = request && request.query? parseToObject(request.query) : undefined,
 			id = req && req.id? req.id : false,
@@ -3186,6 +3244,11 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+	/*
+	 * remove all or one specific by it's id prepared QR code DSK entries 
+	 * this.dskCollection list is used
+	 * this will also remove DSK entries from z-way provisioning list 
+	 */
 	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
 		// prepare request data
 		var req = request && request.query? parseToObject(request.query) : undefined,
@@ -3234,6 +3297,11 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+	/*
+	 * add S2 or Smart Start QR code DSK entries 
+	 * this.dskCollection list is used
+	 * this will also add DSK entries to z-way provisioning list 
+	 */
 	this.ZWaveAPI.AddDSKEntry = function(url, request) {
 		// prepare request data
 		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
@@ -3268,6 +3336,11 @@ ZWave.prototype.defineHandlers = function () {
 		return reply;
 	};
 
+	/*
+	 * update S2 or Smart Start QR code DSK entries 
+	 * this.dskCollection list is used
+	 * this will also change DSK entries within z-way provisioning list 
+	 */
 	this.ZWaveAPI.UpdateDSKEntry = function(url, request) {
 		// prepare request data
 		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
