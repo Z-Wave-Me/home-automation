@@ -1,0 +1,8 @@
+v2.1.1
+- format of time input field changed (HH:mm 24h)
+
+v2.2
+- can start scene many times in day
+- defined default times: 00:00 and 12:00
+- devices on new path, as example switch: this.config.devices.swithes
+- compatibility with old config

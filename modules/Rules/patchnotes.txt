@@ -1,0 +1,20 @@
+v2.5.1
+- allow negativ values for multilevel sensors
+v2.5.0
+- notification as part of If/Then
+v2.4.5
+- allow push and mail with same notification
+v2.4.4
+- adding push and/or mail notification
+v2.4.1
+- adding support for sensorDiscrete
+- adding support for switchRGBW
+- bugfix ON/OFF if sensorMultilevel is trigger action
+v2.1.1
+- bugfix missing change of levels switch multilevel and refactoring
+- avoid update of vDev with same level
+v2.1.0
+- add Thermostat and Multilevel Sensor support
+- add set Level to switch control and switch multilevel
+v2.0.5
+- bugfix: wrong adressing of 'if'-device if app is stopped, so that conditions are still active

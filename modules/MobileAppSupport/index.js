@@ -529,7 +529,7 @@ MobileAppSupport.prototype.createPresenceMobilePhone = function(title, counter) 
 
 	if(vDev) {
 		self.controller.devices.on(vDev.id, "change:metrics:currentScene", function(vDev) {
-			console.log("cahnge currentScene");
+			console.log("change currentScene");
 			var state = vDev.get("metrics:currentScene");
 			if(state === "LOCAL") {
 				vDev.set("metrics:icon", "/ZAutomation/api/v1/load/modulemedia/MobileAppSupport/phone_local.png");

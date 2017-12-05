@@ -5,6 +5,7 @@
 	"unselected": "--- Bitte auswählen ---",
 	"errors": "Alle Fehlermeldungen",
 	"warnings": "Alle Warnmeldungen",
+	"notifications": "Alle Benachrichtigungen",
 
 	"l_logLevelContainer": "Benachrichtigungsklassen für die Event-Weiterleitung",
 	"l_logLevel": "Die Einstellungen weiter unten werden deaktiviert, sobald diese Optionen aktiviert werden. Also entweder alle Benachrichtigungen oder eine benutzerdefinierte Auswahl!",
@@ -45,6 +46,7 @@
 	"l_thermostat": "Thermostate",
 
 	"l_phones": "Mobilgeräte",
-	"l_found_phones": "vorhandene Geräte",
+	"l_phones_id": "Geräte ID",
+	"l_phones_title": "Geräte Titel",
 	"m_del_phone": "Wollen Sie das ausgewählte Mobilgerät wirklich aus Ihrer Konfiguration löschen?"
 }

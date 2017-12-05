@@ -4592,14 +4592,17 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									try {
 										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 											if (vDev.__emulateOff_timeout) {
-												if (this.value && (vDev.get("metrics:level") !== "on" || !vDev.__emulateOff_timer)) {
-													vDev.set("metrics:level", this.value ? "on" : "off");
+												if (this.value)
+												{
+													if (vDev.get("metrics:level") !== "on" || !vDev.__emulateOff_timer) {
+														vDev.set("metrics:level", "on");
+													}
 													vDev.__emulateOff_timer && clearTimeout(vDev.__emulateOff_timer);
 													vDev.__emulateOff_timer = setTimeout(function() {
-														vDev.set("metrics:level", this.value ? "on" : "off");
+														vDev.set("metrics:level", "off");
 														vDev.__emulateOff_timer = 0;
 													}, vDev.__emulateOff_timeout);
-												}
+												} // off from the sensor is ignored
 											} else {
 												vDev.set("metrics:level", this.value ? "on" : "off");
 											}
