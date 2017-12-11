@@ -5,14 +5,14 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName":"ScheduledScene",
-	"version": "2.2",
+	"version": "2.2.1",
 	"maturity": "stable",
 	"repository": {
 			"type": "git",
 			"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
-		"title": "__m_title__",
+		"title": "Schedule",
 		"description": "__m_descr__",
 		"weekdays": [1, 2, 3, 4, 5, 6, 0],
 		"times": ["00:00","12:00"],
@@ -150,7 +150,7 @@
 						"items": {
 							"field": "enum",
 							"datasource": "namespaces",
-							"enum": "namespaces:devices_toggleButton:deviceId",
+							"enum": "namespaces:devices_toggleButton:none:deviceId",
 							"required": true
 						}
 					}
@@ -287,12 +287,13 @@
 								"type": "select",
 								"datasource": "namespaces",
 								"field": "optionLabels",
-								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+								"optionLabels": "namespaces:devices_toggleButton:none:deviceName"
 							}
 						}
 					}
 				}
 			}
 		}
-	}
+	},
+	"postRender": "loadFunction:postRender.js"
 }
