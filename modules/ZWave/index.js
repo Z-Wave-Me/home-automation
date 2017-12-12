@@ -953,12 +953,13 @@ ZWave.prototype.addDSKEntry = function (entry) {
 
 				// get all remaining TLV values
 				tlvString = entry.substring(52);
+				var i = 0;
 
 				/*
 				 * Do while loop and cut out and transform all TLV entries piece by piece
 				 * until the QR string is empty
 				 */
-				while (tlvString.length > 0) {
+				while (tlvString.length > 0 && i < 50) {
 					currPos = 0;
 					valLength = 0;
 					type = null;
@@ -1002,6 +1003,15 @@ ZWave.prototype.addDSKEntry = function (entry) {
 							// add tlv entry key
 							transformedEntry[type+'_'+tlvKeys[index]] = value;
 						}
+
+						// stop loop if length is 0
+						if(_.isNumber(tlv[index+1]) && !!tlv[index+1]) {
+							_valLength = parseInt(tlvString.substring(currPos+3,currPos+ 3 + tlv[index+1]), 10);
+						    if (_valLength < 1) {
+						      	tlvString = '';
+						      	return true;
+						    }
+					    }
 						
 						// if the length of the next value is defined by the predecessor value
 						// set valLength to it's correct length for next transformation step
@@ -1014,8 +1024,11 @@ ZWave.prototype.addDSKEntry = function (entry) {
 						}
 					});
 
-					// cut out the current finished TLV entry from tlvString
-					tlvString = tlvString.substring(4+valLength);
+					if (tlvString !== '') {
+						// cut out the current finished TLV entry from tlvString
+						tlvString = tlvString.substring(4+valLength);
+					}
+					i++;
 				}
 			}
 
@@ -3317,12 +3330,18 @@ ZWave.prototype.defineHandlers = function () {
 				body: null,
 				error: null,
 				message: null
-			}
+			},
+			success = false;
 
 		try {
 			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.ZW_QR === req.dsk;}) < 0) {
-				self.addDSKEntry(req.dsk);
-				reply.body = req.dsk;
+				success = self.addDSKEntry(req.dsk);
+				if (success) {
+					reply.body = typeof req.dsk === 'string'? {dsk: req.dsk} : req.dsk;
+				} else {
+					reply.status = 404;
+					reply.message = 'Cannot add DSK entry';
+				}
 			} else {
 				reply.status = 409;
 				reply.message = 'Conflict - DSK entry already exists';
