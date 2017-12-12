@@ -3253,7 +3253,7 @@ ZWave.prototype.defineHandlers = function () {
 		// prepare request data
 		var req = request && request.query? parseToObject(request.query) : undefined,
 			reply = {
-				status: 201,
+				status: 200,
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*",
