@@ -1,23 +1,15 @@
 function modulePostRender(control) {
-    if( $('input[name=title]').val() === 'Schedule')
-	{
-	    week = getWeekArray();
-	    $('#title').val(week + ': ' + $('input[name=times_0]').val());
+    if(window.location.href.indexOf("post") > -1) {
+	    $('#title').val(getWeekArray() + ': ' + $('input[name=times_0]').val());
+
+        $(document).on("click", "input[type=checkbox]", function() {
+            $('#title').val(getWeekArray() + ': ' + $('input[name=times_0]').val());
+        });
+
+        $(document).on("blur", "input[name=times_0]", function() {
+            $('#title').val(getWeekArray() + ': ' + $('input[name=times_0]').val());
+        })        
     }
-
-    $(document).on("click", "input[type=checkbox]", function() {
-        if(window.location.href.indexOf("post") > -1) {
-            week = getWeekArray();
-            $('#title').val(week + ': ' + $('input[name=times_0]').val());
-	    }
-    });
-
-    $(document).on("blur", "input[name=times_0]", function() {
-        if(window.location.href.indexOf("post") > -1) {
-            week = getWeekArray();
-            $('#title').val(week + ': ' + $('input[name=times_0]').val());
-	    }
-    });
 }
 
 function getWeekArray() {
