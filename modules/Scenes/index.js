@@ -1,10 +1,11 @@
 /*** Scenes Z-Way HA module *******************************************
 
-Version: 1.1.1
+Version: 1.1.2
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Changed: Michael Hensche <mh@zwave.eu>
+Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
 Description:
 	Implements light scene based on virtual devices of type dimmer, switch or anothe scene
 ******************************************************************************/
@@ -35,6 +36,7 @@ Scenes.prototype.init = function (config) {
 		deviceId: "Scenes_" + this.id,
 		defaults: {
 			deviceType: "toggleButton",
+			customIcons: { "default": self.config.customicon.table[0].icon },
 			metrics: {
 				level: "on", // it is always on, but usefull to allow bind
 				icon: "scene",
