@@ -1,11 +1,11 @@
 {
 	"singleton": false,
-	"category": "automation_basic",
+	"category": "system",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName":"Schedules",
-	"version": "1.0.1",
+	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
 			"type": "git",
