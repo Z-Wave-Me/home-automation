@@ -1,8 +1,6 @@
-v2.1.1
-- format of time input field changed (HH:mm 24h)
+v1.0.1
+- Button to test schedule
+- BugFix show mobile devices and email addresses in scene select
 
-v2.2
-- can start scene many times in day
-- defined default times: 00:00 and 12:00
-- devices on new path, as example switch: this.config.devices.swithes
-- compatibility with old config
+v1.0.0
+- clone and rework from "ScheduledScene"
