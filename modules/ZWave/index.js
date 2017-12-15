@@ -3994,6 +3994,29 @@ ZWave.prototype.gateDevicesStart = function () {
 						console.log('###');
 						console.log('########################################################################################');
 					}
+
+					// update state of DSK entry if node is smart start device
+					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
+						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
+						var dskEntryIndex;
+						var dskEntry = self.dskCollection.filter(function (entry, index) {
+							dskEntryIndex = index;
+							return entry['ZW_QR_DSK'] === dsk;
+						});
+
+						if (dskEntry[0]) {
+
+							// update state and nodeId
+							dskEntry[0].state = 'included';
+							dskEntry[0].nodeId = nodeId;
+
+							// replace old DSK entry
+							self.dskCollection[dskEntryIndex] = dskEntry[0];
+
+							// save dsk collection
+							self.saveObject("dskCollection",this.dskCollection);
+						}
+					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}
@@ -4011,6 +4034,28 @@ ZWave.prototype.gateDevicesStart = function () {
 			self.controller.devices.remove(name);
 			self.controller.devices.cleanup(name);
 		});
+
+		// update state of DSK entry if node is smart start device
+		if (_id && !!_id) {
+			var dskEntryIndex;
+			var dskEntry = self.dskCollection.filter(function (entry, index) {
+				dskEntryIndex = index;
+				return entry.nodeId === _id;
+			});
+
+			if (dskEntry[0]) {
+
+				// update state and nodeId
+				dskEntry[0].state = 'pending';
+				dskEntry[0].nodeId = null;
+
+				// replace old DSK entry
+				self.dskCollection[dskEntryIndex] = dskEntry[0];
+
+				// save dsk collection
+				self.saveObject("dskCollection",this.dskCollection);
+			}
+		}
 	}, ""); 
 };
 
@@ -4186,7 +4231,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
 					title: compileTitle('Switch', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4212,6 +4257,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function (type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4241,7 +4289,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: icon,
 					title: title,
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4321,6 +4369,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4350,7 +4401,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 						level: 'off',
 						oldColor: {},
-						isFailed: isFailed
+						isFailed: false
 					}
 				}
 
@@ -4396,6 +4447,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 					
 				if (vDev_rgb) {
+					// set failed status
+					vDev_rgb.set('metrics:isFailed',isFailed);
+
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_BLUE + ".level", handleColor, "value");
@@ -4418,7 +4472,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 								level: 'off',
 								oldLevel: 'off',
-								isFailed: isFailed
+								isFailed: false
 							}
 						}
 
@@ -4516,6 +4570,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, colorId + ".level", function(type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + colorId);
@@ -4541,7 +4598,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: '',
 					level: '',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -4600,6 +4657,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
 								vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
 							}
@@ -4658,7 +4718,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: '',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -4721,6 +4781,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function (type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + sensorTypeId);
@@ -4754,7 +4817,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'meter',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4856,6 +4919,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function (type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + scaleId);
@@ -4889,7 +4955,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'meter',
 					title: compileTitle('Meter', 'Pulse', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4915,6 +4981,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (vDev) {
+						// set failed status
+						vDev.set('metrics:isFailed',isFailed);
+
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "val", function (type) {
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId);
@@ -4940,7 +5009,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'battery',
 					title: compileTitle('Battery', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4962,6 +5031,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+				
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4978,7 +5050,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'door',
 					title: compileTitle('Door Lock', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 
 				}
 			};
@@ -5002,6 +5074,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -5018,7 +5092,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'door',
 					title: compileTitle('Garage Door', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -5041,6 +5115,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "state", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -5074,7 +5151,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						metrics: {
 							icon: 'thermostat',
 							title: compileTitle("Thermostat operation", vDevIdNI),
-							isFailed: isFailed
+							isFailed: false
 						}
 					};
 
@@ -5104,6 +5181,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (m_vDev) {
+						// set failed status
+						m_vDev.set('metrics:isFailed',isFailed);
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function (type) {
 							try {
 								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -5143,7 +5222,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										max: DH.max ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
 										icon: 'thermostat',
 										title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI),
-										isFailed: isFailed
+										isFailed: false
 								}
 							}
 
@@ -5164,6 +5243,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (t_vDev[mode]) {
+								// set failed status
+								t_vDev[mode].set('metrics:isFailed',isFailed);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function (type) {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 										delete t_vDev[mode];
@@ -5190,7 +5271,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: 'alarm',
 					level: 'off',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -5266,6 +5347,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (a_vDev) {
+								// set failed status
+								a_vDev.set('metrics:isFailed',isFailed);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function (type) {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 										self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
@@ -5299,7 +5382,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: 'alarm',
 					level: 'off',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 			Object.keys(cc.data).forEach(function (notificationTypeId) {
@@ -5358,6 +5441,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									});
 
 									if (a_vDev) {
+										// set failed status
+										a_vDev.set('metrics:isFailed',isFailed);
 										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
 											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
@@ -5460,6 +5545,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 													});
 
 													if (a_vDev) {
+														// set failed status
+														a_vDev.set('metrics:isFailed',isFailed);
+
 														self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
 															if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 																self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
@@ -5512,6 +5600,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										});
 
 										if (a_vDev) {
+											// set failed status
+											a_vDev.set('metrics:isFailed',isFailed);
 											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
@@ -5568,7 +5658,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					 */
 					currentScene: '',
 					discreteStates: {},
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -5590,6 +5680,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
 					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
 						self.controller.devices.remove(devId);
@@ -5634,13 +5727,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 								setAction();
 
-								vDev.set("metrics:state", st);
+								/*vDev.set("metrics:state", st);
 								vDev.set("metrics:currentScene", cS);
 								vDev.set("metrics:keyAttribute", kA);
 								vDev.set("metrics:maxScenes", mC);
 								vDev.set("metrics:level", cL);
 								vDev.set("metrics:cnt", cnt);
-								vDev.set("metrics:type", type);
+								vDev.set("metrics:type", type);*/
+								vDev.set("metrics", {
+									state: st,
+									currentScene: cS,
+									keyAttribute: kA,
+									maxScenes: mC,
+									level: cL,
+									cnt: cnt,
+									type: type
+								});
 							}
 						} catch (e) {
 						}
@@ -5727,5 +5829,5 @@ ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
 	// update provisioning list
 	zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
 	// save z-way data
-	zway.devices.SaveData();
+	//zway.devices.SaveData();
 };
