@@ -1,12 +1,12 @@
 {
 	"singleton": false,
 	"dependencies": [],
-	"category": "automation_basic",
+	"category": "system",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName": "Rules",
-	"version": "2.5.1",
+	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -16,7 +16,20 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 		"sourceDevice": {},
-		"targets": [],
+		"targets": {
+			"elements": []
+		},
+		"delay": {},
+		"reverse": {},
+		"advanced": {
+			"activate": false,
+			"triggerOnDevicesChange" : true,
+			"eventSource" : [],
+			"logicalOperator" : " none",
+			"tests" : [],
+			"action" : {},
+			"delay": {}
+		},
 		"mail_helper": "__h_nomail__",
 		"mail_button": "__b_createmail__",
 		"mail_confirm": "__m_createmail__"
@@ -92,7 +105,7 @@
 							"device": {
 								"field": "enum",
 								"datasource": "namespaces",
-								"enum": "namespaces:devices_toggleButton:deviceId",
+								"enum": "namespaces:devices_toggleButton:none:deviceId",
 								"required": true
 							}
 						}
@@ -211,260 +224,727 @@
 					}
 				}
 			},
+			"delay": {
+				"type": "object",
+				"properties": {
+					"eventstart": {
+						"type": "text",
+						"minimum": 0,
+						"maximum": 3600,
+						"required": false
+					}
+				}
+			},
 			"targets": {
-				"type": "array",
-				"items": {
-					"type": "object",
-					"properties": {
-						"filterThen": {
-							"type": "string",
-							"enum": [
-								"switchBinary",
-								"switchMultilevel",
-								"doorlock",
-								"scene",
-								"thermostat",
-								"switchRGBW",
-								"notification"
-							],
-							"required": true
-						},
-						"switchBinary": {
+				"type": "object",
+				"properties": {
+					"elements": {
+						"type": "array",
+						"items": {
 							"type": "object",
-							"dependencies": "filterThen",
 							"properties": {
-								"target": {
+								"filterThen": {
 									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_switchBinary:deviceId",
-									"required": true
-								},
-								"status": {
-									"type": "integer",
 									"enum": [
-										"off",
-										"on"
+										"switchBinary",
+										"switchMultilevel",
+										"doorlock",
+										"scene",
+										"thermostat",
+										"switchRGBW",
+										"notification"
 									],
 									"required": true
 								},
-								"sendAction": {
-									"type": "boolean",
-									"required": true,
-									"default": false
-								}
-							}
-						},
-						"switchMultilevel": {
-							"type": "object",
-							"dependencies": "filterThen",
-							"properties": {
-								"target": {
-									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_switchMultilevel:deviceId",
-									"required": true
-								},
-								"status": {
-									"type": "integer",
-									"enum": [
-										"off",
-										"on",
-										"level"
-									],
-									"required": true
-								},
-								"level": {
-									"dependencies": "status",
-									"type": "integer",
-									"minimum": 0,
-									"maximum": 99,
-									"required": true
-								},
-								"sendAction": {
-									"type": "boolean",
-									"required": true,
-									"default": false
-								}
-							}
-						},
-						"doorlock": {
-							"type": "object",
-							"dependencies": "filterThen",
-							"properties": {
-								"target": {
-									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_doorlock:deviceId",
-									"required": true
-								},
-								"status": {
-									"type": "integer",
-									"enum": [
-										"close",
-										"open"
-									],
-									"required": true
-								},
-								"sendAction": {
-									"type": "boolean",
-									"required": true,
-									"default": false
-								}
-							}
-						},
-						"scene": {
-							"type": "object",
-							"dependencies": "filterThen",
-							"properties": {
-								"target": {
-									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_toggleButton:deviceId",
-									"required": true
-								}
-							}
-						},
-						"thermostat": {
-							"type": "object",
-							"dependencies": "filterThen",
-							"properties": {
-								"target": {
-									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_thermostat:deviceId",
-									"required": true
-								},
-								"status": {
-									"enum": [
-										5,
-										5.5,
-										6,
-										6.5,
-										7,
-										7.5,
-										8,
-										8.5,
-										9,
-										9.5,
-										10,
-										10.5,
-										11,
-										11.5,
-										12,
-										12.5,
-										13,
-										13.5,
-										14,
-										14.5,
-										15,
-										15.5,
-										16,
-										16.5,
-										17,
-										17.5,
-										18,
-										18.5,
-										19,
-										19.5,
-										20,
-										20.5,
-										21,
-										21.5,
-										22,
-										22.5,
-										23,
-										23.5,
-										24,
-										24.5,
-										25,
-										25.5,
-										26,
-										26.5,
-										27
-									]
-								},
-								"sendAction": {
-									"type": "boolean",
-									"required": true,
-									"default": false
-								}
-							}
-						},
-						"switchRGBW": {
-							"type": "object",
-							"dependencies": "filterThen",
-							"properties": {
-								"target": {
-									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_switchRGBW:deviceId",
-									"required": true
-								},
-								"status": {
-									"type": "integer",
-									"enum": [
-										"off",
-										"on",
-										"color"
-									],
-									"required": true,
-									"default": "on"
-								},
-								"color": {
+								"switchBinary": {
 									"type": "object",
-									"dependencies": "status",
 									"properties": {
-										"red": {
-											"type": "integer",
-											"minimum": 0,
-											"maximum": 255,
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_switchBinary:deviceId",
 											"required": true
 										},
-										"green": {
+										"status": {
 											"type": "integer",
-											"minimum": 0,
-											"maximum": 255,
+											"enum": [
+												"off",
+												"on"
+											],
 											"required": true
 										},
-										"blue": {
+										"sendAction": {
+											"type": "boolean",
+											"required": true,
+											"default": false
+										}
+									}
+								},
+								"switchMultilevel": {
+									"type": "object",
+									"properties": {
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_switchMultilevel:deviceId",
+											"required": true
+										},
+										"status": {
+											"type": "integer",
+											"enum": [
+												"off",
+												"on",
+												"level"
+											],
+											"required": true
+										},
+										"level": {
+											"dependencies": "status",
 											"type": "integer",
 											"minimum": 0,
-											"maximum": 255,
+											"maximum": 99,
+											"required": true
+										},
+										"sendAction": {
+											"type": "boolean",
+											"required": true,
+											"default": false
+										}
+									}
+								},
+								"doorlock": {
+									"type": "object",
+									"properties": {
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_doorlock:deviceId",
+											"required": true
+										},
+										"status": {
+											"type": "integer",
+											"enum": [
+												"close",
+												"open"
+											],
+											"required": true
+										},
+										"sendAction": {
+											"type": "boolean",
+											"required": true,
+											"default": false
+										}
+									}
+								},
+								"scene": {
+									"type": "object",
+									"properties": {
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_toggleButton:none:deviceId",
 											"required": true
 										}
 									}
 								},
-								"sendAction": {
-									"type": "boolean",
-									"required": true,
-									"default": false
-								}
-							}
-						},
-						"notification": {
-							"type": "object",
-							"dependencies": "filterThen",
-							"properties": {
-								"target": {
+								"thermostat": {
+									"type": "object",
+									"properties": {
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_thermostat:deviceId",
+											"required": true
+										},
+										"status": {
+											"enum": [
+												5,
+												5.5,
+												6,
+												6.5,
+												7,
+												7.5,
+												8,
+												8.5,
+												9,
+												9.5,
+												10,
+												10.5,
+												11,
+												11.5,
+												12,
+												12.5,
+												13,
+												13.5,
+												14,
+												14.5,
+												15,
+												15.5,
+												16,
+												16.5,
+												17,
+												17.5,
+												18,
+												18.5,
+												19,
+												19.5,
+												20,
+												20.5,
+												21,
+												21.5,
+												22,
+												22.5,
+												23,
+												23.5,
+												24,
+												24.5,
+												25,
+												25.5,
+												26,
+												26.5,
+												27
+											]
+										},
+										"sendAction": {
+											"type": "boolean",
+											"required": true,
+											"default": false
+										}
+									}
+								},
+								"switchRGBW": {
+									"type": "object",
+									"properties": {
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_switchRGBW:deviceId",
+											"required": true
+										},
+										"status": {
+											"type": "integer",
+											"enum": [
+												"off",
+												"on",
+												"color"
+											],
+											"required": true,
+											"default": "on"
+										},
+										"color": {
+											"type": "object",
+											"dependencies": "status",
+											"properties": {
+												"red": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 255,
+													"required": true
+												},
+												"green": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 255,
+													"required": true
+												},
+												"blue": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 255,
+													"required": true
+												}
+											}
+										},
+										"sendAction": {
+											"type": "boolean",
+											"required": true,
+											"default": false
+										}
+									}
+								},
+								"notification": {
+									"type": "object",
+									"properties": {
+										"target": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_toggleButton:notification:push:deviceId",
+											"required": false
+										},
+										"mail_to_input": {
+											"type": "string",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_toggleButton:notification:email:deviceId",
+											"required": false
+										},
+										"message": {
+											"required": false
+										}
+									}
+								},
+								"reverseLVL": {
 									"type": "string",
-									"datasource": "namespaces",
-									"enum": "namespaces:devices_toggleButton:notification:push:deviceId",
-									"required": false
+									"default": "undefined"
+								}
+							},
+							"dependencies": {
+								"switchBinary": ["filterThen"],
+								"switchMultilevel": ["filterThen"],
+								"doorlock": ["filterThen"],
+								"scene": ["filterThen"],
+								"thermostat": ["filterThen"],
+								"switchRGBW": ["filterThen"],
+								"notification": ["filterThen"]
+							}
+						}
+					}
+				}
+			},
+			"advanced": {
+				"type": "object",
+				"properties": {
+					"activate": {
+						"type": "boolean",
+						"default": false
+					},
+					"logicalOperator" : {
+						"type" : "string",
+						"enum" : [" none", "and", "or"],
+						"default" : " none",
+						"required" : true
+					},
+					"tests" : {
+						"type" : "array",
+						"items" : {
+							"type" : "object",
+							"properties" : {
+								"testType" : {
+									"type" : "string",
+									"enum" : [
+										"binary",
+										"multilevel",
+										"remote",
+										"sensorDiscrete",
+										"time",
+										"nested"
+									],
+									"required" : true,
+									"default" : "binary"
 								},
-								"mail_to_input": {
-									"required": false
+								"testBinary" : {
+									"type" : "object",
+									"dependencies" : "testType",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
+											"required" : true
+										},
+										"testValue" : {
+											"type" : "string",
+											"enum" : ["off", "on"],
+											"required" : true,
+											"default" : "on"
+										}
+									}
 								},
-								"message": {
-									"required": false
+								"testMultilevel" : {
+									"type" : "object",
+									"dependencies" : "testType",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_battery:deviceId",
+											"required" : true
+										},
+										"testOperator" : {
+											"type" : "string",
+											"enum" : ["=", "!=", ">", ">=", "<", "<="],
+											"required" : true
+										},
+										"testValue" : {
+											"type" : "number",
+											"required" : true
+										}
+									}
+								},
+								"testRemote" : {
+									"type" : "object",
+									"dependencies" : "testType",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_switchControl:deviceId,namespaces:devices_toggleButton:deviceId",
+											"required" : true
+										},
+										"testValue" : {
+											"type" : "string",
+											"enum" : ["off", "on", "upstart", "upstop", "downstart", "downstop"],
+											"required" : true,
+											"default" : "on"
+										}
+									}
+								},
+								"testSensorDiscrete": {
+									"type": "object",
+									"dependencies" : "testType",
+									"properties": {
+										"device": {
+											"field": "enum",
+											"datasource": "namespaces",
+											"enum": "namespaces:devices_sensorDiscrete:deviceId",
+											"required": true
+										},
+										"testValue": {
+											"type": "string",
+											"required": true
+										}
+									}
+								},
+								"testTime" : {
+									"type" : "object",
+									"dependencies" : "testType",
+									"properties" : {
+										"testOperator" : {
+											"type" : "string",
+											"enum" : [">=", "<="],
+											"required" : true
+										},
+										"testValue" : {
+											"format" : "time",
+											"type" : "string",
+											"required" : true
+										}
+									}
+								},
+								"testNested" : {
+									"type" : "object",
+									"dependencies" : "testType",
+									"properties" : {
+										"logicalOperator" : {
+											"type" : "string",
+											"enum" : ["and", "or"],
+											"default" : "or",
+											"required" : true
+										},
+										"tests" : {
+											"type" : "array",
+											"items" : {
+												"type" : "object",
+												"properties" : {
+													"testType" : {
+														"type" : "string",
+														"enum" : [
+															"binary",
+															"multilevel",
+															"remote",
+															"sensorDiscrete",
+															"time"
+														],
+														"required" : true,
+														"default" : "binary"
+													},
+													"testBinary" : {
+														"type" : "object",
+														"dependencies" : "testType",
+														"properties" : {
+															"device" : {
+																"field" : "enum",
+																"datasource" : "namespaces",
+																"enum" : "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
+																"required" : true
+															},
+															"testValue" : {
+																"type" : "string",
+																"enum" : ["off", "on"],
+																"required" : true
+															}
+														}
+													},
+													"testMultilevel" : {
+														"type" : "object",
+														"dependencies" : "testType",
+														"properties" : {
+															"device" : {
+																"field" : "enum",
+																"datasource" : "namespaces",
+																"enum" : "namespaces:devices_sensorMultilevel:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_battery:deviceId",
+																"required" : true
+															},
+															"testOperator" : {
+																"type" : "string",
+																"enum" : ["=", "!=", ">", ">=", "<", "<="],
+																"required" : true
+															},
+															"testValue" : {
+																"type" : "number",
+																"required" : true
+															}
+														}
+													},
+													"testRemote" : {
+														"type" : "object",
+														"dependencies" : "testType",
+														"properties" : {
+															"device" : {
+																"field" : "enum",
+																"datasource" : "namespaces",
+																"enum" : "namespaces:devices_switchControl:deviceId, namespaces:devices_toggleButton:deviceId",
+																"required" : true
+															},
+															"testValue" : {
+																"type" : "string",
+																"enum" : ["off", "on", "upstart", "upstop", "downstart", "downstop"],
+																"required" : true
+															}
+														}
+													},
+													"testSensorDiscrete": {
+														"type": "object",
+														"dependencies": "testType",
+														"properties": {
+															"device": {
+																"field": "enum",
+																"datasource": "namespaces",
+																"enum": "namespaces:devices_sensorDiscrete:deviceId",
+																"required": true
+															},
+															"testValue": {
+																"type": "string",
+																"required": true
+															}
+														}
+													},
+													"testTime" : {
+														"type" : "object",
+														"dependencies" : "testType",
+														"properties" : {
+															"testOperator" : {
+																"type" : "string",
+																"enum" : [">=", "<="],
+																"required" : true
+															},
+															"testValue" : {
+																"format" : "time",
+																"type" : "string",
+																"required" : true
+															}
+														}
+													}
+												}
+											}
+										}
+									}
 								}
 							}
 						}
+					},
+					"delay": {
+						"type": "object",
+						"properties": {
+							"eventstart": {
+								"type": "text",
+								"minimum": 0,
+								"maximum": 3600,
+								"required": false
+							}
+						}
+					},
+					"action" : {
+						"type" : "object",
+						"properties" : {
+							"switches" : {
+								"type" : "array",
+								"items" : {
+									"type" : "object",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_switchBinary:deviceId",
+											"required" : true
+										},
+										"status" : {
+											"type" : "string",
+											"required" : true,
+											"enum" : ["off", "on"],
+											"default" : "on"
+										},
+										"sendAction" : {
+											"type" : "boolean",
+											"required" : true,
+											"default" : false
+										},
+										"reverseLVL": {
+											"type": "string",
+											"default": "undefined"
+										}
+									}
+								}
+							},
+							"dimmers" : {
+								"type" : "array",
+								"items" : {
+									"type" : "object",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_switchMultilevel:deviceId",
+											"required" : true
+										},
+										"status" : {
+											"required" : true,
+											"minimum" : 0,
+											"maximum" : 99
+										},
+										"sendAction" : {
+											"type" : "boolean",
+											"required" : true,
+											"default" : false
+										},
+										"reverseLVL": {
+											"type": "string",
+											"default": "undefined"
+										}
+									}
+								}
+							},
+							"thermostats" : {
+								"type" : "array",
+								"items" : {
+									"type" : "object",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_thermostat:deviceId",
+											"required" : true
+										},
+										"status" : {
+											"required" : true,
+											"minimum" : 0,
+											"maximum" : 99
+										},
+										"sendAction" : {
+											"type" : "boolean",
+											"required" : true,
+											"default" : false
+										},
+										"reverseLVL": {
+											"type": "string",
+											"default": "undefined"
+										}
+									}
+								}
+							},
+							"locks" : {
+								"type" : "array",
+								"items" : {
+									"type" : "object",
+									"properties" : {
+										"device" : {
+											"field" : "enum",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_doorlock:deviceId",
+											"required" : true
+										},
+										"status" : {
+											"type" : "string",
+											"required" : true,
+											"enum" : ["close", "open"],
+											"default" : "open"
+										},
+										"sendAction" : {
+											"type" : "boolean",
+											"required" : true,
+											"default" : false
+										},
+										"reverseLVL": {
+											"type": "string",
+											"default": "undefined"
+										}
+									}
+								}
+							},
+							"scenes" : {
+								"type" : "array",
+								"items" : {
+									"field" : "enum",
+									"datasource" : "namespaces",
+									"enum" : "namespaces:devices_toggleButton:none:deviceId",
+									"required" : true
+								}
+							},
+							"notification" : {
+								"type" : "array",
+								"items" : {
+									"type" : "object",
+									"properties" : {
+										"target" : {
+											"type" : "string",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_toggleButton:notification:push:deviceId",
+											"required" : false
+										},
+										"mail_to_input" : {
+											"type" : "string",
+											"datasource" : "namespaces",
+											"enum" : "namespaces:devices_toggleButton:notification:email:deviceId",
+											"required" : false
+										},
+										"message" : {
+											"required" : true
+										}
+									}
+								}
+							}
+						},
+						"required" : false
+					},
+					"expertSettings" : {
+						"type" : "boolean",
+						"default" : false
+					},
+					"eventSource" : {
+						"type" : "array",
+						"items" : {
+							"field" : "enum",
+							"datasource" : "namespaces",
+							"enum" : "namespaces:devices_toggleButton:deviceId",
+							"required" : true
+						}
+					},
+					"triggerOnDevicesChange" : {
+						"type" : "boolean",
+						"default" : true
+					}
+				},
+				"dependencies": {
+					"logicalOperator": ["activate"],
+					"action": ["activate"],
+					"tests": ["activate"],
+					"expertSettings": ["activate"],
+					"triggerOnDevicesChange" : "expertSettings",
+					"eventSource" : "expertSettings"
+				}
+			},
+			"reverse": {
+				"type": "object",
+				"properties": {
+					"activate": {
+						"type": "boolean",
+						"required": false
 					}
 				}
 			}
 		}
 	},
 	"options": {
+		"renderform": "true",
 		"fields": {
 			"sourceDevice": {
 				"label": "__l_event_sources__",
@@ -537,7 +1017,7 @@
 								"noneLabel": "__l_choose_dev__",
 								"datasource": "namespaces",
 								"field": "optionLabels",
-								"optionLabels": "namespaces:devices_toggleButton:deviceName"
+								"optionLabels": "namespaces:devices_toggleButton:none:deviceName"
 							}
 						}
 					},
@@ -661,218 +1141,228 @@
 					}
 				}
 			},
+			"delay": {
+				"label": "__l_delay__",
+				"fields": {
+					"eventstart": {
+						"type": "number",
+						"helper": "__h_delay__"
+					}
+				}
+			},
 			"targets": {
 				"label": "__l_actors__",
 				"fields": {
-					"item": {
+					"elements": {
 						"fields": {
-							"filterThen": {
-								"type": "select",
-								"removeDefaultNone": false,
-								"noneLabel": "__l_choose__",
-								"label": "__l_filter__",
-								"optionLabels": [
-									"__switchBinary__",
-									"__switchMultilevel__",
-									"__doorlock__",
-									"__l_scene__",
-									"__thermostat__",
-									"__switchRGBW__",
-									"__l_notification__"
-								]
-							},
-							"switchBinary": {
-								"dependencies": {
-									"filterThen": "switchBinary"
-								},
+							"item": {
 								"fields": {
-									"target": {
+									"filterThen": {
 										"type": "select",
 										"removeDefaultNone": false,
-										"noneLabel": "__l_choose_dev__",
-										"label": "__l_target_device__",
-										"datasource": "namespaces",
-										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_switchBinary:deviceName"
-									},
-									"status": {
-										"label": "__l_action__",
+										"noneLabel": "__l_choose__",
+										"label": "__l_filter__",
 										"optionLabels": [
-											"__off__",
-											"__on__"
+											"__switchBinary__",
+											"__switchMultilevel__",
+											"__doorlock__",
+											"__l_scene__",
+											"__thermostat__",
+											"__switchRGBW__",
+											"__l_notification__"
 										]
 									},
-									"sendAction": {
-										"type": "checkbox",
-										"rightLabel": "__l_sendAction__",
-										"helper": "__h_sendAction__"
-									}
-								}
-							},
-							"switchMultilevel": {
-								"dependencies": {
-									"filterThen": "switchMultilevel"
-								},
-								"fields": {
-									"target": {
-										"type": "select",
-										"removeDefaultNone": false,
-										"noneLabel": "__l_choose_dev__",
-										"label": "__l_target_device__",
-										"datasource": "namespaces",
-										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
-									},
-									"status": {
-										"type": "select",
-										"label": "__l_level__",
-										"optionLabels": [
-											"__off__",
-											"__on__",
-											"__level__"
-										]
-									},
-									"level": {
+									"switchBinary": {
 										"dependencies": {
-											"status": [
-												"level"
-											]
-										}
-									},
-									"sendAction": {
-										"type": "checkbox",
-										"rightLabel": "__l_sendAction__",
-										"helper": "__h_sendAction__"
-									}
-								}
-							},
-							"doorlock": {
-								"dependencies": {
-									"filterThen": "doorlock"
-								},
-								"fields": {
-									"target": {
-										"type": "select",
-										"removeDefaultNone": false,
-										"noneLabel": "__l_choose_dev__",
-										"label": "__l_target_device__",
-										"datasource": "namespaces",
-										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_doorlock:deviceName"
-									},
-									"status": {
-										"label": "__l_action__",
-										"optionLabels": [
-											"__close__",
-											"__open__"
-										]
-									},
-									"sendAction": {
-										"type": "checkbox",
-										"rightLabel": "__l_sendAction__",
-										"helper": "__h_sendAction__"
-									}
-								}
-							},
-							"scene": {
-								"dependencies": {
-									"filterThen": "scene"
-								},
-								"fields": {
-									"target": {
-										"type": "select",
-										"removeDefaultNone": false,
-										"noneLabel": "__l_choose_dev__",
-										"label": "__l_scene__",
-										"label": "__l_scene__",
-										"datasource": "namespaces",
-										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_toggleButton:deviceName"
-									}
-								}
-							},
-							"thermostat": {
-								"dependencies": {
-									"filterThen": "thermostat"
-								},
-								"fields": {
-									"target": {
-										"type": "select",
-										"removeDefaultNone": false,
-										"noneLabel": "__l_choose_dev__",
-										"label": "__l_target_device__",
-										"datasource": "namespaces",
-										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_thermostat:deviceName"
-									},
-									"status": {
-										"type": "select",
-										"label": "__l_level__"
-									},
-									"sendAction": {
-										"type": "checkbox",
-										"rightLabel": "__l_sendAction__",
-										"helper": "__h_sendAction__"
-									}
-								}
-							},
-							"switchRGBW": {
-								"dependencies": {
-									"filterThen": "switchRGBW"
-								},
-								"fields": {
-									"target": {
-										"type": "select",
-										"removeDefaultNone": false,
-										"noneLabel": "__l_choose_dev__",
-										"label": "__l_target_device__",
-										"datasource": "namespaces",
-										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_switchRGBW:deviceName"
-									},
-									"status": {
-										"type": "select",
-										"label": "__l_level__",
-										"optionLabels": [
-											"__off__",
-											"__on__",
-											"__colors__"
-										]
-									},
-									"color": {
-										"dependencies": {
-											"status": [
-												"color"
-											]
+											"filterThen": "switchBinary"
 										},
-										"label": "__colors__",
 										"fields": {
-											"red": {
-												"label": "__l_red__",
-												"helper": "__h_color__"
+											"target": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"label": "__l_target_device__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_switchBinary:deviceName"
 											},
-											"green": {
-												"label": "__l_green__",
-												"helper": "__h_color__"
+											"status": {
+												"label": "__l_action__",
+												"optionLabels": [
+													"__off__",
+													"__on__"
+												]
 											},
-											"blue": {
-												"label": "__l_blue__",
-												"helper": "__h_color__"
+											"sendAction": {
+												"type": "checkbox",
+												"rightLabel": "__l_sendAction__",
+												"helper": "__h_sendAction__"
 											}
 										}
 									},
-									"sendAction": {
-										"type": "checkbox",
-										"rightLabel": "__l_sendAction__",
-										"helper": "__h_sendAction__"
-									}
-								}
-							},
-							"notification": {
-								"dependencies": {
-									"filterThen": "notification"
-								},
-								"fields": {
+									"switchMultilevel": {
+										"dependencies": {
+											"filterThen": "switchMultilevel"
+										},
+										"fields": {
+											"target": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"label": "__l_target_device__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+											},
+											"status": {
+												"type": "select",
+												"label": "__l_level__",
+												"optionLabels": [
+													"__off__",
+													"__on__",
+													"__level__"
+												]
+											},
+											"level": {
+												"dependencies": {
+													"status": [
+														"level"
+													]
+												}
+											},
+											"sendAction": {
+												"type": "checkbox",
+												"rightLabel": "__l_sendAction__",
+												"helper": "__h_sendAction__"
+											}
+										}
+									},
+									"doorlock": {
+										"dependencies": {
+											"filterThen": "doorlock"
+										},
+										"fields": {
+											"target": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"label": "__l_target_device__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_doorlock:deviceName"
+											},
+											"status": {
+												"label": "__l_action__",
+												"optionLabels": [
+													"__close__",
+													"__open__"
+												]
+											},
+											"sendAction": {
+												"type": "checkbox",
+												"rightLabel": "__l_sendAction__",
+												"helper": "__h_sendAction__"
+											}
+										}
+									},
+									"scene": {
+										"dependencies": {
+											"filterThen": "scene"
+										},
+										"fields": {
+											"target": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"label": "__l_scene__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_toggleButton:none:deviceName"
+											}
+										}
+									},
+									"thermostat": {
+										"dependencies": {
+											"filterThen": "thermostat"
+										},
+										"fields": {
+											"target": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"label": "__l_target_device__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_thermostat:deviceName"
+											},
+											"status": {
+												"type": "select",
+												"label": "__l_level__"
+											},
+											"sendAction": {
+												"type": "checkbox",
+												"rightLabel": "__l_sendAction__",
+												"helper": "__h_sendAction__"
+											}
+										}
+									},
+									"switchRGBW": {
+										"dependencies": {
+											"filterThen": "switchRGBW"
+										},
+										"fields": {
+											"target": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"label": "__l_target_device__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_switchRGBW:deviceName"
+											},
+											"status": {
+												"type": "select",
+												"label": "__l_level__",
+												"optionLabels": [
+													"__off__",
+													"__on__",
+													"__colors__"
+												]
+											},
+											"color": {
+												"dependencies": {
+													"status": [
+														"color"
+													]
+												},
+												"label": "__colors__",
+												"fields": {
+													"red": {
+														"label": "__l_red__",
+														"helper": "__h_color__"
+													},
+													"green": {
+														"label": "__l_green__",
+														"helper": "__h_color__"
+													},
+													"blue": {
+														"label": "__l_blue__",
+														"helper": "__h_color__"
+													}
+												}
+											},
+											"sendAction": {
+												"type": "checkbox",
+												"rightLabel": "__l_sendAction__",
+												"helper": "__h_sendAction__"
+											}
+										}
+									},
+									"notification": {
+										"dependencies": {
+											"filterThen": "notification"
+										},
+										"fields": {
 											"target": {
 												"type": "select",
 												"removeDefaultNone": false,
@@ -884,18 +1374,484 @@
 												"fieldClass": "target_select"
 											},
 											"mail_to_input": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_target__",
+												"datasource": "namespaces",
 												"label": "__l_notification_mail__",
+												"optionLabels": "namespaces:devices_toggleButton:notification:email:deviceId",
 												"fieldClass": "mail_input"
+											},
+											"message": {
+												"type": "textarea",
+												"label": "__l_notification_message__",
+												"helper": "__h_notification_message__",
+												"fieldClass": "not_message"
+											}
+										}
 									},
-									"message": {
-										"type": "textarea",
-										"label": "__l_notification_message__",
-										"helper": "__h_notification_message__",
-										"fieldClass": "not_message"
+									"reverseLVL": {
+										"hidden": true
 									}
 								}
 							}
 						}
+					}
+				}
+			},
+			"advanced": {
+				"label": "__l_advanced__",
+				"fields": {
+					"activate": {
+						"type": "checkbox",
+						"rightLabel": "__c_advanced__"
+					},
+					"logicalOperator" : {
+						"label" : "__l_logicalOperator__",
+						"optionLabels" : ["__p_select__", "__and__", "__or__"],
+						"helper" : "__h_logicalOperator__",
+						"type" : "select"
+					},
+					"tests" : {
+						"label" : "__l_tests__",
+						"fields" : {
+							"item" : {
+								"fields" : {
+									"testType" : {
+										"type" : "select",
+										"label" : "__l_testType__",
+										"optionLabels" : [
+											"__l_testBinary__",
+											"__l_testMultilevel__",
+											"__l_testRemote__",
+											"__l_sensorDiscrete__",
+											"__l_testTime__",
+											"__l_testNested__"
+										],
+										"default" : ""
+									},
+									"testBinary" : {
+										"dependencies" : {
+											"testType" : "binary"
+										},
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+											},
+											"testValue" : {
+												"optionLabels" : ["__off__", "__on__"]
+											}
+										}
+									},
+									"testMultilevel" : {
+										"dependencies" : {
+											"testType" : "multilevel"
+										},
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_battery:deviceName"
+											},
+											"testOperator" : {
+												"type" : "select",
+												"optionLabels" : ["=", "≠", ">", "≥", "<", "≤"]
+											}
+										}
+									},
+									"testRemote" : {
+										"dependencies" : {
+											"testType" : "remote"
+										},
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName"
+											},
+											"testValue" : {
+												"optionLabels" : ["__off__", "__on__", "__upstart__", "__upstop__", "__downstart__", "__downstop__"]
+											}
+										}
+									},
+									"testSensorDiscrete": {
+										"dependencies": {
+											"testType" : "sensorDiscrete"
+										},
+										"fields": {
+											"device": {
+												"type": "select",
+												"removeDefaultNone": false,
+												"noneLabel": "__l_choose_dev__",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_sensorDiscrete:deviceName"
+											},
+											"testValue": {
+												"label": "__l_controller_action__",
+												"helper": "__h_controller_action__"
+											}
+										}
+									},
+									"testTime" : {
+										"dependencies" : {
+											"testType" : "time"
+										},
+										"helper" : "__h_testTime__",
+										"fields" : {
+											"testOperator" : {
+												"type" : "select",
+												"optionLabels" : ["≥", "≤"]
+											},
+											"testValue" : {
+												"type" : "time",
+												"maskString" : "99:99",
+												"dateFormat" : "HH:mm"
+											}
+										}
+									},
+									"testNested" : {
+										"dependencies" : {
+											"testType" : "nested"
+										},
+										"helper" : "__h_testNested__",
+										"fields" : {
+											"logicalOperator" : {
+												"label" : "__l_logicalOperator__",
+												"optionLabels" : ["__and__", "__or__"],
+												"helper" : "__h_logicalOperator__",
+												"type" : "select"
+											},
+											"tests" : {
+												"fields" : {
+													"item" : {
+														"fields" : {
+															"testType" : {
+																"label" : "__l_testType__",
+																"optionLabels" : [
+																	"__l_testBinary__",
+																	"__l_testMultilevel__",
+																	"__l_testRemote__",
+																	"__l_sensorDiscrete__",
+																	"__l_testTime__"
+																],
+																"type" : "select",
+																"default" : ""
+															},
+															"testBinary" : {
+																"dependencies" : {
+																	"testType" : "binary"
+																},
+																"fields" : {
+																	"device" : {
+																		"label" : "",
+																		"type" : "select",
+																		"datasource" : "namespaces",
+																		"field" : "optionLabels",
+																		"optionLabels" : "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
+																	},
+																	"testValue" : {
+																		"optionLabels" : ["__off__", "__on__"]
+																	}
+																}
+															},
+															"testMultilevel" : {
+																"dependencies" : {
+																	"testType" : "multilevel"
+																},
+																"fields" : {
+																	"device" : {
+																		"label" : "",
+																		"type" : "select",
+																		"datasource" : "namespaces",
+																		"field" : "optionLabels",
+																		"optionLabels" : "namespaces:devices_sensorMultilevel:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_battery:deviceName"
+																	},
+																	"testOperator" : {
+																		"type" : "select",
+																		"optionLabels" : ["=", "≠", ">", "≥", "<", "≤"]
+																	}
+																}
+															},
+															"testRemote" : {
+																"dependencies" : {
+																	"testType" : "remote"
+																},
+																"fields" : {
+																	"device" : {
+																		"label" : "",
+																		"type" : "select",
+																		"datasource" : "namespaces",
+																		"field" : "optionLabels",
+																		"optionLabels" : "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName"
+																	},
+																	"testValue" : {
+																		"optionLabels" : ["__off__", "__on__", "__upstart__", "__upstop__", "__downstart__", "__downstop__"]
+																	}
+																}
+															},
+															"testSensorDiscrete": {
+																"dependencies": {
+																	"testType" : "sensorDiscrete"
+																},
+																"fields": {
+																	"device": {
+																		"type": "select",
+																		"removeDefaultNone": false,
+																		"noneLabel": "__l_choose_dev__",
+																		"datasource": "namespaces",
+																		"field": "optionLabels",
+																		"optionLabels": "namespaces:devices_sensorDiscrete:deviceName"
+																	},
+																	"testValue": {
+																		"label": "__l_controller_action__",
+																		"helper": "__h_controller_action__"
+																	}
+																}
+															},
+															"testTime" : {
+																"dependencies" : {
+																	"testType" : "time"
+																},
+																"helper" : "__h_testTime__",
+																"fields" : {
+																	"testValue" : {
+																		"type" : "time",
+																		"maskString" : "99:99",
+																		"dateFormat" : "HH:mm"
+																	},
+																	"testOperator" : {
+																		"type" : "select",
+																		"optionLabels" : ["≥", "≤"]
+																	}
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"delay": {
+						"label": "__l_delay__",
+						"fields": {
+							"eventstart": {
+								"type": "number",
+								"helper": "__h_delay__"
+							}
+						}
+					},
+					"action" : {
+						"label" : "__l_logical_action__",
+						"fields" : {
+							"switches" : {
+								"label" : "__l_switches__",
+								"fields" : {
+									"item" : {
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_switchBinary:deviceName"
+											},
+											"status" : {
+												"label" : "",
+												"optionLabels" : ["__off__", "__on__"]
+											},
+											"sendAction" : {
+												"type" : "checkbox",
+												"rightLabel" : "__l_logical_sendAction__",
+												"helper" : "__h_logical_sendAction__"
+											},
+											"reverseLVL": {
+												"hidden": true
+											}
+										}
+									}
+								}
+							},
+							"dimmers" : {
+								"label" : "__l_dimmers__",
+								"fields" : {
+									"item" : {
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_switchMultilevel:deviceName"
+											},
+											"status" : {
+												"label" : "__l_status__",
+												"type" : "integer"
+											},
+											"sendAction" : {
+												"type" : "checkbox",
+												"rightLabel" : "__l_logical_sendAction__",
+												"helper" : "__h_logical_sendAction__"
+											},
+											"reverseLVL": {
+												"hidden": true
+											}
+										}
+									}
+								}
+							},
+							"thermostats" : {
+								"label" : "__l_thermostats__",
+								"fields" : {
+									"item" : {
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_thermostat:deviceName"
+											},
+											"status" : {
+												"label" : "__l_status__",
+												"type" : "integer"
+											},
+											"sendAction" : {
+												"type" : "checkbox",
+												"rightLabel" : "__l_logical_sendAction__",
+												"helper" : "__h_logical_sendAction__"
+											},
+											"reverseLVL": {
+												"hidden": true
+											}
+										}
+									}
+								}
+							},
+							"locks" : {
+								"label" : "__l_locks__",
+								"fields" : {
+									"item" : {
+										"fields" : {
+											"device" : {
+												"label" : "",
+												"type" : "select",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_doorlock:deviceName"
+											},
+											"status" : {
+												"label" : "",
+												"optionLabels" : ["__logical_close__", "__logical_open__"]
+											},
+											"sendAction" : {
+												"type" : "checkbox",
+												"rightLabel" : "__l_logical_sendAction__",
+												"helper" : "__h_logical_sendAction__"
+											},
+											"reverseLVL": {
+												"hidden": true
+											}
+										}
+									}
+								}
+							},
+							"scenes" : {
+								"label" : "__l_scenes__",
+								"fields" : {
+									"item" : {
+										"type" : "select",
+										"datasource" : "namespaces",
+										"field" : "optionLabels",
+										"optionLabels" : "namespaces:devices_toggleButton:none:deviceName"
+									}
+								}
+							},
+							"notification" : {
+								"label" : "__l_notification__",
+								"fields" : {
+									"item" : {
+										"fields" : {
+											"target" : {
+												"type" : "select",
+												"removeDefaultNone" : false,
+												"noneLabel" : "__l_choose_target__",
+												"label" : "__l_notification_device__",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_toggleButton:notification:push:deviceId",
+												"fieldClass" : "target_select"
+											},
+											"mail_to_input" : {
+												"type" : "select",
+												"removeDefaultNone" : false,
+												"noneLabel" : "__l_choose_target__",
+												"datasource" : "namespaces",
+												"field" : "optionLabels",
+												"optionLabels" : "namespaces:devices_toggleButton:notification:email:deviceId",
+												"label" : "__l_notification_mail__",
+												"fieldClass" : "mail_input"
+											},
+											"message" : {
+												"type" : "textarea",
+												"label" : "__l_notification_message__",
+												"helper" : "__h_notification_message__",
+												"fieldClass" : "not_message"
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					"expertSettings" : {
+						"type" : "checkbox",
+						"rightLabel" : "__rl_expertSettings__",
+						"helper" : "__h_expertSettings__"
+					},
+					"eventSource" : {
+						"dependencies" : {
+							"expertSettings" : "true"
+						},
+						"label" : "__l_eventSource__",
+						"datasource" : "namespaces",
+						"fields" : {
+							"item" : {
+								"type" : "select",
+								"datasource" : "namespaces",
+								"field" : "optionLabels",
+								"optionLabels" : "namespaces:devices_toggleButton:deviceName"
+							}
+						}
+					},
+					"triggerOnDevicesChange" : {
+						"dependencies" : {
+							"expertSettings" : "true"
+						},
+						"type" : "checkbox",
+						"rightLabel" : "__rl_options__",
+						"helper" : "__h_triggerOnDevicesChange__"
+					}
+				}
+			},
+			"reverse": {
+				"label": "__l_reverse__",
+				"fields": {
+					"activate": {
+						"type": "checkbox",
+						"rightLabel": "__c_reverse__"
 					}
 				}
 			}

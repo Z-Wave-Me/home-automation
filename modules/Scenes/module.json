@@ -1,12 +1,12 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"category": "automation_basic",
+	"category": "system",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName":"Scenes",
-	"version": "1.1.1",
+	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -19,7 +19,14 @@
 		"dimmers": [],
 		"thermostats": [],
 		"locks":[],
-		"scenes": []
+		"scenes": [],
+		"customicon": {
+			"table": [
+				{
+					"icon": ""
+				}
+			]
+		}
 	},
 	"schema": {
 		"type": "object",
@@ -128,12 +135,42 @@
 				"items": {
 					"field": "enum",
 					"datasource": "namespaces",
-					"enum": "namespaces:devices_toggleButton:deviceId",
+					"enum": "namespaces:devices_toggleButton:none:deviceId",
 					"required": true
 				}
+			},
+			"customicon": {
+				"$ref": "#/definitions/customicon",
+				"type": "object"
+			},
+			"files":{
+				"type": "array",
+				"title": "__l_files__"
 			}
 		},
-		"required": false
+		"required": false,
+		"definitions" : {
+			"customicon": {
+				"properties": {
+					"table": {
+						"items": {
+							"properties": {
+								"icon": {
+									"title": "__t_icon__",
+									"type": "string"
+								},
+								"preview": {
+									"title": "__t_preview__",
+									"type": "image"
+								}
+							},
+							"type": "object"
+						},
+						"type": "array"
+					}
+				}
+			}
+		}
 	},
 	"options": {
 		"fields": {
@@ -242,10 +279,54 @@
 						"type": "select",
 						"datasource": "namespaces",
 						"field": "optionLabels",
-						"optionLabels": "namespaces:devices_toggleButton:deviceName"
+						"optionLabels": "namespaces:devices_toggleButton:none:deviceName"
 					}
 				}
+			},
+			"customicon": {
+				"$ref": "#/definitions/customicon",
+				"label": "__l_icon__",
+				"type": "object"
+			},
+			"files":{
+				"type": "upload",
+				"maxFileSize": 25000000,
+				"maxNumberOfFiles": 100,
+				"allowOptionalEmpty": true,
+				"multiple": true,
+				"upload": {
+					"formData": {
+						"url": "/ZAutomation/api/v1/icons/upload"
+					},
+					"url": "/ZAutomation/api/v1/icons/upload",
+					"autoUpload": true
+				},
+				"helper": "__h_files__"
+			}
+		},
+		"definitions": {
+			"customicon": {
+				"fields": {
+					"table": {
+						"items": {
+							"fields": {
+								"icon": {
+									"type": "select",
+									"name": "icon-select"
+								},
+								"preview": {
+									"type": "image",
+									"view": "bootstrap-display"
+								}
+							}
+						},
+						"type": "table",
+						"showActionsColumn": false
+					}
+				},
+				"fieldClass": "icon-table"
 			}
 		}
-	}
+	},
+	"postRender": "loadFunction:postRender.js"
 }
