@@ -47,7 +47,7 @@ Scenes.prototype.init = function (config) {
 		handler: function (command) {
 			if (command !== 'on') return;
 
-			self.config.switches.forEach(function(devState) {
+			self.config.devices.switches.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -55,7 +55,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.thermostats.forEach(function(devState) {
+			self.config.devices.thermostats.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -63,7 +63,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.dimmers.forEach(function(devState) {
+			self.config.devices.dimmers.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -71,7 +71,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.locks.forEach(function(devState) {
+			self.config.devices.locks.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -79,7 +79,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.scenes.forEach(function(scene) {
+			self.config.devices.scenes.forEach(function(scene) {
 				var vDev = self.controller.devices.get(scene);
 				if (vDev) {
 					vDev.performCommand("on");
