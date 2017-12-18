@@ -2753,10 +2753,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		result = this.controller.installIcon('local', file, 'custom', 'icon');
 
-		if (result === "done") {
+		if (result.message === "done") {
 
 			reply.code = 200;
-			reply.data = "icon_installation_successful";
+			reply.data = result.files;
 			reply.error = null;
 		}
 
