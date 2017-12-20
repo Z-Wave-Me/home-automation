@@ -68,7 +68,7 @@ IfThen.prototype.init = function (config) {
 					}
 				} else {
 					var id = el[type].target,
-						lvl = el[type].status === 'level' && el[type].level? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
+						lvl = el[type].status === 'level' && typeof el[type].level === 'number' ? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
 						vDev = that.controller.devices.get(id),
 						// compare old and new level to avoid unneccessary updates
 						compareValues = function(valOld,valNew){
