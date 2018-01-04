@@ -5679,6 +5679,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 
+
+			// disable value set on z-way startup
+			var startup = true;
+
+			setTimeout(function(){
+				startup = false;
+			},1000);
+
 			if (vDev) {
 				// set failed status
 				vDev.set('metrics:isFailed',isFailed);
@@ -5688,7 +5696,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						self.controller.devices.remove(devId);
 					} else {
 						try {
-							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							if (!startup && !(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 								// output curScene + keyAttr or ''
 								var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : 0,
 									mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : 0,
