@@ -5735,14 +5735,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 								setAction();
 
-								/*vDev.set("metrics:state", st);
+								vDev.set("metrics:state", st);
 								vDev.set("metrics:currentScene", cS);
 								vDev.set("metrics:keyAttribute", kA);
 								vDev.set("metrics:maxScenes", mC);
 								vDev.set("metrics:level", cL);
 								vDev.set("metrics:cnt", cnt);
-								vDev.set("metrics:type", type);*/
-								vDev.set("metrics", {
+								vDev.set("metrics:type", type);
+/*								vDev.set("metrics", {
 									state: st,
 									currentScene: cS,
 									keyAttribute: kA,
@@ -5750,7 +5750,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									level: cL,
 									cnt: cnt,
 									type: type
-								});
+								});*/
 							}
 						} catch (e) {
 						}
