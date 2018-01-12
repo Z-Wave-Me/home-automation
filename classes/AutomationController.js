@@ -1936,7 +1936,7 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 		}
 
 		if (!checkBoxtype('cit')){
-			this.addQRCode(p, object);
+			p.qrcode = this.addQRCode(p, object);
 		}
 
 		this.saveConfig();
@@ -1983,7 +1983,11 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };*/
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = system("hostname -I | cut -d ' ' -f1")[1].replace(/[\s\n]/g, '');
+	var ip = false;
+	try {
+		ip = system("hostname -I | cut -d ' ' -f1")[1].replace(/[\s\n]/g, '');
+	} catch(e) {}
+
 	return ip;
 }
 
@@ -2004,28 +2008,29 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
 	data.passwd = obj.password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
-	data.ip = this.getIPAddress();
-
+	var ip = this.getIPAddress();
+	if(ip) {
+		data.ip = ip;	
+	}
+	 
 	var qr = qrcode(typeNumber, errorCorrectionLevel);
 
 	var url = Object.keys(data).map(function(key){
 		return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 	}).join('&');
 
-	qr.addData(url);
+	qr.addData(Base64.encode(url));
 	qr.make();
 
 	var qrcodeBase64 = qr.createImgTag(3);
 
-	var file = "";
-	if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-		file = data.login + new Date().getTime()+ ".gif"; //Loginname + timespame + file extension(gif)
-	} else {
-		file = profile.qrcode
+	var file = data.login + new Date().getTime()+ ".gif";
+	//delete qrcode
+	if(profile.hasOwnProperty('qrcode') && profile.qrcode !== "") {
+		saveObject(profile.qrcode, null);
 	}
-
-	profile.qrcode = file;
 	saveObject(file ,qrcodeBase64.toString());
+	return file;
 }
 
 // namespaces

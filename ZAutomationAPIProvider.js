@@ -92,6 +92,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 		this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
+		this.router.put("/profiles/qrcode/:profile_id", this.ROLE.USER, this.updateQRCode, [parseInt]);
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -286,11 +287,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// - registered cit & login forwarding is active
 			//if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
 			if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
-
-				// set qr code only box is no CIT
-				if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-					this.controller.addQRCode(profile, reqObj);
-				}
 				return this.setLogin(profile);
 			} else {
 				return this.denyLogin();
@@ -1633,6 +1629,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 
 		return reply;
+	},
+	updateQRCode: function(profileId) {
+		var reply = {
+			error: null,
+			data: null,
+			code: 500
+			},
+		profile = this.controller.getProfile(profileId);
+
+		try {
+			var reqObj = parseToObject(this.req.body);
+		} catch(e) {
+			return reply.error = e.message;
+		}
+
+		if (profile) {
+			var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
+			if(pwd_check) {
+				var file = this.controller.addQRCode(profile, reqObj);
+				profile.qrcode = file;
+
+				profile = this.controller.updateProfile(profile, profile.id);
+				if (profile !== undefined && profile.id !== undefined) {
+					reply.code = 200;
+				} else {
+					reply.code = 500;
+				}
+			} else {
+				reply.error = "wrong_password";	
+				reply.code = 500;
+			}
+
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
+
+		return reply;	
 	},
 	// namespaces
 	listNamespaces: function () {
