@@ -2816,10 +2816,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// download and install the icon
 			result = this.controller.installIcon('remote', reqObj, icName, reqObj.id);
 
-			if (result === "done") {
+			if (result.message === "done") {
 
 				reply.code = 200;
-				reply.data = "icon_installation_successful";
+				reply.data = result.files;
 				reply.error = null;
 			}
 		} else {
