@@ -158,6 +158,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("system/time/ntp/:action", this.ROLE.ADMIN, this.configNtp);
 
 		this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
+		this.router.get("/system/ip-address", this.ROLE.ANONYMOUS, this.getIPAddress);
 		this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
 		this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
 
@@ -2955,6 +2956,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					reply.code = 500;
 					reply.error = e.message;
 				}
+			}
+		return reply;
+	},
+	getIPAddress: function () {
+		var self = this,
+			reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			ip = self.controller.getIPAddress();
+
+			if(ip) {
+				reply.code = 200;
+				reply.data = {
+					ip_address: ip
+				};
+			} else {
+				reply.code = 500;
+				reply.error = "syscommad-not-set";
 			}
 		return reply;
 	},
