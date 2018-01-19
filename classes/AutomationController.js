@@ -1986,11 +1986,13 @@ AutomationController.prototype.getIPAddress = function() {
 	var ip = false;
 	try {
 		if (checkBoxtype('poppbox')){
-			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip").replace(/[\s\n]/g, '');
+			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
 		} else {
-			ip = system("hostname -I | cut -d ' ' -f1")[1].replace(/[\s\n]/g, '');
+			ip = system("automation/lib/getIpAddress.sh")[1].replace(/[\s\n]/g, '');
 		}
-	} catch(e) {}
+	} catch(e) {
+		console.log(e);
+	}
 
 	return ip;
 }
