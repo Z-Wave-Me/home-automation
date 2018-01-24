@@ -1,6 +1,6 @@
 /*** DeviceHistory Z-Way HA module *******************************************
 
-Version: 1.3.0
+Version: 1.4.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -15,6 +15,20 @@ Description:
 function DeviceHistory (id, controller) {
 	// Call superconstructor first (AutomationModule)
 	DeviceHistory.super_.call(this, id, controller);
+
+	// define excluded device types
+	this.devTypes = ['sensorMultilevel','switchMultilevel','thermostat'],
+	this.langFile = this.loadModuleLang();
+
+	this.history = {}
+	this.allDevices = [];
+	this.initial = true;
+	this.registeredVDevIds = [];
+	this.storedDevHistories = [];
+
+	this.exclSensors = this.controller.instances.filter(function (instance){
+		return instance.moduleId === 'SensorsPolling' && instance.active === 'true';
+	});
 }
 
 inherits(DeviceHistory, AutomationModule);
@@ -28,206 +42,234 @@ _module = DeviceHistory;
 _.extend(DeviceHistory.prototype, {
 	init: function (config) {
 		DeviceHistory.super_.prototype.init.call(this, config);
-	   
-		// add cron schedule every 5 minutes
-		this.controller.emit("cron.addTask", "historyPolling.poll", {
-			minute: [0, 59, 5],
-			hour: null,
-			weekDay: null,
-			day: null,
-			month: null
-		});
 
-		this.controller.emit("cron.addTask", "saveHistory.poll", {
-			minute: 0,
-			hour: [0, 23, 1],
-			weekDay: null,
-			day: null,
-			month: null
-		});
+		var self = this;		
 
-		var self = this,
-			// define excluded device types
-			exclDevTypes = ['battery','text','camera','switchRGBW','sensorMultiline'],
-			langFile = this.loadModuleLang();
+		// set history of excluded devices to false
+		this.config.devices.forEach(function (devId) {
+			var vDevd = self.controller.devices.get(devId);
 
-		this.history = this.controller.setHistory();
-		this.allDevices = [];
-		this.initial = true;
-
-		this.exclSensors = this.controller.instances.filter(function (instance){
-			return instance.moduleId === 'SensorsPolling' && instance.active === 'true';
-		});
-
-		config.devices.forEach(function (devId) {
-			var d = self.controller.devices.get(devId);
-
-			if (d && d.get('hasHistory') === true) {
-				d.set('hasHistory', false, {silent: true});
+			if (vDevd && vDevd.get('hasHistory') === true) {
+				vDevd.set('hasHistory', false, {silent: true});
 			}
 		});
 
-		this.updateDevList = function () {
-			return self.controller.devices.filter(function(dev){
-				return  dev.get('permanently_hidden') === false &&			  // only none permanently_hidden devices
-						(!dev.get('metrics:removed') || dev.get('metrics:removed') === false) &&						 // only none removed devices
-						_.unique(config.devices).indexOf(dev.id) === -1 &&	  //in module excluded devices
-						exclDevTypes.indexOf(dev.get('deviceType')) === -1 &&   //excluded device types
-						self.exclSensors.indexOf(dev.id) === -1;				//excluded sensors
-			});
-		};
-		this.allDevices = this.updateDevList();
+		this.initializeDevices();
 
-		// setting up device histories
-		this.setupHistories = function(){
+		// try to restore old histories
+		oldHistory = loadObject('history');
 
-			// cleanup first after  all virtual devices are created  
-			if(self.initial === true){			
-				self.initial = false;		
-			} else {
-				if(self.allDevices.length > 0 && self.allDevices.length < self.history.length) {
-					var cleanedUpHistory = [],
-						devices = [];
-
-					devices = self.allDevices.map(function (dev){
-					   return dev.get('id');
-					});
-					
-					cleanedUpHistory = self.history.filter(function (devHist) {
-						return devices.indexOf(devHist.id) > -1;
-					});
-
-					if(cleanedUpHistory.length === self.allDevices.length){
-						console.log("--- ", "clean up histories");
-						self.history = cleanedUpHistory;
-					}
-				}
-			}
-
-			if (self.allDevices.length === 0) {
-				self.allDevices = self.updateDevList();
-			}
-
-			// Setup histories
-			self.allDevices.forEach(function(dev) {
-				var id = dev.id,
-					devType = dev.get('deviceType'),
-					lvl;
-
-				if(dev.get("hasHistory") === false){
-					dev.set("hasHistory", true, { silent: true });
-				} 
-					
-				switch(devType){
-					case 'sensorMultilevel':
-					case 'switchMultilevel':
-					case 'thermostat':					   
-						lvl = dev.get("metrics:level");
-						self.storeData(dev, lvl);
-						break;
-					default: //'fan',
-						break;
+		if(!!oldHistory || (_.isArray(oldHistory) && oldHistory.length > 0)) {
+			oldHistory.forEach(function(history){
+				if (self.registeredVDevIds.indexOf(history.id) > -1 && self.devTypes.indexOf(history.dT) > -1) {
+					self.history[history.id].set(history.mH);
 				}
 			});
-			console.log("--- ", "histories polled");
-		};
 
-		// collect metrics changes from binary sensors or switches
-
-		// store whole history data on storage
-		this.storeData = function(dev, lvl) {
-			try {
-				var devId = dev.id,
-					index = null,
-					history, change, histMetr, item;
-
-				change = self.setChangeObject(lvl);
-				
-				// find dev history and set index
-				_.find(self.history, function (data, idx) {
-					if(data.id === devId){
-						index = idx;
-						return;
-					}
-				});
-				
-				// create new device entry if necessary
-				if(self.history.length < 1 || index === null){
-					item = {
-							id: dev.id,
-							dT: dev.get("deviceType"),
-							mH: []
-						};
-
-					self.history.push(item);
-					index = self.history.length - 1;
-				}
-				
-				// push only changes during the last 24 hrs
-				histMetr = self.history[index].mH.filter(function (ch){
-					return ch.id >= (change.id - 86400);
-				});
-				
-				if(histMetr.length < 288){ // 86400 s (24 h) = 288 * 300 s (5 min)
-					histMetr.push(change);
-				} else {
-					histMetr.shift();
-					histMetr.push(change);
-				}
-
-				self.history[index].mH = histMetr;
-
-				self.controller.history = self.history;
-			
-			} catch(e){
-				console.log("Cannot store history of device '" + dev.get('metrics:title') + "' because:", e.toString());
-				self.addNotification('error', langFile.err_store_history + dev.get('metrics:title') + " ERROR: " + e.toString(), 'module', 'DeviceHistory');
-			}
-		};
-
-		// polling function
-		this.saveHistory = function () {
-			saveObject("history", self.history);
-		};
-
-		this.controller.on("historyPolling.poll", self.setupHistories);
-		this.controller.on("saveHistory.poll", self.saveHistory);
+			saveObject('history',null);
+			oldHistory = undefined;
+		} else {
+			oldHistory = undefined;
+		}
 
 		// run first time to setting up histories
 		this.setupHistories();
-		this.saveHistory();
+
+		this.assignDeviceListeners();
 	},
 	stop: function () {
 		var self = this;
 
-		// remove eventhandler
+		// remove eventhandlers
+		this.config.allRegisteredDevices.forEach(function(vDevId) {
+			vDev = self.controller.devices.get(vDevId);
 
-		this.allDevices.forEach(function(vDev) {
-			if(vDev.get("hasHistory") === true){
+			if(vDev && vDev.get("hasHistory") === true){
 				vDev.set("hasHistory", false,{ silent: true });
-			} 
+			}
+
+			console.log('######################### ' + vDevId + ' #########################');
+			console.log('###');
+			console.log('### self.history:', JSON.stringify(self.history[vDevId]));
+			console.log('###');
+			console.log('###################################################################');
+
+			if (self.history[vDevId]) {
+				self.history[vDevId].finalize();
+			}
+
+			saveObject("history_"+vDevId, null);
+			self.controller.devices.off(vDevId, self.storeData);
 		});
-		
-		this.controller.emit("cron.removeTask", "historyPolling.poll");
-		this.controller.off("historyPolling.poll", self.setupHistories);
 
-		this.controller.emit("cron.removeTask", "saveHistory.poll");
-		this.controller.off("saveHistory.poll", self.saveHistory);
+		this.controller.devices.off('created', self.assignHistory);
+		this.controller.history = [];
 
-		saveObject("history", null);
 
 		DeviceHistory.super_.prototype.stop.call(this);
 	},
 	// ----------------------------------------------------------------------------
 	// --- Module methods
 	// ----------------------------------------------------------------------------
-	setChangeObject: function (lvl) {
-		var date = new Date(),
-			change = {
-				id: Math.floor(date.getTime() / 1000),
-				l: lvl
-			};
+	setHistory: function (vdevId) {
 
-		return change;
+		this.history[vdevId] = new LimitedArray(
+			loadObject('history_' + vdevId) || [],
+			function (arr) {
+				saveObject('history_' + vdevId, arr);
+			},
+			3, // check it every 10 entries
+			1000, // save up to 1000 entries (min 288 per day)
+			function (devHistory){
+				var now = Math.floor((new Date()).getTime() / 1000);
+				return devHistory.id >= (now - 86400);
+			}
+		);
+	},
+	initializeDevices: function (){
+	 	var self = this;
+
+		this.config.allRegisteredDevices = this.updateDevList();
+
+		//save into config
+		this.saveConfig();
+
+		// store whole history data on storage
+		self.storeData = function(dev) {
+			//try {
+				var change = {
+						id: Math.floor((new Date()).getTime() / 1000),
+						l: dev.get("metrics:level")
+					};
+				
+				self.history[dev.id].push(change);
+
+				self.controller.history = self.history;
+			
+			/*} catch(e){
+				console.log("Cannot store history of device '" + dev.get('metrics:title') + "' because:", e.toString());
+				self.controller.addNotification('error', self.langFile.err_store_history + dev.get('metrics:title') + " ERROR: " + e.toString(), 'module', 'DeviceHistory');
+			}*/
+		};
+
+		_.forEach(this.config.allRegisteredDevices, function(vdevId){
+			var vDev = self.controller.devices.get(vdevId);
+			
+			// create new LimitedArray for 
+			self.setHistory(vdevId);
+
+			// set hasHistory true
+			if(vDev && vDev.get("hasHistory") === false){
+				vDev.set("hasHistory", true,{ silent: true });
+			}
+
+			self.controller.devices.off(vdevId, 'change:metrics:level', self.storeData);
+			self.controller.devices.on(vdevId, 'change:metrics:level', self.storeData);
+
+			self.controller.history[vdevId] = self.history[vdevId].get();
+		});
+	},
+	assignDeviceListeners: function () {
+		var self = this;
+
+		// store whole history data on storage
+		this.storeData = function(dev) {
+			//try {
+				var change = {
+						id: Math.floor((new Date()).getTime() / 1000),
+						l: dev.get("metrics:level")
+					};
+				
+				self.history[dev.id].push(change);
+
+				self.controller.history[dev.id] = self.history[dev.id].get();
+			
+			/*} catch(e){
+				console.log("Cannot store history of device '" + dev.get('metrics:title') + "' because:", e.toString());
+				self.controller.addNotification('error', self.langFile.err_store_history + dev.get('metrics:title') + " ERROR: " + e.toString(), 'module', 'DeviceHistory');
+			}*/
+		};
+
+		this.assignHistory = function (vDev) {
+			if (vDev && vDev.id &&
+				vDev.get('permanently_hidden') === false &&			  						// only none permanently_hidden devices
+				(!vDev.get('metrics:removed') || vDev.get('metrics:removed') === false) &&	// only none removed devices
+				_.unique(self.config.devices).indexOf(vDev.id) === -1 &&	  				// in module excluded devices
+				self.devTypes.indexOf(vDev.get('deviceType')) > -1 &&						// allowed device types
+				self.exclSensors.indexOf(vDev.id) === -1) {									// excluded sensors
+
+				// add to registered vDev list
+				self.config.allRegisteredDevices.push(vDev.id);
+				
+				//save into config
+				self.saveConfig();
+
+				// set LimitedArray for history
+				self.setHistory(vDev.id); 
+
+				//assign level listener
+				self.controller.devices.off(vDev.id, 'change:metrics:level', self.storeData);
+				self.controller.devices.on(vDev.id, 'change:metrics:level', self.storeData);
+			}
+		};
+
+		this.removeHistory = function (vDev) {
+			if (vDev) {
+				if (self.history[vDev.id]) {
+					self.history[vDev.id].finalize();
+					saveObject("history_"+vDev.id, null);
+					delete self.history[vDev.id];
+				}
+
+				console.log('######################### ' + vDev.id + ' #########################');
+				console.log('###');
+				console.log('### self.history:', JSON.stringify(self.history));
+				console.log('###');
+				console.log('###################################################################');
+
+				self.controller.devices.off(vDev.id, 'change:metrics:level', self.storeData);
+			}
+		};
+
+		// assign listener to new vdev
+		this.controller.devices.on('created', this.assignHistory);
+		this.controller.devices.on('removed', this.removeHistory);
+	},
+	// return list of registered vDev IDs
+	updateDevList: function () {
+		var self = this;
+
+		return this.controller.devices.filter(function(dev){
+			return  dev.get('permanently_hidden') === false &&			  						// only none permanently_hidden devices
+					(!dev.get('metrics:removed') || dev.get('metrics:removed') === false) && 	// only none removed devices
+					_.unique(self.config.devices).indexOf(dev.id) === -1 &&	  					// in module excluded devices
+					self.devTypes.indexOf(dev.get('deviceType')) > -1 &&						// allowed device types
+					self.exclSensors.indexOf(dev.id) === -1;									// excluded sensors
+		}).map(function(vdev) {
+			return vdev.id;
+		});
+	},
+	// setting up device histories
+	setupHistories: function(){
+		var self = this;
+		// cleanup first after all virtual devices are created  
+		storageContent = loadObject('__storageContent');
+
+		if(!!storageContent) {
+
+			/*_.forEach(storageContent, function (name) {
+				if (name.indexOf('history_') > -1 && self.allRegisteredDevices.indexOf(name.substring(8)) < 0) {
+					self.allRegisteredDevices.push(name.substring(8));
+				}
+			});*/
+
+			this.storedDevHistories.forEach(function(historyFileName){
+				if (!self.history[historyFileName.substring(8)]) {
+					console.log('vDev', historyFileName.substring(8), 'not assigned to history. Stored histories will be removed ...')
+					saveObject(historyFileName, null);
+				}
+			});
+		}
+		console.log("--- ", "histories updated");
 	}
 });

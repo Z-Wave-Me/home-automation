@@ -42,7 +42,7 @@ function AutomationController() {
 	this.devices = new DevicesCollection(this);
 
 	this.notifications = [];
-	this.history = [];
+	this.history = {};
 	this.lastStructureChangeTime = 0;
 
 	this._loadedSingletons = [];
@@ -1724,11 +1724,6 @@ AutomationController.prototype.updateNotification = function (id, object, callba
 };
 
 AutomationController.prototype.listHistories = function () {
-	return this.history;
-};
-
-AutomationController.prototype.setHistory = function () {
-	this.history = loadObject('history') || [];
 	return this.history;
 };
 
