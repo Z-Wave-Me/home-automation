@@ -20,6 +20,7 @@ function Rules (id, controller) {
 
 	var self = this;
 	this.attachedList = [];
+    this.reversActivated = false;
 
 	this._testRule = function() { // wrapper to correct this and parameters in testRule
 	    self.testRule.call(self, null);
@@ -30,6 +31,30 @@ inherits(Rules, AutomationModule);
 
 _module = Rules;
 
+/*"defaults": {
+        "title": "__m_title__",
+        "description": "__m_descr__",
+        "simple": {
+            "triggerEvent": {},
+            "triggerDelay": 0,
+            "targetElements": [],
+            "sendNotifications": [],
+            "reverseDelay": 0
+        },
+        "advanced": {
+            "active": false,
+            "triggerScenes" : [],
+            "triggerDelay": 0,
+            "logicalOperator" : "and",
+            "tests" : [],
+            "targetElements": [],
+            "sendNotifications": [],
+            "reverseDelay": 0,
+            "triggerOnDevicesChange" : true,
+        },
+        "reverse": false
+    }*/
+
 // ----------------------------------------------------------------------------
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
@@ -38,20 +63,33 @@ Rules.prototype.init = function (config) {
 	Rules.super_.prototype.init.call(this, config);
 
 	var self = this,
-		ifElement = self.config.sourceDevice[self.config.sourceDevice.filterIf],
-        breverse = self.config.reverse.activate,
-        badvanced = self.config.advanced.activate;
+		ifElement = self.config.simple.triggerEvent,
+        /*
+        color als trigger??
+        {
+            deviceId: '',
+            deviceType: '',
+            level: '',
+            status: '', //on, off, open, close, color, level
+            operator: <, = , > ,''
+        }
+        */
+        doReverse = self.config.reverse,
+        advancedActive = self.config.advanced.active;
+        triggered = 0;
 
 	this.handlerLevel = function (sDev) {
-		var that = self,
-			operator = ifElement.operator,
-			ifLevel = (ifElement.status === 'level' && ifElement.level) || (!ifElement.status && ifElement.level) ? ifElement.level : ifElement.status,
+		var operator = ifElement.operator || null,
+			ifLevel = ifElement.level,
+            ifType = ifElement.deviceType,
 			check = false,
-			value = sDev.get("metrics:level");
+			value = sDev.get("metrics:level"),
+            simple = self.config.simple;
 
         // - IF-THEN-PART
-        if (operator && ifLevel) {
-            switch (operator) {
+        if (!!operator && ifLevel) {
+            check = op(value, operator, ifLevel);
+            /*switch (operator) {
                 case '>':
                     check = value > ifLevel;
                     break;
@@ -61,129 +99,172 @@ Rules.prototype.init = function (config) {
                 case '<':
                     check = value < ifLevel;
                     break;
-            }
+            }*/
+        } else if (ifType === 'switchRGBW') {
+            check = _.isEqual(sDev.get("metrics:color"), ifLevel);
         }
-        if (!badvanced) {
-            if (check || value === ifLevel || sDev.get('deviceType') === 'toggleButton') {
-                var timeout = typeof self.config.delay.eventstart === 'undefined' ? 0 : (self.config.delay.eventstart * 1000);
-                this.timer = setTimeout( function() {
-                    self.config.targets.elements.forEach(function(el) {
-                        var type = el.filterThen;
+        
+        var triggerTimeout = getConfigTimeout(simple.triggerDelay);
+        var reverseTimeout = getConfigTimeout(simple.reverseDelay);
 
-                        if (type === "notification") {
-                            if (typeof el.notification.target !== 'undefined' || typeof el.notification.mail_to_input !== 'undefined') {
-                                var mail;
-                                if (el.notification.target.search('@') > 0 || (mail = typeof el.notification.mail_to_input !== 'undefined')) {
-                                    self.addNotification('mail.notification', typeof el.notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets.elements) : el.notification.message, mail ? el.notification.mail_to_input : el.notification.target);
-                                } else {
-                                    self.addNotification('push.notification', typeof el.notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets.elements) : el.notification.message, el.notification.target);
-                                }
-                            }
-                        } else {
-                            var id = el[type].target,
-                                lvl = el[type].status === 'level' && el[type].level? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
-                                vDev = that.controller.devices.get(id),
-                                set = compareValues(vDev.get("metrics:level"), lvl);
+        console.log('####', check, value === ifLevel, sDev.get('deviceType') === 'toggleButton');
 
-                            if (breverse && el.reverseLVL === 'undefined') { el.reverseLVL = vDev.get("metrics:level"); }
-                            if (vDev && (!el[type].sendAction || (el[type].sendAction && set))){ setNewDeviceState(vDev, type, lvl); }
+        if (check || value === ifLevel || sDev.get('deviceType') === 'toggleButton') {
+            
+            this.simpleTriggerTimer = setTimeout( function() {
+
+                /*
+                {
+                    deviceId: '',
+                    deviceType: '',
+                    level: '', / color: { r: 0, g: 0, b: 0}
+                    status: '', //on, off, open, close, color, level
+                    reverseLevel: '',
+                    sendAction: true / false >> don't do this if level is already
+                }
+                */
+
+                // do action for all target devices 
+                simple.targetElements.forEach( function(el) {
+                    console.log('el:', JSON.stringify(el));
+                    var vDev = self.controller.devices.get(el.deviceId),
+                        id = el.deviceId,
+                        //lvl = el.status === 'level' && el.level? el.level : (el.status === 'color' && el.color? el.color: el.status),
+                        set = executeActions(el.sendAction, vDev, el.targetLevel);
+
+                    // check if levels are equal and if active don't trigger new state
+                    if (vDev && set) {
+                        setNewDeviceState(vDev, el.deviceType, el.targetLevel);
+                    }
+                });
+
+                simple.sendNotifications.forEach(function (notification) {
+                    sendNotification(notification, simple.triggerEvent, simple.targetElements);
+                });
+
+                self.reversActivated = true;
+            }, triggerTimeout);
+        } else if (doReverse && !check && self.reversActivated) {
+            this.simpleReverseTimer = setTimeout( function() {
+                self.config.simple.targetElements.forEach(function(el) {
+                    var vDev = self.controller.devices.get(el.deviceId),
+                        id = el.deviceId,
+                        type = vDev? vDev.get('deviceType') : '';
+
+                    if (el.reverseLevel !== '') {
+                        var set = executeActions(el.sendAction, vDev, el.reverseLevel);
+                        if (vDev && set) { 
+                            setNewDeviceState(vDev, type, el.reverseLevel);
                         }
-                    });
-                }, timeout);
-            } else if (breverse && !check) {
-                this.timer = setTimeout( function() {
-                    self.config.targets.elements.forEach(function(el) {
-                        var type = el.filterThen,
-                            origin = el.reverseLVL;
-
-                        if(type !== "notification" || origin !== 'undefined') {
-                            var id = el[type].target,
-                                vDev = that.controller.devices.get(id),
-                                set = compareValues(vDev.get("metrics:level"), origin);
-
-                            el.reverseLVL = 'undefined';
-                            if (vDev && (!el[type].sendAction || (el[type].sendAction && set))){ setNewDeviceState(vDev, type, origin); }
-                        }
-                    });
-                }, timeout);
-            }
+                    }
+                });
+                self.reversActivated = false;
+            }, reverseTimeout);
         }
 	};
 
-    if(badvanced)
-    { // - LOGICAL-RULES-PART
-        this.config.advanced.tests.forEach(function(test) {
-            if (test.testType === "binary") {
-                self.attachDetach(test.testBinary, true);
-            } else if (test.testType === "multilevel") {
-                self.attachDetach(test.testMultilevel, true);
-            } else if (test.testType === "remote") {
-                self.attachDetach(test.testRemote, true);
-            } else if (test.testType === "nested") {
-                test.testNested.tests.forEach(function(xtest) {
-                    if (xtest.testType === "binary") {
-                        self.attachDetach(xtest.testBinary, true);
-                    } else if (xtest.testType === "multilevel") {
-                        self.attachDetach(xtest.testMultilevel, true);
-                    } else if (xtest.testType === "remote") {
-                        self.attachDetach(xtest.testRemote, true);
-                    } else if ( xtest.testType === "time") {
-                        self.attachDetach(xtest.testTime, true);
-                    }
-                });
-            }
-        });
-
-        if (this.config.advanced.eventSource) {
-            this.config.advanced.eventSource.forEach(function(scene) {
-                self.controller.devices.on(scene, "change:metrics:level", self._testRule);
-            });
-        }
+    if (advancedActive) { // - LOGICAL-RULES-PART
+        this.expertTriggerEventRule();
     }
 
 	// Setup metric update event listener
-	if (!badvanced && ifElement && ifElement.device){
-		self.controller.devices.on(ifElement.device, 'change:metrics:level', self.handlerLevel);
+	if (!advancedActive && ifElement && ifElement.deviceId) {
+		self.controller.devices.on(ifElement.deviceId, 'change:metrics:level', this.handlerLevel);
 	}
 };
 
 Rules.prototype.stop = function () {
 	var self = this;
 
-    if(this.config.advanced.activate) {
-        if (this.config.advanced.eventSource) {
-            this.config.advanced.eventSource.forEach(function(scene) {
+    if(this.config.advanced.active) {
+        if (this.config.advanced.triggerScenes) {
+            this.config.advanced.triggerScenes.forEach(function(scene) {
                 self.controller.devices.off(scene, "change:metrics:level", self._testRule);
             });
         }
 
+        // testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
+        // nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
+
         this.config.advanced.tests.forEach(function(test) {
-            if (test.testType === "binary") {
-                self.attachDetach(test.testBinary, false);
-            } else if (test.testType === "multilevel") {
-                self.attachDetach(test.testMultilevel, false);
-            } else if (test.testType === "remote") {
-                self.attachDetach(test.testRemote, false);
+            switch(test.type) {
+                case 'switchBinary':
+                case 'switchMultilevel':
+                case 'switchRGBW':
+                case 'doorlock':
+                case 'switchControl':
+                case 'time':
+                case 'sensorDiscrete':
+                    self.attachDetach(test, false);
+                    break;
+                case 'nested':
+                    test.tests.forEach(function(xtest) {
+                        self.attachDetach(xtest, false);
+                    });
+                    break;
+                default:
+                    break;
+            }
+            /*if (test.testType === "switchBinary") {
+                self.attachDetach(test.testSwitchBinary, false);
+            } else if (test.testType === "switchMultilevel") {
+                self.attachDetach(test.testSwitchMultilevel, false);
+            } else if (test.testType === "color") {
+                self.attachDetach(test.testColor, false);
+            } else if (test.testType === "doorlock") {
+                self.attachDetach(test.testDoorlock, false);
+            } else if (test.testType === "switchControl") {
+                self.attachDetach(test.testSwitchControl, false);
+            } else if (test.testType === "time") {
+                self.attachDetach(test.testTime, false);
+            } else if (test.testType === "sensorDiscrete") {
+                self.attachDetach(test.testSensorDiscrete, false);
             } else if (test.testType === "nested") {
                 test.testNested.tests.forEach(function(xtest) {
-                    if (xtest.testType === "binary") {
-                        self.attachDetach(xtest.testBinary, false);
-                    } else if (xtest.testType === "multilevel") {
-                        self.attachDetach(xtest.testMultilevel, false);
-                    } else if (xtest.testType === "remote") {
-                        self.attachDetach(xtest.testRemote, false);
+                    if (xtest.testType === "switchBinary") {
+                        self.attachDetach(xtest.testSwitchBinary, false);
+                    } else if (xtest.testType === "switchMultilevel") {
+                        self.attachDetach(xtest.testSwitchMultilevel, false);
+                    } else if (xtest.testType === "color") {
+                        self.attachDetach(xtest.testColor, false);
+                    } else if (xtest.testType === "doorlock") {
+                        self.attachDetach(xtest.testDoorlock, false);
+                    } else if (xtest.testType === "switchControl") {
+                        self.attachDetach(xtest.testSwitchControl, false);
                     } else if(xtest.testType === "time") {
                         self.attachDetach(xtest.testTime, false);
+                    } else if ( xtest.testType === "sensorDiscrete") {
+                        self.attachDetach(xtest.testSensorDiscrete, false);
                     }
                 });
-            }
+            }*/
         });
 
         this.attachedList = [];
 
     } else {
-        // remove event listener
-        self.controller.devices.off(self.config.sourceDevice[self.config.sourceDevice.filterIf].device,'change:metrics:level', self.handlerLevel);
+        // remove event IfElement listener
+        self.controller.devices.off(self.config.simple.triggerEvent.deviceId,'change:metrics:level', self.handlerLevel);
+    }
+
+    if (this.simpleReverseTimer) {
+        clearTimeout(this.simpleReverseTimer);
+        this.simpleReverseTimer = undefined;
+    }
+
+    if (this.advancedReverseTimer) {
+        clearTimeout(this.advancedReverseTimer);
+        this.advancedReverseTimer = undefined;
+    }
+
+    if (this.simpleTriggerTimer) {
+        clearTimeout(this.simpleTriggerTimer);
+        this.simpleTriggerTimer = undefined;
+    }
+
+    if (this.advancedTriggerTimer) {
+        clearTimeout(this.advancedTriggerTimer);
+        this.advancedTriggerTimer = undefined;
     }
 
 	Rules.super_.prototype.stop.call(this);
@@ -193,29 +274,106 @@ Rules.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-// compare old and new level to avoid unnecessary updates
-function compareValues(valOld,valNew){
-    var vO = _.isNaN(parseFloat(valOld))? valOld : parseFloat(valOld),
-        vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
+Rules.prototype.expertTriggerEventRule = function () {
 
-    return vO !== vN;
-}
+    // testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
+    // nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
 
-function setNewDeviceState(vDev, target, new_level){
-    if (vDev.get("deviceType") === target && (target === "switchMultilevel" || target === "thermostat" || target === "switchRGBW")) {
-        if (new_level === 'on' || new_level === 'off'){
-            vDev.performCommand(new_level);
-        } else if (typeof new_level === 'object') {
-            vDev.performCommand("exact", new_level);
-        } else {
-            vDev.performCommand("exact", { level: new_level });
+    this.config.advanced.tests.forEach(function(test) {
+        switch(test.type) {
+            case 'switchBinary':
+            case 'switchMultilevel':
+            case 'sensorBinary':
+            case 'sensorMultilevel':
+            case 'switchRGBW':
+            case 'doorlock':
+            case 'switchControl':
+            case 'toggleButton':
+            case 'time': 
+            case 'sensorDiscrete':
+            case 'thermostat':
+                /*
+                    test = {
+                        type: 'xxx',
+                        deviceId: 'xxx',
+                        testValue: 'xxx',
+                        testOperator: '=', '!=', '<', '>', '<=', '>='
+                    },
+                    time = {
+                        type: 'time',
+                        testValue: 'xxx',
+                        testOperator: '<=', '>='
+                    }
+                */
+                self.attachDetach(test, true);
+                break;
+            case 'nested':
+                /*  
+                nested = {
+                    type: 'nested',
+                    logicalOperator: 'and' // 'or'
+                    tests: [{
+                            type: 'xxx'
+                            deviceId: 'xxx'
+                            testValue: 'xxx'
+                            testOperator: '=', '!=', '<', '>', '<=', '>='
+                        },{
+                            type: 'aaa'
+                            deviceId: 'aaa'
+                            testValue: 'aaa'
+                            testOperator: '=', '!=', '<', '>', '<=', '>='
+                        }
+                    ]
+                }     
+                */
+                test.tests.forEach(function(xtest) {
+                    self.attachDetach(xtest, true);
+                });
+                break;
+            default:
+                break;
         }
-    } else if (vDev.get("deviceType") === "toggleButton" && target === "scene") {
-        vDev.performCommand("on");
-    } else if (vDev.get("deviceType") === target) {
-        vDev.performCommand(new_level);
-    }
-}
+
+        /*if (test.testType === "switchBinary") {
+            self.attachDetach(test.testSwitchBinary, true);
+        } else if (test.testType === "switchMultilevel") {
+            self.attachDetach(test.testSwitchMultilevel, true);
+        } else if (test.testType === "color") {
+            self.attachDetach(test.testColor, true);
+        } else if (test.testType === "doorlock") {
+            self.attachDetach(test.testDoorlock, true);
+        } else if (test.testType === "switchControl") {
+            self.attachDetach(test.testSwitchControl, true);
+        } else if ( test.testType === "time") {
+            self.attachDetach(test.testTime, true);
+        } else if ( test.testType === "sensorDiscrete") {
+            self.attachDetach(test.testSensorDiscrete, true);
+        } else if (test.testType === "nested") {
+            test.testNested.tests.forEach(function(xtest) {
+                if (xtest.testType === "switchBinary") {
+                    self.attachDetach(xtest.testSwitchBinary, true);
+                } else if (xtest.testType === "switchMultilevel") {
+                    self.attachDetach(xtest.testSwitchMultilevel, true);
+                } else if (xtest.testType === "color") {
+                    self.attachDetach(xtest.testColor, true);
+                } else if (xtest.testType === "doorlock") {
+                    self.attachDetach(xtest.testDoorlock, true);
+                } else if (xtest.testType === "switchControl") {
+                    self.attachDetach(xtest.testSwitchControl, true);
+                } else if ( xtest.testType === "time") {
+                    self.attachDetach(xtest.testTime, true);
+                } else if ( xtest.testType === "sensorDiscrete") {
+                    self.attachDetach(xtest.testSensorDiscrete, true);
+                }
+            });
+        }*/
+    });
+
+    // TODO add sensorDiscrete as trigger
+    this.config.advanced.triggerScenes.forEach(function(scene) {
+        self.controller.devices.on(scene.deviceId, "change:metrics:level", self._testRule);
+    });
+};
 
 // LogicalRuleMethods
 Rules.prototype.attachDetach = function (test, attachOrDetach) {
@@ -239,9 +397,10 @@ Rules.prototype.testRule = function (tree) {
     var res = null,
         topLevel = !tree,
         self = this,
-		langFile = self.loadModuleLang()
-		breverse = self.config.reverse.activate,
-		timeout = typeof self.config.advanced.delay.eventstart === 'undefined' ? 0 : (self.config.advanced.delay.eventstart * 1000);
+		langFile = self.loadModuleLang(),
+	    doReverse = self.config.reverse || false,
+		triggerTimeout = getConfigTimeout(self.config.advanced.triggerDelay),
+        reverseTimeout = getConfigTimeout(self.config.advanced.reverseDelay);
 
     if (!tree) { tree = this.config.advanced; }
 
@@ -249,32 +408,102 @@ Rules.prototype.testRule = function (tree) {
         res = true;
 
         tree.tests.forEach(function(test) {
-            if (test.testType === "multilevel") {
-                res = res && self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
-            } else if (test.testType === "binary") {
-                res = res && (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
-            } else if (test.testType === "remote") {
-                var dev = self.controller.devices.get(test.testRemote.device);
-                res = res && ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
+            var vDev = test.type !== 'nested'? self.controller.devices.get(test.deviceId) : null,
+                level = !!vDev? vDev.get("metrics:level") : undefined;
+
+            switch (test.type) {
+                case 'doorlock':
+                case 'switchBinary':
+                case 'sensorBinary':
+                case 'sensorDiscrete':
+                    res = res && (level === test.testValue);
+                    break;
+                case 'thermostat':
+                case 'switchMultilevel':
+                case 'sensorMultilevel':
+                    res = res && op(level, test.testOperator, test.testValue);
+                    break;
+                case 'switchRGBW':
+                    res = res && _.isEqual(vDev.get('metrics:color'), test.testValue);
+                    break;
+                case 'toggleButton':
+                case 'switchControl':
+                    res = res && compareSwitchControl(vDev,test.testValue);
+                    break;
+                case 'time':
+                    res = res && compareTime().call(self, test.testOperator);
+                    break;
+                case 'nested':
+                    res = res && self.testRule(test);
+                    break;
+                default:
+                    break;
+            }
+
+            /*if (test.testType === "switchMultilevel") {
+                res = res && self.op(self.controller.devices.get(test.testSwitchMultilevel.device).get("metrics:level"), test.testSwitchMultilevel.testOperator, test.testSwitchMultilevel.testValue);
+            } else if (test.testType === "switchBinary") {
+                res = res && (self.controller.devices.get(test.testSwitchBinary.device).get("metrics:level") === test.testSwitchBinary.testValue);
+            } else if (test.testType === "doorlock") {
+                res = res && (self.controller.devices.get(test.testDoorlock.device).get("metrics:level") === test.testDoorlock.testValue);
+            } else if (test.testType === "thermostat") {
+                res = res && (self.controller.devices.get(test.testThermostat.device).get("metrics:level") === test.testThermostat.testValue);
+            } else if (test.testType === "sensorDiscrete") {
+                res = res && (self.controller.devices.get(test.testSensorDiscrete.device).get("metrics:level") === test.testSensorDiscrete.testValue);
+            } else if (test.testType === "switchControl") {
+                var dev = self.controller.devices.get(test.testSwitchControl.device);
+                res = res && ((_.contains(["on", "off"], test.testSwitchControl.testValue) && dev.get("metrics:level") === test.testSwitchControl.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testSwitchControl.testValue) && dev.get("metrics:change") === test.testSwitchControl.testValue));
             } else if (test.testType === "time") {
                 var curTime = new Date(),
                     time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
                 res = res && self.op(curTime.getHours() * 60 + curTime.getMinutes(), test.testTime.testOperator, time_arr[0] * 60 + time_arr[1]);
             } else if (test.testType === "nested") {
                 res = res && self.testRule(test.testNested);
-            }
+            }*/
         });
     } else if (tree.logicalOperator === "or") {
         res = false;
 
-        tree.conditions.tests.forEach(function(test) {
-            if (test.testType === "multilevel") {
-                res = res || self.op(self.controller.devices.get(test.testMultilevel.device).get("metrics:level"), test.testMultilevel.testOperator, test.testMultilevel.testValue);
-            } else if (test.testType === "binary") {
-                res = res || (self.controller.devices.get(test.testBinary.device).get("metrics:level") === test.testBinary.testValue);
-            } else if (test.testType === "remote") {
-                var dev = self.controller.devices.get(test.testRemote.device);
-                res = res || ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
+        var vDev = test.type !== 'nested'? self.controller.devices.get(test.deviceId) : null,
+            level = !!vDev? vDev.get("metrics:level") : undefined;
+
+            switch (test.type) {
+                case 'doorlock':
+                case 'switchBinary':
+                case 'sensorBinary':
+                case 'sensorDiscrete':
+                    res = res || (level === test.testValue);
+                    break;
+                case 'thermostat':
+                case 'switchMultilevel':
+                case 'sensorMultilevel':
+                    res = res || op(level, test.testOperator, test.testValue);
+                    break;
+                case 'switchRGBW':
+                    res = res || _.isEqual(vDev.get('metrics:color'), test.testValue);
+                    break;
+                case 'toggleButton':
+                case 'switchControl':
+                    res = res || compareSwitchControl(vDev,test.testValue);
+                    break;
+                case 'time':
+                    res = res && compareTime().call(self, test.testOperator);
+                    break;
+                case 'nested':
+                    res = res || self.testRule(test);
+                    break;
+                default:
+                    break;
+            }
+
+        /*tree.tests.forEach(function(test) {
+            if (test.testType === "switchMultilevel") {
+                res = res || self.op(self.controller.devices.get(test.testSwitchMultilevel.device).get("metrics:level"), test.testSwitchMultilevel.testOperator, test.testSwitchMultilevel.testValue);
+            } else if (test.testType === "switchBinary") {
+                res = res || (self.controller.devices.get(test.testSwitchBinary.device).get("metrics:level") === test.testSwitchBinary.testValue);
+            } else if (test.testType === "switchControl") {
+                var dev = self.controller.devices.get(test.testSwitchControl.device);
+                res = res || ((_.contains(["on", "off"], test.testSwitchControl.testValue) && dev.get("metrics:level") === test.testSwitchControl.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testSwitchControl.testValue) && dev.get("metrics:change") === test.testSwitchControl.testValue));
             } else if (test.testType === "time") {
                 var curTime = new Date(),
                     time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
@@ -282,58 +511,68 @@ Rules.prototype.testRule = function (tree) {
             } else if (test.testType === "nested") {
                 res = res || self.testRule(test.testNested);
             }
-        });
-    }
-    else if (tree.conditions.logicalOperator === " none")
-    {
-        self.controller.addNotification("error", langFile.WrongOperator, "module", "Rules");
+        });*/
     }
 
     if (topLevel && res) {
-        this.advancedtimer = setTimeout( function() {
-            tree.action.switches && tree.action.switches.forEach(function(devState) {
+        this.advancedTriggerTimer = setTimeout( function() {
+            tree.targetElements.forEach(function (el){
+                var vDev = self.controller.devices.get(el.deviceId),
+                    set = el.sendAction? executeActions(el.sendAction, vDev, el.targetLevel) : true;
+                if (vDev && set) {
+                    setNewDeviceState(vDev, el.deviceType, el.level)
+                }
+            });
+
+            tree.sendNotifications.forEach(function (notification) {
+                sendNotification(notification, tree.tests, tree.targetElements);
+            });
+
+            self.reversActivated = true;
+            /*
+            tree.targetElements.switches && tree.targetElements.switches.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
-                    if (breverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
+                    if (doReverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
                     if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
                         vDev.performCommand(devState.status);
                     }
                 }
             });
-            tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
+            tree.targetElements.dimmers && tree.targetElements.dimmers.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
-                    if (breverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
+                    if (doReverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
                     if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
                         vDev.performCommand("exact", { level: devState.status });
                     }
                 }
             });
-            tree.action.thermostats && tree.action.thermostats.forEach(function(devState) {
+            tree.targetElements.thermostats && tree.targetElements.thermostats.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
-                    if (breverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
+                    if (doReverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
                     if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
                         vDev.performCommand("exact", { level: devState.status });
                     }
                 }
             });
-            tree.action.locks && tree.action.locks.forEach(function(devState) {
+            tree.targetElements.locks && tree.targetElements.locks.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
-                    if (breverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
+                    if (doReverse && devState.reverseLVL === 'undefined') { devState.reverseLVL = vDev.get("metrics:level"); }
                     if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
                         vDev.performCommand(devState.status);
                     }
                 }
             });
-            tree.action.scenes && tree.action.scenes.forEach(function(scene) {
+            tree.targetElements.scenes && tree.targetElements.scenes.forEach(function(scene) {
                 var vDev = self.controller.devices.get(scene);
                 if (vDev) {
                     vDev.performCommand("on");
                 }
             });
-            tree.action.notification && tree.action.notification.forEach(function(notification) {
+            tree.targetElements.notification && tree.targetElements.notification.forEach(function(notification) {
                 if(typeof notification.target !== 'undefined' || typeof notification.mail_to_input !== 'undefined') {
                     var mail;
                     if(notification.target.search('@') > 0 || (mail = typeof notification.mail_to_input !== 'undefined')) {
@@ -343,10 +582,21 @@ Rules.prototype.testRule = function (tree) {
                     }
                 }
             });
-        }, timeout);
-    } else if (breverse && !res) {
-        this.advancedtimer_reverse = setTimeout( function() {
-            tree.action.switches && tree.action.switches.forEach(function(devState) {
+            */
+        }, triggerTimeout);
+    } else if (doReverse && !res && self.reversActivated) {
+        this.advancedReverseTimer = setTimeout( function() {
+            tree.targetElements.forEach(function (el){
+                var vDev = self.controller.devices.get(el.deviceId);
+                if (vDev) {
+                    setNewDeviceState(vDev, el.deviceType, el.reverseLevel);
+                }
+                self.reversActivated = false;
+            });
+
+
+
+            /*tree.targetElements.switches && tree.targetElements.switches.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
                     if (devState.reverseLVL !== 'undefined') {
@@ -355,7 +605,7 @@ Rules.prototype.testRule = function (tree) {
                     }
                 }
             });
-            tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
+            tree.targetElements.dimmers && tree.targetElements.dimmers.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
                     if (devState.reverseLVL !== 'undefined') {
@@ -364,7 +614,7 @@ Rules.prototype.testRule = function (tree) {
                     }
                 }
             });
-            tree.action.thermostats && tree.action.thermostats.forEach(function(devState) {
+            tree.targetElements.thermostats && tree.targetElements.thermostats.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
                     if (devState.reverseLVL !== 'undefined') {
@@ -373,7 +623,7 @@ Rules.prototype.testRule = function (tree) {
                     }
                 }
             });
-            tree.action.locks && tree.action.locks.forEach(function(devState) {
+            tree.targetElements.locks && tree.targetElements.locks.forEach(function(devState) {
                 var vDev = self.controller.devices.get(devState.device);
                 if (vDev) {
                     if (devState.reverseLVL !== 'undefined') {
@@ -381,14 +631,26 @@ Rules.prototype.testRule = function (tree) {
                         devState.reverseLVL = 'undefined';
                     }
                 }
-            });
-        }, timeout);
+            });*/
+        }, reverseTimeout);
     }
 
     return res;
 };
 
-Rules.prototype.op = function (dval, op, val) {
+function sendNotification (notification, conditions, actions) {
+    var notificationType = '',
+        notificationMessage = '';
+
+    if(notification.target && notification.target !== '') {
+        notificationType = notification.target.search('@') > -1? 'mail.notification' : 'push.notification';
+        notificationMessage = !notification.message? 'Condition: ' + JSON.stringify(conditions) + ' Actions: ' + JSON.stringify(actions) : notification.message;
+
+        this.controller.addNotification(notificationType, notificationMessage, notification.target);
+    }
+};
+
+op = function (dval, op, val) {
     if (op === "=") {
         return dval === val;
     } else if (op === "!=") {
@@ -404,4 +666,99 @@ Rules.prototype.op = function (dval, op, val) {
     }
 
     return null; // error!!
+};
+
+// compare old and new level to avoid unnecessary updates
+function compareValues(vDev,valNew){
+    if (vDev && !!vDev) {
+        var devType = vDev.get('deviceType'),
+            vO = devType === 'switchRGBW'? vDev.get('metrics:color') : vDev.get('metrics:color');
+            vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
+        
+        switch (devType) {
+            case 'switchRGBW':
+                vO = vDev.get('metrics:color');
+                return _.isEqual(vO,vN);
+            case 'switchControl':
+                if (_.contains(['on','off'], vN)) {
+                    vO = vDev.get('metrics:level');
+                } else {
+                    vO = vDev.get('metrics:change');
+                }
+                return vO !== vN;
+            default:
+                vO = vDev.get('metrics:level');
+                return vO !== vN;
+        }
+    }
+};
+
+function setNewDeviceState(vDev, type, new_level){
+    if (vDev && !!vDev) {
+        switch(type) {
+            case 'doorlock':
+            case 'switchBinary':
+                    vDev.performCommand(new_level);
+                break;
+            case 'switchMultilevel':
+            case 'thermostat':
+                    _.contains(['on','off'], new_level)? vDev.performCommand(new_level) : vDev.performCommand("exact", { level: new_level });
+                break;                        
+            case 'switchRGBW':
+                    vDev.performCommand("exact", { color: new_level}); //{r:, g:, b:}
+                break;
+            case 'switchControl':
+                if (_.contains(["on", "off"], new_level)) {
+                    vDev.performCommand(new_level);
+                } else if (_.contains(["upstart", "upstop", "downstart", "downstop"], new_level)) {
+                    vDev.performCommand("exact", { change: new_level });
+                }
+                break;
+            case 'toggleButton':
+                vDev.performCommand('on');
+                break;
+            default:
+                vDev.performCommand(new_level);
+        }
+    }
+
+    /*if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat" || type === "switchRGBW")) {
+        if (new_level === 'on' || new_level === 'off'){
+            vDev.performCommand(new_level);
+        } else if (typeof new_level === 'object') {
+            vDev.performCommand("exact", new_level);
+        } else {
+            vDev.performCommand("exact", { level: new_level });
+        }
+    } else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
+        vDev.performCommand("on");
+    } else if (vDev.get("deviceType") === type) {
+        vDev.performCommand(new_level);
+    }*/
+};
+
+function getConfigTimeout (configTimeout) {
+    return !!!configTimeout? 0 : Math.floor(configTimeout * 1000); // !!! > proof for undefined and null
+};
+
+function executeActions (compareLevelsFirst, vDev, targetValue) {
+    return (!compareLevelsFirst || (compareLevelsFirst && compareValues(vDev, targetValue)));
+};
+
+function compareSwitchControl (vDev, targetValue) {
+    if (!!vDev && vDev) {
+        return (_.contains(["on", "off"], targetValue) && vDev.get('metrics:level') === targetValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], targetValue) && vDev.get("metrics:change") === targetValue)
+    } else {
+        return false;
+    }
+};
+
+function compareTime (operator) {
+    /*var curTime = new Date(),
+        time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
+        res = res || self.op(curTime.getHours() * 60 + curTime.getMinutes(), test.testOperator, time_arr[0] * 60 + time_arr[1]);*/
+    var curTime = new Date(),
+        time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
+    
+    return op(curTime.getHours() * 60 + curTime.getMinutes(), operator, time_arr[0] * 60 + time_arr[1]);
 };
