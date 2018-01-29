@@ -1985,8 +1985,14 @@ AutomationController.prototype.removeProfile = function (profileId) {
 AutomationController.prototype.getIPAddress = function() {
 	var ip = false;
 	try {
-		ip = system("hostname -I | cut -d ' ' -f1")[1].replace(/[\s\n]/g, '');
-	} catch(e) {}
+		if (checkBoxtype('poppbox')){
+			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
+		} else {
+			ip = system("sh automation/lib/getIpAddress.sh")[1].replace(/[\s\n]/g, '');
+		}
+	} catch(e) {
+		console.log(e);
+	}
 
 	return ip;
 }
