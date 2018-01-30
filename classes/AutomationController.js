@@ -2977,3 +2977,92 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 		}
 	});
 };
+/*
+AutomationController.prototype.transformInstanceToNewModule = function(instanceId, transformToModule){
+	var self = this,
+		getInstance = _.filter(this.controller.instances, function(instance){
+			return instance.id === instanceId;
+		}),
+		instance = getInstance[0]? getInstance[0] : null,
+		module = this.modules[transformToModule];
+
+	// test data
+
+	instance = {
+	"instanceId" : "0",
+	"moduleId" : "LogicalRules",
+	"active" : false,
+	"title" : "Logical Rule",
+	"params" : {
+		"triggerOnDevicesChange" : true,
+		"eventSource" : [],
+		"logicalOperator" : " none",
+		"tests" : [{
+				"testType" : "binary",
+				"testBinary" : {
+					"device" : "DummyDevice_17",
+					"testValue" : "on"
+				}
+			}, {
+				"testType" : "time",
+				"testTime" : {
+					"testOperator" : "<=",
+					"testValue" : "03:00"
+				}
+			}, {
+				"testType" : "binary",
+				"testBinary" : {
+					"device" : "Dummy_Devices_24_alarm_alarmSensor_burglar",
+					"testValue" : "on"
+				}
+			}, {
+				"testType" : "nested",
+				"testNested" : {
+					"logicalOperator" : "or",
+					"tests" : [{
+							"testType" : "binary",
+							"testBinary" : {
+								"device" : "ZWayVDev_uzb_6-0-48-1",
+								"testValue" : "on"
+							}
+						}, {
+							"testType" : "sensorDiscrete",
+							"testSensorDiscrete" : {
+								"testValue" : "10"
+							}
+						}
+					]
+				}
+			}
+		],
+		"action" : {
+			"switches" : [{
+					"device" : "DummyDevice_17",
+					"status" : "on",
+					"sendAction" : false
+				}
+			],
+			"dimmers" : [{
+					"device" : "ZWayVDev_uzb_2-0-38",
+					"status" : 56,
+					"sendAction" : false
+				}
+			],
+			"thermostats" : [],
+			"locks" : [],
+			"scenes" : [],
+			"notification" : []
+		},
+		"expertSettings" : false
+	},
+	"id" : 19,
+	"creationTime" : 1516791010,
+	"category" : "automation_basic"
+}
+
+	if (instance && !!instance && module) {
+
+
+	}
+
+};*/
