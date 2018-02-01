@@ -115,11 +115,11 @@ Rules.prototype.init = function (config) {
                 simple.targetElements.forEach( function(el) {
                     var vDev = self.controller.devices.get(el.deviceId),
                         id = el.deviceId,
-                        set = executeActions(el.sendAction, vDev, el.targetLevel);
+                        set = executeActions(el.sendAction, vDev, el.level);
 
                     // check if levels are equal and if active don't trigger new state
                     if (vDev && set) {
-                        setNewDeviceState(vDev, el.deviceType, el.targetLevel);
+                        setNewDeviceState(vDev, el.deviceType, el.level);
                     }
                 });
 
@@ -256,12 +256,12 @@ Rules.prototype.expertTriggerEventRule = function () {
                     test = {
                         type: 'xxx',
                         deviceId: 'xxx',
-                        testValue: 'xxx',
-                        testOperator: '=', '!=', '<', '>', '<=', '>='
+                        level: 'xxx',
+                        operator: '=', '!=', '<', '>', '<=', '>='
                     },
                     time = {
                         type: 'time',
-                        testValue: 'xxx',
+                        level: 'xxx',
                         testOperator: '<=', '>='
                     }
                 */
@@ -275,12 +275,12 @@ Rules.prototype.expertTriggerEventRule = function () {
                     tests: [{
                             type: 'xxx'
                             deviceId: 'xxx'
-                            testValue: 'xxx'
+                            level: 'xxx'
                             testOperator: '=', '!=', '<', '>', '<=', '>='
                         },{
                             type: 'aaa'
                             deviceId: 'aaa'
-                            testValue: 'aaa'
+                            level: 'aaa'
                             testOperator: '=', '!=', '<', '>', '<=', '>='
                         }
                     ]
@@ -342,7 +342,7 @@ Rules.prototype.testRule = function (tree) {
         this.advancedTriggerTimer = setTimeout( function() {
             tree.targetElements.forEach(function (el){
                 var vDev = self.controller.devices.get(el.deviceId),
-                    set = el.sendAction? executeActions(el.sendAction, vDev, el.targetLevel) : true;
+                    set = el.sendAction? executeActions(el.sendAction, vDev, el.level) : true;
                 if (vDev && set) {
                     setNewDeviceState(vDev, el.deviceType, el.level)
                 }
@@ -384,22 +384,22 @@ Rules.prototype.runTests = {
                 case 'switchBinary':
                 case 'sensorBinary':
                 case 'sensorDiscrete':
-                    res = res && (level === test.testValue);
+                    res = res && (level === test.level);
                     break;
                 case 'thermostat':
                 case 'switchMultilevel':
                 case 'sensorMultilevel':
-                    res = res && op(level, test.testOperator, test.testValue);
+                    res = res && op(level, test.operator, test.level);
                     break;
                 case 'switchRGBW':
-                    res = res && _.isEqual(vDev.get('metrics:color'), test.testValue);
+                    res = res && _.isEqual(vDev.get('metrics:color'), test.level);
                     break;
                 case 'toggleButton':
                 case 'switchControl':
-                    res = res && compareSwitchControl(vDev,test.testValue);
+                    res = res && compareSwitchControl(vDev,test.level);
                     break;
                 case 'time':
-                    res = res && compareTime(test.testValue, test.testOperator);
+                    res = res && compareTime(test.level, test.operator);
                     break;
                 case 'nested':
                     res = res && self.testRule(test);
@@ -424,22 +424,22 @@ Rules.prototype.runTests = {
                 case 'switchBinary':
                 case 'sensorBinary':
                 case 'sensorDiscrete':
-                    res = res || (level === test.testValue);
+                    res = res || (level === test.level);
                     break;
                 case 'thermostat':
                 case 'switchMultilevel':
                 case 'sensorMultilevel':
-                    res = res || op(level, test.testOperator, test.testValue);
+                    res = res || op(level, test.operator, test.level);
                     break;
                 case 'switchRGBW':
-                    res = res || _.isEqual(vDev.get('metrics:color'), test.testValue);
+                    res = res || _.isEqual(vDev.get('metrics:color'), test.level);
                     break;
                 case 'toggleButton':
                 case 'switchControl':
-                    res = res || compareSwitchControl(vDev,test.testValue);
+                    res = res || compareSwitchControl(vDev,test.level);
                     break;
                 case 'time':
-                    res = res && compareTime(test.testValue, test.testOperator);
+                    res = res && compareTime(test.level, test.operator);
                     break;
                 case 'nested':
                     res = res || self.testRule(test);

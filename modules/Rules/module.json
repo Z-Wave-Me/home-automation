@@ -33,10 +33,7 @@
 			"reverseDelay": 0,
 			"triggerOnDevicesChange" : true
 		},
-		"reverse": false,
-		"mail_helper": "__h_nomail__",
-		"mail_button": "__b_createmail__",
-		"mail_confirm": "__m_createmail__"
+		"reverse": false
 	},
 	"schema": {},
 	"options": {}
