@@ -1988,7 +1988,7 @@ AutomationController.prototype.getIPAddress = function() {
 		if (checkBoxtype('poppbox')){
 			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
 		} else {
-			ip = system("sh automation/lib/getIpAddress.sh")[1].replace(/[\s\n]/g, '');
+			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
 		}
 	} catch(e) {
 		console.log(e);
