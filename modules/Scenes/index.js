@@ -36,7 +36,9 @@ Scenes.prototype.init = function (config) {
 		deviceId: "Scenes_" + this.id,
 		defaults: {
 			deviceType: "toggleButton",
-			customIcons: { "default": self.config.customicon.table[0].icon },
+			customIcons: { 
+				"default": self.config.customIcon.table[0].icon
+			},
 			metrics: {
 				level: "on", // it is always on, but usefull to allow bind
 				icon: "scene",
