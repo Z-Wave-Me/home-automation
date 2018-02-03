@@ -544,6 +544,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		var encaps = [
 				{ cc: 0x60, cmd: 0x0D, head: 4, tail: 0, srcI: 2, dstI: 3, encap:  'I' }, // MultiChannel
 				{ cc: 0x60, cmd: 0x06, head: 3, tail: 0, srcI: 0, dstI: 2, encap:  'I' }, // MultiInstance
+				{ cc: 0x6C, cmd: 0x01, head: 4, tail: 0, srcI: 0, dstI: 0, encap: 'Su' }, // Supervision
 				{ cc: 0x8F, cmd: 0x01, head: 2, tail: 0, srcI: 0, dstI: 0, encap:  'M' }, // MultiCommand
 				{ cc: 0x98, cmd: 0x81, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
 				{ cc: 0x98, cmd: 0xC1, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
