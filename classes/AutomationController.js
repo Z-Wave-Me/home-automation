@@ -184,12 +184,14 @@ AutomationController.prototype.init = function () {
 
 AutomationController.prototype.setDefaultLang = function (lang) {
 	var self = this,
-		oldLang = self.defaultLang;
-
-	self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
+		oldLang = self.defaultLang,
+		langP = lang.split(';');
 	
-	if(self.defaultLang !== oldLang) {
-		this.emit('language.changed', self.defaultLang);
+	if(langP.length == 1) {	
+		self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
+		if(self.defaultLang !== oldLang) {
+			this.emit('language.changed', self.defaultLang);
+		}
 	}
 };
 
@@ -1227,7 +1229,10 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 };
 
 AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
-	var result = "in progress",
+	var reply = {
+			message: "in progress",
+			files: []
+		},
 		filelist = [],
 		input = "",
 		name = "",
@@ -1253,23 +1258,23 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			id,
 			function(success) {
 				filelist = parseToObject(success);
-				result = "done";
+				reply.message = "done";
 			},  function() {
-				result = "failed";
+				reply.message = "failed";
 			}
 		);
 
 		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d &&  result === "in progress") {
+		while ((new Date()).valueOf() < d &&  reply.message === "in progress") {
 			processPendingCallbacks();
 		}
 
-		if (result === "in progress") {
-			result = "failed";
+		if (reply.message === "in progress") {
+			reply.message = "failed";
 		}
 
-		if (result === 'done') {
+		if (reply.message === 'done') {
 			for (var file in filelist) {
 				if (filelist[file].filename && filelist[file].orgfilename) {
 					var icon = {
@@ -1282,6 +1287,8 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 						'source_title': option === "local" ? iconName+" "+id : reqObj.title
 					};
 
+					reply.files.push(filelist[file].filename);
+
 					this.icons.push(icon);
 					update = true;
 				}
@@ -1292,7 +1299,12 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			}
 		}
 	}
-	return result;
+
+	if (reply.files.length == 1) {
+		reply.files = reply.files[0];
+	}
+
+	return reply;
 };
 
 AutomationController.prototype.listIcons = function() {
@@ -1924,7 +1936,7 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 		}
 
 		if (!checkBoxtype('cit')){
-			this.addQRCode(p, object);
+			p.qrcode = this.addQRCode(p, object);
 		}
 
 		this.saveConfig();
@@ -1971,7 +1983,17 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };*/
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = system("hostname -I | cut -d ' ' -f1")[1].replace(/[\s\n]/g, '');
+	var ip = false;
+	try {
+		if (checkBoxtype('poppbox')){
+			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
+		} else {
+			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
+		}
+	} catch(e) {
+		console.log(e);
+	}
+
 	return ip;
 }
 
@@ -1992,28 +2014,29 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
 	data.passwd = obj.password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
-	data.ip = this.getIPAddress();
-
+	var ip = this.getIPAddress();
+	if(ip) {
+		data.ip = ip;	
+	}
+	 
 	var qr = qrcode(typeNumber, errorCorrectionLevel);
 
 	var url = Object.keys(data).map(function(key){
 		return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 	}).join('&');
 
-	qr.addData(url);
+	qr.addData(Base64.encode(url));
 	qr.make();
 
 	var qrcodeBase64 = qr.createImgTag(3);
 
-	var file = "";
-	if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-		file = data.login + new Date().getTime()+ ".gif"; //Loginname + timespame + file extension(gif)
-	} else {
-		file = profile.qrcode
+	var file = data.login + new Date().getTime()+ ".gif";
+	//delete qrcode
+	if(profile.hasOwnProperty('qrcode') && profile.qrcode !== "") {
+		saveObject(profile.qrcode, null);
 	}
-
-	profile.qrcode = file;
 	saveObject(file ,qrcodeBase64.toString());
+	return file;
 }
 
 // namespaces

@@ -72,6 +72,7 @@ function ZWave (id, controller) {
 		'rss': ''
 	};
 
+	// z-way statistics
 	this.statistics = {
 		RFTxFrames: {
 			value: 0,
@@ -98,7 +99,6 @@ function ZWave (id, controller) {
 			updateTime: 0
 		}
 	};
-
 }
 
 // Module inheritance and setup
@@ -155,6 +155,9 @@ ZWave.prototype.init = function (config) {
 
 	// select custompostfix.json
 	var custom_postfix = loadObject("custompostfix.json");
+
+	// DSK collector
+	this.dskCollection = this.loadObject("dskCollection") || [];
 
 	// add custom_postfix to postfix
 	if (!!custom_postfix) {
@@ -544,6 +547,7 @@ ZWave.prototype.CommunicationLogger = function() {
 		var encaps = [
 				{ cc: 0x60, cmd: 0x0D, head: 4, tail: 0, srcI: 2, dstI: 3, encap:  'I' }, // MultiChannel
 				{ cc: 0x60, cmd: 0x06, head: 3, tail: 0, srcI: 0, dstI: 2, encap:  'I' }, // MultiInstance
+				{ cc: 0x6C, cmd: 0x01, head: 4, tail: 0, srcI: 0, dstI: 0, encap: 'Su' }, // Supervision
 				{ cc: 0x8F, cmd: 0x01, head: 2, tail: 0, srcI: 0, dstI: 0, encap:  'M' }, // MultiCommand
 				{ cc: 0x98, cmd: 0x81, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
 				{ cc: 0x98, cmd: 0xC1, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
@@ -768,6 +772,7 @@ ZWave.prototype.failedNodeCheck = function () {
 
 ZWave.prototype.checkForfailedNode = function(nodeId) {
 	var self = this;
+	var zway = this.zway;
 	this.checkFailed = function (nodeId) {
 		var devData = zway.devices[nodeId].data,
 			wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
@@ -806,6 +811,7 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 
 ZWave.prototype.refreshStatisticsPeriodically = function () {
 	var self = this;
+	var zway = this.zway;
 
 	this.updateNetStats = function () {
 		try {
@@ -855,6 +861,313 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	}, 600 * 1000);
 };
 
+/*
+ * this function uses the S2 or Smart Start QR code information
+ * to generate readable entries in this.dskCollection
+ * DSKs of new entries will also be added automatically to the provisioning list
+ */
+ZWave.prototype.addDSKEntry = function (entry) {
+	var zway = this.zway,
+		successful = false,
+		tlvString = '';
+	
+	if (entry && !!entry) {
+		// setup basic values for each QR code entry
+		var transformedEntry = {
+				id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
+				isSmartStart: false,
+				state: 'pending',
+				nodeId: null,
+				timestamp: (new Date()).valueOf(),
+				ZW_QR: entry,
+				p_id: ''
+			},
+			// array with length values of the first 5 leading static QR code values
+			pos = [2,2,5,3,40],
+			// length values of generic TLV parts 
+			tlv = [2,2,null],
+			// keys of the first 5 leading static QR code values
+			keys = [
+				'ZW_QR_LEADIN',
+				'ZW_QR_VERSION',
+				'ZW_QR_CHKSUM',
+				'ZW_S2_REQ_KEYS',
+				'ZW_QR_DSK'
+				],
+			// type array with all known types and their special value subdivisions
+			// all unknown types will be handled generic, see further below
+			types = {
+				'00': { // TlvType = ProductType [value]
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE':5,
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE':5,
+					},
+				'02': { // TlvType = ProductID [value]
+					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID':5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE':5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID':5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION':5
+				},
+				'06': { // TlvType = UUID16 [value]
+					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT':2,
+					'ZW_QR_TLVVAL_UUID16_UUIDDATA':40
+				}
+			},
+			currPos = 0,
+			valLength = 0,
+			// function that will generate entries for known types
+			setTypeEntries = function(type, value){
+				var length = 0;
+
+				if (types[type]) {
+					Object.keys(types[type]).forEach(function(key, index){
+						transformedEntry[key] = value.substring(length, (length +types[type][key]));
+						length = length +types[type][key];
+					});
+				}
+			};
+		try {
+
+			// check if entry is no smart start entry
+			// only DSK will be added as entry
+			if (entry.length === 47 && entry.split('-').length > 0) {
+				transformedEntry['ZW_QR_DSK'] = entry;
+			// otherwise it is a smart entry
+			// do some more voodoo to preparate smart start entry
+			} else {
+				transformedEntry.isSmartStart = true;
+				
+				// fill all keys for the first 5 leading static QR code values
+				_.forEach(pos, function(l, index) {
+					// get value end position
+					// for substring
+					valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
+
+					// cut out value
+					// if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
+					value = keys[index] === 'ZW_QR_DSK'? entry.substring(currPos,valueEndPos).replace(/(.{5})/g,"$&"+"-").slice(0, -1) : entry.substring(currPos,valueEndPos);
+					
+					// assign value to leading key
+					transformedEntry[keys[index]] = value;
+					
+					currPos = keys[index] === l? currPos + valLength : currPos + l;
+				});
+
+				// get all remaining TLV values
+				tlvString = entry.substring(52);
+				var i = 0;
+
+				/*
+				 * Do while loop and cut out and transform all TLV entries piece by piece
+				 * until the QR string is empty
+				 */
+				while (tlvString.length > 0 && i < 50) {
+					currPos = 0;
+					valLength = 0;
+					type = null;
+					// keys for generic TLV entries
+					tlvKeys = ['TlvType','TlvLength','TlvValue'];
+
+					// use array with length values of generic TLV parts
+					// to walk through each TLV entry
+					tlv.forEach(function (l, index) {
+						// get value end position
+						// for substring
+						valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
+
+						// cut out value
+						value = tlvString.substring(currPos,valueEndPos);
+						
+						// if it is the first TLV entry - set the type
+						if (index === 0) {
+							type = value;
+						}
+
+						// if TLV value is null call function for preparing 
+						// the TLV value entries 
+						if (l === null) {
+							// add TLV value keys
+						    setTypeEntries(type, value);
+
+						    // if TLV type is '02'
+						    // set also the p_id
+						    if (type === '02') {
+						    	transformedEntry['p_id'] = value.replace(/(.{5})/g,"$&"+".").slice(0, -1);
+						    }
+						}
+
+						// if the type is unknown
+						// create generic tranformation by using
+						// keys for generic TLV entries and adding their type in front of the key
+						// devided by underscore
+						if (!types[type]) {
+
+							// add tlv entry key
+							transformedEntry[type+'_'+tlvKeys[index]] = value;
+						}
+
+						// stop loop if length is 0
+						if(_.isNumber(tlv[index+1]) && !!tlv[index+1]) {
+							_valLength = parseInt(tlvString.substring(currPos+3,currPos+ 3 + tlv[index+1]), 10);
+						    if (_valLength < 1) {
+						      	tlvString = '';
+						      	return true;
+						    }
+					    }
+						
+						// if the length of the next value is defined by the predecessor value
+						// set valLength to it's correct length for next transformation step
+						if(!_.isNumber(tlv[index+1]) && tlv[index+1] === null) {
+							valLength = parseInt(tlvString.substring(currPos,currPos+2), 10);
+							currPos = currPos + l;
+						// otherwise simply raise it by length value
+						} else {
+							currPos = keys[index] === l? currPos + valLength : currPos + l;
+						}
+					});
+
+					if (tlvString !== '') {
+						// cut out the current finished TLV entry from tlvString
+						tlvString = tlvString.substring(4+valLength);
+					}
+					i++;
+				}
+			}
+
+			// add new entry to dsk collection
+			this.dskCollection.push(transformedEntry);
+
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
+
+			// add DSK to provisioning list
+			dskProvisioningList.push(transformedEntry.ZW_QR_DSK);
+
+			// save dskProvisioningList
+			this.saveDSKProvisioningList(dskProvisioningList);
+
+			// save dsk collection
+			this.saveObject("dskCollection",this.dskCollection);
+			successful = true;
+		} catch (e) {
+			this.addNotification("error", 'Add DSK entry error: '+ e.toString(), "module");
+		}
+	}
+
+	return successful;
+};
+
+/*
+ * this function allows you to update a S2 or Smart Start QR code entry from this.dskCollection
+ * DSKs of changed entries will also be changed automatically in the provisioning list
+ */
+ZWave.prototype.updateDSKEntry = function (dskEntry) {
+	var zway = this.zway,
+		oldDSKEntry = {},
+		entryIndex = _.findIndex(this.dskCollection, function(entry){
+			return entry.id === dskEntry.id;
+		}),
+		successful = false;
+
+	// update DSK in provisioning list and this.dskCollection
+	try {
+		// check this entry id already exists
+		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
+			// fetch old DSK entry
+			oldDSKEntry = this.dskCollection[entryIndex];
+			
+			// replace old DSK entry
+			this.dskCollection[entryIndex] = dskEntry;
+
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
+
+			// update provisioning list
+			dskIndex = _.findIndex(dskProvisioningList, function(entry){
+				return oldDSKEntry['ZW_QR_DSK'] === entry;
+			});
+			
+			// replace the provisioning list entry
+			if (dskIndex > -1 && dskProvisioningList[dskIndex]) {
+				dskProvisioningList[dskIndex] = dskEntry['ZW_QR_DSK'];
+			} else {
+				dskProvisioningList.push(dskEntry['ZW_QR_DSK']);
+			}
+
+			// save dskProvisioningList
+			this.saveDSKProvisioningList(dskProvisioningList);
+
+			// save dsk collection
+			this.saveObject("dskCollection",this.dskCollection);
+
+			successful = true;
+		}
+	} catch (e) {
+		this.addNotification("error", 'Update DSK entry error: '+ e.toString(), "module");
+	}
+
+	return successful;
+};
+
+/*
+ * this function allows you to remove a S2 or Smart Start QR code entry from this.dskCollection
+ * DSKs of removed entries will also be removed automatically from the provisioning list
+ */
+ZWave.prototype.removeDSKEntry = function (dskEntryID) {
+	var zway = this.zway,
+		oldDSKEntry = {},
+		entryIndex = _.findIndex(this.dskCollection, function(entry){
+			return entry.id === dskEntryID || entry.id === parseInt(dskEntryID, 10);
+		}),
+		successful = false;
+
+	// remove DSK from provisioning list
+	try {
+		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
+			// fetch old DSK entry
+			oldDSKEntry = this.dskCollection[entryIndex];
+			
+			// remove DSK entry
+			this.dskCollection.splice(entryIndex, 1);
+
+			// get dskProvisioningList
+			dskProvisioningList = this.getDSKProvisioningList();
+
+			// remove from provisioning list
+			dskProvisioningList = _.filter(dskProvisioningList, function(dsk){
+				return dsk !== oldDSKEntry['ZW_QR_DSK'];
+			});
+
+			// save dskProvisioningList
+			this.saveDSKProvisioningList(dskProvisioningList);
+
+			// save dsk collection
+			this.saveObject("dskCollection",this.dskCollection);
+
+			successful = true;
+		}
+	} catch (e) {
+		this.addNotification("error", 'Remove DSK entry error: '+ e.toString(), "module");
+	}
+
+	return successful;
+};
+
+/*
+ * this function allows you to get all S2 or Smart Start QR code entries from this.dskCollection
+ * or excactly one specified by it's entry id
+ */
+ZWave.prototype.getDSKCollection = function (dskEntryID) {
+	if (dskEntryID) {
+		var dskEntry = _.filter(this.dskCollection, function(dskEntry){
+			return dskEntry.id === dskEntryID || dskEntry.id === parseInt(dskEntryID, 10);
+		});
+
+		return dskEntry[0]? dskEntry[0] : []; 
+	} else {
+		return this.dskCollection;
+	}
+}
+
 // --------------- Public HTTP API -------------------
 
 
@@ -891,6 +1204,12 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetDSKProvisioningList", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".AddDSKProvisioningEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".GetDSKCollection", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".RemoveDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".AddDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".UpdateDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -927,6 +1246,12 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	ws.revokeExternalAccess(_name + ".GetStatisticsData");
+	ws.revokeExternalAccess(_name + ".GetDSKProvisioningList");
+	ws.revokeExternalAccess(_name + ".AddDSKProvisioningEntry");
+	ws.revokeExternalAccess(_name + ".GetDSKCollection");
+	ws.revokeExternalAccess(_name + ".RemoveDSKEntry");
+	ws.revokeExternalAccess(_name + ".AddDSKEntry");
+	ws.revokeExternalAccess(_name + ".UpdateDSKEntry");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -2835,6 +3160,245 @@ ZWave.prototype.defineHandlers = function () {
 			body: statistics
 		};
 	};
+
+	/*
+	 * show DSK z-way provisioning list
+	 */
+	this.ZWaveAPI.GetDSKProvisioningList = function(url,request) {
+		var reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			};
+
+		try {
+			reply.body = self.getDSKProvisioningList();
+		} catch (e) {
+			_.extend(reply,{
+				status: 500,
+				error: 'Something went wrong. ERROR: ' + e.toString()
+			});
+		}
+
+		return reply;
+	};
+
+	/*
+	 * add DSK to z-way provisioning list
+	 */
+	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			}
+
+		try {
+			// get dskProvisioningList
+			dskProvisioningList = self.getDSKProvisioningList();
+			// add DSK
+			if (dskProvisioningList.indexOf(req.dsk) < 0) {
+				dskProvisioningList.push(req.dsk);
+				
+				// save dskProvisioningList
+				self.saveDSKProvisioningList(dskProvisioningList);
+				
+				reply.body = [req.dsk];
+			} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+		}
+
+		return reply;
+	};
+
+	/*
+	 * show all prepared QR code DSK entries or one specific by it's id
+	 * this.dskCollection list is used 
+	 */
+	this.ZWaveAPI.GetDSKCollection = function(url,request) {
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			id = req && req.id? req.id : false,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: self.getDSKCollection(id),
+				error: null,
+				message: null
+			};
+
+		return reply;
+	};
+
+	/*
+	 * remove all or one specific by it's id prepared QR code DSK entries 
+	 * this.dskCollection list is used
+	 * this will also remove DSK entries from z-way provisioning list 
+	 */
+	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.query? parseToObject(request.query) : undefined,
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			}
+
+		try {
+			if (req['all'] === 'true' || req['all'] === true) {
+			
+				// remove all DSK entry
+				self.dskCollection = []
+
+				// save dskProvisioningList
+				self.saveDSKProvisioningList([]);
+
+				// save dsk collection
+				self.saveObject("dskCollection",self.dskCollection);
+
+				success = true;
+			} else {
+				var success = self.removeDSKEntry(parseInt(req.id,10));
+			}			
+
+			if (success) {
+				reply.body = req['all']? self.dskCollection : req.id;
+			} else {
+				reply.status = 404;
+				reply.message = 'Not found - DSK entry does not exist';
+			}
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+		}
+
+		return reply;
+	};
+
+	/*
+	 * add S2 or Smart Start QR code DSK entries 
+	 * this.dskCollection list is used
+	 * this will also add DSK entries to z-way provisioning list 
+	 */
+	this.ZWaveAPI.AddDSKEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			},
+			success = false;
+
+		try {
+			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.ZW_QR === req.dsk;}) < 0) {
+				success = self.addDSKEntry(req.dsk);
+				if (success) {
+					reply.body = typeof req.dsk === 'string'? {dsk: req.dsk} : req.dsk;
+				} else {
+					reply.status = 404;
+					reply.message = 'Cannot add DSK entry';
+				}
+			} else {
+				reply.status = 409;
+				reply.message = 'Conflict - DSK entry already exists';
+			}
+			
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+		}
+
+		return reply;
+	};
+
+	/*
+	 * update S2 or Smart Start QR code DSK entries 
+	 * this.dskCollection list is used
+	 * this will also change DSK entries within z-way provisioning list 
+	 */
+	this.ZWaveAPI.UpdateDSKEntry = function(url, request) {
+		// prepare request data
+		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
+			reply = {
+				status: 200,
+				headers: {
+					"Content-Type": "application/json",
+					"Access-Control-Allow-Origin": "*",
+					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+					"Access-Control-Allow-Headers": "Authorization",
+					"Connection": "keep-alive"
+				},
+				body: null,
+				error: null,
+				message: null
+			}
+
+		try {
+			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.id === req.id;}) > -1) {
+				var success = self.updateDSKEntry(req);
+
+				if (success) {
+					reply.body = req;
+				} else {
+					reply.status = 500;
+					reply.message = 'Something went wrong.';
+				}
+			} else {
+				reply.status = 404;
+				reply.message = 'Not found - DSK entry does not exist';
+			}
+		} catch (e) {
+			reply.status = 500;
+			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+		}
+
+		return reply;
+	};
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
@@ -3328,6 +3892,7 @@ ZWave.prototype.gateDevicesStart = function () {
 													case 'hide':
 													case 'deactivate':
 													case 'icon':
+													case 'probeType':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
 															var nId = nodeId + '-' + splittedEntry[1];
@@ -3431,6 +3996,29 @@ ZWave.prototype.gateDevicesStart = function () {
 						console.log('###');
 						console.log('########################################################################################');
 					}
+
+					// update state of DSK entry if node is smart start device
+					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
+						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
+						var dskEntryIndex;
+						var dskEntry = self.dskCollection.filter(function (entry, index) {
+							dskEntryIndex = index;
+							return entry['ZW_QR_DSK'] === dsk;
+						});
+
+						if (dskEntry[0]) {
+
+							// update state and nodeId
+							dskEntry[0].state = 'included';
+							dskEntry[0].nodeId = nodeId;
+
+							// replace old DSK entry
+							self.dskCollection[dskEntryIndex] = dskEntry[0];
+
+							// save dsk collection
+							self.saveObject("dskCollection",this.dskCollection);
+						}
+					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}
@@ -3448,6 +4036,28 @@ ZWave.prototype.gateDevicesStart = function () {
 			self.controller.devices.remove(name);
 			self.controller.devices.cleanup(name);
 		});
+
+		// update state of DSK entry if node is smart start device
+		if (_id && !!_id) {
+			var dskEntryIndex;
+			var dskEntry = self.dskCollection.filter(function (entry, index) {
+				dskEntryIndex = index;
+				return entry.nodeId === _id;
+			});
+
+			if (dskEntry[0]) {
+
+				// update state and nodeId
+				dskEntry[0].state = 'pending';
+				dskEntry[0].nodeId = null;
+
+				// replace old DSK entry
+				self.dskCollection[dskEntryIndex] = dskEntry[0];
+
+				// save dsk collection
+				self.saveObject("dskCollection",this.dskCollection);
+			}
+		}
 	}, ""); 
 };
 
@@ -3602,6 +4212,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		function applyPostfix(defaultObj, changeObj, devId, devIdNI) {
+			defaultObj.probeType = changeObj.probeType? changeObj.probeType : defaultObj.probeType;
 			defaultObj.metrics.icon = changeObj.icon? changeObj.icon : defaultObj.metrics.icon;
 			defaultObj.metrics.title = changeObj.rename? compileTitle(changeObj.rename, devIdNI, false) : defaultObj.metrics.title;
 			defaultObj.visibility = changeObj.hide? false : true;
@@ -3623,7 +4234,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
 					title: compileTitle('Switch', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -3649,6 +4260,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function (type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -3678,7 +4292,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				metrics: {
 					icon: icon,
 					title: title,
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -3758,6 +4372,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -3787,7 +4404,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
 						level: 'off',
 						oldColor: {},
-						isFailed: isFailed
+						isFailed: false
 					}
 				}
 
@@ -3833,6 +4450,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 					
 				if (vDev_rgb) {
+					// set failed status
+					vDev_rgb.set('metrics:isFailed',isFailed);
+
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_BLUE + ".level", handleColor, "value");
@@ -3855,7 +4475,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 								level: 'off',
 								oldLevel: 'off',
-								isFailed: isFailed
+								isFailed: false
 							}
 						}
 
@@ -3953,6 +4573,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, colorId + ".level", function(type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + colorId);
@@ -3978,7 +4601,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: '',
 					level: '',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -4037,6 +4660,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
 								vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
 							}
@@ -4048,14 +4674,17 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									try {
 										if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 											if (vDev.__emulateOff_timeout) {
-												if (this.value && (vDev.get("metrics:level") !== "on" || !vDev.__emulateOff_timer)) {
-													vDev.set("metrics:level", this.value ? "on" : "off");
+												if (this.value)
+												{
+													if (vDev.get("metrics:level") !== "on" || !vDev.__emulateOff_timer) {
+														vDev.set("metrics:level", "on");
+													}
 													vDev.__emulateOff_timer && clearTimeout(vDev.__emulateOff_timer);
 													vDev.__emulateOff_timer = setTimeout(function() {
-														vDev.set("metrics:level", this.value ? "on" : "off");
+														vDev.set("metrics:level", "off");
 														vDev.__emulateOff_timer = 0;
 													}, vDev.__emulateOff_timeout);
-												}
+												} // off from the sensor is ignored
 											} else {
 												vDev.set("metrics:level", this.value ? "on" : "off");
 											}
@@ -4092,7 +4721,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: '',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 			Object.keys(cc.data).forEach(function (sensorTypeId) {
@@ -4155,6 +4784,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function (type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + sensorTypeId);
@@ -4188,7 +4820,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'meter',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4290,6 +4922,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						});
 
 						if (vDev) {
+							// set failed status
+							vDev.set('metrics:isFailed',isFailed);
+
 							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function (type) {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId + separ + scaleId);
@@ -4323,7 +4958,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'meter',
 					title: compileTitle('Meter', 'Pulse', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4349,6 +4984,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (vDev) {
+						// set failed status
+						vDev.set('metrics:isFailed',isFailed);
+
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "val", function (type) {
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 								self.controller.devices.remove(vDevId);
@@ -4374,7 +5012,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'battery',
 					title: compileTitle('Battery', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4396,6 +5034,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+				
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4412,7 +5053,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'door',
 					title: compileTitle('Door Lock', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 
 				}
 			};
@@ -4436,6 +5077,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4452,7 +5095,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					level: '',
 					icon: 'door',
 					title: compileTitle('Garage Door', vDevIdNI),
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4475,6 +5118,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "state", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4508,7 +5154,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						metrics: {
 							icon: 'thermostat',
 							title: compileTitle("Thermostat operation", vDevIdNI),
-							isFailed: isFailed
+							isFailed: false
 						}
 					};
 
@@ -4538,6 +5184,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (m_vDev) {
+						// set failed status
+						m_vDev.set('metrics:isFailed',isFailed);
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function (type) {
 							try {
 								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -4577,7 +5225,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										max: DH.max ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
 										icon: 'thermostat',
 										title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI),
-										isFailed: isFailed
+										isFailed: false
 								}
 							}
 
@@ -4598,6 +5246,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (t_vDev[mode]) {
+								// set failed status
+								t_vDev[mode].set('metrics:isFailed',isFailed);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function (type) {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 										delete t_vDev[mode];
@@ -4605,9 +5255,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									} else {
 										try {
 											if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-												if (t_vDev[mode].get('metrics:level') !== this.value) {
-													t_vDev[mode].set("metrics:level", this.value);
-												}
+												t_vDev[mode].set("metrics:level", this.value);
 											}
 										} catch (e) {
 										}
@@ -4626,7 +5274,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: 'alarm',
 					level: 'off',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -4702,6 +5350,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (a_vDev) {
+								// set failed status
+								a_vDev.set('metrics:isFailed',isFailed);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function (type) {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 										self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
@@ -4735,7 +5385,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					icon: 'alarm',
 					level: 'off',
 					title: '',
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 			Object.keys(cc.data).forEach(function (notificationTypeId) {
@@ -4794,6 +5444,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									});
 
 									if (a_vDev) {
+										// set failed status
+										a_vDev.set('metrics:isFailed',isFailed);
 										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
 											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
@@ -4896,6 +5548,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 													});
 
 													if (a_vDev) {
+														// set failed status
+														a_vDev.set('metrics:isFailed',isFailed);
+
 														self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
 															if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 																self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
@@ -4948,6 +5603,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										});
 
 										if (a_vDev) {
+											// set failed status
+											a_vDev.set('metrics:isFailed',isFailed);
 											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
@@ -5004,7 +5661,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					 */
 					currentScene: '',
 					discreteStates: {},
-					isFailed: isFailed
+					isFailed: false
 				}
 			};
 
@@ -5025,13 +5682,24 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				moduleId: self.id
 			});
 
+
+			// disable value set on z-way startup
+			var startup = true;
+
+			setTimeout(function(){
+				startup = false;
+			},1000);
+
 			if (vDev) {
+				// set failed status
+				vDev.set('metrics:isFailed',isFailed);
+
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
 					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
 						self.controller.devices.remove(devId);
 					} else {
 						try {
-							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							if (!startup && !(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 								// output curScene + keyAttr or ''
 								var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : 0,
 									mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : 0,
@@ -5077,6 +5745,15 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								vDev.set("metrics:level", cL);
 								vDev.set("metrics:cnt", cnt);
 								vDev.set("metrics:type", type);
+/*								vDev.set("metrics", {
+									state: st,
+									currentScene: cS,
+									keyAttribute: kA,
+									maxScenes: mC,
+									level: cL,
+									cnt: cnt,
+									type: type
+								});*/
 							}
 						} catch (e) {
 						}
@@ -5134,4 +5811,34 @@ ZWave.prototype.updateRSSIData = function(callback) {
 	this.zway.GetBackgroundRSSI(function() {
 		callback(self.lastRSSIData());
 	});
+};
+
+ZWave.prototype.getDSKProvisioningList = function() {
+	var zway = this.zway;
+	
+	/* TODO
+	// get controller node
+	var controllerNode = zway.controller.data.nodeId.value;
+	// return DSK provisioning list
+	return zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];
+	*/
+
+	return zway.controller.data.smartStart.dskProvisioningList.value || [];
+};
+
+
+ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
+	var zway = this.zway;
+
+	/* TODO
+	// get controller node
+	var controllerNode = zway.controller.data.nodeId.value;
+	// update provisioning list
+	zway.devices[controllerNode].data.smartStart.dskProvisioningList.value = dskProvisioningList;
+	*/
+
+	// update provisioning list
+	zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
+	// save z-way data
+	//zway.devices.SaveData();
 };

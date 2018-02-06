@@ -12,6 +12,11 @@
 	"l_locks":"List of locks:",
 	"close":"Close",
 	"open":"Open",
+	"l_icon":"Custom icon",
+	"t_icon":"Icon",
+	"t_preview":"Icon Preview",
 	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
-	"h_sendAction":"Need to avoid flooding the network."
+	"h_sendAction":"Need to avoid flooding the network.",
+	"l_files":"Upload Icon",
+	"h_files":"Upload additional icons. They will show up directly in the dropdown fields."
 }

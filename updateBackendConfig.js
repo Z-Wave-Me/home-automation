@@ -44,6 +44,7 @@
   if (config && !!config) {
 	// Change profiles data
 	if (config.hasOwnProperty('profiles') && Array.isArray(config.profiles) && config.profiles.length > 0) {
+	  var updateQrCode = false;
 	  config.profiles.forEach(function (profile) {
 		if (profile.hasOwnProperty('groups')) {
 		  delete profile.groups;
@@ -69,7 +70,21 @@
 		if (profile.skin) {
 		  delete profile.skin;
 		}
+
+		if (!config.controller.initialAddPropertyQrCode) {
+			if(profile.hasOwnProperty('qrcode') && profile.qrcode !== "") {
+				saveObject(profile.qrcode, null);
+			}
+			profile.qrcode = '';
+			updateQrCode = true;
+		}
 	  });
+
+	  // set transformation flag
+	 if(updateQrCode) {
+	 	config.controller.initialAddPropertyQrCode = true;	
+	 }	
+
 	} else {
 	  // default profile
 	  config.profiles = [{

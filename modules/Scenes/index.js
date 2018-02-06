@@ -1,10 +1,11 @@
 /*** Scenes Z-Way HA module *******************************************
 
-Version: 1.1.1
+Version: 1.1.2
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Changed: Michael Hensche <mh@zwave.eu>
+Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
 Description:
 	Implements light scene based on virtual devices of type dimmer, switch or anothe scene
 ******************************************************************************/
@@ -35,6 +36,9 @@ Scenes.prototype.init = function (config) {
 		deviceId: "Scenes_" + this.id,
 		defaults: {
 			deviceType: "toggleButton",
+			customIcons: { 
+				"default": self.config.customIcon.table[0].icon
+			},
 			metrics: {
 				level: "on", // it is always on, but usefull to allow bind
 				icon: "scene",
@@ -45,7 +49,7 @@ Scenes.prototype.init = function (config) {
 		handler: function (command) {
 			if (command !== 'on') return;
 
-			self.config.switches.forEach(function(devState) {
+			self.config.devices.switches.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -53,7 +57,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.thermostats.forEach(function(devState) {
+			self.config.devices.thermostats.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -61,7 +65,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.dimmers.forEach(function(devState) {
+			self.config.devices.dimmers.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -69,7 +73,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.locks.forEach(function(devState) {
+			self.config.devices.locks.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -77,7 +81,7 @@ Scenes.prototype.init = function (config) {
 					}
 				}
 			});
-			self.config.scenes.forEach(function(scene) {
+			self.config.devices.scenes.forEach(function(scene) {
 				var vDev = self.controller.devices.get(scene);
 				if (vDev) {
 					vDev.performCommand("on");

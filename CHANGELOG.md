@@ -1,3 +1,87 @@
+#------- v2.3.7
+Features:
+* Added emulateOff postfix to Sensor Binary
+
+Changes:
+* Set thermostat value only if they are not equal - this will prevent ClimateControl app to set values twice
+* add ip address to qrcode
+* postfix.json updated (changed or added):
+  * added:
+    * Z-Wave.me Dimmer
+    * Danfoss Hydronic Controller 10
+    * Secure Temperature Sensor
+    * Aeotec RGBW Bulb
+    * Aeotec Dual Nano Switch with Meter
+    * Aeotec Indoor Siren Gen5
+    * Secure 7 Day Programmable Thermostat
+    * Philio Smart Dimmer Socket PAD02
+    * OOMI Mote
+    * OOMI Plug
+    * OOMI Range Extender
+    * OOMI In-Wall Switch
+    * OOMI In-Wall Dimmer
+    * Everspring Temperature and Humidity Sensor
+    * Devolo Alarmsirene
+    * Devolo Luftfeuchtemelder
+    * Devolo Wassermelder
+    * Devolo Bewegungsmelder
+    * Devolo Funkschalter
+    * Devolo Radiator Thermostat
+    * Devolo Rauchmelder
+    * Devolo KFOB
+    * Fibaro Heat Controller
+    * TKBHOME single/dual dimmer switch
+    * Aeotec Door Window Sensor 6
+    * Aeotec Dual Nano Switch
+    * SCHWAIGER - 4 in 1 Multi Sensor Outdoor IP43
+    * Everspring Wall Plug Dimmer
+    * Fibaro Door/Window Sensor G5 - RU
+  * changed:
+    * Philio Double Relay Insert 2x1,5KW
+    * Fibaro Double Relay Switch FGS-222
+    * Danfoss Hydronic Controller 5
+    * Philio Relay Insert Blind
+    * Qubino PWM Thermostat
+    * Devolo Door/Window Contact
+    * Aeotec Nano Switch 1 Relay
+    * Qubino Relay Insert 1*2,3 kW
+    * Fibaro Dimmer 2
+    * Philio Motionsensor
+    * PAN16 Smart Energy Plug In Switch
+    * Qubino On/Off thermostat
+    * Qubino Flush Thermostat
+    * Aeotec Range Extender 6
+    * Aeotec Door Window Sensor 6
+    * TKB Plug Dimmer French
+    * WiDom Universal Double Switch
+    * Aeotec Multisensor Gen 6
+    * Philio PST02-5B Motion Sensor
+    * Fibaro Door/Window Sensor G5
+    * Aeotec Recessed Door G5
+    * Philio 4 in 1 Multisensor
+
+Fixes:
+* Fix not working time-zone set via shui
+
+Modules:
+* Sonos v1.2.3:
+  * fixes
+  * icon changed
+* MobileAppSupport v1.2.5:
+  * bugfix catches undefined-error occurred during adding first mobile device
+  * bugfix removing mobile device deletes LOCAL widget
+  * update IOS token
+* ScheduledScene v2.2.0:
+  * can start scene many times in day
+  * defined default times: 00:00 and 12:00
+  * devices on new path, as example switch: this.config.devices.swithes
+  * compatibility with old config
+  * Bugfix: Dimmers, Lock and scenes didn't run.
+* IfThen v2.5.1:
+  * allow negative values for multilevel sensors
+* LightScene v1.1.1:
+  * icon changed
+
 #04.10.2017 v2.3.6
 Changes:
 * show more logs on ZWaveBinding error

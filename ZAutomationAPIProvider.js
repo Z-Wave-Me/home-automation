@@ -92,6 +92,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 		this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
+		this.router.put("/profiles/qrcode/:profile_id", this.ROLE.USER, this.updateQRCode, [parseInt]);
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -157,6 +158,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("system/time/ntp/:action", this.ROLE.ADMIN, this.configNtp);
 
 		this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
+		this.router.get("/system/ip-address", this.ROLE.ANONYMOUS, this.getIPAddress);
 		this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
 		this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
 
@@ -286,11 +288,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// - registered cit & login forwarding is active
 			//if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
 			if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
-
-				// set qr code only box is no CIT
-				if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-					this.controller.addQRCode(profile, reqObj);
-				}
 				return this.setLogin(profile);
 			} else {
 				return this.denyLogin();
@@ -1634,6 +1631,44 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
+	updateQRCode: function(profileId) {
+		var reply = {
+			error: null,
+			data: null,
+			code: 500
+			},
+		profile = this.controller.getProfile(profileId);
+
+		try {
+			var reqObj = parseToObject(this.req.body);
+		} catch(e) {
+			return reply.error = e.message;
+		}
+
+		if (profile) {
+			var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
+			if(pwd_check) {
+				var file = this.controller.addQRCode(profile, reqObj);
+				profile.qrcode = file;
+
+				profile = this.controller.updateProfile(profile, profile.id);
+				if (profile !== undefined && profile.id !== undefined) {
+					reply.code = 200;
+				} else {
+					reply.code = 500;
+				}
+			} else {
+				reply.error = "wrong_password";	
+				reply.code = 500;
+			}
+
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
+
+		return reply;	
+	},
 	// namespaces
 	listNamespaces: function () {
 		var reply = {
@@ -2753,10 +2788,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		result = this.controller.installIcon('local', file, 'custom', 'icon');
 
-		if (result === "done") {
+		if (result.message === "done") {
 
 			reply.code = 200;
-			reply.data = "icon_installation_successful";
+			reply.data = result.files;
 			reply.error = null;
 		}
 
@@ -2782,10 +2817,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// download and install the icon
 			result = this.controller.installIcon('remote', reqObj, icName, reqObj.id);
 
-			if (result === "done") {
+			if (result.message === "done") {
 
 				reply.code = 200;
-				reply.data = "icon_installation_successful";
+				reply.data = result.files;
 				reply.error = null;
 			}
 		} else {
@@ -2921,6 +2956,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					reply.code = 500;
 					reply.error = e.message;
 				}
+			}
+		return reply;
+	},
+	getIPAddress: function () {
+		var self = this,
+			reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			ip = self.controller.getIPAddress();
+
+			if(ip) {
+				reply.code = 200;
+				reply.data = {
+					ip_address: ip
+				};
+			} else {
+				reply.code = 500;
+				reply.error = "syscommad-not-set";
 			}
 		return reply;
 	},

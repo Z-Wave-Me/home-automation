@@ -12,6 +12,11 @@
 	"l_locks":"Türschlösser",
 	"close":"Verriegelt",
 	"open":"Entriegelt",
+	"l_icon":"Benutzerdefinierter Icon",
+	"t_icon":"Icon",
+	"t_preview":"Icon Vorschau",
 	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
-	"h_sendAction":"Need to avoid flooding the network."
+	"h_sendAction":"Need to avoid flooding the network.",
+	"l_files":"Icon hochladen",
+	"h_files":"Laden Sie weitere Icons hoch. Diese werden nach erfolgreichem Upload automatisch in den Auswahlfeldern gelistet."
 }
