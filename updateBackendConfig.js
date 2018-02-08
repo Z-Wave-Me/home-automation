@@ -76,6 +76,7 @@
 				saveObject(profile.qrcode, null);
 			}
 			profile.qrcode = '';
+			delete profile.qrcode;
 			updateQrCode = true;
 		}
 	  });
