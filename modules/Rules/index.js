@@ -131,19 +131,7 @@ Rules.prototype.init = function (config) {
             }, triggerTimeout);
         } else if (doReverse && !check && self.reversActivated) {
             this.simpleReverseTimer = setTimeout( function() {
-                self.config.simple.targetElements.forEach(function(el) {
-                    var vDev = self.controller.devices.get(el.deviceId),
-                        id = el.deviceId,
-                        type = vDev? vDev.get('deviceType') : '';
-
-                    if (el.reverseLevel !== '') {
-                        var set = executeActions(el.sendAction, vDev, el.reverseLevel);
-                        if (vDev && set) { 
-                            setNewDeviceState(vDev, type, el.reverseLevel);
-                        }
-                    }
-                });
-                self.reversActivated = false;
+                self.performReverse(self.config.simple.targetElements);
             }, reverseTimeout);
         }
 	};
@@ -357,13 +345,7 @@ Rules.prototype.testRule = function (tree) {
         }, triggerTimeout);
     } else if (doReverse && !res && self.reversActivated) {
         this.advancedReverseTimer = setTimeout( function() {
-            tree.targetElements.forEach(function (el){
-                var vDev = self.controller.devices.get(el.deviceId);
-                if (vDev) {
-                    setNewDeviceState(vDev, el.deviceType, el.reverseLevel);
-                }
-                self.reversActivated = false;
-            });
+            self.performReverse(tree.targetElements);
         }, reverseTimeout);
     }
 
@@ -453,6 +435,29 @@ Rules.prototype.runTests = {
     }
 }
 
+Rules.prototype.performReverse = function (targetElements) {
+    var self = this;
+
+    if (targetElements && targetElements.length > 0) {
+        targetElements.forEach(function(el) {
+            if (el.reverseLevel) {
+                var vDev = self.controller.devices.get(el.deviceId),
+                    id = el.deviceId,
+                    type = vDev? vDev.get('deviceType') : '';
+
+                if (vDev && !!vDev) {
+                    var set = executeActions(el.sendAction, vDev, el.reverseLevel);
+                    if (set) { 
+                        setNewDeviceState(vDev, type, el.reverseLevel);
+                    }
+                    self.reversActivated = false;
+                }
+            }
+        });
+        self.reversActivated = false;
+    }
+};
+
 function sendNotification (notification, conditions, actions) {
     var notificationType = '',
         notificationMessage = '';
@@ -484,27 +489,29 @@ op = function (dval, op, val) {
 };
 
 // compare old and new level to avoid unnecessary updates
-function compareValues(vDev,valNew){
+function newValueNotEqualsOldValue(vDev,valNew){
     if (vDev && !!vDev) {
         var devType = vDev.get('deviceType'),
-            vO = devType === 'switchRGBW'? vDev.get('metrics:color') : vDev.get('metrics:color');
+            vO = '';
             vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
         
         switch (devType) {
             case 'switchRGBW':
-                vO = vDev.get('metrics:color');
-                return _.isEqual(vO,vN);
+                vO = typeof vN !== 'string'? vDev.get('metrics:color') : vDev.get('metrics:level');
+
+                if (valNew !== 'string') {
+                    return _.isEqual(vO,vN);
+                }
             case 'switchControl':
-                if (_.contains(['on','off'], vN)) {
+                if (_.contains(['on','off'], vN) || _.isNumber(vN)) {
                     vO = vDev.get('metrics:level');
                 } else {
                     vO = vDev.get('metrics:change');
                 }
-                return vO !== vN;
             default:
                 vO = vDev.get('metrics:level');
-                return vO !== vN;
         }
+        return vO !== vN;
     }
 };
 
@@ -520,13 +527,23 @@ function setNewDeviceState(vDev, type, new_level){
                     _.contains(['on','off'], new_level)? vDev.performCommand(new_level) : vDev.performCommand("exact", { level: new_level });
                 break;                        
             case 'switchRGBW':
-                    vDev.performCommand("exact", { color: new_level}); //{r:, g:, b:}
+                    if (_.contains(["on", "off"], new_level)) {
+                        vDev.performCommand(new_level);
+                    } else {
+                        vDev.performCommand("exact", {
+                            red: new_level.red,
+                            green: new_level.green,
+                            blue: new_level.blue
+                        });
+                    }
                 break;
             case 'switchControl':
                 if (_.contains(["on", "off"], new_level)) {
                     vDev.performCommand(new_level);
                 } else if (_.contains(["upstart", "upstop", "downstart", "downstop"], new_level)) {
                     vDev.performCommand("exact", { change: new_level });
+                } else {
+                    vDev.performCommand("exact", { level: new_level });
                 }
                 break;
             case 'toggleButton':
@@ -543,7 +560,7 @@ function getConfigTimeout (configTimeout) {
 };
 
 function executeActions (compareLevelsFirst, vDev, targetValue) {
-    return (!compareLevelsFirst || (compareLevelsFirst && compareValues(vDev, targetValue)));
+    return (!compareLevelsFirst || (compareLevelsFirst && newValueNotEqualsOldValue(vDev, targetValue)));
 };
 
 function compareSwitchControl (vDev, targetValue) {
