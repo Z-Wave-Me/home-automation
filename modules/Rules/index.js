@@ -440,7 +440,7 @@ Rules.prototype.performReverse = function (targetElements) {
 
     if (targetElements && targetElements.length > 0) {
         targetElements.forEach(function(el) {
-            if (el.reverseLevel) {
+            if (!!el.reverseLevel) {
                 var vDev = self.controller.devices.get(el.deviceId),
                     id = el.deviceId,
                     type = vDev? vDev.get('deviceType') : '';
