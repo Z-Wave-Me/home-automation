@@ -92,7 +92,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 		this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
-		this.router.put("/profiles/qrcode/:profile_id", this.ROLE.USER, this.updateQRCode, [parseInt]);
+		this.router.post("/profiles/qrcode/:profile_id", this.ROLE.USER, this.getQRCodeString, [parseInt]);
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -1631,7 +1631,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	updateQRCode: function(profileId) {
+	getQRCodeString: function(profileId) {
 		var reply = {
 			error: null,
 			data: null,
@@ -1648,12 +1648,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (profile) {
 			var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
 			if(pwd_check) {
-				var file = this.controller.addQRCode(profile, reqObj);
-				profile.qrcode = file;
-
-				profile = this.controller.updateProfile(profile, profile.id);
-				if (profile !== undefined && profile.id !== undefined) {
+				var qrcode_str = this.controller.getQRCodeData(profile, reqObj.password);
+			
+				if (qrcode_str !== undefined) {
 					reply.code = 200;
+					reply.data = qrcode_str;
 				} else {
 					reply.code = 500;
 				}
@@ -1667,7 +1666,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.error = "Profile not found";
 		}
 
-		return reply;	
+		return reply;
 	},
 	// namespaces
 	listNamespaces: function () {

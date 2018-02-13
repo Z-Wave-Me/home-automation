@@ -1936,10 +1936,6 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 			p.login = object.login;
 		}
 
-		if (!checkBoxtype('cit')){
-			p.qrcode = this.addQRCode(p, object);
-		}
-
 		this.saveConfig();
 		
 		return p;
@@ -1998,10 +1994,8 @@ AutomationController.prototype.getIPAddress = function() {
 	return ip;
 }
 
-AutomationController.prototype.addQRCode = function(profile, obj) {
-	var typeNumber = 15,
-		errorCorrectionLevel = 'H',
-		data = {
+AutomationController.prototype.getQRCodeData = function(profile, password) {
+	var data = {
 			id: "",
 			login: "",
 			service: "find.z-wave.me",
@@ -2010,34 +2004,25 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
 			wpa: "",
 			passwd: ""
 		},
-		url = "";
+		url = "",
+		ip = "";
 
-	data.passwd = obj.password;
+	data.passwd = password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
-	var ip = this.getIPAddress();
+	
+	ip = this.getIPAddress();
 	if(ip) {
 		data.ip = ip;	
 	}
-	 
-	var qr = qrcode(typeNumber, errorCorrectionLevel);
 
-	var url = Object.keys(data).map(function(key){
+	url = Object.keys(data).map(function(key){
 		return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 	}).join('&');
 
-	qr.addData(Base64.encode(url));
-	qr.make();
+	url = Base64.encode(url);
 
-	var qrcodeBase64 = qr.createImgTag(3);
-
-	var file = data.login + new Date().getTime()+ ".gif";
-	//delete qrcode
-	if(profile.hasOwnProperty('qrcode') && profile.qrcode !== "") {
-		saveObject(profile.qrcode, null);
-	}
-	saveObject(file ,qrcodeBase64.toString());
-	return file;
+	return url;
 }
 
 // namespaces
