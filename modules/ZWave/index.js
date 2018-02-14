@@ -3328,6 +3328,7 @@ ZWave.prototype.gateDevicesStart = function () {
 													case 'hide':
 													case 'deactivate':
 													case 'icon':
+													case 'probeType':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1 && c.data.lastIncludedDevice.value === nodeId) {
 															//add devId
 															var nId = nodeId + '-' + splittedEntry[1];
@@ -3601,6 +3602,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		function applyPostfix(defaultObj, changeObj, devId, devIdNI) {
+			defaultObj.probeType = changeObj.probeType? changeObj.probeType : defaultObj.probeType;			
 			defaultObj.metrics.icon = changeObj.icon? changeObj.icon : defaultObj.metrics.icon;
 			defaultObj.metrics.title = changeObj.rename? compileTitle(changeObj.rename, devIdNI, false) : defaultObj.metrics.title;
 			defaultObj.visibility = changeObj.hide? false : true;

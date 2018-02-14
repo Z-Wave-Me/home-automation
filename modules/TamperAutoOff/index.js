@@ -1,7 +1,7 @@
 /*** TamperAutoOff Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2016
+Version: 1.1.0
+(c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <aivs@z-wave.me>
 Description:
@@ -48,8 +48,14 @@ TamperAutoOff.prototype.init = function (config) {
 			(function(_vDev) {
 				self.vDevsWithTimers[_vDev.id] = setTimeout(function () {
 					// Timeout fired, so we send "off" command to the virtual device
-					// (every switch device should handle it)
-					_vDev.set("metrics:level", "off");
+					// Set tamper off for vDev or Z-Wave Device
+					if ((id = _vDev.id.match("(ZWayVDev_([^_]+)_([0-9]+))-([0-9]+)-([0-9]+)-([0-9]+)")) === null) {
+						_vDev.set("metrics:level", "off");
+            			return;
+        			} 
+        			else {
+        				zway.devices[parseInt(id[3])].instances[parseInt(id[4])].commandClasses[parseInt(id[5])].data[parseInt(id[6])].level.value = false;
+        			}					
 					// And clearing out this timer variable
 					delete self.vDevsWithTimers[_vDev.id];
 				}, self.config.timeout*1000);
