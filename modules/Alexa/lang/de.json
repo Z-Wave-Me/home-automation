@@ -1,0 +1,5 @@
+{
+  "m_title":"Alexa",
+  "m_descr":"Mit dieser App können Sie ihre SmartHome Geräte und Szenen mit Amazons Echo oder Dot und Alexa per Sprache steuern. <br><br> 1. Modul 'Alexa' herunterladen. <br> 2. Bei <a target='_blank' href='http://alexa.amazon.de'>alexa.amazon.de</a> anmelden.<br>3. Unter 'Skills' den Skill 'SmartHome Popp' suchen und aktivieren. <br>4. In der anschließenden Eingabemaske einfach mit Ihren 'Remote'-Daten anmelden (ID/User + PW).<br>5. Nach erfolgreicher Bestätigung kann das Fenster geschlossen werden und Alexa bietet Ihnen eine automatische Gerätesuche an. Falls dies nicht erscheint, können Sie mit dem Sprachbefehl: 'Alexa – suche Geräte' die suche selbst starten.<br> 6. Nachdem Alexa Ihre Geräte gefunden hat, können Sie diese ab sofort mit dem Sprachbefehl: 'Alexa – #Gerät# einschalten/ausschalten/auf #Wert# dimmen/auf #Wert# setzen' usw. steuern.",
+  "l_assign_room": "Geräte mit Räume verknüpfen?"
+}

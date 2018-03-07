@@ -1,0 +1,5 @@
+v1.0.2
+- add device type thermostat (set and get temperarture) and doorlock (request only the lockstate)
+v1.0.1
+- Alexa discover only devices with the device typ sensorMultilevel (and probeType temperature), switchBinary, toggleButton and switchMultilevel
+- add support to request temperature of the specific device
