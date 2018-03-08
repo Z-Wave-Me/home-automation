@@ -805,47 +805,83 @@ ZWave.prototype.checkForfailedNode = function(nodeId) {
 	}
 };
 
-ZWave.prototype.refreshStatisticsPeriodically = function () {
+ZWave.prototype.netStatsAction = function (action, wait) {
+	var self = this,
+		stats = ['RFTxFrames', 'RFTxLBTBackOffs', 'RFRxFrames', 'RFRxLRCErrors', 'RFRxCRC16Errors', 'RFRxForeignHomeID'],
+		result = "in progress",
+		wait = wait || false;
+
+	if (action === 'get') {
+		// update statistics object by summarizing the new values with the old
+		zway.GetNetworkStats(function(){
+			stats.forEach(function(key) {
+				self.statistics[key] = {
+					value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
+					updateTime: zway.controller.data.statistics[key].updateTime
+				}
+			});
+			result = 'done';
+		}, function() {
+			result = 'failed';
+		});
+	} else if (action === 'reset') {
+		// reset network stats
+		zway.ClearNetworkStats();
+
+		// update statistics object
+		zway.GetNetworkStats(function(){
+			stats.forEach(function(key) {
+				self.statistics[key] = {
+					value: zway.controller.data.statistics[key].value,
+					updateTime: zway.controller.data.statistics[key].updateTime
+				}
+			});
+			result = 'done';
+		}, function() {
+			result = 'failed';
+		});
+	}
+
+	if (wait) {
+		var d = (new Date()).valueOf() + 10*1000; // wait not more than 10 seconds
+				
+		while ((new Date()).valueOf() < d && result === "in progress") {
+			processPendingCallbacks();
+		}
+		
+		if (result === "in progress") {
+			throw("Getting network statistics has timed out");
+		}
+	}
+};
+
+ZWave.prototype.updateNetStats = function () {
 	var self = this;
 
-	this.updateNetStats = function () {
-		try {
-			var stats = ['RFTxFrames', 'RFTxLBTBackOffs', 'RFRxFrames', 'RFRxLRCErrors', 'RFRxCRC16Errors', 'RFRxForeignHomeID'],
-				// get the biggest value of all stat params
-				maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
+	try {
+		// get the biggest value of all stat params
+		var maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
 
-			// reset network statistics
-			if (maxPaketCnt > 32768) { // 2^15
-				zway.ClearNetworkStats();
+		// reset network statistics
+		if (maxPaketCnt > 32768) { // 2^15
+			self.netStatsAction('reset');
 
-				zway.GetNetworkStats(function(){
-					stats.forEach(function(key) {
-						self.statistics[key] = {
-							value: zway.controller.data.statistics[key].value,
-							updateTime: zway.controller.data.statistics[key].updateTime
-						}
-					});
-				});
-				// update network statistics
-			} else {
-				zway.GetNetworkStats(function(){
-					stats.forEach(function(key) {
-						self.statistics[key] = {
-							value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
-							updateTime: zway.controller.data.statistics[key].updateTime
-						}
-					});
-				});
-			}
-		} catch (e){
-			console.log('Failed to update/remove network statistics.', e.toString());
-
-			if (this.statisticsInterval) {
-				clearInterval(this.statisticsInterval);
-				this.statisticsInterval = undefined;
-			}
+		// update network statistics
+		} else {
+			self.netStatsAction('get');
 		}
-	};
+	} catch (e){
+		console.log('Failed to update/reset network statistics.', e.toString());
+
+		if (this.statisticsInterval) {
+			clearInterval(this.statisticsInterval);
+			this.statisticsInterval = undefined;
+		}
+	}
+};
+
+ZWave.prototype.refreshStatisticsPeriodically = function () {
+	var self = this;
 
 	// initial call
 	this.updateNetStats();
@@ -853,7 +889,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	// intervall function collecting network statistic data
 	this.statisticsInterval = setInterval(function() {
 		self.updateNetStats();
-	}, 600 * 1000);
+	}, 10 * 1000);//600 * 1000);
 };
 
 // --------------- Public HTTP API -------------------
@@ -892,6 +928,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ResetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -928,6 +965,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	ws.revokeExternalAccess(_name + ".GetStatisticsData");
+	ws.revokeExternalAccess(_name + ".ResetStatisticsData");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -2824,6 +2862,24 @@ ZWave.prototype.defineHandlers = function () {
 	}
 
 	this.ZWaveAPI.GetStatisticsData = function() {
+		self.netStatsAction('get',true);
+
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Connection": "keep-alive"
+			},
+			body: statistics
+		};
+	};
+
+	this.ZWaveAPI.ResetStatisticsData = function() {
+		self.netStatsAction('reset',true);
+
 		return {
 			status: 200,
 			headers: {
