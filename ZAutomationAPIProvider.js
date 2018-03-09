@@ -163,6 +163,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
 		this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
 
+		this.router.post("/system/ethernet/settings", this.ROLE.ANONYMOUS, this.setIPSettings);
+		this.router.get("/system/ethernet/settings", this.ROLE.ANONYMOUS, this.getIPSettings);
+
 		this.router.post("/system/certfxAuth",this.ROLE.ANONYMOUS,this.certfxAuth);
 		this.router.post("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxSetAuthForwarding);
 		this.router.get("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxGetAuthForwarding);
@@ -3090,7 +3093,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 				if(reqObj.password !== '') {
 					if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
-						retPp = system("sh automation/lib/configAP.sh setPp " + reqObj.password);
+						retPp = system("./automation/lib/configAP.sh setPp " + reqObj.password);
 					} else {
 						reply.error = "Password must between 8 and 63 characters long.";
 						return reply;
@@ -3100,13 +3103,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				}
 
 				if(reqObj.ssid !== '') {
-					retSsid = system("sh automation/lib/configAP.sh setSsid " + reqObj.ssid);
+					retSsid = system("./automation/lib/configAP.sh setSsid " + reqObj.ssid);
 				} else {
 					retSsid[1] = "";
 				}
 
 				if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
-					retR = system("sh automation/lib/configAP.sh reload");
+					retR = system("./automation/lib/configAP.sh reload");
 					if(retR[1].indexOf("Done") !== -1 ) {
 						reply.error = null;
 						reply.data = "OK";
@@ -3135,7 +3138,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (fs.stat('lib/configAP.sh')) {
 			try {
 
-				var retSsid = system("sh automation/lib/configAP.sh getSsid");
+				var retSsid = system("./automation/lib/configAP.sh getSsid");
 
 				var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
 				reply.code = 200;
@@ -3143,6 +3146,88 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			} catch(e) {
 				console.log(e.toString());
+				reply.error = 'Internal Server Error. ' + e.toString();
+			}
+		} else {
+			reply.error = 'Not Implemented';
+			reply.code = 501;
+		}
+
+		return reply;
+	},
+	setIPSettings: function() {
+		var reply = {
+				error: 'IP setup failed!',
+				data: null,
+				code: 500
+			},
+			retSetStatic = [];
+
+		if (fs.stat('lib/configAP.sh')) {
+			try {
+				var reqObj = parseToObject(this.req.body);
+
+				// allow use of this api if
+				if ((this.authCIT() && this.controller.config.cit_authorized === false && this.req.role === 4) || // box is unauthorized CIT and role is anonymous 
+					(this.authCIT() && this.controller.config.cit_authorized === true && this.req.role === 1) || // box is authorized CIT and role is admin
+					(!this.authCIT() && this.req.role === 1)) { // box is no CIT and role is admin
+
+					// set static ip
+					if (reqObj.setStatic === true || reqObj.setStatic === 'true') {
+						if (validateIPaddress('ip',reqObj.ip) && !validateIPaddress('local-link',reqObj.ip) && validateIPaddress('ip',reqObj.netmask) && validateIPaddress('ip',reqObj.gateway)) {
+							retSetStatic = system('./automation/lib/configAP.sh enableStaticIP ' + reqObj.ip + ' ' + reqObj.netmask + ' ' + reqObj.gateway);
+						} else {
+							reply.error = 'Bad Request. Unable to set static IP with: ip '+ reqObj.ip + ', netmask ' + reqObj.netmask + ', gateway ' + reqObj.gateway;
+							reply.code = 400;
+							return reply;
+						}
+					// use dhcp
+					} else if (reqObj.setStatic === false || reqObj.setStatic === 'false') {
+						retSetStatic = system('./automation/lib/configAP.sh disableStaticIP');
+					}
+
+					if (retSetStatic[0] === '0' || retSetStatic[0] === 0) {
+						reply.error = null;
+						reply.data = "OK";
+						reply.code = 200;
+					}
+					
+				} else {
+					reply.error = 'Not Allowed';
+					reply.code = 403;
+				}
+			} catch(e) {
+				reply.error = 'Internal Server Error: ' + e.toString();
+			}			
+		} else {
+			reply.error = 'Not Implemented';
+			reply.code = 501;
+		}
+
+		return reply;
+	},
+	getIPSettings: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			};
+
+		if (fs.stat('lib/configAP.sh')) {
+			try {
+
+				var retGetIp = system("./automation/lib/configAP.sh getStaticIP");
+
+				if (retGetIp[0] === '1' || retGetIp[0] === 1) {
+					reply.error = 'Not Found';
+					reply.data = retGetIp[1];
+					reply.code = 404;
+				} else {
+					reply.error = null;
+					reply.data = JSON.parse(retGetIp[1]);
+					reply.code = 200;
+				}
+			} catch(e) {
 				reply.error = 'Internal Server Error. ' + e.toString();
 			}
 		} else {

@@ -315,3 +315,19 @@ function retBoolean(boolean) {
 		return false;
 	}
 };
+
+/*
+ * validate if input is a well formed IP address, checks for:
+ *  - local-link (self or auto assigned ip address)
+ *  - ip (valide) 
+ */
+function validateIPaddress(test, ipaddress) { 
+	
+	if (test === 'local-link') {
+		return /^(169?)\.(254?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress);
+	} else if (test === 'ip') {
+		return /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(ipaddress);
+	} else {
+		return false;
+	}
+}
