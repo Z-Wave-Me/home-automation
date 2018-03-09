@@ -889,7 +889,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 	// intervall function collecting network statistic data
 	this.statisticsInterval = setInterval(function() {
 		self.updateNetStats();
-	}, 10 * 1000);//600 * 1000);
+	}, 600 * 1000);
 };
 
 // --------------- Public HTTP API -------------------
