@@ -129,6 +129,10 @@ Alexa.prototype.handleControl = function(event) {
             break;
         case self.REQUEST_SET_LOCK_STATE :
             response = self.handleControlSetLockState(event);
+            break;
+        case self.REQUEST_SET_COLOR:
+            response = self.handleControlSetColor(event);
+            break;
         default:
             console.log("Error", "Unsupported operation" + requestedName);
             response = self.handleUnsupportedOperation();
@@ -392,7 +396,7 @@ Alexa.prototype.handleControlSetLockState = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        lockState = event.payload.targetTemperature;
+        lockState = event.payload.lockState;
 
     if(!vDev) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
@@ -402,7 +406,7 @@ Alexa.prototype.handleControlSetLockState = function(event) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_SET_LOCK_STATE)
         var newLevel = lockState == "LOCKED" ? "close" : "open";
 
-        vDev.performCommand("exact", {level: newLevel});
+        vDev.performCommand(newLevel);
 
         var response = {
             "lockState": lockState
@@ -412,12 +416,41 @@ Alexa.prototype.handleControlSetLockState = function(event) {
     return self.createDirective(header, response);
 };
 
+Alexa.prototype.handleControlSetColor = function(event) {
+    var self = this,
+        vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
+        header = {},
+        response = {},
+        hue = event.payload.color.hue,
+        saturation = event.payload.color.saturation,
+        brightness = event.payload.color.brightness,
+        color = hsvToRgb(hue, saturation, brightness);
+
+    if(!vDev) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
+    } else if(vDev.get("metrics:isFailed")) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
+    } else {
+        var header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_SET_COLOR);
+        response = {
+            "achievedState": {
+              "color": {
+                "hue": hue,
+                    "saturation": saturation,
+                    "brightness": brightness
+                }
+            }
+        }
+        vDev.performCommand("exact", {red: color.r, green: color.g, blue: color.b});
+    }
+
+    return self.createDirective(header, response);
+}   
+
 Alexa.prototype.handleQuery = function(event) {
     var self = this,
         response = null,
         requestedName = event.header.name;
-
-    //console.log("Handle Query: ", JSON.stringify(event));
 
     switch (requestedName) {
         case self.REQUEST_LOCK_STATE :
@@ -590,6 +623,11 @@ Alexa.prototype.buildAppliances = function() {
             case "doorlock":
                 appliance.actions.push("getLockState", "setLockState");
                 appliance.applianceTypes.push("SMARTLOCK");
+                break;
+            case "switchRGBW":
+                appliance.actions.push("setColor", "turnOff", "turnOn");
+                appliance.applianceTypes.push("LIGHT");
+                break;
         }
 
         appliance.applianceId = vDev.id.replace(/[^\w_\-=#;:?@&]/g, '_'); // replace not allowed characters
@@ -673,7 +711,7 @@ Alexa.prototype.defineHandlers = function () {
 
     this.AlexaAPI.callActions = function (url, request) {
         console.log("Received data from Alexa Skill");
-        //console.log("request:", JSON.stringify(request));
+        console.log("request:", JSON.stringify(request, null , 4));
         if (request.method === "POST" && request.body) {
             reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
 
@@ -694,8 +732,86 @@ Alexa.prototype.defineHandlers = function () {
                     break;
             }
             console.log("Return Response to Alexa Skill");
-            //console.log("response:", JSON.stringify(response));
+            console.log("response:", JSON.stringify(response, null, 4));
             return response;
         }
     };
 };
+
+/**
+* HSV/HSB to RGB color conversion
+*
+* H runs from 0 to 360 degrees
+* S and V run from 0 to 100
+*
+*/
+function hsvToRgb(h, s, v) {
+    var r, g, b;
+    var i;
+    var f, p, q, t;
+     
+    // Make sure our arguments stay in-range
+    h = Math.max(0, Math.min(360, h));
+    s = Math.max(0, Math.min(100, s));
+    v = Math.max(0, Math.min(100, v));
+    // We accept saturation and value arguments from 0 to 100 because that's
+    if(s == 0) {
+        // Achromatic (grey)
+        r = g = b = v;
+        return {
+            r:Math.round(r * 255), 
+            g:Math.round(g * 255), 
+            b:Math.round(b * 255)
+        };
+    }
+     
+    h /= 60; // sector 0 to 5
+    i = Math.floor(h);
+    f = h - i; // factorial part of h
+    p = v * (1 - s);
+    q = v * (1 - s * f);
+    t = v * (1 - s * (1 - f));
+     
+    switch(i) {
+        case 0:
+            r = v;
+            g = t;
+            b = p;
+            break;
+     
+        case 1:
+            r = q;
+            g = v;
+            b = p;
+            break;
+     
+        case 2:
+            r = p;
+            g = v;
+            b = t;
+            break;
+     
+        case 3:
+            r = p;
+            g = q;
+            b = v;
+            break;
+     
+        case 4:
+            r = t;
+            g = p;
+            b = v;
+            break;
+     
+        default: // case 5:
+            r = v;
+            g = p;
+            b = q;
+    }
+     
+    return {
+        r:Math.round(r * 255), 
+        g:Math.round(g * 255), 
+        b:Math.round(b * 255)
+    };
+}
