@@ -1432,6 +1432,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					profile.dashboard = reqObj.dashboard;
 					profile.hide_single_device_events = reqObj.hide_single_device_events;
 					profile.email = reqObj.email;
+					profile.night_mode = reqObj.night_mode;
 					
 					profile = this.controller.updateProfile(profile, profile.id);
 					
