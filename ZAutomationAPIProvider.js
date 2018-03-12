@@ -3188,10 +3188,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 					if (retSetStatic[0] === '0' || retSetStatic[0] === 0) {
 						reply.error = null;
-						reply.data = "OK";
+						reply.data = {
+							ip: reqObj.ip,
+							netmask: reqObj.netmask,
+							gateway: reqObj.gateway
+						};
 						reply.code = 200;
+					} else {
+						reply.error = 'Internal Server Error: ' + retSetStatic[1];
 					}
-					
+
 				} else {
 					reply.error = 'Not Allowed';
 					reply.code = 403;
