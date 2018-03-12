@@ -1429,7 +1429,8 @@ AutomationController.prototype.getVdevInfo = function (id) {
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
 	this.vdevInfo[id] = _.pick(device, 
-					"deviceType", 
+					"deviceType",
+					"probeType", 
 					"metrics", 
 					"location", 
 					"tags", 
@@ -1935,10 +1936,6 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 			p.login = object.login;
 		}
 
-		if (!checkBoxtype('cit')){
-			p.qrcode = this.addQRCode(p, object);
-		}
-
 		this.saveConfig();
 		
 		return p;
@@ -1988,7 +1985,7 @@ AutomationController.prototype.getIPAddress = function() {
 		if (checkBoxtype('poppbox')){
 			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
 		} else {
-			ip = system("sh automation/lib/getIpAddress.sh")[1].replace(/[\s\n]/g, '');
+			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
 		}
 	} catch(e) {
 		console.log(e);
@@ -1997,10 +1994,8 @@ AutomationController.prototype.getIPAddress = function() {
 	return ip;
 }
 
-AutomationController.prototype.addQRCode = function(profile, obj) {
-	var typeNumber = 15,
-		errorCorrectionLevel = 'H',
-		data = {
+AutomationController.prototype.getQRCodeData = function(profile, password) {
+	var data = {
 			id: "",
 			login: "",
 			service: "find.z-wave.me",
@@ -2009,34 +2004,25 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
 			wpa: "",
 			passwd: ""
 		},
-		url = "";
+		url = "",
+		ip = "";
 
-	data.passwd = obj.password;
+	data.passwd = password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
-	var ip = this.getIPAddress();
+	
+	ip = this.getIPAddress();
 	if(ip) {
 		data.ip = ip;	
 	}
-	 
-	var qr = qrcode(typeNumber, errorCorrectionLevel);
 
-	var url = Object.keys(data).map(function(key){
+	url = Object.keys(data).map(function(key){
 		return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 	}).join('&');
 
-	qr.addData(Base64.encode(url));
-	qr.make();
+	url = Base64.encode(url);
 
-	var qrcodeBase64 = qr.createImgTag(3);
-
-	var file = data.login + new Date().getTime()+ ".gif";
-	//delete qrcode
-	if(profile.hasOwnProperty('qrcode') && profile.qrcode !== "") {
-		saveObject(profile.qrcode, null);
-	}
-	saveObject(file ,qrcodeBase64.toString());
-	return file;
+	return url;
 }
 
 // namespaces
@@ -3000,3 +2986,92 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 		}
 	});
 };
+/*
+AutomationController.prototype.transformInstanceToNewModule = function(instanceId, transformToModule){
+	var self = this,
+		getInstance = _.filter(this.controller.instances, function(instance){
+			return instance.id === instanceId;
+		}),
+		instance = getInstance[0]? getInstance[0] : null,
+		module = this.modules[transformToModule];
+
+	// test data
+
+	instance = {
+	"instanceId" : "0",
+	"moduleId" : "LogicalRules",
+	"active" : false,
+	"title" : "Logical Rule",
+	"params" : {
+		"triggerOnDevicesChange" : true,
+		"eventSource" : [],
+		"logicalOperator" : " none",
+		"tests" : [{
+				"testType" : "binary",
+				"testBinary" : {
+					"device" : "DummyDevice_17",
+					"testValue" : "on"
+				}
+			}, {
+				"testType" : "time",
+				"testTime" : {
+					"testOperator" : "<=",
+					"testValue" : "03:00"
+				}
+			}, {
+				"testType" : "binary",
+				"testBinary" : {
+					"device" : "Dummy_Devices_24_alarm_alarmSensor_burglar",
+					"testValue" : "on"
+				}
+			}, {
+				"testType" : "nested",
+				"testNested" : {
+					"logicalOperator" : "or",
+					"tests" : [{
+							"testType" : "binary",
+							"testBinary" : {
+								"device" : "ZWayVDev_uzb_6-0-48-1",
+								"testValue" : "on"
+							}
+						}, {
+							"testType" : "sensorDiscrete",
+							"testSensorDiscrete" : {
+								"testValue" : "10"
+							}
+						}
+					]
+				}
+			}
+		],
+		"action" : {
+			"switches" : [{
+					"device" : "DummyDevice_17",
+					"status" : "on",
+					"sendAction" : false
+				}
+			],
+			"dimmers" : [{
+					"device" : "ZWayVDev_uzb_2-0-38",
+					"status" : 56,
+					"sendAction" : false
+				}
+			],
+			"thermostats" : [],
+			"locks" : [],
+			"scenes" : [],
+			"notification" : []
+		},
+		"expertSettings" : false
+	},
+	"id" : 19,
+	"creationTime" : 1516791010,
+	"category" : "automation_basic"
+}
+
+	if (instance && !!instance && module) {
+
+
+	}
+
+};*/

@@ -15,24 +15,25 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-		"sourceDevice": {},
-		"targets": {
-			"elements": []
+		"simple": {
+			"triggerEvent": {},
+			"triggerDelay": 0,
+			"targetElements": [],
+			"sendNotifications": [],
+			"reverseDelay": 0
 		},
-		"delay": {},
-		"reverse": {},
 		"advanced": {
-			"activate": false,
-			"triggerOnDevicesChange" : true,
-			"eventSource" : [],
-			"logicalOperator" : " none",
+			"active": false,
+			"triggerScenes" : [],
+			"triggerDelay": 0,
+			"logicalOperator" : "and",
 			"tests" : [],
-			"action" : {},
-			"delay": {}
+			"targetElements": [],
+			"sendNotifications": [],
+			"reverseDelay": 0,
+			"triggerOnDevicesChange" : true
 		},
-		"mail_helper": "__h_nomail__",
-		"mail_button": "__b_createmail__",
-		"mail_confirm": "__m_createmail__"
+		"reverse": false
 	},
 	"schema": {},
 	"options": {}
