@@ -75,6 +75,7 @@
 		  delete profile.skin;
 		}
 
+		// remove qrcode
 		if(profile.qrcode) {
 			if(profile.qrcode !== "") {
 				saveObject(profile.qrcode, null);	
