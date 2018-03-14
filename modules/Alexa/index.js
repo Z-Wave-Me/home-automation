@@ -71,8 +71,8 @@ Alexa.prototype.init = function(config) {
 
     Alexa.super_.prototype.init.call(this, config);
 
-    self.defineHandlers();
-    self.externalAPIAllow();
+    this.defineHandlers();
+    this.externalAPIAllow();
     global["AlexaAPI"] = this.AlexaAPI;
 };
 
@@ -99,8 +99,6 @@ Alexa.prototype.handleControl = function(event) {
     var self = this,
         response = null,
         requestedName = event.header.name;
-
-    //console.log("Handle Control: ", JSON.stringify(event));
 
     switch (requestedName) {
         case self.REQUEST_TURN_ON :
@@ -138,11 +136,43 @@ Alexa.prototype.handleControl = function(event) {
             response = self.handleUnsupportedOperation();
             break;
     }
-    return response
+    return response;
 };
 
+
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "TurnOnRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "TurnOnConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {}
+   * }
+   */
 Alexa.prototype.handleControlTurnOn = function(event) {
-    var self = this,
+     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {};
 
@@ -151,13 +181,44 @@ Alexa.prototype.handleControlTurnOn = function(event) {
     } else if(vDev.get("metrics:isFailed")) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
     } else {
-        header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_TURN_ON)
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_TURN_ON);
         vDev.performCommand("on");    
     }
         
-    return self.createDirective(header, {})
+    return self.createDirective(header, {});
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "TurnOffRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "TurnOffConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {}
+   * }
+   */
 Alexa.prototype.handleControlTurnOff = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
@@ -172,9 +233,43 @@ Alexa.prototype.handleControlTurnOff = function(event) {
         vDev.performCommand("off");    
     }
 
-    return self.createDirective(header, {})
+    return self.createDirective(header, {});
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "SetPercentageRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "percentageState": {
+   *            "value": 50.0
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "SetPercentageConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {}
+   * }
+   */
 Alexa.prototype.handleControlSetPercentage = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
@@ -193,11 +288,44 @@ Alexa.prototype.handleControlSetPercentage = function(event) {
     return self.createDirective(header, {});
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "IncrementPercentageRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "deltaPercentage": {
+   *            "value": 10.0
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "IncrementPercentageConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {}
+   * }
+   */
 Alexa.prototype.handleControlIncrementPercentage = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        curLevel = vDev.get("metrics:level"),
         maxLevel = 99,
         minLevel = 0,
         newLevel = 0,
@@ -210,6 +338,7 @@ Alexa.prototype.handleControlIncrementPercentage = function(event) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
     } else {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_INCREMENT_PERCENTAGE);
+        var curLevel = vDev.get("metrics:level");
         if(curLevel + delta <= maxLevel) {
             newLevel = curLevel + delta;
         } else {
@@ -222,11 +351,44 @@ Alexa.prototype.handleControlIncrementPercentage = function(event) {
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "DecrementPercentageRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "deltaPercentage": {
+   *            "value": 10.0
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "DecrementPercentageConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {}
+   * }
+   */
 Alexa.prototype.handleControlDecrementPercentage = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        curLevel = vDev.get("metrics:level"),
         minLevel = 0,
         newLevel = 0,
         delta = event.payload.deltaPercentage.value;
@@ -237,6 +399,8 @@ Alexa.prototype.handleControlDecrementPercentage = function(event) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
     } else {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_DECREMENT_PERCENTAGE);
+        var curLevel = vDev.get("metrics:level");
+
         if(curLevel - delta >= minLevel) {
             newLevel = curLevel - delta;
         } else {
@@ -249,122 +413,276 @@ Alexa.prototype.handleControlDecrementPercentage = function(event) {
     return self.createDirective(header, {});
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "SetTargetTemperatureRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "targetTemperature": {
+   *            "value": 25.0
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "SetTargetTemperatureConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "targetTemperature": {
+   *             "value": 25.0   
+   *         },
+   *         "temperatureMode": {
+   *             "value" "AUTO"
+   *         },
+   *         "previousState": {
+   *             "targetTemperature": {
+   *                 "value": 21.0
+   *             },
+   *             "mode": {
+   *                 "value": "AUTO"
+   *             }   
+   *         }
+   *     }
+   * }
+   */
 Alexa.prototype.handleControlSetTargetTemperature = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        maxTemp = vDev.get("metrics:max"),
-        minTemp = vDev.get("metrics:min"),
         temperature = event.payload.targetTemperature.value,
-        prevTemp = vDev.get("metrics:level"),
         response = {};
 
     if(!vDev) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
     } else if(vDev.get("metrics:isFailed")) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
-    } else if (temperature < minTemp || temperature > maxTemp) {
-        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_VALUE_OUT_OF_RANGE);
-        response = {
-            "minimumValue": minTemp,
-            "maximumValue": maxTemp
-        };
     } else {
-        header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_SET_TARGET_TEMPERATURE);
-        vDev.performCommand("exact", {level: temperature});
+      var maxTemp = vDev.get("metrics:max"),
+          minTemp = vDev.get("metrics:min"),
+          prevTemp = vDev.get("metrics:level");
 
-        response = {
-            "targetTemperature": {
-                "value": temperature
-            },
-            "temperatureMode": {
-                "value": "AUTO"
-            },
-            "previousState": {
-                "targetTemperature": {
-                    "value": prevTemp
-                },
-                "mode": {
-                    "value": "AUTO"
-                }
-            }
-        };
+      if (temperature < minTemp || temperature > maxTemp) {
+          header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_VALUE_OUT_OF_RANGE);
+          response = {
+              "minimumValue": minTemp,
+              "maximumValue": maxTemp
+          };
+      } else {
+          header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_SET_TARGET_TEMPERATURE);
+          vDev.performCommand("exact", {level: temperature});
+
+          response = {
+              "targetTemperature": {
+                  "value": temperature
+              },
+              "temperatureMode": {
+                  "value": "AUTO"
+              },
+              "previousState": {
+                  "targetTemperature": {
+                      "value": prevTemp
+                  },
+                  "mode": {
+                      "value": "AUTO"
+                  }
+              }
+          };
+      }
     }
-
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "IncrementTargetTemperatureRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "deltaTemperature": {
+   *            "value": 3.6
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "IncrementTargetTemperatureConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "previousState": {
+   *             "targetTemperature": {
+   *                 "value": 21.0
+   *             },
+   *             "mode": {
+   *                 "value": "AUTO"
+   *             }   
+   *         }
+   *         "targetTemperature": {
+   *             "value": 24.6   
+   *         },
+   *         "temperatureMode": {
+   *             "value" "AUTO"
+   *         }
+   *     }
+   * }
+   */
 Alexa.prototype.handleControlIncrementTargetTemperature = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        maxTemp = vDev.get("metrics:max"),
-        minTemp = vDev.get("metrics:min"),
         newTemp = 0,
         temperature = event.payload.deltaTemperature.value,
-        curTemp = vDev.get("metrics:level"),
         response = {};
 
     if(!vDev) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
     } else if(vDev.get("metrics:isFailed")) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
-    } else if(curTemp + temperature > maxTemp) {
-        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_VALUE_OUT_OF_RANGE);
-        response = {
-            "minimumValue": minTemp,
-            "maximumValue": maxTemp
-        };
     } else {
-        header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_INCREMENT_TARGET_TEMPERATURE)
-        
-        newTemp = curTemp + temperature;
+      var maxTemp = vDev.get("metrics:max"),
+          minTemp = vDev.get("metrics:min"),
+          curTemp = vDev.get("metrics:level");
 
-        vDev.performCommand("exact", {level: newTemp});
+      if(curTemp + temperature > maxTemp) {
+          header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_VALUE_OUT_OF_RANGE);
+          response = {
+              "minimumValue": minTemp,
+              "maximumValue": maxTemp
+          };
+      } else {
+          header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_INCREMENT_TARGET_TEMPERATURE)
+          
+          newTemp = curTemp + temperature;
 
-        response = {
-            "previousState": {
-                "mode": {
-                    "value": "AUTO"
-                },
-                "targetTemperature": {
-                    "value": curTemp
-                }
-            },
-            "targetTemperature": {
-                "value": newTemp
-            },
-            "temperatureMode": {
-                "value": "AUTO"
-            }
-        };
+          vDev.performCommand("exact", {level: newTemp});
+
+          response = {
+              "previousState": {
+                  "mode": {
+                      "value": "AUTO"
+                  },
+                  "targetTemperature": {
+                      "value": curTemp
+                  }
+              },
+              "targetTemperature": {
+                  "value": newTemp
+              },
+              "temperatureMode": {
+                  "value": "AUTO"
+              }
+          };
+      }
     }
 
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "DecrementTargetTemperatureRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "deltaTemperature": {
+   *            "value": 2
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "DecrementTargetTemperatureConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "previousState": {
+   *             "targetTemperature": {
+   *                 "value": 23.0
+   *             },
+   *             "mode": {
+   *                 "value": "AUTO"
+   *             }   
+   *         }
+   *         "targetTemperature": {
+   *             "value": 21.0   
+   *         },
+   *         "temperatureMode": {
+   *             "value" "AUTO"
+   *         }
+   *     }
+   * }
+   */
 Alexa.prototype.handleControlDecrementTargetTemperature = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        minTemp = vDev.get("metrics:min"),
-        maxTemp = vDev.get("metrics:max"),
         newTemp = 0,
         temperature = event.payload.deltaTemperature.value,
-        curTemp = vDev.get("metrics:level"),
         response = {};
 
     if(!vDev) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
     } else if(vDev.get("metrics:isFailed")) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
-    } else if(curTemp - temperature < minTemp) {
+    } else {
+      var minTemp = vDev.get("metrics:min"),
+          maxTemp = vDev.get("metrics:max"),
+          curTemp = vDev.get("metrics:level");
+
+      if(curTemp - temperature < minTemp) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_VALUE_OUT_OF_RANGE);
         response = {
             "minimumValue": minTemp,
             "maximumValue": maxTemp
         };
-    } else {
+      } else {
 
         newTemp = curTemp - temperature;
 
@@ -387,16 +705,51 @@ Alexa.prototype.handleControlDecrementTargetTemperature = function(event) {
                 "value": "AUTO"
             }
         };
+      }
     }
     
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "SetLockStateRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "lockState": "LOCKED"
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "SetLockStateConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "lockState": "LOCKED"
+   *     }
+   * }
+   */
 Alexa.prototype.handleControlSetLockState = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
         header = {},
-        lockState = event.payload.lockState;
+        lockState = event.payload.targetTemperature;
 
     if(!vDev) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
@@ -406,7 +759,7 @@ Alexa.prototype.handleControlSetLockState = function(event) {
         header = self.createHeader(self.NAMESPACE_CONTROL, self.RESPONSE_SET_LOCK_STATE)
         var newLevel = lockState == "LOCKED" ? "close" : "open";
 
-        vDev.performCommand(newLevel);
+        vDev.performCommand("exact", {level: newLevel});
 
         var response = {
             "lockState": lockState
@@ -416,6 +769,50 @@ Alexa.prototype.handleControlSetLockState = function(event) {
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "SetColorRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        },
+   *        "color": {
+   *            "hue": 0.0,
+   *            "saturation": 1.0000,
+   *            "brightness": 1.0000
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "SetColorConfirmation",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "achievedState": {
+   *             "color": {
+   *                "hue": 0.0,
+   *                "saturation": 1.0000,
+   *                "brightness": 1.0000
+   *            }
+   *         }
+   *     }
+   * }
+   */
 Alexa.prototype.handleControlSetColor = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
@@ -452,6 +849,8 @@ Alexa.prototype.handleQuery = function(event) {
         response = null,
         requestedName = event.header.name;
 
+    //console.log("Handle Query: ", JSON.stringify(event));
+
     switch (requestedName) {
         case self.REQUEST_LOCK_STATE :
             response = self.handleQueryLockState(event);
@@ -470,73 +869,244 @@ Alexa.prototype.handleQuery = function(event) {
     return response;
 };
 
-
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "GetLockStateRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "GetLockStateResponse",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "lockSate": "LOCKED",
+   *         "applianceResponseTimestamp": "2017-01-12T23:20:50.52Z"
+   *     }
+   * }
+   */
 Alexa.prototype.handleQueryLockState = function(event) {
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
-        header = self.createHeader(self.NAMESPACE_QUERY, self.RESPONSE_GET_LOCK_STATE),
-        curLevel = vDev.get("metrics:level"),
-        updateTime = new Date(vDev.get("updateTime") * 1000);
+        header = {},
+        response = {};
 
-        var lockState = curLevel == "open" ? "UNLOCKED" : "LOCKED";
 
-    var response = {
-        "lockState": lockState,
-        "applianceResponseTimestamp": self.ISODateString(updateTime)
-    };
+    if(!vDev) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
+    } else if(vDev.get("metrics:isFailed")) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
+    } else {
+        var curLevel = vDev.get("metrics:level"),
+            updateTime = new Date(vDev.get("updateTime") * 1000),
+            lockState = curLevel == "open" ? "UNLOCKED" : "LOCKED";
+        
+        header = self.createHeader(self.NAMESPACE_QUERY, self.RESPONSE_GET_LOCK_STATE);
+        
+        response = {
+            "lockState": lockState,
+            "applianceResponseTimestamp": self.ISODateString(updateTime)
+        };
+    }
 
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "GetTargetTemperatureRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "GetTargetTemperatureResponse ",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "targetTemperature": {
+   *             "value": 23.00,
+   *             "scale": "CELSIUS"
+   *         },
+   *         "applianceResponseTimestamp": "2017-01-12T23:20:50.52Z",
+   *         "temperatureMode": {
+   *             "value": "HEAT",
+   *             "friendlyName": ""
+   *         }
+   *     }
+   * }
+   */
 Alexa.prototype.handleQueryTargetTemperature = function(event){
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
-        header = self.createHeader(self.NAMESPACE_QUERY, self.RESPONSE_TARGET_TEMPERATURE),
-        curTemp = Math.round(vDev.get("metrics:level")),
-        updateTime = new Date(vDev.get("updateTime") * 1000);
+        header = {},
+        response = {};
 
-    var response = {
-        "targetTemperature": {
-            "value": curTemp,
-            "scale": "CELSIUS"
-        },
-        "applianceResponseTimestamp": self.ISODateString(updateTime),
-        "temperatureMode": {
-            "value": "AUTO",
-            "friendlyName": ""
-        }
-    };
+    if(!vDev) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
+    } else if(vDev.get("metrics:isFailed")) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
+    } else {
+        var curTemp = Math.round(vDev.get("metrics:level")),
+            updateTime = new Date(vDev.get("updateTime") * 1000);
+        
+        header = self.createHeader(self.NAMESPACE_QUERY, self.RESPONSE_TARGET_TEMPERATURE),
+
+        response = {
+            "targetTemperature": {
+                "value": curTemp,
+                "scale": "CELSIUS"
+            },
+            "applianceResponseTimestamp": self.ISODateString(updateTime),
+            "temperatureMode": {
+                "value": "AUTO",
+                "friendlyName": ""
+            }
+        };
+    }
 
     return self.createDirective(header, response);
 };
 
+/**
+   *
+   * @param event
+   * {
+   *  "header": {
+   *       "messageId": "01ebf625-0b89-4c4d-b3aa-32340e894688",
+   *        "name": "GetTemperatureReadingRequest",
+   *        "namespace": "Alexa.ConnectedHome.Control",
+   *        "payloadVersion": "2"
+   *  },
+   *  "payload": {
+   *        "accessToken": "[OAuth token here]",
+   *        "appliance": {
+   *            "additionalApplianceDetails": {
+   *                {"device": "[Z-Way Device ID]"}
+   *            },
+   *            "applianceId": "[Device ID]"
+   *        }
+   *    }
+   * }
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "GetTemperatureReadingResponse ",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "temperatureReading": {
+   *             "value": 23.00,
+   *             "scale": "CELSIUS"
+   *         },
+   *         "applianceResponseTimestamp": "2017-01-12T23:20:50.52Z"
+   *     }
+   * }
+   */
 Alexa.prototype.handleQueryTargetReadingTemperature = function(event){
     var self = this,
         vDev = self.getvDev(event.payload.appliance.additionalApplianceDetails.device),
-        header = self.createHeader(self.NAMESPACE_QUERY, self.RESPONSE_TARGET_READING_TEMPERATURE),
-        curTemp = Math.round(vDev.get("metrics:level")),
-        updateTime = new Date(vDev.get("updateTime") * 1000);
+        header = {},
+        response = {};
 
-    var response = {
-        "temperatureReading": {
-            "value": curTemp,
-            "scale": "CELSIUS"
-        },
-        "applianceResponseTimestamp": self.ISODateString(updateTime)
-    };
+    if(!vDev) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_NO_SUCH_TARGET);
+    } else if(vDev.get("metrics:isFailed")) {
+        header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_TARGET_OFFLINE);
+    } else {
+        var curTemp = Math.round(vDev.get("metrics:level")),
+            updateTime = new Date(vDev.get("updateTime") * 1000);
+
+        header = self.createHeader(self.NAMESPACE_QUERY, self.RESPONSE_TARGET_READING_TEMPERATURE)
+        
+        response = {
+            "temperatureReading": {
+                "value": curTemp,
+                "scale": "CELSIUS"
+            },
+            "applianceResponseTimestamp": self.ISODateString(updateTime)
+        };
+    }
 
     return self.createDirective(header, response);
 };
 
+
+/**
+   *
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "UnsupportedOperationError",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {}
+   * }
+   */
 Alexa.prototype.handleUnsupportedOperation = function() {
     var self = this,
         header = self.createHeader(self.NAMESPACE_CONTROL, self.ERROR_UNSUPPORTED_OPERATION);
     return self.createDirective(header, {});
 };
 
+
+/**
+   * @param fault
+   * @return {{}}
+   * {
+   *     "header": {
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "UnexpectedInformationReceivedError",
+   *         "namespace": "Alexa.ConnectedHome.Control",
+   *         "payloadVersion": "2"
+   *     },
+   *     "payload": {
+   *         "faultingParameter": "[FAULT]"
+   *     }
+   * }
+   */
 Alexa.prototype.handleUnexpectedInfo = function(fault) {
     var self = this,
-        header = self.createHeader(NAMESPACE_CONTROL,ERROR_UNEXPECTED_INFO);
+        header = self.createHeader(NAMESPACE_CONTROL, ERROR_UNEXPECTED_INFO);
 
     var payload = {
         "faultingParameter" : fault
@@ -552,6 +1122,19 @@ Alexa.prototype.getvDev = function(deviceId) {
     return vDev;
 };
 
+/**
+   * @param namespace
+   * @param name
+   * @return {{}}
+   * {
+   *     
+   *         "messageId": "26fa11a8-accb-4f66-a272-8b1ff7abd722",
+   *         "name": "[name]",
+   *         "namespace": "[namespace]",
+   *         "payloadVersion": "2"
+   *     
+   * }
+   */
 Alexa.prototype.createHeader = function(namespace, name) {
     var self = this;
     return {
@@ -562,6 +1145,19 @@ Alexa.prototype.createHeader = function(namespace, name) {
     };
 };
 
+/**
+   * @param header
+   * @param payload
+   * @return {{}}
+   * {
+   *     "header": {
+   *         ["header"]
+   *     },
+   *     "payload": {
+   *         ["payload"]
+   *     }
+   * }
+   */
 Alexa.prototype.createDirective = function(header, payload) {
     return {
         "header" : header,
@@ -648,10 +1244,10 @@ Alexa.prototype.buildAppliances = function() {
             });
             var room = location.title;
             friendlyName = deviceName + " " + room;
-            appliance.friendlyDescription = deviceName + " " + room;
+            appliance.friendlyDescription = deviceName + " " + room + " connected via Z-Way";
         } else {
             friendlyName = deviceName;
-            appliance.friendlyDescription = deviceName;
+            appliance.friendlyDescription = deviceName + " connected via Z-Way";
         }
 
         appliance.friendlyName = friendlyName;
@@ -691,8 +1287,8 @@ Alexa.prototype.ISODateString = function (d) {
 Alexa.prototype.externalAPIAllow = function (name) {
     var _name = !!name ? ("Alexa." + name) : "AlexaAPI";
 
-    ws.allowExternalAccess(_name, this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".callActions", this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name, this.controller.auth.ROLE.USER);
+    ws.allowExternalAccess(_name + ".callActions", this.controller.auth.ROLE.USER);
 };
 
 Alexa.prototype.externalAPIRevoke = function (name) {
@@ -711,7 +1307,7 @@ Alexa.prototype.defineHandlers = function () {
 
     this.AlexaAPI.callActions = function (url, request) {
         console.log("Received data from Alexa Skill");
-        console.log("request:", JSON.stringify(request, null , 4));
+        //console.log("request:", JSON.stringify(request, null , 4));
         if (request.method === "POST" && request.body) {
             reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
 
@@ -729,10 +1325,11 @@ Alexa.prototype.defineHandlers = function () {
                     break;
                 default:
                     console.log("Error: ", "Unsupported namespace: " + requestedNamespace);
+                    self.handleUnexpectedInfo(requestedNamespace);
                     break;
             }
             console.log("Return Response to Alexa Skill");
-            console.log("response:", JSON.stringify(response, null, 4));
+            //console.log("response:", JSON.stringify(response, null, 4));
             return response;
         }
     };

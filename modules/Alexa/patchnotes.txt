@@ -1,3 +1,6 @@
+v1.0.3
+- improve error handling
+- add  device typ switchRGBW to support RGB bulbs (change color)
 v1.0.2
 - add device type thermostat (set and get temperarture) and doorlock (request only the lockstate)
 v1.0.1
