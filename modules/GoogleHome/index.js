@@ -540,11 +540,10 @@ GoogleHome.prototype.handleColorAbsolute = function(command, device) {
         spectrumInt = command.params.color.spectrumRGB,
         rgb = {},
         spectrumHex = "#"+spectrumInt.toString(16);
+        rgb = HexToRGB(spectrumHex),
+        vDev = self.controller.devices.get(device.id),
+        command = {};
 
-        rgb = HexToRGB(spectrumHex);
-
-        var vDev = self.controller.devices.get(device.id);
-        var command = {};
         if(!vDev) {
             command = {
                 "ids": [device.id],
@@ -609,8 +608,6 @@ GoogleHome.prototype.handleTemperatrueSetPoint = function(command, device) {
     var self = this,
         temperature = command.params.thermostatTemperatureSetpoint,
         vDev = self.controller.devices.get(device.id),
-        minTemp = vDev.get("metrics:min"),
-        maxTemp = vDev.get("metrics:max"),
         command = {};
 
     if(!vDev) {
@@ -625,20 +622,25 @@ GoogleHome.prototype.handleTemperatrueSetPoint = function(command, device) {
             "status": "ERROR",
             "errorCode": "deviceOffline"
         }
-    } else if(temperature < minTemp || temperature > maxTemp){
-        command = {
-            "ids": [device.id],
-            "status": "ERROR",
-            "errorCode": "valueOutOfRange"
-        }
     } else {
-        command = {
-            "ids": [device.id],
-            "status": "SUCCESS",
-            "thermostatTemperatureSetpoint": temperature,
-            "online": true
+        var minTemp = vDev.get("metrics:min"),
+            maxTemp = vDev.get("metrics:max");
+
+        if(temperature < minTemp || temperature > maxTemp){
+            command = {
+                "ids": [device.id],
+                "status": "ERROR",
+                "errorCode": "valueOutOfRange"
+            }
+        } else {
+            command = {
+                "ids": [device.id],
+                "status": "SUCCESS",
+                "thermostatTemperatureSetpoint": temperature,
+                "online": true
+            }
+            vDev.performCommand("exact", {"level": parseInt(temperature)});
         }
-        vDev.performCommand("exact", {"level": parseInt(temperature)});
     }
 
     return command;    
@@ -648,46 +650,28 @@ GoogleHome.prototype.handleTemperatrueSetPoint = function(command, device) {
    * @param requestId
    * @param payload
    * {
-   *   "commands": [{
-   *     "devices": [{
-   *       "id": "123",
-   *       "customData": {
-   *         "fooValue": 12,
-   *         "barValue": true,
-   *         "bazValue": "alpaca sauce"
+   *     "devices": {
+   *       "123": {
+   *           "online": true,
+   *           "brightness": 65
    *       }
-   *     }, {
-   *       "id": "456"
-   *     },
-   *     ...
-   *     ],
-   *     "execution": [{
-   *       "command": "action.devices.commands.OnOff",
-   *       "params": {
-   *           "on": true
+   *     }
+   * }
+   * OR
+   * {
+   *     "commands": [{
+   *       "ids": ["123"],
+   *       "status": "SUCCESS",
+   *       "states": {
+   *           "brightness": 65
    *       }
-   *   }]
+   *     }]
    * }
    * @return {{}}
    * {
-   *  "requestId": "ff36a3cc-ec34-11e6-b1a0-64510650abcf",
+   *  "requestId": "[requestId]",
    *   "payload": {
-   *     "devices": {
-   *       "123": {
-   *         "on": true ,
-   *         "online": true
-   *       },
-   *       "456": {
-   *         "on": true,
-   *         "online": true,
-   *         "brightness": 80,
-   *         "color": {
-   *           "name": "cerulian",
-   *           "spectrumRGB": 31655
-   *         }
-   *       },
-   *       ...
-   *     }
+   *        "[payload]"
    *   }
    * }
    */
@@ -808,8 +792,8 @@ GoogleHome.prototype.stop = function() {
 GoogleHome.prototype.externalAPIAllow = function (name) {
     var _name = !!name ? ("GoogleHome." + name) : "GoogleHomeAPI";
 
-    ws.allowExternalAccess(_name, this.controller.auth.ROLE.ADMIN);
-    ws.allowExternalAccess(_name + ".callAction", this.controller.auth.ROLE.ADMIN);
+    ws.allowExternalAccess(_name, this.controller.auth.ROLE.USER);
+    ws.allowExternalAccess(_name + ".callAction", this.controller.auth.ROLE.USER);
 };
 
 GoogleHome.prototype.externalAPIRevoke = function (name) {
@@ -829,7 +813,6 @@ GoogleHome.prototype.defineHandlers = function () {
     this.GoogleHomeAPI.callAction = function (url, request) {
         console.log("Received data from Google Home");
         console.log("request:", JSON.stringify(request));
-
 
         if (request.method === "POST" && request.body) {
             reqObj = typeof request.body === "string" ? JSON.parse(request.body) : request.body;
