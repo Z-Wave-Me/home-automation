@@ -1,0 +1,252 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "system",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+    "moduleName":"LeakageNotification",
+	"version": "1.0.5",
+	"maturity": "beta",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"sensors": [],
+		"action":{},
+		"notification":{}
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"sensors": {
+				"type": "array",
+				"items": {
+					"field": "enum",
+					"datasource": "namespaces",
+					"enum": "namespaces:devices_sensorBinary:flood:deviceId,namespaces:devices_sensorBinary:alarm:flood:deviceId,namespaces:devices_sensorBinary:alarmSensor:flood:deviceId",
+					"required": true
+				}
+			},
+			"action":{
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties":{
+						"filter": {
+							"type":"string",
+							"enum": ["switchBinary","switchMultilevel","scene"],
+							"required": true
+						},
+						"switchBinary": {
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchBinary:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "integer",
+									"enum": ["off", "on"],
+									"required": true
+								}
+							}
+						},
+						"switchMultilevel": {
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {
+								"device": {
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_switchMultilevel:deviceId",
+									"required": true
+								},
+								"status": {
+									"type": "integer",
+									"enum": ["off","on","lvl"],
+									"required": true
+								},
+								"level": {
+									"type": "integer",
+									"minimum":"0",
+									"maximum":"99",
+									"required": true,
+									"dependencies": "status"
+								}
+							}
+						},
+						"scene":{
+							"type": "object",
+							"dependencies":"filter",
+							"properties": {				
+								"device":{
+									"type":"string",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_toggleButton:deviceId",
+									"required": true
+								}
+							}
+						}
+					}
+				}
+			},
+			"notification":{
+				"type":"object",
+				"properties": {
+					"notifiers": {
+						"type": "array",
+						"items": {
+							"type":"object",
+							"properties":{
+								"notifier":{
+									"field": "enum",
+									"datasource": "namespaces",
+									"enum": "namespaces:devices_toggleButton:notification:deviceId"
+								},
+								"message":{
+									"type":"string"
+								}
+							}
+						}
+					},
+					"interval": {
+						"field": "enum",
+						"enum": [60,120,300,600,900,1800,3600]
+					}
+				}
+				
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"sensors": {
+				"label": "__l_dev__",
+				"fields": {
+					"item": {
+						"type": "select",
+						"removeDefaultNone": false,
+						"noneLabel": "__l_choose_dev__",
+						"datasource": "namespaces",
+						"field": "optionLabels",
+						"optionLabels": "namespaces:devices_sensorBinary:flood:deviceName,namespaces:devices_sensorBinary:alarm:flood:deviceName,namespaces:devices_sensorBinary:alarmSensor:flood:deviceName"
+					}
+				}
+			},
+			"action":{
+				"label": "__l_action__",
+				"fields": {
+					"item": {
+						"fields": {
+							"filter": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_type__",
+								"label":"__l_filter__",
+								"optionLabels": ["__switchBinary__","__switchMultilevel__","__scene__"]
+							},
+							"switchBinary": {
+								"dependencies": {
+									"filter": "switchBinary"
+								},
+								"fields": {
+									"device": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
+										"label": "__switchBinary__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchBinary:deviceName"
+									},
+									"status": {
+										"optionLabels": ["__off__", "__on__"]
+									}
+								}
+							},
+							"switchMultilevel": {
+								"dependencies": {
+									"filter": "switchMultilevel"
+								},
+								"fields": {
+									"device": {
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
+										"label": "__switchMultilevel__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+									},
+									"status": {
+										"type": "radio",
+										"optionLabels": ["__on__","__off__","__level__"]
+									},
+									"level": {
+										"field": "enum",
+										"dependencies": {
+											"status": "lvl"
+										}
+									}
+								}
+							},
+							"scene": {
+								"dependencies": {
+									"filter": "scene"
+								},
+								"fields":{
+									"device" :{
+										"type": "select",
+										"removeDefaultNone": false,
+										"noneLabel": "__l_choose_dev__",
+										"label": "__scene__",
+										"helper": "__h_statusOn__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_toggleButton:deviceName"
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"notification": {
+				"label":"__l_notification__",
+				"fields": {
+					"interval": {
+						"label": "__l_interval__",
+						"field": "optionLabels",
+						"optionLabels": ["__one_min__","__two_min__","__five_min__","__ten_min__","__fifteen_min__","__half_h__","__one_h__"]
+					},
+					"notifiers": {
+						"fields": {
+							"item": {
+								"fields": {
+									"notifier":{
+										"type": "select",
+										"label": "__l_notifier__",
+										"datasource": "namespaces",
+										"field": "optionLabels",
+										"optionLabels": "namespaces:devices_toggleButton:notification:deviceName"
+									},
+									"message":{
+										"label":"__l_message__",
+										"type": "textarea"
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}
