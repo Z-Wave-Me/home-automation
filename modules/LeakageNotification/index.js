@@ -4,6 +4,7 @@ Version: 1.0.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
+        Karsten Reichel <kar@zwave.eu>
 Description:
     Filters all water sensors and creates a virtual device to monitor and control them together.
 ******************************************************************************/
@@ -29,8 +30,7 @@ LeakageNotification.prototype.init = function(config) {
     var self = this,
         filteredSensorsFromDevices = [],
         waterSensorMetrics = [],
-        item = {},
-        langFile = self.controller.loadModuleLang('LeakageNotification');
+        item = {};
 
     this.vDev = null;
 
@@ -128,7 +128,7 @@ LeakageNotification.prototype.init = function(config) {
             //stop sending notifications
             console.log('Stop sending notifications ...');
 
-            self.triggerNotification(langFile.abort_sending_msg? langFile.abort_sending_msg : undefined);
+            self.triggerNotification();
 
             if (self.sendInterval) {
                 console.log('Stop - Clear send ...');
@@ -154,26 +154,33 @@ LeakageNotification.prototype.init = function(config) {
             this.sendInterval = setInterval( function () {
                 console.log('Send ...');
                 self.triggerNotification();
-            }, parseInt(config.notification.interval, 10) * 1000);
+            }, parseInt(config.notificationsInterval, 10) * 1000);
         }
     };
 
-    this.triggerNotification = function(msg) {
-        _.forEach(config.notification.notifiers, function(obj){
-            var vDev = self.controller.devices.get(obj.notifier),
-                message = msg? msg : (obj.message? obj.message : '');
+    this.triggerNotification = function() {
+        _.forEach(config.sendNotifications, function(notification){
+            var notificationType = '',
+                notificationMessage = '';
 
-            if (vDev) {
+            if(notification.target && notification.target !== '') {
+                notificationType = notification.target.search('@') > -1? 'mail.notification' : 'push.notification';
+                notificationMessage = !notification.message? fallbackMessage : notification.message;
 
-                // set message to send
-                vDev.set('metrics:message', message, {silent: true});
-                // send notification
-                vDev.performCommand('on');
-                // clear message
-                vDev.set('metrics:message', '', {silent: true});
-            } 
+                self.controller.addNotification(notificationType, notificationMessage, notification.target);
+            }            
         });
     };
+
+    this.triggerEvents = function() {
+        _.forEach(config.triggerEvent, function(event){
+            var vDev = self.controller.devices.get(event.deviceId),
+                set = event.sendAction ? executeActions(event.sendAction, vDev, event.level) : true;
+            if (vDev && set) {
+                setNewDeviceState(vDev, event.deviceType, event.level)
+            }                 
+        });
+    };    
 
     // listener - set vDev level back to OK if device is disarmed and sensor levels are all 'off'
     this.onPoll = function() {
@@ -266,7 +273,7 @@ LeakageNotification.prototype.init = function(config) {
             deviceType: 'sensorMultiline',
             metrics: {
                 multilineType: 'protection',
-                title: self.getInstanceTitle(this.id),
+                title: self.getInstanceTitle(),
                 icon: '/ZAutomation/api/v1/load/modulemedia/LeakageNotification/ok.png',
                 level: !!metr && metr.level? metr.level : 'OK',
                 state: !!metr && metr.state? metr.state :'disarmed'
@@ -274,7 +281,7 @@ LeakageNotification.prototype.init = function(config) {
         },
         overlay: {
             metrics: {
-                title: self.getInstanceTitle(this.id),
+                title: self.getInstanceTitle(),
                 sensors: waterSensorMetrics
             }
         },
@@ -310,7 +317,7 @@ LeakageNotification.prototype.init = function(config) {
                 //stop sending notifications
                 console.log('Disarmed. Stop sending notifications ...');
                 
-                self.triggerNotification(langFile.disarmed? langFile.disarmed : undefined);
+                //self.triggerNotification();
                 
                 if (self.sendInterval) {
                     console.log('Disarmed - Clear send ...');
@@ -394,14 +401,6 @@ LeakageNotification.prototype.stop = function() {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-LeakageNotification.prototype.getInstanceTitle = function(instanceId) {
-    var instanceTitle = this.controller.instances.filter(function(instance) {
-        return instance.id === instanceId;
-    });
-
-    return instanceTitle[0] && instanceTitle[0].title ? instanceTitle[0].title : 'Leakage Protection ' + this.id;
-};
-
 LeakageNotification.prototype.getSensorLevels = function() {
     var self = this;
 
@@ -409,3 +408,75 @@ LeakageNotification.prototype.getSensorLevels = function() {
         return sensor.metrics.level;
     });
 };
+
+// compare old and new level to avoid unnecessary updates
+function newValueNotEqualsOldValue(vDev,valNew){
+    if (vDev && !!vDev) {
+        var devType = vDev.get('deviceType'),
+            vO = '';
+            vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
+        
+        switch (devType) {
+            case 'switchRGBW':
+                vO = typeof vN !== 'string'? vDev.get('metrics:color') : vDev.get('metrics:level');
+
+                if (valNew !== 'string') {
+                    return _.isEqual(vO,vN);
+                }
+            case 'switchControl':
+                if (_.contains(['on','off'], vN) || _.isNumber(vN)) {
+                    vO = vDev.get('metrics:level');
+                } else {
+                    vO = vDev.get('metrics:change');
+                }
+            default:
+                vO = vDev.get('metrics:level');
+        }
+        return vO !== vN;
+    }
+};
+
+function executeActions (compareLevelsFirst, vDev, targetValue) {
+    return (!compareLevelsFirst || (compareLevelsFirst && newValueNotEqualsOldValue(vDev, targetValue)));
+};
+
+function setNewDeviceState(vDev, type, new_level){
+    if (vDev && !!vDev) {
+        switch(type) {
+            case 'doorlock':
+            case 'switchBinary':
+                    vDev.performCommand(new_level);
+                break;
+            case 'switchMultilevel':
+            case 'thermostat':
+                    _.contains(['on','off'], new_level)? vDev.performCommand(new_level) : vDev.performCommand("exact", { level: new_level });
+                break;                        
+            case 'switchRGBW':
+                    if (_.contains(["on", "off"], new_level)) {
+                        vDev.performCommand(new_level);
+                    } else {
+                        vDev.performCommand("exact", {
+                            red: new_level.red,
+                            green: new_level.green,
+                            blue: new_level.blue
+                        });
+                    }
+                break;
+            case 'switchControl':
+                if (_.contains(["on", "off"], new_level)) {
+                    vDev.performCommand(new_level);
+                } else if (_.contains(["upstart", "upstop", "downstart", "downstop"], new_level)) {
+                    vDev.performCommand("exact", { change: new_level });
+                } else {
+                    vDev.performCommand("exact", { level: new_level });
+                }
+                break;
+            case 'toggleButton':
+                vDev.performCommand('on');
+                break;
+            default:
+                vDev.performCommand(new_level);
+        }
+    }
+};
+
