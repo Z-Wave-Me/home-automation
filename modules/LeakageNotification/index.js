@@ -128,7 +128,7 @@ LeakageNotification.prototype.init = function(config) {
             //stop sending notifications
             console.log('Stop sending notifications ...');
 
-            self.triggerNotification();
+            self.triggerNotification('revert');
 
             if (self.sendInterval) {
                 console.log('Stop - Clear send ...');
@@ -144,31 +144,33 @@ LeakageNotification.prototype.init = function(config) {
         self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/LeakageNotification/alarm.png');
 
         // trigger reaction
-        self.reactOnAlert();
+        self.triggerEvents();
 
         //start sending notifications
         console.log('Alert detected. Start sending notifications ...');
 
         if (!this.sendInterval) {
-            self.triggerNotification();
+            self.triggerNotification('alarm');
             this.sendInterval = setInterval( function () {
                 console.log('Send ...');
-                self.triggerNotification();
+                self.triggerNotification('alarm');
             }, parseInt(config.notificationsInterval, 10) * 1000);
         }
     };
 
-    this.triggerNotification = function() {
+    this.triggerNotification = function(type) {
         _.forEach(config.sendNotifications, function(notification){
-            var notificationType = '',
-                notificationMessage = '';
+            if (type == notification.fireOn) {
+                var notificationType = '',
+                    notificationMessage = '';
 
-            if(notification.target && notification.target !== '') {
-                notificationType = notification.target.search('@') > -1? 'mail.notification' : 'push.notification';
-                notificationMessage = !notification.message? fallbackMessage : notification.message;
+                if(notification.target && notification.target !== '') {
+                    notificationType = notification.target.search('@') > -1? 'mail.notification' : 'push.notification';
+                    notificationMessage = !notification.message? fallbackMessage : notification.message;
 
-                self.controller.addNotification(notificationType, notificationMessage, notification.target);
-            }            
+                    self.controller.addNotification(notificationType, notificationMessage, notification.target);
+                }
+            }
         });
     };
 
@@ -205,32 +207,6 @@ LeakageNotification.prototype.init = function(config) {
             clearInterval(this.sendInterval);
             this.sendInterval = undefined;
         }
-    };
-
-    // do configured action if alert is triggered
-    this.reactOnAlert = function() {
-
-        _.forEach(self.config.action, function(actor) {
-            var type = actor.filter,
-                configDev = actor[type],
-                targetDev = self.controller.devices.get(configDev.device);
-
-            if (targetDev) {
-                if (type === 'switchMultilevel') {
-                    if (configDev.status === 'lvl') {
-                        targetDev.performCommand("exact", {
-                            level: configDev.level
-                        });
-                    } else {
-                        targetDev.performCommand(configDev.status);
-                    }
-                } else if (targetDev.get("deviceType") === "toggleButton" && type === "scene") {
-                    targetDev.performCommand("on");
-                } else {
-                    targetDev.performCommand(configDev.status);
-                }
-            }
-        });
     };
 
     this.checkState = function() {
@@ -299,6 +275,8 @@ LeakageNotification.prototype.init = function(config) {
 
                 // set up arm mode
                 self.setupArmed();
+
+                self.triggerNotification('on');
             }
             // disarm
             if (command === 'disarm' && waterSensorMetrics.length > 0) {
@@ -317,7 +295,7 @@ LeakageNotification.prototype.init = function(config) {
                 //stop sending notifications
                 console.log('Disarmed. Stop sending notifications ...');
                 
-                //self.triggerNotification();
+                self.triggerNotification('off');
                 
                 if (self.sendInterval) {
                     console.log('Disarmed - Clear send ...');
