@@ -160,7 +160,7 @@ LeakageNotification.prototype.init = function(config) {
 
     this.triggerNotification = function(type) {
         _.forEach(config.sendNotifications, function(notification){
-            if (type == notification.fireOn) {
+            if (type == notification.firedOn) {
                 var notificationType = '',
                     notificationMessage = '';
 
