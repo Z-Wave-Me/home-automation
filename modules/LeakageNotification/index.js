@@ -177,9 +177,10 @@ LeakageNotification.prototype.init = function(config) {
     this.triggerEvents = function() {
         _.forEach(config.triggerEvent, function(event){
             var vDev = self.controller.devices.get(event.deviceId),
-                set = event.sendAction ? executeActions(event.sendAction, vDev, event.level) : true;
+                lvl = event.status == "lvl" ? event.level : event.status,
+                set = event.sendAction ? executeActions(event.sendAction, vDev, lvl) : true;
             if (vDev && set) {
-                setNewDeviceState(vDev, event.deviceType, event.level)
+                setNewDeviceState(vDev, event.deviceType, lvl)
             }                 
         });
     };    
