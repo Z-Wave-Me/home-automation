@@ -33,16 +33,16 @@ _module = Heating;
 Heating.prototype.prepareSchedule = function (rooms) {
 	var self = this, schedule = [];
 
-	rooms.forEach(function (data, roomID) {
+	_.each(rooms, function (data, roomID) {
 
-		data.schedule.forEach(function (s, day) {
+		_.each(data.schedule, function (s, day) {
 			// is there already some schedule with same start && end && temp ? -> just add day to list
 			sched = _.filter(schedule, function (entry) {
 						return entry.Starttime == s.stime && entry.Endtime == s.etime && entry.Temperature == s.temp;
 			});
 
-			if (sched) {
-				sched.Weekday.push(day);
+			if (!_.isEmpty(sched)) {
+				sched[0].Weekday.push(day);
 			}
 			else {
 				// if there is some prevoius schedule, we maybe need to add some gap between both
@@ -132,14 +132,15 @@ Heating.prototype.init = function (config) {
 	Heating.super_.prototype.init.call(this, config);
 	var self = this;
 	self.fallbackOverTime=[];
-	this.newRooms = _.map(self.config.schedule,function(sc){return {"room":self.confif.schedule.indexOf(sc), "comfort": sc.comfortTemp, "energySave": sc.energySaveTemp, "fallback": sc.fallbackTemp, "mainSensor": sc.sensorId }});
+	//"room": _.findIndex(self.config.roomSettings,function(obj) {return obj === sc}),
+	this.newRooms = _.map(self.config.roomSettings,function(sc){return {"room": _.findIndex(self.config.roomSettings,function(obj) {return obj === sc}), "comfort": sc.comfortTemp, "energySave": sc.energySaveTemp, "fallback": sc.fallbackTemp, "mainSensor": sc.sensorId }});
 	this.vDev = null;
 	this.alreadyChangedThermostats = [];
 	this.registerdSchedules = {};
 	this.alarmTimer = {};
 	this.fallbackThermostatSettings = {},
 	this.langFile = self.controller.loadModuleLang("Heating"),
-	this.schedule = self.prepareSchedule(self.config.schedule);
+	this.schedule = self.prepareSchedule(self.config.roomSettings);
 	this.waitingTime = self.config.resetTime * 1000*60*60; // convert in hours
 	self.initFunctions();
 	this.createHouseControl();
