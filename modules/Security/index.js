@@ -1,6 +1,6 @@
 /*** Security Z-Way HA module *******************************************
 
- Version: 1.3.0
+ Version: 1.0.0
  (c) Z-Wave.Me, 2018
  -----------------------------------------------------------------------------
  Author: Karsten Reichel <kar@zwave.eu>
