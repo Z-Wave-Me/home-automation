@@ -1,7 +1,7 @@
 /*** ScheduledScene Z-Way HA module *******************************************
 
-Version: 2.2.1
-(c) Z-Wave.Me, 2017
+Version: 2.2.2
+(c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
 Author: Hans-Christian Göckeritz <hcg@zwave.eu>
@@ -32,14 +32,49 @@ ScheduledScene.prototype.init = function (config) {
 
 	var self = this;
 
+	/**** TRANSFORM OLD CONFIG FROM 2.1.2 TO 2.2.1 VERSION ****/
+	var needToSaveConfig = false;
+
+	if (self.config.switches) {
+		self.config.devices.switches = self.config.switches;
+		delete self.config.switches;
+		needToSaveConfig = true;
+	}
+	if (self.config.dimmers) {
+		self.config.devices.dimmers = self.config.dimmers;
+		delete self.config.dimmers;
+		needToSaveConfig = true;
+	}
+	if (self.config.thermostats) {
+		self.config.devices.thermostats = self.config.thermostats;
+		delete self.config.thermostats;
+		needToSaveConfig = true;
+	}
+	if (self.config.scenes) {
+		self.config.devices.scenes = self.config.scenes;
+		delete self.config.scenes;
+		needToSaveConfig = true;
+	}
+	if (self.config.locks) {
+		self.config.devices.locks = self.config.locks;
+		delete self.config.locks;
+		needToSaveConfig = true;
+	}
+	if (self.config.time) {
+		self.config.times = [];
+		self.config.times.push(self.config.time);
+		delete self.config.time;
+		needToSaveConfig = true;
+	}
+	if (needToSaveConfig) {
+		self.saveConfig();
+	}
+	/***********************************************************/
+
 	this.runScene = function() {
 		var switchesArray;
 		if (_.isArray(self.config.devices.switches)) {
 			switchesArray = self.config.devices.switches;
-		}
-		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.switches)) {
-			switchesArray = self.config.switches;
 		}
 
 		if (switchesArray) {
@@ -57,10 +92,6 @@ ScheduledScene.prototype.init = function (config) {
 		if (_.isArray(self.config.devices.thermostats)) {
 			thermostatsArray = self.config.devices.thermostats;
 		}
-		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.thermostats)) {
-			thermostatsArray = self.config.thermostats;
-		}
 
 		if (thermostatsArray) {
 			thermostatsArray.forEach(function(devState) {
@@ -76,10 +107,6 @@ ScheduledScene.prototype.init = function (config) {
 		var dimmersArray;
 		if (_.isArray(self.config.devices.dimmers)) {
 			dimmersArray = self.config.devices.dimmers;
-		}
-		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.dimmers)) {
-			dimmersArray = self.config.dimmers;
 		}
 
 		if (dimmersArray) {
@@ -97,10 +124,6 @@ ScheduledScene.prototype.init = function (config) {
 		if (_.isArray(self.config.devices.locks)) {
 			locksArray = self.config.devices.locks;
 		}
-		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.locks)) {
-			locksArray = self.config.locks;
-		}
 
 		if (locksArray) {
 			locksArray.forEach(function(devState) {
@@ -116,10 +139,6 @@ ScheduledScene.prototype.init = function (config) {
 		var scenesArray;
 		if (_.isArray(self.config.devices.scenes)) {
 			scenesArray = self.config.devices.scenes;
-		}
-		// compatibility configuration to version 2.2
-		if (_.isArray(self.config.scenes)) {
-			scenesArray = self.config.scenes;
 		}
 
 		if (scenesArray) {
@@ -152,16 +171,6 @@ ScheduledScene.prototype.init = function (config) {
 					day: null,
 					month: null
 				});
-			});
-		}
-		// compatibility configuration to version 2.2
-		else {
-			self.controller.emit("cron.addTask", "scheduledScene.run."+self.id, {
-				minute: parseInt(self.config.time.split(":")[1], 10),
-				hour: parseInt(self.config.time.split(":")[0], 10),
-				weekDay: wd,
-				day: null,
-				month: null
 			});
 		}
 	});
