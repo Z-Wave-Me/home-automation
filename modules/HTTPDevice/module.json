@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName": "HTTPDevice",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -38,6 +38,9 @@
 		"method": "GET",
 		"contentType": "application/x-www-form-urlencoded",
 		"data":"",
+		"methodForGetValue": "GET",
+		"contentTypeForGetValue": "application/x-www-form-urlencoded",
+		"dataForGetValue":"",
 		"updateOnAction": false,
 		"skipEventIfSameValue": false,
 		"login":"",
@@ -157,11 +160,29 @@
 			},
 			"contentType": {
 				"type": "string",
-				"required": true
+				"required": true,
+				"dependencies": "method"
 			},
 			"data":{
 				"type": "string",
-				"required": false
+				"required": true,
+				"dependencies": "method"
+			},
+			"methodForGetValue": {
+				"type": "string",
+				"required": true,
+				"enum": ["GET", "POST"],
+				"dependencies": "deviceType"
+			},
+			"contentTypeForGetValue": {
+				"type": "string",
+				"required": true,
+				"dependencies": "methodForGetValue"
+			},
+			"dataForGetValue":{
+				"type": "string",
+				"required": true,
+				"dependencies": "methodForGetValue"
 			},
 			"updateOnAction": {
 				"type": "boolean",
@@ -328,11 +349,38 @@
 			},
 			"contentType": {
 				"label": "__l_contentType__",
-				"helper": "__h_contentType__"
+				"helper": "__h_contentType__",
+				"dependencies": {
+					"method": "POST"
+				}
 			},
 			"data":{
 				"label": "__l_data__",
-				"helper": "__h_data__"
+				"helper": "__h_data__",
+				"dependencies": {
+					"method": "POST"
+				}
+			},
+			"methodForGetValue": {
+				"label": "__l_methodForGetValue__",
+				"type": "select",
+				"dependencies": {
+					"deviceType": ["switchBinary", "switchMultilevel"]
+				}
+			},
+			"contentTypeForGetValue": {
+				"label": "__l_contentTypeForGetValue__",
+				"helper": "__h_contentTypeForGetValue__",
+				"dependencies": {
+					"methodForGetValue": "POST"
+				}
+			},
+			"dataForGetValue":{
+				"label": "__l_dataForGetValue__",
+				"helper": "__h_dataForGetValue__",
+				"dependencies": {
+					"methodForGetValue": "POST"
+				}
 			},
 			"updateOnAction": {
 				"type": "checkbox",
