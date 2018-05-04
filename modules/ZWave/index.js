@@ -3710,15 +3710,17 @@ ZWave.prototype.gateDevicesStart = function () {
 						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
 						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
 						devId,
+						appMajorId,
+						appMajorMinorId,
 						postFix,
-						fixes = self.postfix.fixes? self.postfix.fixes : self.postfix;				  
+						fixes = self.postfix.fixes? self.postfix.fixes : self.postfix;
 					
 					// try to get fix by manufacturerProductId and application Version
 					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
 
-						devId = mId + '.' + mPT + '.' + mPId,
-						appMajorId = devId + '.' + appMajor,
-						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor,
+						devId = mId + '.' + mPT + '.' + mPId;
+						appMajorId = devId + '.' + appMajor;
+						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor;
 						postFix = fixes.filter(function(fix) {
 							return  fix.p_id === devId ||	   //search by manufacturerProductId
 									fix.p_id === appMajorId || //search by applicationMajor
