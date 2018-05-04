@@ -108,15 +108,16 @@ inherits(ZWave, AutomationModule);
 _module = ZWave;
 
 Object.defineProperty(ZWave, "list", {
-	value: function () {
-		return Object.keys(ZWave);
+	value: function (__, req) {
+		// show in the list if called directly (not via web) or role is admin or API is public
+		return Object.keys(ZWave).filter(function(name) { return !req || req.role == controller.auth.ROLE.ADMIN || ZWave[name].publicAPI; });
 	},
 	enumerable: false,
 	writable: false,  
 	configurable: false 
 });
 
-ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
+ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ANONYMOUS); // we handle role inside the handler
 
 ZWave.prototype.updateList = function() {
 	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
@@ -248,6 +249,7 @@ ZWave.prototype.startBinding = function () {
 	global.ZWave[this.config.name] = {
 		"zway": this.zway,
 		"port": this.config.port,
+		"publicAPI": this.config.publicAPI,
 		"fastAccess": this.fastAccess
 	};
 	this.updateList();
