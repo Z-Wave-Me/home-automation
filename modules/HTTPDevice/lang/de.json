@@ -14,7 +14,7 @@
 	"l_getterPollInterval":"Abfrageintervall in Sekunden",
 	"h_getterPollInterval":"Bei keiner Eingabe oder 0 wird kein Abfrageintervall instanziiert (Explizite update Kommandos funktionieren auch weiterhin)",
 	"l_getterParser_Multilevel":"Inline Javascript für das Einlesen eingehender Daten als Zahlen",
-	"h_getterParser_Multilevel":"Bei keiner Eingabe wird parseFloat() verwendet. Bsp.: $$$$.split(':'')[1] oder parseInt($$$$, 16) oder $$$$.data.metrics.level oder parseFloat($$$$.findOne('/A/B[C='123']/D/text()'))",
+	"h_getterParser_Multilevel":"Bei keiner Eingabe wird parseFloat() verwendet. Bsp.: $$$$.split(':'')[1] oder parseInt($$$$, 16) oder $$$$.data.metrics.level oder parseFloat($$$$.findOne(\\\"/A/B[@C='123']/D/text()\\\"))",
 	"l_setterLevel":"Führe eine Aktion über die URL aus",
 	"p_setterLevel":"http://192.168.0.100/action/set/$$$$",
 	"h_setterLevel":"$$$$ wird benutzt um das Level in der URL zu symbolisieren. Bsp.: http://host/dimmer/level/$$$$/set",

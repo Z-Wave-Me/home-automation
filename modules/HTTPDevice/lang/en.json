@@ -14,7 +14,7 @@
 	"l_getterPollInterval":"Interval in seconds between polling requests",
 	"h_getterPollInterval":"Empty or 0 to disable periodical requests (explicit update command will still initiate request process)",
 	"l_getterParser_Multilevel":"Inline Javascript to parse incoming data to number",
-	"h_getterParser_Multilevel":"Can be empty to use parseFloat() function. Example: $$$$.split(':')[1] or parseInt($$$$, 16) or $$$$.data.metrics.level or parseFloat($$$$.findOne('/A/B[C='123']/D/text()'))",
+	"h_getterParser_Multilevel":"Can be empty to use parseFloat() function. Example: $$$$.split(':')[1] or parseInt($$$$, 16) or $$$$.data.metrics.level or parseFloat($$$$.findOne(\\\"/A/B[@C='123']/D/text()\\\"))",
 	"l_setterLevel":"URL for action",
 	"p_setterLevel":"http://192.168.0.100/action/set/$$$$",
 	"h_setterLevel":"$$$$ is used to represent level in the URL. For example: http://host/dimmer/level/$$$$/set",

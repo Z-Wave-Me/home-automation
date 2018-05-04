@@ -14,7 +14,7 @@
 	"l_getterPollInterval":"Интервал в секундах опроса значения",
 	"h_getterPollInterval":"Пусто или 0 отключают периодический опрос (запросить значение можно вручную командой update)",
 	"l_getterParser_Multilevel":"JavaScript код для преобразования полученного значения в число",
-	"h_getterParser_Multilevel":"Поле может быть пустым, тогда будет использована функция parseFloat(). Пример преобразования: $$$$.split(':')[1] или parseInt($$$$, 16) или $$$$.data.metrics.level или parseFloat($$$$.findOne('/A/B[C='123']/D/text()'))",
+	"h_getterParser_Multilevel":"Поле может быть пустым, тогда будет использована функция parseFloat(). Пример преобразования: $$$$.split(':')[1] или parseInt($$$$, 16) или $$$$.data.metrics.level или parseFloat($$$$.findOne(\\\"/A/B[@C='123']/D/text()\\\"))",
 	"l_setterLevel":"URL для действия",
 	"p_setterLevel":"http://192.168.0.100/action/set/$$$$",
 	"h_setterLevel":"Символы $$$$ содержат значение уровня диммирования от 0 до 99 в URL. Например: http://host/dimmer/level/$$$$/set",
