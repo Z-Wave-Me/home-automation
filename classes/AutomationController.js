@@ -1439,7 +1439,8 @@ AutomationController.prototype.setVdevInfo = function (id, device) {
 					"customIcons", 
 					"order",
 					"visibility",
-					"hasHistory");
+					"hasHistory",
+					"nodeId");
 	this.saveConfig();
 	return this.vdevInfo[id];
 };
@@ -2970,22 +2971,6 @@ AutomationController.prototype.reoderDevices = function(list, action) {
 	return result;
 };
 
-AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, zwayName) {
-	var nodeId = nodeId,
-		getNodeVDevs = [];
-
-	getNodeVDevs = this.devices.filterByNode(nodeId, zwayName);
-
-	// set vDev isFailed state
-	getNodeVDevs.forEach(function(vDev) {
-		vDev.set('metrics:isFailed', isFailed);
-
-		if (!isFailed) {
-			// bind on last receive
-			zway.devices[nodeId].data.lastReceived.unbind(this.vDevFailedDetection);
-		}
-	});
-};
 /*
 AutomationController.prototype.transformInstanceToNewModule = function(instanceId, transformToModule){
 	var self = this,
