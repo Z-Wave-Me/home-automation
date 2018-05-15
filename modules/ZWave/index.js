@@ -108,15 +108,16 @@ inherits(ZWave, AutomationModule);
 _module = ZWave;
 
 Object.defineProperty(ZWave, "list", {
-	value: function () {
-		return Object.keys(ZWave);
+	value: function (__, req) {
+		// show in the list if called directly (not via web) or role is admin or API is public
+		return Object.keys(ZWave).filter(function(name) { return !req || req.role == controller.auth.ROLE.ADMIN || ZWave[name].publicAPI; });
 	},
 	enumerable: false,
 	writable: false,  
 	configurable: false 
 });
 
-ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ADMIN);
+ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ANONYMOUS); // we handle role inside the handler
 
 ZWave.prototype.updateList = function() {
 	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
@@ -248,6 +249,7 @@ ZWave.prototype.startBinding = function () {
 	global.ZWave[this.config.name] = {
 		"zway": this.zway,
 		"port": this.config.port,
+		"publicAPI": this.config.publicAPI,
 		"fastAccess": this.fastAccess
 	};
 	this.updateList();
@@ -3735,15 +3737,17 @@ ZWave.prototype.gateDevicesStart = function () {
 						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
 						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
 						devId,
+						appMajorId,
+						appMajorMinorId,
 						postFix,
-						fixes = self.postfix.fixes? self.postfix.fixes : self.postfix;				  
+						fixes = self.postfix.fixes? self.postfix.fixes : self.postfix;
 					
 					// try to get fix by manufacturerProductId and application Version
 					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
 
-						devId = mId + '.' + mPT + '.' + mPId,
-						appMajorId = devId + '.' + appMajor,
-						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor,
+						devId = mId + '.' + mPT + '.' + mPId;
+						appMajorId = devId + '.' + appMajor;
+						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor;
 						postFix = fixes.filter(function(fix) {
 							return  fix.p_id === devId ||	   //search by manufacturerProductId
 									fix.p_id === appMajorId || //search by applicationMajor
@@ -5521,8 +5525,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									a_defaults.probeType = 'alarm_clock';
 									break;
 								case 0x12: // Gas Alarm (V7)
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'alarmSensor_co';
+									a_defaults.metrics.icon = 'gas';
+									a_defaults.probeType = 'gas';
 									break;
 								default:
 									return; // skip this type
