@@ -6,7 +6,7 @@
   "homepage": "http://z-wave.me",
   "icon": "icon.png",
   "moduleName": "MobileAppSupport",
-  "version": "1.2.5",
+  "version": "1.2.7",
   "maturity": "stable",
   "defaults": {
 	"title": "__m_title__",
@@ -109,7 +109,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				    "notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -157,7 +158,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -194,7 +196,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -242,7 +245,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -279,7 +283,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -327,7 +332,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -375,7 +381,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -423,7 +430,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -471,7 +479,8 @@
 				  "enum": [
 					"unselected",
 					"errors",
-					"warnings"
+					"warnings",
+				  	"notifications"
 				  ],
 				  "required": true,
 				  "title": "__d_devicesLogLevel__"
@@ -519,11 +528,12 @@
 			  "properties": {
 				"phones_dev": {
 				  "type": "string",
-				  "title": "__l_found_phones__",
+				  "title": "__l_phones_id__",
 				  "readonly": true
 				},
 				"phones_title": {
 				  "type": "string",
+				  "title": "__l_phones_title__",
 				  "readonly": true
 				}
 			  }
@@ -590,7 +600,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -628,7 +639,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -678,7 +690,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -716,7 +729,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -766,7 +780,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -804,7 +819,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -854,7 +870,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -904,7 +921,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -954,7 +972,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {
@@ -1004,7 +1023,8 @@
 				  "optionLabels": [
 					"__unselected__",
 					"__errors__",
-					"__warnings__"
+					"__warnings__",
+				  	"__notifications__"
 				  ]
 				},
 				"dev_message": {

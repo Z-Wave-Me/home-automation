@@ -64,12 +64,27 @@
 		if (!profile.email) {
 		  profile.email = '';
 		}
+		
+		//add nightMode
+		if (!profile.night_mode) {
+		  profile.night_mode = false;
+		}
 
 		// add default skin entry
 		if (profile.skin) {
 		  delete profile.skin;
 		}
+
+		// remove qrcode
+		if(profile.qrcode) {
+			if(profile.qrcode !== "") {
+				saveObject(profile.qrcode, null);	
+			}
+			profile.qrcode = '';
+			delete profile.qrcode;
+		}
 	  });
+
 	} else {
 	  // default profile
 	  config.profiles = [{

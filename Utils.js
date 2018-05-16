@@ -315,3 +315,42 @@ function retBoolean(boolean) {
 		return false;
 	}
 };
+
+/*
+* find the smallest not assigned value (integer) of a specific key within array objects
+*/
+function findSmallestNotAssignedIntegerValue (array, key) {
+	var value = 1,
+		maxValue = null,
+		listValues = [];
+
+	listValues = array.map(function(entry) {
+		return Number.isInteger(entry[key])? entry[key] : parseInt(entry[key],10);
+	});
+
+	maxValue = Math.max.apply(null, listValues);
+
+	for (var i = 1; i <= maxValue; i++) {
+		if (listValues.indexOf(i) < 0) {
+			value = i;
+			break;
+		} else if (i == maxValue) {
+			value = i + 1;
+		}
+	}
+
+	return value;
+};
+
+/*
+ * transform the publicKey into usual dsk format: xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx 
+ */
+ function transformPublicKeyToDSK (publicKey) {
+ 	var dsk = '';
+
+ 	if (_.isArray(publicKey) && publicKey.length > 0) {
+ 		dsk = publicKey.map(function(x, i, a) { if (i % 2 == 0) return x * 256 + a[i + 1]; }).filter(function(x) { return x != undefined; }).map(function(x) { return ("00000" + x).slice(-5); }).slice(0, 8).join('-');
+ 	}
+
+ 	return dsk;
+ }

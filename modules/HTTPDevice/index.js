@@ -1,9 +1,9 @@
 /*** HTTPDevice Z-Way HA module *******************************************
 
-Version: 2.1.0
-(c) Z-Wave.Me, 2017
+Version: 2.2.0
+(c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
-Author: Poltorak Serguei <ps@z-wave.me>
+Author: Poltorak Serguei <ps@z-wave.me>, Yurkin Vitaliy <aivs@z-wave.me>
 Description:
 	Implements virtual device based on HTTP object
 ******************************************************************************/
@@ -131,7 +131,6 @@ HTTPDevice.prototype.update = function (vDev) {
 	if (url) {
 		var req = {
 			url: url,
-			method: this.config.method,
 			async: true,
 			success: function(response) {
 				var data = null;
@@ -164,12 +163,31 @@ HTTPDevice.prototype.update = function (vDev) {
 				console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
 			} 
 		};
-		// With Content type
-		req.headers = { "Content-Type": self.config.contentType }
 
-		// With Data
-		if (self.config.data) {
-			req.data = self.config.data;
+		// With Method
+		if (self.config.methodForGetValue && (deviceType === "switchMultilevel" || deviceType === "switchBinary")) { // compatibility with 2.1
+			req.method = self.config.methodForGetValue;
+		}
+		else {
+			req.method = self.config.method // compatibility with 2.1
+		}
+
+		if (req.method === "POST") {
+			// With Content type
+			if (self.config.contentTypeForGetValue && (deviceType === "switchMultilevel" || deviceType === "switchBinary")) { // compatibility with 2.1
+				req.headers = { "Content-Type": self.config.contentTypeForGetValue}
+			}
+			else if (self.config.contentType) {
+				req.headers = { "Content-Type": self.config.contentType} // compatibility with 2.1
+			}
+
+			// With Data
+			if (self.config.dataForGetValue && (deviceType === "switchMultilevel" || deviceType === "switchBinary")) { // compatibility with 2.1
+				req.data = self.config.dataForGetValue;
+			}
+			else if (self.config.data) {
+				req.data = self.config.data; // compatibility with 2.1
+			}
 		}
 		
 		// With Authorization
@@ -201,12 +219,17 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
 				self.addNotification("error", langFile.err_req + response.statusText, "module");
 			}
 		};
-		// With Content type
-		req.headers = { "Content-Type": self.config.contentType }
 
-		// With Data
-		if (self.config.data) {
-			req.data = self.config.data.replace(/\$\$/g, subst);
+		if (req.method === "POST") {
+			// With Content type
+			if (self.config.contentType) {
+				req.headers = { "Content-Type": self.config.contentType }
+			}
+
+			// With Data
+			if (self.config.data) {
+				req.data = self.config.data.replace(/\$\$/g, subst);
+			}
 		}
 		// With authorization
 		if (self.config.login && self.config.password) {
