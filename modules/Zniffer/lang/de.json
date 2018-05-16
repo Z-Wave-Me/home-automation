@@ -1,0 +1,5 @@
+{
+	"m_title":"Zniffer Modul",
+	"m_descr":"Unterstützt die Benutzung eines Z-Wave Alliance Zniffer  <br><br><br> Icon powered by <br><br> <div>Icons made by <a href='https://www.flaticon.com/authors/icon-monk' title='Icon Monk'>Icon Monk</a> from <a href='https://www.flaticon.com/' title='Flaticon'>www.flaticon.com</a> is licensed by <a href='http://creativecommons.org/licenses/by/3.0/' title='Creative Commons BY 3.0' target='_blank'>CC 3.0 BY</a></div>",
+	"err_init": "Zniffer Module konnte nihct initialisiert werden. Bitte überprüfen Sie ob das Gerät korrekt angesteckt und auch der richtige Port ausgewählt ist. "
+}
