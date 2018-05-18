@@ -134,11 +134,9 @@ Heating.prototype.init = function(config) {
     var self = this;
     self.fallbackOverTime = [];
     //"room": _.findIndex(self.config.roomSettings,function(obj) {return obj === sc}),
-    this.newRooms = _.map(self.config.roomSettings, function(sc) {
+    this.newRooms = _.map(self.config.roomSettings, function(sc, roomId) {
         return {
-            "room": _.findIndex(self.config.roomSettings, function(obj) {
-                return obj === sc
-            }),
+            "room": roomId,
             "comfort": sc.comfortTemp,
             "energySave": sc.energySaveTemp,
             "fallback": sc.fallbackTemp,
