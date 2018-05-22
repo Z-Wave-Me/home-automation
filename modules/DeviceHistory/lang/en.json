@@ -3,5 +3,9 @@
 	"m_descr":"This app adds a little icon to every sensor and actor. Clicking on this icon opens a splash window with a graph showing the status of the last 24 hours. Please note that this is display is for quick information only. Only average values are shown so that a short turning on of a light may not even reflected in this history. Nevertheless it’s a nice and quick way to get an idea about the status of a sensor for the last 24 hours. If you like to record data about your smart home more precisely you should use the App “Sensor logging” together with some third party service or software.<br><br>Settings: You can define a list of devices that are not recorded. Please note that a device already excluded from polling in the Sensor Polling App can not be recorded anyway.",
 	"l_devices":"Do not track devices marked below:",
 	"h_devices":"With simultaneous use of the app 'Periodical Sensor Polling', note the following: One there from the polling excluded device cannot create a history.",
-	"err_store_history":"Cannot store history of device: "
+	"err_store_history":"Cannot store history of device: ",
+	"info_add_history":"History added to device: ",
+	"info_remove_history":"History removed for device: ",
+	"info_clear_id_history":"History entries cleared of device: ",
+	"info_clear_all_histories":"History entries of all devices cleared."
 }

@@ -42,7 +42,6 @@ function AutomationController() {
 	this.devices = new DevicesCollection(this);
 
 	this.notifications = [];
-	this.history = {};
 	this.lastStructureChangeTime = 0;
 
 	this._loadedSingletons = [];
@@ -1723,111 +1722,43 @@ AutomationController.prototype.updateNotification = function (id, object, callba
 	}
 };
 
-AutomationController.prototype.listHistories = function () {
-	return this.history;
-};
+// get list of files from storage that should be ignored during e.g. backup, restore
+AutomationController.prototype.getIgnoredStorageFiles = function (list) {
+	var dontSave = [
+            "notifications",
+            "8084AccessTimeout",
+            "expertconfig.json",
+            "de.devices.json",
+            "en.devices.json",
+            "history",
+            "postfix.json"
+        ], // objects that should be ignored
+        dynamicMatches = [
+        	"incomingPacket.json",
+            "outgoingPacket.json",
+            "originPackets.json",
+            "parsedPackets.json",
+            "reorgLog",
+            "rssidata.json",
+            "vendors.json",
+            "history_"
+        ],
+        storageList = __storageContent;
+        matches = [];
 
-AutomationController.prototype.deleteDevHistory = function (vDevId) {
-	var self = this,
-		vDevId = vDevId || null;
-		success = false;
-		
-		if (!!vDevId) {
-			//clear entries of single vDev
-			index = _.findIndex(self.history, { id: vDevId });
+    // add additional list of ignored storage files
+    dontSave = list && _.isArray(list)? _.uniq(dontSave.concat(list)) : dontSave;
 
-			if (index > -1) {
-				self.history[index].mH = [];
+     // apply list of dynamic matches to ignore list
+    if(storageList) {
+        _.forEach(dynamicMatches, function (match) {
+        	matches = _.uniq(matches.concat(_.filter(storageList, function (name) {
+	            return name.indexOf(match) > -1;
+	        })));
+        });
+    }
 
-				success = true;
-
-				console.log('History of ' + vDevId + ' successful deleted ...');
-			}
-		} else {
-			//clear all entries
-			self.history.forEach(function (devHist) {
-				devHist.mH = [];
-			});
-
-			success = true;
-
-			console.log('All histories successful deleted ...');
-		}
-
-		//save history
-		if (success) {
-			saveObject('history', self.history);
-		}
-
-	return success;
-};
-
-AutomationController.prototype.getDevHistory = function (dev, since, show) {
-	var filteredEntries = [],
-		averageEntries = [],
-		entries = [],
-		now = Math.floor(new Date().getTime() / 1000),
-		l = 0,
-		cnt = 0,
-		metric = {},
-		since = since? since : 0,
-		items = show? show : 0,
-		sec = 0;
-
-	// create output with n (= show) values - 288, 96, 48, 24, 12, 6
-	if(items > 0 && items <= 288){
-		sec = 86400 / show; // calculate seconds of range
-		
-		// calculate averaged value of all meta values between 'sec' range
-		for (i = 0; i < items; i++){
-			from = now - sec*(items - i);
-			to = now - sec*(items - (i+1));
-
-			// filter values between from and to
-			range = dev[0]['mH'].filter(function (metric){
-				return metric.id >= from && metric.id <= to;
-			});
-
-			cnt = range.length;
-			
-			// calculate level
-			if(cnt > 0){
-
-				for(j=0; j < cnt; j++){
-					l += range[j]['l'];
-				}
-
-				l = l /cnt;
-						
-				if(l === +l && l !== (l|0)) { // round to one position after '.'
-					l = l.toFixed(1);
-				}
-			} else {
-				l = null;
-			}			
-
-			metric = {
-				id: to,
-				l: parseFloat(l)
-			}
-
-			averageEntries.push(metric);
-			
-			l = 0;
-			metric = {};
-		}
-
-		entries = averageEntries;
-	} else {
-		entries = dev[0]['mH'];
-	}
-
-	// filter meta entries by since
-	filteredEntries = since > 0? entries.filter(function (metric) {
-			return metric.id >= since;
-		}) : entries;
-
-	return filteredEntries;
+    return _.uniq(dontSave.concat(matches));
 };
 
 AutomationController.prototype.getListProfiles = function () {
@@ -2779,32 +2710,12 @@ AutomationController.prototype.createBackup = function() {
 		skins = [],
 		result = null;
 
-	var list = loadObject("__storageContent"),
-		excludedFiles = [
-			"notifications",
-			"8084AccessTimeout",
-			"expertconfig.json",
-			"rssidata.json",
-			"reorgLog",
-			"incomingPacket.json",
-			"outgoingPacket.json",
-			"originPackets.json",
-			"zway_incomingPacket.json",
-			"zway_outgoingPacket.json",
-			"zway_originPackets.json",
-			"zway_parsedPackets.json",
-			"zway_reorgLog",
-			"zway_rssidata.json",
-			"de.devices.json",
-			"en.devices.json",
-			"zwave_vendors.json",
-			"history"
-		];
+	var list = __storageContent,
+		excludedFiles = this.getIgnoredStorageFiles();
 
 	try {
 		// save all objects in storage
 		for (var ind in list) {
-			//if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
 			if (excludedFiles.indexOf(list[ind]) === -1) {
 				backupJSON[list[ind]] = loadObject(list[ind]);
 			}

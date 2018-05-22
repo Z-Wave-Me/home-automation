@@ -1799,115 +1799,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
         return reply;
     },
-    // History
-    exposeHistory: function() {
-        var history,
-            reply = {
-                code: 500,
-                error: null,
-                data: null
-            };
-
-        history = this.controller.listHistories();
-
-        if (history) {
-            if (this.req.method === "GET") {
-                reply.data = {
-                    updateTime: Math.floor(new Date().getTime() / 1000),
-                    history: history
-                };
-                reply.code = 200;
-
-            } else if (this.req.method === "DELETE") {
-                success = this.controller.deleteDevHistory();
-
-                if (success) {
-                    reply.code = 204;
-                } else {
-                    reply.error = "Something went wrong."
-                }
-            } else {
-                reply.code = 400;
-                reply.error = "Bad request.";
-            }
-        } else {
-            reply.code = 404;
-            reply.error = "No device histories found.";
-        }
-
-        return reply;
-    },
-    // get or delete histories of devices
-    getDevHist: function(vDevId) {
-        var history,
-            dev,
-            reply = {
-                code: 500,
-                error: null,
-                data: null
-            },
-            since,
-            show,
-            sinceDevHist,
-            view = [288, 96, 48, 24, 12, 6];
-
-        if (this.deviceByUser(vDevId, this.req.user) !== null) {
-
-            history = this.controller.listHistories();
-
-            if (history) {
-
-                hash = this.controller.hashCode(vDevId);
-                dev = history.filter(function(x) {
-                    return x.h === hash || x.id === vDevId;
-                });
-
-                if (dev.length > 0) {
-                    if (this.req.method === "GET") {
-                        show = this.req.query.hasOwnProperty("show") ? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
-                        since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
-
-                        sinceDevHist = this.controller.getDevHistory(dev, since, show);
-
-                        if (dev && sinceDevHist) {
-                            reply.code = 200;
-                            reply.data = {
-                                id: vDevId,
-                                since: since,
-                                deviceHistory: sinceDevHist
-                            };
-                        } else {
-                            reply.code = 200;
-                            reply.data = dev;
-                        }
-
-                    } else if (this.req.method === "DELETE") {
-                        success = this.controller.deleteDevHistory(vDevId);
-
-                        if (success) {
-                            reply.code = 204;
-                        } else {
-                            reply.error = "Something went wrong."
-                        }
-                    } else {
-                        reply.code = 400;
-                        reply.error = "Bad request.";
-                    }
-                } else {
-                    reply.code = 404;
-                    reply.error = "History of device " + vDevId + " doesn't exist";
-                }
-            } else {
-                reply.code = 404;
-                reply.error = "No device histories found. Please check if app '24 Hours Device History' is active.";
-            }
-        } else {
-            reply.code = 404;
-            reply.error = "Device not found.";
-        }
-
-        return reply;
-    },
     // restart
     restartController: function(profileId) {
         var reply = {
@@ -2078,23 +1969,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             },
             result = "",
             langfile = this.controller.loadMainLang(),
-            waitForInstallation = function(allreadyInstalled, reqKey) {
-                var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
+            dontSave = this.controller.getIgnoredStorageFiles([
+                    "__ZWay",
+                    "__EnOcean",
+                    "__userModules",
+                    "__userSkins"
+                ]);
 
-                while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
+        function waitForInstallation(allreadyInstalled, reqKey) {
+            var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
 
-                    if (allreadyInstalled.length === reqObj.data[reqKey].length) {
-                        break;
-                    }
-
-                    processPendingCallbacks();
-                }
+            while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
 
                 if (allreadyInstalled.length === reqObj.data[reqKey].length) {
-                    // success
-                    reply.code = 200;
+                    break;
                 }
-            };
+
+                processPendingCallbacks();
+            }
+
+            if (allreadyInstalled.length === reqObj.data[reqKey].length) {
+                // success
+                reply.code = 200;
+            }
+        }
 
         // get flag that network information should be overwritten
         allowTopoRestore = this.req.body.hasOwnProperty("overwriteNetwork") ? retBoolean(this.req.body.overwriteNetwork) : false;
@@ -2131,30 +2029,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             // stop the controller
             this.controller.stop();
 
+
             for (var obj in reqObj.data) {
-                var dontSave = [
-                    "__ZWay",
-                    "__EnOcean",
-                    "__userModules",
-                    "notifications",
-                    "8084AccessTimeout",
-                    "__userSkins",
-                    "rssidata.json",
-                    "reorgLog",
-                    "incomingPacket.json",
-                    "outgoingPacket.json",
-                    "originPackets.json",
-                    "zway_incomingPacket.json",
-                    "zway_outgoingPacket.json",
-                    "zway_originPackets.json",
-                    "zway_parsedPackets.json",
-                    "zway_reorgLog",
-                    "zway_rssidata.json",
-                    "de.devices.json",
-                    "en.devices.json",
-                    "zwave_vendors.json",
-                    "history"
-                ]; // objects that should be ignored
 
                 if (dontSave.indexOf(obj) === -1) {
                     saveObject(obj, reqObj.data[obj]);
@@ -2272,7 +2148,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
                 http.request({
                     // get online list of all existing modules first
-                    url: 'http://hrix.net/developer-console/?uri=api-skins',
+                    url: 'https://developer.z-wave.me/?uri=api-skins',
                     method: 'GET',
                     async: true,
                     success: function(res) {
@@ -3889,7 +3765,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                         result.push(obj);
                     },
                     error: function() {
-                        self.controller.addNotification('Z-Wave device list for lang:' + lang + ' not found.');
+                        self.controller.addNotification('error','Z-Wave device list for lang:' + lang + ' not found.','core', 'ZAutomationAPI');
                         result.push(obj);
                     }
                 });
@@ -3905,7 +3781,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
         } catch (e) {
-            this.controller.addNotification('Error has occured during updating the Z-Wave devices list');
+            this.controller.addNotification('error','Error has occured during updating the Z-Wave devices list','core', 'ZAutomationAPI');
             reply.error = 'Something went wrong:' + e.message;
         }
 
@@ -3982,7 +3858,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
                 },
                 error: function(e) {
                     var msg = 'Z-Wave vendors list could not be updated. Error: ' + e.toString();
-                    self.controller.addNotification(msg);
+                    self.controller.addNotification('error',msg,'core', 'ZAutomationAPI');
 
                     result = 'failed';
 
@@ -4001,7 +3877,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
             }
 
         } catch (e) {
-            this.controller.addNotification('Error has occured during updating the Z-Wave devices list');
+            this.controller.addNotification('error','Error has occured during updating the Z-Wave devices list','core', 'ZAutomationAPI');
             reply.error = 'Something went wrong:' + e.message;
         }
 

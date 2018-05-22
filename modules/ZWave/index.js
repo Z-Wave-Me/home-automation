@@ -3674,7 +3674,11 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 		
 		// set failed (true/false) flag to all node vDevs
 		if (self.zway && self.zway.devices[nodeId]) {
-			self.controller.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
+			try {
+				self.controller.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
+			} catch (e) {
+				// do nothing
+			}
 		}
 		
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
