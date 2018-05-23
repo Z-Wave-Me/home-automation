@@ -2,7 +2,9 @@ Z-Way Home Automation Engine v2.3.6
 ====================================
 
 # Introduction #
-[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/Z-Wave-Me/home-automation?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+<a href="https://gitter.im/Z-Wave-Me/home-automation?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge">
+  <img src="https://badges.gitter.im/Join Chat.svg" alt="Join Chat on Gitter">
+</a>
 
 ## Available WebUI's: 
 * Smart Home UI: https://github.com/Z-Wave-Me/zwave-smarthome
