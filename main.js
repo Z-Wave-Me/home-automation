@@ -25,11 +25,26 @@ executeFile("updateBackendConfig.js");
 // overload saveObject to allow backup/restore of all JSON files in storage
 __saveObject = saveObject;
 __storageContent = loadObject("__storageContent") || [];
+
+// check against storage if listed files really exists
+__storageContent = __storageContent.filter(function(name) {
+	return !!loadObject(name);
+});
+
 saveObject = function(name, object) {
+	// add entry to __storageContent if it does not already exist
 	if (__storageContent.indexOf(name) === -1 && !!name) {
 		__storageContent.push(name);
 		__saveObject("__storageContent", __storageContent);
+
+	// remove entry from __storageContent if deleted
+	} else if (!!name && object === null) {
+		__storageContent = _.filter(__storageContent, function(fileName){
+			return fileName !== name;
+		});
+		__saveObject("__storageContent", __storageContent);
 	}
+
 	__saveObject(name, object);
 };
 

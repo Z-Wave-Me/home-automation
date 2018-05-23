@@ -127,3 +127,25 @@ AutomationModule.prototype.loadModuleLang = function () {
 AutomationModule.prototype.addNotification = function (severity, message, type) {
 	this.controller.addNotification(severity, message, type, this.getName());
 };
+
+AutomationModule.prototype.prepareHTTPResponse = function(body) {
+	var result = {},
+		ret = {
+			status: 500,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body: {
+				code: 500,
+				message: "500 Something went wrong.",
+				error: null,
+				data: null
+			}
+		};
+
+	return body? _.extend(ret, { status: body.code? body.code : ret.status, body: body	}) : ret;
+}

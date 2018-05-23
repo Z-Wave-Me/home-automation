@@ -42,7 +42,6 @@ function AutomationController() {
 	this.devices = new DevicesCollection(this);
 
 	this.notifications = [];
-	this.history = [];
 	this.lastStructureChangeTime = 0;
 
 	this._loadedSingletons = [];
@@ -184,14 +183,12 @@ AutomationController.prototype.init = function () {
 
 AutomationController.prototype.setDefaultLang = function (lang) {
 	var self = this,
-		oldLang = self.defaultLang,
-		langP = lang.split(';');
+		oldLang = self.defaultLang;
+
+	self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
 	
-	if(langP.length == 1) {	
-		self.defaultLang = self.availableLang.indexOf(lang) === -1 ? 'en' : lang;
-		if(self.defaultLang !== oldLang) {
-			this.emit('language.changed', self.defaultLang);
-		}
+	if(self.defaultLang !== oldLang) {
+		this.emit('language.changed', self.defaultLang);
 	}
 };
 
@@ -1229,10 +1226,7 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 };
 
 AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
-	var reply = {
-			message: "in progress",
-			files: []
-		},
+	var result = "in progress",
 		filelist = [],
 		input = "",
 		name = "",
@@ -1258,23 +1252,23 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			id,
 			function(success) {
 				filelist = parseToObject(success);
-				reply.message = "done";
+				result = "done";
 			},  function() {
-				reply.message = "failed";
+				result = "failed";
 			}
 		);
 
 		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d &&  reply.message === "in progress") {
+		while ((new Date()).valueOf() < d &&  result === "in progress") {
 			processPendingCallbacks();
 		}
 
-		if (reply.message === "in progress") {
-			reply.message = "failed";
+		if (result === "in progress") {
+			result = "failed";
 		}
 
-		if (reply.message === 'done') {
+		if (result === 'done') {
 			for (var file in filelist) {
 				if (filelist[file].filename && filelist[file].orgfilename) {
 					var icon = {
@@ -1287,8 +1281,6 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 						'source_title': option === "local" ? iconName+" "+id : reqObj.title
 					};
 
-					reply.files.push(filelist[file].filename);
-
 					this.icons.push(icon);
 					update = true;
 				}
@@ -1299,12 +1291,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			}
 		}
 	}
-
-	if (reply.files.length == 1) {
-		reply.files = reply.files[0];
-	}
-
-	return reply;
+	return result;
 };
 
 AutomationController.prototype.listIcons = function() {
@@ -1429,8 +1416,7 @@ AutomationController.prototype.getVdevInfo = function (id) {
 
 AutomationController.prototype.setVdevInfo = function (id, device) {
 	this.vdevInfo[id] = _.pick(device, 
-					"deviceType",
-					"probeType", 
+					"deviceType", 
 					"metrics", 
 					"location", 
 					"tags", 
@@ -1439,8 +1425,7 @@ AutomationController.prototype.setVdevInfo = function (id, device) {
 					"customIcons", 
 					"order",
 					"visibility",
-					"hasHistory",
-					"nodeId");
+					"hasHistory");
 	this.saveConfig();
 	return this.vdevInfo[id];
 };
@@ -1737,116 +1722,43 @@ AutomationController.prototype.updateNotification = function (id, object, callba
 	}
 };
 
-AutomationController.prototype.listHistories = function () {
-	return this.history;
-};
+// get list of files from storage that should be ignored during e.g. backup, restore
+AutomationController.prototype.getIgnoredStorageFiles = function (list) {
+	var dontSave = [
+            "notifications",
+            "8084AccessTimeout",
+            "expertconfig.json",
+            "de.devices.json",
+            "en.devices.json",
+            "history",
+            "postfix.json"
+        ], // objects that should be ignored
+        dynamicMatches = [
+        	"incomingPacket.json",
+            "outgoingPacket.json",
+            "originPackets.json",
+            "parsedPackets.json",
+            "reorgLog",
+            "rssidata.json",
+            "vendors.json",
+            "history_"
+        ],
+        storageList = __storageContent;
+        matches = [];
 
-AutomationController.prototype.setHistory = function () {
-	this.history = loadObject('history') || [];
-	return this.history;
-};
+    // add additional list of ignored storage files
+    dontSave = list && _.isArray(list)? _.uniq(dontSave.concat(list)) : dontSave;
 
-AutomationController.prototype.deleteDevHistory = function (vDevId) {
-	var self = this,
-		vDevId = vDevId || null;
-		success = false;
-		
-		if (!!vDevId) {
-			//clear entries of single vDev
-			index = _.findIndex(self.history, { id: vDevId });
+     // apply list of dynamic matches to ignore list
+    if(storageList) {
+        _.forEach(dynamicMatches, function (match) {
+        	matches = _.uniq(matches.concat(_.filter(storageList, function (name) {
+	            return name.indexOf(match) > -1;
+	        })));
+        });
+    }
 
-			if (index > -1) {
-				self.history[index].mH = [];
-
-				success = true;
-
-				console.log('History of ' + vDevId + ' successful deleted ...');
-			}
-		} else {
-			//clear all entries
-			self.history.forEach(function (devHist) {
-				devHist.mH = [];
-			});
-
-			success = true;
-
-			console.log('All histories successful deleted ...');
-		}
-
-		//save history
-		if (success) {
-			saveObject('history', self.history);
-		}
-
-	return success;
-};
-
-AutomationController.prototype.getDevHistory = function (dev, since, show) {
-	var filteredEntries = [],
-		averageEntries = [],
-		entries = [],
-		now = Math.floor(new Date().getTime() / 1000),
-		l = 0,
-		cnt = 0,
-		metric = {},
-		since = since? since : 0,
-		items = show? show : 0,
-		sec = 0;
-
-	// create output with n (= show) values - 288, 96, 48, 24, 12, 6
-	if(items > 0 && items <= 288){
-		sec = 86400 / show; // calculate seconds of range
-		
-		// calculate averaged value of all meta values between 'sec' range
-		for (i = 0; i < items; i++){
-			from = now - sec*(items - i);
-			to = now - sec*(items - (i+1));
-
-			// filter values between from and to
-			range = dev[0]['mH'].filter(function (metric){
-				return metric.id >= from && metric.id <= to;
-			});
-
-			cnt = range.length;
-			
-			// calculate level
-			if(cnt > 0){
-
-				for(j=0; j < cnt; j++){
-					l += range[j]['l'];
-				}
-
-				l = l /cnt;
-						
-				if(l === +l && l !== (l|0)) { // round to one position after '.'
-					l = l.toFixed(1);
-				}
-			} else {
-				l = null;
-			}			
-
-			metric = {
-				id: to,
-				l: parseFloat(l)
-			}
-
-			averageEntries.push(metric);
-			
-			l = 0;
-			metric = {};
-		}
-
-		entries = averageEntries;
-	} else {
-		entries = dev[0]['mH'];
-	}
-
-	// filter meta entries by since
-	filteredEntries = since > 0? entries.filter(function (metric) {
-			return metric.id >= since;
-		}) : entries;
-
-	return filteredEntries;
+    return _.uniq(dontSave.concat(matches));
 };
 
 AutomationController.prototype.getListProfiles = function () {
@@ -1937,6 +1849,10 @@ AutomationController.prototype.updateProfileAuth = function (object, id) {
 			p.login = object.login;
 		}
 
+		if (!checkBoxtype('cit')){
+			this.addQRCode(p, object);
+		}
+
 		this.saveConfig();
 		
 		return p;
@@ -1981,22 +1897,14 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };*/
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = false;
-	try {
-		if (checkBoxtype('poppbox')){
-			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
-		} else {
-			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
-		}
-	} catch(e) {
-		console.log(e);
-	}
-
+	var ip = system('hostname -I')[1].replace(/[\s\n]/g, '');
 	return ip;
 }
 
-AutomationController.prototype.getQRCodeData = function(profile, password) {
-	var data = {
+AutomationController.prototype.addQRCode = function(profile, obj) {
+	var typeNumber = 15,
+		errorCorrectionLevel = 'H',
+		data = {
 			id: "",
 			login: "",
 			service: "find.z-wave.me",
@@ -2005,25 +1913,33 @@ AutomationController.prototype.getQRCodeData = function(profile, password) {
 			wpa: "",
 			passwd: ""
 		},
-		url = "",
-		ip = "";
+		url = "";
 
-	data.passwd = password;
+	data.passwd = obj.password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
-	
-	ip = this.getIPAddress();
-	if(ip) {
-		data.ip = ip;	
-	}
+	data.ip = this.getIPAddress();
 
-	url = Object.keys(data).map(function(key){
+	var qr = qrcode(typeNumber, errorCorrectionLevel);
+
+	var url = Object.keys(data).map(function(key){
 		return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 	}).join('&');
 
-	url = Base64.encode(url);
+	qr.addData(url);
+	qr.make();
 
-	return url;
+	var qrcodeBase64 = qr.createImgTag(3);
+
+	var file = "";
+	if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
+		file = data.login + new Date().getTime()+ ".gif"; //Loginname + timespame + file extension(gif)
+	} else {
+		file = profile.qrcode
+	}
+
+	profile.qrcode = file;
+	saveObject(file ,qrcodeBase64.toString());
 }
 
 // namespaces
@@ -2794,32 +2710,12 @@ AutomationController.prototype.createBackup = function() {
 		skins = [],
 		result = null;
 
-	var list = loadObject("__storageContent"),
-		excludedFiles = [
-			"notifications",
-			"8084AccessTimeout",
-			"expertconfig.json",
-			"rssidata.json",
-			"reorgLog",
-			"incomingPacket.json",
-			"outgoingPacket.json",
-			"originPackets.json",
-			"zway_incomingPacket.json",
-			"zway_outgoingPacket.json",
-			"zway_originPackets.json",
-			"zway_parsedPackets.json",
-			"zway_reorgLog",
-			"zway_rssidata.json",
-			"de.devices.json",
-			"en.devices.json",
-			"zwave_vendors.json",
-			"history"
-		];
+	var list = __storageContent,
+		excludedFiles = this.getIgnoredStorageFiles();
 
 	try {
 		// save all objects in storage
 		for (var ind in list) {
-			//if (list[ind] !== "notifications" && list[ind] !== "8084AccessTimeout") { // don't create backup of 8084 and notifications
 			if (excludedFiles.indexOf(list[ind]) === -1) {
 				backupJSON[list[ind]] = loadObject(list[ind]);
 			}
@@ -2971,92 +2867,19 @@ AutomationController.prototype.reoderDevices = function(list, action) {
 	return result;
 };
 
-/*
-AutomationController.prototype.transformInstanceToNewModule = function(instanceId, transformToModule){
-	var self = this,
-		getInstance = _.filter(this.controller.instances, function(instance){
-			return instance.id === instanceId;
-		}),
-		instance = getInstance[0]? getInstance[0] : null,
-		module = this.modules[transformToModule];
+AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, zwayName) {
+	var nodeId = nodeId,
+		getNodeVDevs = [];
 
-	// test data
+	getNodeVDevs = this.devices.filterByNode(nodeId, zwayName);
 
-	instance = {
-	"instanceId" : "0",
-	"moduleId" : "LogicalRules",
-	"active" : false,
-	"title" : "Logical Rule",
-	"params" : {
-		"triggerOnDevicesChange" : true,
-		"eventSource" : [],
-		"logicalOperator" : " none",
-		"tests" : [{
-				"testType" : "binary",
-				"testBinary" : {
-					"device" : "DummyDevice_17",
-					"testValue" : "on"
-				}
-			}, {
-				"testType" : "time",
-				"testTime" : {
-					"testOperator" : "<=",
-					"testValue" : "03:00"
-				}
-			}, {
-				"testType" : "binary",
-				"testBinary" : {
-					"device" : "Dummy_Devices_24_alarm_alarmSensor_burglar",
-					"testValue" : "on"
-				}
-			}, {
-				"testType" : "nested",
-				"testNested" : {
-					"logicalOperator" : "or",
-					"tests" : [{
-							"testType" : "binary",
-							"testBinary" : {
-								"device" : "ZWayVDev_uzb_6-0-48-1",
-								"testValue" : "on"
-							}
-						}, {
-							"testType" : "sensorDiscrete",
-							"testSensorDiscrete" : {
-								"testValue" : "10"
-							}
-						}
-					]
-				}
-			}
-		],
-		"action" : {
-			"switches" : [{
-					"device" : "DummyDevice_17",
-					"status" : "on",
-					"sendAction" : false
-				}
-			],
-			"dimmers" : [{
-					"device" : "ZWayVDev_uzb_2-0-38",
-					"status" : 56,
-					"sendAction" : false
-				}
-			],
-			"thermostats" : [],
-			"locks" : [],
-			"scenes" : [],
-			"notification" : []
-		},
-		"expertSettings" : false
-	},
-	"id" : 19,
-	"creationTime" : 1516791010,
-	"category" : "automation_basic"
-}
+	// set vDev isFailed state
+	getNodeVDevs.forEach(function(vDev) {
+		vDev.set('metrics:isFailed', isFailed);
 
-	if (instance && !!instance && module) {
-
-
-	}
-
-};*/
+		if (!isFailed) {
+			// bind on last receive
+			zway.devices[nodeId].data.lastReceived.unbind(this.vDevFailedDetection);
+		}
+	});
+};
