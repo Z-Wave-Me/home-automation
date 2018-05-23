@@ -7,5 +7,6 @@
 	"info_add_history":"Historie zum Gerät hinzugefügt: ",
 	"info_remove_history":"Historie vom Gerät entfernt: ",
 	"info_clear_id_history":"Historieneinträge vom Gerät gelöscht: ",
-	"info_clear_all_histories":"Historieneinträge aller Geräte gelöscht."
+	"info_clear_all_histories":"Historieneinträge aller Geräte gelöscht.",
+	"info_transformation":" keine Historie gefunden. Historie wird gelöscht ..."
 }

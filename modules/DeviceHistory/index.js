@@ -1,6 +1,6 @@
 /*** DeviceHistory Z-Way HA module *******************************************
 
-Version: 1.4.0
+Version: 2.0.0
 (c) Z-Wave.Me, 2015
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
@@ -296,8 +296,8 @@ _.extend(DeviceHistory.prototype, {
 			if (devId && self.history[devId]) {
 				hist = self.history[devId].get();
 
-				// create output with n (= show) values - 288, 96, 48, 24, 12, 6
-				if(items > 0 && items <= 288){
+				// create output with n (= show) values - 1440, 288, 96, 48, 24, 12, 6
+				if(items > 0 && items <= 1440){
 					sec = 86400 / items; // calculate seconds of range
 					
 					// calculate averaged value of all meta values between 'sec' range

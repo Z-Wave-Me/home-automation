@@ -7,5 +7,6 @@
 	"info_add_history":"History added to device: ",
 	"info_remove_history":"History removed for device: ",
 	"info_clear_id_history":"History entries cleared of device: ",
-	"info_clear_all_histories":"History entries of all devices cleared."
+	"info_clear_all_histories":"History entries of all devices cleared.",
+	"info_transformation":" not assigned to history. History will be removed ..."
 }
