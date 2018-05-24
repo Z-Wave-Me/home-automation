@@ -577,7 +577,7 @@ Security.prototype.stopDevices = function () {
         self.controller.devices.remove(self.vDevALARM.id);
         self.vDevALARM = null;
     }
-    self.log("warning", "Security_ " + self.id + " Stopped", true);
+    self.log("warning", "Security_ " + self.id + " Stopped", false);
 
 };
 /**
