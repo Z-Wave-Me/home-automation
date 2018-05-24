@@ -1897,7 +1897,7 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };*/
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = system('hostname -I')[1].replace(/[\s\n]/g, '');
+	var ip = system("hostname -I | cut -d ' ' -f1")[1];
 	return ip;
 }
 
