@@ -1897,14 +1897,22 @@ AutomationController.prototype.removeProfile = function (profileId) {
 };*/
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = system("hostname -I | cut -d ' ' -f1")[1];
+	var ip = false;
+	try {
+		if (checkBoxtype('poppbox')){
+			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
+		} else {
+			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
+		}
+	} catch(e) {
+		console.log(e);
+	}
+
 	return ip;
 }
 
-AutomationController.prototype.addQRCode = function(profile, obj) {
-	var typeNumber = 15,
-		errorCorrectionLevel = 'H',
-		data = {
+AutomationController.prototype.getQRCodeData = function(profile, password) {
+	var data = {
 			id: "",
 			login: "",
 			service: "find.z-wave.me",
@@ -1913,33 +1921,25 @@ AutomationController.prototype.addQRCode = function(profile, obj) {
 			wpa: "",
 			passwd: ""
 		},
-		url = "";
+		url = "",
+		ip = "";
 
-	data.passwd = obj.password;
+	data.passwd = password;
 	data.login = profile.login;
 	data.id = this.getRemoteId();
-	data.ip = this.getIPAddress();
+	
+	ip = this.getIPAddress();
+	if(ip) {
+		data.ip = ip;	
+	}
 
-	var qr = qrcode(typeNumber, errorCorrectionLevel);
-
-	var url = Object.keys(data).map(function(key){
+	url = Object.keys(data).map(function(key){
 		return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
 	}).join('&');
 
-	qr.addData(url);
-	qr.make();
+	url = Base64.encode(url);
 
-	var qrcodeBase64 = qr.createImgTag(3);
-
-	var file = "";
-	if(!profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-		file = data.login + new Date().getTime()+ ".gif"; //Loginname + timespame + file extension(gif)
-	} else {
-		file = profile.qrcode
-	}
-
-	profile.qrcode = file;
-	saveObject(file ,qrcodeBase64.toString());
+	return url;
 }
 
 // namespaces
