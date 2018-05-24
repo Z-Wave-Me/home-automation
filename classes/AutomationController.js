@@ -2636,7 +2636,7 @@ AutomationController.prototype.loadMainLang = function (pathPrefix) {
 };
 
 AutomationController.prototype.loadModuleMedia = function(moduleName,fileName) {
-	var img = ["png","jpg","jpeg","JPG","JPEG","gif"],
+	var img = ["png","PNG","jpg","jpeg","JPG","JPEG","gif","GIF"],
 		text = ["css","js","txt","rtf","xml"],
 		html = ["htm","html","shtml"],
 		video = ["mpeg","mpg","mpe","qt","mov","viv","vivo","avi","movie","mp4"],
