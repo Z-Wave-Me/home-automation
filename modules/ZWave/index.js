@@ -206,7 +206,20 @@ ZWave.prototype.init = function (config) {
 	this.controller.emit("ZWave.register", this.config.name);
 
 	// check periodically if nodes are failed to mark their vDevs as failed too
-	this.failedNodeCheck();
+
+	// add cron job that is triggered every day
+	this.controller.emit("cron.addTask", "checkForFailedNode.poll", {
+		minute: 0,
+		hour: 0,
+		weekDay: null,
+		day: null,
+		month: null
+	});
+
+	// add event listener
+	this.controller.on("checkForFailedNode.poll", self.checkForFailedNode);
+	// initial call
+	this.checkForFailedNode();
 };
 
 ZWave.prototype.startBinding = function () {
@@ -335,7 +348,7 @@ ZWave.prototype.stop = function () {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
 	}
 
-	this.controller.off("checkForfailedNode.poll", this.checkForfailedNode);
+	this.controller.off("checkForFailedNode.poll", this.checkForFailedNode);
 };
 
 ZWave.prototype.stopBinding = function () {
@@ -756,80 +769,64 @@ ZWave.prototype.certXFCheck = function () {
 	this.checkForCertFxLicense();
 };
 
-ZWave.prototype.failedNodeCheck = function () {
+ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
 	var self = this;
 	var zway = this.zway;
+	var nodeId = nodeId;
 
-	this.vDevFailedDetection = function(nodeId, isFailed, zwayName) {
-		var nodeId = nodeId,
-			getNodeVDevs = [];
-
-		getNodeVDevs = self.devices.filterByNode(nodeId, zwayName);
-
-		// set vDev isFailed state
-		getNodeVDevs.forEach(function(vDev) {
-			vDev.set('metrics:isFailed', isFailed);
-
-			if (!isFailed) {
-				// bind on last receive
-				zway.devices[nodeId].data.lastReceived.unbind(self.vDevFailedDetection);
-			}
-		});
-	};
-
-	this.checkFailed = function (nodeId) {
-		var devData = zway.devices[nodeId].data,
-			wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
-			isFailedNode = zway.devices[nodeId].data.isFailed.value || false,
-			now = Math.floor(Date.now()/1000);
-
-		if (devData.deviceTypeString.value !== 'Portable Remote Controller') {
-			if (wakeupCC) {
-
-				wakeupInterval = wakeupCC.data.interval.value;
-				
-				// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
-				if (!!wakeupInterval && (_.max([devData.lastReceived.updateTime, devData.lastSend.updateTime]) < now - 3 * wakeupInterval)) {
-					self.controller.vDevFailedDetection(nodeId, true);
-					// bind on last receive
-					devData.lastReceived.bind(self.controller.vDevFailedDetection(nodeId, false), self, false);
-				}
-			} else {				
-				self.controller.vDevFailedDetection(nodeId, isFailedNode);
-			}
-		}   
-	};
-
-	this.checkForfailedNode = function(nodeId) {
-		try {
-			if (typeof nodeId === 'number') {
-				self.checkFailed(nodeId);
-			} else {
-				Object.keys(zway.devices).forEach(function(nodeId) {
-					if (nodeId != zway.controller.data.nodeId.value) {
-						self.checkFailed(nodeId);
-					}
-				});
-			}
-		} catch (e) {
-			console.log("Failed to check if node is failed. ERROR:", e.toString());
-		}
-	};
-
-	// add cron job that is triggered each 10 min
-	this.controller.emit("cron.addTask", "checkForfailedNode.poll", {
-		minute: 0,
-		hour: 0,
-		weekDay: null,
-		day: null,
-		month: null
+	// set vDev isFailed state
+	this.devices.filterByNode(nodeId, this.config.name).forEach(function(vDev) {
+		vDev.set('metrics:isFailed', isFailed);
 	});
-
-	// add event listener
-	this.controller.on("checkForfailedNode.poll", self.checkForfailedNode);
-	// initial call
-	this.checkForfailedNode();
+	
+	if (!isFailed) {
+		zway.devices[nodeId].data.lastReceived.unbind(self.vDevFailedDetection);
+	}
 };
+
+ZWave.prototype.checkFailed = function (nodeId) {
+	var self = this;
+	var zway = this.zway;
+	var devData = zway.devices[nodeId].data,
+		wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
+		isFailedNode = zway.devices[nodeId].data.isFailed.value,
+		now = Math.floor(Date.now()/1000);
+
+	if (devData.deviceTypeString.value !== 'Portable Remote Controller') {
+		if (wakeupCC) {
+
+			wakeupInterval = wakeupCC.data.interval.value;
+			
+			// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
+			if (!!wakeupInterval && (_.max([devData.lastReceived.updateTime, devData.lastSend.updateTime]) < now - 3 * wakeupInterval)) {
+				self.controller.vDevFailedDetection(nodeId, true);
+				// bind on last receive
+				devData.lastReceived.bind(self.vDevFailedDetection);
+			}
+		} else {
+			self.controller.vDevFailedDetection(nodeId, isFailedNode);
+		}
+	}
+};
+
+ZWave.prototype.checkForFailedNode = function(nodeId) {
+	var self = this;
+	var zway = this.zway;
+	try {
+		if (typeof nodeId === 'number') {
+			self.checkFailed(nodeId);
+		} else {
+			Object.keys(zway.devices).forEach(function(nodeId) {
+				if (nodeId != zway.controller.data.nodeId.value) {
+					self.checkFailed(nodeId);
+				}
+			});
+		}
+	} catch (e) {
+		console.log("Failed to check if node is failed. ERROR:", e.toString());
+	}
+};
+
 
 ZWave.prototype.refreshStatisticsPeriodically = function () {
 	var self = this;
@@ -3671,12 +3668,6 @@ ZWave.prototype.deadDetectionStop = function () {
 ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	var self = this;
 	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) {
-		
-		// set failed (true/false) flag to all node vDevs
-		if (self.zway && self.zway.devices[nodeId]) {
-			self.controller.vDevFailedDetection(nodeId, self.zway.devices[nodeId].data.isFailed.value);
-		}
-		
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
 			self.deadDetectionCheckDevice(self, arg);
@@ -3696,9 +3687,11 @@ ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 
 	if (self.zway.devices[nodeId].data.isFailed.value) {
 		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
+			self.controller.vDevFailedDetection(nodeId, true);
 			self.addNotification("error", langFile.err_connct + values, "connection");
 		}
 	} else {
+		self.controller.vDevFailedDetection(nodeId, false);
 		self.addNotification("notification", langFile.dev_btl + values, "connection");
 	}
 };
@@ -4133,10 +4126,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		vDevIdC = commandClassId,
 		vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
 		changeDevId = vDevIdNI + separ + vDevIdC,
-		defaults,
-		isFailed = function (nodeId) {
-			return self.zway.devices[nodeId].data.isFailed.value || false;
-		}
+		defaults;
 		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
 	try {
@@ -4299,7 +4289,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:level", this.value ? "on" : "off");
 						}
 						// set failed status
-						vDev.set('metrics:isFailed',isFailed(nodeId));
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -4410,7 +4400,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:level", this.value);
 						}
 						// set failed status
-						vDev.set('metrics:isFailed',isFailed(nodeId));
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -4482,7 +4472,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
 						}
 						// set failed status
-						vDev_rgb.set('metrics:isFailed',isFailed(nodeId));
+						vDev_rgb.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}
 					
@@ -4616,7 +4606,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											vDev.set("metrics:level", this.value);
 										}
 										// set failed status
-										vDev.set('metrics:isFailed',isFailed(nodeId));
+										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -4722,7 +4712,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											}
 										}
 										// set failed status
-										vDev.set('metrics:isFailed',isFailed(nodeId));
+										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 								
@@ -4827,7 +4817,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											vDev.set("metrics:level", this.value);
 										}
 										// set failed status
-										vDev.set('metrics:isFailed',isFailed(nodeId));
+										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -4963,7 +4953,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											vDev.set("metrics:level", this.value);
 										}
 										// set failed status
-										vDev.set('metrics:isFailed',isFailed(nodeId));
+										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -5022,7 +5012,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									vDev.set("metrics:level", this.value);
 								}
 								// set failed status
-								vDev.set('metrics:isFailed',isFailed(nodeId));
+								vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 							} catch (e) {}
 						}, "value");
 					}
@@ -5066,7 +5056,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
 						}
 						// set failed status
-						vDev.set('metrics:isFailed',isFailed(nodeId));
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -5108,7 +5098,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:level", this.value === 255 ? "close" : "open");
 						}
 						// set failed status
-						vDev.set('metrics:isFailed',isFailed(nodeId));
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -5149,7 +5139,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:level", this.value === 255 ? "open" : "close");
 						}
 						// set failed status
-						vDev.set('metrics:isFailed',isFailed(nodeId));
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -5214,7 +5204,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
 								}
 								// set failed status
-								m_vDev.set('metrics:isFailed',isFailed(nodeId));
+								m_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 							} catch (e) {}
 						}, "value");
 					}
@@ -5279,7 +5269,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											t_vDev[mode].set("metrics:level", this.value);
 										}
 										// set failed status
-										t_vDev[mode].set('metrics:isFailed',isFailed(nodeId));
+										t_vDev[mode].set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								});
 							}
@@ -5380,7 +5370,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											a_vDev.set("metrics:level", this.value ? "on" : "off");
 										}
 										// set failed status
-										a_vDev.set('metrics:isFailed',isFailed(nodeId));
+										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -5475,7 +5465,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 													a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
 												}
 												// set failed status
-												a_vDev.set('metrics:isFailed',isFailed(nodeId));
+												a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 											} catch (e) {}
 										}, "value");
 									}
@@ -5579,7 +5569,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 																	a_vDev.set("metrics:level", this.event.value ? "on" : "off");
 																}
 																// set failed status
-																a_vDev.set('metrics:isFailed',isFailed(nodeId));
+																a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 															} catch (e) {}
 														}, "value");
 													}
@@ -5629,7 +5619,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
 													}
 													// set failed status
-													a_vDev.set('metrics:isFailed',isFailed(nodeId));
+													a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 												} catch (e) {}
 											}, "value");
 										}
@@ -5767,7 +5757,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});*/
 						}
 						// set failed status
-						vDev.set('metrics:isFailed',isFailed(nodeId));
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
