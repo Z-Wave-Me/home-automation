@@ -12,6 +12,47 @@
 function Security(id, controller) {
     // Call superconstructor first (AutomationModule)
     Security.super_.call(this, id, controller);
+
+    var self = this;
+
+    this.minuteStandart = 60;//60
+    this.secondStandart = 1;//1
+
+    /**
+     * Static State Datas
+     * @type {{COFF: {value: number, name: string, code: string, vDevname: string}, CON: {value: number, name: string, code: string, vDevname: string}, CRESET: {value: number, name: string, code: string, vDevname: string}, TRIGGER: {value: number, name: string, code: string, vDevname: string}, TIMER: {value: number, name: string, code: string, vDevname: string}, FTIMER: {value: number, name: string, code: string, vDevname: string}, AUTOTOGGLE: {value: number, name: string, code: string, vDevname: string}}}
+     */
+    this.performEnum = {
+        COFF: {value: 0, name: "cOff", code: "OF", vDevname: "Security_Unarmed"},
+        CON: {value: 1, name: "cOn", code: "ON", vDevname: "Security_Armed"},
+        CRESET: {value: 2, name: "cReset", code: "RE", vDevname: "Security_Reset"},
+        TRIGGER: {value: 3, name: "trigger", code: "TR", vDevname: "Alarm_Trigger"},
+        TIMER: {value: 4, name: "timer", code: "TI", vDevname: "Alarm_Command_TimerStart"},
+        FTIMER: {value: 5, name: "ftimer", code: "FT", vDevname: "Alarm_Command_TimerEnd"},
+        AUTOTOGGLE: {value: 6, name: "automationToggle", code: "AT", vDevname: "Automation_switch"}
+    };
+
+    /**
+     * Stati an State can have
+     * @type {{INIT: string, STOPPED: string, RUNNING: string}}
+     */
+    this.StateStatus = {
+        INIT: "init",
+        STOPPED: "stop",
+        RUNNING: "run"
+    };
+
+    /**
+     * Static Transition Datas
+     * @type {{OFF: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, PREON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, LIVEON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, ALARMED: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, INITIAL: {value: number, name: string, code: string, vDevname: string, StateStatus: string}}}
+     */
+    this.StateEnum = {
+        OFF: {value: 0, name: "off", code: "O", vDevname: "Alarm_Off", StateStatus: this.StateStatus.STOPPED},
+        PREON: {value: 1, name: "preON", code: "P", vDevname: "Alarm_Wait", StateStatus: this.StateStatus.STOPPED},
+        LIVEON: {value: 2, name: "liveOn", code: "L", vDevname: "Alarm_Ready", StateStatus: this.StateStatus.STOPPED},
+        ALARMED: {value: 3, name: "alarmed", code: "A", vDevname: "Alarm_Alarmed", StateStatus: this.StateStatus.STOPPED},
+        INITIAL: {value: 4, name: "initial", code: "I", vDevname: "Alarm_Initial", StateStatus: this.StateStatus.STOPPED}
+    };    
 }
 inherits(Security, AutomationModule);
 _module = Security;
@@ -20,41 +61,22 @@ _module = Security;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 //
-var minuteStandart = 60;//60
-var secondStandart = 1;//1
+
 /**
- * Static State Datas
- * @type {{COFF: {value: number, name: string, code: string, vDevname: string}, CON: {value: number, name: string, code: string, vDevname: string}, CRESET: {value: number, name: string, code: string, vDevname: string}, TRIGGER: {value: number, name: string, code: string, vDevname: string}, TIMER: {value: number, name: string, code: string, vDevname: string}, FTIMER: {value: number, name: string, code: string, vDevname: string}, AUTOTOGGLE: {value: number, name: string, code: string, vDevname: string}}}
+ * Datas an Extern Device needs for Controling the Module oder get Controled from the Module
+ * @param self a Reference of this Module
+ * @param device a Reference of the device
+ * @param condition the Condition when something happends in the Module when device Level is condition
+ * @param performE what Happend if Conditionb is true
+ * @constructor
  */
-var performEnum = {
-    COFF: {value: 0, name: "cOff", code: "OF", vDevname: "Security_Unarmed"},
-    CON: {value: 1, name: "cOn", code: "ON", vDevname: "Security_Armed"},
-    CRESET: {value: 2, name: "cReset", code: "RE", vDevname: "Security_Reset"},
-    TRIGGER: {value: 3, name: "trigger", code: "TR", vDevname: "Alarm_Trigger"},
-    TIMER: {value: 4, name: "timer", code: "TI", vDevname: "Alarm_Command_TimerStart"},
-    FTIMER: {value: 5, name: "ftimer", code: "FT", vDevname: "Alarm_Command_TimerEnd"},
-    AUTOTOGGLE: {value: 6, name: "automationToggle", code: "AT", vDevname: "Automation_switch"}
-};
-/**
- * Stati an State can have
- * @type {{INIT: string, STOPPED: string, RUNNING: string}}
- */
-var StateStatus = {
-    INIT: "init",
-    STOPPED: "stop",
-    RUNNING: "run"
-};
-/**
- * Static Transition Datas
- * @type {{OFF: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, PREON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, LIVEON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, ALARMED: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, INITIAL: {value: number, name: string, code: string, vDevname: string, StateStatus: string}}}
- */
-var StateEnum = {
-    OFF: {value: 0, name: "off", code: "O", vDevname: "Alarm_Off", StateStatus: StateStatus.STOPPED},
-    PREON: {value: 1, name: "preON", code: "P", vDevname: "Alarm_Wait", StateStatus: StateStatus.STOPPED},
-    LIVEON: {value: 2, name: "liveOn", code: "L", vDevname: "Alarm_Ready", StateStatus: StateStatus.STOPPED},
-    ALARMED: {value: 3, name: "alarmed", code: "A", vDevname: "Alarm_Alarmed", StateStatus: StateStatus.STOPPED},
-    INITIAL: {value: 4, name: "initial", code: "I", vDevname: "Alarm_Initial", StateStatus: StateStatus.STOPPED}
-};
+Security.prototype.BusDatas = function (self, device, condition, performE) {
+    this.self = self;
+    this.device = device;
+    this.condition = condition;
+    this.performE = performE;
+}
+
 //State Definition
 /**
  * Definition of an State
@@ -64,46 +86,32 @@ var StateEnum = {
  * @param exit the Method who called by exitin an state
  * @constructor
  */
-function State(stateEnum, entry, make, exit) {
-    this.stateEnum = stateEnum;
+Security.prototype.State = function (stateStatus, stateEnum, entry, make, exit) {
     var entry = entry;
     var make = make;
     var exit = exit;
+
+    this.stateStatus = stateStatus;
+    this.stateEnum = stateEnum;
+    
     this.doEntry = function () {
-        stateEnum.StateStatus = StateStatus.INIT;
+        stateEnum.StateStatus = stateStatus.INIT;
         entry();
     };
     this.doMake = function (args) {
-        if (stateEnum.StateStatus === StateStatus.INIT) {
-            stateEnum.StateStatus = StateStatus.RUNNING;
+        if (stateEnum.StateStatus === stateStatus.INIT) {
+            stateEnum.StateStatus = stateStatus.RUNNING;
             make(args);
         }
-
     };
     this.doExit = function () {
-        if (stateEnum.StateStatus === StateStatus.RUNNING) {
-
+        if (stateEnum.StateStatus === stateStatus.RUNNING) {
             exit();
-            stateEnum.StateStatus = StateStatus.STOPPED;
+            stateEnum.StateStatus = stateStatus.STOPPED;
         }
-
     };
+}
 
-}
-/**
- * Datas an Extern Device needs for Controling the Module oder get Controled from the Module
- * @param self a Reference of this Module
- * @param device a Reference of the device
- * @param condition the Condition when something happends in the Module when device Level is condition
- * @param performE what Happend if Conditionb is true
- * @constructor
- */
-function BusDatas(self, device, condition, performE) {
-    this.self = self;
-    this.device = device;
-    this.condition = condition;
-    this.performE = performE;
-}
 /**
  * sets the parameter to the Automation Controlling value
  * @param toSet parameter
@@ -111,8 +119,6 @@ function BusDatas(self, device, condition, performE) {
 Security.prototype.setAutomation = function (toSet) {
     var self = this;
     self.vDev.set("metrics:Alevel", toSet);
-
-
 };
 /**
  * Initiate the Module
@@ -148,7 +154,7 @@ Security.prototype.init = function (config) {
     self.cleanNots = config.clean.notification;    
 
     self.timeScedule = config.times.table;
-    self.busDatas = new BusDatas(null, null, null, null);
+    self.busDatas = new this.BusDatas(null, null, null, null);
     self.busDataMap = {};
     self.start = config.times.start;
     self.interval = config.times.interval;
@@ -172,11 +178,11 @@ Security.prototype.init = function (config) {
             if (busDatas) {
                 vDevD = busDatas.self.controller.devices.get(busDatas.device);
                 if (busDatas.condition === vDevD.get("metrics:level")) {
-                    if (busDatas.self.vDev.get("metrics:state") === StateEnum.LIVEON) {
+                    if (busDatas.self.vDev.get("metrics:state") === self.StateEnum.LIVEON) {
                         busDatas.self.lastTrigger(busDatas.self.lastTriggerList, vDevD);
                     }
                     if(busDatas.self.vDev.get("metrics:level")==="on") {
-                        busDatas.self.vDev.performCommand(performEnum.TRIGGER.name, {device: busDatas.device.toString()});
+                        busDatas.self.vDev.performCommand(self.performEnum.TRIGGER.name, {device: busDatas.device.toString()});
                     }
                     if (!busDatas.self.alarmDevice) {
                         busDatas.self.alarmDevice = busDatas.device.toString();
@@ -227,7 +233,7 @@ Security.prototype.init = function (config) {
     self.initDevices();
     self.state.doEntry();
     self.state.doMake();
-    self.vDev.performCommand(performEnum.COFF.name);
+    self.vDev.performCommand(self.performEnum.COFF.name);
 };
 /**
  * Method calls the wipeOwnVdevs for all Device Arrays
@@ -308,7 +314,7 @@ Security.prototype.filterFor = function (array, condition) {
 Security.prototype.onSensor = function (device, condition) {
     var self = this;
     if (!self.busDataMap[device + '#' + condition]) {
-        self.busDataMap[device + '#' + condition] = new BusDatas(self, device, condition, null);
+        self.busDataMap[device + '#' + condition] = new this.BusDatas(self, device, condition, null);
     }
     self.controller.devices.on(device, "change:metrics:level",
         self.sensorFunction
@@ -334,14 +340,14 @@ Security.prototype.commandHandlingWithBidirektionalScene = function (args, vdevI
 Security.prototype.makeVDevs = function () {
     var self = this;
     //Transition VDEVS
-    self.vDevON = self.makeVDev(performEnum.CON.vDevname, 'toggleButton');
-    self.vDevOFF = self.makeVDev(performEnum.COFF.vDevname, 'toggleButton');
-    self.vDevRESET = self.makeVDev(performEnum.CRESET.vDevname, 'toggleButton');
-    self.vDevTRIGGER = self.makeVDev(performEnum.TRIGGER.vDevname, 'toggleButton');
+    self.vDevON = self.makeVDev(this.performEnum.CON.vDevname, 'toggleButton');
+    self.vDevOFF = self.makeVDev(this.performEnum.COFF.vDevname, 'toggleButton');
+    self.vDevRESET = self.makeVDev(this.performEnum.CRESET.vDevname, 'toggleButton');
+    self.vDevTRIGGER = self.makeVDev(this.performEnum.TRIGGER.vDevname, 'toggleButton');
     //Alarm State VDEV
-    self.vDevALARM = self.makeVDev(StateEnum.ALARMED.vDevname, 'toggleButton');
+    self.vDevALARM = self.makeVDev(this.StateEnum.ALARMED.vDevname, 'toggleButton');
     //Automation VDEV
-    self.vDevTimeScedule = self.makeVDev(performEnum.AUTOTOGGLE.vDevname, 'toggleButton');
+    self.vDevTimeScedule = self.makeVDev(this.performEnum.AUTOTOGGLE.vDevname, 'toggleButton');
     //Module VDEV
     self.vDev = self.controller.devices.create({
             deviceId: "Security_" + self.id,
@@ -351,12 +357,12 @@ Security.prototype.makeVDevs = function () {
                     multilineType: "securityControl",
                     title: self.getInstanceTitle(),
                     icon: "security",
-                    state: StateEnum.OFF,
+                    state: self.StateEnum.OFF,
                     level: 'off',
                     scaleTitle: '',
                     Alevel: 'off',
                     Rlevel: 'off',
-                    Clevel: performEnum.COFF.name,
+                    Clevel: this.performEnum.COFF.name,
                     start: self.start,
                     interval: self.interval,
                     lastTriggerList: []
@@ -374,25 +380,25 @@ Security.prototype.makeVDevs = function () {
                         self.test();
                         returnState = self.makeReturnState(1, "test Security_" + self.id);
                         return returnState;
-                    case performEnum.COFF.name:
-                        message = performEnum.COFF.name;
+                    case self.performEnum.COFF.name:
+                        message = self.performEnum.COFF.name;
                         self.commandHandlingWithBidirektionalScene(args, self.vDevOFF.id, function () {
                             self.transition(self.canOff(), self.off, args);
                         });
                         break;
-                    case performEnum.CRESET.name:
-                        message = performEnum.CRESET.name;
+                    case self.performEnum.CRESET.name:
+                        message = self.performEnum.CRESET.name;
                         self.commandHandlingWithBidirektionalScene(args, self.vDevRESET.id, function () {
                             self.transition(self.canReset(), self.preOn, args);
                         });
                         break;
-                    case performEnum.CON.name:
-                        message = performEnum.CON.name;
+                    case self.performEnum.CON.name:
+                        message = self.performEnum.CON.name;
                         self.commandHandlingWithBidirektionalScene(args, self.vDevON.id, function () {
                             self.transition(self.canOn(), self.preOn, args);
                         });
                         break;
-                    case performEnum.TRIGGER.name:
+                    case self.performEnum.TRIGGER.name:
                         self.alarmDevice = args.device;
                         if (args.device && args.device !== self.vDevTRIGGER.id) {
                             self.a = args;
@@ -401,13 +407,13 @@ Security.prototype.makeVDevs = function () {
                             self.transition(self.canTrigger(), self.alarmed, self.a);
                         });
                         break;
-                    case performEnum.TIMER.name:
+                    case self.performEnum.TIMER.name:
                         self.transition(self.canTimer(), self.liveOn, args);
                         break;
-                    case performEnum.FTIMER.name:
+                    case self.performEnum.FTIMER.name:
                         self.transition(self.canTimer(), self.alarmed, args);
                         break;
-                    case performEnum.AUTOTOGGLE.name:
+                    case self.performEnum.AUTOTOGGLE.name:
                         if (args.device === self.vDevTimeScedule.id) {
                             if (self.vDev.get("metrics:Alevel") === 'on') {
                                 self.setAutomation('off');
@@ -415,14 +421,14 @@ Security.prototype.makeVDevs = function () {
                             else {
                                 self.setAutomation('on');
                             }
-                            self.log("warning", "automation switched to" + "#" + self.vDev.get("metrics:Alevel"), true);
+                            self.log("warning", "automation switched to " + "#" + self.vDev.get("metrics:Alevel"), false);
                         } else {
                             self.controller.devices.get(self.vDevTimeScedule.id).set("metrics:level", "on");
                         }
 
                         break;
                     default :
-                        self.log("warning", "Security_ " + self.id + " unknown command " + command, false);
+                        self.log("warning", "Security_" + self.id + " unknown command " + command, false);
                         returnState = self.makeReturnState(2, command + 'is not available command');
                         return returnState;
                 }
@@ -438,12 +444,12 @@ Security.prototype.makeVDevs = function () {
  */
 Security.prototype.destroyVDevs = function () {
     var self = this;
-    self.destroyVDev(performEnum.CON.vDevname);
-    self.destroyVDev(performEnum.COFF.vDevname);
-    self.destroyVDev(performEnum.CRESET.vDevname);
-    self.destroyVDev(performEnum.TRIGGER.vDevname);
-    self.destroyVDev(StateEnum.ALARMED.vDevname);
-    self.destroyVDev(performEnum.AUTOTOGGLE.vDevname);
+    self.destroyVDev(this.performEnum.CON.vDevname);
+    self.destroyVDev(this.performEnum.COFF.vDevname);
+    self.destroyVDev(this.performEnum.CRESET.vDevname);
+    self.destroyVDev(this.performEnum.TRIGGER.vDevname);
+    self.destroyVDev(this.StateEnum.ALARMED.vDevname);
+    self.destroyVDev(this.performEnum.AUTOTOGGLE.vDevname);
 };
 /**
  * Makes an VDEV with name and Devicetype
@@ -495,7 +501,7 @@ Security.prototype.destroyVDev = function (vdevName) {
 Security.prototype.onInput = function (pE, device, condition) {
     var self = this;
     if (!self.busDataMap[device + '#' + condition]) {
-        self.busDataMap[device + '#' + condition] = new BusDatas(self, device, condition, pE);
+        self.busDataMap[device + '#' + condition] = new this.BusDatas(self, device, condition, pE);
     }
     if (self.controller.devices.get(device)) {
         self.controller.devices.on(device, "change:metrics:level",
@@ -514,19 +520,19 @@ Security.prototype.initDevices = function () {
         self.onSensorsAndConditionArray(self.sensorsDatas);
     }
     if (self.offDatas) {
-        self.onInputArray(performEnum.COFF, self.offDatas);
+        self.onInputArray(this.performEnum.COFF, self.offDatas);
     }
     if (self.onDatas) {
-        self.onInputArray(performEnum.CON, self.onDatas);
+        self.onInputArray(this.performEnum.CON, self.onDatas);
     }
     if (self.resetDatas) {
-        self.onInputArray(performEnum.CRESET, self.resetDatas);
+        self.onInputArray(this.performEnum.CRESET, self.resetDatas);
     }
-    self.onInput(performEnum.CON, self.vDevON.id, true);
-    self.onInput(performEnum.COFF, self.vDevOFF.id, true);
-    self.onInput(performEnum.CRESET, self.vDevRESET.id, true);
-    self.onInput(performEnum.TRIGGER, self.vDevTRIGGER.id, true);
-    self.onInput(performEnum.AUTOTOGGLE, self.vDevTimeScedule.id, true);
+    self.onInput(this.performEnum.CON, self.vDevON.id, true);
+    self.onInput(this.performEnum.COFF, self.vDevOFF.id, true);
+    self.onInput(this.performEnum.CRESET, self.vDevRESET.id, true);
+    self.onInput(this.performEnum.TRIGGER, self.vDevTRIGGER.id, true);
+    self.onInput(this.performEnum.AUTOTOGGLE, self.vDevTimeScedule.id, true);
     this.vDevON.set('visibility', false, {silent: true});
     this.vDevOFF.set('visibility', false, {silent: true});
     this.vDevRESET.set('visibility', false, {silent: true});
@@ -543,19 +549,19 @@ Security.prototype.stopDevices = function () {
         self.offSensorsAndConditionArray(self.sensorsDatas);
     }
     if (self.offDatas) {
-        self.offInputArray(performEnum.COFF, self.offDatas);
+        self.offInputArray(this.performEnum.COFF, self.offDatas);
     }
     if (self.onDatas) {
-        self.offInputArray(performEnum.CON, self.onDatas);
+        self.offInputArray(this.performEnum.CON, self.onDatas);
     }
     if (self.resetDatas) {
-        self.offInputArray(performEnum.CRESET, self.resetDatas);
+        self.offInputArray(this.performEnum.CRESET, self.resetDatas);
     }
-    self.offInput(performEnum.CON, self.vDevON.id, true);
-    self.offInput(performEnum.COFF, self.vDevOFF.id, true);
-    self.offInput(performEnum.CRESET, self.vDevRESET.id, true);
-    self.offInput(performEnum.TRIGGER, self.vDevTRIGGER.id, true);
-    self.offInput(performEnum.AUTOTOGGLE, self.vDevTimeScedule.id, true);
+    self.offInput(this.performEnum.CON, self.vDevON.id, true);
+    self.offInput(this.performEnum.COFF, self.vDevOFF.id, true);
+    self.offInput(this.performEnum.CRESET, self.vDevRESET.id, true);
+    self.offInput(this.performEnum.TRIGGER, self.vDevTRIGGER.id, true);
+    self.offInput(this.performEnum.AUTOTOGGLE, self.vDevTimeScedule.id, true);
 
     if (self.vDevON) {
         self.controller.devices.remove(self.vDevON.id);
@@ -577,7 +583,7 @@ Security.prototype.stopDevices = function () {
         self.controller.devices.remove(self.vDevALARM.id);
         self.vDevALARM = null;
     }
-    self.log("warning", "Security_ " + self.id + " Stopped", false);
+    self.log("warning", "Security_" + self.id + " Stopped", false);
 
 };
 /**
@@ -675,14 +681,14 @@ Security.prototype.scedule = function (timeScedule) {
     self.sceduletimer = setInterval(function () {
         if (self.sceduleAktive()) {
             if (self.analyseScedule(timeScedule, "arm")) {
-                self.vDev.performCommand(performEnum.CON.name);
+                self.vDev.performCommand(self.performEnum.CON.name);
             }
             if (self.analyseScedule(timeScedule, "disarm")) {
-                self.vDev.performCommand(performEnum.COFF.name);
+                self.vDev.performCommand(self.performEnum.COFF.name);
             }
         }
 
-    }, minuteStandart * 500);
+    }, this.minuteStandart * 500);
 
 };
 /**
@@ -764,7 +770,7 @@ Security.prototype.sceduleAnalyse = function (timeScedule) {
 Security.prototype.initStates = function () {
     var self = this;
     //--Initial-State--
-    self.initState = new State(StateEnum.INITIAL,
+    self.initState = new this.State(this.StateStatus, this.StateEnum.INITIAL,
         function () {
         }, function () {
             self.vDevALARM.performCommand("on");
@@ -773,21 +779,21 @@ Security.prototype.initStates = function () {
         function () {
         });
     //--OFF-State--
-    self.off = new State(StateEnum.OFF, function () {
+    self.off = new this.State(this.StateStatus, this.StateEnum.OFF, function () {
         self.vDev.set("metrics:state", StateEnum.OFF);
         self.vDev.set("metrics:level", 'off');
         self.vDev.set("metrics:Rlevel", 'off');
-        self.vDev.set("metrics:Clevel", performEnum.COFF.name);
-        self.vDev.set("metrics:state", StateEnum.OFF);
+        self.vDev.set("metrics:Clevel", self.performEnum.COFF.name);
+        self.vDev.set("metrics:state", self.StateEnum.OFF);
         self.endscedule();
     }, function (args) {
         self.scedule(self.timeScedule);
     }, function () {
     });
     //--Waiting-State--
-    self.preOn = new State(StateEnum.PREON, function () {
-        self.vDev.set("metrics:state", StateEnum.PREON);
-        self.vDev.set("metrics:Clevel", performEnum.CON.name);
+    self.preOn = new this.State(this.StateStatus, this.StateEnum.PREON, function () {
+        self.vDev.set("metrics:state", self.StateEnum.PREON);
+        self.vDev.set("metrics:Clevel", self.performEnum.CON.name);
         self.vDev.set("metrics:Rlevel", 'off');
         self.vDev.set("metrics:level", 'pending');
         self.a = null;
@@ -798,8 +804,8 @@ Security.prototype.initStates = function () {
 
     });
     //--Online-State--
-    self.liveOn = new State(StateEnum.LIVEON, function () {
-        self.vDev.set("metrics:state", StateEnum.LIVEON);
+    self.liveOn = new this.State(this.StateStatus, this.StateEnum.LIVEON, function () {
+        self.vDev.set("metrics:state", self.StateEnum.LIVEON);
         self.vDev.set("metrics:level", 'on');
     }, function (args) {
         if (self.confirmDatas) {
@@ -844,8 +850,8 @@ Security.prototype.initStates = function () {
         }        
     });
     //--Alarming-State--
-    self.alarmed = new State(StateEnum.ALARMED, function () {
-        self.vDev.set("metrics:state", StateEnum.ALARMED);
+    self.alarmed = new this.State(this.StateStatus, this.StateEnum.ALARMED, function () {
+        self.vDev.set("metrics:state", self.StateEnum.ALARMED);
         self.vDev.set("metrics:level", 'alarmed');
         self.vDev.set("metrics:Rlevel", 'on');
     }, function (args) {
@@ -866,14 +872,14 @@ Security.prototype.initStates = function () {
 Security.prototype.alarmTriggering = function (alarmMsg) {
     var self = this;
     if (self.interval) {
-        self.time = minuteStandart * 1000 * self.interval;
+        self.time = this.minuteStandart * 1000 * self.interval;
     } else {
-        self.time = minuteStandart * 1000;
+        self.time = this.minuteStandart * 1000;
     }
     if (self.silent) {
-        self.time2 = secondStandart * 1000 * self.silent;
+        self.time2 = this.secondStandart * 1000 * self.silent;
     } else {
-        self.time2 = secondStandart * 1000;
+        self.time2 = this.secondStandart * 1000;
     }
     if (!self.alarmtimer) {
         if (self.silent === 0) {
@@ -904,7 +910,7 @@ Security.prototype.alarmTriggering = function (alarmMsg) {
  */
 Security.prototype.silenttriggerFunction = function (alarmMsg) {
     var self = this;
-    self.log("error", "ALARM silent " + "Security_ " + self.id + " " + alarmMsg, false);
+    self.log("error", "ALARM silent " + "Security_" + self.id + " " + alarmMsg, false);
 
     if (self.silentalarmDatas) {
         self.silentalarmDatas.forEach(
@@ -933,7 +939,7 @@ Security.prototype.silenttriggerFunction = function (alarmMsg) {
  */
 Security.prototype.triggerFunction = function (alarmMsg) {
     var self = this;
-    self.log("error", "ALARM " + "Security_ " + self.id + " " + alarmMsg, false);
+    self.log("error", "ALARM " + "Security_" + self.id + " " + alarmMsg, false);
     self.controller.emit("alarm", self);
     self.vDevALARM.performCommand("on");
     if (self.alarmDatas) {
@@ -980,9 +986,9 @@ Security.prototype.transition = function (condition, newState, args) {
 Security.prototype.cTimer = function () {
     var self = this;
     if (self.start) {
-        self.time = secondStandart * 1000 * self.start;
+        self.time = this.secondStandart * 1000 * self.start;
     } else {
-        self.time = secondStandart * 1000;
+        self.time = this.secondStandart * 1000;
     }
     if (self.alarmCtimer) {
         clearInterval(self.alarmCtimer);
@@ -990,12 +996,12 @@ Security.prototype.cTimer = function () {
     self.alarmCtimer = setInterval(function () {
         if (self.vDev) {
             if (self.allDevicesInit()) {
-                self.vDev.performCommand(performEnum.TIMER.name);
+                self.vDev.performCommand(self.performEnum.TIMER.name);
             } else {
                 if (!self.alarmDevice && self.lastTriggerList) {
                     self.alarmDevice = self.lastTriggerList[0].id;
                 }
-                self.vDev.performCommand(performEnum.FTIMER.name, {device: self.alarmDevice});
+                self.vDev.performCommand(self.performEnum.FTIMER.name, {device: self.alarmDevice});
 
             }
             clearInterval(self.alarmCtimer);
@@ -1009,7 +1015,7 @@ Security.prototype.cTimer = function () {
  */
 Security.prototype.canTrigger = function () {
     var self = this;
-    return self.state.stateEnum === StateEnum.LIVEON;
+    return self.state.stateEnum === this.StateEnum.LIVEON;
 
 };
 /**
@@ -1018,7 +1024,7 @@ Security.prototype.canTrigger = function () {
  */
 Security.prototype.canTimer = function () {
     var self = this;
-    return self.state.stateEnum === StateEnum.PREON;
+    return self.state.stateEnum === this.StateEnum.PREON;
 
 };
 /**
@@ -1027,7 +1033,7 @@ Security.prototype.canTimer = function () {
  */
 Security.prototype.canOn = function () {
     var self = this;
-    if (self.state.stateEnum !== StateEnum.OFF) {
+    if (self.state.stateEnum !== this.StateEnum.OFF) {
         return false;
     }
     return true;
@@ -1038,7 +1044,7 @@ Security.prototype.canOn = function () {
  */
 Security.prototype.canOff = function () {
     var self = this;
-    return [StateEnum.LIVEON, StateEnum.PREON, StateEnum.INITIAL].indexOf(self.state.stateEnum) !== -1;
+    return [this.StateEnum.LIVEON, this.StateEnum.PREON, this.StateEnum.INITIAL].indexOf(self.state.stateEnum) !== -1;
 };
 /**
  * Condition for reset alarmed
@@ -1046,7 +1052,7 @@ Security.prototype.canOff = function () {
  */
 Security.prototype.canReset = function () {
     var self = this;
-    return self.state.stateEnum === StateEnum.ALARMED;
+    return self.state.stateEnum === this.StateEnum.ALARMED;
 };
 /**
  * Looks if all Devices are on the right state that the module can get alarm ready
@@ -1092,13 +1098,14 @@ Security.prototype.makeReturnState = function (code, message) {
 Security.prototype.log = function (level, message, stringify) {
     var self = this;
     if (stringify) {
-        self.controller.addNotification(level, JSON.stringify(message, null, 4), "module", "PersonIdentificationModule");
-        console.log(JSON.stringify(message, null, 4));
+        self.controller.addNotification(level, JSON.stringify(message, null, 4), "module", "Security");
+        //console.log(JSON.stringify(message, null, 4));
     } else {
-        self.controller.addNotification(level, message, "module", "PersonIdentificationModule");
-        console.log(message);
+        self.controller.addNotification(level, message, "module", "Security");
+        //console.log(message);
     }
 };
+
 Security.prototype.contains = function (array, obj) {
     var i = array.length;
     while (i--) {
@@ -1137,7 +1144,7 @@ Security.prototype.alarmCancel = function () {
     self.alarmSilenttimerS2 = null;
     self.alarmtimerS2 = null;
     self.doOnDeviceArray(self.alarmDatas,"off");
-    self.log("warning", "Security_ " + "ALARM-END", false);
+    self.log("warning", "Security_" + "ALARM-END", false);
     if (self.vDevALARM) {
         self.vDevALARM.performCommand("on");
     }

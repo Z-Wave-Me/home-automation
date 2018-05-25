@@ -86,7 +86,7 @@ _.extend(DeviceHistory.prototype, {
 	},
 	stop: function () {
 		var self = this;
-
+		
 		// remove eventhandlers
 		this.config.allRegisteredDevices.forEach(function(vDevId) {
 			vDev = self.controller.devices.get(vDevId);
@@ -195,7 +195,8 @@ _.extend(DeviceHistory.prototype, {
 		};
 
 		this.removeHistory = function (vDev) {
-			if (vDev) {
+
+			if (vDev && self.config.allRegisteredDevices.indexOf(vDev.id) > -1) {
 				// remove history array
 				if (self.history[vDev.id]) {
 					self.history[vDev.id].finalize();
@@ -399,7 +400,7 @@ _.extend(DeviceHistory.prototype, {
 
 				self.config.allRegisteredDevices.forEach(function(devId){
 					if(self.history[devId]) {
-						elf.history[devId].set([]);
+						self.history[devId].set([]);
 					}
 				});
 
