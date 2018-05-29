@@ -1226,11 +1226,23 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 };
 
 AutomationController.prototype.installIcon = function(option, reqObj, iconName, id) {
-	var result = "in progress",
+	var reply = {
+			message: "in progress",
+			files: []
+		},
 		filelist = [],
 		input = "",
 		name = "",
 		update = false;
+
+	extensionToLower = function (name) {
+		var arr = name.split(".");
+		arr[arr.length-1] = arr[arr.length-1].toLowerCase();
+		if (arr[arr.length-1] == "gz" && arr.length > 2 && arr[arr.length-2].toLowerCase() == "tar") {
+			arr[arr.length-2] == arr[arr.length-2].toLowerCase();
+		}
+		return arr.join(".");
+	};		
 
 	switch(option) {
 		case 'remote':
@@ -1238,6 +1250,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			name = iconName
 			break;
 		case 'local':
+			reqObj.name = extensionToLower(reqObj.name);
 			input = JSON.stringify(reqObj);
 			name = reqObj.name;
 			break;
@@ -1252,23 +1265,23 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			id,
 			function(success) {
 				filelist = parseToObject(success);
-				result = "done";
+				reply.message = "done";
 			},  function() {
-				result = "failed";
+				reply.message = "failed";
 			}
 		);
 
 		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d &&  result === "in progress") {
+		while ((new Date()).valueOf() < d &&  reply.message === "in progress") {
 			processPendingCallbacks();
 		}
 
-		if (result === "in progress") {
-			result = "failed";
+		if (reply.message === "in progress") {
+			reply.message = "failed";
 		}
 
-		if (result === 'done') {
+		if (reply.message === 'done') {
 			for (var file in filelist) {
 				if (filelist[file].filename && filelist[file].orgfilename) {
 					var icon = {
@@ -1281,6 +1294,8 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 						'source_title': option === "local" ? iconName+" "+id : reqObj.title
 					};
 
+					reply.files.push(filelist[file].filename);
+
 					this.icons.push(icon);
 					update = true;
 				}
@@ -1291,7 +1306,12 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			}
 		}
 	}
-	return result;
+
+	if (reply.files.length == 1) {
+		reply.files = reply.files[0];
+	}
+
+	return reply;
 };
 
 AutomationController.prototype.listIcons = function() {
