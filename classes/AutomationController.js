@@ -1661,13 +1661,13 @@ AutomationController.prototype.updateLocation = function (id, title, user_img, d
 		location.title = title;
 		location.show_background = show_background;
 		location.main_sensors = main_sensors;
-		if (typeof user_img === 'string' && user_img.length > 0) {
+		if (typeof user_img === 'string') {
 			location.user_img = user_img;
 		}
-		if (typeof default_img === 'string' && default_img.length > 0) {
+		if (typeof default_img === 'string') {
 			location.default_img = default_img;
 		}
-		if (typeof img_type === 'string' && img_type.length > 0) {
+		if (typeof img_type === 'string') {
 			location.img_type = img_type;
 		}
 		if (typeof callback === 'function') {
