@@ -421,7 +421,7 @@ Rules.prototype.runTests = {
                     res = res || self.compareSwitchControl(vDev,test.level);
                     break;
                 case 'time':
-                    res = res && self.compareTime(test.level, test.operator);
+                    res = res || self.compareTime(test.level, test.operator);
                     break;
                 case 'nested':
                     res = res || self.testRule(test);
