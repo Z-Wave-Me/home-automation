@@ -49,7 +49,7 @@ MailNotifier.prototype.init = function (config) {
 
 	//console.log(this.mail_to);
 	this.message = config.mail_message;
-	this.collectMessages = 0;
+	this.collectMessages = [];
 
 	var self = this;
 
@@ -68,21 +68,24 @@ MailNotifier.prototype.init = function (config) {
 			probeType: 'notification_email'
 		},
 		handler: function(command, args) {
+			var mailObject = {};
 			var send_mail = false;
 			if (command !== 'update') {
 				if (send_mail |= command === "on") {
-					self.collectMessages++;
-					self.message = self.config.mail_message;
-					self.mail_to = self.config.mail_to_input === '' ? self.config.mail_to_select : self.config.mail_to_input;
+					//self.collectMessages++;
+					mailObject.message = self.config.mail_message;
+					mailObject.mail_to = self.config.mail_to_input === '' ? self.config.mail_to_select : self.config.mail_to_input;
+					self.collectMessages.push(mailObject);
 				} else if (send_mail |= command === "send") {
-					self.collectMessages++;
-					self.message = args.message;
-					self.mail_to = args.mail_to;
+					//self.collectMessages++;
+					mailObject.message = args.message;
+					mailObject.mail_to = args.mail_to;
+					self.collectMessages.push(mailObject);
 				}
 
 				// TODO check for mail address
-				if (!self.mail_to || self.mail_to === '') {
-					self.addNotification('error', 'Missing receiver e-mail address. Please check your configuration in the following app instance: ' + self.config.title, 'module', 'MailNotifier');
+				if (!mailObject.mail_to || mailObject.mail_to === '') {
+					self.addNotification('error', 'Missing receiver e-mail address. Please check your configuration in the following app instance: ' + self.config.title, 'module');
 					return;
 				}
 
@@ -112,7 +115,7 @@ MailNotifier.prototype.init = function (config) {
 				var new_vDev = self.controller.devices.get(instance[0].moduleId + '_' + instance[0].id);
 
 				if (instance[0].id === self.vDev.get('creatorId')) {
-					new_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
+					new_vDev.performCommand('send', {mail_to: notification.type, message: notification.message});
 				}
 			} else {
 				var def_instance = self.controller.instances.filter(function (instance){
@@ -122,7 +125,7 @@ MailNotifier.prototype.init = function (config) {
 					var def_vDev = self.controller.devices.get(def_instance[0].moduleId + '_' + def_instance[0].id);
 
 					if (def_instance[0].id === self.vDev.get('creatorId')) {
-						def_vDev.performCommand('send', {mail_to: notification.type, message: notification.message, subject: 'Z-Way Notification'});
+						def_vDev.performCommand('send', {mail_to: notification.type, message: notification.message});
 					}
 				}
 			}
@@ -152,11 +155,13 @@ MailNotifier.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 
 MailNotifier.prototype.sendSendMessageWithDelay = function () {
-	var self = this;
+	var self = this,
+		mailObject = {};
 
 	this.timer = setInterval( function() {
 
-		if (self.collectMessages > 0) {
+		if (self.collectMessages.length > 0) {
+			mailObject = self.collectMessages.shift();
 
 			http.request({
 				method: "POST",
@@ -164,20 +169,18 @@ MailNotifier.prototype.sendSendMessageWithDelay = function () {
 				async: true,
 				data: {
 					remote_id: self.remote_id,
-					mail_to: self.mail_to,
+					mail_to: mailObject.mail_to,
 					subject: self.subject,
-					message: self.vDev.get('metrics:message') !== ''? self.vDev.get('metrics:message') : self.message,
+					message: self.vDev.get('metrics:message') !== ''? self.vDev.get('metrics:message') : mailObject.message,
 					language: self.controller.defaultLang
 				},
 				headers: {
 					"Content-Type": "application/x-www-form-urlencoded"
 				},
 				error: function(response) {
-					console.log("MailNotifier-ERROR: " + typeof response !== 'string'? JSON.stringify(response) : response);
+					self.addNotification('error', 'MailNotifier-ERROR: ' + (typeof response !== 'string'? JSON.stringify(response) : response), 'module');
 				}
 			});
-
-			self.collectMessages--;
 		} else {
 			if (self.timer) {
 				clearInterval(self.timer);
