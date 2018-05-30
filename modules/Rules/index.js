@@ -88,13 +88,13 @@ Rules.prototype.init = function (config) {
 
         // - IF-THEN-PART
         if (!!operator && ifLevel) {
-            check = op(value, operator, ifLevel);
+            check = self.op(value, operator, ifLevel);
         } else if (ifType === 'switchRGBW') {
             check = _.isEqual(sDev.get("metrics:color"), ifLevel);
         }
         
-        var triggerTimeout = getConfigTimeout(simple.triggerDelay);
-        var reverseTimeout = getConfigTimeout(simple.reverseDelay);
+        var triggerTimeout = self.getConfigTimeout(simple.triggerDelay);
+        var reverseTimeout = self.getConfigTimeout(simple.reverseDelay);
 
         if (check || value === ifLevel || sDev.get('deviceType') === 'toggleButton') {
             
@@ -115,16 +115,16 @@ Rules.prototype.init = function (config) {
                 simple.targetElements.forEach( function(el) {
                     var vDev = self.controller.devices.get(el.deviceId),
                         id = el.deviceId,
-                        set = executeActions(el.sendAction, vDev, el.level);
+                        set = self.executeActions(el.sendAction, vDev, el.level);
 
                     // check if levels are equal and if active don't trigger new state
                     if (vDev && set) {
-                        setNewDeviceState(vDev, el.deviceType, el.level);
+                        self.setNewDeviceState(vDev, el.deviceType, el.level);
                     }
                 });
 
                 simple.sendNotifications.forEach(function (notification) {
-                    sendNotification(notification, simple.triggerEvent, simple.targetElements);
+                    self.sendNotification(notification, simple.triggerEvent, simple.targetElements);
                 });
 
                 self.reversActivated = true;
@@ -223,7 +223,6 @@ Rules.prototype.stop = function () {
 
 Rules.prototype.expertTriggerEventRule = function () {
     var self = this;
-    console.log('### expertTriggerEventRule ... ');
 
     // testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
     // nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
@@ -310,13 +309,14 @@ Rules.prototype.attachDetach = function (test, attachOrDetach) {
 };
 
 Rules.prototype.testRule = function (tree) {
-    var res = null,
+    var self = this,
+        res = null,
         topLevel = !tree,
         self = this,
-		langFile = self.loadModuleLang(),
-	    doReverse = self.config.reverse || false,
-		triggerTimeout = getConfigTimeout(self.config.advanced.triggerDelay),
-        reverseTimeout = getConfigTimeout(self.config.advanced.reverseDelay);
+		langFile = this.loadModuleLang(),
+	    doReverse = this.config.reverse || false,
+		triggerTimeout = this.getConfigTimeout(self.config.advanced.triggerDelay),
+        reverseTimeout = this.getConfigTimeout(self.config.advanced.reverseDelay);
 
     // if tests are false check if advanced is active
     if (!!!tree) { tree = this.config.advanced; }
@@ -330,14 +330,14 @@ Rules.prototype.testRule = function (tree) {
         this.advancedTriggerTimer = setTimeout( function() {
             tree.targetElements.forEach(function (el){
                 var vDev = self.controller.devices.get(el.deviceId),
-                    set = el.sendAction? executeActions(el.sendAction, vDev, el.level) : true;
+                    set = el.sendAction? self.executeActions(el.sendAction, vDev, el.level) : true;
                 if (vDev && set) {
-                    setNewDeviceState(vDev, el.deviceType, el.level)
+                    self.setNewDeviceState(vDev, el.deviceType, el.level);
                 }
             });
 
             tree.sendNotifications.forEach(function (notification) {
-                sendNotification(notification, tree.tests, tree.targetElements);
+                self.sendNotification(notification, tree.tests, tree.targetElements);
             });
 
             self.reversActivated = true;
@@ -371,17 +371,17 @@ Rules.prototype.runTests = {
                 case 'thermostat':
                 case 'switchMultilevel':
                 case 'sensorMultilevel':
-                    res = res && op(level, test.operator, test.level);
+                    res = res && self.op(level, test.operator, test.level);
                     break;
                 case 'switchRGBW':
                     res = res && _.isEqual(vDev.get('metrics:color'), test.level);
                     break;
                 case 'toggleButton':
                 case 'switchControl':
-                    res = res && compareSwitchControl(vDev,test.level);
+                    res = res && self.compareSwitchControl(vDev,test.level);
                     break;
                 case 'time':
-                    res = res && compareTime(test.level, test.operator);
+                    res = res && self.compareTime(test.level, test.operator);
                     break;
                 case 'nested':
                     res = res && self.testRule(test);
@@ -411,17 +411,17 @@ Rules.prototype.runTests = {
                 case 'thermostat':
                 case 'switchMultilevel':
                 case 'sensorMultilevel':
-                    res = res || op(level, test.operator, test.level);
+                    res = res || self.op(level, test.operator, test.level);
                     break;
                 case 'switchRGBW':
                     res = res || _.isEqual(vDev.get('metrics:color'), test.level);
                     break;
                 case 'toggleButton':
                 case 'switchControl':
-                    res = res || compareSwitchControl(vDev,test.level);
+                    res = res || self.compareSwitchControl(vDev,test.level);
                     break;
                 case 'time':
-                    res = res && compareTime(test.level, test.operator);
+                    res = res && self.compareTime(test.level, test.operator);
                     break;
                 case 'nested':
                     res = res || self.testRule(test);
@@ -440,15 +440,15 @@ Rules.prototype.performReverse = function (targetElements) {
 
     if (targetElements && targetElements.length > 0) {
         targetElements.forEach(function(el) {
-            if (!!el.reverseLevel) {
+            if (el.reverseLevel !== null) {
                 var vDev = self.controller.devices.get(el.deviceId),
                     id = el.deviceId,
                     type = vDev? vDev.get('deviceType') : '';
 
                 if (vDev && !!vDev) {
-                    var set = executeActions(el.sendAction, vDev, el.reverseLevel);
+                    var set = self.executeActions(el.sendAction, vDev, el.reverseLevel);
                     if (set) { 
-                        setNewDeviceState(vDev, type, el.reverseLevel);
+                        self.setNewDeviceState(vDev, type, el.reverseLevel);
                     }
                     self.reversActivated = false;
                 }
@@ -458,7 +458,7 @@ Rules.prototype.performReverse = function (targetElements) {
     }
 };
 
-function sendNotification (notification, conditions, actions) {
+Rules.prototype.sendNotification = function (notification, conditions, actions) {
     var notificationType = '',
         notificationMessage = '';
 
@@ -466,11 +466,11 @@ function sendNotification (notification, conditions, actions) {
         notificationType = notification.target.search('@') > -1? 'mail.notification' : 'push.notification';
         notificationMessage = !notification.message? 'Condition: ' + JSON.stringify(conditions) + ' Actions: ' + JSON.stringify(actions) : notification.message;
 
-        this.controller.addNotification(notificationType, notificationMessage, notification.target);
+        this.addNotification(notificationType, notificationMessage + ' => ' +notification.target, notification.target);
     }
 };
 
-op = function (dval, op, val) {
+Rules.prototype.op = function (dval, op, val) {
     if (op === "=") {
         return dval === val;
     } else if (op === "!=") {
@@ -489,7 +489,7 @@ op = function (dval, op, val) {
 };
 
 // compare old and new level to avoid unnecessary updates
-function newValueNotEqualsOldValue(vDev,valNew){
+Rules.prototype.newValueNotEqualsOldValue = function (vDev,valNew){
     if (vDev && !!vDev) {
         var devType = vDev.get('deviceType'),
             vO = '';
@@ -497,10 +497,11 @@ function newValueNotEqualsOldValue(vDev,valNew){
         
         switch (devType) {
             case 'switchRGBW':
+            
                 vO = typeof vN !== 'string'? vDev.get('metrics:color') : vDev.get('metrics:level');
 
                 if (valNew !== 'string') {
-                    return _.isEqual(vO,vN);
+                    return !_.isEqual(vO,vN);
                 }
             case 'switchControl':
                 if (_.contains(['on','off'], vN) || _.isNumber(vN)) {
@@ -515,7 +516,7 @@ function newValueNotEqualsOldValue(vDev,valNew){
     }
 };
 
-function setNewDeviceState(vDev, type, new_level){
+Rules.prototype.setNewDeviceState = function (vDev, type, new_level){
     if (vDev && !!vDev) {
         switch(type) {
             case 'doorlock':
@@ -531,9 +532,9 @@ function setNewDeviceState(vDev, type, new_level){
                         vDev.performCommand(new_level);
                     } else {
                         vDev.performCommand("exact", {
-                            red: new_level.red,
-                            green: new_level.green,
-                            blue: new_level.blue
+                            red: new_level.r,
+                            green: new_level.g,
+                            blue: new_level.b
                         });
                     }
                 break;
@@ -555,15 +556,15 @@ function setNewDeviceState(vDev, type, new_level){
     }
 };
 
-function getConfigTimeout (configTimeout) {
+Rules.prototype.getConfigTimeout = function (configTimeout) {
     return !!!configTimeout? 0 : Math.floor(configTimeout * 1000); // !!! > proof for undefined and null
 };
 
-function executeActions (compareLevelsFirst, vDev, targetValue) {
-    return (!compareLevelsFirst || (compareLevelsFirst && newValueNotEqualsOldValue(vDev, targetValue)));
+Rules.prototype.executeActions = function (compareLevelsFirst, vDev, targetValue) {
+    return (!compareLevelsFirst || (compareLevelsFirst && this.newValueNotEqualsOldValue(vDev, targetValue)));
 };
 
-function compareSwitchControl (vDev, targetValue) {
+Rules.prototype.compareSwitchControl = function (vDev, targetValue) {
     if (!!vDev && vDev) {
         return (_.contains(["on", "off"], targetValue) && vDev.get('metrics:level') === targetValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], targetValue) && vDev.get("metrics:change") === targetValue)
     } else {
@@ -571,9 +572,9 @@ function compareSwitchControl (vDev, targetValue) {
     }
 };
 
-function compareTime (time, operator) {
+Rules.prototype.compareTime = function (time, operator) {
     var curTime = new Date(),
         time_arr = time.split(":").map(function(x) { return parseInt(x, 10); });
     
-    return op(curTime.getHours() * 60 + curTime.getMinutes(), operator, time_arr[0] * 60 + time_arr[1]);
+    return this.op(curTime.getHours() * 60 + curTime.getMinutes(), operator, time_arr[0] * 60 + time_arr[1]);
 };
