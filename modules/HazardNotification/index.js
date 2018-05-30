@@ -171,7 +171,7 @@ HazardNotification.prototype.init = function(config) {
                     notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
                     notificationMessage = !notification.message ? fallbackMessage : notification.message;
 
-                    self.controller.addNotification(notificationType, notificationMessage, notification.target);
+                    self.addNotification(notificationType, notificationMessage, notification.target);
                 }
             }
         });
@@ -181,9 +181,9 @@ HazardNotification.prototype.init = function(config) {
         _.forEach(config.triggerEvent, function(event) {
             var vDev = self.controller.devices.get(event.deviceId),
                 lvl = event.status == "lvl" ? event.level : event.status,
-                set = event.sendAction ? executeActions(event.sendAction, vDev, lvl) : true;
+                set = event.sendAction ? self.executeActions(event.sendAction, vDev, lvl) : true;
             if (vDev && set) {
-                setNewDeviceState(vDev, event.deviceType, lvl)
+                self.setNewDeviceState(vDev, event.deviceType, lvl);
             }
         });
     };
@@ -393,7 +393,7 @@ HazardNotification.prototype.getSensorLevels = function() {
 };
 
 // compare old and new level to avoid unnecessary updates
-function newValueNotEqualsOldValue(vDev, valNew) {
+HazardNotification.prototype.newValueNotEqualsOldValue = function (vDev, valNew) {
     if (vDev && !!vDev) {
         var devType = vDev.get('deviceType'),
             vO = '';
@@ -419,11 +419,11 @@ function newValueNotEqualsOldValue(vDev, valNew) {
     }
 };
 
-function executeActions(compareLevelsFirst, vDev, targetValue) {
-    return (!compareLevelsFirst || (compareLevelsFirst && newValueNotEqualsOldValue(vDev, targetValue)));
+HazardNotification.prototype.executeActions = function (compareLevelsFirst, vDev, targetValue) {
+    return (!compareLevelsFirst || (compareLevelsFirst && this.newValueNotEqualsOldValue(vDev, targetValue)));
 };
 
-function setNewDeviceState(vDev, type, new_level) {
+HazardNotification.prototype.setNewDeviceState = function (vDev, type, new_level) {
     if (vDev && !!vDev) {
         switch (type) {
             case 'doorlock':
