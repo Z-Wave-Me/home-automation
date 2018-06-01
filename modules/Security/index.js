@@ -793,30 +793,38 @@ Security.prototype.schedule = function() {
 
 	if (this.scheduleActive() && this.timeSchedule) {
 		Object.keys(this.timeSchedule).forEach(function(weekday) {
+			var times = ['arm', 'disarm'];
 			if (self.timeSchedule[weekday].length > 0) {
 				self.timeSchedule[weekday].forEach(function(entry) {
-					var minute = parseInt(entry.time.split(":")[1], 10),
-						hour = parseInt(entry.time.split(":")[0], 10),
-						listenerName = entry.condition + '.' + entry.time + '.' + weekday + '.poll';
+					times.forEach(function(time) {
+						try {
+							var min = parseInt(entry[time].split(":")[1], 10),
+								hour = parseInt(entry[time].split(":")[0], 10),
+								listenerName = time + '.' + entry[time] + '.' + weekday + '.poll';
 
-					// add cron schedule every week
-					self.controller.emit("cron.addTask", listenerName, {
-						minute: minute,
-						hour: hour,
-						weekDay: parseInt(weekday, 10),
-						day: null,
-						month: null
-					});
+							// add cron schedule every week
+							self.controller.emit("cron.addTask", listenerName, {
+								minute: min,
+								hour: hour,
+								weekDay: parseInt(weekday, 10),
+								day: null,
+								month: null
+							});
 
-					if (entry.condition === 'arm') {
-						self.controller.on(listenerName, self.pollArm);
-					} else if (entry.condition === 'disarm') {
-						self.controller.on(listenerName, self.pollDisarm);
-					}
+							if (time === 'arm') {
+								self.controller.on(listenerName, self.pollArm);
+							} else if (time === 'disarm') {
+								self.controller.on(listenerName, self.pollDisarm);
+							}
 
-					if (self.cronListeningCollector.indexOf(listenerName) < 0) {
-						self.cronListeningCollector.push(listenerName);
-					}
+							if (self.cronListeningCollector.indexOf(listenerName) < 0) {
+								self.cronListeningCollector.push(listenerName);
+							}
+						} catch (e) {
+							console.log('Security schedule error:', e.toString());
+						}
+
+					})
 				});
 			}
 		});
