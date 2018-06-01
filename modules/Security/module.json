@@ -24,7 +24,8 @@
     "controls": {},
     "armConfirm": {},
     "disarmConfirm": {},
-    "times": {}
+    "times": {},
+    "schedules": {}
   },
   "schema": {},
   "options": {}
