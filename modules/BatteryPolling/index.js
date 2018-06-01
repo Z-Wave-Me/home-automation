@@ -1,9 +1,10 @@
 /*** BatteryPolling Z-Way HA module *******************************************
 
-Version: 2.1.0
+Version: 2.2.0
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
-Author: Gregory Sitnin <sitnin@z-wave.me> nad Serguei Poltorak <ps@z-wave.me>
+Author: Gregory Sitnin <sitnin@z-wave.me> nad Serguei Poltorak <ps@z-wave.me>,
+Karsten Reichel <kar@z-wave.eu>
 Description:
 	This module periodically requests all battery devices for battery level report
 
@@ -69,8 +70,20 @@ BatteryPolling.prototype.init = function (config) {
 		if (vDev.get("metrics:level") <= self.config.warningLevel) {
 			var values = vDev.get("metrics:title"),
 				langFile = self.loadModuleLang();
-				
-			self.controller.addNotification("warning", langFile.warning + values, "battery", self.vDev.get(id));
+
+			// add notification
+			if(typeof self.config.notification.target !== 'undefined' || typeof self.config.notification.mail_to_input !== 'undefined') {
+			    var mail;
+			    if(self.config.notification.target.search('@') > 0 || (mail = typeof self.config.notification.mail_to_input !== 'undefined')) {
+			        self.addNotification('mail.notification', typeof self.config.notification.message === 'undefined' ? langFile.warning + values : self.config.notification.message.replace('__device__',values), mail ? self.config.notification.mail_to_input : self.config.notification.target);
+			    } else {
+			        self.addNotification('push.notification', typeof self.config.notification.message === 'undefined' ? langFile.warning + values : self.config.notification.message.replace('__device__',values), self.config.notification.target);
+			    }
+			}
+			else
+			{
+				self.addNotification("warning", langFile.warning + values, "battery", self.vDev.id);
+			}			
 		}
 	};
 	
@@ -85,7 +98,7 @@ BatteryPolling.prototype.init = function (config) {
 	if (this.config.launchWeekDay == everyDay) {
 		// add cron schedule every day
 		this.controller.emit("cron.addTask", "batteryPolling.poll", {
-			minute: null,
+			minute: 0,
 			hour: 0,
 			weekDay: null,
 			day: null,
