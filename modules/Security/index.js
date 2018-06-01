@@ -306,6 +306,29 @@ Security.prototype.init = function(config) {
 	this.state.doMake();
 	this.vDev.performCommand(self.performEnum.COFF.name);
 };
+
+/**
+ * stops module and remove all injections and destroys all vdevs
+ */
+Security.prototype.stop = function() {
+
+	this.alarmCancel();
+	this.stopDevices();
+	this.endschedule();
+
+	if (this.vDev) {
+		this.controller.devices.remove(this.vDev.id);
+	}
+
+	this.vDev = null;
+	this.destroyVDevs();
+	Security.super_.prototype.stop.call(this);
+};
+
+// ----------------------------------------------------------------------------
+// --- Module methods
+// ----------------------------------------------------------------------------
+
 /**
  * Method calls the wipeOwnVdevs for all Device Arrays
  */
@@ -926,12 +949,13 @@ Security.prototype.initStates = function() {
 		self.vDev.set("metrics:state", self.StateEnum.LIVEON);
 		self.vDev.set("metrics:level", 'on');
 	}, function(args) {
-		if (self.confirmDatas) {
+		self.shiftTriggerDevices(self.confirmDatas, self.confirmNots, 'arm');
+		/*if (self.confirmDatas) {
 			self.confirmDatas.forEach(
 				function(args) {
-					if (self.controller.devices.get(args.devices)) {
-						var vDev = self.controller.devices.get(args.devices);
-						vDev.performCommand("on");
+					var vDev = self.controller.devices.get(args.devices);
+					if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
+						vDev.performCommand(args.level);
 					}
 				}
 			);
@@ -944,15 +968,16 @@ Security.prototype.initStates = function() {
 			} else {
 				self.addNotification('push.notification', typeof self.confirmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.confirmNots.message, self.confirmNots.target);
 			}
-		}
+		}*/
 
 	}, function() {
-		if (self.disconfirmDatas) {
+		self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
+		/*if (self.disconfirmDatas) {
 			self.disconfirmDatas.forEach(
 				function(args) {
-					if (self.controller.devices.get(args.devices)) {
-						var vDev = self.controller.devices.get(args.devices);
-						vDev.performCommand("on");
+					var vDev = self.controller.devices.get(args.devices);
+					if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
+						vDev.performCommand(args.level);
 					}
 				}
 			);
@@ -965,7 +990,7 @@ Security.prototype.initStates = function() {
 			} else {
 				self.addNotification('push.notification', typeof self.disconfirmNots.message === 'undefined' ? self.getInstanceTitle() + ' - disarm' : self.disconfirmNots.message, self.disconfirmNots.target);
 			}
-		}
+		}*/
 	});
 	//--Alarming-State--
 	self.alarmed = new this.State(this.StateStatus, this.StateEnum.ALARMED, function() {
@@ -1024,15 +1049,15 @@ Security.prototype.alarmTriggering = function(alarmMsg) {
  * @param alarmMsg
  */
 Security.prototype.silenttriggerFunction = function(alarmMsg) {
-	var self = this;
-	self.log("error", "ALARM silent " + "Security_" + self.id + " " + alarmMsg, false);
+	this.log("error", "ALARM silent " + "Security_" + this.id + " " + alarmMsg, false);
 
-	if (self.silentalarmDatas) {
+	this.shiftTriggerDevices(this.disconfirmDatas, this.disconfirmNots, 'arm');
+	/*if (self.silentalarmDatas) {
 		self.silentalarmDatas.forEach(
 			function(args) {
-				if (self.controller.devices.get(args.devices)) {
-					var vDev = self.controller.devices.get(args.devices);
-					vDev.performCommand("on");
+				var vDev = self.controller.devices.get(args.devices);
+				if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
+					vDev.performCommand(args.level);
 				}
 			}
 		);
@@ -1045,7 +1070,7 @@ Security.prototype.silenttriggerFunction = function(alarmMsg) {
 		} else {
 			self.addNotification('push.notification', typeof self.silentalarmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.silentalarmNots.message, self.silentalarmNots.target);
 		}
-	}
+	}*/
 
 };
 /**
@@ -1053,16 +1078,17 @@ Security.prototype.silenttriggerFunction = function(alarmMsg) {
  * @param alarmMsg
  */
 Security.prototype.triggerFunction = function(alarmMsg) {
-	var self = this;
-	self.log("error", "ALARM " + "Security_" + self.id + " " + alarmMsg, false);
-	self.controller.emit("alarm", self);
-	self.vDevALARM.performCommand("on");
-	if (self.alarmDatas) {
+	this.log("error", "ALARM " + "Security_" + this.id + " " + alarmMsg, false);
+	this.controller.emit("alarm", this);
+	this.vDevALARM.performCommand("on");
+
+	this.shiftTriggerDevices(this.alarmDatas, this.alarmNots, 'arm');
+	/*if (self.alarmDatas) {
 		self.alarmDatas.forEach(
 			function(args) {
-				if (self.controller.devices.get(args.devices)) {
-					var vDev = self.controller.devices.get(args.devices);
-					vDev.performCommand("on");
+				var vDev = self.controller.devices.get(args.devices);
+				if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
+					vDev.performCommand(args.level);
 				}
 			}
 		);
@@ -1075,7 +1101,7 @@ Security.prototype.triggerFunction = function(alarmMsg) {
 		} else {
 			self.addNotification('push.notification', typeof self.alarmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.alarmNots.message, self.alarmNots.target);
 		}
-	}
+	}*/
 
 };
 /**
@@ -1253,27 +1279,28 @@ Security.prototype.doOnDeviceArray = function doOnDeviceArray(deviceArray, bin) 
  * Ends the Alarm and cleans the timer
  */
 Security.prototype.alarmCancel = function() {
-	var self = this;
-	clearInterval(self.alarmtimer);
-	clearInterval(self.alarmtimerS2);
-	clearInterval(self.alarmSilenttimerS2);
-	self.alarmtimer = null;
-	self.alarmSilenttimerS2 = null;
-	self.alarmtimerS2 = null;
-	self.doOnDeviceArray(self.alarmDatas, "off");
-	self.log("warning", "Security_" + "ALARM-END", false);
-	if (self.vDevALARM) {
-		self.vDevALARM.performCommand("on");
+	clearInterval(this.alarmtimer);
+	clearInterval(this.alarmtimerS2);
+	clearInterval(this.alarmSilenttimerS2);
+	this.alarmtimer = null;
+	this.alarmSilenttimerS2 = null;
+	this.alarmtimerS2 = null;
+	this.doOnDeviceArray(this.alarmDatas, "off");
+	this.log("warning", "Security_" + "ALARM-END", false);
+	if (this.vDevALARM) {
+		this.vDevALARM.performCommand("on");
 	}
-	if (self.alarmDevice) {
-		self.alarmDevice = null;
+	if (this.alarmDevice) {
+		this.alarmDevice = null;
 	}
-	if (self.cleanDatas) {
+
+	this.shiftTriggerDevices(this.cleanDatas, this.cleanNots, 'arm');
+	/*if (self.cleanDatas) {
 		self.cleanDatas.forEach(
 			function(args) {
-				if (self.controller.devices.get(args.devices)) {
-					var vDev = self.controller.devices.get(args.devices);
-					vDev.performCommand("on");
+				var vDev = self.controller.devices.get(args.devices);
+				if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
+					vDev.performCommand(args.level);
 				}
 			}
 		);
@@ -1286,7 +1313,7 @@ Security.prototype.alarmCancel = function() {
 		} else {
 			self.addNotification('push.notification', typeof self.cleanNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.cleanNots.message, self.cleanNots.target);
 		}
-	}
+	}*/
 };
 
 /**
@@ -1308,24 +1335,51 @@ Security.prototype.endschedule = function() {
 	});
 };
 
-/**
- * stops module and remove all injections and destroys all vdevs
+/*
+ * shift all devices that are triggered on state change
  */
-Security.prototype.stop = function() {
+Security.prototype.shiftTriggerDevices = function(datas, notification, level) {
+	var self = this;
 
-	this.alarmCancel();
-	this.stopDevices();
-	this.endschedule();
+	if (datas) {
+		datas.forEach(function(args) {
+			// args([deviceID],[level],[sendAction])
+			var vDev = self.controller.devices.get(args.devices),
+				type = vDev.get('deviceType') || null,
+				level = vDev.get('metrics:level'),
+				set = args.sendAction ? args.level !== vDev.get('metrics:level') : true;
 
-	if (this.vDev) {
-		this.controller.devices.remove(this.vDev.id);
+			if (vDev && set) {
+				switch (type) {
+					case 'switchMultilevel':
+						_.contains(['on', 'off'], args.level) ? vDev.performCommand(args.level) : vDev.performCommand("exact", {
+							level: args.level
+						});
+						break;
+					case 'switchRGBW':
+						_.contains(['on', 'off'], new_level) ? vDev.performCommand(args.level) : vDev.performCommand("exact", {
+							red: args.level.r,
+							green: args.level.g,
+							blue: args.level.b
+						});
+						break;
+					case 'toggleButton':
+						vDev.performCommand('on');
+						break;
+					default:
+						vDev.performCommand(args.level);
+				}
+			}
+		});
 	}
 
-	this.vDev = null;
-	this.destroyVDevs();
-	Security.super_.prototype.stop.call(this);
-};
+	if (typeof notification.target !== 'undefined' || typeof notification.mail_to_input !== 'undefined') {
+		var mail;
+		if (notification.target.search('@') > 0 || (mail = typeof notification.mail_to_input !== 'undefined')) {
+			this.addNotification('mail.notification', typeof notification.message === 'undefined' ? this.getInstanceTitle() + ' - ' + level : notification.message, mail ? notification.mail_to_input : notification.target);
+		} else {
+			this.addNotification('push.notification', typeof notification.message === 'undefined' ? this.getInstanceTitle() + ' - ' + level : notification.message, notification.target);
+		}
+	}
 
-// ----------------------------------------------------------------------------
-// --- Module methods
-// ----------------------------------------------------------------------------
+};
