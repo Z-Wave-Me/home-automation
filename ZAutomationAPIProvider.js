@@ -1737,21 +1737,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 
 		if (profile) {
-			var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
-			if (pwd_check) {
-				var qrcode_str = this.controller.getQRCodeData(profile, reqObj.password);
+			if (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profileId)) {
+				var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
+				if (pwd_check) {
+					var qrcode_str = this.controller.getQRCodeData(profile, reqObj.password);
 
-				if (qrcode_str !== undefined) {
-					reply.code = 200;
-					reply.data = qrcode_str;
+					if (qrcode_str !== undefined) {
+						reply.code = 200;
+						reply.data = qrcode_str;
+					} else {
+						reply.code = 500;
+					}
 				} else {
+					reply.error = "wrong_password";
 					reply.code = 500;
 				}
 			} else {
-				reply.error = "wrong_password";
-				reply.code = 500;
+				reply.error = "Forbidden";
+				reply.code = 403;
 			}
-
 		} else {
 			reply.code = 404;
 			reply.error = "Profile not found";
@@ -1970,11 +1974,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			result = "",
 			langfile = this.controller.loadMainLang(),
 			dontSave = this.controller.getIgnoredStorageFiles([
-					"__ZWay",
-					"__EnOcean",
-					"__userModules",
-					"__userSkins"
-				]);
+				"__ZWay",
+				"__EnOcean",
+				"__userModules",
+				"__userSkins"
+			]);
 
 		function waitForInstallation(allreadyInstalled, reqKey) {
 			var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
@@ -3765,7 +3769,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						result.push(obj);
 					},
 					error: function() {
-						self.controller.addNotification('error','Z-Wave device list for lang:' + lang + ' not found.','core', 'ZAutomationAPI');
+						self.controller.addNotification('error', 'Z-Wave device list for lang:' + lang + ' not found.', 'core', 'ZAutomationAPI');
 						result.push(obj);
 					}
 				});
@@ -3781,7 +3785,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 
 		} catch (e) {
-			this.controller.addNotification('error','Error has occured during updating the Z-Wave devices list','core', 'ZAutomationAPI');
+			this.controller.addNotification('error', 'Error has occured during updating the Z-Wave devices list', 'core', 'ZAutomationAPI');
 			reply.error = 'Something went wrong:' + e.message;
 		}
 
@@ -3858,7 +3862,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				},
 				error: function(e) {
 					var msg = 'Z-Wave vendors list could not be updated. Error: ' + e.toString();
-					self.controller.addNotification('error',msg,'core', 'ZAutomationAPI');
+					self.controller.addNotification('error', msg, 'core', 'ZAutomationAPI');
 
 					result = 'failed';
 
@@ -3877,7 +3881,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 
 		} catch (e) {
-			this.controller.addNotification('error','Error has occured during updating the Z-Wave devices list','core', 'ZAutomationAPI');
+			this.controller.addNotification('error', 'Error has occured during updating the Z-Wave devices list', 'core', 'ZAutomationAPI');
 			reply.error = 'Something went wrong:' + e.message;
 		}
 
