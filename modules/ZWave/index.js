@@ -7,7 +7,7 @@ Copyright: (c) Z-Wave.Me, 2014
 
 ******************************************************************************/
 
-function ZWave (id, controller) {
+function ZWave(id, controller) {
 
 	// if called without "new", return list of loaded Z-Way instances
 	if (!(this instanceof ZWave))
@@ -27,14 +27,14 @@ function ZWave (id, controller) {
 	};
 
 	this.ZWAY_DATA_CHANGE_TYPE = {
-		"Updated": 0x01,	   // Value updated or child created
-		"Invalidated": 0x02,   // Value invalidated
-		"Deleted": 0x03,	   // Data holder deleted - callback is called last time before being deleted
-		"ChildCreated": 0x04,  // New direct child node created
+		"Updated": 0x01, // Value updated or child created
+		"Invalidated": 0x02, // Value invalidated
+		"Deleted": 0x03, // Data holder deleted - callback is called last time before being deleted
+		"ChildCreated": 0x04, // New direct child node created
 
 		// ORed flags
 		"PhantomUpdate": 0x40, // Data holder updated with same value (only updateTime changed)
-		"ChildEvent": 0x80   // Event from child node
+		"ChildEvent": 0x80 // Event from child node
 	};
 
 	this.CC = {
@@ -60,7 +60,7 @@ function ZWave (id, controller) {
 	};
 
 	this.default_expert_config = {
-		'debug' : false,
+		'debug': false,
 		'network_name': '',
 		'date_format': '',
 		'time_format': '',
@@ -108,19 +108,25 @@ inherits(ZWave, AutomationModule);
 _module = ZWave;
 
 Object.defineProperty(ZWave, "list", {
-	value: function (__, req) {
+	value: function(__, req) {
 		// show in the list if called directly (not via web) or role is admin or API is public
-		return Object.keys(ZWave).filter(function(name) { return !req || req.role == controller.auth.ROLE.ADMIN || ZWave[name].publicAPI; });
+		return Object.keys(ZWave).filter(function(name) {
+			return !req || req.role == controller.auth.ROLE.ADMIN || ZWave[name].publicAPI;
+		});
 	},
 	enumerable: false,
-	writable: false,  
-	configurable: false 
+	writable: false,
+	configurable: false
 });
 
 ws.allowExternalAccess("ZWave.list", controller.auth.ROLE.ANONYMOUS); // we handle role inside the handler
 
 ZWave.prototype.updateList = function() {
-	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) { return {zwayName: name}; }));
+	this.controller.setNamespace("zways", this.controller.namespaces, ZWave.list().map(function(name) {
+		return {
+			zwayName: name
+		};
+	}));
 };
 
 ZWave.prototype.loadObject = function(name) {
@@ -131,7 +137,7 @@ ZWave.prototype.saveObject = function(name, obj) {
 	return saveObject(this.config.name + "_" + name, obj);
 };
 
-ZWave.prototype.init = function (config) {
+ZWave.prototype.init = function(config) {
 	ZWave.super_.prototype.init.call(this, config);
 
 	var self = this;
@@ -142,12 +148,12 @@ ZWave.prototype.init = function (config) {
 	updatedPostfix = loadObject("postfix.json");
 
 	if (!!updatedPostfix && updatedPostfix.last_update && this.postfix.last_update && updatedPostfix.last_update > this.postfix.last_update) {
-		this.postfix = updatedPostfix; 
+		this.postfix = updatedPostfix;
 	}
 
 	this.expert_config = this.loadObject("expertconfig.json");
 
-	if(!!!this.expert_config) {
+	if (!!!this.expert_config) {
 		this.expert_config = self.default_expert_config;
 		this.saveObject("expertconfig.json", this.expert_config);
 	}
@@ -185,7 +191,7 @@ ZWave.prototype.init = function (config) {
 	}
 
 	this.restartBindingCounter = 0;
-	
+
 	this.startBinding();
 	if (!this.zway) {
 		return;
@@ -199,7 +205,7 @@ ZWave.prototype.init = function (config) {
 	this._dataUnbind = function(dataBindings) {
 		self.dataUnbind(dataBindings);
 	};
-		
+
 	this.controller.on("ZWave.dataBind", this._dataBind);
 	this.controller.on("ZWave.dataUnbind", this._dataUnbind);
 
@@ -222,7 +228,7 @@ ZWave.prototype.init = function (config) {
 	this.checkForFailedNode();
 };
 
-ZWave.prototype.startBinding = function () {
+ZWave.prototype.startBinding = function() {
 	var self = this;
 
 	try {
@@ -234,7 +240,7 @@ ZWave.prototype.startBinding = function () {
 				self.terminating.call(self);
 			}
 		});
-		
+
 		try {
 			this.zway.discover();
 		} catch (e1) {
@@ -243,7 +249,7 @@ ZWave.prototype.startBinding = function () {
 			this.tryRestartLater(e1);
 			return;
 		}
-	} catch(e) {
+	} catch (e) {
 		this.zway = null;
 		console.log(e.toString());
 		this.tryRestartLater(e);
@@ -252,7 +258,7 @@ ZWave.prototype.startBinding = function () {
 
 	// started
 	this.restartBindingCounter = 0;
-	
+
 	this.fastAccess = false;
 	if (!global.zway) {
 		// this is the first zway - make fast shortcut
@@ -268,7 +274,7 @@ ZWave.prototype.startBinding = function () {
 	this.updateList();
 
 	this.stopped = false;
-	
+
 	if (this.config.enableAPI !== false) {
 		this.defineHandlers();
 	}
@@ -293,7 +299,7 @@ ZWave.prototype.startBinding = function () {
 	// save data every hour for hot start
 	this.saveDataXMLTimer = setInterval(function() {
 		self.zway.devices.SaveData();
-	}, 3600*1000);
+	}, 3600 * 1000);
 
 	// store parsed incoming and outgoing packets (for Zniffer)
 	this.parsedPackets = new LimitedArray(
@@ -304,10 +310,10 @@ ZWave.prototype.startBinding = function () {
 		100, // check it every 100 packets
 		5000, // save up to 5000 packets
 		function(element) { // save last day only
-			return element.id > ((new Date()).getTime() - 86400*1000);
+			return element.id > ((new Date()).getTime() - 86400 * 1000);
 		}
 	);
-	
+
 	// store incoming and outgoing packets as they are (for PacketLog)
 	this.originPackets = new LimitedArray(
 		self.loadObject("originPackets.json"),
@@ -317,7 +323,7 @@ ZWave.prototype.startBinding = function () {
 		100, // check it every 100 packets
 		5000, // save up to 5000 packets
 		function(element) { // save last day only
-			return element.updateTime > ((new Date()).getTime()/1000 - 86400);
+			return element.updateTime > ((new Date()).getTime() / 1000 - 86400);
 		}
 	);
 
@@ -335,7 +341,7 @@ ZWave.prototype.startBinding = function () {
 	this.CommunicationLogger();
 };
 
-ZWave.prototype.stop = function () {
+ZWave.prototype.stop = function() {
 	console.log("--- ZWave.stop()");
 	ZWave.super_.prototype.stop.call(this);
 
@@ -351,9 +357,9 @@ ZWave.prototype.stop = function () {
 	this.controller.off("checkForFailedNode.poll", this.checkForFailedNode);
 };
 
-ZWave.prototype.stopBinding = function () {
+ZWave.prototype.stopBinding = function() {
 	this.controller.emit("ZWave.unregister", this.config.name);
-	
+
 	if (this.config.createVDev !== false) {
 		this.gateDevicesStop();
 		this.deadDetectionStop();
@@ -368,16 +374,16 @@ ZWave.prototype.stopBinding = function () {
 			delete global["ZWaveAPI"];
 		}
 	}
-	
+
 	if (this.config.enableAPI !== false) {
 		this.externalAPIRevoke(this.config.name);
 	}
-	
+
 	if (global.ZWave) {
 		delete global.ZWave[this.config.name];
 		this.updateList();
 	}
-	
+
 	// clear statistics of packets
 	if (this.originPackets) {
 		this.originPackets.finalize();
@@ -398,7 +404,7 @@ ZWave.prototype.stopBinding = function () {
 		clearInterval(this.statisticsInterval);
 		this.statisticsInterval = undefined;
 	}
-	
+
 	if (this.saveDataXMLTimer) {
 		clearInterval(this.saveDataXMLTimer);
 		this.saveDataXMLTimer = undefined;
@@ -416,16 +422,16 @@ ZWave.prototype.stopBinding = function () {
 	if (this.zway) {
 		try {
 			this.zway.stop();
-		} catch(e) {
+		} catch (e) {
 			// Z-Way has already gone
 		}
 		this.zway = null;
 	}
 };
 
-ZWave.prototype.tryRestartLater = function (e) {
+ZWave.prototype.tryRestartLater = function(e) {
 	var delay = 10;
-	
+
 	if (this.restartBindingCounter < 5) {
 		var self = this;
 
@@ -437,16 +443,16 @@ ZWave.prototype.tryRestartLater = function (e) {
 			console.log("Restarting Z-Wave binding (" + self.config.name + ")");
 			self.startBinding();
 		}, delay * 1000);
-		
+
 	} else {
 		var langFile = this.loadModuleLang();
-		
+
 		console.log("Tried " + this.restartBindingCounter + " times without success. Stopping tries.");
 		this.addNotification("critical", langFile.err_binding_start + e.toString(), "z-wave");
 	}
 };
-		
-ZWave.prototype.terminating = function () {
+
+ZWave.prototype.terminating = function() {
 	if (!this.stopped) {
 		console.log("Terminating Z-Wave binding");
 		this.stopBinding();
@@ -458,11 +464,11 @@ ZWave.prototype.CommunicationLogger = function() {
 	var self = this,
 		zway = this.zway;
 
-	var inH = function (type) {
+	var inH = function(type) {
 		var data = this;
-		
+
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
-		
+
 		// save the packet as it is
 		data.direction = "input";
 		self.originPackets.push({
@@ -480,11 +486,11 @@ ZWave.prototype.CommunicationLogger = function() {
 		self.parsedPackets.push(data);
 	};
 
-	var outH = function (type) {
+	var outH = function(type) {
 		var data = this;
-		
+
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
-		
+
 		data.direction = "output";
 		self.originPackets.push({
 			"updateTime": data.updateTime,
@@ -527,7 +533,7 @@ ZWave.prototype.CommunicationLogger = function() {
 					// remove values older than 24h
 					if (data.length > 1440) {
 						var lastDay = now - 86400;
-						data = _.filter(data, function(entry){
+						data = _.filter(data, function(entry) {
 							return entry.time > lastDay;
 						});
 					}
@@ -536,7 +542,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			} catch (e) {
 				console.log('Cannot fetch background RSSI. Error:', e.message);
 			}
-		}, 1000*30);
+		}, 1000 * 30);
 	}
 
 	// =================== helper functions ========================
@@ -551,7 +557,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	}
 
 	function prepareRSSI(rssiPacket) {
-		if(_.isArray(rssiPacket)){
+		if (_.isArray(rssiPacket)) {
 			return rssiPacket.map(RSSItoText);
 		} else {
 			return RSSItoText(rssiPacket);
@@ -559,15 +565,78 @@ ZWave.prototype.CommunicationLogger = function() {
 	}
 
 	function packetApplication(packet, packetType) {
-		var encaps = [
-				{ cc: 0x60, cmd: 0x0D, head: 4, tail: 0, srcI: 2, dstI: 3, encap:  'I' }, // MultiChannel
-				{ cc: 0x60, cmd: 0x06, head: 3, tail: 0, srcI: 0, dstI: 2, encap:  'I' }, // MultiInstance
-				{ cc: 0x6C, cmd: 0x01, head: 4, tail: 0, srcI: 0, dstI: 0, encap: 'Su' }, // Supervision
-				{ cc: 0x8F, cmd: 0x01, head: 2, tail: 0, srcI: 0, dstI: 0, encap:  'M' }, // MultiCommand
-				{ cc: 0x98, cmd: 0x81, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
-				{ cc: 0x98, cmd: 0xC1, head: 0, tail: 0, srcI: 0, dstI: 0, encap:  'S' }, // Security
-				{ cc: 0x9F, cmd: 0x03, head: 0, tail: 0, srcI: 0, dstI: 0, encap: 'S2' }, // Security S2
-				{ cc: 0x56, cmd: 0x01, head: 2, tail: 2, srcI: 0, dstI: 0, encap:  'C' }  // CRC16
+		var encaps = [{
+					cc: 0x60,
+					cmd: 0x0D,
+					head: 4,
+					tail: 0,
+					srcI: 2,
+					dstI: 3,
+					encap: 'I'
+				}, // MultiChannel
+				{
+					cc: 0x60,
+					cmd: 0x06,
+					head: 3,
+					tail: 0,
+					srcI: 0,
+					dstI: 2,
+					encap: 'I'
+				}, // MultiInstance
+				{
+					cc: 0x6C,
+					cmd: 0x01,
+					head: 4,
+					tail: 0,
+					srcI: 0,
+					dstI: 0,
+					encap: 'Su'
+				}, // Supervision
+				{
+					cc: 0x8F,
+					cmd: 0x01,
+					head: 2,
+					tail: 0,
+					srcI: 0,
+					dstI: 0,
+					encap: 'M'
+				}, // MultiCommand
+				{
+					cc: 0x98,
+					cmd: 0x81,
+					head: 0,
+					tail: 0,
+					srcI: 0,
+					dstI: 0,
+					encap: 'S'
+				}, // Security
+				{
+					cc: 0x98,
+					cmd: 0xC1,
+					head: 0,
+					tail: 0,
+					srcI: 0,
+					dstI: 0,
+					encap: 'S'
+				}, // Security
+				{
+					cc: 0x9F,
+					cmd: 0x03,
+					head: 0,
+					tail: 0,
+					srcI: 0,
+					dstI: 0,
+					encap: 'S2'
+				}, // Security S2
+				{
+					cc: 0x56,
+					cmd: 0x01,
+					head: 2,
+					tail: 2,
+					srcI: 0,
+					dstI: 0,
+					encap: 'C'
+				} // CRC16
 			],
 			result = {
 				src: packetType === 'in' ? packet.nodeId.value : self.zway.controller.data.nodeId.value,
@@ -642,15 +711,17 @@ ZWave.prototype.CommunicationLogger = function() {
 		var ccId = "0x" + decToHex(payload[0]);
 
 		// match CC
-		var findCmdClass = _.filter(self.cmdClasses, function (cc){
+		var findCmdClass = _.filter(self.cmdClasses, function(cc) {
 			return cc['_key'] === ccId;
 		});
 
 		// get latest version of filtered
-		var latestVersion = Math.max.apply(Math, findCmdClass.map(function(cc) { return parseInt(cc['_version'], 10); })).toString();
+		var latestVersion = Math.max.apply(Math, findCmdClass.map(function(cc) {
+			return parseInt(cc['_version'], 10);
+		})).toString();
 
 		// match CC of the last version
-		var _cmdClass = _.filter(findCmdClass, function (cc) {
+		var _cmdClass = _.filter(findCmdClass, function(cc) {
 			return cc['_version'] === latestVersion;
 		})[0];
 
@@ -666,7 +737,7 @@ ZWave.prototype.CommunicationLogger = function() {
 
 		var cmd;
 		if (_.isArray(_cmdClass.cmd)) {
-			cmd = _.filter(_cmdClass.cmd, function (cmd) {
+			cmd = _.filter(_cmdClass.cmd, function(cmd) {
 				return cmd['_key'] === ccCmd;
 			})[0];
 		} else {
@@ -722,14 +793,14 @@ ZWave.prototype.CommunicationLogger = function() {
 	}
 };
 
-ZWave.prototype.certXFCheck = function () {
+ZWave.prototype.certXFCheck = function() {
 	var zway = this.zway;
 
 	// polling function
 	this.checkForCertFxLicense = function() {
 		zway.ZMECapabilities(null, function() {
 			if (zway.controller.data.countDown.value < 5) {
-				var capsNonce = zway.controller.data.capsNonce.value.map(function (i){
+				var capsNonce = zway.controller.data.capsNonce.value.map(function(i) {
 					return ("00" + i.toString(16)).slice(-2);
 				}).join("");
 
@@ -739,7 +810,9 @@ ZWave.prototype.certXFCheck = function () {
 					url: "https://CertXFer.Z-WaveAlliance.org:8443/CITAuth/CITAuth.aspx?uid=" + uuid + "&nonce=" + capsNonce,
 					async: true,
 					success: function(resp) {
-						var key = resp.data.split(": ")[1].split(" ").map(function(i) { return parseInt(i,16); });
+						var key = resp.data.split(": ")[1].split(" ").map(function(i) {
+							return parseInt(i, 16);
+						});
 						zway.ZMECapabilities(key);
 
 						// refresh caps
@@ -778,25 +851,25 @@ ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
 	this.devices.filterByNode(nodeId, this.config.name).forEach(function(vDev) {
 		vDev.set('metrics:isFailed', isFailed);
 	});
-	
+
 	if (!isFailed) {
 		zway.devices[nodeId].data.lastReceived.unbind(self.vDevFailedDetection);
 	}
 };
 
-ZWave.prototype.checkFailed = function (nodeId) {
+ZWave.prototype.checkFailed = function(nodeId) {
 	var self = this;
 	var zway = this.zway;
 	var devData = zway.devices[nodeId].data,
 		wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
 		isFailedNode = zway.devices[nodeId].data.isFailed.value,
-		now = Math.floor(Date.now()/1000);
+		now = Math.floor(Date.now() / 1000);
 
 	if (devData.deviceTypeString.value !== 'Portable Remote Controller') {
 		if (wakeupCC) {
 
 			wakeupInterval = wakeupCC.data.interval.value;
-			
+
 			// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
 			if (!!wakeupInterval && (_.max([devData.lastReceived.updateTime, devData.lastSend.updateTime]) < now - 3 * wakeupInterval)) {
 				self.controller.vDevFailedDetection(nodeId, true);
@@ -828,21 +901,23 @@ ZWave.prototype.checkForFailedNode = function(nodeId) {
 };
 
 
-ZWave.prototype.refreshStatisticsPeriodically = function () {
+ZWave.prototype.refreshStatisticsPeriodically = function() {
 	var self = this;
 	var zway = this.zway;
 
-	this.updateNetStats = function () {
+	this.updateNetStats = function() {
 		try {
 			var stats = ['RFTxFrames', 'RFTxLBTBackOffs', 'RFRxFrames', 'RFRxLRCErrors', 'RFRxCRC16Errors', 'RFRxForeignHomeID'],
 				// get the biggest value of all stat params
-				maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key){ return self.statistics[key].value}));
+				maxPaketCnt = Math.max.apply(null, Object.keys(self.statistics).map(function(key) {
+					return self.statistics[key].value
+				}));
 
 			// reset network statistics
 			if (maxPaketCnt > 32768) { // 2^15
 				zway.ClearNetworkStats();
 
-				zway.GetNetworkStats(function(){
+				zway.GetNetworkStats(function() {
 					stats.forEach(function(key) {
 						self.statistics[key] = {
 							value: zway.controller.data.statistics[key].value,
@@ -852,16 +927,16 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 				});
 				// update network statistics
 			} else {
-				zway.GetNetworkStats(function(){
+				zway.GetNetworkStats(function() {
 					stats.forEach(function(key) {
 						self.statistics[key] = {
-							value: self.statistics[key].value? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
+							value: self.statistics[key].value ? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
 							updateTime: zway.controller.data.statistics[key].updateTime
 						}
 					});
 				});
 			}
-		} catch (e){
+		} catch (e) {
 			console.log('Failed to update/remove network statistics.', e.toString());
 
 			if (this.statisticsInterval) {
@@ -873,7 +948,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
 
 	// initial call
 	this.updateNetStats();
-	
+
 	// intervall function collecting network statistic data
 	this.statisticsInterval = setInterval(function() {
 		self.updateNetStats();
@@ -885,16 +960,16 @@ ZWave.prototype.refreshStatisticsPeriodically = function () {
  * to generate readable entries in this.dskCollection
  * DSKs of new entries will also be added automatically to the provisioning list
  */
-ZWave.prototype.addDSKEntry = function (entry) {
+ZWave.prototype.addDSKEntry = function(entry) {
 	var zway = this.zway,
 		successful = false,
 		tlvString = '';
-	
+
 	if (entry && !!entry) {
 		// setup basic values for each QR code entry
 		var transformedEntry = {
 				id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
-				isSmartStart: false,
+				isSmartStart: entry.substring(0, 1) === '90' && entry.substring(0, 1) === '01' && entry.split('-').length === 0,
 				state: 'pending',
 				nodeId: null,
 				timestamp: (new Date()).valueOf(),
@@ -902,9 +977,9 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				p_id: ''
 			},
 			// array with length values of the first 5 leading static QR code values
-			pos = [2,2,5,3,40],
+			pos = [2, 2, 5, 3, 40],
 			// length values of generic TLV parts 
-			tlv = [2,2,null],
+			tlv = [2, 2, null],
 			// keys of the first 5 leading static QR code values
 			keys = [
 				'ZW_QR_LEADIN',
@@ -912,35 +987,35 @@ ZWave.prototype.addDSKEntry = function (entry) {
 				'ZW_QR_CHKSUM',
 				'ZW_S2_REQ_KEYS',
 				'ZW_QR_DSK'
-				],
+			],
 			// type array with all known types and their special value subdivisions
 			// all unknown types will be handled generic, see further below
 			types = {
 				'00': { // TlvType = ProductType [value]
-					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE':5,
-					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE':5,
-					},
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE': 5,
+					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE': 5,
+				},
 				'02': { // TlvType = ProductID [value]
-					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID':5,
-					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE':5,
-					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID':5,
-					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION':5
+					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID': 5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE': 5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID': 5,
+					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION': 5
 				},
 				'06': { // TlvType = UUID16 [value]
-					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT':2,
-					'ZW_QR_TLVVAL_UUID16_UUIDDATA':40
+					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT': 2,
+					'ZW_QR_TLVVAL_UUID16_UUIDDATA': 40
 				}
 			},
 			currPos = 0,
 			valLength = 0,
 			// function that will generate entries for known types
-			setTypeEntries = function(type, value){
+			setTypeEntries = function(type, value) {
 				var length = 0;
 
 				if (types[type]) {
-					Object.keys(types[type]).forEach(function(key, index){
-						transformedEntry[key] = value.substring(length, (length +types[type][key]));
-						length = length +types[type][key];
+					Object.keys(types[type]).forEach(function(key, index) {
+						transformedEntry[key] = value.substring(length, (length + types[type][key]));
+						length = length + types[type][key];
 					});
 				}
 			};
@@ -948,27 +1023,25 @@ ZWave.prototype.addDSKEntry = function (entry) {
 
 			// check if entry is no smart start entry
 			// only DSK will be added as entry
-			if (entry.length === 47 && entry.split('-').length > 0) {
+			if (!transformedEntry.isSmartStart) {
 				transformedEntry['ZW_QR_DSK'] = entry;
-			// otherwise it is a smart entry
-			// do some more voodoo to preparate smart start entry
+				// otherwise it is a smart entry
+				// do some more voodoo to preparate smart start entry
 			} else {
-				transformedEntry.isSmartStart = true;
-				
 				// fill all keys for the first 5 leading static QR code values
 				_.forEach(pos, function(l, index) {
 					// get value end position
 					// for substring
-					valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
+					valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
 
 					// cut out value
 					// if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
-					value = keys[index] === 'ZW_QR_DSK'? entry.substring(currPos,valueEndPos).replace(/(.{5})/g,"$&"+"-").slice(0, -1) : entry.substring(currPos,valueEndPos);
-					
+					value = keys[index] === 'ZW_QR_DSK' ? entry.substring(currPos, valueEndPos).replace(/(.{5})/g, "$&" + "-").slice(0, -1) : entry.substring(currPos, valueEndPos);
+
 					// assign value to leading key
 					transformedEntry[keys[index]] = value;
-					
-					currPos = keys[index] === l? currPos + valLength : currPos + l;
+
+					currPos = keys[index] === l ? currPos + valLength : currPos + l;
 				});
 
 				// get all remaining TLV values
@@ -984,18 +1057,18 @@ ZWave.prototype.addDSKEntry = function (entry) {
 					valLength = 0;
 					type = null;
 					// keys for generic TLV entries
-					tlvKeys = ['TlvType','TlvLength','TlvValue'];
+					tlvKeys = ['TlvType', 'TlvLength', 'TlvValue'];
 
 					// use array with length values of generic TLV parts
 					// to walk through each TLV entry
-					tlv.forEach(function (l, index) {
+					tlv.forEach(function(l, index) {
 						// get value end position
 						// for substring
-						valueEndPos = _.isNumber(l)? currPos+l : (currPos + valLength);
+						valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
 
 						// cut out value
-						value = tlvString.substring(currPos,valueEndPos);
-						
+						value = tlvString.substring(currPos, valueEndPos);
+
 						// if it is the first TLV entry - set the type
 						if (index === 0) {
 							type = value;
@@ -1005,13 +1078,13 @@ ZWave.prototype.addDSKEntry = function (entry) {
 						// the TLV value entries 
 						if (l === null) {
 							// add TLV value keys
-						    setTypeEntries(type, value);
+							setTypeEntries(type, value);
 
-						    // if TLV type is '02'
-						    // set also the p_id
-						    if (type === '02') {
-						    	transformedEntry['p_id'] = value.replace(/(.{5})/g,"$&"+".").slice(0, -1);
-						    }
+							// if TLV type is '02'
+							// set also the p_id
+							if (type === '02') {
+								transformedEntry['p_id'] = value.replace(/(.{5})/g, "$&" + ".").slice(0, -1);
+							}
 						}
 
 						// if the type is unknown
@@ -1021,32 +1094,32 @@ ZWave.prototype.addDSKEntry = function (entry) {
 						if (!types[type]) {
 
 							// add tlv entry key
-							transformedEntry[type+'_'+tlvKeys[index]] = value;
+							transformedEntry[type + '_' + tlvKeys[index]] = value;
 						}
 
 						// stop loop if length is 0
-						if(_.isNumber(tlv[index+1]) && !!tlv[index+1]) {
-							_valLength = parseInt(tlvString.substring(currPos+3,currPos+ 3 + tlv[index+1]), 10);
-						    if (_valLength < 1) {
-						      	tlvString = '';
-						      	return true;
-						    }
-					    }
-						
+						if (_.isNumber(tlv[index + 1]) && !!tlv[index + 1]) {
+							_valLength = parseInt(tlvString.substring(currPos + 3, currPos + 3 + tlv[index + 1]), 10);
+							if (_valLength < 1) {
+								tlvString = '';
+								return true;
+							}
+						}
+
 						// if the length of the next value is defined by the predecessor value
 						// set valLength to it's correct length for next transformation step
-						if(!_.isNumber(tlv[index+1]) && tlv[index+1] === null) {
-							valLength = parseInt(tlvString.substring(currPos,currPos+2), 10);
+						if (!_.isNumber(tlv[index + 1]) && tlv[index + 1] === null) {
+							valLength = parseInt(tlvString.substring(currPos, currPos + 2), 10);
 							currPos = currPos + l;
-						// otherwise simply raise it by length value
+							// otherwise simply raise it by length value
 						} else {
-							currPos = keys[index] === l? currPos + valLength : currPos + l;
+							currPos = keys[index] === l ? currPos + valLength : currPos + l;
 						}
 					});
 
 					if (tlvString !== '') {
 						// cut out the current finished TLV entry from tlvString
-						tlvString = tlvString.substring(4+valLength);
+						tlvString = tlvString.substring(4 + valLength);
 					}
 					i++;
 				}
@@ -1065,10 +1138,10 @@ ZWave.prototype.addDSKEntry = function (entry) {
 			this.saveDSKProvisioningList(dskProvisioningList);
 
 			// save dsk collection
-			this.saveObject("dskCollection",this.dskCollection);
+			this.saveObject("dskCollection", this.dskCollection);
 			successful = true;
 		} catch (e) {
-			this.addNotification("error", 'Add DSK entry error: '+ e.toString(), "module");
+			this.addNotification("error", 'Add DSK entry error: ' + e.toString(), "module");
 		}
 	}
 
@@ -1079,10 +1152,10 @@ ZWave.prototype.addDSKEntry = function (entry) {
  * this function allows you to update a S2 or Smart Start QR code entry from this.dskCollection
  * DSKs of changed entries will also be changed automatically in the provisioning list
  */
-ZWave.prototype.updateDSKEntry = function (dskEntry) {
+ZWave.prototype.updateDSKEntry = function(dskEntry) {
 	var zway = this.zway,
 		oldDSKEntry = {},
-		entryIndex = _.findIndex(this.dskCollection, function(entry){
+		entryIndex = _.findIndex(this.dskCollection, function(entry) {
 			return entry.id === dskEntry.id;
 		}),
 		successful = false;
@@ -1093,7 +1166,7 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
 		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
 			// fetch old DSK entry
 			oldDSKEntry = this.dskCollection[entryIndex];
-			
+
 			// replace old DSK entry
 			this.dskCollection[entryIndex] = dskEntry;
 
@@ -1101,10 +1174,10 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
 			dskProvisioningList = this.getDSKProvisioningList();
 
 			// update provisioning list
-			dskIndex = _.findIndex(dskProvisioningList, function(entry){
+			dskIndex = _.findIndex(dskProvisioningList, function(entry) {
 				return oldDSKEntry['ZW_QR_DSK'] === entry;
 			});
-			
+
 			// replace the provisioning list entry
 			if (dskIndex > -1 && dskProvisioningList[dskIndex]) {
 				dskProvisioningList[dskIndex] = dskEntry['ZW_QR_DSK'];
@@ -1116,12 +1189,12 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
 			this.saveDSKProvisioningList(dskProvisioningList);
 
 			// save dsk collection
-			this.saveObject("dskCollection",this.dskCollection);
+			this.saveObject("dskCollection", this.dskCollection);
 
 			successful = true;
 		}
 	} catch (e) {
-		this.addNotification("error", 'Update DSK entry error: '+ e.toString(), "module");
+		this.addNotification("error", 'Update DSK entry error: ' + e.toString(), "module");
 	}
 
 	return successful;
@@ -1131,10 +1204,10 @@ ZWave.prototype.updateDSKEntry = function (dskEntry) {
  * this function allows you to remove a S2 or Smart Start QR code entry from this.dskCollection
  * DSKs of removed entries will also be removed automatically from the provisioning list
  */
-ZWave.prototype.removeDSKEntry = function (dskEntryID) {
+ZWave.prototype.removeDSKEntry = function(dskEntryID) {
 	var zway = this.zway,
 		oldDSKEntry = {},
-		entryIndex = _.findIndex(this.dskCollection, function(entry){
+		entryIndex = _.findIndex(this.dskCollection, function(entry) {
 			return entry.id === dskEntryID || entry.id === parseInt(dskEntryID, 10);
 		}),
 		successful = false;
@@ -1144,7 +1217,7 @@ ZWave.prototype.removeDSKEntry = function (dskEntryID) {
 		if (entryIndex > -1 && this.dskCollection[entryIndex]) {
 			// fetch old DSK entry
 			oldDSKEntry = this.dskCollection[entryIndex];
-			
+
 			// remove DSK entry
 			this.dskCollection.splice(entryIndex, 1);
 
@@ -1152,7 +1225,7 @@ ZWave.prototype.removeDSKEntry = function (dskEntryID) {
 			dskProvisioningList = this.getDSKProvisioningList();
 
 			// remove from provisioning list
-			dskProvisioningList = _.filter(dskProvisioningList, function(dsk){
+			dskProvisioningList = _.filter(dskProvisioningList, function(dsk) {
 				return dsk !== oldDSKEntry['ZW_QR_DSK'];
 			});
 
@@ -1160,12 +1233,12 @@ ZWave.prototype.removeDSKEntry = function (dskEntryID) {
 			this.saveDSKProvisioningList(dskProvisioningList);
 
 			// save dsk collection
-			this.saveObject("dskCollection",this.dskCollection);
+			this.saveObject("dskCollection", this.dskCollection);
 
 			successful = true;
 		}
 	} catch (e) {
-		this.addNotification("error", 'Remove DSK entry error: '+ e.toString(), "module");
+		this.addNotification("error", 'Remove DSK entry error: ' + e.toString(), "module");
 	}
 
 	return successful;
@@ -1175,13 +1248,13 @@ ZWave.prototype.removeDSKEntry = function (dskEntryID) {
  * this function allows you to get all S2 or Smart Start QR code entries from this.dskCollection
  * or excactly one specified by it's entry id
  */
-ZWave.prototype.getDSKCollection = function (dskEntryID) {
+ZWave.prototype.getDSKCollection = function(dskEntryID) {
 	if (dskEntryID) {
-		var dskEntry = _.filter(this.dskCollection, function(dskEntry){
+		var dskEntry = _.filter(this.dskCollection, function(dskEntry) {
 			return dskEntry.id === dskEntryID || dskEntry.id === parseInt(dskEntryID, 10);
 		});
 
-		return dskEntry[0]? dskEntry[0] : []; 
+		return dskEntry[0] ? dskEntry[0] : [];
 	} else {
 		return this.dskCollection;
 	}
@@ -1190,7 +1263,7 @@ ZWave.prototype.getDSKCollection = function (dskEntryID) {
 // --------------- Public HTTP API -------------------
 
 
-ZWave.prototype.externalAPIAllow = function (name) {
+ZWave.prototype.externalAPIAllow = function(name) {
 	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
 	ws.allowExternalAccess(_name, this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -1232,7 +1305,7 @@ ZWave.prototype.externalAPIAllow = function (name) {
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
-ZWave.prototype.externalAPIRevoke = function (name) {
+ZWave.prototype.externalAPIRevoke = function(name) {
 	var _name = !!name ? ("ZWave." + name) : "ZWaveAPI";
 
 	ws.revokeExternalAccess(_name);
@@ -1274,7 +1347,7 @@ ZWave.prototype.externalAPIRevoke = function (name) {
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
-ZWave.prototype.defineHandlers = function () {
+ZWave.prototype.defineHandlers = function() {
 	var zway = this.zway;
 	var postfix = this.postfix;
 	var self = this;
@@ -1287,7 +1360,10 @@ ZWave.prototype.defineHandlers = function () {
 	var statistics = this.statistics;
 
 	this.ZWaveAPI = function() {
-		return { status: 400, body: "Bad ZWaveAPI request " };
+		return {
+			status: 400,
+			body: "Bad ZWaveAPI request "
+		};
 	};
 
 	this.ZWaveAPI.list = function() {
@@ -1316,7 +1392,10 @@ ZWave.prototype.defineHandlers = function () {
 			*/
 			return zwayList;
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
@@ -1336,7 +1415,10 @@ ZWave.prototype.defineHandlers = function () {
 				body: r
 			};
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
@@ -1379,7 +1461,7 @@ ZWave.prototype.defineHandlers = function () {
 
 			// do backup
 			var data = zway.controller.Backup();
-			var filename = (checkBoxtype('cit')?"cit" : "z-way") + "-backup-" + ts + ".zbk"
+			var filename = (checkBoxtype('cit') ? "cit" : "z-way") + "-backup-" + ts + ".zbk"
 
 			return {
 				status: 200,
@@ -1394,7 +1476,10 @@ ZWave.prototype.defineHandlers = function () {
 				body: data
 			};
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
@@ -1402,17 +1487,17 @@ ZWave.prototype.defineHandlers = function () {
 		var lines = '',
 			q = request.query,
 			testLines = function(lines) {
-				var l = parseInt(lines,10);
+				var l = parseInt(lines, 10);
 				return l > 0 && l <= 20000 || false;
 			},
 			logAvailable = fs.stat('lib/fetchLog.sh'),
 			report_url = "https://service.z-wave.me/report/index.php",
 			ret = false,
 			formElements = [],
-			reqObj = request.body? request.body : request.data,
+			reqObj = request.body ? request.body : request.data,
 			data;
 
-		reqObj = reqObj && typeof reqObj !== 'string'? reqObj : JSON.parse(reqObj);
+		reqObj = reqObj && typeof reqObj !== 'string' ? reqObj : JSON.parse(reqObj);
 
 		//TODO: Implement for Multiple zways
 		/*function createBackup(){
@@ -1432,14 +1517,14 @@ ZWave.prototype.defineHandlers = function () {
 			return zwayBcp;
 		}*/
 
-		function createBackup(){
+		function createBackup() {
 			var zwayBcp = []
 
 			// do backup
 			var bcp = "",
 				data = new Uint8Array(zway.controller.Backup());
 
-			for(var i = 0; i < data.length; i++) {
+			for (var i = 0; i < data.length; i++) {
 				bcp += String.fromCharCode(data[i]);
 			}
 
@@ -1449,7 +1534,7 @@ ZWave.prototype.defineHandlers = function () {
 		}
 
 		if (q && logAvailable) {
-			lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines)? parseInt(q.lines,10) : lines;
+			lines = q.lines && !_.isNaN(q.lines) && testLines(q.lines) ? parseInt(q.lines, 10) : lines;
 		}
 
 		if (logAvailable) {
@@ -1468,7 +1553,7 @@ ZWave.prototype.defineHandlers = function () {
 			var now = new Date();
 			// create a timestamp in format yyyy-MM-dd-HH-mm
 			var ts = getHRDateformat(now);
-			var box_type = checkBoxtype('cit')? 'cit' : 'z-way';
+			var box_type = checkBoxtype('cit') ? 'cit' : 'z-way';
 
 			// prepare system information
 			for (param in reqObj) {
@@ -1478,12 +1563,12 @@ ZWave.prototype.defineHandlers = function () {
 				})
 			}
 
-			if(data) {
+			if (data) {
 				// add backup with log
 				formElements.push({
 					name: 'log_name',
-					value: "report-"+ box_type +"-backup-log-" + ts + ".tgz"
-				},{
+					value: "report-" + box_type + "-backup-log-" + ts + ".tgz"
+				}, {
 					name: 'log_data',
 					value: Base64.encode(JSON.stringify(data))
 				});
@@ -1494,7 +1579,7 @@ ZWave.prototype.defineHandlers = function () {
 			if (res.status === -1) { //error e.g. no connection to server
 				self.addNotification("error", res.statusText, "module");
 			} else {
-				if(res.status === 200) {
+				if (res.status === 200) {
 					ret = true;
 					self.addNotification("info", res.data.message, "module");
 				} else {
@@ -1502,8 +1587,11 @@ ZWave.prototype.defineHandlers = function () {
 				}
 			}
 
-		} catch(e) {
-			return { status: 500, body: e.toString() }
+		} catch (e) {
+			return {
+				status: 500,
+				body: e.toString()
+			}
 		}
 		return ret;
 	};
@@ -1536,11 +1624,17 @@ ZWave.prototype.defineHandlers = function () {
 						body: null
 					};
 				} catch (e) {
-					return { status: 500, body: e.toString() };
+					return {
+						status: 500,
+						body: e.toString()
+					};
 				}
 			}
 		}
-		return { status: 400, body: "Invalid request" };
+		return {
+			status: 400,
+			body: "Invalid request"
+		};
 	};
 
 	this.ZWaveAPI.CreateZDDX = function(url, request) {
@@ -1553,7 +1647,7 @@ ZWave.prototype.defineHandlers = function () {
 		}
 
 		function tagAttrValue(name, value) {
-			return  {
+			return {
 				"name": name,
 				"attributes": {
 					"value": value
@@ -1570,11 +1664,11 @@ ZWave.prototype.defineHandlers = function () {
 		}
 
 		function tagBool(name, value) {
-			return tagAttrValue(name, value ? "true": "false");
+			return tagAttrValue(name, value ? "true" : "false");
 		}
 
 		function tagText(name, value) {
-			return  {
+			return {
 				"name": name,
 				"text": value
 			};
@@ -1643,64 +1737,65 @@ ZWave.prototype.defineHandlers = function () {
 				"xmlns": "http://www.pepper1.net/zwavedb/xml-schemata/z-wave",
 				"schemaVersion": "2"
 			},
-			"children": [
-				{
-					"name": "descriptorVersion",
-					"text": "1"
-				},
-				{
-					"name": "deviceData",
-					"children": [
-						tagWord("manufacturerId", d.data.manufacturerId.value),
-						tagWord("productType", d.data.manufacturerProductType.value),
-						tagWord("productId", d.data.manufacturerProductId.value),
-						tagByte("libType", d.data.ZWLib.value),
-						tagByte("protoVersion", d.data.ZWProtocolMajor.value),
-						tagByte("protoSubVersion", d.data.ZWProtocolMinor.value),
-						tagByte("appVersion", d.data.applicationMajor.value),
-						tagByte("appSubVersion", d.data.applicationMinor.value),
-						tagByte("basicClass", d.data.basicType.value),
-						tagByte("genericClass", d.data.genericType.value),
-						tagByte("specificClass", d.data.specificType.value),
-						tagBool("optional", d.data.optional.value),
-						tagBool("listening", d.data.isListening.value),
-						tagBool("routing", d.data.isRouting.value),
-						tagText("beamSensor", d.data.sensor250.value ? "250" : (d.data.sensor1000.value ? "1000" : "0"))
-					]
-				},
-				{
-					"name": "deviceDescription",
-					"children": [
-						tagLangs("description", {"en": ""}),
-						tagLangs("wakeupNote", {"en": ""}),
-						tagLangs("inclusionNote", {"en": ""}),
-						tagText("productName", ""),
-						tagText("brandName", ""),
-						tagText("productVersion", d.data.applicationMajor.value.toString()  + "." + d.data.applicationMinor.value.toString())
-					]
-				},
-				{
-					"name": "commandClasses",
-					"children": (function() {
-						var
-							ccId, n,
-							arr = [],
-							ccs = d.instances[0].commandClasses;
+			"children": [{
+				"name": "descriptorVersion",
+				"text": "1"
+			}, {
+				"name": "deviceData",
+				"children": [
+					tagWord("manufacturerId", d.data.manufacturerId.value),
+					tagWord("productType", d.data.manufacturerProductType.value),
+					tagWord("productId", d.data.manufacturerProductId.value),
+					tagByte("libType", d.data.ZWLib.value),
+					tagByte("protoVersion", d.data.ZWProtocolMajor.value),
+					tagByte("protoSubVersion", d.data.ZWProtocolMinor.value),
+					tagByte("appVersion", d.data.applicationMajor.value),
+					tagByte("appSubVersion", d.data.applicationMinor.value),
+					tagByte("basicClass", d.data.basicType.value),
+					tagByte("genericClass", d.data.genericType.value),
+					tagByte("specificClass", d.data.specificType.value),
+					tagBool("optional", d.data.optional.value),
+					tagBool("listening", d.data.isListening.value),
+					tagBool("routing", d.data.isRouting.value),
+					tagText("beamSensor", d.data.sensor250.value ? "250" : (d.data.sensor1000.value ? "1000" : "0"))
+				]
+			}, {
+				"name": "deviceDescription",
+				"children": [
+					tagLangs("description", {
+						"en": ""
+					}),
+					tagLangs("wakeupNote", {
+						"en": ""
+					}),
+					tagLangs("inclusionNote", {
+						"en": ""
+					}),
+					tagText("productName", ""),
+					tagText("brandName", ""),
+					tagText("productVersion", d.data.applicationMajor.value.toString() + "." + d.data.applicationMinor.value.toString())
+				]
+			}, {
+				"name": "commandClasses",
+				"children": (function() {
+					var
+						ccId, n,
+						arr = [],
+						ccs = d.instances[0].commandClasses;
 
-						for(ccId in ccs) {
-							arr.push(tagCC(ccId, ccs[ccId].data.version.value, ccs[ccId].data.supported.value, ccs[ccId].data.security.value, d.data.nodeInfoFrame.value));
+					for (ccId in ccs) {
+						arr.push(tagCC(ccId, ccs[ccId].data.version.value, ccs[ccId].data.supported.value, ccs[ccId].data.security.value, d.data.nodeInfoFrame.value));
+					}
+					for (n in d.data.nodeInfoFrame.value) {
+						ccId = d.data.nodeInfoFrame.value[n];
+						if (!ccs[ccId] && ccId !== 0xEF) {
+							arr.push(tagCC(ccId, 1, false, false, d.data.nodeInfoFrame.value));
 						}
-						for(n in d.data.nodeInfoFrame.value) {
-							ccId = d.data.nodeInfoFrame.value[n];
-							if (!ccs[ccId] && ccId !== 0xEF) {
-								arr.push(tagCC(ccId, 1, false, false, d.data.nodeInfoFrame.value));
-							}
-						}
+					}
 
-						return arr;
-					})()
-				}
-			]
+					return arr;
+				})()
+			}]
 		};
 
 		if (d.instances[0].Association) {
@@ -1720,7 +1815,9 @@ ZWave.prototype.defineHandlers = function () {
 								"maxNodes": data[n].max.value
 							},
 							"children": [
-								tagLangs("description", {"en": "Group " + n.toString()})
+								tagLangs("description", {
+									"en": "Group " + n.toString()
+								})
 							]
 						});
 					}
@@ -1743,7 +1840,7 @@ ZWave.prototype.defineHandlers = function () {
 		};
 	};
 
-	this.CommunicationStatistics = function (zw) {
+	this.CommunicationStatistics = function(zw) {
 		this.MAX_ARRAY_LENGTH = 30;
 
 		this.zw = zw;
@@ -1770,7 +1867,7 @@ ZWave.prototype.defineHandlers = function () {
 			self.communicationStatistics[this.nodeId.value] = [];
 		}
 		self.communicationStatistics[this.nodeId.value].push({
-			"date": (new Date()).getTime()/1000,
+			"date": (new Date()).getTime() / 1000,
 			"delivered": this.delivered.value,
 			"packetLength": this.packetLength.value,
 			"deliveryTime": this.deliveryTime.value
@@ -1825,12 +1922,12 @@ ZWave.prototype.defineHandlers = function () {
 			filterObj = typeof request.query.filter === 'string' ? JSON.parse(request.query.filter) : request.query.filter;
 		}
 
-		if(!_.isEmpty(packets)) {
-			if(!_.isNull(filterObj)) {
+		if (!_.isEmpty(packets)) {
+			if (!_.isNull(filterObj)) {
 				if (filterObj.src.value != "") {
-					var filter = packets.filter(function (p) {
+					var filter = packets.filter(function(p) {
 						// filter by array of sources
-						var srcs =  filterObj.src.value.split(',');
+						var srcs = filterObj.src.value.split(',');
 
 						if (parseInt(filterObj.src.show) === 1) {
 							return srcs.indexOf(p.src.toString()) > -1;
@@ -1843,9 +1940,9 @@ ZWave.prototype.defineHandlers = function () {
 				}
 
 				if (filterObj.dest.value != "") {
-					filter = packets.filter(function (p) {
+					filter = packets.filter(function(p) {
 						// filter by array of destinations
-						var dests =  filterObj.dest.value.split(',');
+						var dests = filterObj.dest.value.split(',');
 
 						if (parseInt(filterObj.dest.show) === 1) {
 							return dests.indexOf(p.dest.toString()) > -1;
@@ -1871,11 +1968,11 @@ ZWave.prototype.defineHandlers = function () {
 
 	this.ZWaveAPI.Zniffer = function() {
 		var body = {
-				"code": 200,
-				"message": "200 OK",
-				"updateTime": null,
-				"data": []
-			};
+			"code": 200,
+			"message": "200 OK",
+			"updateTime": null,
+			"data": []
+		};
 
 		// TODO(!!!) may be report only updates since last body.updateTime ?
 		body.data = _.filter(self.parsedPackets.get(), function(p) {
@@ -1979,23 +2076,25 @@ ZWave.prototype.defineHandlers = function () {
 			};
 		}
 	};
-	
+
 	this.ZWaveAPI.TestNode = function(url, request) {
 		try {
 			var nodeId = url.split("/")[1],
 				N = url.split("/")[2] || 10;
-			
+
 			var delivered = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-				sent =  [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+				sent = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
 			var result = "in progress";
 
 			function hasFinished() {
-				if (sent.reduce(function(a, b) { return a + b; }, 0) == 10 * N) {
+				if (sent.reduce(function(a, b) {
+						return a + b;
+					}, 0) == 10 * N) {
 					result = "done";
 				}
 			}
-			
+
 			for (var powerlevel = 0; powerlevel < 10; powerlevel++) {
 				(function(pwrlvl) {
 					var succesCbk = function() {
@@ -2014,22 +2113,27 @@ ZWave.prototype.defineHandlers = function () {
 				})(powerlevel)
 			}
 
-			var d = (new Date()).valueOf() + 10*N*1000; // wait not more than 10*N seconds
-			
+			var d = (new Date()).valueOf() + 10 * N * 1000; // wait not more than 10*N seconds
+
 			while ((new Date()).valueOf() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
-			
+
 			if (result === "in progress") {
-				throw("Timeout");
+				throw ("Timeout");
 			}
 
-			return delivered.map(function(val, index) { return 100 * val / sent[index]; });
+			return delivered.map(function(val, index) {
+				return 100 * val / sent[index];
+			});
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
-	
+
 	this.ZWaveAPI.FirmwareUpdate = function(url, request) {
 		try {
 			var deviceId = parseInt(url.substring(1), 10);
@@ -2071,7 +2175,10 @@ ZWave.prototype.defineHandlers = function () {
 				}
 				fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 
-				return { status: 200, body: "Initiating update" };
+				return {
+					status: 200,
+					body: "Initiating update"
+				};
 			} else if (data.url) {
 				var result = {
 					status: 'in progress'
@@ -2088,7 +2195,7 @@ ZWave.prototype.defineHandlers = function () {
 					},
 					contentType: "application/octet-stream", // enforce binary response,
 					async: true,
-					success: function (res) {
+					success: function(res) {
 
 						//console.log('upgrade res:', JSON.stringify(res, null, 1));
 						var fw;
@@ -2099,37 +2206,46 @@ ZWave.prototype.defineHandlers = function () {
 							} else {
 								fw = res.data;
 							}
-								fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
+							fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 
-								result.status = 'done';
+							result.status = 'done';
 						} catch (e) {
 							result.error = 'Firmware download successful. Parsing has failed: ' + e.toString();
 							result.status = 'fail';
 							throw ('Firmware download successful. Parsing has failed: ' + e.toString());
 						}
 					},
-					error: function (res) {
+					error: function(res) {
 						result.error = 'Failed to download firmware: ' + res.statusText;
 						result.status = 'fail';
 						throw ('Failed to download firmware: ' + res.statusText);
 					}
 				});
 
-				while ((new Date()).valueOf() < d &&  result.status === "in progress") {
+				while ((new Date()).valueOf() < d && result.status === "in progress") {
 					processPendingCallbacks();
 				}
 
-				result.status = result.status === 'in progress'? 'fail' : result.status;
+				result.status = result.status === 'in progress' ? 'fail' : result.status;
 
 				if (result.status === 'fail') {
-					return { status: 500, body: result.error };
+					return {
+						status: 500,
+						body: result.error
+					};
 				} else {
-					return { status: 200, body: "Initiating update" };
+					return {
+						status: 200,
+						body: "Initiating update"
+					};
 				}
 			}
 
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
@@ -2141,24 +2257,35 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 			var result = "in progress";
-			zway.ZMECapabilities(data.license.split(",").map(function(i) { return parseInt(i, 10); }), function() {
+			zway.ZMECapabilities(data.license.split(",").map(function(i) {
+				return parseInt(i, 10);
+			}), function() {
 				result = "done";
-			},  function() {
+			}, function() {
 				result = "failed";
 			});
-			
+
 			var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
-			
-			while ((new Date()).valueOf() < d &&  result === "in progress") {
+
+			while ((new Date()).valueOf() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
-			
+
 			if (result === "in progress") {
 				result = "failed";
 			}
-			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
+			return (result === "done") ? {
+				status: 200,
+				body: "Done"
+			} : {
+				status: 500,
+				body: "Failed"
+			};
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
@@ -2170,7 +2297,7 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 			var result = "in progress";
-			
+
 			if (zway.controller.data.SDK.value === null) {
 				console.log("Unknown SDK version - update Z-Way");
 				throw "Unknown SDK version - update Z-Way";
@@ -2195,7 +2322,7 @@ ZWave.prototype.defineHandlers = function () {
 					data = bootloader_6_70 ? buf : buf.slice(0x1800);
 
 				for (var i = 0; i < data.byteLength; i += L) {
-					var arr = (new Uint8Array(data.slice(i, i+L)));
+					var arr = (new Uint8Array(data.slice(i, i + L)));
 					if (arr.length == 1) {
 						arr = [arr[0]]
 						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
@@ -2203,13 +2330,13 @@ ZWave.prototype.defineHandlers = function () {
 					zway.NVMExtWriteLongBuffer(addr + i, arr);
 				}
 
-				zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+				zway.NVMExtWriteLongBuffer(addr - 2, [0, 1], // we only need one byte, but a due to some error single byte is not read
 					function() {
 						zway.SerialAPISoftReset(function() {
 							result = "done";
 							zway.stop(); // to force re-start Z-Way
 						});
-				});
+					});
 			} else if (data.url) {
 				http.request({
 					url: data.url,
@@ -2228,7 +2355,7 @@ ZWave.prototype.defineHandlers = function () {
 							data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
 
 						for (var i = 0; i < data.byteLength; i += L) {
-							var arr = (new Uint8Array(data.slice(i, i+L)));
+							var arr = (new Uint8Array(data.slice(i, i + L)));
 							if (arr.length == 1) {
 								arr = [arr[0]]
 								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
@@ -2236,15 +2363,15 @@ ZWave.prototype.defineHandlers = function () {
 							zway.NVMExtWriteLongBuffer(addr + i, arr);
 						}
 
-						zway.NVMExtWriteLongBuffer(addr - 2, [0, 1],  // we only need one byte, but a due to some error single byte is not read
+						zway.NVMExtWriteLongBuffer(addr - 2, [0, 1], // we only need one byte, but a due to some error single byte is not read
 							function() {
 								zway.SerialAPISoftReset(function() {
 									result = "done";
 									zway.stop(); // to force re-start Z-Way
 								});
-						});
+							});
 					},
-					error: function (res) {
+					error: function(res) {
 						console.error("Failed to download firmware: " + res.statusText);
 						result = "failed";
 					}
@@ -2253,20 +2380,29 @@ ZWave.prototype.defineHandlers = function () {
 				console.error("Wrong request. Failed to apply firmware.");
 				result = "failed";
 			}
-			
-			var d = (new Date()).valueOf() + 300*1000; // wait not more than 5 minutes
-			
-			while ((new Date()).valueOf() < d &&  result === "in progress") {
+
+			var d = (new Date()).valueOf() + 300 * 1000; // wait not more than 5 minutes
+
+			while ((new Date()).valueOf() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
-			
+
 			if (result === "in progress") {
 				result = "failed";
 			}
-			
-			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
+
+			return (result === "done") ? {
+				status: 200,
+				body: "Done"
+			} : {
+				status: 500,
+				body: "Failed"
+			};
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
@@ -2287,12 +2423,12 @@ ZWave.prototype.defineHandlers = function () {
 				}
 
 				var L = 32,
-					seg = 6,	 // Функция бутлодера принимает номер сегмента
-					addr = seg*0x800, // ==12k
+					seg = 6, // Функция бутлодера принимает номер сегмента
+					addr = seg * 0x800, // ==12k
 					data = buf;
 
 				for (var i = 0; i < data.byteLength; i += L) {
-					var arr = (new Uint8Array(data.slice(i, i+L)));
+					var arr = (new Uint8Array(data.slice(i, i + L)));
 					if (arr.length == 1) {
 						arr = [arr[0]]
 						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
@@ -2300,16 +2436,16 @@ ZWave.prototype.defineHandlers = function () {
 					zway.NVMExtWriteLongBuffer(addr + i, arr);
 				}
 
-				zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+				zway.NVMExtWriteLongBuffer(addr - 2, [0, 0], // we only need one byte, but a due to some error single byte is not read
 					function() {
 						//Вызываем перезапись bootloder
 						zway.ZMEBootloaderFlash(seg, function() {
 							result = "done";
 							zway.stop(); // to force re-start Z-Way
-						},  function() {
+						}, function() {
 							result = "failed";
 						});
-				});
+					});
 			} else if (data.url) {
 				http.request({
 					url: data.url,
@@ -2317,12 +2453,12 @@ ZWave.prototype.defineHandlers = function () {
 					contentType: "application/octet-stream",
 					success: function(response) {
 						var L = 32,
-							seg = 6,	 // Функция бутлодера принимает номер сегмента
-							addr = seg*0x800, // ==12k
+							seg = 6, // Функция бутлодера принимает номер сегмента
+							addr = seg * 0x800, // ==12k
 							data = response.data;
 
 						for (var i = 0; i < data.byteLength; i += L) {
-							var arr = (new Uint8Array(data.slice(i, i+L)));
+							var arr = (new Uint8Array(data.slice(i, i + L)));
 							if (arr.length == 1) {
 								arr = [arr[0]]
 								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
@@ -2330,18 +2466,18 @@ ZWave.prototype.defineHandlers = function () {
 							zway.NVMExtWriteLongBuffer(addr + i, arr);
 						}
 
-						zway.NVMExtWriteLongBuffer(addr - 2, [0, 0],  // we only need one byte, but a due to some error single byte is not read
+						zway.NVMExtWriteLongBuffer(addr - 2, [0, 0], // we only need one byte, but a due to some error single byte is not read
 							function() {
 								//Вызываем перезапись bootloder
 								zway.ZMEBootloaderFlash(seg, function() {
 									result = "done";
 									zway.stop(); // to force re-start Z-Way
-								},  function() {
+								}, function() {
 									result = "failed";
 								});
-						});
+							});
 					},
-					error: function (res) {
+					error: function(res) {
 						console.error("Failed to download bootloader: " + res.statusText);
 						result = "failed";
 					}
@@ -2351,23 +2487,32 @@ ZWave.prototype.defineHandlers = function () {
 				result = "failed";
 			}
 
-			var d = (new Date()).valueOf() + 60*1000; // wait not more than 60 seconds
-			
-			while ((new Date()).valueOf() < d &&  result === "in progress") {
+			var d = (new Date()).valueOf() + 60 * 1000; // wait not more than 60 seconds
+
+			while ((new Date()).valueOf() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
-			
+
 			if (result === "in progress") {
 				result = "failed";
 			}
-			return (result === "done") ? { status: 200, body: "Done" } : { status: 500, body: "Failed" };
+			return (result === "done") ? {
+				status: 200,
+				body: "Done"
+			} : {
+				status: 500,
+				body: "Failed"
+			};
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 	};
 
-	this.ZWaveAPI.Postfix = function(url, request) {		
-		
+	this.ZWaveAPI.Postfix = function(url, request) {
+
 		var show = request.query ? request.query : null;
 
 		if (!!self.postfix) {
@@ -2375,13 +2520,16 @@ ZWave.prototype.defineHandlers = function () {
 			pfix = self.postfix;
 
 			if (show === 'false') {
-				pfix = self.postfix.fixes? self.postfix.fixes : self.postfix;
+				pfix = self.postfix.fixes ? self.postfix.fixes : self.postfix;
 
-				pfix = pfix.map(function (fix) { 
-						return { p_id: fix.p_id, product: fix.product }
-					});
+				pfix = pfix.map(function(fix) {
+					return {
+						p_id: fix.p_id,
+						product: fix.product
+					}
+				});
 			}
-		
+
 			return {
 				status: 200,
 				headers: {
@@ -2408,7 +2556,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		// update postfix JSON
 		http.request({
-			url: "http://manuals-backend.z-wave.info/make.php?mode=ui_postfix",//"http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
+			url: "http://manuals-backend.z-wave.info/make.php?mode=ui_postfix", //"http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
 			async: true,
 			success: function(res) {
 				if (res.data) {
@@ -2430,22 +2578,22 @@ ZWave.prototype.defineHandlers = function () {
 				success = 0;
 			}
 		});
-		
+
 		while (!success && (new Date()).valueOf() < delay) {
 			processPendingCallbacks();
 		}
 
-		switch(success) {
+		switch (success) {
 			case 1:
-				setTimeout(function () {
+				setTimeout(function() {
 					self.controller.reinitializeModule('ZWave', 'modules/');
 				}, 3000);
-					
+
 				return {
 					status: 200,
 					body: 'ZWave will be reinitialized in 3, 2, 1 ... \nReload the page after 15-20 sec to check if fixes are up to date.'
 				};
-			case 2: 
+			case 2:
 				return {
 					status: 200,
 					body: 'List of fixes is already up to date ... '
@@ -2461,9 +2609,9 @@ ZWave.prototype.defineHandlers = function () {
 	this.ZWaveAPI.PostfixGet = function(url) {
 		var p_id = url.substring(1),
 			fixes = postfix.fixes,
-			fix = fixes.filter(function (fix) {
-			return fix.p_id === p_id;
-		});
+			fix = fixes.filter(function(fix) {
+				return fix.p_id === p_id;
+			});
 
 		if (!_.isEmpty(fix)) {
 			return {
@@ -2478,31 +2626,37 @@ ZWave.prototype.defineHandlers = function () {
 				body: fix[0]
 			};
 		} else {
-			return {status: 404, body: "Postfix with p_id: " + p_id + " not found"};
+			return {
+				status: 404,
+				body: "Postfix with p_id: " + p_id + " not found"
+			};
 		}
 	};
 
 	this.ZWaveAPI.PostfixAdd = function(url, request) {
 
-		if(request.method === "POST" && request.body) {
+		if (request.method === "POST" && request.body) {
 
 			var date = new Date();
 
 			try {
 				var reqObj = parseToObject(request.body);
-			} catch(e) {
-				return { status: 400, body: e.toString() };
+			} catch (e) {
+				return {
+					status: 400,
+					body: e.toString()
+				};
 			}
 
 			var custom_postfix = loadObject("custompostfix.json");
 
-			if(custom_postfix === null) {
+			if (custom_postfix === null) {
 
 				reqObj.id = 1;
 
 				custom_postfix = {
-					"last_update" : Math.floor(date.getTime()/1000),
-					"fixes" : [reqObj]
+					"last_update": Math.floor(date.getTime() / 1000),
+					"fixes": [reqObj]
 				};
 
 			} else {
@@ -2512,11 +2666,11 @@ ZWave.prototype.defineHandlers = function () {
 						return fix.p_id === reqObj.p_id;
 					});
 
-				if(_.isEmpty(fix)) {
+				if (_.isEmpty(fix)) {
 					var id = Math.max.apply(Math, custom_postfix.fixes.map(function(fix) {
 						return fix.id;
 					}));
-					reqObj.id = id+1;
+					reqObj.id = id + 1;
 
 					custom_postfix.fixes.push(reqObj);
 
@@ -2524,8 +2678,8 @@ ZWave.prototype.defineHandlers = function () {
 
 					var tempFixes = fixes;
 
-					for(var p in tempFixes) {
-						if(tempFixes[p].p_id === reqObj.p_id) {
+					for (var p in tempFixes) {
+						if (tempFixes[p].p_id === reqObj.p_id) {
 							tempFixes[p] = _.assign(tempFixes[p], reqObj);
 						}
 					}
@@ -2533,13 +2687,13 @@ ZWave.prototype.defineHandlers = function () {
 					custom_postfix.fixes = tempFixes;
 				}
 
-				custom_postfix.last_update = Math.floor(date.getTime()/1000);
+				custom_postfix.last_update = Math.floor(date.getTime() / 1000);
 
 			}
 
 			saveObject("custompostfix.json", custom_postfix);
 
-			setTimeout(function () {
+			setTimeout(function() {
 				self.controller.reinitializeModule('ZWave', 'modules/');
 			}, 3000);
 
@@ -2549,7 +2703,10 @@ ZWave.prototype.defineHandlers = function () {
 			};
 
 		}
-		return { status: 400, body: "Invalid request" };
+		return {
+			status: 400,
+			body: "Invalid request"
+		};
 	};
 
 	this.ZWaveAPI.PostfixRemove = function(url, request) {
@@ -2565,7 +2722,7 @@ ZWave.prototype.defineHandlers = function () {
 					});
 
 				if (!_.isEmpty(fix)) {
-					fixes = _.reject(fixes ,function(fix) {
+					fixes = _.reject(fixes, function(fix) {
 						return fix.p_id === reqObj.p_id;
 					});
 
@@ -2573,7 +2730,7 @@ ZWave.prototype.defineHandlers = function () {
 
 					saveObject("custompostfix.json", custom_postfix);
 
-					setTimeout(function () {
+					setTimeout(function() {
 						self.controller.reinitializeModule('ZWave', 'modules/');
 					}, 3000);
 
@@ -2595,7 +2752,10 @@ ZWave.prototype.defineHandlers = function () {
 				};
 			}
 		}
-		return { status: 400, body: "Invalid request" };
+		return {
+			status: 400,
+			body: "Invalid request"
+		};
 	};
 
 	this.ZWaveAPI.ExpertConfigGet = function() {
@@ -2618,9 +2778,9 @@ ZWave.prototype.defineHandlers = function () {
 		if (request.method === "POST" && request.body) {
 			reqObj = parseToObject(request.body);
 
-			if(Object.keys(reqObj).length > 0) {
+			if (Object.keys(reqObj).length > 0) {
 
-				self.expert_config = _.assign(self.expert_config,_.pick(reqObj,
+				self.expert_config = _.assign(self.expert_config, _.pick(reqObj,
 					'debug',
 					'network_name',
 					'date_format',
@@ -2643,14 +2803,17 @@ ZWave.prototype.defineHandlers = function () {
 				};
 			}
 		}
-		return { status: 400, body: "Invalid request" };
+		return {
+			status: 400,
+			body: "Invalid request"
+		};
 	};
 
 	this.ZWaveAPI.CallForAllNIF = function(url, request) {
-		var req = request && request.body? request.body : request && request.data? request.data : undefined,
+		var req = request && request.body ? request.body : request && request.data ? request.data : undefined,
 			req = parseToObject(req),
-			delay = req && req.delay? req.delay :null,
-			timeout = !!delay? parseInt(delay.toString(), 10) * 1000 : 10000,
+			delay = req && req.delay ? req.delay : null,
+			timeout = !!delay ? parseInt(delay.toString(), 10) * 1000 : 10000,
 			timer = null,
 			now = (new Date()).valueOf();
 
@@ -2662,10 +2825,10 @@ ZWave.prototype.defineHandlers = function () {
 			};
 			var dTS = '';
 
-			if(devices.length > 0) {
+			if (devices.length > 0) {
 
 				// do not send NIF to itself
-				devices.forEach(function (nodeId) {
+				devices.forEach(function(nodeId) {
 					var request = "in progress",
 						entry = {
 							nodeId: nodeId,
@@ -2689,13 +2852,14 @@ ZWave.prototype.defineHandlers = function () {
 							function() {
 								request = "done";
 								entry.result = request;
-								entry.runtime= ((new Date()).valueOf() - start) /1000;
+								entry.runtime = ((new Date()).valueOf() - start) / 1000;
 								entry.isFLiRS = isFLiRS;
 								entry.hasBattery = hasWakeup;
-							},  function() {
+							},
+							function() {
 								request = "failed";
 								entry.result = request;
-								entry.runtime= ((new Date()).valueOf() - start) /1000;
+								entry.runtime = ((new Date()).valueOf() - start) / 1000;
 								entry.isFLiRS = isFLiRS;
 								entry.hasBattery = hasWakeup;
 							});
@@ -2705,8 +2869,8 @@ ZWave.prototype.defineHandlers = function () {
 						}
 
 						if (request === "in progress") {
-							entry.result = hasWakeup? "waiting for wakeup" : "failed";
-							entry.runtime= ((new Date()).valueOf() - start) /1000;
+							entry.result = hasWakeup ? "waiting for wakeup" : "failed";
+							entry.runtime = ((new Date()).valueOf() - start) / 1000;
 							entry.isFLiRS = isFLiRS;
 							entry.hasBattery = hasWakeup;
 						}
@@ -2716,12 +2880,18 @@ ZWave.prototype.defineHandlers = function () {
 				});
 			}
 
-			ret.runtime = Math.floor(((new Date()).valueOf() - now)/1000);
-			ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
+			ret.runtime = Math.floor(((new Date()).valueOf() - now) / 1000);
+			ret.updateTime = Math.floor(((new Date()).valueOf()) / 1000);
 
-			return { status: 200, body: ret };
+			return {
+				status: 200,
+				body: ret
+			};
 		} catch (e) {
-			return { status: 500, body: e.toString() }
+			return {
+				status: 500,
+				body: e.toString()
+			}
 		}
 
 		return reply;
@@ -2729,26 +2899,26 @@ ZWave.prototype.defineHandlers = function () {
 	};
 
 	this.ZWaveAPI.CheckAllLinks = function(url, request) {
-		var req = request && request.body? request.body : request && request.data? request.data : undefined,
+		var req = request && request.body ? request.body : request && request.data ? request.data : undefined,
 			req = parseToObject(req),
-			delay = req && req.delay? req.delay :null,
-			timeout = !!delay && parseInt(delay.toString(), 10) >= 1? parseInt(delay.toString(), 10) * 1000 : 2000,
+			delay = req && req.delay ? req.delay : null,
+			timeout = !!delay && parseInt(delay.toString(), 10) >= 1 ? parseInt(delay.toString(), 10) * 1000 : 2000,
 			timer = null,
-			nodeId = req && req.nodeId? req.nodeId : null;
+			nodeId = req && req.nodeId ? req.nodeId : null;
 
 		try {
 			if (!!nodeId && zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) { // do not test against itself
 				var neighbours = zway.devices[nodeId].data.neighbours.value;
-				var supported = zway.devices[nodeId].instances[0].commandClasses[115]? true : false;
+				var supported = zway.devices[nodeId].instances[0].commandClasses[115] ? true : false;
 				var ret = {
-					runtime: neighbours.length * (timeout /1000),
-					link_test : 'TestNodeSet',
+					runtime: neighbours.length * (timeout / 1000),
+					link_test: 'TestNodeSet',
 					srcNodeId: nodeId,
 					dstNodeIds: neighbours,
 					test: []
 				};
 				if (supported) {
-					neighbours.forEach(function (neighbour) {
+					neighbours.forEach(function(neighbour) {
 						var start = (new Date()).valueOf();
 						var item = {};
 						var powerLvl = zway.devices[nodeId].instances[0].commandClasses[115];
@@ -2772,18 +2942,30 @@ ZWave.prototype.defineHandlers = function () {
 
 					});
 
-					ret.updateTime = Math.floor(((new Date()).valueOf())/1000);
+					ret.updateTime = Math.floor(((new Date()).valueOf()) / 1000);
 
-					return { status: 200, body: ret };
+					return {
+						status: 200,
+						body: ret
+					};
 				} else {
-					return { status: 404, body: 'Not supported for this device.'};
+					return {
+						status: 404,
+						body: 'Not supported for this device.'
+					};
 				}
 
 			} else {
-				return { status: 404, body: 'Node not found.' };
+				return {
+					status: 404,
+					body: 'Node not found.'
+				};
 			}
 		} catch (e) {
-			return { status: 500, body: e.toString() };
+			return {
+				status: 500,
+				body: e.toString()
+			};
 		}
 
 		return reply;
@@ -2803,15 +2985,15 @@ ZWave.prototype.defineHandlers = function () {
 				body: null
 			},
 			// prepare request data
-			req = request && request.query? request.query : undefined,
+			req = request && request.query ? request.query : undefined,
 			req = parseToObject(req),
 			cntNodes = 0,
 			requestInterval = 10000, // wait 10 sec between each node reorganization
 			// check if all reorganizations of types have finished
-			finished = function () {
+			finished = function() {
 				var f = true;
-				Object.keys(reorgState.progress).forEach(function(type){
-					f = !reorgState.progress[type] || (reorgState.progress[type] && reorgState.progress[type].pendingCbk.length < 1 );
+				Object.keys(reorgState.progress).forEach(function(type) {
+					f = !reorgState.progress[type] || (reorgState.progress[type] && reorgState.progress[type].pendingCbk.length < 1);
 					if (!f) {
 						return;
 					}
@@ -2833,13 +3015,13 @@ ZWave.prototype.defineHandlers = function () {
 		// load module language keys
 		reorgState.langFile = self.loadModuleLang();
 		// prepare request properties
-		reorgMain = req && req.hasOwnProperty('reorgMain')? req.reorgMain == 'true' : true;
-		reorgBattery = req && req.hasOwnProperty('reorgBattery')? req.reorgBattery == 'true' : false;
+		reorgMain = req && req.hasOwnProperty('reorgMain') ? req.reorgMain == 'true' : true;
+		reorgBattery = req && req.hasOwnProperty('reorgBattery') ? req.reorgBattery == 'true' : false;
 
 		/*
-		* Add a progress container of special type to progress object
-		*/
-		function addTypeToProgress (type, reorg) {
+		 * Add a progress container of special type to progress object
+		 */
+		function addTypeToProgress(type, reorg) {
 			if (!reorgState.progress[type]) {
 				reorgState.progress[type] = {
 					reorg: reorg,
@@ -2856,11 +3038,11 @@ ZWave.prototype.defineHandlers = function () {
 		/*
 		 * Add a log entry to reorgLog array
 		 */
-		function addLog (message, nodeId) {
+		function addLog(message, nodeId) {
 			var entry = {
 				timestamp: (new Date()).valueOf(),
 				message: message,
-				node: nodeId? nodeId : undefined,
+				node: nodeId ? nodeId : undefined,
 				type: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].type : undefined,
 				status: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].status : undefined,
 				tries: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].tries : undefined
@@ -2876,10 +3058,10 @@ ZWave.prototype.defineHandlers = function () {
 		/*
 		 * Remove pending node after done/failed/timeout
 		 */
-		function removeFromPending (type,nodeId) {
+		function removeFromPending(type, nodeId) {
 			if (reorgState.progress[type].pendingCbk.indexOf(nodeId) > -1) {
 				reorgState.progress[type].pendingCbk = reorgState.progress[type].pendingCbk.filter(function(node) {
-					return  node != nodeId;
+					return node != nodeId;
 				});
 			}
 		}
@@ -2887,10 +3069,10 @@ ZWave.prototype.defineHandlers = function () {
 		/*
 		 * Remove pending node after delayed done/failed callback from timeout list
 		 */
-		function removeFromTimeout (type,nodeId) {
+		function removeFromTimeout(type, nodeId) {
 			if (reorgState.progress[type].timeout.indexOf(nodeId) > -1) {
 				reorgState.progress[type].timeout = reorgState.progress[type].timeout.filter(function(node) {
-					return  node != nodeId;
+					return node != nodeId;
 				});
 			}
 		}
@@ -2898,7 +3080,7 @@ ZWave.prototype.defineHandlers = function () {
 		/*
 		 * Trigger reorganization of a node and define their callback functions
 		 */
-		function doReorg(nodeId, type){
+		function doReorg(nodeId, type) {
 
 			// add single node status
 			if (!reorgState.nodeRes[nodeId]) {
@@ -2917,9 +3099,9 @@ ZWave.prototype.defineHandlers = function () {
 			 * - update pending/timeout arrays
 			 */
 			var succesCbk = function() {
-				var message = '#'+nodeId+' ('+type+') ';
+				var message = '#' + nodeId + ' (' + type + ') ';
 
-				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId],{
+				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId], {
 					status: 'done',
 					type: type,
 					tries: reorgState.nodeRes[nodeId].tries
@@ -2932,7 +3114,7 @@ ZWave.prototype.defineHandlers = function () {
 				removeFromPending(type, nodeId);
 				removeFromTimeout(type, nodeId);
 
-				i=4;
+				i = 4;
 			};
 
 			/*
@@ -2942,11 +3124,11 @@ ZWave.prototype.defineHandlers = function () {
 			 * - update pending/timeout arrays
 			 */
 			var failCbk = function() {
-				var preMessage = '#'+nodeId+' ('+type+') ',
-					message='',
+				var preMessage = '#' + nodeId + ' (' + type + ') ',
+					message = '',
 					tries = 0;
 
-				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId],{
+				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId], {
 					status: 'failed',
 					type: type,
 					tries: reorgState.nodeRes[nodeId].tries + 1
@@ -2955,8 +3137,8 @@ ZWave.prototype.defineHandlers = function () {
 				tries = reorgState.nodeRes[nodeId].tries;
 
 				if (type === 'main' && tries < 3) {
-						addLog(preMessage + '... ' + tries + reorgState.langFile.reorg_try_failed + ' ' + reorgState.langFile.reorg_next_try);
-						reorgUpdate(nodeId);
+					addLog(preMessage + '... ' + tries + reorgState.langFile.reorg_try_failed + ' ' + reorgState.langFile.reorg_next_try);
+					reorgUpdate(nodeId);
 				} else {
 					message = type === 'main' ? reorgState.langFile.reorg_all_tries_failed : '... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_failed;
 
@@ -2972,7 +3154,7 @@ ZWave.prototype.defineHandlers = function () {
 			 * - set callback timeout of 15 sec
 			 * - respond immediately if it fails
 			 */
-			var reorgUpdate = function (nodeId){
+			var reorgUpdate = function(nodeId) {
 				try {
 					reorgState.nodeRes[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
 					zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
@@ -2980,7 +3162,7 @@ ZWave.prototype.defineHandlers = function () {
 					console.log(reorgState.langFile.reorg_err_node + nodeId + ': ' + e.message);
 					reorgState.nodeRes[nodeId].status = 'failed';
 					removeFromPending(type, nodeId);
-					addLog('#'+nodeId+' ('+reorgState.nodeRes[nodeId].type+') ... '+reorgState.langFile.reorg +' '+reorgState.langFile.reorg_failed, nodeId);
+					addLog('#' + nodeId + ' (' + reorgState.nodeRes[nodeId].type + ') ... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_failed, nodeId);
 				}
 			}
 
@@ -2991,7 +3173,7 @@ ZWave.prototype.defineHandlers = function () {
 		/*
 		 * reorganize each outstanding node step by step and remove it from list
 		 */
-		function nodeReorg(){
+		function nodeReorg() {
 			var nodeId = reorgState.nodesPending[0].nodeId,
 				type = reorgState.nodesPending[0].type,
 				currProgressType = reorgState.progress[type],
@@ -2999,9 +3181,9 @@ ZWave.prototype.defineHandlers = function () {
 				intervalNodesPending = currProgressType.intervalNodesPending,
 				status = currProgressType.status,
 				reorg = currProgressType.reorg,
-				key = reorgState.langFile['reorg_all_'+type] ? reorgState.langFile['reorg_all_'+type] : reorgState.langFile['reorg_all'] + reorgState.langFile[type] + ': ';
+				key = reorgState.langFile['reorg_all_' + type] ? reorgState.langFile['reorg_all_' + type] : reorgState.langFile['reorg_all'] + reorgState.langFile[type] + ': ';
 
-			if(all.length > 0 && all.length === intervalNodesPending.length) {
+			if (all.length > 0 && all.length === intervalNodesPending.length) {
 				addLog(key + JSON.stringify(all));
 			} else if (intervalNodesPending.length < 1 && status === 'in progress' && reorg) {
 				reorgState.progress[type].status = 'done';
@@ -3014,17 +3196,20 @@ ZWave.prototype.defineHandlers = function () {
 			// remove node from intervalNodesPending
 			if (reorgState.progress[type].intervalNodesPending.indexOf(nodeId) > -1) {
 				reorgState.progress[type].intervalNodesPending = reorgState.progress[type].intervalNodesPending.filter(function(node) {
-					return  node != nodeId;
+					return node != nodeId;
 				});
 			}
 
 			// remove first entry from outstanding nodes list
-			reorgState.nodesPending = reorgState.nodesPending.filter(function(entry){
-				return !_.isEqual(entry,{nodeId:nodeId,type:type})
+			reorgState.nodesPending = reorgState.nodesPending.filter(function(entry) {
+				return !_.isEqual(entry, {
+					nodeId: nodeId,
+					type: type
+				})
 			});
 		};
 
-		var initialMsg = reorgBattery && reorgMain? reorgState.langFile.reorg_with_battery : reorgBattery && !reorgMain? reorgState.langFile.reorg_battery_only : reorgState.langFile.reorg_without_battery;
+		var initialMsg = reorgBattery && reorgMain ? reorgState.langFile.reorg_with_battery : reorgBattery && !reorgMain ? reorgState.langFile.reorg_battery_only : reorgState.langFile.reorg_without_battery;
 
 		// add initial message to reorganization log
 		addLog(reorgState.langFile.reorg_started + initialMsg);
@@ -3037,18 +3222,21 @@ ZWave.prototype.defineHandlers = function () {
 				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
 				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value),
 				// depending on request params decide if node should be added
-				add = (reorgBattery && isBattery && !isFLiRS) || (reorgMain && !isBattery) || (reorgMain && isBattery && isFLiRS)? true: false,
-				type = isBattery && !isFLiRS? 'battery': (isFLiRS? 'flirs': 'main');
+				add = (reorgBattery && isBattery && !isFLiRS) || (reorgMain && !isBattery) || (reorgMain && isBattery && isFLiRS) ? true : false,
+				type = isBattery && !isFLiRS ? 'battery' : (isFLiRS ? 'flirs' : 'main');
 
-			if (add){
-				addTypeToProgress(type,add);
+			if (add) {
+				addTypeToProgress(type, add);
 				reorgState.progress[type].all.push(nodeId);
 				// add list of pending nodes for callback
 				reorgState.progress[type].pendingCbk = reorgState.progress[type].all;
 				// add list of pending nodes for interval
 				reorgState.progress[type].intervalNodesPending = reorgState.progress[type].all;
 				// add node/type object to type specific list of outstanding nodes - is necessary for interval progress chain
-				reorgState.progress[type].nodesPending.push({nodeId: nodeId, type: type});
+				reorgState.progress[type].nodesPending.push({
+					nodeId: nodeId,
+					type: type
+				});
 				cntNodes++;
 			}
 		});
@@ -3061,7 +3249,7 @@ ZWave.prototype.defineHandlers = function () {
 		}
 
 		// merge all lists with node/type objects of outstanding node together
-		Object.keys(reorgState.progress).forEach(function(type){
+		Object.keys(reorgState.progress).forEach(function(type) {
 			reorgState.nodesPending = _.uniq(reorgState.nodesPending.concat(reorgState.progress[type].nodesPending));
 		});
 
@@ -3082,19 +3270,19 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		}, requestInterval);
 
-		 /*
+		/*
 		 * Global reorganization interval that checks for:
 		 * - callback timeouts
 		 * - whole reorganization progress has timed out
 		 * - whole reorganization progress has finished
 		 */
 		// TODO(!!!) this has to be changed from global handler to the local one
-		reorgState.reorgInterval = setInterval(function(){
+		reorgState.reorgInterval = setInterval(function() {
 			var nodes = [],
 				cntNodes = Object.keys(reorgState.nodeRes).length,
 				now = (new Date()).valueOf();
 
-			Object.keys(reorgState.nodeRes).forEach(function(nodeId){
+			Object.keys(reorgState.nodeRes).forEach(function(nodeId) {
 				var nodeRes = reorgState.nodeRes[nodeId],
 					type = nodeRes.type,
 					status = nodeRes.status,
@@ -3106,7 +3294,7 @@ ZWave.prototype.defineHandlers = function () {
 						nodes.push(nodeId);
 					} else if (status === 'in progress' && nodeRes.timeout < now) {
 						reorgState.nodeRes[nodeId].status = 'timeout';
-						addLog('#'+nodeId+' ('+type+') ... ' +reorgState.langFile.reorg_timeout, nodeId);
+						addLog('#' + nodeId + ' (' + type + ') ... ' + reorgState.langFile.reorg_timeout, nodeId);
 						removeFromPending(type, nodeId);
 						nodes.push(nodeId);
 						currArr.timeout.push(nodeId);
@@ -3125,18 +3313,18 @@ ZWave.prototype.defineHandlers = function () {
 
 				var allTimeout = [];
 
-				Object.keys(reorgState.progress).forEach(function (type) {
+				Object.keys(reorgState.progress).forEach(function(type) {
 					allTimeout = _.uniq(allTimeout.concat(reorgState.progress[type].timeout));
 				});
 
 				if (reorgState.reorgIntervalTimeout < now) {
-					addLog(reorgState.langFile.reorg_timeout+' ... '+reorgState.langFile.reorg_canceled);
+					addLog(reorgState.langFile.reorg_timeout + ' ... ' + reorgState.langFile.reorg_canceled);
 					addLog('finished');
 				} else {
 					if (allTimeout && allTimeout.length > 0) {
-						addLog(reorgState.langFile.reorg_timeout_nodes + ' '+ JSON.stringify(allTimeout));
+						addLog(reorgState.langFile.reorg_timeout_nodes + ' ' + JSON.stringify(allTimeout));
 					}
-					addLog(reorgState.langFile.reorg+' '+reorgState.langFile.reorg_complete);
+					addLog(reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_complete);
 					addLog('finished');
 				}
 
@@ -3168,7 +3356,7 @@ ZWave.prototype.defineHandlers = function () {
 			},
 			reorgLog = self.loadObject('reorgLog');
 
-		reply.body = !!reorgLog? reorgLog : [];
+		reply.body = !!reorgLog ? reorgLog : [];
 
 		return reply;
 	}
@@ -3190,25 +3378,25 @@ ZWave.prototype.defineHandlers = function () {
 	/*
 	 * show DSK z-way provisioning list
 	 */
-	this.ZWaveAPI.GetDSKProvisioningList = function(url,request) {
+	this.ZWaveAPI.GetDSKProvisioningList = function(url, request) {
 		var reply = {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
-				},
-				body: null,
-				error: null,
-				message: null
-			};
+			status: 200,
+			headers: {
+				"Content-Type": "application/json",
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Connection": "keep-alive"
+			},
+			body: null,
+			error: null,
+			message: null
+		};
 
 		try {
 			reply.body = self.getDSKProvisioningList();
 		} catch (e) {
-			_.extend(reply,{
+			_.extend(reply, {
 				status: 500,
 				error: 'Something went wrong. ERROR: ' + e.toString()
 			});
@@ -3222,7 +3410,7 @@ ZWave.prototype.defineHandlers = function () {
 	 */
 	this.ZWaveAPI.AddDSKProvisioningEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
+		var req = request && request.body ? parseToObject(request.body) : (request && request.data ? parseToObject(request.data) : undefined),
 			reply = {
 				status: 200,
 				headers: {
@@ -3243,10 +3431,10 @@ ZWave.prototype.defineHandlers = function () {
 			// add DSK
 			if (dskProvisioningList.indexOf(req.dsk) < 0) {
 				dskProvisioningList.push(req.dsk);
-				
+
 				// save dskProvisioningList
 				self.saveDSKProvisioningList(dskProvisioningList);
-				
+
 				reply.body = [req.dsk];
 			} else {
 				reply.status = 409;
@@ -3254,7 +3442,7 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		} catch (e) {
 			reply.status = 500;
-			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+			reply.message = 'Something went wrong. ERROR: ' + e.toString();
 		}
 
 		return reply;
@@ -3264,9 +3452,9 @@ ZWave.prototype.defineHandlers = function () {
 	 * show all prepared QR code DSK entries or one specific by it's id
 	 * this.dskCollection list is used 
 	 */
-	this.ZWaveAPI.GetDSKCollection = function(url,request) {
-		var req = request && request.query? parseToObject(request.query) : undefined,
-			id = req && req.id? req.id : false,
+	this.ZWaveAPI.GetDSKCollection = function(url, request) {
+		var req = request && request.query ? parseToObject(request.query) : undefined,
+			id = req && req.id ? req.id : false,
 			reply = {
 				status: 200,
 				headers: {
@@ -3291,7 +3479,7 @@ ZWave.prototype.defineHandlers = function () {
 	 */
 	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.query? parseToObject(request.query) : undefined,
+		var req = request && request.query ? parseToObject(request.query) : undefined,
 			reply = {
 				status: 200,
 				headers: {
@@ -3308,7 +3496,7 @@ ZWave.prototype.defineHandlers = function () {
 
 		try {
 			if (req['all'] === 'true' || req['all'] === true) {
-			
+
 				// remove all DSK entry
 				self.dskCollection = []
 
@@ -3316,22 +3504,22 @@ ZWave.prototype.defineHandlers = function () {
 				self.saveDSKProvisioningList([]);
 
 				// save dsk collection
-				self.saveObject("dskCollection",self.dskCollection);
+				self.saveObject("dskCollection", self.dskCollection);
 
 				success = true;
 			} else {
-				var success = self.removeDSKEntry(parseInt(req.id,10));
-			}			
+				var success = self.removeDSKEntry(parseInt(req.id, 10));
+			}
 
 			if (success) {
-				reply.body = req['all']? self.dskCollection : req.id;
+				reply.body = req['all'] ? self.dskCollection : req.id;
 			} else {
 				reply.status = 404;
 				reply.message = 'Not found - DSK entry does not exist';
 			}
 		} catch (e) {
 			reply.status = 500;
-			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+			reply.message = 'Something went wrong. ERROR: ' + e.toString();
 		}
 
 		return reply;
@@ -3344,7 +3532,7 @@ ZWave.prototype.defineHandlers = function () {
 	 */
 	this.ZWaveAPI.AddDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
+		var req = request && request.body ? parseToObject(request.body) : (request && request.data ? parseToObject(request.data) : undefined),
 			reply = {
 				status: 200,
 				headers: {
@@ -3361,10 +3549,14 @@ ZWave.prototype.defineHandlers = function () {
 			success = false;
 
 		try {
-			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.ZW_QR === req.dsk;}) < 0) {
+			if (_.findIndex(self.dskCollection, function(qrObject) {
+					return qrObject.ZW_QR === req.dsk;
+				}) < 0) {
 				success = self.addDSKEntry(req.dsk);
 				if (success) {
-					reply.body = typeof req.dsk === 'string'? {dsk: req.dsk} : req.dsk;
+					reply.body = typeof req.dsk === 'string' ? {
+						dsk: req.dsk
+					} : req.dsk;
 				} else {
 					reply.status = 404;
 					reply.message = 'Cannot add DSK entry';
@@ -3373,10 +3565,10 @@ ZWave.prototype.defineHandlers = function () {
 				reply.status = 409;
 				reply.message = 'Conflict - DSK entry already exists';
 			}
-			
+
 		} catch (e) {
 			reply.status = 500;
-			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+			reply.message = 'Something went wrong. ERROR: ' + e.toString();
 		}
 
 		return reply;
@@ -3389,7 +3581,7 @@ ZWave.prototype.defineHandlers = function () {
 	 */
 	this.ZWaveAPI.UpdateDSKEntry = function(url, request) {
 		// prepare request data
-		var req = request && request.body? parseToObject(request.body) : (request && request.data? parseToObject(request.data) : undefined),
+		var req = request && request.body ? parseToObject(request.body) : (request && request.data ? parseToObject(request.data) : undefined),
 			reply = {
 				status: 200,
 				headers: {
@@ -3405,7 +3597,9 @@ ZWave.prototype.defineHandlers = function () {
 			}
 
 		try {
-			if (_.findIndex(self.dskCollection, function(qrObject) {return qrObject.id === req.id;}) > -1) {
+			if (_.findIndex(self.dskCollection, function(qrObject) {
+					return qrObject.id === req.id;
+				}) > -1) {
 				var success = self.updateDSKEntry(req);
 
 				if (success) {
@@ -3420,7 +3614,7 @@ ZWave.prototype.defineHandlers = function () {
 			}
 		} catch (e) {
 			reply.status = 500;
-			reply.message = 'Something went wrong. ERROR: ' +e.toString();
+			reply.message = 'Something went wrong. ERROR: ' + e.toString();
 		}
 
 		return reply;
@@ -3530,10 +3724,10 @@ ZWave.prototype.defineHandlers = function () {
 // ------------- Data Binding --------------
 
 ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId, commandClassId, path, func, type) {
-		if (zwayName === this.config.name) {
-			this.dataBind(dataBindings, this.zway, nodeId, instanceId, commandClassId, path, func, type);
-		}
+	if (zwayName === this.config.name) {
+		this.dataBind(dataBindings, this.zway, nodeId, instanceId, commandClassId, path, func, type);
 	}
+}
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
 	// three prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
@@ -3611,9 +3805,9 @@ ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, comm
 };
 
 ZWave.prototype.dataUnbind = function(dataBindings) {
-	dataBindings.forEach(function (item) {
-		var ctrlBind = ! ("nodeId" in item),
-			devBind = ! ("instanceId" in item);
+	dataBindings.forEach(function(item) {
+		var ctrlBind = !("nodeId" in item),
+			devBind = !("instanceId" in item);
 
 		if (item.zway && item.zway.isRunning() && (ctrlBind || (item.zway.devices[item.nodeId] && (devBind || (item.zway.devices[item.nodeId].instances[item.instanceId] && item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId]))))) {
 			var data = ctrlBind ? item.zway.controller.data : (devBind ? item.zway.devices[item.nodeId].data : item.zway.devices[item.nodeId].instances[item.instanceId].commandClasses[item.commandClassId].data),
@@ -3640,26 +3834,26 @@ ZWave.prototype.dataUnbind = function(dataBindings) {
 // ------------- Dead Detection ------------
 
 
-ZWave.prototype.deadDetectionStart = function () {
+ZWave.prototype.deadDetectionStart = function() {
 	var self = this;
 
 	this.deadDetectionDataBindings = [];
 
 	// Bind to all future CommandClasses changes
-	this.deadDetectionBinding = this.zway.bind(function (type, nodeId) {
+	this.deadDetectionBinding = this.zway.bind(function(type, nodeId) {
 		if (type === self.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
 			self.deadDetectionAttach(nodeId);
 		}
 	}, this.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
 };
 
-ZWave.prototype.deadDetectionStop = function () {
+ZWave.prototype.deadDetectionStop = function() {
 	// releasing bindings
 	try {
 		if (this.deadDetectionDataBindings) {
 			this.dataUnbind(this.deadDetectionDataBindings);
 		}
-	} catch(e) {
+	} catch (e) {
 		// Z-Way already gone, skip deallocation
 		//this.zway = null;
 	}
@@ -3681,7 +3875,7 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	});
 };
 
-ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
+ZWave.prototype.deadDetectionCheckDevice = function(self, nodeId) {
 	var values = nodeId.toString(10),
 		langFile = this.loadModuleLang();
 
@@ -3699,7 +3893,7 @@ ZWave.prototype.deadDetectionCheckDevice = function (self, nodeId) {
 // ----------------- Devices Creator ---------------
 
 
-ZWave.prototype.gateDevicesStart = function () {
+ZWave.prototype.gateDevicesStart = function() {
 
 	var self = this,
 		fixesDone = [];
@@ -3707,7 +3901,7 @@ ZWave.prototype.gateDevicesStart = function () {
 	this.gateDataBinding = [];
 
 	// Bind to all future CommandClasses changes
-	this.gateBinding = this.zway.bind(function (type, nodeId, instanceId, commandClassId) {
+	this.gateBinding = this.zway.bind(function(type, nodeId, instanceId, commandClassId) {
 		if (type === self.ZWAY_DEVICE_CHANGE_TYPES["CommandAdded"]) {
 			// Ignore Static PC Controllers
 			if (2 === self.zway.devices[nodeId].data.basicType.value && 1 === self.zway.devices[nodeId].data.specificType.value) {
@@ -3724,17 +3918,17 @@ ZWave.prototype.gateDevicesStart = function () {
 						deviceInstances = self.zway.devices[nodeId].instances,
 						deviceCC = deviceInstances[instanceId].commandClasses[commandClassId],
 						c = self.zway.controller,
-						mId = deviceData.manufacturerId.value? deviceData.manufacturerId.value : null,
-						mPT = deviceData.manufacturerProductType.value? deviceData.manufacturerProductType.value : null,
-						mPId = deviceData.manufacturerProductId.value? deviceData.manufacturerProductId.value: null,
-						appMajor = deviceData.applicationMajor.value? deviceData.applicationMajor.value: null,
-						appMinor = deviceData.applicationMinor.value? deviceData.applicationMinor.value: null,
+						mId = deviceData.manufacturerId.value ? deviceData.manufacturerId.value : null,
+						mPT = deviceData.manufacturerProductType.value ? deviceData.manufacturerProductType.value : null,
+						mPId = deviceData.manufacturerProductId.value ? deviceData.manufacturerProductId.value : null,
+						appMajor = deviceData.applicationMajor.value ? deviceData.applicationMajor.value : null,
+						appMinor = deviceData.applicationMinor.value ? deviceData.applicationMinor.value : null,
 						devId,
 						appMajorId,
 						appMajorMinorId,
 						postFix,
-						fixes = self.postfix.fixes? self.postfix.fixes : self.postfix;
-					
+						fixes = self.postfix.fixes ? self.postfix.fixes : self.postfix;
+
 					// try to get fix by manufacturerProductId and application Version
 					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
 
@@ -3742,37 +3936,37 @@ ZWave.prototype.gateDevicesStart = function () {
 						appMajorId = devId + '.' + appMajor;
 						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor;
 						postFix = fixes.filter(function(fix) {
-							return  fix.p_id === devId ||	   //search by manufacturerProductId
-									fix.p_id === appMajorId || //search by applicationMajor
-									fix.p_id === appMajorMinorId;   //search by applicationMajor and applicationMinor
+							return fix.p_id === devId || //search by manufacturerProductId
+								fix.p_id === appMajorId || //search by applicationMajor
+								fix.p_id === appMajorMinorId; //search by applicationMajor and applicationMinor
 						});
 					}
 
 					// ----------------------------------------------------------------------------
 					// --- postfix functions
 					// ----------------------------------------------------------------------------
-					
+
 					// add SwitchController support by entering (runs once after inclusion):
 					// instId ... instance ID
 					// commandClass ... Command Class ID
 					// maxBtnNr ... maximum number of widgets that should / could be rendered
 					// type ... 'S' for 'scene' and 'B' for 'button' or 'switchControl'
-					function sceneSupport (instId, commandClass, maxBtnNr, type) {
+					function sceneSupport(instId, commandClass, maxBtnNr, type) {
 						var trapArray = [],
 							commandClass = commandClass || null;
-						
-						trapArray = self.controller.instances.filter(function (instance) {
-								return instance.moduleId === 'SwitchControlGenerator';
-							});
+
+						trapArray = self.controller.instances.filter(function(instance) {
+							return instance.moduleId === 'SwitchControlGenerator';
+						});
 						if (instId === instanceId && commandClassId === commandClass && deviceCC && c.data.lastIncludedDevice.value === nodeId) {
-							maxBtnNr = (deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr? deviceCC.data.maxScenes.value : maxBtnNr) || 0
-							
+							maxBtnNr = (deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr ? deviceCC.data.maxScenes.value : maxBtnNr) || 0
+
 							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
 								for (i = 1; i <= maxBtnNr; i++) {
 									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
 
 									// console output
-									console.log('#######################', 'ADD SWITCHCONTROLGENERATOR SUPPORT TO #'+ nodeId,'###############################');
+									console.log('#######################', 'ADD SWITCHCONTROLGENERATOR SUPPORT TO #' + nodeId, '###############################');
 									console.log('###');
 									console.log('###', 'Add support for instance ' + instId + ':');
 									console.log('###', 'CC:', commandClass);
@@ -3790,18 +3984,18 @@ ZWave.prototype.gateDevicesStart = function () {
 					// parameter ... id of the parameter that should be changed. Can be 0 ... 0xff
 					// value ... new value. Can be 0 ... 0xffffffff
 					// size ... 0 for auto or 1, 2, 4 (Byte)
-					function setConfig (instId, parameter, value, size) {
+					function setConfig(instId, parameter, value, size) {
 						var parameter = Number.isInteger(parseInt(parameter)) ? parseInt(parameter) : null,
-						value = Number.isInteger(parseInt(value)) ? parseInt(value) : null,
-						size = parseInt(size) || null; 
+							value = Number.isInteger(parseInt(value)) ? parseInt(value) : null,
+							size = parseInt(size) || null;
 
-						if(instId === instanceId && parameter !== null && !!value !== null && size !== null){
+						if (instId === instanceId && parameter !== null && !!value !== null && size !== null) {
 							// set config after inclusion only and if it doesn't exist or isn't equal
-							if(commandClassId === 112 && deviceCC && c.data.lastIncludedDevice.value === nodeId && (!deviceCC.data[parameter] || (deviceCC.data[parameter] && deviceCC.data[parameter].val.value !== value))){
+							if (commandClassId === 112 && deviceCC && c.data.lastIncludedDevice.value === nodeId && (!deviceCC.data[parameter] || (deviceCC.data[parameter] && deviceCC.data[parameter].val.value !== value))) {
 								deviceCC.Set(parameter, value, size);
 
 								// console output
-								console.log('#######################', 'CHANGE CONFIGURATION OF #'+ nodeId,'###############################');
+								console.log('#######################', 'CHANGE CONFIGURATION OF #' + nodeId, '###############################');
 								console.log('###');
 								console.log('###', 'Change configuration of instance ' + instId + ':');
 								console.log('###', 'parameter:', parameter);
@@ -3819,28 +4013,28 @@ ZWave.prototype.gateDevicesStart = function () {
 					// dataType ... data type object that should be changed -e.g. security, version, interviewDone
 					// key ... of this data type object
 					// value ... new value
-					function setCCData (instId, commandClass, dataType, key, value) {
+					function setCCData(instId, commandClass, dataType, key, value) {
 						var commandClass = parseInt(commandClass, 10);
 
-						if (commandClassId === commandClass && 
-								deviceInstances[instId].commandClasses[commandClass] 
-									&& c.data.lastIncludedDevice.value === nodeId){ 
-													
+						if (commandClassId === commandClass &&
+							deviceInstances[instId].commandClasses[commandClass] &&
+							c.data.lastIncludedDevice.value === nodeId) {
+
 							// set value
 							if (typeof value !== 'undefined' &&
-									deviceInstances[instId].commandClasses[commandClass].data[dataType] &&
-										deviceInstances[instId].commandClasses[commandClass].data[dataType][key] &&
-											deviceInstances[instId].commandClasses[commandClass].data[dataType][key] !== value) {
-								
+								deviceInstances[instId].commandClasses[commandClass].data[dataType] &&
+								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] &&
+								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] !== value) {
+
 								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] = value;
 
 								// console output
-								console.log('#######################', 'SET COMMANDCLASS DATA OF:', devId,'################################');
+								console.log('#######################', 'SET COMMANDCLASS DATA OF:', devId, '################################');
 								console.log('###');
 								console.log('###', 'Change CC entry of instance ' + instId + ':');
 								console.log('###', 'CC:', commandClass);
 								console.log('###', 'data type object that has changed:', dataType);
-								console.log('###', 'new value for ' + key +':', value);
+								console.log('###', 'new value for ' + key + ':', value);
 								console.log('###');
 								console.log('##############################################################################################');
 							}
@@ -3853,10 +4047,10 @@ ZWave.prototype.gateDevicesStart = function () {
 						if (nodeName !== deviceData.givenName.value) {
 
 							// do something
-							deviceData.givenName.value = nodeName && nodeName !== '' && !!nodeName? nodeName : deviceData.givenName.value;
+							deviceData.givenName.value = nodeName && nodeName !== '' && !!nodeName ? nodeName : deviceData.givenName.value;
 
 							// console output
-							console.log('#######################', 'Apply postfix #'+ nodeId,'################################');
+							console.log('#######################', 'Apply postfix #' + nodeId, '################################');
 							console.log('###');
 							console.log('###', 'Change node name to: ', nodeName);
 							console.log('###');
@@ -3874,26 +4068,26 @@ ZWave.prototype.gateDevicesStart = function () {
 								// works of course only during inclusion - after restart hidden elements are visible again
 								if (!!nodeId && c.data.lastIncludedDevice.value === nodeId) {
 									var intDone = deviceCC.data.interviewDone.value;
-										intDelay = (new Date()).valueOf() + 5*1000; // wait not more than 5 seconds for single interview
+									intDelay = (new Date()).valueOf() + 5 * 1000; // wait not more than 5 seconds for single interview
 
 									// wait till interview is done
-									while ((new Date()).valueOf() < intDelay &&  intDone === false) {
+									while ((new Date()).valueOf() < intDelay && intDone === false) {
 										intDone = deviceCC.data.interviewDone.value;
 									}
-									
+
 									if (intDone === false) {
 										try {
 											// call preInteview functions from postfix.json
-											postFix.forEach(function(fix){
+											postFix.forEach(function(fix) {
 												if (!!fix.preInterview && fix.preInterview && fix.preInterview.length > 0) {
-													fix.preInterview.forEach(function(func){
+													fix.preInterview.forEach(function(func) {
 														eval(func);
 													});
 												}
 											});
-										} catch(e) {
+										} catch (e) {
 											// console output
-											console.log('##############', 'INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED:', '#' + nodeId,'#######################');
+											console.log('##############', 'INTERVIEW-HAS-FAILED-----PREFIX-HAS-FAILED:', '#' + nodeId, '#######################');
 											console.log('###');
 											console.log('###', 'ERROR:', e.toString());
 											console.log('###');
@@ -3901,10 +4095,10 @@ ZWave.prototype.gateDevicesStart = function () {
 										}
 									}
 								}
-								
+
 								// call postInterview functions from postfix.json
 								postFix.forEach(function(fix) {
-									if(!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0) {
+									if (!!fix.postInterview && fix.postInterview && fix.postInterview.length > 0) {
 										fix.postInterview.forEach(function(entry) {
 											var splittedEntry = entry.split(','),
 												devICC = instanceId + '-' + commandClassId;
@@ -3980,11 +4174,11 @@ ZWave.prototype.gateDevicesStart = function () {
 													case 'emulateOff':
 														if (splittedEntry[1] && splittedEntry[2]) {
 															var nId = nodeId + '-' + splittedEntry[1];
-															
+
 															if (!changeVDev[nId]) {
 																changeVDev[nId] = {};
 															}
-															
+
 															changeVDev[nId].emulateOff = splittedEntry[2];
 														}
 
@@ -3996,9 +4190,9 @@ ZWave.prototype.gateDevicesStart = function () {
 										});
 									}
 								});
-							} catch(e) {
+							} catch (e) {
 								// console output
-								console.log('#######################', 'PRE-OR-POSTFIX-ERROR:', '#' + nodeId,'################################');
+								console.log('#######################', 'PRE-OR-POSTFIX-ERROR:', '#' + nodeId, '################################');
 								console.log('###');
 								console.log('###', 'ERROR:', e.toString());
 								console.log('###');
@@ -4014,7 +4208,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					} else if (changeVDev[ccId] && changeVDev[ccId].noVDev) {
 						var devId = "ZWayVDev_" + self.config.name + "_" + nodeId + '-' + ccId;
 						// console output
-						console.log('#######################', 'Apply postfix for:', devId,'################################');
+						console.log('#######################', 'Apply postfix for:', devId, '################################');
 						console.log('###');
 						console.log('###', 'not created');
 						console.log('###');
@@ -4025,7 +4219,7 @@ ZWave.prototype.gateDevicesStart = function () {
 					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
 						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
 						var dskEntryIndex;
-						var dskEntry = self.dskCollection.filter(function (entry, index) {
+						var dskEntry = self.dskCollection.filter(function(entry, index) {
 							dskEntryIndex = index;
 							return entry['ZW_QR_DSK'] === dsk;
 						});
@@ -4040,7 +4234,7 @@ ZWave.prototype.gateDevicesStart = function () {
 							self.dskCollection[dskEntryIndex] = dskEntry[0];
 
 							// save dsk collection
-							self.saveObject("dskCollection",this.dskCollection);
+							self.saveObject("dskCollection", this.dskCollection);
 						}
 					}
 				} else {
@@ -4054,9 +4248,13 @@ ZWave.prototype.gateDevicesStart = function () {
 
 	self.dataBind(self.gateDataBinding, self.zway, "lastExcludedDevice", function(type) {
 		var _id = this.value,
-			_toRemove = self.controller.devices.filter(function (el) { return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0; }).map(function(el) { return el.id; });
+			_toRemove = self.controller.devices.filter(function(el) {
+				return el.id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0;
+			}).map(function(el) {
+				return el.id;
+			});
 
-		_toRemove.forEach(function (name) {
+		_toRemove.forEach(function(name) {
 			self.controller.devices.remove(name);
 			self.controller.devices.cleanup(name);
 		});
@@ -4064,7 +4262,7 @@ ZWave.prototype.gateDevicesStart = function () {
 		// update state of DSK entry if node is smart start device
 		if (_id && !!_id) {
 			var dskEntryIndex;
-			var dskEntry = self.dskCollection.filter(function (entry, index) {
+			var dskEntry = self.dskCollection.filter(function(entry, index) {
 				dskEntryIndex = index;
 				return entry.nodeId === _id;
 			});
@@ -4079,24 +4277,24 @@ ZWave.prototype.gateDevicesStart = function () {
 				self.dskCollection[dskEntryIndex] = dskEntry[0];
 
 				// save dsk collection
-				self.saveObject("dskCollection",this.dskCollection);
+				self.saveObject("dskCollection", this.dskCollection);
 			}
 		}
-	}, ""); 
+	}, "");
 };
 
-ZWave.prototype.gateDevicesStop = function () {
+ZWave.prototype.gateDevicesStop = function() {
 	var self = this;
-	
+
 	// delete devices
-	this.controller.devices.map(function (el) {
+	this.controller.devices.map(function(el) {
 		return el.id;
 	}).filter(function(el) {
 		return el.indexOf("ZWayVDev_" + self.config.name + "_") === 0;
 	}).forEach(function(el) {
 		self.controller.devices.remove(el);
 	});
-	
+
 	// releasing bindings
 	try {
 		if (this.gateDataBinding) {
@@ -4105,20 +4303,22 @@ ZWave.prototype.gateDevicesStop = function () {
 		if (this.zway) {
 			this.zway.unbind(this.gateBinding);
 		}
-	} catch(e) {
+	} catch (e) {
 		// Z-Way already gone, skip deallocation
 		//this.zway = null;
 	}
 };
 
-ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClassId, scaleAdded, changeVDev) {
+ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClassId, scaleAdded, changeVDev) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
 
 	var self = this,
 		instance = this.zway.devices[nodeId].instances[instanceId],
-		instanceCommandClasses = Object.keys(instance.commandClasses).map(function(x) { return parseInt(x); }),
+		instanceCommandClasses = Object.keys(instance.commandClasses).map(function(x) {
+			return parseInt(x);
+		}),
 		cc = instance.commandClasses[commandClassId],
 		separ = "-",
 		vDevIdPrefix = "ZWayVDev_" + this.config.name + "_",
@@ -4127,7 +4327,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		vDevId = vDevIdPrefix + vDevIdNI + separ + vDevIdC,
 		changeDevId = vDevIdNI + separ + vDevIdC,
 		defaults;
-		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
+	// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
 	try {
 		if (!cc.data.supported.value) {
@@ -4177,7 +4377,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			// add probeType on second position if available
-			if(last > 1 && args[1]) {
+			if (last > 1 && args[1]) {
 				sortArgs.push(args[1]);
 			}
 
@@ -4208,21 +4408,21 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}*/
 
 			sortArgs.push(lastId);
-			
+
 			return sortArgs.join(' ');
 		}
 
 		function postfixLog(devId, changeObj) {
 
 			// console output
-			console.log('#######################', 'Apply postfix for:', devId,'################################');
+			console.log('#######################', 'Apply postfix for:', devId, '################################');
 			console.log('###');
 
 			try {
 				if (changeObj.noVDev) {
 					console.log('###', 'not created');
 				} else {
-					Object.keys(changeObj).forEach(function (key) {
+					Object.keys(changeObj).forEach(function(key) {
 						console.log('###', 'change ' + key + ' into:', changeObj[key]);
 					});
 				}
@@ -4235,14 +4435,14 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		function applyPostfix(defaultObj, changeObj, devId, devIdNI) {
-			defaultObj.probeType = changeObj.probeType? changeObj.probeType : defaultObj.probeType;
-			defaultObj.metrics.icon = changeObj.icon? changeObj.icon : defaultObj.metrics.icon;
-			defaultObj.metrics.title = changeObj.rename? compileTitle(changeObj.rename, devIdNI, false) : defaultObj.metrics.title;
-			defaultObj.visibility = changeObj.hide? false : true;
-			defaultObj.permanently_hidden = changeObj.deactivate? true : false;
+			defaultObj.probeType = changeObj.probeType ? changeObj.probeType : defaultObj.probeType;
+			defaultObj.metrics.icon = changeObj.icon ? changeObj.icon : defaultObj.metrics.icon;
+			defaultObj.metrics.title = changeObj.rename ? compileTitle(changeObj.rename, devIdNI, false) : defaultObj.metrics.title;
+			defaultObj.visibility = changeObj.hide ? false : true;
+			defaultObj.permanently_hidden = changeObj.deactivate ? true : false;
 
 			if (defaultObj.metrics.discreteStates) {
-				defaultObj.metrics.discreteStates = changeObj.discreteState && !_.isEmpty(changeObj.discreteState)? changeObj.discreteState : defaultObj.metrics.discreteStates;
+				defaultObj.metrics.discreteStates = changeObj.discreteState && !_.isEmpty(changeObj.discreteState) ? changeObj.discreteState : defaultObj.metrics.discreteStates;
 			}
 
 			postfixLog(devId, changeObj);
@@ -4255,7 +4455,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			defaults = {
 				deviceType: "switchBinary",
 				metrics: {
-					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
+					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren' : 'switch',
 					title: compileTitle('Switch', vDevIdNI),
 					isFailed: false
 				}
@@ -4270,7 +4470,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceId: vDevId,
 				defaults: defaults,
 				overlay: {},
-				handler: function (command) {
+				handler: function(command) {
 					if ("on" === command) {
 						cc.Set(true);
 					} else if ("off" === command) {
@@ -4283,7 +4483,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			});
 
 			if (vDev) {
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function (type) {
+				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value ? "on" : "off");
@@ -4413,16 +4613,20 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				COLOR_BLUE = 4;
 
 			var haveRGB = cc.data && cc.data[COLOR_RED] && cc.data[COLOR_GREEN] && cc.data[COLOR_BLUE] && true;
-			
+
 			if (haveRGB && !self.controller.devices.get(vDevId + separ + "rgb")) {
 
-				var defaults =  {
+				var defaults = {
 					deviceType: "switchRGBW",
 					probeType: 'switchColor_rgb',
 					metrics: {
 						icon: 'multilevel',
 						title: compileTitle('Color', vDevIdNI),
-						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
+						color: {
+							r: cc.data[COLOR_RED].level.value,
+							g: cc.data[COLOR_GREEN].level.value,
+							b: cc.data[COLOR_BLUE].level.value
+						},
 						level: 'off',
 						oldColor: {},
 						isFailed: false
@@ -4438,11 +4642,15 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					deviceId: vDevId + separ + "rgb",
 					defaults: defaults,
 					overlay: {},
-					handler:  function (command, args) {
-						var color = {r: 0, g: 0, b: 0},
+					handler: function(command, args) {
+						var color = {
+								r: 0,
+								g: 0,
+								b: 0
+							},
 							oldColor = vDev_rgb.get('metrics:oldColor');
 						if (command === "on") {
-							if(!_.isEmpty(oldColor)) {
+							if (!_.isEmpty(oldColor)) {
 								color = oldColor;
 							} else {
 								color.r = color.g = color.b = 255;
@@ -4465,9 +4673,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
 						} else {
-							vDev_rgb.set("metrics:color", {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value});
+							vDev_rgb.set("metrics:color", {
+								r: cc.data[COLOR_RED].level.value,
+								g: cc.data[COLOR_GREEN].level.value,
+								b: cc.data[COLOR_BLUE].level.value
+							});
 						}
-						
+
 						if (cc.data) {
 							vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
 						}
@@ -4475,7 +4687,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						vDev_rgb.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}
-					
+
 				if (vDev_rgb) {
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
@@ -4484,7 +4696,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 
 			if (cc.data) {
-				Object.keys(cc.data).forEach(function (colorId) {
+				Object.keys(cc.data).forEach(function(colorId) {
 
 					colorId = parseInt(colorId, 10);
 					if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
@@ -4509,7 +4721,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + colorId, vDevIdNI);
 							}
 
-							switch(colorId) {
+							switch (colorId) {
 								case 0:
 									defaults.probeType = 'switchColor_soft_white';
 									break;
@@ -4533,7 +4745,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								overlay: {},
 								handler: function(command, args) {
 									var newVal,
-										oldVal = this.get('metrics:level');		 
+										oldVal = this.get('metrics:level');
 
 									// up, down for Blinds
 									if ("on" === command || "up" === command) {
@@ -4591,7 +4803,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									}
 
 									if (oldVal != newVal) {
-										this.set('metrics:oldLevel',oldVal);
+										this.set('metrics:oldLevel', oldVal);
 									}
 								},
 								moduleId: self.id
@@ -4629,7 +4841,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			};
 
 			if (cc.data) {
-				Object.keys(cc.data).forEach(function (sensorTypeId) {
+				Object.keys(cc.data).forEach(function(sensorTypeId) {
 					sensorTypeId = parseInt(sensorTypeId, 10);
 					if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
 
@@ -4675,25 +4887,25 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								deviceId: vDevId + separ + sensorTypeId,
 								defaults: defaults,
 								overlay: {},
-								handler: function (command) {
+								handler: function(command) {
 									if (command === "update") {
 										cc.Get(sensorTypeId);
 									}
 								},
 								moduleId: self.id
 							});
-							
+
 
 							if (vDev) {
 								if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
 									vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
 								}
-								
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function (type) {
+
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + sensorTypeId);
-										} else {										
+										} else {
 											if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 												if (vDev.__emulateOff_timeout) {
 													if (this.value) {
@@ -4715,7 +4927,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
-								
+
 								if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
 									// on start we need to kick the timer
 									if (vDev.get("metrics:level") === "on") {
@@ -4749,7 +4961,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			};
 
 			if (cc.data) {
-				Object.keys(cc.data).forEach(function (sensorTypeId) {
+				Object.keys(cc.data).forEach(function(sensorTypeId) {
 
 					sensorTypeId = parseInt(sensorTypeId, 10);
 					if (!isNaN(sensorTypeId) && !self.controller.devices.get(vDevId + separ + sensorTypeId)) {
@@ -4762,7 +4974,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							defaults.metrics.probeTitle = cc.data[sensorTypeId].sensorTypeString.value;
 							defaults.metrics.scaleTitle = cc.data[sensorTypeId].scaleString.value;
 							defaults.metrics.title = compileTitle('Sensor', defaults.metrics.probeTitle, vDevIdNI);
-							
+
 							if (sensorTypeId === 1) {
 								defaults.metrics.icon = "temperature";
 							} else if (sensorTypeId === 3) {
@@ -4800,7 +5012,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								deviceId: vDevId + separ + sensorTypeId,
 								defaults: defaults,
 								overlay: {},
-								handler: function (command) {
+								handler: function(command) {
 									if (command === "update") {
 										cc.Get(sensorTypeId);
 									}
@@ -4809,7 +5021,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (vDev) {
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function (type) {
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + sensorTypeId);
@@ -4847,7 +5059,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			};
 
 			if (cc.data) {
-				Object.keys(cc.data).forEach(function (scaleId) {
+				Object.keys(cc.data).forEach(function(scaleId) {
 
 					scaleId = parseInt(scaleId, 10);
 					if (!isNaN(scaleId) && !self.controller.devices.get(vDevId + separ + scaleId)) {
@@ -4888,7 +5100,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											break;
 									}
 									break;
-								// Gas meter
+									// Gas meter
 								case 2:
 									switch (scaleId) {
 										case 0:
@@ -4904,7 +5116,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											break;
 									}
 									break;
-								// Water meter
+									// Water meter
 								case 3:
 									switch (scaleId) {
 										case 0:
@@ -4936,7 +5148,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								deviceId: vDevId + separ + scaleId,
 								defaults: defaults,
 								overlay: {},
-								handler: function (command) {
+								handler: function(command) {
 									if (command === "update") {
 										cc.Get(scaleId);
 									}
@@ -4945,7 +5157,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (vDev) {
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function (type) {
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + scaleId);
@@ -4995,7 +5207,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						deviceId: vDevId,
 						defaults: defaults,
 						overlay: {},
-						handler: function (command) {
+						handler: function(command) {
 							if (command === "update") {
 								cc.Get();
 							}
@@ -5004,7 +5216,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "val", function (type) {
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "val", function(type) {
 							try {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 									self.controller.devices.remove(vDevId);
@@ -5153,7 +5365,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				return; // skip not finished interview
 			}
 
-			var MODE_OFF = 0, MODE_HEAT = 1, MODE_COOL = 2;
+			var MODE_OFF = 0,
+				MODE_HEAT = 1,
+				MODE_COOL = 2;
 
 			if (withMode && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatMode"])) {
 				var withModeOff = !!instance.ThermostatMode.data[MODE_OFF],
@@ -5164,7 +5378,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 
 					defaults = {
 						deviceType: "switchBinary",
-						probeType:'thermostat_mode',
+						probeType: 'thermostat_mode',
 						metrics: {
 							icon: 'thermostat',
 							title: compileTitle("Thermostat operation", vDevIdNI),
@@ -5181,10 +5395,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						deviceId: deviceNamePrefix + this.CC["ThermostatMode"],
 						defaults: defaults,
 						overlay: {},
-						handler: function (command) {
+						handler: function(command) {
 							if ("on" === command) {
 								var lastMode = withModeHeat ? MODE_HEAT : MODE_COOL;
-								
+
 								// modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
 								if (withModeHeat && withModeCool && instance.ThermostatSetPoint && instance.ThermostatSetPoint.data[MODE_HEAT] && instance.ThermostatSetPoint.data[MODE_COOL]) {
 									lastMode = instance.ThermostatSetPoint.data[MODE_HEAT].setVal.updateTime > instance.ThermostatSetPoint.data[MODE_COOL].setVal.updateTime ? MODE_HEAT : MODE_COOL;
@@ -5198,7 +5412,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 					});
 
 					if (m_vDev) {
-						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function (type) {
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function(type) {
 							try {
 								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 									m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
@@ -5215,10 +5429,10 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL],
 					modes = [];
-				
+
 				withTempHeat && modes.push(MODE_HEAT);
 				withTempCool && modes.push(MODE_COOL);
-				
+
 				var t_vDev = [];
 				modes.forEach(function(mode) {
 					var cVDId = changeDevId + separ + mode;
@@ -5235,8 +5449,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								metrics: {
 									scaleTitle: DH.scaleString.value,
 									level: DH.val.value,
-									min: DH.min && DH.min.value? DH.min.value : (DH.scale.value === 0 ? 5 : 41),
-									max: DH.max && DH.max.value? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
+									min: DH.min && DH.min.value ? DH.min.value : (DH.scale.value === 0 ? 5 : 41),
+									max: DH.max && DH.max.value ? DH.max.value : (DH.scale.value === 0 ? 40 : 104),
 									icon: 'thermostat',
 									title: compileTitle("Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"), vDevIdNI),
 									isFailed: false
@@ -5252,7 +5466,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								deviceId: _vDevId,
 								defaults: defaults,
 								overlay: {},
-								handler: function (command, args) {
+								handler: function(command, args) {
 									instance.ThermostatSetPoint.Set(mode, args.level);
 									instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
 								},
@@ -5260,7 +5474,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (t_vDev[mode]) {
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function (type) {
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											delete t_vDev[mode];
@@ -5290,7 +5504,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			};
 
 			if (cc.data) {
-				Object.keys(cc.data).forEach(function (sensorTypeId) {
+				Object.keys(cc.data).forEach(function(sensorTypeId) {
 
 					sensorTypeId = parseInt(sensorTypeId, 10);
 
@@ -5353,7 +5567,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								deviceId: a_id,
 								defaults: a_defaults,
 								overlay: {},
-								handler: function (command) {
+								handler: function(command) {
 									if (command === "update") {
 										cc.Get(sensorTypeId);
 									}
@@ -5362,7 +5576,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							});
 
 							if (a_vDev) {
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function (type) {
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + sensorTypeId + separ + "A");
@@ -5387,7 +5601,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			}
 		} else if (this.CC["Alarm"] === commandClassId) {
 			if (cc.data.version.value < 3) return; // We skip old Alarm CC implementations handling only v3 (Notification)
-			
+
 			a_defaults = {
 				deviceType: 'sensorBinary',
 				probeType: '',
@@ -5400,7 +5614,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			};
 
 			if (cc.data) {
-				Object.keys(cc.data).forEach(function (notificationTypeId) {
+				Object.keys(cc.data).forEach(function(notificationTypeId) {
 
 					notificationTypeId = parseInt(notificationTypeId, 10);
 
@@ -5409,8 +5623,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
-							maskArrayToTypes = function (bitmaskArray) {
-								var types = [], n = 0;
+							maskArrayToTypes = function(bitmaskArray) {
+								var types = [],
+									n = 0;
 
 								bitmaskArray.forEach(function(bitmask, i) {
 									n = i * 8;
@@ -5426,7 +5641,8 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								return types;
 							};
 
-							var DOOR_OPEN = 0x16, DOOR_CLOSE = 0x17;
+							var DOOR_OPEN = 0x16,
+								DOOR_CLOSE = 0x17;
 							var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
 							if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1)) { // Very special case of Door
 								a_defaults.metrics.icon = 'door';
@@ -5446,7 +5662,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										deviceId: a_id,
 										defaults: a_defaults,
 										overlay: {},
-										handler: function (command) {
+										handler: function(command) {
 											if (command === "update") {
 												cc.Get(0, notificationTypeId, DOOR_OPEN);
 												cc.Get(0, notificationTypeId, DOOR_CLOSE);
@@ -5456,12 +5672,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 									});
 
 									if (a_vDev) {
-										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
+										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 											try {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
 												} else if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE &&
-															(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+													(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
 													a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
 												}
 												// set failed status
@@ -5532,7 +5748,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								var a_id = vDevId + separ + notificationTypeId + separ + 0xFE + separ + "A";
 								if (!self.ccAlarmUnknownEventBinded[a_id]) {
 									self.ccAlarmUnknownEventBinded[a_id] = true;
-									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + ".event", function (type) {
+									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + ".event", function(type) {
 										var eventTypeId = parseInt(this.value, 10);
 										if (eventTypeId === 0xFE) {
 											var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
@@ -5551,7 +5767,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 														deviceId: a_id,
 														defaults: a_defaults,
 														overlay: {},
-														handler: function (command) {
+														handler: function(command) {
 															if (command === "update") {
 																cc.Get(0, notificationTypeId, eventTypeId);
 															}
@@ -5560,12 +5776,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 													});
 
 													if (a_vDev) {
-														self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
+														self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 															try {
 																if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 																	self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
 																} else if (this.event.value === eventTypeId || this.event.value === 0 &&
-																		(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+																	(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
 																	a_vDev.set("metrics:level", this.event.value ? "on" : "off");
 																}
 																// set failed status
@@ -5580,7 +5796,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								}
 							}
 
-							maskArrayToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function (eventTypeId) {
+							maskArrayToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function(eventTypeId) {
 
 								eventTypeId = parseInt(eventTypeId, 10);
 
@@ -5601,7 +5817,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 											deviceId: a_id,
 											defaults: a_defaults,
 											overlay: {},
-											handler: function (command) {
+											handler: function(command) {
 												if (command === "update") {
 													cc.Get(0, notificationTypeId, eventTypeId);
 												}
@@ -5610,12 +5826,12 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 										});
 
 										if (a_vDev) {
-											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function (type) {
+											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 												try {
 													if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 														self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
 													} else if (this.event.value === eventTypeId || this.event.value === 0 &&
-															(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+														(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
 														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
 													}
 													// set failed status
@@ -5679,7 +5895,7 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				deviceId: devId,
 				defaults: defaults,
 				overlay: {},
-				handler: function (command) {
+				handler: function(command) {
 					if (command === "update") {
 						cc.Get;
 					}
@@ -5691,9 +5907,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			// disable value set on z-way startup
 			var startup = true;
 
-			setTimeout(function(){
+			setTimeout(function() {
 				startup = false;
-			},1000);
+			}, 1000);
 
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
@@ -5702,9 +5918,9 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							self.controller.devices.remove(devId);
 						} else if (!startup && !(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							// output curScene + keyAttr or ''
-							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value? cc.data['currentScene'].value : 0,
-								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value? cc.data['maxScenes'].value : 0,
-								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value? cc.data['keyAttribute'].value : 0,
+							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value ? cc.data['currentScene'].value : 0,
+								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value ? cc.data['maxScenes'].value : 0,
+								kA = cc.data['keyAttribute'].value && !!cc.data['keyAttribute'].value ? cc.data['keyAttribute'].value : 0,
 								/*
 								 * CentralScene v3:
 								 *
@@ -5716,22 +5932,22 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 								 * 0x05 Key Pressed 4 times
 								 * 0x06 Key Pressed 5 times
 								 */
-								kaCnt = kA > 0x02? kA - 0x01 : 0x01,
+								kaCnt = kA > 0x02 ? kA - 0x01 : 0x01,
 								cL = cS.toString() + kA.toString(),
-								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL]? defaults.metrics.discreteStates[cL] : undefined,
+								dS = !_.isEmpty(defaults.metrics.discreteStates) && defaults.metrics.discreteStates[cL] ? defaults.metrics.discreteStates[cL] : undefined,
 								st = '',
-								cnt = dS && dS['cnt']? dS['cnt'] : kaCnt,
-								type = dS && dS['type']? dS['type'] : 'B',
-								setAction = function () {
+								cnt = dS && dS['cnt'] ? dS['cnt'] : kaCnt,
+								type = dS && dS['type'] ? dS['type'] : 'B',
+								setAction = function() {
 									switch (kA) {
 										case 0x01:
-											st = dS && dS['action']? dS['action'] : 'release';
+											st = dS && dS['action'] ? dS['action'] : 'release';
 											break;
 										case 0x02:
-											st = dS && dS['action']? dS['action'] : 'hold';
+											st = dS && dS['action'] ? dS['action'] : 'hold';
 											break;
 										default:
-											st = dS && dS['action']? dS['action'] : 'press';
+											st = dS && dS['action'] ? dS['action'] : 'press';
 											break;
 									}
 								};
@@ -5746,15 +5962,15 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 							vDev.set("metrics:level", cL);
 							vDev.set("metrics:cnt", cnt);
 							vDev.set("metrics:type", type);
-/*								vDev.set("metrics", {
-								state: st,
-								currentScene: cS,
-								keyAttribute: kA,
-								maxScenes: mC,
-								level: cL,
-								cnt: cnt,
-								type: type
-							});*/
+							/*								vDev.set("metrics", {
+															state: st,
+															currentScene: cS,
+															keyAttribute: kA,
+															maxScenes: mC,
+															level: cL,
+															cnt: cnt,
+															type: type
+														});*/
 						}
 						// set failed status
 						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
@@ -5772,13 +5988,13 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 	} catch (e) {
 		var langFile = this.loadModuleLang(),
 			values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
-			
+
 		this.addNotification("error", langFile.err_dev_create + values, "core");
 		console.log(e.toString());
 	}
 };
 
-ZWave.prototype.parseDelCommandClass = function (nodeId, instanceId, commandClassId) {
+ZWave.prototype.parseDelCommandClass = function(nodeId, instanceId, commandClassId) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
@@ -5799,7 +6015,7 @@ ZWave.prototype.lastRSSIData = function() {
 	var rssi = this.zway.controller.data.statistics.backgroundRSSI;
 
 	return {
-		"time": Math.round((new Date()).getTime()/1000),
+		"time": Math.round((new Date()).getTime() / 1000),
 		"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value) ? rssi.channel1.value - 256 : null,
 		"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value) ? rssi.channel2.value - 256 : null,
 		"channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value) ? rssi.channel3.value - 256 : null
@@ -5808,7 +6024,7 @@ ZWave.prototype.lastRSSIData = function() {
 
 ZWave.prototype.updateRSSIData = function(callback) {
 	var self = this;
-	
+
 	this.zway.GetBackgroundRSSI(function() {
 		callback(self.lastRSSIData());
 	});
@@ -5816,7 +6032,7 @@ ZWave.prototype.updateRSSIData = function(callback) {
 
 ZWave.prototype.getDSKProvisioningList = function() {
 	var zway = this.zway;
-	
+
 	/* TODO
 	// get controller node
 	var controllerNode = zway.controller.data.nodeId.value;
