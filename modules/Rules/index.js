@@ -14,16 +14,16 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
-function Rules (id, controller) {
+function Rules(id, controller) {
 	// Call superconstructor first (AutomationModule)
 	Rules.super_.call(this, id, controller);
 
 	var self = this;
 	this.attachedList = [];
-    this.reversActivated = false;
+	this.reversActivated = false;
 
 	this._testRule = function() { // wrapper to correct this and parameters in testRule
-	    self.testRule.call(self, null);
+		self.testRule.call(self, null);
 	}
 }
 
@@ -59,86 +59,77 @@ _module = Rules;
 // --- Module instance initialized
 // ----------------------------------------------------------------------------
 
-Rules.prototype.init = function (config) {
+Rules.prototype.init = function(config) {
 	Rules.super_.prototype.init.call(this, config);
 
 	var self = this,
 		ifElement = self.config.simple.triggerEvent,
-        /*
-        color als trigger??
-        {
-            deviceId: '',
-            deviceType: '',
-            level: '',
-            status: '', //on, off, open, close, color, level
-            operator: <, = , > ,''
-        }
-        */
-        doReverse = self.config.reverse,
-        advancedActive = self.config.advanced.active;
-        triggered = 0;
+		/*
+		color als trigger??
+		{
+		    deviceId: '',
+		    deviceType: '',
+		    level: '', //on, off, open, close, color, level
+		    operator: <, = , > ,''
+		}
+		*/
+		doReverse = self.config.reverse,
+		advancedActive = self.config.advanced.active;
+	triggered = 0;
 
-	this.handlerLevel = function (sDev) {
+	this.handlerLevel = function(sDev) {
 		var operator = ifElement.operator || null,
 			ifLevel = ifElement.level,
-            ifType = ifElement.deviceType,
+			ifType = ifElement.deviceType,
 			check = false,
 			value = sDev.get("metrics:level"),
-            simple = self.config.simple;
+			simple = self.config.simple;
 
-        // - IF-THEN-PART
-        if (!!operator && ifLevel) {
-            check = self.op(value, operator, ifLevel);
-        } else if (ifType === 'switchRGBW') {
-            check = _.isEqual(sDev.get("metrics:color"), ifLevel);
-        }
-        
-        var triggerTimeout = self.getConfigTimeout(simple.triggerDelay);
-        var reverseTimeout = self.getConfigTimeout(simple.reverseDelay);
+		// - IF-THEN-PART
+		if (!!operator && ifLevel) {
+			check = self.op(value, operator, ifLevel);
+		} else if (ifType === 'switchRGBW') {
+			check = _.isEqual(sDev.get("metrics:color"), ifLevel);
+		}
 
-        if (check || value === ifLevel || sDev.get('deviceType') === 'toggleButton') {
-            
-            this.simpleTriggerTimer = setTimeout( function() {
+		var triggerTimeout = self.getConfigTimeout(simple.triggerDelay);
+		var reverseTimeout = self.getConfigTimeout(simple.reverseDelay);
 
-                /*
-                {
-                    deviceId: '',
-                    deviceType: '',
-                    level: '', / color: { r: 0, g: 0, b: 0}
-                    status: '', //on, off, open, close, color, level
-                    reverseLevel: '',
-                    sendAction: true / false >> don't do this if level is already
-                }
-                */
+		if (check || value === ifLevel || sDev.get('deviceType') === 'toggleButton') {
 
-                // do action for all target devices 
-                simple.targetElements.forEach( function(el) {
-                    var vDev = self.controller.devices.get(el.deviceId),
-                        id = el.deviceId,
-                        set = self.executeActions(el.sendAction, vDev, el.level);
+			this.simpleTriggerTimer = setTimeout(function() {
 
-                    // check if levels are equal and if active don't trigger new state
-                    if (vDev && set) {
-                        self.setNewDeviceState(vDev, el.deviceType, el.level);
-                    }
-                });
+				/*
+				{
+				    deviceId: '',
+				    deviceType: '',
+				    level: '', / color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+				    reverseLevel: '',
+				    sendAction: true / false >> don't do this if level is already
+				}
+				*/
 
-                simple.sendNotifications.forEach(function (notification) {
-                    self.sendNotification(notification, simple.triggerEvent, simple.targetElements);
-                });
+				// do action for all target devices 
+				simple.targetElements.forEach(function(el) {
+					self.shiftDevice(el);
+				});
 
-                self.reversActivated = true;
-            }, triggerTimeout);
-        } else if (doReverse && !check && self.reversActivated) {
-            this.simpleReverseTimer = setTimeout( function() {
-                self.performReverse(self.config.simple.targetElements);
-            }, reverseTimeout);
-        }
+				simple.sendNotifications.forEach(function(notification) {
+					self.sendNotification(notification, simple.triggerEvent, simple.targetElements);
+				});
+
+				self.reversActivated = true;
+			}, triggerTimeout);
+		} else if (doReverse && !check && self.reversActivated) {
+			this.simpleReverseTimer = setTimeout(function() {
+				self.performReverse(self.config.simple.targetElements);
+			}, reverseTimeout);
+		}
 	};
 
-    if (advancedActive) { // - LOGICAL-RULES-PART
-        this.expertTriggerEventRule();
-    }
+	if (advancedActive) { // - LOGICAL-RULES-PART
+		this.expertTriggerEventRule();
+	}
 
 	// Setup metric update event listener
 	if (!advancedActive && ifElement && ifElement.deviceId) {
@@ -146,73 +137,73 @@ Rules.prototype.init = function (config) {
 	}
 };
 
-Rules.prototype.stop = function () {
+Rules.prototype.stop = function() {
 	var self = this;
 
-    if(this.config.advanced.active) {
-        if (this.config.advanced.triggerScenes) {
-            this.config.advanced.triggerScenes.forEach(function(scene) {
-                self.attachDetach(scene, false);
-            });
-        }
+	if (this.config.advanced.active) {
+		if (this.config.advanced.triggerScenes) {
+			this.config.advanced.triggerScenes.forEach(function(scene) {
+				self.attachDetach(scene, false);
+			});
+		}
 
-        // testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
-        // nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
+		// testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
+		// nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
 
-        this.config.advanced.tests.forEach(function(test) {
-            switch(test.type) {
-                case 'switchBinary':
-                case 'switchMultilevel':
-                case 'sensorBinary':
-                case 'sensorMultilevel':
-                case 'switchRGBW':
-                case 'doorlock':
-                case 'switchControl':
-                case 'toggleButton': 
-                case 'sensorDiscrete':
-                case 'thermostat':
-                    self.attachDetach(test, false);
-                    break;
-                case 'nested':
-                    test.tests.forEach(function(xtest) {
-                        self.attachDetach(xtest, false);
-                    });
-                    break;
-                case 'time':
-                    break;
-                default:
-                    break;
-            }
-        });
+		this.config.advanced.tests.forEach(function(test) {
+			switch (test.type) {
+				case 'switchBinary':
+				case 'switchMultilevel':
+				case 'sensorBinary':
+				case 'sensorMultilevel':
+				case 'switchRGBW':
+				case 'doorlock':
+				case 'switchControl':
+				case 'toggleButton':
+				case 'sensorDiscrete':
+				case 'thermostat':
+					self.attachDetach(test, false);
+					break;
+				case 'nested':
+					test.tests.forEach(function(xtest) {
+						self.attachDetach(xtest, false);
+					});
+					break;
+				case 'time':
+					break;
+				default:
+					break;
+			}
+		});
 
-        this.attachedList = [];
+		this.attachedList = [];
 
-    } else {
-        // remove event IfElement listener
-        self.controller.devices.off(self.config.simple.triggerEvent.deviceId,'change:metrics:level', self.handlerLevel);
-    }
+	} else {
+		// remove event IfElement listener
+		self.controller.devices.off(self.config.simple.triggerEvent.deviceId, 'change:metrics:level', self.handlerLevel);
+	}
 
-    if (this.simpleReverseTimer) {
-        clearTimeout(this.simpleReverseTimer);
-        this.simpleReverseTimer = undefined;
-    }
+	if (this.simpleReverseTimer) {
+		clearTimeout(this.simpleReverseTimer);
+		this.simpleReverseTimer = undefined;
+	}
 
-    if (this.advancedReverseTimer) {
-        clearTimeout(this.advancedReverseTimer);
-        this.advancedReverseTimer = undefined;
-    }
+	if (this.advancedReverseTimer) {
+		clearTimeout(this.advancedReverseTimer);
+		this.advancedReverseTimer = undefined;
+	}
 
-    if (this.simpleTriggerTimer) {
-        clearTimeout(this.simpleTriggerTimer);
-        this.simpleTriggerTimer = undefined;
-    }
+	if (this.simpleTriggerTimer) {
+		clearTimeout(this.simpleTriggerTimer);
+		this.simpleTriggerTimer = undefined;
+	}
 
-    if (this.advancedTriggerTimer) {
-        clearTimeout(this.advancedTriggerTimer);
-        this.advancedTriggerTimer = undefined;
-    }
+	if (this.advancedTriggerTimer) {
+		clearTimeout(this.advancedTriggerTimer);
+		this.advancedTriggerTimer = undefined;
+	}
 
-    this.reversActivated = false;
+	this.reversActivated = false;
 
 	Rules.super_.prototype.stop.call(this);
 };
@@ -221,360 +212,255 @@ Rules.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-Rules.prototype.expertTriggerEventRule = function () {
-    var self = this;
+Rules.prototype.expertTriggerEventRule = function() {
+	var self = this;
 
-    // testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
-    // nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
+	// testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete, nested
+	// nested testType ... switchBinary, switchMultilevel, switchRGBW, doorlock, switchControl, time, sensorDiscrete
 
-    this.config.advanced.tests.forEach(function(test) {
-        switch(test.type) {
-            case 'switchBinary':
-            case 'switchMultilevel':
-            case 'sensorBinary':
-            case 'sensorMultilevel':
-            case 'switchRGBW':
-            case 'doorlock':
-            case 'switchControl':
-            case 'toggleButton': 
-            case 'sensorDiscrete':
-            case 'thermostat':
-                /*
-                    test = {
-                        type: 'xxx',
-                        deviceId: 'xxx',
-                        level: 'xxx',
-                        operator: '=', '!=', '<', '>', '<=', '>='
-                    },
-                    time = {
-                        type: 'time',
-                        level: 'xxx',
-                        testOperator: '<=', '>='
-                    }
-                */
-                self.attachDetach(test, true);
-                break;
-            case 'nested':
-                /*  
-                nested = {
-                    type: 'nested',
-                    logicalOperator: 'and' // 'or'
-                    tests: [{
-                            type: 'xxx'
-                            deviceId: 'xxx'
-                            level: 'xxx'
-                            testOperator: '=', '!=', '<', '>', '<=', '>='
-                        },{
-                            type: 'aaa'
-                            deviceId: 'aaa'
-                            level: 'aaa'
-                            testOperator: '=', '!=', '<', '>', '<=', '>='
-                        }
-                    ]
-                }     
-                */
-                test.tests.forEach(function(xtest) {
-                    self.attachDetach(xtest, true);
-                });
-                break;
-            case 'time':
-                break;
-            default:
-                break;
-        }
-    });
+	this.config.advanced.tests.forEach(function(test) {
+		switch (test.type) {
+			case 'switchBinary':
+			case 'switchMultilevel':
+			case 'sensorBinary':
+			case 'sensorMultilevel':
+			case 'switchRGBW':
+			case 'doorlock':
+			case 'switchControl':
+			case 'toggleButton':
+			case 'sensorDiscrete':
+			case 'thermostat':
+				/*
+				    test = {
+				        type: 'xxx',
+				        deviceId: 'xxx',
+				        level: 'xxx',
+				        operator: '=', '!=', '<', '>', '<=', '>='
+				    },
+				    time = {
+				        type: 'time',
+				        level: 'xxx',
+				        testOperator: '<=', '>='
+				    }
+				*/
+				self.attachDetach(test, true);
+				break;
+			case 'nested':
+				/*  
+				nested = {
+				    type: 'nested',
+				    logicalOperator: 'and' // 'or'
+				    tests: [{
+				            type: 'xxx'
+				            deviceId: 'xxx'
+				            level: 'xxx'
+				            testOperator: '=', '!=', '<', '>', '<=', '>='
+				        },{
+				            type: 'aaa'
+				            deviceId: 'aaa'
+				            level: 'aaa'
+				            testOperator: '=', '!=', '<', '>', '<=', '>='
+				        }
+				    ]
+				}     
+				*/
+				test.tests.forEach(function(xtest) {
+					self.attachDetach(xtest, true);
+				});
+				break;
+			case 'time':
+				break;
+			default:
+				break;
+		}
+	});
 
-    // TODO add sensorDiscrete as trigger
-    this.config.advanced.triggerScenes.forEach(function(scene) {
-        self.attachDetach(scene, true);
-    });
+	// TODO add sensorDiscrete as trigger
+	this.config.advanced.triggerScenes.forEach(function(scene) {
+		self.attachDetach(scene, true);
+	});
 };
 
 // LogicalRuleMethods
-Rules.prototype.attachDetach = function (test, attachOrDetach) {
-    if (this.config.advanced.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
-        return;
-    }
+Rules.prototype.attachDetach = function(test, attachOrDetach) {
+	if (this.config.advanced.triggerOnDevicesChange === false) { // this condition is used to allow empty triggerOnDevicesChange if old LogicalRules is used
+		return;
+	}
 
-    if (attachOrDetach) {
-        if (this.attachedList.indexOf(test.deviceId) === -1) {
-            this.attachedList.push(test.deviceId);
-            this.controller.devices.on(test.deviceId, "change:metrics:level", this._testRule);
-            this.controller.devices.on(test.deviceId, "change:metrics:change", this._testRule); //switchControl
-        }
-    } else {
-        this.controller.devices.off(test.deviceId, "change:metrics:level", this._testRule);
-        this.controller.devices.off(test.deviceId, "change:metrics:change", this._testRule); //switchControl
-    }
+	if (attachOrDetach) {
+		if (this.attachedList.indexOf(test.deviceId) === -1) {
+			this.attachedList.push(test.deviceId);
+			this.controller.devices.on(test.deviceId, "change:metrics:level", this._testRule);
+			this.controller.devices.on(test.deviceId, "change:metrics:change", this._testRule); //switchControl
+		}
+	} else {
+		this.controller.devices.off(test.deviceId, "change:metrics:level", this._testRule);
+		this.controller.devices.off(test.deviceId, "change:metrics:change", this._testRule); //switchControl
+	}
 };
 
-Rules.prototype.testRule = function (tree) {
-    var self = this,
-        res = null,
-        topLevel = !tree,
-        self = this,
+Rules.prototype.testRule = function(tree) {
+	var self = this,
+		res = null,
+		topLevel = !tree,
+		self = this,
 		langFile = this.loadModuleLang(),
-	    doReverse = this.config.reverse || false,
+		doReverse = this.config.reverse || false,
 		triggerTimeout = this.getConfigTimeout(self.config.advanced.triggerDelay),
-        reverseTimeout = this.getConfigTimeout(self.config.advanced.reverseDelay);
+		reverseTimeout = this.getConfigTimeout(self.config.advanced.reverseDelay);
 
-    // if tests are false check if advanced is active
-    if (!!!tree) { tree = this.config.advanced; }
+	// if tests are false check if advanced is active
+	if (!!!tree) {
+		tree = this.config.advanced;
+	}
 
-    // loop through all tests and proof conditions
-    if (_.contains(["and", "or"],tree.logicalOperator)) {
-        res = self.runTests[tree.logicalOperator].call(self, tree);
-    }
+	// loop through all tests and proof conditions
+	if (_.contains(["and", "or"], tree.logicalOperator)) {
+		res = self.runTests[tree.logicalOperator].call(self, tree);
+	}
 
-    if (topLevel && res) {
-        this.advancedTriggerTimer = setTimeout( function() {
-            tree.targetElements.forEach(function (el){
-                var vDev = self.controller.devices.get(el.deviceId),
-                    set = el.sendAction? self.executeActions(el.sendAction, vDev, el.level) : true;
-                if (vDev && set) {
-                    self.setNewDeviceState(vDev, el.deviceType, el.level);
-                }
-            });
+	if (topLevel && res) {
+		this.advancedTriggerTimer = setTimeout(function() {
+			tree.targetElements.forEach(function(el) {
+				self.shiftDevice(el);
+			});
 
-            tree.sendNotifications.forEach(function (notification) {
-                self.sendNotification(notification, tree.tests, tree.targetElements);
-            });
+			tree.sendNotifications.forEach(function(notification) {
+				self.sendNotification(notification, tree.tests, tree.targetElements);
+			});
 
-            self.reversActivated = true;
+			self.reversActivated = true;
 
-        }, triggerTimeout);
-    } else if (doReverse && !res && self.reversActivated) {
-        this.advancedReverseTimer = setTimeout( function() {
-            self.performReverse(tree.targetElements);
-        }, reverseTimeout);
-    }
+		}, triggerTimeout);
+	} else if (doReverse && !res && self.reversActivated) {
+		this.advancedReverseTimer = setTimeout(function() {
+			self.performReverse(tree.targetElements);
+		}, reverseTimeout);
+	}
 
-    return res;
+	return res;
 };
 
 Rules.prototype.runTests = {
-    "and": function(tree){
-        var res = true,
-            self = this;
+	"and": function(tree) {
+		var res = true,
+			self = this;
 
-        tree.tests.forEach(function(test) {
-            var vDev = test.type !== 'nested'? self.controller.devices.get(test.deviceId) : null,
-                level = !!vDev? vDev.get("metrics:level") : undefined;
+		tree.tests.forEach(function(test) {
+			var vDev = test.type !== 'nested' ? self.controller.devices.get(test.deviceId) : null,
+				level = !!vDev ? vDev.get("metrics:level") : undefined;
 
-            switch (test.type) {
-                case 'doorlock':
-                case 'switchBinary':
-                case 'sensorBinary':
-                case 'sensorDiscrete':
-                    res = res && (level === test.level);
-                    break;
-                case 'thermostat':
-                case 'switchMultilevel':
-                case 'sensorMultilevel':
-                    res = res && self.op(level, test.operator, test.level);
-                    break;
-                case 'switchRGBW':
-                    res = res && _.isEqual(vDev.get('metrics:color'), test.level);
-                    break;
-                case 'toggleButton':
-                case 'switchControl':
-                    res = res && self.compareSwitchControl(vDev,test.level);
-                    break;
-                case 'time':
-                    res = res && self.compareTime(test.level, test.operator);
-                    break;
-                case 'nested':
-                    res = res && self.testRule(test);
-                    break;
-                default:
-                    break;
-            }
-        });
+			switch (test.type) {
+				case 'doorlock':
+				case 'switchBinary':
+				case 'sensorBinary':
+				case 'sensorDiscrete':
+					res = res && (level === test.level);
+					break;
+				case 'thermostat':
+				case 'switchMultilevel':
+				case 'sensorMultilevel':
+					res = res && self.op(level, test.operator, test.level);
+					break;
+				case 'switchRGBW':
+					res = res && _.isEqual(vDev.get('metrics:color'), test.level);
+					break;
+				case 'toggleButton':
+				case 'switchControl':
+					res = res && self.compareSwitchControl(vDev, test.level);
+					break;
+				case 'time':
+					res = res && self.compareTime(test.level, test.operator);
+					break;
+				case 'nested':
+					res = res && self.testRule(test);
+					break;
+				default:
+					break;
+			}
+		});
 
-        return res;
-    },
-    "or": function(tree){
-        var res = false,
-            self = this;
+		return res;
+	},
+	"or": function(tree) {
+		var res = false,
+			self = this;
 
-        tree.tests.forEach(function(test) {
-            var vDev = test.type !== 'nested'? self.controller.devices.get(test.deviceId) : null,
-                level = !!vDev? vDev.get("metrics:level") : undefined;
+		tree.tests.forEach(function(test) {
+			var vDev = test.type !== 'nested' ? self.controller.devices.get(test.deviceId) : null,
+				level = !!vDev ? vDev.get("metrics:level") : undefined;
 
-            switch (test.type) {
-                case 'doorlock':
-                case 'switchBinary':
-                case 'sensorBinary':
-                case 'sensorDiscrete':
-                    res = res || (level === test.level);
-                    break;
-                case 'thermostat':
-                case 'switchMultilevel':
-                case 'sensorMultilevel':
-                    res = res || self.op(level, test.operator, test.level);
-                    break;
-                case 'switchRGBW':
-                    res = res || _.isEqual(vDev.get('metrics:color'), test.level);
-                    break;
-                case 'toggleButton':
-                case 'switchControl':
-                    res = res || self.compareSwitchControl(vDev,test.level);
-                    break;
-                case 'time':
-                    res = res || self.compareTime(test.level, test.operator);
-                    break;
-                case 'nested':
-                    res = res || self.testRule(test);
-                    break;
-                default:
-                    break;
-            }
-        });
+			switch (test.type) {
+				case 'doorlock':
+				case 'switchBinary':
+				case 'sensorBinary':
+				case 'sensorDiscrete':
+					res = res || (level === test.level);
+					break;
+				case 'thermostat':
+				case 'switchMultilevel':
+				case 'sensorMultilevel':
+					res = res || self.op(level, test.operator, test.level);
+					break;
+				case 'switchRGBW':
+					res = res || _.isEqual(vDev.get('metrics:color'), test.level);
+					break;
+				case 'toggleButton':
+				case 'switchControl':
+					res = res || self.compareSwitchControl(vDev, test.level);
+					break;
+				case 'time':
+					res = res || self.compareTime(test.level, test.operator);
+					break;
+				case 'nested':
+					res = res || self.testRule(test);
+					break;
+				default:
+					break;
+			}
+		});
 
-        return res;
-    }
+		return res;
+	}
 }
 
-Rules.prototype.performReverse = function (targetElements) {
-    var self = this;
+Rules.prototype.performReverse = function(targetElements) {
+	var self = this;
 
-    if (targetElements && targetElements.length > 0) {
-        targetElements.forEach(function(el) {
-            if (el.reverseLevel !== null) {
-                var vDev = self.controller.devices.get(el.deviceId),
-                    id = el.deviceId,
-                    type = vDev? vDev.get('deviceType') : '';
+	if (targetElements && targetElements.length > 0) {
+		targetElements.forEach(function(el) {
+			if (el.reverseLevel !== null) {
+				self.shiftDevice(el, true);
+				/*var vDev = self.controller.devices.get(el.deviceId),
+					id = el.deviceId,
+					type = vDev ? vDev.get('deviceType') : '';
 
-                if (vDev && !!vDev) {
-                    var set = self.executeActions(el.sendAction, vDev, el.reverseLevel);
-                    if (set) { 
-                        self.setNewDeviceState(vDev, type, el.reverseLevel);
-                    }
-                    self.reversActivated = false;
-                }
-            }
-        });
-        self.reversActivated = false;
-    }
+				if (vDev && !!vDev) {
+					var set = self.executeActions(el.sendAction, vDev, el.reverseLevel);
+					if (set) {
+						self.setNewDeviceState(vDev, type, el.reverseLevel);
+					}
+					self.reversActivated = false;
+				}*/
+				self.reversActivated = false;
+			}
+		});
+		self.reversActivated = false;
+	}
 };
 
-Rules.prototype.sendNotification = function (notification, conditions, actions) {
-    var notificationType = '',
-        notificationMessage = '';
+Rules.prototype.sendNotification = function(notification, conditions, actions) {
+	var notificationType = '',
+		notificationMessage = '';
 
-    if(notification.target && notification.target !== '') {
-        notificationType = notification.target.search('@') > -1? 'mail.notification' : 'push.notification';
-        notificationMessage = !notification.message? 'Condition: ' + JSON.stringify(conditions) + ' Actions: ' + JSON.stringify(actions) : notification.message;
+	if (notification.target && notification.target !== '') {
+		notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
+		notificationMessage = !notification.message ? 'Condition: ' + JSON.stringify(conditions) + ' Actions: ' + JSON.stringify(actions) : notification.message;
 
-        this.addNotification(notificationType, notificationMessage + ' => ' +notification.target, notification.target);
-    }
+		this.addNotification(notificationType, notificationMessage + ' => ' + notification.target, notification.target);
+	}
 };
 
-Rules.prototype.op = function (dval, op, val) {
-    if (op === "=") {
-        return dval === val;
-    } else if (op === "!=") {
-        return dval !== val;
-    } else if (op === ">") {
-        return dval > val;
-    } else if (op === "<") {
-        return dval < val;
-    } else if (op === ">=") {
-        return dval >= val;
-    } else if (op === "<=") {
-        return dval <= val;
-    }
-
-    return null; // error!!
-};
-
-// compare old and new level to avoid unnecessary updates
-Rules.prototype.newValueNotEqualsOldValue = function (vDev,valNew){
-    if (vDev && !!vDev) {
-        var devType = vDev.get('deviceType'),
-            vO = '';
-            vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
-        
-        switch (devType) {
-            case 'switchRGBW':
-            
-                vO = typeof vN !== 'string'? vDev.get('metrics:color') : vDev.get('metrics:level');
-
-                if (valNew !== 'string') {
-                    return !_.isEqual(vO,vN);
-                }
-            case 'switchControl':
-                if (_.contains(['on','off'], vN) || _.isNumber(vN)) {
-                    vO = vDev.get('metrics:level');
-                } else {
-                    vO = vDev.get('metrics:change');
-                }
-            default:
-                vO = vDev.get('metrics:level');
-        }
-        return vO !== vN;
-    }
-};
-
-Rules.prototype.setNewDeviceState = function (vDev, type, new_level){
-    if (vDev && !!vDev) {
-        switch(type) {
-            case 'doorlock':
-            case 'switchBinary':
-                    vDev.performCommand(new_level);
-                break;
-            case 'switchMultilevel':
-            case 'thermostat':
-                    _.contains(['on','off'], new_level)? vDev.performCommand(new_level) : vDev.performCommand("exact", { level: new_level });
-                break;                        
-            case 'switchRGBW':
-                    if (_.contains(["on", "off"], new_level)) {
-                        vDev.performCommand(new_level);
-                    } else {
-                        vDev.performCommand("exact", {
-                            red: new_level.r,
-                            green: new_level.g,
-                            blue: new_level.b
-                        });
-                    }
-                break;
-            case 'switchControl':
-                if (_.contains(["on", "off"], new_level)) {
-                    vDev.performCommand(new_level);
-                } else if (_.contains(["upstart", "upstop", "downstart", "downstop"], new_level)) {
-                    vDev.performCommand("exact", { change: new_level });
-                } else {
-                    vDev.performCommand("exact", { level: new_level });
-                }
-                break;
-            case 'toggleButton':
-                vDev.performCommand('on');
-                break;
-            default:
-                vDev.performCommand(new_level);
-        }
-    }
-};
-
-Rules.prototype.getConfigTimeout = function (configTimeout) {
-    return !!!configTimeout? 0 : Math.floor(configTimeout * 1000); // !!! > proof for undefined and null
-};
-
-Rules.prototype.executeActions = function (compareLevelsFirst, vDev, targetValue) {
-    return (!compareLevelsFirst || (compareLevelsFirst && this.newValueNotEqualsOldValue(vDev, targetValue)));
-};
-
-Rules.prototype.compareSwitchControl = function (vDev, targetValue) {
-    if (!!vDev && vDev) {
-        return (_.contains(["on", "off"], targetValue) && vDev.get('metrics:level') === targetValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], targetValue) && vDev.get("metrics:change") === targetValue)
-    } else {
-        return false;
-    }
-};
-
-Rules.prototype.compareTime = function (time, operator) {
-    var curTime = new Date(),
-        time_arr = time.split(":").map(function(x) { return parseInt(x, 10); });
-    
-    return this.op(curTime.getHours() * 60 + curTime.getMinutes(), operator, time_arr[0] * 60 + time_arr[1]);
+Rules.prototype.getConfigTimeout = function(configTimeout) {
+	return !!!configTimeout ? 0 : Math.floor(configTimeout * 1000); // !!! > proof for undefined and null
 };
