@@ -13,8 +13,8 @@ Description:
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 function HazardNotification(id, controller) {
-    // Call superconstructor first (AutomationModule)
-    HazardNotification.super_.call(this, id, controller);
+	// Call superconstructor first (AutomationModule)
+	HazardNotification.super_.call(this, id, controller);
 }
 
 inherits(HazardNotification, AutomationModule);
@@ -26,358 +26,393 @@ _module = HazardNotification;
 // ----------------------------------------------------------------------------
 
 HazardNotification.prototype.init = function(config) {
-    HazardNotification.super_.prototype.init.call(this, config);
+	HazardNotification.super_.prototype.init.call(this, config);
 
-    var self = this,
-        filteredSensorsFromDevices = [],
-        hazardSensorMetrics = [],
-        item = {};
+	var self = this,
+		filteredSensorsFromDevices = [],
+		hazardSensorMetrics = [],
+		item = {};
 
-    this.vDev = null;
+	this.vDev = null;
 
-    // update vDev attributes (water and fire sensors)
-    this.updateAttributes = function(dev) {
-        var hazardSensors = [],
-            sensor = [],
-            indx = null;
+	setTimeout(function() {
+		if (self.config.triggerEvent.length > 0 && !self.config.transformed) {
+			var new_triggerEvents = [];
 
-        hazardSensors = self.vDev.get('metrics:sensors');
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			    {
+			        deviceId: '',
+			        deviceType: '',
+			        level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+			        sendAction: true || false >> don't do this if level is already triggered
+			    }
+			*/
+			self.config.triggerEvent.forEach(function(entry) {
+				vDev = self.controller.devices.get(entry.deviceId);
 
-        sensor = hazardSensors.filter(function(sensor) {
-            return sensor.id === dev.get('id');
-        });
+				new_triggerEvents.push({
+					deviceId: entry.deviceId,
+					deviceType: vDev ? vDev.get('deviceType') : '',
+					level: entry.status && entry.status != 'level' ? entry.status : (entry.status === 'level' && entry.level ? entry.level : 0),
+					sendAction: entry.sendAction || false
+				});
+			});
 
-        if (sensor[0]) {
-            // update sensor metrics
-            sensor[0].metrics = dev.get('metrics');
-        }
-    };
+			// overwrite config devices list
+			self.config.triggerEvent = _.uniq(new_triggerEvents);
+			self.config.transformed = true;
 
-    // add sensors to vDev (after server startup)
-    this.updateIfHazardSensorsAreCreated = function(dev) {
-        var indx = self.config.sensors.indexOf(dev.id);
+			//save into config
+			self.saveConfig();
+		}
 
-        if (indx > -1 && hazardSensorMetrics.map(function(e) {
-                return e.id;
-            }).indexOf(dev.id) === -1) {
+		// update vDev attributes (water and fire sensors)
+		self.updateAttributes = function(dev) {
+			var hazardSensors = [],
+				sensor = [],
+				indx = null;
 
-            if (filteredSensorsFromDevices.indexOf(dev) === -1) {
-                filteredSensorsFromDevices.push(dev);
-            }
+			hazardSensors = self.vDev.get('metrics:sensors');
 
-            item = {
-                id: dev.id,
-                deviceType: dev.get('deviceType'),
-                metrics: dev.get('metrics'),
-                hasHistory: dev.get('hasHistory'),
-                updateTime: dev.get('updateTime')
-            };
+			sensor = hazardSensors.filter(function(sensor) {
+				return sensor.id === dev.get('id');
+			});
 
-            hazardSensorMetrics.push(item);
+			if (sensor[0]) {
+				// update sensor metrics
+				sensor[0].metrics = dev.get('metrics');
+			}
+		};
 
-            // listen to sensor changes
-            self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+		// add sensors to vDev (after server startup)
+		self.updateIfHazardSensorsAreCreated = function(dev) {
+			var indx = self.config.sensors.indexOf(dev.id);
 
-            // setup arm mode (reinitialize vDev)
-            if (self.vDev.get('metrics:state') === 'armed') {
-                if (dev.get('metrics:level') === 'on') {
-                    self.setAlert();
-                }
+			if (indx > -1 && hazardSensorMetrics.map(function(e) {
+					return e.id;
+				}).indexOf(dev.id) === -1) {
 
-                // listen to sensor changes
-                self.controller.devices.on(dev.id, 'change:metrics:level', self.throwAlert);
-            }
-        }
-    };
+				if (filteredSensorsFromDevices.indexOf(dev) === -1) {
+					filteredSensorsFromDevices.push(dev);
+				}
 
-    // activate armed modus
-    this.setupArmed = function() {
-        // if it is still alert set alert mode 
-        if (self.getSensorLevels().length > 0 && self.getSensorLevels().indexOf('on') !== -1) {
-            self.setAlert();
-        } else {
-            self.vDev.set('metrics:level', 'OK');
-            self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/ok.png');
-        }
+				item = {
+					id: dev.id,
+					deviceType: dev.get('deviceType'),
+					metrics: dev.get('metrics'),
+					hasHistory: dev.get('hasHistory'),
+					updateTime: dev.get('updateTime')
+				};
 
-        // listen to sensor changes
-        filteredSensorsFromDevices.forEach(function(dev) {
-            self.controller.devices.on(dev.id, 'change:metrics:level', self.throwAlert);
-        });
-    };
+				hazardSensorMetrics.push(item);
 
-    // listener - what to do if sensors state has changed 
-    this.throwAlert = function(dev) {
+				// listen to sensor changes
+				self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
 
-        //set alert mode
-        if (dev.get('metrics:level') === 'on' && self.vDev.get('metrics:level') !== 'ALERT') {
-            self.setAlert();
-        }
+				// setup arm mode (reinitialize vDev)
+				if (self.vDev.get('metrics:state') === 'armed') {
+					if (dev.get('metrics:level') === 'on') {
+						self.setAlert();
+					}
 
-        //set back armed mode if alert is OK and device is not disarmed
-        if (dev.get('metrics:level') === 'off' &&
-            self.vDev.get('metrics:level') === 'ALERT' &&
-            self.getSensorLevels().length > 0 &&
-            self.getSensorLevels().indexOf('on') === -1 &&
-            self.vDev.get('metrics:state') !== 'disarmed') {
+					// listen to sensor changes
+					self.controller.devices.on(dev.id, 'change:metrics:level', self.throwAlert);
+				}
+			}
+		};
 
-            self.vDev.set('metrics:level', 'OK!');
-            var icon = config.hazardType == "fire" ? "fire_warning.png" : "leakage_warning.png";
-            self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
+		// activate armed modus
+		self.setupArmed = function() {
+			// if it is still alert set alert mode 
+			if (self.getSensorLevels().length > 0 && self.getSensorLevels().indexOf('on') !== -1) {
+				self.setAlert();
+			} else {
+				self.vDev.set('metrics:level', 'OK');
+				self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/ok.png');
+			}
 
-            //send notification: OK
-            console.log('Leakage Protection state is "OK". Still armed ...');
-            //stop sending notifications
-            console.log('Stop sending notifications ...');
+			// listen to sensor changes
+			filteredSensorsFromDevices.forEach(function(dev) {
+				self.controller.devices.on(dev.id, 'change:metrics:level', self.throwAlert);
+			});
+		};
 
-            self.triggerNotification('revert');
+		// listener - what to do if sensors state has changed 
+		self.throwAlert = function(dev) {
 
-            if (self.sendInterval) {
-                console.log('Stop - Clear send ...');
-                clearInterval(self.sendInterval);
-                self.sendInterval = undefined;
-            }
-        }
-    };
+			//set alert mode
+			if (dev.get('metrics:level') === 'on' && self.vDev.get('metrics:level') !== 'ALERT') {
+				self.setAlert();
+			}
 
-    // set vDev to alert mode
-    this.setAlert = function() {
-        var icon = config.hazardType == "fire" ? "fire_alarm.png" : "leakage_alarm.png";
-        self.vDev.set('metrics:level', 'ALERT');
-        self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
+			//set back armed mode if alert is OK and device is not disarmed
+			if (dev.get('metrics:level') === 'off' &&
+				self.vDev.get('metrics:level') === 'ALERT' &&
+				self.getSensorLevels().length > 0 &&
+				self.getSensorLevels().indexOf('on') === -1 &&
+				self.vDev.get('metrics:state') !== 'disarmed') {
 
-        // trigger reaction
-        self.triggerEvents();
+				self.vDev.set('metrics:level', 'OK!');
+				var icon = config.hazardType == "fire" ? "fire_warning.png" : "leakage_warning.png";
+				self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
 
-        //start sending notifications
-        console.log('Alert detected. Start sending notifications ...');
+				//send notification: OK
+				//console.log('Leakage Protection state is "OK". Still armed ...');
+				//stop sending notifications
+				//console.log('Stop sending notifications ...');
 
-        if (!this.sendInterval) {
-            self.triggerNotification('alarm');
-            this.sendInterval = setInterval(function() {
-                console.log('Send ...');
-                self.triggerNotification('alarm');
-            }, parseInt(config.notificationsInterval, 10) * 1000);
-        }
-    };
+				self.triggerNotification('revert');
 
-    this.triggerNotification = function(type) {
-        _.forEach(config.sendNotifications, function(notification) {
-            if (type == notification.firedOn) {
-                var notificationType = '',
-                    notificationMessage = '';
+				if (self.sendInterval) {
+					//console.log('Stop - Clear send ...');
+					clearInterval(self.sendInterval);
+					self.sendInterval = undefined;
+				}
+			}
+		};
 
-                if (notification.target && notification.target !== '') {
-                    notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
-                    notificationMessage = !notification.message ? fallbackMessage : notification.message;
+		// set vDev to alert mode
+		self.setAlert = function() {
+			var icon = config.hazardType == "fire" ? "fire_alarm.png" : "leakage_alarm.png";
+			self.vDev.set('metrics:level', 'ALERT');
+			self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
 
-                    self.addNotification(notificationType, notificationMessage, notification.target);
-                }
-            }
-        });
-    };
+			// trigger reaction
+			self.triggerEvents();
 
-    this.triggerEvents = function() {
-        _.forEach(config.triggerEvent, function(event) {
-            var vDev = self.controller.devices.get(event.deviceId),
-                lvl = event.status == "lvl" ? event.level : event.status,
-                set = event.sendAction ? self.executeActions(event.sendAction, vDev, lvl) : true;
-            if (vDev && set) {
-                self.setNewDeviceState(vDev, event.deviceType, lvl);
-            }
-        });
-    };
+			//start sending notifications
+			//console.log('Alert detected. Start sending notifications ...');
 
-    // listener - set vDev level back to OK if device is disarmed and sensor levels are all 'off'
-    this.onPoll = function() {
-        if (self.getSensorLevels().indexOf('on') === -1 && self.vDev) {
-            self.vDev.set('metrics:level', 'OK');
-            self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/ok.png');
-            self.removePolling();
-        }
-    };
+			if (!self.sendInterval) {
+				self.triggerNotification('alarm');
+				self.sendInterval = setInterval(function() {
+					//console.log('Send ...');
+					self.triggerNotification('alarm');
+				}, parseInt(config.notificationsInterval, 10) * 1000);
+			}
+		};
 
-    // remove polling after disarm and sensor levels are ok
-    this.removePolling = function() {
+		self.triggerNotification = function(type) {
+			_.forEach(config.sendNotifications, function(notification) {
+				if (type == notification.firedOn) {
+					var notificationType = '',
+						notificationMessage = '';
 
-        if (this.timer) {
-            console.log('Clear check ...');
-            clearInterval(this.timer);
-            this.timer = undefined;
-        }
+					if (notification.target && notification.target !== '') {
+						notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
+						notificationMessage = !notification.message ? fallbackMessage : notification.message;
 
-        if (this.sendInterval) {
-            console.log('Clear send ...');
-            clearInterval(this.sendInterval);
-            this.sendInterval = undefined;
-        }
-    };
+						self.addNotification(notificationType, notificationMessage, notification.target);
+					}
+				}
+			});
+		};
 
-    this.checkState = function() {
-        if (!this.timer) {
-            this.timer = setInterval(function() {
-                console.log('Do check ...');
-                self.onPoll();
-            }, 10 * 1000);
-        }
-    };
+		self.triggerEvents = function() {
+			_.forEach(config.triggerEvent, function(event) {
+				/*var vDev = self.controller.devices.get(event.deviceId),
+				    lvl = event.status == "lvl" ? event.level : event.status,
+				    set = event.sendAction ? self.executeActions(event.sendAction, vDev, lvl) : true;
+				if (vDev && set) {
+				    self.setNewDeviceState(vDev, lvl);
+				}*/
 
-    // get sensors from devices
-    filteredSensorsFromDevices = self.controller.devices.filter(function(dev) {
-        return self.config.sensors.indexOf(dev.id) > -1;
-    });
+				self.shiftDevice(event);
+			});
+		};
 
-    // create vDev metrics with sensor values
-    filteredSensorsFromDevices.forEach(function(dev) {
+		// listener - set vDev level back to OK if device is disarmed and sensor levels are all 'off'
+		self.onPoll = function() {
+			if (self.getSensorLevels().indexOf('on') === -1 && self.vDev) {
+				self.vDev.set('metrics:level', 'OK');
+				self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/ok.png');
+				self.removePolling();
+			}
+		};
 
-        item = {
-            id: dev.id,
-            deviceType: dev.get('deviceType'),
-            metrics: dev.get('metrics'),
-            hasHistory: dev.get('hasHistory'),
-            updateTime: dev.get('updateTime')
-        };
+		// remove polling after disarm and sensor levels are ok
+		self.removePolling = function() {
 
-        hazardSensorMetrics.push(item);
+			if (self.timer) {
+				//console.log('Clear check ...');
+				clearInterval(self.timer);
+				self.timer = undefined;
+			}
 
-        // listen to sensor changes
-        self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
-    });
+			if (self.sendInterval) {
+				//console.log('Clear send ...');
+				clearInterval(self.sendInterval);
+				self.sendInterval = undefined;
+			}
+		};
 
-    var metr = this.controller.vdevInfo["HazardNotification_" + this.id] && this.controller.vdevInfo["HazardNotification_" + this.id].metrics ? this.controller.vdevInfo["HazardNotification_" + this.id].metrics : null,
-        icon = config.hazardType == "fire" ? "fire_ok.png" : "leakage_ok.png";
+		self.checkState = function() {
+			if (!self.timer) {
+				self.timer = setInterval(function() {
+					//console.log('Do check ...');
+					self.onPoll();
+				}, 10 * 1000);
+			}
+		};
 
-    // create vDev
-    this.vDev = self.controller.devices.create({
-        deviceId: "HazardNotification_" + this.id,
-        defaults: {
-            deviceType: 'sensorMultiline',
-            metrics: {
-                multilineType: 'protection',
-                title: self.getInstanceTitle(),
-                icon: '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon,
-                level: !!metr && metr.level ? metr.level : 'OK',
-                state: !!metr && metr.state ? metr.state : 'disarmed'
-            }
-        },
-        overlay: {
-            metrics: {
-                title: self.getInstanceTitle(),
-                sensors: hazardSensorMetrics
-            }
-        },
-        handler: function(command) {
-            var cutDevId = [],
-                cutIdNumbers = [],
-                nodId = [];
-            // arm
-            if (command === 'arm' && hazardSensorMetrics.length > 0) {
-                // set vDev state to armed
-                self.vDev.set('metrics:state', 'armed');
+		// get sensors from devices
+		filteredSensorsFromDevices = self.controller.devices.filter(function(dev) {
+			return self.config.sensors.indexOf(dev.id) > -1;
+		});
 
-                // remove polling
-                self.removePolling();
+		// create vDev metrics with sensor values
+		filteredSensorsFromDevices.forEach(function(dev) {
 
-                // set up arm mode
-                self.setupArmed();
+			item = {
+				id: dev.id,
+				deviceType: dev.get('deviceType'),
+				metrics: dev.get('metrics'),
+				hasHistory: dev.get('hasHistory'),
+				updateTime: dev.get('updateTime')
+			};
 
-                self.triggerNotification('on');
-            }
-            // disarm
-            if (command === 'disarm' && hazardSensorMetrics.length > 0) {
-                // set vDev state to disarmed
-                self.vDev.set('metrics:state', 'disarmed');
+			hazardSensorMetrics.push(item);
 
-                // set up cron handler checking for alert
-                if (self.getSensorLevels().indexOf('on') !== -1) {
+			// listen to sensor changes
+			self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
+		});
 
-                    self.checkState();
-                } else {
-                    self.vDev.set('metrics:level', 'OK');
-                    self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
-                }
+		var metr = self.controller.vdevInfo["HazardNotification_" + self.id] && self.controller.vdevInfo["HazardNotification_" + self.id].metrics ? self.controller.vdevInfo["HazardNotification_" + self.id].metrics : null,
+			icon = config.hazardType == "fire" ? "fire_ok.png" : "leakage_ok.png";
 
-                //stop sending notifications
-                console.log('Disarmed. Stop sending notifications ...');
+		// create vDev
+		self.vDev = self.controller.devices.create({
+			deviceId: "HazardNotification_" + self.id,
+			defaults: {
+				deviceType: 'sensorMultiline',
+				metrics: {
+					multilineType: 'protection',
+					title: self.getInstanceTitle(),
+					icon: '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon,
+					level: !!metr && metr.level ? metr.level : 'OK',
+					state: !!metr && metr.state ? metr.state : 'disarmed'
+				}
+			},
+			overlay: {
+				metrics: {
+					title: self.getInstanceTitle(),
+					sensors: hazardSensorMetrics
+				}
+			},
+			handler: function(command) {
+				var cutDevId = [],
+					cutIdNumbers = [],
+					nodId = [];
+				// arm
+				if (command === 'arm' && hazardSensorMetrics.length > 0) {
+					// set vDev state to armed
+					self.vDev.set('metrics:state', 'armed');
 
-                self.triggerNotification('off');
+					// remove polling
+					self.removePolling();
 
-                if (self.sendInterval) {
-                    console.log('Disarmed - Clear send ...');
-                    clearInterval(self.sendInterval);
-                    self.sendInterval = undefined;
-                }
+					// set up arm mode
+					self.setupArmed();
 
-                // remove listener of sensor changes
-                filteredSensorsFromDevices.forEach(function(dev) {
-                    self.controller.devices.off(dev.id, 'change:metrics:level', self.throwAlert);
-                });
+					self.triggerNotification('on');
+				}
+				// disarm
+				if (command === 'disarm' && hazardSensorMetrics.length > 0) {
+					// set vDev state to disarmed
+					self.vDev.set('metrics:state', 'disarmed');
 
-                //if ALERT send basic off to each water anf fire detector
-                if (self.vDev.get('metrics:level') === 'ALERT') {
-                    //get correct node id
-                    self.config.sensors.forEach(function(id) {
-                        cutDevId = id.split('_');
-                        cutIdNumbers = cutDevId[2].split('-');
+					// set up cron handler checking for alert
+					if (self.getSensorLevels().indexOf('on') !== -1) {
 
-                        if (nodId.indexOf(cutIdNumbers[0]) === -1) {
-                            nodId.push(cutIdNumbers[0]);
-                        }
-                    });
+						self.checkState();
+					} else {
+						self.vDev.set('metrics:level', 'OK');
+						self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
+					}
 
-                    nodId.forEach(function(node) {
-                        // send via z-way api
-                        if (zway.devices[node].instances[0].commandClasses[32]) {
-                            zway.devices[node].instances[0].commandClasses[32].Set(0);
-                        }
-                    });
-                }
-            }
+					//stop sending notifications
+                    //console.log('Disarmed. Stop sending notifications ...');
 
-            //update
-            if (command === 'update' && hazardSensorMetrics.length > 0) {
-                filteredSensorsFromDevices.forEach(function(sensor) {
-                    try {
-                        sensor.performCommand('update');
-                    } catch (e) {
-                        self.controller.addNotification('device-info', 'Update has failed. Error:' + e, 'device-status', sensor.id);
-                    }
-                });
-            }
-        },
-        moduleId: this.id
-    });
+					self.triggerNotification('off');
 
-    // setup arm mode (reinitialize vDev)
-    if (self.vDev.get('metrics:state') === 'armed') {
-        self.setupArmed();
-    }
+					if (self.sendInterval) {
+						//console.log('Disarmed - Clear send ...');
+						clearInterval(self.sendInterval);
+						self.sendInterval = undefined;
+					}
 
-    // refresh/create virtual device if sensors are created (after restart)
-    self.controller.devices.on('created', self.updateIfHazardSensorsAreCreated);
+					// remove listener of sensor changes
+					filteredSensorsFromDevices.forEach(function(dev) {
+						self.controller.devices.off(dev.id, 'change:metrics:level', self.throwAlert);
+					});
+
+					//if ALERT send basic off to each water anf fire detector
+					if (self.vDev.get('metrics:level') === 'ALERT') {
+						//get correct node id
+						self.config.sensors.forEach(function(id) {
+							cutDevId = id.split('_');
+							cutIdNumbers = cutDevId[2].split('-');
+
+							if (nodId.indexOf(cutIdNumbers[0]) === -1) {
+								nodId.push(cutIdNumbers[0]);
+							}
+						});
+
+						nodId.forEach(function(node) {
+							// send via z-way api
+							if (zway.devices[node].instances[0].commandClasses[32]) {
+								zway.devices[node].instances[0].commandClasses[32].Set(0);
+							}
+						});
+					}
+				}
+
+				//update
+				if (command === 'update' && hazardSensorMetrics.length > 0) {
+					filteredSensorsFromDevices.forEach(function(sensor) {
+						try {
+							sensor.performCommand('update');
+						} catch (e) {
+							self.controller.addNotification('device-info', 'Update has failed. Error:' + e, 'device-status', sensor.id);
+						}
+					});
+				}
+			},
+			moduleId: self.id
+		});
+
+		// setup arm mode (reinitialize vDev)
+		if (self.vDev.get('metrics:state') === 'armed') {
+			self.setupArmed();
+		}
+
+		// refresh/create virtual device if sensors are created (after restart)
+		self.controller.devices.on('created', self.updateIfHazardSensorsAreCreated);
+	}, 10000);
+
 };
 
 HazardNotification.prototype.stop = function() {
-    var self = this;
+	var self = this;
 
-    if (this.vDev) {
-        this.controller.devices.remove(this.vDev.id);
-        this.vDev = null;
-    }
+	if (this.vDev) {
+		this.controller.devices.remove(this.vDev.id);
+		this.vDev = null;
+	}
 
-    this.controller.devices.filter(function(dev) {
-        return self.config.sensors.indexOf(dev.id) > -1;
-    }).forEach(function(dev) {
-        self.controller.devices.off(dev.id, 'change:[object Object]', self.updateAttributes);
-        self.controller.devices.off(dev.id, 'change:metrics:level', self.throwAlert);
-    });
+	this.controller.devices.filter(function(dev) {
+		return self.config.sensors.indexOf(dev.id) > -1;
+	}).forEach(function(dev) {
+		self.controller.devices.off(dev.id, 'change:[object Object]', self.updateAttributes);
+		self.controller.devices.off(dev.id, 'change:metrics:level', self.throwAlert);
+	});
 
-    this.controller.devices.off('created', self.updateIfHazardSensorsAreCreated);
+	this.controller.devices.off('created', self.updateIfHazardSensorsAreCreated);
 
-    // remove polling
-    this.removePolling();
+	// remove polling
+	this.removePolling();
 
-    HazardNotification.super_.prototype.stop.call(this);
+	HazardNotification.super_.prototype.stop.call(this);
 };
 
 // ----------------------------------------------------------------------------
@@ -385,14 +420,14 @@ HazardNotification.prototype.stop = function() {
 // ----------------------------------------------------------------------------
 
 HazardNotification.prototype.getSensorLevels = function() {
-    var self = this;
+	var self = this;
 
-    return self.vDev.get('metrics:sensors').map(function(sensor) {
-        return sensor.metrics.level;
-    });
+	return self.vDev.get('metrics:sensors').map(function(sensor) {
+		return sensor.metrics.level;
+	});
 };
 
-// compare old and new level to avoid unnecessary updates
+/*// compare old and new level to avoid unnecessary updates
 HazardNotification.prototype.newValueNotEqualsOldValue = function (vDev, valNew) {
     if (vDev && !!vDev) {
         var devType = vDev.get('deviceType'),
@@ -467,4 +502,4 @@ HazardNotification.prototype.setNewDeviceState = function (vDev, type, new_level
                 vDev.performCommand(new_level);
         }
     }
-};
+};*/
