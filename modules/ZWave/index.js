@@ -2176,6 +2176,17 @@ ZWave.prototype.defineHandlers = function () {
 				throw "Unknown SDK version - update Z-Way";
 			}
 
+			var L = 32,
+				bootloader_6_70 =
+				zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
+				||
+				zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
+				||
+				zway.controller.data.bootloaderCRC.value === 0x9d04 // bootloader for UZB 6.70
+				||
+				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71, // bootloader for 6.71 SDK
+				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
+				
 			if (data.file && data.file.content) {
 				var buf = new ArrayBuffer(data.file.content.length);
 				var bufView = new Uint8Array(buf);
@@ -2183,16 +2194,7 @@ ZWave.prototype.defineHandlers = function () {
 					bufView[i] = data.file.content.charCodeAt(i);
 				}
 
-				var L = 32,
-					bootloader_6_70 =
-					zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
-					||
-					zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
-					||
-					parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71 // bootloader for 6.71 SDK
-					,
-					addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-					data = bootloader_6_70 ? buf : buf.slice(0x1800);
+				var data = bootloader_6_70 ? buf : buf.slice(0x1800);
 
 				for (var i = 0; i < data.byteLength; i += L) {
 					var arr = (new Uint8Array(data.slice(i, i+L)));
@@ -2216,16 +2218,7 @@ ZWave.prototype.defineHandlers = function () {
 					async: true,
 					contentType: "application/octet-stream",
 					success: function(response) {
-						var L = 32,
-							bootloader_6_70 =
-							zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
-							||
-							zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
-							||
-							parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71 // bootloader for 6.71 SDK
-							,
-							addr = bootloader_6_70 ? 0x20000 : 0x7800, // M25PE10
-							data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
+						var data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
 
 						for (var i = 0; i < data.byteLength; i += L) {
 							var arr = (new Uint8Array(data.slice(i, i+L)));
