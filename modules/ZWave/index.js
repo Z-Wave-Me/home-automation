@@ -565,7 +565,9 @@ ZWave.prototype.CommunicationLogger = function() {
 	}
 
 	function packetApplication(packet, packetType) {
-		var encaps = [{
+		var encaps = [
+				// MultiChannel
+				{
 					cc: 0x60,
 					cmd: 0x0D,
 					head: 4,
@@ -573,7 +575,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 2,
 					dstI: 3,
 					encap: 'I'
-				}, // MultiChannel
+				},
+				// MultiInstance
 				{
 					cc: 0x60,
 					cmd: 0x06,
@@ -582,7 +585,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 2,
 					encap: 'I'
-				}, // MultiInstance
+				},
+				// Supervision
 				{
 					cc: 0x6C,
 					cmd: 0x01,
@@ -591,7 +595,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 0,
 					encap: 'Su'
-				}, // Supervision
+				},
+				// MultiCommand
 				{
 					cc: 0x8F,
 					cmd: 0x01,
@@ -600,7 +605,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 0,
 					encap: 'M'
-				}, // MultiCommand
+				},
+				// Security
 				{
 					cc: 0x98,
 					cmd: 0x81,
@@ -609,7 +615,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 0,
 					encap: 'S'
-				}, // Security
+				},
+				// Security
 				{
 					cc: 0x98,
 					cmd: 0xC1,
@@ -618,7 +625,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 0,
 					encap: 'S'
-				}, // Security
+				},
+				// Security S2
 				{
 					cc: 0x9F,
 					cmd: 0x03,
@@ -627,7 +635,8 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 0,
 					encap: 'S2'
-				}, // Security S2
+				},
+				// CRC16
 				{
 					cc: 0x56,
 					cmd: 0x01,
@@ -636,7 +645,7 @@ ZWave.prototype.CommunicationLogger = function() {
 					srcI: 0,
 					dstI: 0,
 					encap: 'C'
-				} // CRC16
+				}
 			],
 			result = {
 				src: packetType === 'in' ? packet.nodeId.value : self.zway.controller.data.nodeId.value,
