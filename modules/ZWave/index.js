@@ -5929,15 +5929,17 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							vDev.set("metrics:level", cL);
 							vDev.set("metrics:cnt", cnt);
 							vDev.set("metrics:type", type);
-							/*								vDev.set("metrics", {
-															state: st,
-															currentScene: cS,
-															keyAttribute: kA,
-															maxScenes: mC,
-															level: cL,
-															cnt: cnt,
-															type: type
-														});*/
+							/*
+							vDev.set("metrics", {
+								state: st,
+								currentScene: cS,
+								keyAttribute: kA,
+								maxScenes: mC,
+								level: cL,
+								cnt: cnt,
+								type: type
+							});
+							*/
 						}
 					} catch (e) {}
 				}, "value");
