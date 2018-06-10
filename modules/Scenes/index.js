@@ -104,7 +104,7 @@ Scenes.prototype.init = function(config) {
 			},
 			moduleId: self.id
 		});
-	});
+	}, 10000);
 };
 
 Scenes.prototype.stop = function() {
