@@ -56,7 +56,8 @@ function ZWave(id, controller) {
 		"CentralScene": 0x5b,
 		"Battery": 0x80,
 		"DeviceResetLocally": 0x5a,
-		"BarrierOperator": 0x66
+		"BarrierOperator": 0x66,
+		"Wakeup": 0x84
 	};
 
 	this.default_expert_config = {
@@ -210,22 +211,6 @@ ZWave.prototype.init = function(config) {
 	this.controller.on("ZWave.dataUnbind", this._dataUnbind);
 
 	this.controller.emit("ZWave.register", this.config.name);
-
-	// check periodically if nodes are failed to mark their vDevs as failed too
-
-	// add cron job that is triggered every day
-	this.controller.emit("cron.addTask", "checkForFailedNode.poll", {
-		minute: 0,
-		hour: 0,
-		weekDay: null,
-		day: null,
-		month: null
-	});
-
-	// add event listener
-	this.controller.on("checkForFailedNode.poll", self.checkForFailedNode);
-	// initial call
-	this.checkForFailedNode();
 };
 
 ZWave.prototype.startBinding = function() {
@@ -353,8 +338,6 @@ ZWave.prototype.stop = function() {
 	if (this._dataUnbind) {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
 	}
-
-	this.controller.off("checkForFailedNode.poll", this.checkForFailedNode);
 };
 
 ZWave.prototype.stopBinding = function() {
@@ -841,65 +824,6 @@ ZWave.prototype.certXFCheck = function() {
 	// initial certXF check
 	this.checkForCertFxLicense();
 };
-
-ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
-	var self = this;
-	var zway = this.zway;
-	var nodeId = nodeId;
-
-	// set vDev isFailed state
-	this.devices.filterByNode(nodeId, this.config.name).forEach(function(vDev) {
-		vDev.set('metrics:isFailed', isFailed);
-	});
-
-	if (!isFailed) {
-		zway.devices[nodeId].data.lastReceived.unbind(self.vDevFailedDetection);
-	}
-};
-
-ZWave.prototype.checkFailed = function(nodeId) {
-	var self = this;
-	var zway = this.zway;
-	var devData = zway.devices[nodeId].data,
-		wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
-		isFailedNode = zway.devices[nodeId].data.isFailed.value,
-		now = Math.floor(Date.now() / 1000);
-
-	if (devData.deviceTypeString.value !== 'Portable Remote Controller') {
-		if (wakeupCC) {
-
-			wakeupInterval = wakeupCC.data.interval.value;
-
-			// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
-			if (!!wakeupInterval && (_.max([devData.lastReceived.updateTime, devData.lastSend.updateTime]) < now - 3 * wakeupInterval)) {
-				self.controller.vDevFailedDetection(nodeId, true);
-				// bind on last receive
-				devData.lastReceived.bind(self.vDevFailedDetection);
-			}
-		} else {
-			self.controller.vDevFailedDetection(nodeId, isFailedNode);
-		}
-	}
-};
-
-ZWave.prototype.checkForFailedNode = function(nodeId) {
-	var self = this;
-	var zway = this.zway;
-	try {
-		if (typeof nodeId === 'number') {
-			self.checkFailed(nodeId);
-		} else {
-			Object.keys(zway.devices).forEach(function(nodeId) {
-				if (nodeId != zway.controller.data.nodeId.value) {
-					self.checkFailed(nodeId);
-				}
-			});
-		}
-	} catch (e) {
-		console.log("Failed to check if node is failed. ERROR:", e.toString());
-	}
-};
-
 
 ZWave.prototype.refreshStatisticsPeriodically = function() {
 	var self = this;
@@ -3826,21 +3750,42 @@ ZWave.prototype.dataUnbind = function(dataBindings) {
 
 // ------------- Dead Detection ------------
 
-
 ZWave.prototype.deadDetectionStart = function() {
 	var self = this;
 
 	this.deadDetectionDataBindings = [];
 
-	// Bind to all future CommandClasses changes
+	// Bind to all future Devices creation and enumerate existing
 	this.deadDetectionBinding = this.zway.bind(function(type, nodeId) {
 		if (type === self.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
 			self.deadDetectionAttach(nodeId);
 		}
 	}, this.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+
+	// for battery devices we will check for wakeups once a day
+	// check periodically if nodes are failed to mark their vDevs as failed too
+	this.controller.emit("cron.addTask", "deadDetectionCheckBatteryDevice.poll", {
+		minute: 0,
+		hour: 0,
+		weekDay: null,
+		day: null,
+		month: null
+	});
+	
+	// add event listener
+	this.deadDetectionCheckBatteryDevicesPoll = function() {
+		self.deadDetectionCheckBatteryDevices();
+	};
+	
+	this.controller.on("deadDetectionCheckBatteryDevice.poll", this.deadDetectionCheckBatteryDevicesPoll);
 };
 
 ZWave.prototype.deadDetectionStop = function() {
+	this.controller.emit("cron.removeTask", "deadDetectionCheckBatteryDevice.poll");
+	
+	if (this.deadDetectionCheckBatteryDevicesPoll)
+		this.controller.off("deadDetectionCheckBatteryDevice.poll", this.deadDetectionCheckBatteryDevicesPoll);
+
 	// releasing bindings
 	try {
 		if (this.deadDetectionDataBindings) {
@@ -3854,33 +3799,69 @@ ZWave.prototype.deadDetectionStop = function() {
 
 ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	var self = this;
-	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) {
+	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) { // arg is nodeId (see dataBind)
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
-			self.deadDetectionCheckDevice(self, arg);
+			self.deadDetectionCheckDevice(arg);
 		}
 	});
-	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "failureCount", function(type, arg) {
+	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "failureCount", function(type, arg) { // arg is nodeId (see dataBind)
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
-			self.deadDetectionCheckDevice(self, arg);
+			self.deadDetectionCheckDevice(arg);
 		}
+	});
+	if (this.zway.devices[nodeId].Wakeup) {
+		this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, 0, this.CC["Wakeup"], "lastWakeup", function(type) { // don't use arg, but instead outer scope
+			if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+			if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
+				self.controller.vDevFailedDetection(nodeId, false);
+			}
+		});
+	}
+};
+
+ZWave.prototype.deadDetectionCheckDevice = function(nodeId) {
+	var langFile = this.loadModuleLang();
+
+	if (this.zway.devices[nodeId].data.isFailed.value) {
+		if (this.zway.devices[nodeId].data.failureCount.value === 2) {
+			this.controller.vDevFailedDetection(nodeId, true);
+			this.addNotification("error", langFile.err_connct + nodeId.toString(10), "connection");
+		}
+	} else {
+		this.controller.vDevFailedDetection(nodeId, false);
+		this.addNotification("notification", langFile.dev_btl + nodeId.toString(10), "connection");
+	}
+};
+
+ZWave.prototype.deadDetectionCheckBatteryDevices = function() {
+	var self = this;
+	Object.keys(this.zway.devices).forEach(function(nodeId) {
+		self.deadDetectionCheckBatteryDevice(nodeId);
 	});
 };
 
-ZWave.prototype.deadDetectionCheckDevice = function(self, nodeId) {
-	var values = nodeId.toString(10),
-		langFile = this.loadModuleLang();
-
-	if (self.zway.devices[nodeId].data.isFailed.value) {
-		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			self.controller.vDevFailedDetection(nodeId, true);
-			self.addNotification("error", langFile.err_connct + values, "connection");
+ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
+	var devData = this.zway.devices[nodeId].data,
+		wakeupData = this.zway.devices[nodeId].Wakeup && this.zway.devices[nodeId].Wakeup.data,
+		isFailedNode = devData.isFailed.value || false,
+		now = Math.floor(Date.now()/1000);
+	
+	if (nodeId === this.zway.controller.data.nodeId.value) return;
+	
+	if (wakeupData && devData.basicType.value !== 1) {
+		// handle only sleeping nodes with Wakeup CC excluding Portable Controllers
+		var wakeupInterval = wakeupData.interval.value;
+		console.log("!!! Checking " + nodeId + ", W = " + wakeupData.lastWakeup.value + ", I = " + wakeupData.interval.value + " Now " + now);
+		if (
+			wakeupData.interval.value > 0 && // Wakeup Interval is not zero
+			this.zway.controller.data.nodeId.value === wakeupData.nodeId.value && // controller is the destination for Wakeup Notification
+			wakeupData.lastWakeup.value + 3 * wakeupData.interval.value < now // wakeup happens within the last three Wakeup Intervals
+		) {
+			this.controller.vDevFailedDetection(nodeId, true);
 		}
-	} else {
-		self.controller.vDevFailedDetection(nodeId, false);
-		self.addNotification("notification", langFile.dev_btl + values, "connection");
-	}
+	}   
 };
 
 // ----------------- Devices Creator ---------------

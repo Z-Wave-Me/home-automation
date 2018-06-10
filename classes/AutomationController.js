@@ -2916,18 +2916,9 @@ AutomationController.prototype.reoderDevices = function(list, action) {
 };
 
 AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, zwayName) {
-	var nodeId = nodeId,
-		getNodeVDevs = [];
-
-	getNodeVDevs = this.devices.filterByNode(nodeId, zwayName);
-
-	// set vDev isFailed state
-	getNodeVDevs.forEach(function(vDev) {
-		vDev.set('metrics:isFailed', isFailed);
-
-		if (!isFailed) {
-			// bind on last receive
-			zway.devices[nodeId].data.lastReceived.unbind(this.vDevFailedDetection);
+	this.devices.filterByNode(nodeId, zwayName).forEach(function(vDev) {
+		if (vDev.get('metrics:isFailed') !== isFailed) { // don't trigger events if values is not changing to minimize the number of events
+			vDev.set('metrics:isFailed', isFailed);
 		}
 	});
 };
