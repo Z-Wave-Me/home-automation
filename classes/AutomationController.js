@@ -893,20 +893,10 @@ AutomationController.prototype.listInstances = function() {
 
 AutomationController.prototype.createInstance = function(reqObj) {
 
-	getNextId = function() {
-		var id = 0;
-		self.instances.forEach(function(instance) {
-			if (instance.id > id) {
-				id = instance.id;
-			}
-		});
-		return id + 1;
-	}
-
 	//var instance = this.instantiateModule(id, className, config),
 	var self = this,
 		langFile = this.loadMainLang(),
-		id = getNextId(),
+		id = findSmallestNotAssignedIntegerValue(self.instances, 'id'),
 		instance = null,
 		module = _.find(self.modules, function(module) {
 			return module.meta.id === reqObj.moduleId;
@@ -923,13 +913,13 @@ AutomationController.prototype.createInstance = function(reqObj) {
 		}
 
 		instance = _.extend(reqObj, {
-			id: alreadyExisting[0] ? alreadyExisting[0].id : id,
+			id: alreadyExisting[0] ? reqObj.id : id,
 			active: reqObj.active === 'true' || reqObj.active ? true : false
 		});
 
 		self.instances.push(instance);
 		self.saveConfig();
-		self.emit('core.instanceCreated', id);
+		self.emit('core.instanceCreated', instance.id);
 		result = self.instantiateModule(instance);
 
 		// remove instance from list if broken
@@ -2930,4 +2920,346 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 			zway.devices[nodeId].data.lastReceived.unbind(this.vDevFailedDetection);
 		}
 	});
+};
+
+AutomationController.prototype.transformIntoRulesInstance = function(moduleName) {
+	/*{
+		"simple": {},
+		"advanced": {
+			"active": true,
+			"triggerScenes": [],
+			"triggerDelay": 0,
+			"logicalOperator": "and",
+			"tests": [{
+				"type": "time",
+				"operator": "<=",
+				"level": "15:00"
+			},
+			{
+				"deviceId": "DummyDevice_74",
+				"type": "switchBinary",
+				"level": "on",
+				"sendAction": false
+			}],
+			"targetElements": [{
+				"deviceId": "ZWayVDev_zway_26-0-51-rgb",
+				"deviceType": "switchRGBW",
+				"level": {
+					"r": 0,
+					"g": 0,
+					"b": 255
+				},
+				"sendAction": true,
+				"reverseLevel": null
+			}],
+			"sendNotifications": [],
+			"reverseDelay": 0,
+			"triggerOnDevicesChange": true
+		},
+		"reverse": false
+	}*/
+
+	if (['IfThen', 'LogicalRules'].indexOf(moduleName) < 0) {
+		return;
+	}
+
+	var self = this,
+		instances = [],
+		newInstances = [];
+
+	var moduleMeta = this.modules[moduleName] && this.modules[moduleName].meta || null;
+
+	instances = _.filter(this.instances, function(i) {
+		return moduleName === i.moduleId;
+	});
+
+	if (instances.length && moduleMeta) {
+		instances.forEach(function(instance) {
+			var newInstance = {
+				moduleId: "Rules",
+				active: false,
+				title: '',
+				params: {
+					simple: {},
+					advanced: {},
+					reverse: false
+				}
+			}
+
+			var newSimpleParams = {
+				triggerEvent: {},
+				triggerDelay: 0,
+				targetElements: [],
+				sendNotifications: [],
+				reverseDelay: 0
+			};
+
+			var newAdvancedParams = {
+				active: false,
+				triggerOnDevicesChange: false,
+				triggerScenes: [],
+				triggerDelay: 0,
+				logicalOperator: 'and',
+				tests: [],
+				targetElements: [],
+				sendNotifications: [],
+				reverseDelay: 0
+			};
+
+			if ((moduleName === 'LogicalRules' && has_higher_version(moduleMeta.version, '1.4.0')) || (moduleName === 'IfThen' && has_higher_version(moduleMeta.version, '2.5.0'))) {
+				// adjust title and instance state
+				newInstance.active = instance.active || false;
+				newInstance.title = 'Rules - ' + instance.title || 'Automated transformed Rule from module: ' + moduleName;
+
+				if (moduleName === 'LogicalRules') {
+
+					// transform into advanced Rule
+					newInstance.params.advanced = self.transformIntoRule('advanced', instance, newAdvancedParams);
+
+					// add empty simple data
+					newInstance.params.simple = newSimpleParams;
+
+				} else if (moduleName === 'IfThen') {
+
+					// transform into simple Rule
+					newInstance.params.simple = self.transformIntoRule('simple', instance, newSimpleParams);
+
+					// add empty advanced data
+					newInstance.params.advanced = newAdvancedParams;
+				}
+
+				newInstances.push(newInstance);
+
+				// stop old instance
+				if (instance.active || instance.active === 'true') {
+					instance.active = false;
+					self.reconfigureInstance(instance.id, instance);
+				}
+			}
+		});
+
+		// create new instances
+		newInstances.forEach(function(inst, index) {
+			//setTimeout(function() {
+			var active = inst.active;
+			if (!active) {
+				inst.active = true;
+			}
+
+			addedInst = self.createInstance(inst);
+
+			// stop old instance
+			if (addedInst && (!active || active === 'false')) {
+				addedInst.active = false;
+				self.reconfigureInstance(addedInst.id, addedInst);
+			}
+			//}, index * 5000);
+		});
+	}
+};
+
+AutomationController.prototype.transformIntoRule = function(type, instance, object) {
+	var self = this,
+		targetDevices = [],
+		tests = [],
+		oldParams = instance.params ? instance.params : null,
+		newParams = object ? object : null;
+
+	/*
+	newParams = {
+		active: true,
+		triggerOnDevicesChange: false,
+		triggerScenes: [],
+		triggerDelay: 0,
+		logicalOperator: 'and',
+		tests: [],
+		targetElements: [],
+		sendNotifications: [],
+		reverseDelay: 0
+	}
+	*/
+
+	// transform old structure to new
+	if (oldParams && type === 'advanced' && newParams) {
+
+		object.active = true;
+		object.triggerOnDevicesChange = oldParams.triggerOnDevicesChange || false;
+		object.logicalOperator = oldParams.logicalOperator || 'and';
+		object.tests = oldParams.test || [];
+		object.targetElements = oldParams.action || [];
+
+		// concat all tests to one list
+		oldParams.tests.forEach(function(test) {
+
+			if (Object.keys(test)[1]) {
+				var entry = test[Object.keys(test)[1]];
+
+				if (test['testType'] === 'time') {
+					tests.push({
+						type: "time",
+						operator: test.testOperator,
+						level: test.testValue
+					});
+				} else if (test['testType'] === 'nested') {
+					var nested = {
+						logicalOperator: test['testNested']['logicalOperator'],
+						tests: []
+					}
+
+					test['testNested']['tests'].forEach(function(nestedTest) {
+						var nestedTests = [];
+
+						if (nestedTest['testType'] === 'time') {
+							nested.tests.push({
+								type: "time",
+								operator: test.testOperator,
+								level: test.testValue
+							});
+						} else {
+							nested.tests.push(self.transformAdvancedEntry('test', nestedTest));
+						}
+					});
+
+					tests.push(nested);
+
+					//
+				} else {
+					tests.push(self.transformAdvancedEntry('test', entry));
+				}
+			}
+		});
+
+		// concat actions to one list
+		Object.keys(oldParams.action).forEach(function(key) {
+
+			oldParams.action[key].forEach(function(entry) {
+				if (entry.device || (key === 'scenes' && entry)) {
+					if (key === 'scenes') {
+						targetDevices.push({
+							deviceId: entry,
+							deviceType: 'toggleButton',
+							level: 'on'
+						});
+					} else if (key === 'notification') {
+						newParams.sendNotifications.push(entry);
+					} else {
+						targetDevices.push(self.transformAdvancedEntry('action', entry));
+					}
+				}
+			});
+		});
+
+		// make new params uniq
+		newParams.sendNotifications = _.uniq(newParams.sendNotifications);
+		newParams.tests = _.uniq(tests);
+		newParams.targetElements = _.uniq(targetDevices);
+
+	} else if (oldParams && type === 'simple' && newParams) {
+
+		/*
+		newParams = {
+			triggerEvent: {},
+			triggerDelay: 0,
+			targetElements: [],
+			sendNotifications: [],
+			reverseDelay: 0
+		}
+		*/
+
+		// transform trigger event
+		if (Object.keys(oldParams.sourceDevice)[1]) {
+			var entry = oldParams.sourceDevice[Object.keys(oldParams.sourceDevice)[1]];
+
+			newParams.triggerEvent = self.transformSimpleEntry(entry);
+		}
+
+		// concat actions to one list
+		oldParams.targets.forEach(function(key) {
+			var targetEntry = key[Object.keys(key)[1]];
+
+			if (key['notification']) {
+				newParams.sendNotifications.push(targetEntry);
+			} else if (key['scene']) {
+				newParams.targetElements.push({
+					deviceId: targetEntry.target,
+					deviceType: 'toggleButton',
+					level: 'on'
+				});
+			} else {
+				newParams.targetElements.push(self.transformSimpleEntry(targetEntry));
+			}
+		});
+
+		// make new params uniq
+		newParams.sendNotifications = _.uniq(newParams.sendNotifications);
+		newParams.targetElements = _.uniq(newParams.targetElements);
+	}
+
+	return newParams;
+}
+
+AutomationController.prototype.transformSimpleEntry = function(entry) {
+	console.log('### simple entry:', JSON.stringify(entry));
+	var vdevId = entry && entry.device ? entry.device : entry.target,
+		vDev = this.devices.get(vdevId);
+
+	if (vDev) {
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			{
+			    deviceId: '',
+			    deviceType: '',
+			    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+			    sendAction: true, || false >> don't do this if level is already triggered
+			    operator: '',
+			    reverseLevel: "off"  // set reverse level on or off
+			}
+		*/
+		return {
+			deviceId: vdevId,
+			deviceType: vDev ? vDev.get('deviceType') : '',
+			level: entry.status && entry.status != 'level' ? entry.status : (entry.status === 'level' && entry.level ? entry.level : (entry.status === 'color' && entry.color ? entry.color : 0)),
+			sendAction: entry.sendAction || false,
+			operator: entry.operator,
+			reverseLevel: "off"
+		};
+	}
+};
+
+AutomationController.prototype.transformAdvancedEntry = function(transformation, entry) {
+	var vDev = this.devices.get(entry.device);
+
+	if (vDev) {
+		if (transformation === 'test') {
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+				{
+				    deviceId: '',
+				    type: '',
+				    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+				    operator: ''
+				}
+			*/
+			return {
+				deviceId: vDev.id,
+				type: vDev ? vDev.get('deviceType') : '',
+				level: entry['testValue'],
+				operator: entry['testOperator'] ? entry['testOperator'] : undefined
+			}
+
+		} else if (transformation === 'action') {
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+				{
+				    deviceId: '',
+				    deviceType: '',
+				    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+				    sendAction: true || false >> don't do this if level is already triggered
+				}
+			*/
+			return {
+				deviceId: entry.device,
+				deviceType: vDev ? vDev.get('deviceType') : '',
+				level: entry.status && entry.status != 'level' ? entry.status : (entry.status === 'level' && entry.level ? entry.level : (entry.status === 'color' && entry.color ? entry.color : 0)),
+				sendAction: entry.sendAction || false
+			}
+		}
+	}
 };
