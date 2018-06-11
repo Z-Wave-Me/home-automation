@@ -4691,7 +4691,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									icon: 'multilevel',
 									title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 									level: 'off',
-									oldLevel: 'off',
 									isFailed: false
 								}
 							}
@@ -4727,26 +4726,25 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									var newVal,
 										oldVal = this.get('metrics:level');
 
-									// up, down for Blinds
-									if ("on" === command || "up" === command) {
+									if ("on" === command) {
 										newVal = 255;
-									} else if ("off" === command || "down" === command) {
+									} else if ("off" === command) {
 										newVal = 0;
 									} else if ("min" === command) {
 										newVal = 10;
-									} else if ("max" === command || "upMax" === command) {
-										newVal = 99;
+									} else if ("max" === command) {
+										newVal = 255;
 									} else if ("increase" === command) {
-										newVal = this.metrics.level + 10;
+										newVal = Math.ceil(oldVal * 255 / 99) + 10;
 										if (0 !== newVal % 10) {
 											newVal = Math.round(newVal / 10) * 10;
 										}
-										if (newVal > 99) {
-											newVal = 99;
+										if (newVal > 255) {
+											newVal = 255;
 										}
 
 									} else if ("decrease" === command) {
-										newVal = this.metrics.level - 10;
+										newVal = Math.ceil(oldVal * 255 / 99) - 10;
 										if (newVal < 0) {
 											newVal = 0;
 										}
@@ -4754,24 +4752,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 											newVal = Math.round(newVal / 10) * 10;
 										}
 									} else if ("exact" === command || "exactSmooth" === command) {
-										newVal = parseInt(args.level, 10);
+										newVal = Math.ceil(parseInt(args.level, 10) * 255 / 99);
 										if (newVal < 0) {
 											newVal = 0;
-										} else if (newVal === 255) {
+										} else if (newVal > 255) {
 											newVal = 255;
-										} else if (newVal > 99) {
-											if (newVal === 100) {
-												newVal = 99;
-											} else {
-												newVal = null;
-											}
 										}
-									} else if ("stop" === command) { // Commands for Blinds
-										cc.StopLevelChange(colorId);
-									} else if ("startUp" === command) {
-										cc.StartLevelChange(colorId, 0);
-									} else if ("startDown" === command) {
-										cc.StartLevelChange(colorId, 1);
 									}
 
 									if (0 === newVal || !!newVal) {
@@ -4780,10 +4766,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										} else {
 											cc.Set(colorId, newVal);
 										}
-									}
-
-									if (oldVal != newVal) {
-										this.set('metrics:oldLevel', oldVal);
 									}
 								},
 								moduleId: self.id
@@ -4796,7 +4778,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + colorId);
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-											vDev.set("metrics:level", this.value);
+											vDev.set("metrics:level", Math.ceil(this.value * 99 / 255));
 										}
 									} catch (e) {}
 								}, "value");
