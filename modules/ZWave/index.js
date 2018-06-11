@@ -4642,7 +4642,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							color.r = parseInt(args.red, 10);
 							color.g = parseInt(args.green, 10);
 							color.b = parseInt(args.blue, 10);
-							vDev_rgb.set('metrics:oldColor', color);
 						}
 						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
 					},
@@ -4651,19 +4650,23 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 				function handleColor(type, arg) {
 					try {
+						var isOn = cc.data && (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value);
+						
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
 						} else {
-							vDev_rgb.set("metrics:color", {
+							var color = {
 								r: cc.data[COLOR_RED].level.value,
 								g: cc.data[COLOR_GREEN].level.value,
 								b: cc.data[COLOR_BLUE].level.value
-							});
+							};
+							vDev_rgb.set("metrics:color", color);
+							if (isOn) {
+								vDev_rgb.set('metrics:oldColor', color);
+							}
 						}
 
-						if (cc.data) {
-							vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
-						}
+						vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 					} catch (e) {}
 				}
 
@@ -4724,10 +4727,15 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								overlay: {},
 								handler: function(command, args) {
 									var newVal,
-										oldVal = this.get('metrics:level');
-
+										level = this.get('metrics:level'),
+										oldLevel = this.get('metrics:oldLevel');
+									
 									if ("on" === command) {
-										newVal = 255;
+										if (!_.isEmpty(oldLevel)) {
+											newVal = oldLevel;
+										} else {
+											newVal = 255;
+										}
 									} else if ("off" === command) {
 										newVal = 0;
 									} else if ("min" === command) {
@@ -4735,7 +4743,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									} else if ("max" === command) {
 										newVal = 255;
 									} else if ("increase" === command) {
-										newVal = Math.ceil(oldVal * 255 / 99) + 10;
+										newVal = Math.ceil(level * 255 / 99) + 10;
 										if (0 !== newVal % 10) {
 											newVal = Math.round(newVal / 10) * 10;
 										}
@@ -4744,7 +4752,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										}
 
 									} else if ("decrease" === command) {
-										newVal = Math.ceil(oldVal * 255 / 99) - 10;
+										newVal = Math.ceil(level * 255 / 99) - 10;
 										if (newVal < 0) {
 											newVal = 0;
 										}
@@ -4778,7 +4786,11 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + colorId);
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-											vDev.set("metrics:level", Math.ceil(this.value * 99 / 255));
+											var value = Math.ceil(this.value * 99 / 255);
+											vDev.set("metrics:level", value);
+											if (this.value > 0) {
+												vDev.set("metrics:oldLevel", value);
+											}
 										}
 									} catch (e) {}
 								}, "value");
