@@ -930,12 +930,13 @@ Security.prototype.initStates = function() {
 		function() {});
 	//--OFF-State--
 	self.off = new this.State(this.StateStatus, this.StateEnum.OFF, function() {
-		self.vDev.set("metrics:state", StateEnum.OFF);
+		self.vDev.set("metrics:state", self.StateEnum.OFF);
 		self.vDev.set("metrics:level", 'off');
 		self.vDev.set("metrics:Rlevel", 'off');
 		self.vDev.set("metrics:Clevel", self.performEnum.COFF.name);
 		self.vDev.set("metrics:state", self.StateEnum.OFF);
 		self.endschedule();
+		self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
 	}, function(args) {
 		self.schedule();
 	}, function() {});
@@ -979,7 +980,7 @@ Security.prototype.initStates = function() {
 		}*/
 
 	}, function() {
-		self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
+		//self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
 		/*if (self.disconfirmDatas) {
 			self.disconfirmDatas.forEach(
 				function(args) {
@@ -1059,7 +1060,7 @@ Security.prototype.alarmTriggering = function(alarmMsg) {
 Security.prototype.silenttriggerFunction = function(alarmMsg) {
 	this.log("error", "ALARM silent " + "Security_" + this.id + " " + alarmMsg, false);
 
-	this.shiftTriggerDevices(this.disconfirmDatas, this.disconfirmNots, 'arm');
+	this.shiftTriggerDevices(this.silentalarmDatas, this.silentalarmNots, 'arm');
 	/*if (self.silentalarmDatas) {
 		self.silentalarmDatas.forEach(
 			function(args) {
