@@ -2913,15 +2913,16 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 	});
 };
 
-AutomationController.prototype.transformIntoRulesInstance = function(moduleName) {
+AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 
-	if (['IfThen', 'LogicalRules'].indexOf(moduleName) < 0) {
-		return;
+	if (['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'].indexOf(moduleName) < 0) {
+		return null;
 	}
 
 	var self = this,
 		instances = [],
-		newInstances = [];
+		newInstances = [],
+		result = [];
 
 	var moduleMeta = this.modules[moduleName] && this.modules[moduleName].meta || null;
 
@@ -2931,57 +2932,98 @@ AutomationController.prototype.transformIntoRulesInstance = function(moduleName)
 
 	if (instances.length && moduleMeta) {
 		instances.forEach(function(instance) {
-			var newInstance = {
-				moduleId: "Rules",
-				active: false,
-				title: '',
-				params: {
-					simple: {},
-					advanced: {},
-					reverse: false
-				}
+			var newInstance = {};
+
+			switch (moduleName) {
+				case 'IfThen':
+				case 'LogicalRules':
+					newInstance = {
+						moduleId: 'Rules',
+						active: false,
+						title: '',
+						params: {
+							simple: {
+								triggerEvent: {},
+								triggerDelay: 0,
+								targetElements: [],
+								sendNotifications: [],
+								reverseDelay: 0
+							},
+							advanced: {
+								active: false,
+								triggerOnDevicesChange: false,
+								triggerScenes: [],
+								triggerDelay: 0,
+								logicalOperator: 'and',
+								tests: [],
+								targetElements: [],
+								sendNotifications: [],
+								reverseDelay: 0
+							},
+							reverse: false
+						}
+					}
+					break;
+				case 'ScheduledScene':
+
+					newInstance = {
+						moduleId: 'Schedules',
+						active: false,
+						title: '',
+						params: {
+							devices: [],
+							customIcon: {}
+						}
+					};
+
+					break;
+				case 'LightScene':
+
+					newInstance = {
+						moduleId: 'Scenes',
+						active: false,
+						title: '',
+						params: {
+							weekdays: [],
+							times: [],
+							devices: []
+						}
+					};
+
+					break;
 			}
 
-			var newSimpleParams = {
-				triggerEvent: {},
-				triggerDelay: 0,
-				targetElements: [],
-				sendNotifications: [],
-				reverseDelay: 0
-			};
+			if ((moduleName === 'LogicalRules' && has_higher_version(moduleMeta.version, '1.4.0')) ||
+				(moduleName === 'IfThen' && has_higher_version(moduleMeta.version, '2.5.0')) ||
+				(moduleName === 'ScheduledScene' && has_higher_version(moduleMeta.version, '2.2.1')) ||
+				(moduleName === 'LightScene' && has_higher_version(moduleMeta.version, '1.1.0'))) {
 
-			var newAdvancedParams = {
-				active: false,
-				triggerOnDevicesChange: false,
-				triggerScenes: [],
-				triggerDelay: 0,
-				logicalOperator: 'and',
-				tests: [],
-				targetElements: [],
-				sendNotifications: [],
-				reverseDelay: 0
-			};
-
-			if ((moduleName === 'LogicalRules' && has_higher_version(moduleMeta.version, '1.4.0')) || (moduleName === 'IfThen' && has_higher_version(moduleMeta.version, '2.5.0'))) {
 				// adjust title and instance state
 				newInstance.active = instance.active || false;
-				newInstance.title = 'Rules - ' + instance.title || 'Automated transformed Rule from module: ' + moduleName;
+				newInstance.title = moduleName + ' - ' + instance.title || 'Automatically transformed ' + newInstance.moduleId + ' instance from ' + moduleName + ' instance #' + instance.id;
 
 				if (moduleName === 'LogicalRules') {
 
 					// transform into advanced Rule
-					newInstance.params.advanced = self.transformIntoRule('advanced', instance, newAdvancedParams);
-
-					// add empty simple data
-					newInstance.params.simple = newSimpleParams;
+					newInstance.params.advanced = self.transformIntoRule('advanced', instance, newInstance.params.advanced);
 
 				} else if (moduleName === 'IfThen') {
 
 					// transform into simple Rule
-					newInstance.params.simple = self.transformIntoRule('simple', instance, newSimpleParams);
+					newInstance.params.simple = self.transformIntoRule('simple', instance, newInstance.params.simple);
 
-					// add empty advanced data
-					newInstance.params.advanced = newAdvancedParams;
+				} else if (moduleName === 'ScheduledScene') {
+
+					// update params and instance
+					newInstance.params.devices = self.concatDeviceListEntries(instance.params.devices);
+					newInstance.params.times = instance.params.times;
+					newInstance.params.weekdays = instance.params.weekdays
+
+				} else if (moduleName === 'LightScene') {
+
+					// update params and instance
+					newInstance.params.devices = self.concatDeviceListEntries(instance.params.devices);
+					newInstance.params.customIcon = instance.params.customIcon;
 				}
 
 				newInstances.push(newInstance);
@@ -2996,7 +3038,7 @@ AutomationController.prototype.transformIntoRulesInstance = function(moduleName)
 
 		// create new instances
 		newInstances.forEach(function(inst, index) {
-			//setTimeout(function() {
+
 			var active = inst.active;
 			if (!active) {
 				inst.active = true;
@@ -3004,14 +3046,26 @@ AutomationController.prototype.transformIntoRulesInstance = function(moduleName)
 
 			addedInst = self.createInstance(inst);
 
+			result.push({
+				id: addedInst.id,
+				title: inst.title,
+				old_moduleId: moduleName
+			});
+
 			// stop old instance
-			if (addedInst && (!active || active === 'false')) {
-				addedInst.active = false;
+			if (addedInst) {
+				if (!active || active === 'false') {
+					addedInst.active = false;
+				}
+
+				addedInst.transformed = true;
+
 				self.reconfigureInstance(addedInst.id, addedInst);
 			}
-			//}, index * 5000);
 		});
 	}
+
+	return result;
 };
 
 AutomationController.prototype.transformIntoRule = function(type, instance, object) {
@@ -3228,4 +3282,50 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 			}
 		}
 	}
+};
+
+AutomationController.prototype.concatDeviceListEntries = function(devices) {
+	console.log('### devices:', JSON.stringify(devices));
+	var self = this,
+		newDevArr = [];
+
+	// concat all lists to one
+	Object.keys(devices).forEach(function(key) {
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			{
+			    deviceId: '',
+			    deviceType: '',
+			    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+			    sendAction: true || false >> don't do this if level is already triggered
+			}
+		*/
+		devices[key].forEach(function(entry) {
+			var vDev = null;
+			if (entry.device || (key === 'scenes' && entry)) {
+				if (key === 'scenes') {
+					newDevArr.push({
+						deviceId: entry,
+						deviceType: 'toggleButton',
+						level: 'on'
+					});
+				} else {
+					vDev = self.devices.get(entry.device);
+
+					newDevArr.push({
+						deviceId: entry.device,
+						deviceType: vDev ? vDev.get('deviceType') : '',
+						level: entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+							r: entry.color.red,
+							g: entry.color.green,
+							b: entry.color.blue
+						} : 0)),
+						sendAction: entry.sendAction
+					});
+				}
+			}
+		});
+	});
+
+	// update params and instance
+	return _.uniq(newDevArr);
 };
