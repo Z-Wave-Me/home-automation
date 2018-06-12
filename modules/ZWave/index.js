@@ -56,7 +56,8 @@ function ZWave(id, controller) {
 		"CentralScene": 0x5b,
 		"Battery": 0x80,
 		"DeviceResetLocally": 0x5a,
-		"BarrierOperator": 0x66
+		"BarrierOperator": 0x66,
+		"Wakeup": 0x84
 	};
 
 	this.default_expert_config = {
@@ -210,22 +211,6 @@ ZWave.prototype.init = function(config) {
 	this.controller.on("ZWave.dataUnbind", this._dataUnbind);
 
 	this.controller.emit("ZWave.register", this.config.name);
-
-	// check periodically if nodes are failed to mark their vDevs as failed too
-
-	// add cron job that is triggered every day
-	this.controller.emit("cron.addTask", "checkForFailedNode.poll", {
-		minute: 0,
-		hour: 0,
-		weekDay: null,
-		day: null,
-		month: null
-	});
-
-	// add event listener
-	this.controller.on("checkForFailedNode.poll", self.checkForFailedNode);
-	// initial call
-	this.checkForFailedNode();
 };
 
 ZWave.prototype.startBinding = function() {
@@ -353,8 +338,6 @@ ZWave.prototype.stop = function() {
 	if (this._dataUnbind) {
 		this.controller.off("ZWave.dataUnbind", this._dataUnbind);
 	}
-
-	this.controller.off("checkForFailedNode.poll", this.checkForFailedNode);
 };
 
 ZWave.prototype.stopBinding = function() {
@@ -850,65 +833,6 @@ ZWave.prototype.certXFCheck = function() {
 	// initial certXF check
 	this.checkForCertFxLicense();
 };
-
-ZWave.prototype.vDevFailedDetection = function(nodeId, isFailed) {
-	var self = this;
-	var zway = this.zway;
-	var nodeId = nodeId;
-
-	// set vDev isFailed state
-	this.devices.filterByNode(nodeId, this.config.name).forEach(function(vDev) {
-		vDev.set('metrics:isFailed', isFailed);
-	});
-
-	if (!isFailed) {
-		zway.devices[nodeId].data.lastReceived.unbind(self.vDevFailedDetection);
-	}
-};
-
-ZWave.prototype.checkFailed = function(nodeId) {
-	var self = this;
-	var zway = this.zway;
-	var devData = zway.devices[nodeId].data,
-		wakeupCC = zway.devices[nodeId].instances[0].commandClasses[0x84],
-		isFailedNode = zway.devices[nodeId].data.isFailed.value,
-		now = Math.floor(Date.now() / 1000);
-
-	if (devData.deviceTypeString.value !== 'Portable Remote Controller') {
-		if (wakeupCC) {
-
-			wakeupInterval = wakeupCC.data.interval.value;
-
-			// check if the last wakeup happens within the last three wakeup intervals - set all vDevs failed if not
-			if (!!wakeupInterval && (_.max([devData.lastReceived.updateTime, devData.lastSend.updateTime]) < now - 3 * wakeupInterval)) {
-				self.controller.vDevFailedDetection(nodeId, true);
-				// bind on last receive
-				devData.lastReceived.bind(self.vDevFailedDetection);
-			}
-		} else {
-			self.controller.vDevFailedDetection(nodeId, isFailedNode);
-		}
-	}
-};
-
-ZWave.prototype.checkForFailedNode = function(nodeId) {
-	var self = this;
-	var zway = this.zway;
-	try {
-		if (typeof nodeId === 'number') {
-			self.checkFailed(nodeId);
-		} else {
-			Object.keys(zway.devices).forEach(function(nodeId) {
-				if (nodeId != zway.controller.data.nodeId.value) {
-					self.checkFailed(nodeId);
-				}
-			});
-		}
-	} catch (e) {
-		console.log("Failed to check if node is failed. ERROR:", e.toString());
-	}
-};
-
 
 ZWave.prototype.refreshStatisticsPeriodically = function() {
 	var self = this;
@@ -2322,7 +2246,7 @@ ZWave.prototype.defineHandlers = function() {
 				||
 				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71, // bootloader for 6.71 SDK
 				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
-				
+
 			if (data.file && data.file.content) {
 				var buf = new ArrayBuffer(data.file.content.length);
 				var bufView = new Uint8Array(buf);
@@ -3835,21 +3759,42 @@ ZWave.prototype.dataUnbind = function(dataBindings) {
 
 // ------------- Dead Detection ------------
 
-
 ZWave.prototype.deadDetectionStart = function() {
 	var self = this;
 
 	this.deadDetectionDataBindings = [];
 
-	// Bind to all future CommandClasses changes
+	// Bind to all future Devices creation and enumerate existing
 	this.deadDetectionBinding = this.zway.bind(function(type, nodeId) {
 		if (type === self.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
 			self.deadDetectionAttach(nodeId);
 		}
 	}, this.ZWAY_DEVICE_CHANGE_TYPES["DeviceAdded"] | this.ZWAY_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+
+	// for battery devices we will check for wakeups once a day
+	// check periodically if nodes are failed to mark their vDevs as failed too
+	this.controller.emit("cron.addTask", "deadDetectionCheckBatteryDevice.poll", {
+		minute: 0,
+		hour: 0,
+		weekDay: null,
+		day: null,
+		month: null
+	});
+
+	// add event listener
+	this.deadDetectionCheckBatteryDevicesPoll = function() {
+		self.deadDetectionCheckBatteryDevices();
+	};
+
+	this.controller.on("deadDetectionCheckBatteryDevice.poll", this.deadDetectionCheckBatteryDevicesPoll);
 };
 
 ZWave.prototype.deadDetectionStop = function() {
+	this.controller.emit("cron.removeTask", "deadDetectionCheckBatteryDevice.poll");
+
+	if (this.deadDetectionCheckBatteryDevicesPoll)
+		this.controller.off("deadDetectionCheckBatteryDevice.poll", this.deadDetectionCheckBatteryDevicesPoll);
+
 	// releasing bindings
 	try {
 		if (this.deadDetectionDataBindings) {
@@ -3863,32 +3808,68 @@ ZWave.prototype.deadDetectionStop = function() {
 
 ZWave.prototype.deadDetectionAttach = function(nodeId) {
 	var self = this;
-	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) {
+	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "isFailed", function(type, arg) { // arg is nodeId (see dataBind)
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
-			self.deadDetectionCheckDevice(self, arg);
+			self.deadDetectionCheckDevice(arg);
 		}
 	});
-	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "failureCount", function(type, arg) {
+	this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, "failureCount", function(type, arg) { // arg is nodeId (see dataBind)
 		if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
 		if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
-			self.deadDetectionCheckDevice(self, arg);
+			self.deadDetectionCheckDevice(arg);
 		}
+	});
+	if (this.zway.devices[nodeId].Wakeup) {
+		this.dataBind(this.deadDetectionDataBindings, this.zway, nodeId, 0, this.CC["Wakeup"], "lastWakeup", function(type) { // don't use arg, but instead outer scope
+			if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+			if (!(type & self.ZWAY_DATA_CHANGE_TYPE["PhantomUpdate"])) {
+				self.controller.vDevFailedDetection(nodeId, false);
+			}
+		});
+	}
+};
+
+ZWave.prototype.deadDetectionCheckDevice = function(nodeId) {
+	var langFile = this.loadModuleLang();
+
+	if (this.zway.devices[nodeId].data.isFailed.value) {
+		if (this.zway.devices[nodeId].data.failureCount.value === 2) {
+			this.controller.vDevFailedDetection(nodeId, true);
+			this.addNotification("error", langFile.err_connct + nodeId.toString(10), "connection");
+		}
+	} else {
+		this.controller.vDevFailedDetection(nodeId, false);
+		this.addNotification("notification", langFile.dev_btl + nodeId.toString(10), "connection");
+	}
+};
+
+ZWave.prototype.deadDetectionCheckBatteryDevices = function() {
+	var self = this;
+	Object.keys(this.zway.devices).forEach(function(nodeId) {
+		self.deadDetectionCheckBatteryDevice(nodeId);
 	});
 };
 
-ZWave.prototype.deadDetectionCheckDevice = function(self, nodeId) {
-	var values = nodeId.toString(10),
-		langFile = this.loadModuleLang();
+ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
+	var devData = this.zway.devices[nodeId].data,
+		wakeupData = this.zway.devices[nodeId].Wakeup && this.zway.devices[nodeId].Wakeup.data,
+		isFailedNode = devData.isFailed.value || false,
+		now = Math.floor(Date.now() / 1000);
 
-	if (self.zway.devices[nodeId].data.isFailed.value) {
-		if (self.zway.devices[nodeId].data.failureCount.value === 2) {
-			self.controller.vDevFailedDetection(nodeId, true);
-			self.addNotification("error", langFile.err_connct + values, "connection");
+	if (nodeId === this.zway.controller.data.nodeId.value) return;
+
+	if (wakeupData && devData.basicType.value !== 1) {
+		// handle only sleeping nodes with Wakeup CC excluding Portable Controllers
+		var wakeupInterval = wakeupData.interval.value;
+		console.log("!!! Checking " + nodeId + ", W = " + wakeupData.lastWakeup.value + ", I = " + wakeupData.interval.value + " Now " + now);
+		if (
+			wakeupData.interval.value > 0 && // Wakeup Interval is not zero
+			this.zway.controller.data.nodeId.value === wakeupData.nodeId.value && // controller is the destination for Wakeup Notification
+			wakeupData.lastWakeup.value + 3 * wakeupData.interval.value < now // wakeup happens within the last three Wakeup Intervals
+		) {
+			this.controller.vDevFailedDetection(nodeId, true);
 		}
-	} else {
-		self.controller.vDevFailedDetection(nodeId, false);
-		self.addNotification("notification", langFile.dev_btl + values, "connection");
 	}
 };
 
@@ -4485,13 +4466,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			});
 
 			if (vDev) {
+				vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value ? "on" : "off");
 						}
-						// set failed status
-						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -4596,13 +4576,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			});
 
 			if (vDev) {
+				vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value);
 						}
-						// set failed status
-						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -4663,7 +4642,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							color.r = parseInt(args.red, 10);
 							color.g = parseInt(args.green, 10);
 							color.b = parseInt(args.blue, 10);
-							vDev_rgb.set('metrics:oldColor', color);
 						}
 						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
 					},
@@ -4672,25 +4650,28 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 				function handleColor(type, arg) {
 					try {
+						var isOn = cc.data && (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value);
+
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
 						} else {
-							vDev_rgb.set("metrics:color", {
+							var color = {
 								r: cc.data[COLOR_RED].level.value,
 								g: cc.data[COLOR_GREEN].level.value,
 								b: cc.data[COLOR_BLUE].level.value
-							});
+							};
+							vDev_rgb.set("metrics:color", color);
+							if (isOn) {
+								vDev_rgb.set('metrics:oldColor', color);
+							}
 						}
 
-						if (cc.data) {
-							vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
-						}
-						// set failed status
-						vDev_rgb.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+						vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 					} catch (e) {}
 				}
 
 				if (vDev_rgb) {
+					vDev_rgb.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_BLUE + ".level", handleColor, "value");
@@ -4713,7 +4694,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									icon: 'multilevel',
 									title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 									level: 'off',
-									oldLevel: 'off',
+									oldLevel: 0,
 									isFailed: false
 								}
 							}
@@ -4747,28 +4728,32 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								overlay: {},
 								handler: function(command, args) {
 									var newVal,
-										oldVal = this.get('metrics:level');
+										level = this.get('metrics:level'),
+										oldLevel = this.get('metrics:oldLevel');
 
-									// up, down for Blinds
-									if ("on" === command || "up" === command) {
-										newVal = 255;
-									} else if ("off" === command || "down" === command) {
+									if ("on" === command) {
+										if (!_.isEmpty(oldLevel)) {
+											newVal = oldLevel;
+										} else {
+											newVal = 255;
+										}
+									} else if ("off" === command) {
 										newVal = 0;
 									} else if ("min" === command) {
 										newVal = 10;
-									} else if ("max" === command || "upMax" === command) {
-										newVal = 99;
+									} else if ("max" === command) {
+										newVal = 255;
 									} else if ("increase" === command) {
-										newVal = this.metrics.level + 10;
+										newVal = Math.ceil(level * 255 / 99) + 10;
 										if (0 !== newVal % 10) {
 											newVal = Math.round(newVal / 10) * 10;
 										}
-										if (newVal > 99) {
-											newVal = 99;
+										if (newVal > 255) {
+											newVal = 255;
 										}
 
 									} else if ("decrease" === command) {
-										newVal = this.metrics.level - 10;
+										newVal = Math.ceil(level * 255 / 99) - 10;
 										if (newVal < 0) {
 											newVal = 0;
 										}
@@ -4776,24 +4761,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 											newVal = Math.round(newVal / 10) * 10;
 										}
 									} else if ("exact" === command || "exactSmooth" === command) {
-										newVal = parseInt(args.level, 10);
+										newVal = Math.ceil(parseInt(args.level, 10) * 255 / 99);
 										if (newVal < 0) {
 											newVal = 0;
-										} else if (newVal === 255) {
+										} else if (newVal > 255) {
 											newVal = 255;
-										} else if (newVal > 99) {
-											if (newVal === 100) {
-												newVal = 99;
-											} else {
-												newVal = null;
-											}
 										}
-									} else if ("stop" === command) { // Commands for Blinds
-										cc.StopLevelChange(colorId);
-									} else if ("startUp" === command) {
-										cc.StartLevelChange(colorId, 0);
-									} else if ("startDown" === command) {
-										cc.StartLevelChange(colorId, 1);
 									}
 
 									if (0 === newVal || !!newVal) {
@@ -4803,24 +4776,23 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 											cc.Set(colorId, newVal);
 										}
 									}
-
-									if (oldVal != newVal) {
-										this.set('metrics:oldLevel', oldVal);
-									}
 								},
 								moduleId: self.id
 							});
 
 							if (vDev) {
+								vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, colorId + ".level", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 											self.controller.devices.remove(vDevId + separ + colorId);
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-											vDev.set("metrics:level", this.value);
+											var value = Math.ceil(this.value * 99 / 255);
+											vDev.set("metrics:level", value);
+											if (this.value > 0) {
+												vDev.set("metrics:oldLevel", value);
+											}
 										}
-										// set failed status
-										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -4903,6 +4875,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
 								}
 
+								vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".level", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -4925,8 +4898,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 												}
 											}
 										}
-										// set failed status
-										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 
@@ -5023,6 +4994,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							});
 
 							if (vDev) {
+								vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".val", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5030,8 +5002,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 											vDev.set("metrics:level", this.value);
 										}
-										// set failed status
-										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -5159,6 +5129,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							});
 
 							if (vDev) {
+								vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, scaleId + ".val", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5166,8 +5137,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 											vDev.set("metrics:level", this.value);
 										}
-										// set failed status
-										vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -5218,6 +5187,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					});
 
 					if (vDev) {
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "val", function(type) {
 							try {
 								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5225,8 +5195,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 									vDev.set("metrics:level", this.value);
 								}
-								// set failed status
-								vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 							} catch (e) {}
 						}, "value");
 					}
@@ -5264,13 +5232,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			});
 
 			if (vDev) {
+				vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
 						}
-						// set failed status
-						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -5306,13 +5273,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				moduleId: self.id
 			});
 			if (vDev) {
+				vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value === 255 ? "close" : "open");
 						}
-						// set failed status
-						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -5347,13 +5313,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				moduleId: self.id
 			});
 			if (vDev) {
+				vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "state", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value === 255 ? "open" : "close");
 						}
-						// set failed status
-						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}
@@ -5414,13 +5379,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					});
 
 					if (m_vDev) {
+						m_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, this.CC["ThermostatMode"], "mode", function(type) {
 							try {
 								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 									m_vDev.set("metrics:level", this.value != MODE_OFF ? "on" : "off");
 								}
-								// set failed status
-								m_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 							} catch (e) {}
 						}, "value");
 					}
@@ -5476,6 +5440,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							});
 
 							if (t_vDev[mode]) {
+								t_vDev[mode].set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5484,8 +5449,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 											t_vDev[mode].set("metrics:level", this.value);
 										}
-										// set failed status
-										t_vDev[mode].set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								});
 							}
@@ -5578,6 +5541,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							});
 
 							if (a_vDev) {
+								a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, sensorTypeId + ".sensorState", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5585,8 +5549,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 											a_vDev.set("metrics:level", this.value ? "on" : "off");
 										}
-										// set failed status
-										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 									} catch (e) {}
 								}, "value");
 							}
@@ -5674,6 +5636,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									});
 
 									if (a_vDev) {
+										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 											try {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5682,8 +5645,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 													(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
 													a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
 												}
-												// set failed status
-												a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 											} catch (e) {}
 										}, "value");
 									}
@@ -5778,6 +5739,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 													});
 
 													if (a_vDev) {
+														a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 														self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 															try {
 																if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5786,8 +5748,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 																	(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
 																	a_vDev.set("metrics:level", this.event.value ? "on" : "off");
 																}
-																// set failed status
-																a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 															} catch (e) {}
 														}, "value");
 													}
@@ -5828,6 +5788,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										});
 
 										if (a_vDev) {
+											a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 												try {
 													if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -5836,8 +5797,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 														(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
 														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
 													}
-													// set failed status
-													a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 												} catch (e) {}
 											}, "value");
 										}
@@ -5914,6 +5873,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			}, 1000);
 
 			if (vDev) {
+				vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "currentScene", function(type) {
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
@@ -5964,18 +5924,18 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							vDev.set("metrics:level", cL);
 							vDev.set("metrics:cnt", cnt);
 							vDev.set("metrics:type", type);
-							/*								vDev.set("metrics", {
-															state: st,
-															currentScene: cS,
-															keyAttribute: kA,
-															maxScenes: mC,
-															level: cL,
-															cnt: cnt,
-															type: type
-														});*/
+							/*
+							vDev.set("metrics", {
+								state: st,
+								currentScene: cS,
+								keyAttribute: kA,
+								maxScenes: mC,
+								level: cL,
+								cnt: cnt,
+								type: type
+							});
+							*/
 						}
-						// set failed status
-						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 					} catch (e) {}
 				}, "value");
 			}

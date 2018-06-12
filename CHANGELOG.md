@@ -1,3 +1,241 @@
+#XX.XX.2018 v2.3.8
+Features:
+* remove uploaded room images
+* new base modules added that combine or enhance functionalities of already well known modules, which are working without Alpca JS.
+  These new modules can be find and configured in SHUI under the Automation menu (gear wheel):
+  * Hazard Notification (combination from Leakage Protection and Fire Protection modules, ready for more)
+  * Rules (combination of If>Then (simple mode) and Logical Rule (expert mode) modules)
+  * Scenes (enhancement of Light Scene module)
+  * Schedules (enhancement of Scheduled Scene module)
+  * Security (refactored and scheduling enhanced)
+  * Heating (enhanced Climate Control module)
+
+Changes:
+* node id to vdev of zway devices added
+* add remove location image api
+* add prepareHTTPResponse function to AutomationModule.js
+* ignore list of restore/backup functions refactored
+* ZAutomation history API removed (now it comes from the module itself)
+* storage function enhanced to remove not existing and cleared filenames from list
+* add PNG and GIF to img type check
+* QR-Code isn't stored on z-way-server anymore, it's generated on demand in UI instead (Devices > Mobile > Add)
+* add restriction to QR code API - admin can request all QR codes, users can only request their own
+* logical helper functions from Rules moved and centralized into AutomationModule.js, so also other modules can use them
+* postfix.json updated (changed or added):
+  * added:
+    * Steinel XLED home 2
+    * Steinel Senor-Switched Outdoor LightScene
+    * Foxx Project Door/Window Sensor
+    * Foxx Project Flood Sensor
+    * Everspring/TechniSat RM1
+    * Heiman Smart Smoke Sensor
+    * Aeotec NanoMote One
+    * Aeotec NanoMote Quad
+    * Aeotec TriSensor
+    * TKBHome single/dual wall switch
+    * TKBHOME single/dual dimmer switch
+    * TKB Home Energy Plug In Switch
+    * Everspring Plug
+    * Popp Power Plug
+    * MCO Home Fan Coil Thermostat (2-pipe) V3.0
+    * MCO Home CO2 Monitor
+    * Qubino 3-Phase Smart Meter
+    * Qubino Smart Plug
+
+  * changed:
+    * Philio 4 in 1 Multisensor
+    * Philio Relay Insert Blind
+    * Philio Double Relay Insert 2*1.5 kW with Metering Function
+    * Foxx Project Smart Switch Gen5
+    * POPP Flood / Water Leakage Sensor
+    * TKBHome two channel switch TZX7
+    * TKB Plug Dimmer
+    * Qubino Smart Meter
+    * Qubino Flush Thermostats
+    * Qubino On/Off thermostat
+    * Aeotec Home Energy Meter - Gen5
+    * PAN16 Smart Energy Plug In Switch
+    * Everspring Lamp Holder
+    * Poly Control Dana Lock V3
+    * OOMI Door Window Sensor
+    * MCO Home - Water Heating Thermostat with humidity sensor
+    * MCO Home - Electrical Heating Thermostat with humidity sensor
+    * Sensative Strips Comfort / Drips
+    * Hank Flood Sensor
+
+Fixes:
+* ZWave v2.3.0
+  * update of failed status in zway vdevs fixed
+  * thermostat min/max fixed
+  * Public Z-Wave API with Expert UI fixed
+* postfix update fixed
+* Object.keys() error if cc.data is null fixed
+* download URL of skins fixed
+* Cannot select none image for room fixed
+* icon upload and add uppercase extension (GIF,PNG,JPG,JPEG) support fixed
+* missing transformation of main_sensor during update leads to indexOf undefined error - fixed
+
+Modules:
+* ZWave v2.3.0
+  * Gas Alarm (V7) 0x12 support added
+  * new alarm type - gas added
+  * to not polute the global namespace area a var was added to postfix logic
+  * Optimized a bit the F/W update code and added support of 40196 bootloader for upgrade UZB 5.07->5.27
+* HTTPDevice v2.2.0
+  * enhancement: can set method GET/POST for update command
+  * helper fixed
+* DeviceHistory v2.0.0
+  * new api HistoryAPI added (moved from ZAutomation and AutomationController to module)
+* BindDevices v1.0.2
+  * sensorMultilevel support added
+* MailNotifier v1.2.0
+  * change logic to handle also different mail adresses in e-mail outgoing
+* BatteryPolling v2.2.0
+  * notifications support module added
+* MobileAppSupport v1.2.7
+  * table of undefined bug fixed
+
+#23.03.2018 v2.3.7
+Features:
+* Added emulateOff postfix to Sensor Binary
+* support for wifiplugs added (TP-Link HS100, TP-Link HS110, EDIMAX SP1101, EDIMAX SP2101)
+* allow probeType postfix in ZWave module
+* IP-address api added
+
+Changes:
+* Set thermostat value only if they are not equal * this will prevent ClimateControl app to set values twice
+* add ip address to qrcode
+* stored QR code is removed, now it is only produced in UI temporarely against successful authorization
+* module categories "system" and "wifiplug" added
+* rework the ZAutomation/api/v1/icons/upload API to return a name
+* language files refactored
+* postfix.json updated (changed or added):
+  * added:
+    * Popp Z-Weather
+    * Z-Wave.me Dimmer
+    * Danfoss Hydronic Controller 10
+    * Aeotec RGBW Bulb
+    * Aeotec Dual Nano Switch with Meter
+    * Aeotec Indoor Siren Gen5
+    * Aeotec Door Window Sensor 6
+    * Aeotec Dual Nano Switch
+    * Aeotec Water Sensor 6
+    * Secure 7 Day Programmable Thermostat
+    * Secure Temperature Sensor
+    * Secure Wall Thermostat with LCD Display
+    * Secure Z-Wave controlled Boiler Actuator (2 Channels)
+    * Secure Receiver with Relay SSR303
+    * Philio Smart Dimmer Socket PAD02
+    * Philio Double Relay Insert 2*1.5 kW with Metering Function
+    * OOMI Mote
+    * OOMI Plug
+    * OOMI Range Extender
+    * OOMI In-Wall Switch
+    * OOMI In-Wall Dimmer
+    * OOMI Colorstripe
+    * OOMI WATERSENSOR
+    * OOMI Multisensor
+    * Everspring Temperature and Humidity Sensor
+    * Everspring Wall Plug Dimmer
+    * Everspring ST812 Flood Detector
+    * Everspring SE812 Indoor Siren
+    * Devolo Alarmsirene
+    * Devolo Luftfeuchtemelder
+    * Devolo Wassermelder
+    * Devolo Bewegungsmelder
+    * Devolo Funkschalter
+    * Devolo Radiator Thermostat
+    * Devolo Rauchmelder
+    * Devolo KFOB
+    * Devolo Wall Plug 2.0
+    * TKBHOME single/dual dimmer switch
+    * SCHWAIGER * 4 in 1 Multi Sensor Outdoor IP43
+    * Fibaro Door/Window Sensor G5 * RU
+    * Fibaro Single Switch * 1*2.5 kW
+    * Fibaro Heat Controller
+    * MCO Home PM2.5 Sensor
+    * MCO Home Water Heating Thermostat with humidity sensor
+    * MCO Home CO2 Monitor
+    * MCO Home Glass Touch Switch (4 Buttons) British Standard
+    * MCO Home Glass Touch Switch (2 Buttons) British Standard
+    * MCO Home Glass Touch Switch (1 Button)
+    * MCO Home Glass Touch Switch (2 Buttons)
+    * MCO Home * Electrical Heating Thermostat with humidity sensor
+    * Sensative Stripe Multisensor Drip
+    * BeNext Wall Plug with Dimmer Function
+    * Hank Four-Key Scene Contoller
+    * Hank One-Key Scene Contoller
+    * Hank Flood Sensor
+    * Hank Motion Sensor
+    * Hank Smart Plug
+    * NEO Coolcam Door / Window Sensor
+    * NEO Coolcam Motion Sensor
+    * NEO Coolcam Siren
+    * Steinel Indoor Light
+    * Steinel Motion Sensor
+  * changed:
+    * Fibaro Double Relay Switch FGS-222
+    * Fibaro Door/Window Sensor G5
+    * Fibaro Dimmer 2
+    * Danfoss Hydronic Controller 5
+    * Devolo Door/Window Contact
+    * Aeotec Nano Switch 1 Relay
+    * Aeotec Range Extender 6
+    * Aeotec Door Window Sensor 6
+    * Aeotec Recessed Door G5
+    * Aeotec Multisensor Gen 6
+    * Qubino On/Off thermostat
+    * Qubino Flush Thermostat
+    * Qubino Relay Insert 1*2,3 kW
+    * Qubino PWM Thermostat
+    * TKB Plug Dimmer French
+    * WiDom Universal Double Switch
+    * Philio 4 in 1 Multisensor
+    * Philio PST02-5B Motion Sensor
+    * Philio Motionsensor
+    * Philio Relay Insert Blind
+    * Philio Double Relay Insert 2x1,5KW
+    * Philio PAN16 Smart Energy Plug In Switch
+
+Fixes:
+* Fix not working time-zone set via shui
+* remote triggered on Z-Way startup
+* fix setDefaultLang function
+* allow probeType postfix in ZWave module
+* save probeType in vdevInfo
+
+Modules:
+* TP-Link HS100 v1.0.0
+  * added to support this wifi plug
+* TP-Link HS110 v1.0.0
+  * added to support this wifi plug
+* EDIMAX SP1101 v1.0.0
+  * added to support this wifi plug
+* EDIMAX SP2101 v1.0.0
+  * added to support this wifi plug
+* Sonos v1.2.3:
+  * fixes
+  * icon changed
+* MobileAppSupport v1.2.5:
+  * bugfix catches undefined-error occurred during adding first mobile device
+  * bugfix removing mobile device deletes LOCAL widget
+  * update IOS token
+  * remove devices manually
+* ScheduledScene v2.2.0:
+  * can start scene many times in day
+  * defined default times: 00:00 and 12:00
+  * devices on new path, as example switch: this.config.devices.switches
+  * compatibility with old config
+  * Bugfix: Dimmers, Lock and scenes didn't run.
+* IfThen v2.5.1:
+  * allow negative values for multilevel sensors
+* LightScene v1.1.1:
+  * icon changed
+* AutoLock v1.2:
+  *  added switchBinary support and checkbox Don't send Lock command if doorlock already closed
+* TamperAutoOff v1.1.0:
+  * fix to SETDATA 
+
 #04.10.2017 v2.3.6
 Changes:
 * show more logs on ZWaveBinding error

@@ -2906,58 +2906,14 @@ AutomationController.prototype.reoderDevices = function(list, action) {
 };
 
 AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, zwayName) {
-	var nodeId = nodeId,
-		getNodeVDevs = [];
-
-	getNodeVDevs = this.devices.filterByNode(nodeId, zwayName);
-
-	// set vDev isFailed state
-	getNodeVDevs.forEach(function(vDev) {
-		vDev.set('metrics:isFailed', isFailed);
-
-		if (!isFailed) {
-			// bind on last receive
-			zway.devices[nodeId].data.lastReceived.unbind(this.vDevFailedDetection);
+	this.devices.filterByNode(nodeId, zwayName).forEach(function(vDev) {
+		if (vDev.get('metrics:isFailed') !== isFailed) { // don't trigger events if values is not changing to minimize the number of events
+			vDev.set('metrics:isFailed', isFailed);
 		}
 	});
 };
 
 AutomationController.prototype.transformIntoRulesInstance = function(moduleName) {
-	/*{
-		"simple": {},
-		"advanced": {
-			"active": true,
-			"triggerScenes": [],
-			"triggerDelay": 0,
-			"logicalOperator": "and",
-			"tests": [{
-				"type": "time",
-				"operator": "<=",
-				"level": "15:00"
-			},
-			{
-				"deviceId": "DummyDevice_74",
-				"type": "switchBinary",
-				"level": "on",
-				"sendAction": false
-			}],
-			"targetElements": [{
-				"deviceId": "ZWayVDev_zway_26-0-51-rgb",
-				"deviceType": "switchRGBW",
-				"level": {
-					"r": 0,
-					"g": 0,
-					"b": 255
-				},
-				"sendAction": true,
-				"reverseLevel": null
-			}],
-			"sendNotifications": [],
-			"reverseDelay": 0,
-			"triggerOnDevicesChange": true
-		},
-		"reverse": false
-	}*/
 
 	if (['IfThen', 'LogicalRules'].indexOf(moduleName) < 0) {
 		return;
@@ -3097,8 +3053,8 @@ AutomationController.prototype.transformIntoRule = function(type, instance, obje
 				if (test['testType'] === 'time') {
 					tests.push({
 						type: "time",
-						operator: test.testOperator,
-						level: test.testValue
+						operator: entry.testOperator,
+						level: entry.testValue
 					});
 				} else if (test['testType'] === 'nested') {
 					var nested = {
@@ -3112,8 +3068,8 @@ AutomationController.prototype.transformIntoRule = function(type, instance, obje
 						if (nestedTest['testType'] === 'time') {
 							nested.tests.push({
 								type: "time",
-								operator: test.testOperator,
-								level: test.testValue
+								operator: nestedTest.testOperator,
+								level: nestedTest.testValue
 							});
 						} else {
 							nested.tests.push(self.transformAdvancedEntry('test', nestedTest));
@@ -3199,9 +3155,14 @@ AutomationController.prototype.transformIntoRule = function(type, instance, obje
 }
 
 AutomationController.prototype.transformSimpleEntry = function(entry) {
-	console.log('### simple entry:', JSON.stringify(entry));
+	//console.log('simple entry:', JSON.stringify(entry));
 	var vdevId = entry && entry.device ? entry.device : entry.target,
-		vDev = this.devices.get(vdevId);
+		vDev = this.devices.get(vdevId),
+		lvl = entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+			r: entry.color.red,
+			g: entry.color.green,
+			b: entry.color.blue
+		} : 0));
 
 	if (vDev) {
 		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
@@ -3217,7 +3178,7 @@ AutomationController.prototype.transformSimpleEntry = function(entry) {
 		return {
 			deviceId: vdevId,
 			deviceType: vDev ? vDev.get('deviceType') : '',
-			level: entry.status && entry.status != 'level' ? entry.status : (entry.status === 'level' && entry.level ? entry.level : (entry.status === 'color' && entry.color ? entry.color : 0)),
+			level: lvl,
 			sendAction: entry.sendAction || false,
 			operator: entry.operator,
 			reverseLevel: "off"
@@ -3226,6 +3187,7 @@ AutomationController.prototype.transformSimpleEntry = function(entry) {
 };
 
 AutomationController.prototype.transformAdvancedEntry = function(transformation, entry) {
+	//console.log('advanced entry:', JSON.stringify(entry));
 	var vDev = this.devices.get(entry.device);
 
 	if (vDev) {
@@ -3257,7 +3219,11 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 			return {
 				deviceId: entry.device,
 				deviceType: vDev ? vDev.get('deviceType') : '',
-				level: entry.status && entry.status != 'level' ? entry.status : (entry.status === 'level' && entry.level ? entry.level : (entry.status === 'color' && entry.color ? entry.color : 0)),
+				level: entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+					r: entry.color.red,
+					g: entry.color.green,
+					b: entry.color.blue
+				} : 0)),
 				sendAction: entry.sendAction || false
 			}
 		}
