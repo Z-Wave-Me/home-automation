@@ -2927,7 +2927,7 @@ AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 	var moduleMeta = this.modules[moduleName] && this.modules[moduleName].meta || null;
 
 	instances = _.filter(this.instances, function(i) {
-		return moduleName === i.moduleId;
+		return moduleName === i.moduleId && !i.params.transformed;
 	});
 
 	if (instances.length && moduleMeta) {
@@ -2971,8 +2971,9 @@ AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 						active: false,
 						title: '',
 						params: {
-							devices: [],
-							customIcon: {}
+							weekdays: [],
+							times: [],
+							devices: []
 						}
 					};
 
@@ -2984,9 +2985,12 @@ AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 						active: false,
 						title: '',
 						params: {
-							weekdays: [],
-							times: [],
-							devices: []
+							devices: [],
+							customIcon: {
+								table: [{
+									icon: ''
+								}]
+							}
 						}
 					};
 
@@ -3017,22 +3021,21 @@ AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 					// update params and instance
 					newInstance.params.devices = self.concatDeviceListEntries(instance.params.devices);
 					newInstance.params.times = instance.params.times;
-					newInstance.params.weekdays = instance.params.weekdays
+					newInstance.params.weekdays = instance.params.weekdays;
 
 				} else if (moduleName === 'LightScene') {
 
 					// update params and instance
-					newInstance.params.devices = self.concatDeviceListEntries(instance.params.devices);
-					newInstance.params.customIcon = instance.params.customIcon;
+					newInstance.params.devices = self.concatDeviceListEntries(instance.params);
 				}
 
 				newInstances.push(newInstance);
 
 				// stop old instance
-				if (instance.active || instance.active === 'true') {
-					instance.active = false;
-					self.reconfigureInstance(instance.id, instance);
-				}
+				instance.active = instance.active || instance.active === 'true' ? false : instance.active;
+				// set transformed flag
+				instance.params.transformed = true;
+				self.reconfigureInstance(instance.id, instance);
 			}
 		});
 
@@ -3053,14 +3056,10 @@ AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 			});
 
 			// stop old instance
-			if (addedInst) {
-				if (!active || active === 'false') {
-					addedInst.active = false;
-				}
+			if (addedInst && (!active || active === 'false')) {
 
-				addedInst.transformed = true;
-
-				self.reconfigureInstance(addedInst.id, addedInst);
+				inst.active = false;
+				self.reconfigureInstance(addedInst.id, inst);
 			}
 		});
 	}
@@ -3159,10 +3158,9 @@ AutomationController.prototype.transformIntoRule = function(type, instance, obje
 			});
 		});
 
-		// make new params uniq
-		newParams.sendNotifications = _.uniq(newParams.sendNotifications);
-		newParams.tests = _.uniq(tests);
-		newParams.targetElements = _.uniq(targetDevices);
+		// set new params
+		newParams.tests = tests;
+		newParams.targetElements = targetDevices;
 
 	} else if (oldParams && type === 'simple' && newParams) {
 
@@ -3199,10 +3197,6 @@ AutomationController.prototype.transformIntoRule = function(type, instance, obje
 				newParams.targetElements.push(self.transformSimpleEntry(targetEntry));
 			}
 		});
-
-		// make new params uniq
-		newParams.sendNotifications = _.uniq(newParams.sendNotifications);
-		newParams.targetElements = _.uniq(newParams.targetElements);
 	}
 
 	return newParams;
@@ -3285,9 +3279,9 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 };
 
 AutomationController.prototype.concatDeviceListEntries = function(devices) {
-	console.log('### devices:', JSON.stringify(devices));
 	var self = this,
-		newDevArr = [];
+		newDevArr = [],
+		keys = ['switches', 'dimmers', 'thermostats', 'locks', 'scenes'];
 
 	// concat all lists to one
 	Object.keys(devices).forEach(function(key) {
@@ -3299,33 +3293,36 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 			    sendAction: true || false >> don't do this if level is already triggered
 			}
 		*/
-		devices[key].forEach(function(entry) {
-			var vDev = null;
-			if (entry.device || (key === 'scenes' && entry)) {
-				if (key === 'scenes') {
-					newDevArr.push({
-						deviceId: entry,
-						deviceType: 'toggleButton',
-						level: 'on'
-					});
-				} else {
-					vDev = self.devices.get(entry.device);
+		if (_.isArray(devices[key]) && keys.indexOf(key) >= 0) {
+			devices[key].forEach(function(entry) {
 
-					newDevArr.push({
-						deviceId: entry.device,
-						deviceType: vDev ? vDev.get('deviceType') : '',
-						level: entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
-							r: entry.color.red,
-							g: entry.color.green,
-							b: entry.color.blue
-						} : 0)),
-						sendAction: entry.sendAction
-					});
+				var vDev = null;
+				if (entry.device || (key === 'scenes' && entry)) {
+					if (key === 'scenes') {
+						newDevArr.push({
+							deviceId: entry,
+							deviceType: 'toggleButton',
+							level: 'on'
+						});
+					} else {
+						vDev = self.devices.get(entry.device);
+
+						newDevArr.push({
+							deviceId: entry.device,
+							deviceType: vDev ? vDev.get('deviceType') : '',
+							level: entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+								r: entry.color.red,
+								g: entry.color.green,
+								b: entry.color.blue
+							} : 0)),
+							sendAction: entry.sendAction
+						});
+					}
 				}
-			}
-		});
+			});
+		}
 	});
 
 	// update params and instance
-	return _.uniq(newDevArr);
+	return newDevArr;
 };
