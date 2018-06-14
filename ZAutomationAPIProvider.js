@@ -943,6 +943,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	transformModule: function() {
+		console.log('### this.req:', JSON.stringify(this.req));
 		var reply = {
 				error: 'Something went wrong.',
 				data: null,
@@ -951,8 +952,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqObj = parseToObject(this.req.body),
 			sources = ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'],
 			targets = ['Rules', 'Schedules', 'Scenes'],
-			source = this.req.query.source && ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'].indexOf(this.req.query.source) > -1 ? this.req.query.source : null,
-			target = this.req.query.target && ['Rules', 'Schedules', 'Scenes'].indexOf(this.req.query.target) > -1 ? this.req.query.target : null,
+			source = reqObj.source && ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'].indexOf(reqObj.source) > -1 ? reqObj.source : null,
+			target = reqObj.target && ['Rules', 'Schedules', 'Scenes'].indexOf(reqObj.target) > -1 ? reqObj.target : null,
 			pairing = false,
 			resultList = [];
 
