@@ -943,7 +943,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	transformModule: function() {
-		console.log('### this.req:', JSON.stringify(this.req));
 		var reply = {
 				error: 'Something went wrong.',
 				data: null,
