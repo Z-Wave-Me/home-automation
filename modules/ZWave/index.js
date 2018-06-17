@@ -2246,7 +2246,7 @@ ZWave.prototype.defineHandlers = function() {
 				||
 				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71, // bootloader for 6.71 SDK
 				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
-				
+
 			if (data.file && data.file.content) {
 				var buf = new ArrayBuffer(data.file.content.length);
 				var bufView = new Uint8Array(buf);
@@ -3780,18 +3780,18 @@ ZWave.prototype.deadDetectionStart = function() {
 		day: null,
 		month: null
 	});
-	
+
 	// add event listener
 	this.deadDetectionCheckBatteryDevicesPoll = function() {
 		self.deadDetectionCheckBatteryDevices();
 	};
-	
+
 	this.controller.on("deadDetectionCheckBatteryDevice.poll", this.deadDetectionCheckBatteryDevicesPoll);
 };
 
 ZWave.prototype.deadDetectionStop = function() {
 	this.controller.emit("cron.removeTask", "deadDetectionCheckBatteryDevice.poll");
-	
+
 	if (this.deadDetectionCheckBatteryDevicesPoll)
 		this.controller.off("deadDetectionCheckBatteryDevice.poll", this.deadDetectionCheckBatteryDevicesPoll);
 
@@ -3855,10 +3855,10 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 	var devData = this.zway.devices[nodeId].data,
 		wakeupData = this.zway.devices[nodeId].Wakeup && this.zway.devices[nodeId].Wakeup.data,
 		isFailedNode = devData.isFailed.value || false,
-		now = Math.floor(Date.now()/1000);
-	
+		now = Math.floor(Date.now() / 1000);
+
 	if (nodeId === this.zway.controller.data.nodeId.value) return;
-	
+
 	if (wakeupData && devData.basicType.value !== 1) {
 		// handle only sleeping nodes with Wakeup CC excluding Portable Controllers
 		var wakeupInterval = wakeupData.interval.value;
@@ -3869,7 +3869,7 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 		) {
 			this.controller.vDevFailedDetection(nodeId, true);
 		}
-	}   
+	}
 };
 
 // ----------------- Devices Creator ---------------
@@ -4650,7 +4650,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				function handleColor(type, arg) {
 					try {
 						var isOn = cc.data && (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value);
-						
+
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
 						} else {
@@ -4729,7 +4729,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									var newVal,
 										level = this.get('metrics:level'),
 										oldLevel = this.get('metrics:oldLevel');
-									
+
 									if ("on" === command) {
 										if (!_.isEmpty(oldLevel)) {
 											newVal = oldLevel;

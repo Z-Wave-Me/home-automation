@@ -116,6 +116,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/modules/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
 
 		this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
+		this.router.post("/modules/transform", this.ROLE.ADMIN, this.transformModule);
 
 		this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
@@ -937,6 +938,41 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		} else {
 			reply.code = 200;
 			reply.data = category;
+		}
+
+		return reply;
+	},
+	transformModule: function() {
+		var reply = {
+				error: 'Something went wrong.',
+				data: null,
+				code: 500
+			},
+			reqObj = parseToObject(this.req.body),
+			sources = ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'],
+			targets = ['Rules', 'Schedules', 'Scenes'],
+			source = reqObj.source && ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'].indexOf(reqObj.source) > -1 ? reqObj.source : null,
+			target = reqObj.target && ['Rules', 'Schedules', 'Scenes'].indexOf(reqObj.target) > -1 ? reqObj.target : null,
+			pairing = false,
+			resultList = [];
+
+		pairing = (target === 'Rules' && (source === 'IfThen' || source === 'LogicalRules')) ||
+			(target === 'Schedules' && source === 'ScheduledScene') ||
+			(target === 'Scenes' && source === 'LightScene');
+
+		if (pairing) {
+			//try {
+			resultList = this.controller.transformIntoNewInstance(source);
+
+			reply.code = 200;
+			reply.data = resultList;
+			reply.error = null;
+			/*} catch (e) {
+				reply.error += ' Error: ' + e.toString();
+			}*/
+		} else {
+			reply.code = 400;
+			reply.error = 'Bad Request. Following transformations are allowed: IfThen/LogicalRules > Rules, ScheduledScene > Schedules, LightScene > Scenes';
 		}
 
 		return reply;

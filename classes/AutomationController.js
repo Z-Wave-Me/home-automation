@@ -893,20 +893,10 @@ AutomationController.prototype.listInstances = function() {
 
 AutomationController.prototype.createInstance = function(reqObj) {
 
-	getNextId = function() {
-		var id = 0;
-		self.instances.forEach(function(instance) {
-			if (instance.id > id) {
-				id = instance.id;
-			}
-		});
-		return id + 1;
-	}
-
 	//var instance = this.instantiateModule(id, className, config),
 	var self = this,
 		langFile = this.loadMainLang(),
-		id = getNextId(),
+		id = findSmallestNotAssignedIntegerValue(self.instances, 'id'),
 		instance = null,
 		module = _.find(self.modules, function(module) {
 			return module.meta.id === reqObj.moduleId;
@@ -923,13 +913,13 @@ AutomationController.prototype.createInstance = function(reqObj) {
 		}
 
 		instance = _.extend(reqObj, {
-			id: alreadyExisting[0] ? alreadyExisting[0].id : id,
+			id: alreadyExisting[0] ? reqObj.id : id,
 			active: reqObj.active === 'true' || reqObj.active ? true : false
 		});
 
 		self.instances.push(instance);
 		self.saveConfig();
-		self.emit('core.instanceCreated', id);
+		self.emit('core.instanceCreated', instance.id);
 		result = self.instantiateModule(instance);
 
 		// remove instance from list if broken
@@ -2921,4 +2911,418 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 			vDev.set('metrics:isFailed', isFailed);
 		}
 	});
+};
+
+AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
+
+	if (['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'].indexOf(moduleName) < 0) {
+		return null;
+	}
+
+	var self = this,
+		instances = [],
+		newInstances = [],
+		result = [];
+
+	var moduleMeta = this.modules[moduleName] && this.modules[moduleName].meta || null;
+
+	instances = _.filter(this.instances, function(i) {
+		return moduleName === i.moduleId && !i.params.transformed;
+	});
+
+	if (instances.length && moduleMeta) {
+		instances.forEach(function(instance) {
+			var newInstance = {};
+
+			switch (moduleName) {
+				case 'IfThen':
+				case 'LogicalRules':
+					newInstance = {
+						moduleId: 'Rules',
+						active: false,
+						title: '',
+						params: {
+							simple: {
+								triggerEvent: {},
+								triggerDelay: 0,
+								targetElements: [],
+								sendNotifications: [],
+								reverseDelay: 0
+							},
+							advanced: {
+								active: false,
+								triggerOnDevicesChange: false,
+								triggerScenes: [],
+								triggerDelay: 0,
+								logicalOperator: 'and',
+								tests: [],
+								targetElements: [],
+								sendNotifications: [],
+								reverseDelay: 0
+							},
+							reverse: false
+						}
+					}
+					break;
+				case 'ScheduledScene':
+
+					newInstance = {
+						moduleId: 'Schedules',
+						active: false,
+						title: '',
+						params: {
+							weekdays: [],
+							times: [],
+							devices: []
+						}
+					};
+
+					break;
+				case 'LightScene':
+
+					newInstance = {
+						moduleId: 'Scenes',
+						active: false,
+						title: '',
+						params: {
+							devices: [],
+							customIcon: {
+								table: [{
+									icon: ''
+								}]
+							}
+						}
+					};
+
+					break;
+			}
+
+			if ((moduleName === 'LogicalRules' && has_higher_version(moduleMeta.version, '1.4.0')) ||
+				(moduleName === 'IfThen' && has_higher_version(moduleMeta.version, '2.5.0')) ||
+				(moduleName === 'ScheduledScene' && has_higher_version(moduleMeta.version, '2.2.1')) ||
+				(moduleName === 'LightScene' && has_higher_version(moduleMeta.version, '1.1.0'))) {
+
+				// adjust title and instance state
+				newInstance.active = instance.active || false;
+				newInstance.title = moduleName + ' - ' + instance.title || 'Automatically transformed ' + newInstance.moduleId + ' instance from ' + moduleName + ' instance #' + instance.id;
+
+				if (moduleName === 'LogicalRules') {
+
+					// transform into advanced Rule
+					newInstance.params.advanced = self.transformIntoRule('advanced', instance, newInstance.params.advanced);
+
+				} else if (moduleName === 'IfThen') {
+
+					// transform into simple Rule
+					newInstance.params.simple = self.transformIntoRule('simple', instance, newInstance.params.simple);
+
+				} else if (moduleName === 'ScheduledScene') {
+
+					// update params and instance
+					newInstance.params.devices = self.concatDeviceListEntries(instance.params.devices);
+					newInstance.params.times = instance.params.times;
+					newInstance.params.weekdays = instance.params.weekdays;
+
+				} else if (moduleName === 'LightScene') {
+
+					// update params and instance
+					newInstance.params.devices = self.concatDeviceListEntries(instance.params);
+				}
+
+				newInstances.push(newInstance);
+
+				// stop old instance
+				instance.active = instance.active || instance.active === 'true' ? false : instance.active;
+				// set transformed flag
+				instance.params.transformed = true;
+				self.reconfigureInstance(instance.id, instance);
+			}
+		});
+
+		// create new instances
+		newInstances.forEach(function(inst, index) {
+
+			var active = inst.active;
+			if (!active) {
+				inst.active = true;
+			}
+
+			addedInst = self.createInstance(inst);
+
+			result.push({
+				id: addedInst.id,
+				title: inst.title,
+				old_moduleId: moduleName
+			});
+
+			// stop old instance
+			if (addedInst && (!active || active === 'false')) {
+
+				inst.active = false;
+				self.reconfigureInstance(addedInst.id, inst);
+			}
+		});
+	}
+
+	return result;
+};
+
+AutomationController.prototype.transformIntoRule = function(type, instance, object) {
+	var self = this,
+		targetDevices = [],
+		tests = [],
+		oldParams = instance.params ? instance.params : null,
+		newParams = object ? object : null;
+
+	/*
+	newParams = {
+		active: true,
+		triggerOnDevicesChange: false,
+		triggerScenes: [],
+		triggerDelay: 0,
+		logicalOperator: 'and',
+		tests: [],
+		targetElements: [],
+		sendNotifications: [],
+		reverseDelay: 0
+	}
+	*/
+
+	// transform old structure to new
+	if (oldParams && type === 'advanced' && newParams) {
+
+		object.active = true;
+		object.triggerOnDevicesChange = oldParams.triggerOnDevicesChange || false;
+		object.logicalOperator = oldParams.logicalOperator || 'and';
+		object.tests = oldParams.test || [];
+		object.targetElements = oldParams.action || [];
+
+		// concat all tests to one list
+		oldParams.tests.forEach(function(test) {
+
+			if (Object.keys(test)[1]) {
+				var entry = test[Object.keys(test)[1]];
+
+				if (test['testType'] === 'time') {
+					tests.push({
+						type: "time",
+						operator: entry.testOperator,
+						level: entry.testValue
+					});
+				} else if (test['testType'] === 'nested') {
+					var nested = {
+						logicalOperator: test['testNested']['logicalOperator'],
+						tests: []
+					}
+
+					test['testNested']['tests'].forEach(function(nestedTest) {
+						var nestedTests = [];
+
+						if (nestedTest['testType'] === 'time') {
+							nested.tests.push({
+								type: "time",
+								operator: nestedTest.testOperator,
+								level: nestedTest.testValue
+							});
+						} else {
+							nested.tests.push(self.transformAdvancedEntry('test', nestedTest));
+						}
+					});
+
+					tests.push(nested);
+
+					//
+				} else {
+					tests.push(self.transformAdvancedEntry('test', entry));
+				}
+			}
+		});
+
+		// concat actions to one list
+		Object.keys(oldParams.action).forEach(function(key) {
+
+			oldParams.action[key].forEach(function(entry) {
+				if (entry.device || (key === 'scenes' && entry)) {
+					if (key === 'scenes') {
+						targetDevices.push({
+							deviceId: entry,
+							deviceType: 'toggleButton',
+							level: 'on'
+						});
+					} else if (key === 'notification') {
+						newParams.sendNotifications.push(entry);
+					} else {
+						targetDevices.push(self.transformAdvancedEntry('action', entry));
+					}
+				}
+			});
+		});
+
+		// set new params
+		newParams.tests = tests;
+		newParams.targetElements = targetDevices;
+
+	} else if (oldParams && type === 'simple' && newParams) {
+
+		/*
+		newParams = {
+			triggerEvent: {},
+			triggerDelay: 0,
+			targetElements: [],
+			sendNotifications: [],
+			reverseDelay: 0
+		}
+		*/
+
+		// transform trigger event
+		if (Object.keys(oldParams.sourceDevice)[1]) {
+			var entry = oldParams.sourceDevice[Object.keys(oldParams.sourceDevice)[1]];
+
+			newParams.triggerEvent = self.transformSimpleEntry(entry);
+		}
+
+		// concat actions to one list
+		oldParams.targets.forEach(function(key) {
+			var targetEntry = key[Object.keys(key)[1]];
+
+			if (key['notification']) {
+				newParams.sendNotifications.push(targetEntry);
+			} else if (key['scene']) {
+				newParams.targetElements.push({
+					deviceId: targetEntry.target,
+					deviceType: 'toggleButton',
+					level: 'on'
+				});
+			} else {
+				newParams.targetElements.push(self.transformSimpleEntry(targetEntry));
+			}
+		});
+	}
+
+	return newParams;
+}
+
+AutomationController.prototype.transformSimpleEntry = function(entry) {
+	//console.log('simple entry:', JSON.stringify(entry));
+	var vdevId = entry && entry.device ? entry.device : entry.target,
+		vDev = this.devices.get(vdevId),
+		lvl = entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+			r: entry.color.red,
+			g: entry.color.green,
+			b: entry.color.blue
+		} : 0));
+
+	if (vDev) {
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			{
+			    deviceId: '',
+			    deviceType: '',
+			    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+			    sendAction: true, || false >> don't do this if level is already triggered
+			    operator: '',
+			    reverseLevel: "off"  // set reverse level on or off
+			}
+		*/
+		return {
+			deviceId: vdevId,
+			deviceType: vDev ? vDev.get('deviceType') : '',
+			level: lvl,
+			sendAction: entry.sendAction || false,
+			operator: entry.operator,
+			reverseLevel: "off"
+		};
+	}
+};
+
+AutomationController.prototype.transformAdvancedEntry = function(transformation, entry) {
+	//console.log('advanced entry:', JSON.stringify(entry));
+	var vDev = this.devices.get(entry.device);
+
+	if (vDev) {
+		if (transformation === 'test') {
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+				{
+				    deviceId: '',
+				    type: '',
+				    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+				    operator: ''
+				}
+			*/
+			return {
+				deviceId: vDev.id,
+				type: vDev ? vDev.get('deviceType') : '',
+				level: entry['testValue'],
+				operator: entry['testOperator'] ? entry['testOperator'] : undefined
+			}
+
+		} else if (transformation === 'action') {
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+				{
+				    deviceId: '',
+				    deviceType: '',
+				    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+				    sendAction: true || false >> don't do this if level is already triggered
+				}
+			*/
+			return {
+				deviceId: entry.device,
+				deviceType: vDev ? vDev.get('deviceType') : '',
+				level: entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+					r: entry.color.red,
+					g: entry.color.green,
+					b: entry.color.blue
+				} : 0)),
+				sendAction: entry.sendAction || false
+			}
+		}
+	}
+};
+
+AutomationController.prototype.concatDeviceListEntries = function(devices) {
+	var self = this,
+		newDevArr = [],
+		keys = ['switches', 'dimmers', 'thermostats', 'locks', 'scenes'];
+
+	// concat all lists to one
+	Object.keys(devices).forEach(function(key) {
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			{
+			    deviceId: '',
+			    deviceType: '',
+			    level: '', // color: { r: 0, g: 0, b: 0}, on, off, open, close, color
+			    sendAction: true || false >> don't do this if level is already triggered
+			}
+		*/
+		if (_.isArray(devices[key]) && keys.indexOf(key) >= 0) {
+			devices[key].forEach(function(entry) {
+
+				var vDev = null;
+				if (entry.device || (key === 'scenes' && entry)) {
+					if (key === 'scenes') {
+						newDevArr.push({
+							deviceId: entry,
+							deviceType: 'toggleButton',
+							level: 'on'
+						});
+					} else {
+						vDev = self.devices.get(entry.device);
+
+						newDevArr.push({
+							deviceId: entry.device,
+							deviceType: vDev ? vDev.get('deviceType') : '',
+							level: entry.status && ['color', 'level'].indexOf(entry.status) < 0 ? entry.status : (entry.level ? entry.level : (entry.color ? {
+								r: entry.color.red,
+								g: entry.color.green,
+								b: entry.color.blue
+							} : 0)),
+							sendAction: entry.sendAction
+						});
+					}
+				}
+			});
+		}
+	});
+
+	// update params and instance
+	return newDevArr;
 };
