@@ -3862,7 +3862,6 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 	if (wakeupData && devData.basicType.value !== 1) {
 		// handle only sleeping nodes with Wakeup CC excluding Portable Controllers
 		var wakeupInterval = wakeupData.interval.value;
-		console.log("!!! Checking " + nodeId + ", W = " + wakeupData.lastWakeup.value + ", I = " + wakeupData.interval.value + " Now " + now);
 		if (
 			wakeupData.interval.value > 0 && // Wakeup Interval is not zero
 			this.zway.controller.data.nodeId.value === wakeupData.nodeId.value && // controller is the destination for Wakeup Notification
@@ -4694,6 +4693,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									icon: 'multilevel',
 									title: compileTitle(cc.data[colorId].capabilityString.value, vDevIdNI),
 									level: 'off',
+									oldLevel: 0,
 									isFailed: false
 								}
 							}
