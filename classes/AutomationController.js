@@ -3034,7 +3034,7 @@ AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
 				// stop old instance
 				instance.active = instance.active || instance.active === 'true' ? false : instance.active;
 				// set transformed flag
-				instance.params.transformed = true;
+				instance.params.moduleAPITransformed = true;
 				self.reconfigureInstance(instance.id, instance);
 			}
 		});

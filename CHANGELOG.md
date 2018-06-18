@@ -9,6 +9,7 @@ Features:
   * Schedules (enhancement of Scheduled Scene module)
   * Security (refactored and scheduling enhanced)
   * Heating (enhanced Climate Control module)
+  * transformation added that will optionally transform LogicalRules/IfThen into Rules, LightScene into Scene, ScheduledScene into Schedules instances and deactivate all source instances - so the transformation can be rolled back easily (using http://IP:8083/ZAutomation/api/v1/modules/transform/reverse will remove the transformation flag from all modules)
 
 Changes:
 * node id to vdev of zway devices added
