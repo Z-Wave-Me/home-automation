@@ -3861,13 +3861,21 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 
 	if (wakeupData && devData.basicType.value !== 1) {
 		// handle only sleeping nodes with Wakeup CC excluding Portable Controllers
-		var wakeupInterval = wakeupData.interval.value;
+		var wakeupInterval = wakeupData.interval.value,
+			lastSleepTimedOut = wakeupData.lastSleep.value + 3 * wakeupData.interval.value < now,
+			lastWakeupTimedOut = wakeupData.lastWakeup.value + 3 * wakeupData.interval.value < now;
+		
+		//console.log("!!! Checking " + nodeId + ", W = " + wakeupData.lastSleep.value + ", I = " + wakeupData.interval.value + " Now " + now);
+		//console.log("conditions:",wakeupData.interval.value > 0, this.zway.controller.data.nodeId.value === wakeupData.nodeId.value, 'lastWakeupTimedOut:', lastWakeupTimedOut, 'lastSleepTimedOut:', lastSleepTimedOut);
 		if (
 			wakeupData.interval.value > 0 && // Wakeup Interval is not zero
 			this.zway.controller.data.nodeId.value === wakeupData.nodeId.value && // controller is the destination for Wakeup Notification
-			wakeupData.lastWakeup.value + 3 * wakeupData.interval.value < now // wakeup happens within the last three Wakeup Intervals
+			lastWakeupTimedOut && // wakeup happens within the last three Wakeup Intervals
+			lastSleepTimedOut // sleep happens within the last three Wakeup Intervals
 		) {
 			this.controller.vDevFailedDetection(nodeId, true);
+		} else {
+			this.controller.vDevFailedDetection(nodeId, isFailedNode);
 		}
 	}
 };
