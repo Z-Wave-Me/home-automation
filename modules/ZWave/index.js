@@ -5842,7 +5842,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					 */
 					currentScene: '',
 					discreteStates: {},
-					isFailed: false
+					isFailed: false,
+					startup: true
 				}
 			};
 
@@ -5855,20 +5856,17 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				deviceId: devId,
 				defaults: defaults,
 				overlay: {},
-				handler: function(command) {
-					if (command === "update") {
-						cc.Get;
-					}
-				},
+				handler: function(command) {},
 				moduleId: self.id
 			});
 
 
 			// disable value set on z-way startup
-			var startup = true;
-
 			setTimeout(function() {
-				startup = false;
+				sensorDiscreteVDev = self.controller.devices.get(devId);
+				if(sensorDiscreteVDev) {
+					sensorDiscreteVDev.set('metrics:startup',false,{'silent':true});
+				}
 			}, 1000);
 
 			if (vDev) {
@@ -5877,7 +5875,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
 							self.controller.devices.remove(devId);
-						} else if (!startup && !(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+						} else if (!vDev.get('metrics:startup') && !(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							// output curScene + keyAttr or ''
 							var cS = cc.data['currentScene'].value && !!cc.data['currentScene'].value ? cc.data['currentScene'].value : 0,
 								mC = cc.data['maxScenes'].value && !!cc.data['maxScenes'].value ? cc.data['maxScenes'].value : 0,
@@ -5915,15 +5913,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 
 							setAction();
-
-							vDev.set("metrics:state", st);
-							vDev.set("metrics:currentScene", cS);
-							vDev.set("metrics:keyAttribute", kA);
-							vDev.set("metrics:maxScenes", mC);
-							vDev.set("metrics:level", cL);
-							vDev.set("metrics:cnt", cnt);
-							vDev.set("metrics:type", type);
-							/*
+							
+							// update sensorDiscrete vDev
 							vDev.set("metrics", {
 								state: st,
 								currentScene: cS,
@@ -5933,7 +5924,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								cnt: cnt,
 								type: type
 							});
-							*/
 						}
 					} catch (e) {}
 				}, "value");

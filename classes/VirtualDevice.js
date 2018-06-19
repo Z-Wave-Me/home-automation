@@ -215,11 +215,26 @@ _.extend(VirtualDevice.prototype, {
 
 		if (_.isString(keyName) && typeof(val) != "undefined" && keyName.split(':').length === 1) {
 			findObj = findX(this.attributes, keyName);
-			if (findObj[keyName] !== val) {
+			// do single change of none objects
+			if ((findObj[keyName] !== val && typeof val !== 'object')) {
 				that.attributes[keyName] = val;
 				changes.push(keyName);
 				that.changed[keyName] = val;
+			
+			// allow bulk changes of vdev top layer keys like metrics with object values
+			} else if (typeof val === 'object') {
+
+				Object.keys(val).forEach(function (metricsKey) {
+					if (!_.isEqual(val[metricsKey], that.attributes[keyName][metricsKey])) {
+						that.attributes[keyName][metricsKey] = val[metricsKey];
+						changes.push(keyName +':' + metricsKey);
+					}
+				});
+				// push also keyName identifier
+				changes.push(keyName);
+				that.changed[keyName] = val;
 			}
+
 		} else {
 			if (_.isString(keyName) && val !== undefined && keyName.split(':').length > 1) {
 				setObj(current, keyName.split(':'), val);
