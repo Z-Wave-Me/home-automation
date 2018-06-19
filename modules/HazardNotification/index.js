@@ -127,7 +127,8 @@ HazardNotification.prototype.init = function(config) {
 			self.setAlert();
 		} else {
 			self.vDev.set('metrics:level', 'OK');
-			self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/ok.png');
+			var icon = config.hazardType == "fire" ? "fire_ok.png" : "leakage_ok.png";
+			self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/'+icon);
 		}
 
 		// listen to sensor changes
@@ -224,7 +225,8 @@ HazardNotification.prototype.init = function(config) {
 	self.onPoll = function() {
 		if (self.getSensorLevels().indexOf('on') === -1 && self.vDev) {
 			self.vDev.set('metrics:level', 'OK');
-			self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/ok.png');
+			var icon = config.hazardType == "fire" ? "fire_ok.png" : "leakage_ok.png";
+			self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/'+icon);
 			self.removePolling();
 		}
 	};
@@ -305,7 +307,7 @@ HazardNotification.prototype.init = function(config) {
 			// arm
 			if (command === 'arm' && hazardSensorMetrics.length > 0) {
 				// set vDev state to armed
-				self.vDev.set('metrics:state', 'armed');
+				this.set('metrics:state', 'armed');
 
 				// remove polling
 				self.removePolling();
@@ -318,15 +320,15 @@ HazardNotification.prototype.init = function(config) {
 			// disarm
 			if (command === 'disarm' && hazardSensorMetrics.length > 0) {
 				// set vDev state to disarmed
-				self.vDev.set('metrics:state', 'disarmed');
+				this.set('metrics:state', 'disarmed');
 
 				// set up cron handler checking for alert
 				if (self.getSensorLevels().indexOf('on') !== -1) {
 
 					self.checkState();
 				} else {
-					self.vDev.set('metrics:level', 'OK');
-					self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
+					this.set('metrics:level', 'OK');
+					this.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
 				}
 
 				//stop sending notifications
@@ -346,7 +348,7 @@ HazardNotification.prototype.init = function(config) {
 				});
 
 				//if ALERT send basic off to each water anf fire detector
-				if (self.vDev.get('metrics:level') === 'ALERT') {
+				if (this.get('metrics:level') === 'ALERT') {
 					//get correct node id
 					self.config.sensors.forEach(function(id) {
 						cutDevId = id.split('_');
