@@ -32,6 +32,9 @@ BatteryPolling.prototype.init = function (config) {
 
 	var self = this;
 
+	// timestamp of last triggered notification
+	this.lastTriggered = [];
+
 	// polling function
 	this.onPoll = function () {
 		self.controller.devices.filter(function (el) {
@@ -67,7 +70,8 @@ BatteryPolling.prototype.init = function (config) {
 		}
 		
 		self.vDev.set("metrics:level", self.minimalBatteryValue());
-		if (vDev.get("metrics:level") <= self.config.warningLevel) {
+		var now = Math.round(new Date().getTime()/1000);
+		if (vDev.get("metrics:level") <= self.config.warningLevel && (typeof self.lastTriggered[vDev.id] === 'undefined' || self.lastTriggered[vDev.id] <= (now-43200))) {
 			var values = vDev.get("metrics:title"),
 				langFile = self.loadModuleLang();
 
@@ -83,7 +87,8 @@ BatteryPolling.prototype.init = function (config) {
 			else
 			{
 				self.addNotification("warning", langFile.warning + values, "battery", self.vDev.id);
-			}			
+			}
+			self.lastTriggered[vDev.id] = now;
 		}
 	};
 	
@@ -99,7 +104,7 @@ BatteryPolling.prototype.init = function (config) {
 		// add cron schedule every day
 		this.controller.emit("cron.addTask", "batteryPolling.poll", {
 			minute: 0,
-			hour: 0,
+			hour: 12,
 			weekDay: null,
 			day: null,
 			month: null
@@ -109,7 +114,7 @@ BatteryPolling.prototype.init = function (config) {
 		// add cron schedule every week
 		this.controller.emit("cron.addTask", "batteryPolling.poll", {
 			minute: 0,
-			hour: 0,
+			hour: 12,
 			weekDay: this.config.launchWeekDay,
 			day: null,
 			month: null
