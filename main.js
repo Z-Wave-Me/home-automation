@@ -118,6 +118,13 @@ if (!config && config === null) {
 		controller.addNotification("error", err.message, "core", "core controller");
 	});
 
+	controller.on('ZWave.interviewsDone', function(){
+		console.log("ZWay nodes succesfully initialized");
+
+		// remove messed up vDevs from vdevInfo list
+		controller.cleanUpVdevInfo();
+	});
+
 	//--- main
 	controller.init();
 	controller.start();

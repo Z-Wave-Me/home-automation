@@ -750,14 +750,56 @@ AutomationController.prototype.reinitializeModule = function(moduleId, rootDirec
 	var self = this,
 		successful = false,
 		existingInstances = [],
-		ignoreVersion = ignoreVersion ? ignoreVersion : false;
+		ignoreVersion = ignoreVersion ? ignoreVersion : false,
+        backupVdevInfo = [],
+        zwaveIDs = [];
+
 
 	// filter for active instances of moduleId
 	existingInstances = self.instances.filter(function(instance) {
 		return instance.moduleId === moduleId;
 	});
 
-	this.unloadModule(moduleId);
+	if (moduleId === 'ZWave') {
+
+        // get id's of all ZWave instances
+        zwaveIDs = existingInstances.map(function(instance){
+            return instance.id;
+        });
+
+        console.log('### zwaveIDs:',JSON.stringify(zwaveIDs, null, 1));
+        console.log('##############################################################################');
+
+        // save vdevInfo
+        /*backupVdevInfo = _.filter(this.vdevInfo, function(vdev) {
+            return zwaveIDs.indexOf(vdev.creatorId) > -1;
+        });*/
+        Object.keys(this.vdevInfo).forEach(function(devId){
+            if (self.vdevInfo[devId].creatorId && zwaveIDs.indexOf(self.vdevInfo[devId]) > -1) {
+                backupVdevInfo[devId] = self.vdevInfo[devId];
+            }
+        });
+        console.log('### backupVdevInfo:',JSON.stringify(backupVdevInfo, null, 1));
+        console.log('##############################################################################');
+
+        // unload ZWave module
+        this.unloadModule(moduleId);
+
+        console.log('### stopped this.vdevInfo:',JSON.stringify(this.vdevInfo, null, 1));
+        console.log('##############################################################################');
+        
+        // apply saved vdevInfo
+        //this.vdevInfo = this.vdevInfo.concat(backupVdevInfo);
+        Object.keys(backupVdevInfo).forEach(function(devId){
+            //self.vdevInfo[devId] = backupVdevInfo[devId];
+            self.setVdevInfo(devId,backupVdevInfo[devId]);
+        });
+
+        console.log('### restored this.vdevInfo:',JSON.stringify(this.vdevInfo, null, 1));
+        console.log('##############################################################################');
+    } else {
+        this.unloadModule(moduleId);
+    }
 
 	// try to reinitialize app
 	try {
@@ -1450,7 +1492,8 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 		"customIcons",
 		"order",
 		"visibility",
-		"hasHistory");
+		"hasHistory",
+		"creatorId");
 	this.saveConfig();
 	return this.vdevInfo[id];
 };
@@ -1458,6 +1501,67 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 AutomationController.prototype.clearVdevInfo = function(id) {
 	delete this.vdevInfo[id];
 	this.saveConfig();
+};
+
+/*
+ * Check vdevInfo list against registered instances ::creatorId::
+ * 
+ *
+ */
+AutomationController.prototype.cleanUpVdevInfo = function () {
+    var self = this,
+        instanceIds = _.map(this.instances, function(inst){
+            return inst.id;
+        }),
+        newVDevInfo = {};
+
+    /*console.log('##############################################################################');
+    console.log('###');
+    console.log('### instances before', JSON.stringify(instanceIds, null, 1));
+    console.log('###');
+    console.log('##############################################################################');
+    
+
+    console.log('##############################################################################');
+    console.log('###');
+    console.log('### vdevInfo length before:', Object.keys(this.vdevInfo).length);
+    console.log('###');
+    console.log('##############################################################################');*/
+
+    /*
+     * remove entries if vdevs are null and creatorIds doesn't exist in instances list anymore 
+     * or if they haven't a creatoreId
+	 */
+    Object.keys(this.vdevInfo).forEach(function(devId){
+        if ((self.devices.get(devId) === null && 
+             	self.vdevInfo[devId] &&
+             	self.vdevInfo[devId].creatorId && 
+             	instanceIds.indexOf(self.vdevInfo[devId].creatorId) < 0) || 
+             (self.devices.get(devId) === null && 
+             	self.vdevInfo[devId] &&
+             	!self.vdevInfo[devId].creatorId)) {
+            /*console.log('##############################################################################');
+            console.log('###');
+            console.log('### has creatorId?', self.vdevInfo[devId].hasOwnProperty("creatorId"));
+            console.log('###');
+            console.log('### remove vdevId', devId);
+            console.log('###');
+            console.log('##############################################################################');*/
+            delete self.vdevInfo[devId];
+        }
+    });
+
+    if (!self.vdevInfo) {
+        self.vdevInfo = {};
+    }
+
+    /*console.log('##############################################################################');
+    console.log('###');
+    console.log('### vdevInfo length after:', Object.keys(this.vdevInfo).length);
+    console.log('###');
+    console.log('##############################################################################');*/
+
+    this.saveConfig();
 };
 
 AutomationController.prototype.loadNotifications = function() {
@@ -2375,7 +2479,27 @@ AutomationController.prototype.getModuleData = function(moduleName) {
 		data = self.modules[moduleName].meta;
 	}
 
+	data.options = this.replaceModuleFormData(data.options, ['dataSource']);
+
 	return data;
+};
+
+AutomationController.prototype.replaceModuleFormData = function (obj, keys) {
+    var objects = [];
+    for (var i in obj) {
+        if (!obj.hasOwnProperty(i))
+            continue;
+        if (typeof obj[i] == 'object') {
+            objects = objects.concat(this.replaceModuleFormData(obj[i], keys));
+        } else if (~keys.indexOf(i) && !Array.isArray(obj[i]) &&
+            typeof obj[i] === 'string' &&
+            obj[i].indexOf("function") === 0) {
+            // overwrite old string with function evaluation
+            // we can only pass a function as string in JSON ==> doing a real function
+            obj[i] = new Function('return ' + obj[i])()();
+        }
+    }
+    return obj;
 };
 
 AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {

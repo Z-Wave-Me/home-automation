@@ -330,6 +330,10 @@ ZWave.prototype.stop = function() {
 	console.log("--- ZWave.stop()");
 	ZWave.super_.prototype.stop.call(this);
 
+	// unbind incoming/outgoing packages functions
+	this.zway.controller.data.incomingPacket.unbind(inH);
+	this.zway.controller.data.outgoingPacket.unbind(outH);
+
 	this.stopBinding();
 
 	if (this._dataBind) {
@@ -3884,7 +3888,8 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 ZWave.prototype.gateDevicesStart = function() {
 
 	var self = this,
-		fixesDone = [];
+		fixesDone = [],
+		nodesInitialized = [];
 
 	this.gateDataBinding = [];
 
@@ -3895,6 +3900,11 @@ ZWave.prototype.gateDevicesStart = function() {
 			if (2 === self.zway.devices[nodeId].data.basicType.value && 1 === self.zway.devices[nodeId].data.specificType.value) {
 				// console.log("Device", nodeId, "is a Static PC Controller, ignoring");
 				return;
+			}
+
+			// count nodes against total zway nodes to fetch a trigger point when zway nodes are initiated
+			if (nodesInitialized.indexOf(nodeId) < 0){
+				nodesInitialized.push(nodeId);
 			}
 
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "interviewDone", function(type) {
@@ -4225,6 +4235,22 @@ ZWave.prototype.gateDevicesStart = function() {
 							self.saveObject("dskCollection", this.dskCollection);
 						}
 					}
+
+					// compare initialized nodes (excl. controller) against total zway nodes to fetch a trigger point when all zway nodes are initiated
+					if (Object.keys(self.zway.devices).length - 1 === nodesInitialized.length) {
+
+                        // initialization of nodes is done
+                        // throw emit with delay of 10 sec (waiting for the last vDevs)
+                        setTimeout(function(){
+                            self.controller.emit('ZWave.interviewsDone');
+                            // reset Initialized node array
+                            nodesInitialized = [];
+                        }, 10 * 1000);
+
+                        // reset initialized node array
+                        nodesInitialized = [];
+                    }
+
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}

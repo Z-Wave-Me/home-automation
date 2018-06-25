@@ -12,9 +12,15 @@ VirtualDevice = function (options) {
 	var probeType = options.defaults.probeType? options.defaults.probeType : (options.overlay.probeType? options.overlay.probeType : ''),
 		permHidden = options.defaults.hasOwnProperty('permanently_hidden')? options.defaults.permanently_hidden : false,
 		visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true,
-		customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {},
+		location = options.defaults.hasOwnProperty('location')? options.defaults.location : 0,
+		customicons = options.defaults.hasOwnProperty('customIcons') ? location.defaults.customIcons : {},
+		tags = options.defaults.hasOwnProperty('tags')? options.defaults.tags : [],
+		creationTime = options.defaults.hasOwnProperty('creationTime')? options.defaults.creationTime : 0,
+		order = options.defaults.hasOwnProperty('order')? options.defaults.order : {rooms: 0,elements: 0,dashboard: 0},
+		hasHistory = options.defaults.hasOwnProperty('hasHistory')? options.defaults.hasHistory : false,
 		removed = this.metrics && this.metrics.hasOwnProperty('removed')? this.metrics.removed : false,
-		isFailed = this.metrics && this.metrics.hasOwnProperty('isFailed')? this.metrics.isFailed : false;
+		isFailed = this.metrics && this.metrics.hasOwnProperty('isFailed')? this.metrics.isFailed : false,
+		vdevInfo = options.controller.getVdevInfo(this.id);
 
 	_.extend(this, options, {
 		id: options.deviceId,
@@ -39,8 +45,6 @@ VirtualDevice = function (options) {
 		collection: options.controller.devices,
 		metrics: {},
 		ready: false,
-		location: 0,
-		tags: [],
 		updateTime: 0,
 		attributes: {
 			id: options.deviceId,
@@ -48,20 +52,15 @@ VirtualDevice = function (options) {
 				isFailed: isFailed,
 				removed: removed
 			}),
-			tags: [],
+			tags: tags,
 			permanently_hidden: permHidden,
-			location: 0,
-			h: options.controller.hashCode(options.deviceId),
-			hasHistory: false,
+			location: location,
+			hasHistory: hasHistory,
 			visibility: visibility,
-			creationTime: 0,
+			creationTime: creationTime,
 			probeType: probeType,
 			customIcons: customicons,
-			order: {
-				rooms: 0,
-				elements: 0,
-				dashboard: 0
-			}
+			order: order
 		},
 		changed: {},
 		overlay: options.overlay || {},
@@ -91,6 +90,11 @@ VirtualDevice = function (options) {
 		this.attributes.nodeId = shifting === 4 && nodeId? 'R-'+ idArr[1] +'_'+ idArr[3] +'_'+ nodeId : (nodeId? parseInt(nodeId, 10) : undefined); // Remote is flagged by R-[moduleID]_[zwayName]_[nodeId]
 	} else {
 		delete this.attributes.nodeId;
+	}
+	
+	if (!vdevInfo['creatorId'] && options.moduleId) {
+		vdevInfo['creatorId'] = options.moduleId;
+		options.controller.setVdevInfo(this.id, vdevInfo);
 	}
 
 	this.initialize.apply(this, arguments);
