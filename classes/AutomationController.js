@@ -115,7 +115,7 @@ AutomationController.prototype.init = function() {
 				}
 			});
 
-			if (location !== undefined) {
+			if (location !== undefined && device.get('location') !== location.id) {
 				location.main_sensors.splice(index, 1);
 				self.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
 					if (!data) {
