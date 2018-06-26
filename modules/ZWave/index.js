@@ -3875,6 +3875,8 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 		} else {
 			this.controller.vDevFailedDetection(nodeId, isFailedNode);
 		}
+	} else {
+		this.controller.vDevFailedDetection(nodeId, isFailedNode);
 	}
 };
 
