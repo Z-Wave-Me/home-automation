@@ -324,7 +324,7 @@ AutomationModule.prototype.compareTime = function(time, operator) {
 */
 AutomationModule.prototype.shiftDevice = function(el, reverse) {
 	var vDev = this.controller.devices.get(el.deviceId),
-		lvl = reverse && el.reverseLevel ? el.reverseLevel : el.level,
+		lvl = reverse && el.reverseLevel !== undefined && !!el.reverseLevel? el.reverseLevel : el.level,
 		set = this.executeActions(el.sendAction, vDev, lvl);
 
 	// check if levels are equal and if active don't trigger new state

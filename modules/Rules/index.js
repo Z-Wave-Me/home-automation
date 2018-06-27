@@ -429,19 +429,10 @@ Rules.prototype.performReverse = function(targetElements) {
 
 	if (targetElements && targetElements.length > 0) {
 		targetElements.forEach(function(el) {
+
 			if (el.reverseLevel !== null) {
 				self.shiftDevice(el, true);
-				/*var vDev = self.controller.devices.get(el.deviceId),
-					id = el.deviceId,
-					type = vDev ? vDev.get('deviceType') : '';
 
-				if (vDev && !!vDev) {
-					var set = self.executeActions(el.sendAction, vDev, el.reverseLevel);
-					if (set) {
-						self.setNewDeviceState(vDev, type, el.reverseLevel);
-					}
-					self.reversActivated = false;
-				}*/
 				self.reversActivated = false;
 			}
 		});
