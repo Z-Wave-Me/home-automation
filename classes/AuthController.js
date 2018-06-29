@@ -169,6 +169,7 @@ AuthController.prototype.forgottenPwd = function(email, token) {
 			
 			if (Object.keys(self.forgottenPwdCollector).length < 1 && self.expireTokens) {
 				clearInterval(self.expireTokens);
+				self.expireTokens = null;
 			}
 		}, 60 * 1000); // check each minute
 	}
