@@ -136,38 +136,41 @@ AuthController.prototype.checkIn = function(profile, sid) {
 
 AuthController.prototype.forgottenPwd = function(email, token) {
 	var self = this,
-		success;
+		success = true,
+		setToken = function(){
+			self.forgottenPwdCollector[token] = {
+				email: email,
+				expTime: Math.floor(new Date().getTime() / 1000) + 600 // 10 min
+			};
+		};
 
-	if ( Object.keys(this.forgottenPwdCollector).length > 0) {
+	if (Object.keys(this.forgottenPwdCollector).length > 0) {
 		Object.keys(this.forgottenPwdCollector).forEach(function(t){
 			if (self.forgottenPwdCollector[t].email === email) {
-				console.log('Tokenrequest already exists for e-mail:', email);
 				success = false;
 			}
 		});
+		if (success) {
+			setToken();
+		}
 	} else {
-		this.forgottenPwdCollector[token] = {
-			email: email,
-			expTime: Math.floor(new Date().getTime() / 1000) + 3600
-		};
-
-		success = true;
+		setToken();
 	}
 
-	if (!self.expireTokens) {
+	if (!this.expireTokens) {
 		this.expireTokens = setInterval(function() {
 			var expirationTime = Math.floor(new Date().getTime() / 1000);
 			
-			Object.keys(self.forgottenPwdCollector).forEach(function(tkn, i) {
-				if (tkn.expTime < expirationTime) {
-					self.removeForgottenPwdEntry(i);
+			Object.keys(self.forgottenPwdCollector).forEach(function(tkn) {
+				if (self.forgottenPwdCollector[tkn].expTime < expirationTime) {
+					self.removeForgottenPwdEntry(tkn);
 				}
 			});
 			
-			if (self.forgottenPwdCollector.size === 0 && self.expireTokens) {
+			if (Object.keys(self.forgottenPwdCollector).length < 1 && self.expireTokens) {
 				clearInterval(self.expireTokens);
 			}
-		}, 600 * 1000);
+		}, 60 * 1000); // check each minute
 	}
 
 	return success;
