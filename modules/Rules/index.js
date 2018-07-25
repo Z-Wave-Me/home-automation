@@ -448,7 +448,7 @@ Rules.prototype.sendNotification = function(notification, conditions, actions) {
 		notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
 		notificationMessage = !notification.message ? 'Condition: ' + JSON.stringify(conditions) + ' Actions: ' + JSON.stringify(actions) : notification.message;
 
-		this.addNotification(notificationType, notificationMessage + ' => ' + notification.target, notification.target);
+		this.addNotification(notificationType, notificationMessage, notification.target);
 	}
 };
 
