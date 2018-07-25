@@ -1504,7 +1504,7 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 				message = message.replace(search[0],replace);			
 			}
 			count++;
-		} while(search && count < 10);		
+		} while(search && count < 50);		
 		return message;
 	}
 
