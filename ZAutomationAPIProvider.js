@@ -47,8 +47,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
 		this.router.put("/notifications", this.ROLE.ADMIN, this.redeemNotifications);
 		this.router.del("/notifications", this.ROLE.ADMIN, this.deleteNotifications);
-		this.router.get("/history", this.ROLE.USER, this.exposeHistory);
-		this.router.del("/history", this.ROLE.USER, this.exposeHistory);
 		this.router.get("/devices", this.ROLE.USER, this.listDevices);
 		this.router.get("/restart", this.ROLE.ADMIN, this.restartController);
 		this.router.get("/locations", this.ROLE.USER, this.listLocations);
@@ -169,8 +167,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
 
 		this.router.post("/system/certfxAuth", this.ROLE.ANONYMOUS, this.certfxAuth);
-		this.router.post("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxSetAuthForwarding);
-		this.router.get("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxGetAuthForwarding);
+		//this.router.post("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxSetAuthForwarding);
+		//this.router.get("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxGetAuthForwarding);
 		this.router.post("/system/certfxUnregister", this.ROLE.ADMIN, this.certfxUnregister);
 		this.router.post("/system/certfxUpdateIdentifier", this.ROLE.ADMIN, this.certfxUpdateIdentifier);
 
