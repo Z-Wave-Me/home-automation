@@ -1483,12 +1483,37 @@ AutomationController.prototype.loadNotifications = function() {
 };
 
 AutomationController.prototype.addNotification = function(severity, message, type, source) {
+	var self = this;
+
+	this.prepareMessage = function(message) {
+		var regex = /<<[^:>>]*\:[^:<<]*>>/;
+		count = 0;
+		do {
+			search = regex.exec(message);
+			if (search) {
+				var replace = '';
+				var dev = search[0].substring(2,search[0].length-2).split(':');
+				if (dev[0] != '' && (dev[1] == 'level' || dev[1] == 'title' || dev[1] == 'scaleTitle')) {
+					var vDev = self.devices.get(dev[0]);
+					if (vDev) {
+						replace = vDev.get('metrics:'+dev[1]);
+					}
+				}
+				if (replace == '')
+					replace = 'unknown';
+				message = message.replace(search[0],replace);			
+			}
+			count++;
+		} while(search && count < 50);		
+		return message;
+	}
+
 	var now = new Date(),
 		notice = {
 			id: Math.floor(now.getTime()),
 			timestamp: now.toISOString(),
 			level: severity,
-			message: '',
+			message: this.prepareMessage(message),
 			type: type || 'device',
 			source: source,
 			redeemed: false
@@ -1499,7 +1524,6 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 	} else {
 		msg = message;
 	}
-	notice.message = '' + msg; // to string
 
 	this.notifications.push(notice);
 
