@@ -2248,6 +2248,8 @@ ZWave.prototype.defineHandlers = function() {
 				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
 
 			if (data.file && data.file.content) {
+				console.log("Fetching firmware from file " + data.file);
+				
 				var buf = new ArrayBuffer(data.file.content.length);
 				var bufView = new Uint8Array(buf);
 				for (var i = 0; i < data.file.content.length; i++) {
@@ -2273,6 +2275,8 @@ ZWave.prototype.defineHandlers = function() {
 						});
 					});
 			} else if (data.url) {
+				console.log("Fetching firmware from " + data.url);
+				
 				http.request({
 					url: data.url,
 					async: true,

@@ -7,6 +7,7 @@
 	"l_prefix":"Префикс для всех сообщений",
 	"l_api_key":"API ключ с сайта SMS.ru",
 	"h_api_key":"После регистрации телефона на SMS.ru в правой колонке появится ключ api_id (пример: a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"rl_hidden":"Скрыть созданный виджет в списке устройств",
 	"critical":"Critical",
 	"error":"Error",
 	"warning":"Warning",

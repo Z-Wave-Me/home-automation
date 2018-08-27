@@ -1488,7 +1488,7 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 			id: Math.floor(now.getTime()),
 			timestamp: now.toISOString(),
 			level: severity,
-			message: message,
+			message: '',
 			type: type || 'device',
 			source: source,
 			redeemed: false
@@ -1499,6 +1499,7 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 	} else {
 		msg = message;
 	}
+	notice.message = '' + msg; // to string
 
 	this.notifications.push(notice);
 
