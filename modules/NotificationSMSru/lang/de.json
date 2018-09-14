@@ -7,6 +7,7 @@
 	"l_prefix":"Präfix für alle Benachrichtigungen:",
 	"l_api_key":"API-Key von SMS.ru",
 	"h_api_key":"Nach der Registrierung auf SMS.ru finden Sie auf der rechten Seite die benötigte 'api_id' (z.B. a43f6376-f57d-27e4-5981-ec48945d871f)",
+	"rl_hidden":"Blende das erzeugte Widget in der Elementübersicht aus.",
 	"critical":"Critical",
 	"error":"Error",
 	"warning":"Warning",
