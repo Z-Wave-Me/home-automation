@@ -52,7 +52,11 @@ IfThen.prototype.init = function (config) {
 					break;
 			}
 		}
-
+		
+		// handle 0 and 99 for dimmers as off/on
+		if (value === 99 && ifLevel === "on") value = "on";
+		if (value === 0 && ifLevel === "off") value = "off";
+		
 		if(check || value === ifLevel || sDev.get('deviceType') === 'toggleButton'){
 
 			self.config.targets.forEach(function(el) {
