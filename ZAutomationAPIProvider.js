@@ -251,8 +251,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		var profile = _.find(this.controller.profiles, function(profile) {
 			return profile.id === auth.user;
 		});
-
-		return this.setLogin(profile);
+		
+		res = _.extend(this.getProfileResponse(profile), {sid: controller.auth.getSessionId(this.req)});
+		
+		return {
+			error: null,
+			data: res,
+			code: 200,
+			headers: {
+				"Set-Cookie": "ZWAYSession=" + res.sid + "; Path=/; HttpOnly" // set cookie - it will duplicate header just in case client prefers cookies
+			}
+		};
 	},
 	// Check if login exists and password is correct 
 	verifyLogin: function() {

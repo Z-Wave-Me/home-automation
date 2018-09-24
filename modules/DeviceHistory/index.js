@@ -101,6 +101,7 @@ _.extend(DeviceHistory.prototype, {
 		this.controller.devices.off('created', self.assignHistory);
 		this.controller.devices.off('removed', this.removeHistory);
 
+		this.externalAPIRevoke();
 		delete global["HistoryAPI"];
 
 
