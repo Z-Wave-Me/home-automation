@@ -3930,7 +3930,8 @@ ZWave.prototype.gateDevicesStart = function() {
 						appMajorId = devId + '.' + appMajor;
 						appMajorMinorId = devId + '.' + appMajor + '.' + appMinor;
 						postFix = fixes.filter(function(fix) {
-							return fix.p_id === devId || //search by manufacturerProductId
+							return 	fix.p_id === mId.toString() || //search by manufacturerId
+								fix.p_id === devId || //search by manufacturerProductId
 								fix.p_id === appMajorId || //search by applicationMajor
 								fix.p_id === appMajorMinorId; //search by applicationMajor and applicationMinor
 						});
