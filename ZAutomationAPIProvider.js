@@ -2294,8 +2294,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				error: null,
 				data: null,
 				code: 500
-			},
-			backupCfg = loadObject("backupConfig"),
+			};
+
+		if (checkBoxtype('popphub3')) {
+			reply.code = 200;
+			
+			system('/etc/init.d/ph3_button_handler uireset');
+
+			setTimeout(function() {
+				self.doLogout();
+			}, 3000);
+			
+		} else {
+			var backupCfg = loadObject("backupConfig"),
 			storageContentList = loadObject("__storageContent"),
 			defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
 			defaultConfig = {},
@@ -2311,127 +2322,128 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}],
 			now = new Date();
 
-		try {
+			try {
 
-			if (defaultConfigExists && defaultConfigExists.type !== 'dir' && defaultConfigExists.size > 0) {
-				defaultConfig = fs.loadJSON('defaultConfigs/config.json');
-			}
+				if (defaultConfigExists && defaultConfigExists.type !== 'dir' && defaultConfigExists.size > 0) {
+					defaultConfig = fs.loadJSON('defaultConfigs/config.json');
+				}
 
-			if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
+				if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
 
-				if (zway) {
-					var ts = now.getFullYear() + "-";
-					ts += ("0" + (now.getMonth() + 1)).slice(-2) + "-";
-					ts += ("0" + now.getDate()).slice(-2) + "-";
-					ts += ("0" + now.getHours()).slice(-2) + "-";
-					ts += ("0" + now.getMinutes()).slice(-2);
+					if (zway) {
+						var ts = now.getFullYear() + "-";
+						ts += ("0" + (now.getMonth() + 1)).slice(-2) + "-";
+						ts += ("0" + now.getDate()).slice(-2) + "-";
+						ts += ("0" + now.getHours()).slice(-2) + "-";
+						ts += ("0" + now.getMinutes()).slice(-2);
 
-					console.log('Backup config ...');
-					// make backup of current config.json
-					saveObject('backupConfig' + ts, loadObject('config.json'));
+						console.log('Backup config ...');
+						// make backup of current config.json
+						saveObject('backupConfig' + ts, loadObject('config.json'));
 
-					// remove all active instances of moduleId
-					this.controller.instances.forEach(function(instance) {
-						if (instance.moduleId !== 'ZWave') {
-							self.controller.deleteInstance(instance.id);
-						}
-					});
-
-					// reset z-way controller
-					console.log('Reset Controller ...');
-					var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
-
-					zway.controller.SetDefault();
-
-					while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
-						processPendingCallbacks();
-					}
-
-					// remove instances of ZWave at least
-					// filter for instances of ZWave
-					zwInstances = this.controller.instances.filter(function(instance) {
-						return instance.moduleId === 'ZWave';
-					}).map(function(instance) {
-						return instance.id;
-					});
-
-					// remove instance of ZWave
-					if (zwInstances.length > 0) {
-						zwInstances.forEach(function(instanceId) {
-							console.log('Remove ZWave instance: ' + instanceId);
-							self.controller.deleteInstance(instanceId);
+						// remove all active instances of moduleId
+						this.controller.instances.forEach(function(instance) {
+							if (instance.moduleId !== 'ZWave') {
+								self.controller.deleteInstance(instance.id);
+							}
 						});
-					}
 
-					console.log('Remove and unload userModules apps ...');
-					// unload and remove modules
-					Object.keys(this.controller.modules).forEach(function(className) {
-						var meta = self.controller.modules[className],
-							unload = '',
-							locPath = meta.location.split('/'),
-							success = false;
+						// reset z-way controller
+						console.log('Reset Controller ...');
+						var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 
-						if (locPath[0] === 'userModules') {
-							console.log(className + ' remove it ...');
+						zway.controller.SetDefault();
 
-							success = self.controller.uninstallModule(className);
+						while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
+							processPendingCallbacks();
+						}
 
-							if (success) {
-								console.log(className + ' has been successfully removed.');
-							} else {
-								console.log('Cannot remove app: ' + className);
-								self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+						// remove instances of ZWave at least
+						// filter for instances of ZWave
+						zwInstances = this.controller.instances.filter(function(instance) {
+							return instance.moduleId === 'ZWave';
+						}).map(function(instance) {
+							return instance.id;
+						});
+
+						// remove instance of ZWave
+						if (zwInstances.length > 0) {
+							zwInstances.forEach(function(instanceId) {
+								console.log('Remove ZWave instance: ' + instanceId);
+								self.controller.deleteInstance(instanceId);
+							});
+						}
+
+						console.log('Remove and unload userModules apps ...');
+						// unload and remove modules
+						Object.keys(this.controller.modules).forEach(function(className) {
+							var meta = self.controller.modules[className],
+								unload = '',
+								locPath = meta.location.split('/'),
+								success = false;
+
+							if (locPath[0] === 'userModules') {
+								console.log(className + ' remove it ...');
+
+								success = self.controller.uninstallModule(className);
+
+								if (success) {
+									console.log(className + ' has been successfully removed.');
+								} else {
+									console.log('Cannot remove app: ' + className);
+									self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+								}
+							}
+
+						});
+
+						// remove skins
+						_.forEach(this.controller.skins, function(skin) {
+							if (skin.name !== 'default') {
+								self.controller.uninstallSkin(skin.name);
+							}
+						});
+
+						// stop the controller
+						this.controller.stop();
+
+						// clean up storage
+						for (var ind in storageContentList) {
+							if (storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]) {
+								saveObject(storageContentList[ind], null);
 							}
 						}
 
-					});
-
-					// remove skins
-					_.forEach(this.controller.skins, function(skin) {
-						if (skin.name !== 'default') {
-							self.controller.uninstallSkin(skin.name);
+						// clean up storageContent
+						if (__storageContent.length > 0) {
+							__saveObject("__storageContent", []);
+							__storageContent = [];
 						}
-					});
 
-					// stop the controller
-					this.controller.stop();
+						// set back to default config
+						saveObject('config.json', defaultConfig);
+						saveObject('userSkins.json', defaultSkins);
 
-					// clean up storage
-					for (var ind in storageContentList) {
-						if (storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]) {
-							saveObject(storageContentList[ind], null);
-						}
+						// start controller with reload flag to apply config.json
+						this.controller.start(true);
+
+						reply.code = 200;
+
+						setTimeout(function() {
+							self.doLogout();
+						}, 3000);
+					} else {
+						reply.code = 404;
+						reply.error = 'Unable to reset controller. Z-Way not found.';
 					}
 
-					// clean up storageContent
-					if (__storageContent.length > 0) {
-						__saveObject("__storageContent", []);
-						__storageContent = [];
-					}
-
-					// set back to default config
-					saveObject('config.json', defaultConfig);
-					saveObject('userSkins.json', defaultSkins);
-
-					// start controller with reload flag to apply config.json
-					this.controller.start(true);
-
-					reply.code = 200;
-
-					setTimeout(function() {
-						self.doLogout();
-					}, 3000);
 				} else {
 					reply.code = 404;
-					reply.error = 'Unable to reset controller. Z-Way not found.';
+					reply.error = 'No default configuration file found.';
 				}
-
-			} else {
-				reply.code = 404;
-				reply.error = 'No default configuration file found.';
+			} catch (e) {
+				reply.error = 'Something went wrong. Error: ' + e.toString();
 			}
-		} catch (e) {
-			reply.error = 'Something went wrong. Error: ' + e.toString();
 		}
 
 		return reply;
