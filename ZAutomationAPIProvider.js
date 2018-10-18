@@ -251,9 +251,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		var profile = _.find(this.controller.profiles, function(profile) {
 			return profile.id === auth.user;
 		});
-		
+
 		res = _.extend(this.getProfileResponse(profile), {sid: controller.auth.getSessionId(this.req)});
-		
+
 		return {
 			error: null,
 			data: res,
@@ -263,7 +263,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		};
 	},
-	// Check if login exists and password is correct 
+	// Check if login exists and password is correct
 	verifyLogin: function() {
 		var reqObj;
 
@@ -2298,17 +2298,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		if (checkBoxtype('popphub3')) {
 			reply.code = 200;
-			
-			system('/etc/init.d/ph3_button_handler uireset');
+
+			saveObject('performReset','1');
 
 			setTimeout(function() {
 				self.doLogout();
 			}, 3000);
-			
+
 		} else {
 			var backupCfg = loadObject("backupConfig"),
 			storageContentList = loadObject("__storageContent"),
-			defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
+			defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending
 			defaultConfig = {},
 			defaultSkins = [{
 				name: "default",
