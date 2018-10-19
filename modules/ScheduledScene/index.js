@@ -1,9 +1,10 @@
 /*** ScheduledScene Z-Way HA module *******************************************
 
-Version: 2.1.2
-(c) Z-Wave.Me, 2014
+Version: 2.2.2
+(c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
-Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
+Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
+Author: Hans-Christian Göckeritz <hcg@zwave.eu>
 Description:
 	This executes scene by cron
 
@@ -31,9 +32,53 @@ ScheduledScene.prototype.init = function (config) {
 
 	var self = this;
 
+	/**** TRANSFORM OLD CONFIG FROM 2.1.2 TO 2.2.1 VERSION ****/
+	var needToSaveConfig = false;
+
+	if (self.config.switches) {
+		self.config.devices.switches = self.config.switches;
+		delete self.config.switches;
+		needToSaveConfig = true;
+	}
+	if (self.config.dimmers) {
+		self.config.devices.dimmers = self.config.dimmers;
+		delete self.config.dimmers;
+		needToSaveConfig = true;
+	}
+	if (self.config.thermostats) {
+		self.config.devices.thermostats = self.config.thermostats;
+		delete self.config.thermostats;
+		needToSaveConfig = true;
+	}
+	if (self.config.scenes) {
+		self.config.devices.scenes = self.config.scenes;
+		delete self.config.scenes;
+		needToSaveConfig = true;
+	}
+	if (self.config.locks) {
+		self.config.devices.locks = self.config.locks;
+		delete self.config.locks;
+		needToSaveConfig = true;
+	}
+	if (self.config.time) {
+		self.config.times = [];
+		self.config.times.push(self.config.time);
+		delete self.config.time;
+		needToSaveConfig = true;
+	}
+	if (needToSaveConfig) {
+		self.saveConfig();
+	}
+	/***********************************************************/
+
 	this.runScene = function() {
-		if (_.isArray(self.config.switches)) {
-			self.config.switches.forEach(function(devState) {
+		var switchesArray;
+		if (_.isArray(self.config.devices.switches)) {
+			switchesArray = self.config.devices.switches;
+		}
+
+		if (switchesArray) {
+			switchesArray.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -42,8 +87,14 @@ ScheduledScene.prototype.init = function (config) {
 				}
 			});
 		}
-		if (_.isArray(self.config.thermostats)) {
-			self.config.thermostats.forEach(function(devState) {
+
+		var thermostatsArray;
+		if (_.isArray(self.config.devices.thermostats)) {
+			thermostatsArray = self.config.devices.thermostats;
+		}
+
+		if (thermostatsArray) {
+			thermostatsArray.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -52,8 +103,14 @@ ScheduledScene.prototype.init = function (config) {
 				}
 			});
 		}
-		if (_.isArray(self.config.dimmers)) {
-			self.config.dimmers.forEach(function(devState) {
+
+		var dimmersArray;
+		if (_.isArray(self.config.devices.dimmers)) {
+			dimmersArray = self.config.devices.dimmers;
+		}
+
+		if (dimmersArray) {
+			dimmersArray.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -62,8 +119,14 @@ ScheduledScene.prototype.init = function (config) {
 				}
 			});
 		}
-		if (_.isArray(self.config.locks)) {
-			self.config.locks.forEach(function(devState) {
+
+		var locksArray;
+		if (_.isArray(self.config.devices.locks)) {
+			locksArray = self.config.devices.locks;
+		}
+
+		if (locksArray) {
+			locksArray.forEach(function(devState) {
 				var vDev = self.controller.devices.get(devState.device);
 				if (vDev) {
 					if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
@@ -72,8 +135,14 @@ ScheduledScene.prototype.init = function (config) {
 				}
 			});
 		}
-		if (_.isArray(self.config.scenes)) {
-			self.config.scenes.forEach(function(scene) {
+
+		var scenesArray;
+		if (_.isArray(self.config.devices.scenes)) {
+			scenesArray = self.config.devices.scenes;
+		}
+
+		if (scenesArray) {
+			scenesArray.forEach(function(scene) {
 				var vDev = self.controller.devices.get(scene);
 				if (vDev) {
 					vDev.performCommand("on");
@@ -91,15 +160,19 @@ ScheduledScene.prototype.init = function (config) {
 	if (wds.length == 7) {
 		wds = [null]; // same as all - hack to add single cron record. NB! changes type of wd elements from integer to null
 	}
-	
+
 	wds.forEach(function(wd) {
-		this.controller.emit("cron.addTask", "scheduledScene.run."+self.id, {
-			minute: parseInt(self.config.time.split(":")[1], 10),
-			hour: parseInt(self.config.time.split(":")[0], 10),
-			weekDay: wd,
-			day: null,
-			month: null
-		});
+		if (_.isArray(self.config.times)) {
+			self.config.times.forEach(function(time) {
+				self.controller.emit("cron.addTask", "scheduledScene.run."+self.id, {
+					minute: parseInt(time.split(":")[1], 10),
+					hour: parseInt(time.split(":")[0], 10),
+					weekDay: wd,
+					day: null,
+					month: null
+				});
+			});
+		}
 	});
 };
 

@@ -1,0 +1,40 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "system",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "Rules",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"simple": {
+			"triggerEvent": {},
+			"triggerDelay": 0,
+			"targetElements": [],
+			"sendNotifications": [],
+			"reverseDelay": 0
+		},
+		"advanced": {
+			"active": false,
+			"triggerScenes" : [],
+			"triggerDelay": 0,
+			"logicalOperator" : "and",
+			"tests" : [],
+			"targetElements": [],
+			"sendNotifications": [],
+			"reverseDelay": 0,
+			"triggerOnDevicesChange" : true
+		},
+		"reverse": false
+	},
+	"schema": {},
+	"options": {}
+}

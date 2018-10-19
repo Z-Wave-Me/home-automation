@@ -14,7 +14,11 @@ VirtualDevice = function (options) {
 		visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true,
 		customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {},
 		removed = this.metrics && this.metrics.hasOwnProperty('removed')? this.metrics.removed : false,
-		isFailed = this.metrics && this.metrics.hasOwnProperty('isFailed')? this.metrics.isFailed : false;
+		isFailed = this.metrics && this.metrics.hasOwnProperty('isFailed')? this.metrics.isFailed : false,
+		tags = options.defaults.hasOwnProperty('tags')? options.defaults.tags : [],
+		order = options.defaults.hasOwnProperty('order') ? options.defaults.order : { rooms: 0, elements: 0, dashboard: 0 },
+		location = options.defaults.hasOwnProperty('location')? options.defaults.location : 0,
+		creationTime = options.defaults.hasOwnProperty('creationTime')? options.defaults.creationTime : 0;
 
 	_.extend(this, options, {
 		id: options.deviceId,
@@ -33,7 +37,8 @@ VirtualDevice = function (options) {
 			'creationTime',
 			'probeType',
 			'customIcons',
-			'order'
+			'order',
+			'nodeId'
 		],
 		collection: options.controller.devices,
 		metrics: {},
@@ -47,20 +52,16 @@ VirtualDevice = function (options) {
 				isFailed: isFailed,
 				removed: removed
 			}),
-			tags: [],
+			tags: tags,
 			permanently_hidden: permHidden,
-			location: 0,
+			location: location,
 			h: options.controller.hashCode(options.deviceId),
 			hasHistory: false,
 			visibility: visibility,
-			creationTime: 0,
+			creationTime: creationTime,
 			probeType: probeType,
 			customIcons: customicons,
-			order: {
-				rooms: 0,
-				elements: 0,
-				dashboard: 0
-			}
+			order: order
 		},
 		changed: {},
 		overlay: options.overlay || {},
@@ -80,6 +81,16 @@ VirtualDevice = function (options) {
 
 	if (!!options.moduleId) {
 		this.attributes.creatorId = options.moduleId;
+	}
+
+	if (this.attributes.id.indexOf('ZWayVDev') > -1) {
+		var shifting = this.attributes.id.indexOf('RemoteHA') > -1? 4 : 2;
+		var idArr = this.attributes.id.split('_');
+		var nodeId = idArr[shifting].split('-').shift();
+
+		this.attributes.nodeId = shifting === 4 && nodeId? 'R-'+ idArr[1] +'_'+ idArr[3] +'_'+ nodeId : (nodeId? parseInt(nodeId, 10) : undefined); // Remote is flagged by R-[moduleID]_[zwayName]_[nodeId]
+	} else {
+		delete this.attributes.nodeId;
 	}
 
 	this.initialize.apply(this, arguments);

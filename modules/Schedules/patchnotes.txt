@@ -1,0 +1,6 @@
+v1.0.1
+- Button to test schedule
+- BugFix show mobile devices and email addresses in scene select
+
+v1.0.0
+- clone and rework from "ScheduledScene"

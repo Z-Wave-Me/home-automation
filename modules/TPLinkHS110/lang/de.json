@@ -1,0 +1,6 @@
+{
+	"m_title":"TP-Link HS110",
+	"m_descr":"Diese App ermöglicht Ihnen die Steuerung Ihrer TP-Link HS110 WLAN Steckdose. Geben Sie dazu einfach die IP-Adresse der komplett eingerichteten WLAN Steckdose an.",
+	"ip":"IP-Adresse des Schalters",
+	"h_ip":"Beispielformat: '192.168.0.50'"
+}

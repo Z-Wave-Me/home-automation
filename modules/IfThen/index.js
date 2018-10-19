@@ -1,10 +1,11 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.5.0
+Version: 2.5.1
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Author: Hans-Christian Göckeritz <hcg@zwave.eu>
+Author: Karsten Reichel <kar@zwave.eu>
 Description:
 	Bind actions on one device to other devices or scenes
 ******************************************************************************/
@@ -51,7 +52,11 @@ IfThen.prototype.init = function (config) {
 					break;
 			}
 		}
-
+		
+		// handle 0 and 99 for dimmers as off/on
+		if (value === 99 && ifLevel === "on") value = "on";
+		if (value === 0 && ifLevel === "off") value = "off";
+		
 		if(check || value === ifLevel || sDev.get('deviceType') === 'toggleButton'){
 
 			self.config.targets.forEach(function(el) {

@@ -1,0 +1,34 @@
+{
+  "singleton": true,
+  "dependencies": [
+    "Cron"
+  ],
+  "category": "system",
+  "author": "Z-Wave.Me",
+  "homepage": "http://razberry.z-wave.me",
+  "icon": "icon.png",
+  "moduleName": "Security",
+  "version": "1.0.0",
+  "maturity": "stable",
+  "repository": {
+    "type": "git",
+    "source": "https://github.com/Z-Wave-Me/home-automation"
+  },
+  "defaults": {
+    "title": "__m_title__",
+    "description": "__m_descr__",
+    "input": {},
+    "alarms": {},
+    "silentAlarms": {}, 
+    "clean": {},
+    "controls": {},
+    "armConfirm": {},
+    "disarmConfirm": {},
+    "times": {},
+    "schedules": {}
+  },
+  "schema": {},
+  "options": {}
+}
+
+
