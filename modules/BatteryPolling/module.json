@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName": "BatteryPolling",
-	"version": "2.1.0",
+	"version": "2.2.0",
 	"maturity": "stable",
 	"repository": {
 			"type": "git",
@@ -16,7 +16,11 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 		"launchWeekDay": 0,
-		"warningLevel": 20
+		"warningLevel": 20,
+		"notification": {},
+		"mail_helper": "__h_nomail__",
+		"mail_button": "__b_createmail__",
+		"mail_confirm": "__m_createmail__"		
 	},
 	"schema": {
 		"type": "object",
@@ -30,7 +34,24 @@
 				"type": "select",
 				"required": true,
 				"enum": [5, 10, 15, 20]
-			}
+			},
+			"notification": {
+				"type": "object",
+				"properties": {
+					"target": {
+						"type": "string",
+						"datasource": "namespaces",
+						"enum": "namespaces:devices_toggleButton:notification:push:deviceId",
+						"required": false
+					},
+					"mail_to_input": {
+						"required": false
+					},
+					"message": {
+						"required": false
+					}
+				}
+			}			
 		},
 		"required": false
 	},
@@ -44,7 +65,32 @@
 				"label": "__l_warning_lvl__",
 				"helper": "__h_warning_lvl__",
 				"optionLabels": ["5%", "10%", "15%", "20%"]
-			}
+			},
+			"notification": {
+				"fields": {
+							"target": {
+								"type": "select",
+								"removeDefaultNone": false,
+								"noneLabel": "__l_choose_target__",
+								"label": "__l_notification__",
+								"datasource": "namespaces",
+								"field": "optionLabels",
+								"optionLabels": "namespaces:devices_toggleButton:notification:push:deviceId",
+								"fieldClass": "target_select"
+							},
+							"mail_to_input": {
+								"label": "__l_notification_mail__",
+								"fieldClass": "mail_input"
+					},
+					"message": {
+						"type": "textarea",
+						"label": "__l_notification_message__",
+						"helper": "__h_notification_message__",
+						"fieldClass": "not_message"
+					}
+				}
+			}			
 		}
-	}
+	},
+	"postRender": "loadFunction:postRender.js"	
 }

@@ -1,0 +1,19 @@
+{
+  "dependencies": [],
+  "singleton": true,
+  "category": "support_external_dev",
+  "author": "Z-Wave.Me",
+  "homepage": "http://razberry.z-wave.me",
+  "icon": "icon.png",
+  "moduleName":"GoogleHome",
+  "version": "0.0.9",
+  "maturity": "beta",
+  "repository": {
+    "type": "git",
+    "source": "https://github.com/Z-Wave-Me/home-automation"
+  },
+  "defaults": {
+    "title" : "__m_title__",
+    "description": "__m_descr__"
+  }
+}

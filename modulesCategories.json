@@ -125,6 +125,18 @@
 			"name": "Markierung",
 			"description": "Markieren/Taggen von Elementen",
 			"icon": ""
+		},
+		{
+			"id": "wifiplug",
+			"name": "Wifi Steckdosen",
+			"description": "Unterstützung für Wifi Steckdosen",
+			"icon": ""
+		},
+		{
+			"id": "system",
+			"name": "System",
+			"description": "System Module",
+			"icon": ""
 		}
 	],
 	"en": [
@@ -252,6 +264,18 @@
 			"id": "tagging",
 			"name": "Tagging",
 			"description": "Tagging widgets",
+			"icon": ""
+		},
+		{
+			"id": "wifiplug",
+			"name": "Wifi Plugs",
+			"description": "Support for wifi plugs",
+			"icon": ""
+		},
+		{
+			"id": "system",
+			"name": "System",
+			"description": "System Modules",
 			"icon": ""
 		}
 	]

@@ -13,11 +13,11 @@ Copyright: (c) ZWave.Me, 2013
 
 executeFile("router.js");
 
-function ZAutomationAPIWebRequest (controller) {
+function ZAutomationAPIWebRequest(controller) {
 	ZAutomationAPIWebRequest.super_.call(this);
 
 	this.ROLE = controller.auth.ROLE;
-	
+
 	this.router = new Router("/v1");
 	this.controller = controller;
 	this.res = {
@@ -47,8 +47,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/notifications", this.ROLE.USER, this.exposeNotifications);
 		this.router.put("/notifications", this.ROLE.ADMIN, this.redeemNotifications);
 		this.router.del("/notifications", this.ROLE.ADMIN, this.deleteNotifications);
-		this.router.get("/history", this.ROLE.USER, this.exposeHistory);
-		this.router.del("/history", this.ROLE.USER, this.exposeHistory);
 		this.router.get("/devices", this.ROLE.USER, this.listDevices);
 		this.router.get("/restart", this.ROLE.ADMIN, this.restartController);
 		this.router.get("/locations", this.ROLE.USER, this.listLocations);
@@ -61,7 +59,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/locations/update", this.ROLE.ADMIN, this.updateLocation);
 		this.router.get("/modules", this.ROLE.ADMIN, this.listModules);
 		this.router.get("/modules/categories", this.ROLE.ADMIN, this.listModulesCategories);
-		
+
 		// module installation / update
 		this.router.post("/modules/install", this.ROLE.ADMIN, this.installModule);
 		this.router.post("/modules/update", this.ROLE.ADMIN, this.updateModule);
@@ -84,6 +82,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 		this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 
+		this.router.del("/locations/image/:location_id", this.ROLE.ADMIN, this.removeLocationImage, [parseInt]);
 		this.router.del("/locations/:location_id", this.ROLE.ADMIN, this.removeLocation, [parseInt]);
 		this.router.put("/locations/:location_id", this.ROLE.ADMIN, this.updateLocation, [parseInt]);
 		this.router.get("/locations/:location_id", this.ROLE.ADMIN, this.getLocationFunc);
@@ -92,6 +91,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/notifications/:notification_id", this.ROLE.USER, this.deleteNotifications, [parseInt]);
 		this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
+		this.router.post("/profiles/qrcode/:profile_id", this.ROLE.USER, this.getQRCodeString, [parseInt]);
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -109,12 +109,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.post("/modules/reset/:module_id", this.ROLE.ADMIN, this.resetModule);
 		this.router.del("/modules/delete/:module_id", this.ROLE.ADMIN, this.deleteModule);
-		
+
 		// reinitialize apps from /modules or /userModules directory
 		this.router.get("/modules/reinitialize/:module_id", this.ROLE.ADMIN, this.reinitializeModule);
-		
+
 		this.router.get("/modules/categories/:category_id", this.ROLE.ADMIN, this.getModuleCategoryFunc);
-		
+		this.router.get("/modules/transform/reverse", this.ROLE.ADMIN, this.revertTransformModuleFlag);
+		this.router.post("/modules/transform", this.ROLE.ADMIN, this.transformModule);
+
 		this.router.get("/modules/:module_id", this.ROLE.ADMIN, this.getModuleFunc);
 
 		this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
@@ -123,7 +125,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/history/:dev_id", this.ROLE.USER, this.getDevHist);
 
 		this.router.get("/load/modulemedia/:module_name/:file_name", this.ROLE.ANONYMOUS, this.loadModuleMedia);
-		
+
 		this.router.get("/load/image/:img_name", this.ROLE.ANONYMOUS, this.loadImage);
 
 		this.router.get("/backup", this.ROLE.ADMIN, this.backup);
@@ -157,28 +159,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("system/time/ntp/:action", this.ROLE.ADMIN, this.configNtp);
 
 		this.router.get("/system/remote-id", this.ROLE.ANONYMOUS, this.getRemoteId);
+		this.router.get("/system/ip-address", this.ROLE.ANONYMOUS, this.getIPAddress);
 		this.router.get("/system/first-access", this.ROLE.ANONYMOUS, this.getFirstLoginInfo);
 		this.router.get("/system/info", this.ROLE.ANONYMOUS, this.getSystemInfo);
 
 		this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
 		this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
 
-		this.router.post("/system/certfxAuth",this.ROLE.ANONYMOUS,this.certfxAuth);
-		this.router.post("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxSetAuthForwarding);
-		this.router.get("/system/certfxAuthForwarding",this.ROLE.ADMIN,this.certfxGetAuthForwarding);
-		this.router.post("/system/certfxUnregister",this.ROLE.ADMIN,this.certfxUnregister);
-		this.router.post("/system/certfxUpdateIdentifier",this.ROLE.ADMIN,this.certfxUpdateIdentifier);
+		this.router.post("/system/certfxAuth", this.ROLE.ANONYMOUS, this.certfxAuth);
+		//this.router.post("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxSetAuthForwarding);
+		//this.router.get("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxGetAuthForwarding);
+		this.router.post("/system/certfxUnregister", this.ROLE.ADMIN, this.certfxUnregister);
+		this.router.post("/system/certfxUpdateIdentifier", this.ROLE.ADMIN, this.certfxUpdateIdentifier);
 
-		this.router.get("/system/zwave/deviceInfoGet",this.ROLE.ADMIN, this.zwaveDeviceInfoGet);
-		this.router.get("/system/zwave/deviceInfoUpdate",this.ROLE.ADMIN, this.zwaveDeviceInfoUpdate);
-		this.router.get("/system/zwave/vendorsInfoGet",this.ROLE.ADMIN, this.zwaveVendorsInfoGet);
-		this.router.get("/system/zwave/vendorsInfoUpdate",this.ROLE.ADMIN, this.zwaveVendorsInfoUpdate);
+		this.router.get("/system/zwave/deviceInfoGet", this.ROLE.ADMIN, this.zwaveDeviceInfoGet);
+		this.router.get("/system/zwave/deviceInfoUpdate", this.ROLE.ADMIN, this.zwaveDeviceInfoUpdate);
+		this.router.get("/system/zwave/vendorsInfoGet", this.ROLE.ADMIN, this.zwaveVendorsInfoGet);
+		this.router.get("/system/zwave/vendorsInfoUpdate", this.ROLE.ADMIN, this.zwaveVendorsInfoUpdate);
 
 		this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
 	},
 
 	// Used by the android app to request server status
-	statusReport: function () {
+	statusReport: function() {
 		var currentDateTime = new Date(),
 			reply = {
 				error: null,
@@ -191,7 +194,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.data = null;
 			reply.code = 503;
 			reply.message = "Service Unavailable";
-		} 
+		}
 
 		return reply;
 	},
@@ -222,10 +225,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			data: resProfile,
 			code: 200,
 			headers: {
-				"Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly"// set cookie - it will duplicate header just in case client prefers cookies
+				"Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly" // set cookie - it will duplicate header just in case client prefers cookies
 			}
 		};
-	},	
+	},
 	// Method to return a 401 to the user
 	denyLogin: function(error) {
 		return {
@@ -240,18 +243,27 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	// Returns user session information for the smarthome UI
 	verifySession: function() {
 		var auth = controller.auth.resolve(this.req, 2);
-		
+
 		if (!auth) {
 			return this.denyLogin("No valid user session found");
 		}
-		
-		var profile = _.find(this.controller.profiles, function (profile) {
+
+		var profile = _.find(this.controller.profiles, function(profile) {
 			return profile.id === auth.user;
 		});
-		
-		return this.setLogin(profile);
+
+		res = _.extend(this.getProfileResponse(profile), {sid: controller.auth.getSessionId(this.req)});
+
+		return {
+			error: null,
+			data: res,
+			code: 200,
+			headers: {
+				"Set-Cookie": "ZWAYSession=" + res.sid + "; Path=/; HttpOnly" // set cookie - it will duplicate header just in case client prefers cookies
+			}
+		};
 	},
-	// Check if login exists and password is correct 
+	// Check if login exists and password is correct
 	verifyLogin: function() {
 		var reqObj;
 
@@ -266,7 +278,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			};
 		}
 
-		var profile = _.find(this.controller.profiles, function (profile) {
+		var profile = _.find(this.controller.profiles, function(profile) {
 			return profile.login === reqObj.login;
 		});
 
@@ -286,11 +298,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// - registered cit & login forwarding is active
 			//if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
 			if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
-
-				// set qr code only box is no CIT
-				if(!checkBoxtype('cit') && !profile.hasOwnProperty('qrcode') || profile.qrcode === "") {
-					this.controller.addQRCode(profile, reqObj);
-				}
 				return this.setLogin(profile);
 			} else {
 				return this.denyLogin();
@@ -299,7 +306,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return this.denyLogin();
 		}
 	},
-	
+
 	doLogout: function() {
 		var reply = {
 				error: null,
@@ -308,7 +315,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				headers: null
 			},
 			session;
-		
+
 		var sessionId = this.controller.auth.getSessionId(this.req);
 
 		if (sessionId) {
@@ -327,11 +334,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 404;
 			reply.error = 'Could not logout. No session found.';
 		}
-		
+
 		return reply;
 	},
 	// Devices
-	listDevices: function () {
+	listDevices: function() {
 		var nowTS = Math.floor(new Date().getTime() / 1000),
 			reply = {
 				error: null,
@@ -343,20 +350,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
 
-		reply.data.structureChanged = this.controller.lastStructureChangeTime >= since ? true : false;
-		reply.data.devices = this.devicesByUser(this.req.user, function (dev) { return dev.get("updateTime") >= (reply.data.structureChanged ? 0 : since); });
+		reply.data.structureChanged = this.controller.lastStructureChangeTime >= since && since? true : false;
+		reply.data.devices = this.devicesByUser(this.req.user, function(dev) {
+			return dev.get("updateTime") >= (reply.data.structureChanged ? 0 : since);
+		});
 		if (Boolean(this.req.query.pagination)) {
 			reply.data.total_count = devices.length;
 		}
 
 		return reply;
 	},
-	getVDevFunc: function (vDevId) {
+	getVDevFunc: function(vDevId) {
 		var reply = {
 				error: null,
 				data: null
 			},
-			device = _.find(this.devicesByUser(this.req.user), function(device) { return device.id === vDevId; });
+			device = _.find(this.devicesByUser(this.req.user), function(device) {
+				return device.id === vDevId;
+			});
 
 		if (device) {
 			reply.code = 200;
@@ -367,7 +378,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 		return reply;
 	},
-	setVDevFunc: function (vDevId) {
+	setVDevFunc: function(vDevId) {
 		var reqObj,
 			device = null,
 			reply = {
@@ -384,10 +395,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return reply;
 		}
 
-		if(this.req.query.hasOwnProperty('icon')) {
+		if (this.req.query.hasOwnProperty('icon')) {
 			device = this.controller.devices.get(vDevId);
-			if(device) {
-				device.set('customIcons', reqObj.customicons, {silent:true});
+			if (device) {
+				device.set('customIcons', reqObj.customicons, {
+					silent: true
+				});
 				reply.data = "OK";
 				result = true;
 			}
@@ -399,7 +412,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		}
 
-		if(result) {
+		if (result) {
 			reply.code = 200;
 		} else {
 			reply.code = 404;
@@ -407,7 +420,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 		return reply;
 	},
-	performVDevCommandFunc: function (vDevId, commandId) {
+	performVDevCommandFunc: function(vDevId, commandId) {
 		var reply = {
 				error: null,
 				data: null,
@@ -415,7 +428,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			result_execution_command,
 			vDev = this.deviceByUser(vDevId, this.req.user);
-		
+
 		if (vDev) {
 			result_execution_command = vDev.performCommand.call(vDev, commandId, this.req.query);
 			reply.data = !!result_execution_command ? result_execution_command : null;
@@ -427,7 +440,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	// Notifications
-	exposeNotifications: function (notificationId) {
+	exposeNotifications: function(notificationId) {
 		var notifications,
 			reply = {
 				error: null,
@@ -438,22 +451,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
 			to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
 			profile = this.profileByUser(this.req.user),
-			devices = this.devicesByUser(this.req.user).map(function(device) { return device.id; }),
+			devices = this.devicesByUser(this.req.user).map(function(device) {
+				return device.id;
+			}),
 			test = function(n) {
 				return ((profile.hide_system_events === false && n.level !== 'device-info') || // hide_system_events = false
-					(profile.hide_all_device_events === false && n.level === 'device-info')) && // hide_device_events = false
+						(profile.hide_all_device_events === false && n.level === 'device-info')) && // hide_device_events = false
 					(!profile.hide_single_device_events || profile.hide_single_device_events.indexOf(n.source) === -1) && // remove events from devices to hide
-					((n.level !== 'device-info' && devices.indexOf(n.source) === -1) || (n.level === 'device-info' && devices.indexOf(n.source) > -1));//  filter device by user
+					((n.level !== 'device-info' && devices.indexOf(n.source) === -1) || (n.level === 'device-info' && devices.indexOf(n.source) > -1)); //  filter device by user
 			};
 
 		if (notificationId) {
 
-			notification = this.controller.notifications.get().filter(function (notification) {
+			notification = this.controller.notifications.get().filter(function(notification) {
 				return notification.id === notificationId && // filter by id
-						test(notification); // check against 2nd filter
+					test(notification); // check against 2nd filter
 			});
 
-			if (notification.length > 0 ) {
+			if (notification.length > 0) {
 				reply.data = notification[0];
 			} else {
 				reply.code = 404;
@@ -461,19 +476,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 
 		} else {
-			notifications = this.controller.notifications.get().filter(function (notification) {
-				return  notification.id >= since && notification.id <= to && // filter by time
-						test(notification); // check against 2nd filter
+			notifications = this.controller.notifications.get().filter(function(notification) {
+				return notification.id >= since && notification.id <= to && // filter by time
+					test(notification); // check against 2nd filter
 			});
 
 			reply.data = {
-				updateTime: Math.floor(timestamp/1000),
+				updateTime: Math.floor(timestamp / 1000),
 				notifications: notifications
 			};
 		}
 
 		if (Boolean(this.req.query.pagination)) {
-			reply.data.total_count= notifications.length;
+			reply.data.total_count = notifications.length;
 			// !!! fix pagination
 			notifications = notifications.slice();
 		}
@@ -481,7 +496,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	// delete single notifications or all privious by a choosen timestamp
-	deleteNotifications: function (notificationId) {
+	deleteNotifications: function(notificationId) {
 
 		var id = notificationId ? parseInt(notificationId) : 0,
 			reply = {
@@ -495,7 +510,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		redeemed = this.req.query.hasOwnProperty("allRedeemed") ? Boolean(this.req.query.allRedeemed) : false;
 
 		if (!redeemed) {
-			this.controller.deleteNotifications(id, before, function (notice) {
+			this.controller.deleteNotifications(id, before, function(notice) {
 				if (notice) {
 					reply.code = 204;
 					reply.data = null;
@@ -507,7 +522,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				}
 			});
 		} else {
-			this.controller.deleteAllRedeemedNotifications(function (notice) {
+			this.controller.deleteAllRedeemedNotifications(function(notice) {
 				if (notice) {
 					reply.code = 204;
 					reply.data = null;
@@ -519,7 +534,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	// redeem single or all notifications (true/false)
-	redeemNotifications: function (notificationId) {
+	redeemNotifications: function(notificationId) {
 
 		var id = notificationId ? parseInt(notificationId) : 0,
 			reply = {
@@ -528,11 +543,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				error: "Something went wrong."
 			};
 
-		redeemed = this.req.body.hasOwnProperty("set_redeemed")? retBoolean(this.req.body.set_redeemed) : false;
-		all = this.req.body.hasOwnProperty("all")? retBoolean(this.req.body.all) : false;
+		redeemed = this.req.body.hasOwnProperty("set_redeemed") ? retBoolean(this.req.body.set_redeemed) : false;
+		all = this.req.body.hasOwnProperty("all") ? retBoolean(this.req.body.all) : false;
 
 		if (!all) {
-			this.controller.redeemNotification(id, redeemed, function (notice) {
+			this.controller.redeemNotification(id, redeemed, function(notice) {
 				if (notice) {
 					reply.code = 204;
 					reply.data = null;
@@ -544,7 +559,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				}
 			});
 		} else {
-			this.controller.redeemAllNotifications(redeemed, function (notice) {
+			this.controller.redeemAllNotifications(redeemed, function(notice) {
 				if (notice) {
 					reply.code = 204;
 					reply.data = null;
@@ -556,7 +571,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	//locations
-	listLocations: function () {
+	listLocations: function() {
 		var reply = {
 				data: null,
 				error: null
@@ -576,14 +591,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	// get location
-	getLocationFunc: function (locationId) {
+	getLocationFunc: function(locationId) {
 		var reply = {
 				data: null,
 				error: null
 			},
 			locations = this.locationsByUser(this.req.user),
 			_location = [],
-			locationId = !isNaN(locationId)? parseInt(locationId, 10) : locationId;
+			locationId = !isNaN(locationId) ? parseInt(locationId, 10) : locationId;
 
 		_location = this.controller.getLocation(locations, locationId);
 
@@ -599,14 +614,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	//filter location namespaces
-	getLocationNamespacesFunc: function (locationId, namespaceId) {
+	getLocationNamespacesFunc: function(locationId, namespaceId) {
 		var reply = {
 				data: null,
 				error: null
 			},
 			locations = this.locationsByUser(this.req.user),
 			_location = [],
-			locationId = !isNaN(locationId)? parseInt(locationId, 10) : locationId;
+			locationId = !isNaN(locationId) ? parseInt(locationId, 10) : locationId;
 
 		_location = this.controller.getLocation(locations, locationId);
 
@@ -629,12 +644,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		} else {
 			reply.code = 404;
-			reply.error = "Location " + locationId === 0? 'globalRoom' : locationId + " not found";
+			reply.error = "Location " + locationId === 0 ? 'globalRoom' : locationId + " not found";
 		}
 
 		return reply;
 	},
-	addLocation: function () {
+	addLocation: function() {
 		var title,
 			reply = {
 				error: null,
@@ -644,9 +659,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			locProps = {};
 
 		if (this.req.method === 'GET') {
-			
+
 			reqObj = this.req.query;
-		
+
 		} else if (this.req.method === 'POST') { // POST
 			try {
 				reqObj = JSON.parse(this.req.body);
@@ -657,13 +672,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 
 		for (var property in reqObj) {
-			if ( property !== 'id') {
+			if (property !== 'id') {
 				locProps[property] = reqObj[property] ? reqObj[property] : null;
 			}
 		}
 
 		if (!!locProps.title) {
-			this.controller.addLocation(locProps, function (data) {
+			this.controller.addLocation(locProps, function(data) {
 				if (data) {
 					reply.code = 201;
 					reply.data = data;
@@ -679,7 +694,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	removeLocation: function (locationId) {
+	removeLocation: function(locationId) {
 		var id,
 			reqObj,
 			reply = {
@@ -703,7 +718,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		if (!!id) {
 			if (id !== 0) {
-				this.controller.removeLocation(id, function (result) {
+				this.controller.removeLocation(id, function(result) {
 					if (result) {
 						reply.code = 204;
 						reply.data = null;
@@ -723,7 +738,74 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	updateLocation: function (locationId) {
+	removeLocationImage: function(locationId) {
+		var id,
+			user_img,
+			reqObj,
+			reply = {
+				error: null,
+				data: null,
+				code: 200
+			};
+
+		if (this.req.method === 'DELETE' && locationId === undefined) {
+			try {
+				reqObj = JSON.parse(this.req.body);
+			} catch (ex) {
+				reply.error = ex.message;
+			}
+			id = reqObj.id;
+			user_img = reqObj.user_img;
+
+		} else if (this.req.method === 'DELETE' && locationId !== undefined) {
+			id = locationId;
+			user_img = this.req.query.user_img;
+		}
+
+		if (!!id || user_img !== "") {
+			if (id !== 0) {
+				var location = this.controller.getLocation(this.controller.locations, id);
+				if (location) {
+					// check custom image exists
+					if (!loadObject(user_img)) {
+						reply.code = 404;
+						reply.error = "Location image " + user_img + " doesn't exist or already deleted.";
+					} else {
+						// delete custom room image
+						saveObject(user_img, null);
+						if (location.user_img == user_img && location.img_type == 'user') {
+							location.user_img = '';
+							location.img_type = '';
+							location.show_background = false;
+						} else if (location.user_img == user_img) {
+							location.user_img = '';
+						}
+						// update affected location
+						this.controller.updateLocation(location.id, location.title, location.user_img, location.default_img, location.img_type, location.show_background, location.main_sensors, function(data) {
+							if (data) {
+								reply.data = data;
+							} else {
+								reply.code = 404;
+								reply.error = "Location " + id + " doesn't exist.";
+							}
+						});
+					}
+				} else {
+					reply.code = 404;
+					reply.error = "Location " + id + " doesn't exist.";
+				}
+			} else {
+				reply.code = 403;
+				reply.error = "Permission denied.";
+			}
+		} else {
+			reply.code = 400;
+			reply.error = "Argument id, user_img is required.";
+		}
+
+		return reply;
+	},
+	updateLocation: function(locationId) {
 		var id,
 			title,
 			user_img,
@@ -737,8 +819,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 200
 			},
 			reqObj;
-		
-		if(locationId !== 0){
+
+		if (locationId !== 0) {
 			if (this.req.method === 'GET') {
 				id = parseInt(this.req.query.id);
 				title = this.req.query.title;
@@ -750,7 +832,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				}
 				id = locationId || reqObj.id;
 				title = reqObj.title;
-				user_img =reqObj.user_img || '';
+				user_img = reqObj.user_img || '';
 				default_img = reqObj.default_img || '';
 				img_type = reqObj.img_type || '';
 				show_background = reqObj.show_background || false;
@@ -758,7 +840,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 
 			if (!!title && title.length > 0) {
-				this.controller.updateLocation(id, title, user_img, default_img, img_type,show_background, main_sensors, function (data) {
+				this.controller.updateLocation(id, title, user_img, default_img, img_type, show_background, main_sensors, function(data) {
 					if (data) {
 						reply.data = data;
 					} else {
@@ -770,16 +852,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.code = 400;
 				reply.error = "Arguments id & title are required";
 			}
-		}else {
+		} else {
 			reply.code = 403;
 			reply.error = "Permission denied.";
 		}
-		
+
 
 		return reply;
 	},
 	// modules
-	listModules: function () {
+	listModules: function() {
 		var reply = {
 				error: null,
 				data: [],
@@ -787,17 +869,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			module = null;
 
-		Object.keys(this.controller.modules).sort().forEach(function (className) {
+		Object.keys(this.controller.modules).sort().forEach(function(className) {
 			module = this.controller.getModuleData(className);
 			module.className = className;
 
-			if(module.location === ('userModules/' + className) && fs.list('modules/'+ className)) {
+			if (module.location === ('userModules/' + className) && fs.list('modules/' + className)) {
 				module.hasReset = true;
 			} else {
 				module.hasReset = false;
 			}
 
-			if (module.singleton && _.any(this.controller.instances, function (instance) { return instance.moduleId === module.id; })) {
+			if (module.singleton && _.any(this.controller.instances, function(instance) {
+					return instance.moduleId === module.id;
+				})) {
 				module.created = true;
 			} else {
 				module.created = false;
@@ -807,12 +891,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getModuleFunc: function (moduleId) {
+	getModuleFunc: function(moduleId) {
 		var reply = {
 				error: null,
 				data: null,
 				code: null
-			}, 
+			},
 			moduleData;
 
 		if (!this.controller.modules.hasOwnProperty(moduleId)) {
@@ -822,7 +906,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// get module data
 			moduleData = this.controller.getModuleData(moduleId);
 
-			if(moduleData.location === ('userModules/' + moduleId) && fs.list('modules/'+ moduleId)) {
+			if (moduleData.location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)) {
 				moduleData.hasReset = true;
 			} else {
 				moduleData.hasReset = false;
@@ -832,27 +916,27 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// replace namspace filters
 			reply.data = this.controller.replaceNamespaceFilters(moduleData);
 		}
-		
+
 		return reply;
 	},
 	// modules categories
-	listModulesCategories: function () {
+	listModulesCategories: function() {
 		var reply = {
-				error: null,
-				data: null,
-				code: 200
-			};
+			error: null,
+			data: null,
+			code: 200
+		};
 
 		reply.data = this.controller.getListModulesCategories();
 
 		return reply;
 	},
-	getModuleCategoryFunc: function (categoryId) {
+	getModuleCategoryFunc: function(categoryId) {
 		var reply = {
-				error: null,
-				data: null,
-				code: 500
-			};
+			error: null,
+			data: null,
+			code: 500
+		};
 
 		category = this.controller.getListModulesCategories(categoryId);
 
@@ -866,8 +950,74 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
+	transformModule: function() {
+		var reply = {
+				error: 'Something went wrong.',
+				data: null,
+				code: 500
+			},
+			reqObj = parseToObject(this.req.body),
+			sources = ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'],
+			targets = ['Rules', 'Schedules', 'Scenes'],
+			source = reqObj.source && ['IfThen', 'LogicalRules', 'ScheduledScene', 'LightScene'].indexOf(reqObj.source) > -1 ? reqObj.source : null,
+			target = reqObj.target && ['Rules', 'Schedules', 'Scenes'].indexOf(reqObj.target) > -1 ? reqObj.target : null,
+			pairing = false,
+			resultList = [];
+
+		try {
+			pairing = (target === 'Rules' && (source === 'IfThen' || source === 'LogicalRules')) ||
+				(target === 'Schedules' && source === 'ScheduledScene') ||
+				(target === 'Scenes' && source === 'LightScene');
+
+			if (pairing) {
+				resultList = this.controller.transformIntoNewInstance(source);
+
+				reply.code = 200;
+				reply.data = resultList;
+				reply.error = null;
+			} else {
+				reply.code = 400;
+				reply.error = 'Bad Request. Following transformations are allowed: IfThen/LogicalRules > Rules, ScheduledScene > Schedules, LightScene > Scenes';
+			}
+
+		} catch (e) {
+			reply.error += ' Error: ' + e.toString();
+		}
+
+		return reply;
+	},
+	revertTransformModuleFlag: function() {
+		var self = this,
+			reply = {
+				error: 'Something went wrong.',
+				data: null,
+				code: 500
+			},
+			transformationsDone = false;
+
+		try {
+
+			_.forEach(this.controller.instances, function(instance) {
+				if (instance.params.moduleAPITransformed) {
+					// remove transformed flag
+					delete instance.params.moduleAPITransformed;
+					self.controller.reconfigureInstance(instance.id, instance);
+					transformationsDone = true;
+				}
+			});
+
+			reply.code = 200;
+			reply.data = transformationsDone ? 'successfull' : 'No transformations found.';
+			reply.error = null;
+
+		} catch (e) {
+			reply.error += ' Error: ' + e.toString();
+		}
+
+		return reply;
+	},
 	// install module
-	installModule: function () {
+	installModule: function() {
 		var reply = {
 				error: {
 					key: null,
@@ -884,15 +1034,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			moduleId = moduleUrl.split(/[\/]+/).pop().split(/[.]+/).shift();
 
 		if (!this.controller.modules[moduleId]) {
-			
+
 			// download and install the module
 			result = this.controller.installModule(moduleUrl, moduleId);
 
 			if (result === "done") {
-				
+
 				loadSuccessfully = this.controller.loadInstalledModule(moduleId, 'userModules/', false);
 
-				if(loadSuccessfully){
+				if (loadSuccessfully) {
 					reply.code = 201;
 					reply.data.key = "app_installation_successful"; // send language key as response
 				} else {
@@ -910,7 +1060,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 		return reply;
 	},
-	updateModule: function () {
+	updateModule: function() {
 		var reply = {
 				error: {
 					key: null,
@@ -935,7 +1085,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 				loadSuccessfully = this.controller.reinitializeModule(moduleId, 'userModules/');
 
-				if(loadSuccessfully){
+				if (loadSuccessfully) {
 					reply.code = 200;
 					reply.data.key = "app_update_successful"; // send language key as response
 				} else {
@@ -953,7 +1103,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 		return reply;
 	},
-	deleteModule: function (moduleId) {
+	deleteModule: function(moduleId) {
 		var reply = {
 				error: {
 					key: null
@@ -963,7 +1113,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					appendix: null
 				},
 				code: 500
-			}, 
+			},
 			uninstall = false;
 
 		if (this.controller.modules[moduleId]) {
@@ -976,37 +1126,37 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			} else {
 				reply.code = 500;
 				reply.error.key = 'app_failed_to_delete';
-			}	   
+			}
 		} else {
 			reply.code = 404;
 			reply.error.key = 'app_not_exist';
 		}
 		return reply;
 	},
-	resetModule: function (moduleId) {
+	resetModule: function(moduleId) {
 		var reply = {
 				error: {},
 				data: {},
 				code: 500
-			}, 
+			},
 			unload;
-			
+
 		var result = "in progress";
 
 		if (this.controller.modules[moduleId]) {
 
-			if (this.controller.modules[moduleId].location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)){
+			if (this.controller.modules[moduleId].location === ('userModules/' + moduleId) && fs.list('modules/' + moduleId)) {
 
 				uninstall = this.controller.uninstallModule(moduleId, true);
 
 				if (uninstall) {
 					reply.code = 200;
 					reply.data.key = 'app_reset_successful_to_version';
-					reply.data.appendix = this.controller.modules[moduleId].meta.version; 
+					reply.data.appendix = this.controller.modules[moduleId].meta.version;
 				} else {
 					reply.code = 500;
 					reply.error = 'There was an error during resetting the app ' + moduleId + '. Maybe a server restart could solve this problem.';
-				}	   
+				}
 			} else {
 				reply.code = 412;
 				reply.error.key = 'app_is_still_reseted';
@@ -1017,23 +1167,23 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 		return reply;
 	},
-	getModuleTokens: function () {
+	getModuleTokens: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				}, 
-				tokenObj = {
-					tokens: []
-				},
-				getTokens = function () {
-					return loadObject('moduleTokens.json');
-				};
+				error: null,
+				data: null,
+				code: 500
+			},
+			tokenObj = {
+				tokens: []
+			},
+			getTokens = function() {
+				return loadObject('moduleTokens.json');
+			};
 
 		if (getTokens() === null) {
 			saveObject('moduleTokens.json', tokenObj);
 		}
-			
+
 		if (!!getTokens()) {
 			reply.data = getTokens();
 			reply.code = 200;
@@ -1043,14 +1193,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	storeModuleToken: function () {
+	storeModuleToken: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				},
-				reqObj = parseToObject(this.req.body),
-				tokenObj = loadObject('moduleTokens.json');
+				error: null,
+				data: null,
+				code: 500
+			},
+			reqObj = parseToObject(this.req.body),
+			tokenObj = loadObject('moduleTokens.json');
 
 		if (tokenObj === null) {
 			saveObject('moduleTokens.json', tokenObj);
@@ -1079,14 +1229,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	deleteModuleToken: function () {
+	deleteModuleToken: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				},
-				reqObj = parseToObject(this.req.body),
-				tokenObj = loadObject('moduleTokens.json');
+				error: null,
+				data: null,
+				code: 500
+			},
+			reqObj = parseToObject(this.req.body),
+			tokenObj = loadObject('moduleTokens.json');
 
 		if (reqObj && reqObj.token && !!tokenObj && tokenObj.tokens) {
 			if (tokenObj.tokens.indexOf(reqObj.token) > -1) {
@@ -1120,11 +1270,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			location = [],
 			loadSuccessfully = 0;
 
-		if(fs.list('modules/' + moduleId)) {
+		if (fs.list('modules/' + moduleId)) {
 			location.push('modules/');
 		}
 
-		if(fs.list('userModules/' + moduleId)) {
+		if (fs.list('userModules/' + moduleId)) {
 			location.push('userModules/');
 		}
 
@@ -1134,8 +1284,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				_.forEach(location, function(loc) {
 					loadSuccessfully += this.controller.reinitializeModule(moduleId, loc);
 				});
-				
-				if(loadSuccessfully > 0){
+
+				if (loadSuccessfully > 0) {
 					reply.data = 'Reinitialization of app "' + moduleId + '" successfull.';
 					reply.code = 200;
 				}
@@ -1146,28 +1296,28 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 404;
 			reply.error = "App not found.";
 		}
-		
+
 		return reply;
 	},
 	// instances
-	listInstances: function () {
+	listInstances: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 200
-				},
+				error: null,
+				data: null,
+				code: 200
+			},
 			instances = this.controller.listInstances();
-		if(instances){
+		if (instances) {
 			reply.data = instances;
 		} else {
 			reply.code = 500;
 			reply.error = 'Could not list Instances.';
 		}
-		
+
 
 		return reply;
 	},
-	createInstance: function () {
+	createInstance: function() {
 		var reply = {
 				error: null,
 				data: null,
@@ -1192,17 +1342,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getInstanceFunc: function (instanceId) {
+	getInstanceFunc: function(instanceId) {
 		var reply = {
-				error: null,
-				data: null,
-				code: 500
-			};
-		
-		if(isNaN(instanceId)){
-			instance = _.filter(this.controller.instances, function (i) { return instanceId === i.moduleId; });
+			error: null,
+			data: null,
+			code: 500
+		};
+
+		if (isNaN(instanceId)) {
+			instance = _.filter(this.controller.instances, function(i) {
+				return instanceId === i.moduleId;
+			});
 		} else {
-			instance = _.find(this.controller.instances, function (i) { return parseInt(instanceId) === i.id; });
+			instance = _.find(this.controller.instances, function(i) {
+				return parseInt(instanceId) === i.id;
+			});
 		}
 
 		if (!Boolean(instance) || instance.length === 0) {
@@ -1215,7 +1369,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	reconfigureInstanceFunc: function (instanceId) {
+	reconfigureInstanceFunc: function(instanceId) {
 		var reply = {
 				error: null,
 				data: null
@@ -1223,7 +1377,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqObj = this.req.reqObj,
 			instance;
 
-		if (!_.any(this.controller.instances, function (instance) { return instanceId === instance.id; })) {
+		if (!_.any(this.controller.instances, function(instance) {
+				return instanceId === instance.id;
+			})) {
 			reply.code = 404;
 			reply.error = "Instance " + instanceId + " doesn't exist";
 		} else {
@@ -1239,14 +1395,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	deleteInstanceFunc: function (instanceId) {
+	deleteInstanceFunc: function(instanceId) {
 		var reply = {
 			error: null,
 			data: null,
 			code: 200
 		};
 
-		if (!_.any(this.controller.instances, function (instance) { return instance.id === instanceId; })) {
+		if (!_.any(this.controller.instances, function(instance) {
+				return instance.id === instanceId;
+			})) {
 			reply.code = 404;
 			reply.error = "Instance " + instanceId + " not found";
 		} else {
@@ -1254,11 +1412,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.data = null;
 			this.controller.deleteInstance(instanceId);
 		}
-		
+
 		return reply;
 	},
 	// profiles
-	listProfiles: function (profileId) {
+	listProfiles: function(profileId) {
 		var reply = {
 				error: null,
 				data: null,
@@ -1291,14 +1449,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			if (!!getProfile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === getProfile.id))) {
 
 				// do not send password (also role if user is no admin)
-				if(this.req.role === this.ROLE.ADMIN){
+				if (this.req.role === this.ROLE.ADMIN) {
 					excl = ["password"];
 				} else {
 					excl = ["password", "role"];
-				}				
-		
+				}
+
 				for (var property in getProfile) {
-					if(excl.indexOf(property) === -1){
+					if (excl.indexOf(property) === -1) {
 						filteredProfile[property] = getProfile[property];
 					}
 				}
@@ -1313,7 +1471,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	createProfile: function () {
+	createProfile: function() {
 		var reply = {
 				error: null,
 				data: null,
@@ -1331,11 +1489,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.error = ex.message;
 		}
 
-		uniqueEmail = _.filter(this.controller.profiles, function (p) {
+		uniqueEmail = _.filter(this.controller.profiles, function(p) {
 			return p.email !== '' && p.email === reqObj.email;
 		});
 
-		uniqueLogin = _.filter(this.controller.profiles, function (p) {
+		uniqueLogin = _.filter(this.controller.profiles, function(p) {
 			return p.login !== '' && p.login === reqObj.login;
 		});
 
@@ -1349,12 +1507,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			_.defaults(reqObj, {
 				role: null,
 				name: 'User',
-				email:'',
+				email: '',
 				lang: 'en',
 				color: '#dddddd',
 				dashboard: [],
 				interval: 2000,
-				rooms: reqObj.role === 1? [0] : [],
+				rooms: reqObj.role === 1 ? [0] : [],
 				expert_view: false,
 				hide_all_device_events: false,
 				hide_system_events: false,
@@ -1363,7 +1521,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			});
 
 			reqObj = _.omit(reqObj, 'passwordConfirm');
-			
+
 			profile = this.controller.createProfile(reqObj);
 			if (profile !== undefined && profile.id !== undefined) {
 				reply.data = resProfile;
@@ -1373,10 +1531,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.error = "Profile creation error";
 			}
 		}
-		
+
 		return reply;
 	},
-	updateProfile: function (profileId) {
+	updateProfile: function(profileId) {
 		var reply = {
 				error: null,
 				data: null,
@@ -1385,7 +1543,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqObj,
 			profile = this.controller.getProfile(profileId),
 			uniqueProfProps = [];
-		
+
 		if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
 			reqObj = JSON.parse(this.req.body);
 
@@ -1393,9 +1551,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.code = 403;
 				reply.error = "Revoking self Admin priviledge is not allowed.";
 			} else {
-				uniqueProfProps = _.filter(this.controller.profiles, function (p) {
-					return (p.email !== '' && p.email === reqObj.email) && 
-									p.id !== profileId;
+				uniqueProfProps = _.filter(this.controller.profiles, function(p) {
+					return (p.email !== '' && p.email === reqObj.email) &&
+						p.id !== profileId;
 				});
 
 				if (uniqueProfProps.length === 0) {
@@ -1403,14 +1561,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					if (this.req.role === this.ROLE.ADMIN) {
 						// id is never changeable
 						// login is changed by updateProfileAuth()
-						profile.role = reqObj.role;					
-						profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1? reqObj.rooms.push(0) : reqObj.rooms;
+						profile.role = reqObj.role;
+						profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1 ? reqObj.rooms.push(0) : reqObj.rooms;
 						profile.expert_view = reqObj.expert_view;
 
 						try {
 							// update email adress on initial update
 							if (profile.login === 'admin' && this.controller.config.initial && reqObj.email !== '') {
-								var emailMe = _.findIndex(this.controller.instances, function (instance){
+								var emailMe = _.findIndex(this.controller.instances, function(instance) {
 									return instance.moduleId === 'MailNotifier' &&
 										instance.params.mail_to_input === '' &&
 										instance.params.mail_to_select === ''
@@ -1422,7 +1580,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 								}
 							}
 						} catch (e) {
-							this.controller.addNotification('error', 'Failed to set email address: ' + e.toString(),'core','ZAutomationAPI');
+							this.controller.addNotification('error', 'Failed to set email address: ' + e.toString(), 'core', 'ZAutomationAPI');
 						}
 					}
 					// could be changed by user role
@@ -1435,9 +1593,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					profile.dashboard = reqObj.dashboard;
 					profile.hide_single_device_events = reqObj.hide_single_device_events;
 					profile.email = reqObj.email;
-					
+					profile.night_mode = reqObj.night_mode;
+
 					profile = this.controller.updateProfile(profile, profile.id);
-					
+
 					if (profile !== undefined && profile.id !== undefined) {
 						reply.data = this.getProfileResponse(profile);
 						reply.code = 200;
@@ -1458,7 +1617,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 	// different pipe for updating authentication values
-	updateProfileAuth: function (profileId) {
+	updateProfileAuth: function(profileId) {
 		var self = this,
 			reply = {
 				error: null,
@@ -1468,9 +1627,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqObj,
 			profile = this.controller.getProfile(profileId),
 			uniqueLogin = [],
-			reqToken = this.req.reqObj.hasOwnProperty("token")? this.req.reqObj.token : null,
+			reqToken = this.req.reqObj.hasOwnProperty("token") ? this.req.reqObj.token : null,
 			tokenObj = {};
-		
+
 		if (typeof this.req.body !== 'object') {
 			reqObj = JSON.parse(this.req.body);
 		} else {
@@ -1482,7 +1641,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
 
-			uniqueLogin = _.filter(this.controller.profiles, function (p) {
+			uniqueLogin = _.filter(this.controller.profiles, function(p) {
 				if (self.req.role === self.ROLE.ADMIN && self.req.user !== parseInt(reqObj.id, 10)) {
 					return p.login !== '' && p.login === reqObj.login && p.id !== parseInt(reqObj.id, 10);
 				} else {
@@ -1492,7 +1651,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			if (uniqueLogin.length < 1) {
 				profile = this.controller.updateProfileAuth(reqObj, profileId);
-				
+
 				if (!!profile && profile.id !== undefined) {
 					reply.data = this.getProfileResponse(profile);
 					reply.code = 200;
@@ -1506,14 +1665,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		} else if (this.req.role === this.ROLE.ANONYMOUS && profileId && !!reqToken) {
 			tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
-				
+
 			if (tokenObj && !!tokenObj) {
 				profile = this.controller.updateProfileAuth(reqObj, profileId);
 
 				if (!!profile && profile.id !== undefined) {
 					// remove forgotten token
 					self.controller.auth.removeForgottenPwdEntry(reqToken);
-					
+
 					reply.code = 200;
 				} else {
 					reply.code = 500;
@@ -1530,56 +1689,60 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	restorePassword: function (profileId) {
+	restorePassword: function(profileId) {
 		var self = this,
 			reply = {
 				error: null,
 				data: null,
 				code: 500
 			},
-			reqObj = typeof this.req.body !== 'object'? JSON.parse(this.req.body): this.req.body,
-			reqToken = this.req.query.hasOwnProperty("token")? this.req.query.token : null,
+			reqObj = typeof this.req.body !== 'object' ? JSON.parse(this.req.body) : this.req.body,
+			reqToken = this.req.query.hasOwnProperty("token") ? this.req.query.token : null,
 			profile,
 			emailExists = [],
-			tokenObj;		
+			tokenObj;
 
 		if (reqObj.email) {
-			emailExists = _.filter(self.controller.profiles, function (profile) {
+			emailExists = _.filter(self.controller.profiles, function(profile) {
 				return profile.email !== '' && profile.email === reqObj.email;
 			});
 		}
 
 		if (reqToken === null && emailExists.length > 0 && !profileId) {
-			
+
 			try {
 				var tkn = crypto.guid(),
 					success = self.controller.auth.forgottenPwd(reqObj.email, tkn);
-				
+
 				if (success) {
-					reply.data = { token: tkn };
+					reply.data = {
+						token: tkn
+					};
 					reply.code = 200;
 				} else {
 					reply.error = "Token request for e-mail already exists.";
 					reply.code = 409;
-				}				
-			
+				}
+
 			} catch (e) {
 				reply.code = 500;
 				reply.error = "Internal server error.";
 			}
-		} else if (!!reqToken && emailExists.length < 1 && !profileId){
+		} else if (!!reqToken && emailExists.length < 1 && !profileId) {
 			try {
 				tokenObj = self.controller.auth.getForgottenPwdToken(reqToken);
-				
+
 				if (tokenObj && !!tokenObj) {
 
-					profile = _.filter(self.controller.profiles,function(p) {
-						return p.email === tokenObj.email; 
+					profile = _.filter(self.controller.profiles, function(p) {
+						return p.email === tokenObj.email;
 					});
 
-					if(profile[0]) {
+					if (profile[0]) {
 						reply.code = 200;
-						reply.data = { userId: profile[0].id };
+						reply.data = {
+							userId: profile[0].id
+						};
 					} else {
 						reply.code = 404;
 						reply.error = "User not found.";
@@ -1587,7 +1750,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				} else {
 					reply.code = 404;
 					reply.error = "Token not found.";
-				}			
+				}
 			} catch (e) {
 				reply.code = 500;
 				reply.error = "Internal server error.";
@@ -1595,7 +1758,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		} else if (!!reqToken && emailExists.length < 1 && profileId) {
 
 			profile = self.controller.updateProfileAuth(reqObj, profileId);
-			
+
 			if (!!profile && profile.id !== undefined) {
 				reply.code = 200;
 			} else {
@@ -1609,14 +1772,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	removeProfile: function (profileId) {
+	removeProfile: function(profileId) {
 		var reply = {
-			error: null,
-			data: null,
-			code: 500
+				error: null,
+				data: null,
+				code: 500
 			},
-		profile = this.controller.getProfile(profileId);
-		
+			profile = this.controller.getProfile(profileId);
+
 		if (profile) {
 			// It is not possible to delete own profile
 			if (profile.id !== this.req.user) {
@@ -1634,14 +1797,55 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	// namespaces
-	listNamespaces: function () {
+	getQRCodeString: function(profileId) {
 		var reply = {
-			error: null,
-			data: null,
-			code: 500
-		},
-		nspc;
+				error: null,
+				data: null,
+				code: 500
+			},
+			profile = this.controller.getProfile(profileId);
+
+		try {
+			var reqObj = parseToObject(this.req.body);
+		} catch (e) {
+			return reply.error = e.message;
+		}
+
+		if (profile) {
+			if (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profileId)) {
+				var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
+				if (pwd_check) {
+					var qrcode_str = this.controller.getQRCodeData(profile, reqObj.password);
+
+					if (qrcode_str !== undefined) {
+						reply.code = 200;
+						reply.data = qrcode_str;
+					} else {
+						reply.code = 500;
+					}
+				} else {
+					reply.error = "wrong_password";
+					reply.code = 500;
+				}
+			} else {
+				reply.error = "Forbidden";
+				reply.code = 403;
+			}
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
+
+		return reply;
+	},
+	// namespaces
+	listNamespaces: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			nspc;
 
 		nspc = this.controller.namespaces;
 
@@ -1655,13 +1859,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getNamespaceFunc: function (namespaceId) {
-	   var reply = {
-			error: null,
-			data: null,
-			code: 500
-		},
-		namespace;
+	getNamespaceFunc: function(namespaceId) {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			namespace;
 
 		namespace = this.controller.getListNamespaces(namespaceId, this.controller.namespaces);
 		if (!namespace || (_.isArray(namespace) && namespace.length < 1)) {
@@ -1670,121 +1874,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		} else {
 			reply.data = namespace;
 			reply.code = 200;
-		} 
-
-		return reply;
-	},
-	// History
-	exposeHistory: function () {
-		var history,
-			reply = {
-				code: 500,
-				error: null,
-				data: null
-			};
-
-		history = this.controller.listHistories();
-
-		if(history){
-			if (this.req.method === "GET") {
-				reply.data = {
-					updateTime: Math.floor(new Date().getTime() / 1000),
-					history: history
-				};
-				reply.code = 200;
-
-			} else if (this.req.method === "DELETE") {
-				success = this.controller.deleteDevHistory();
-
-				if (success) {
-					reply.code = 204;
-				} else {
-					reply.error = "Something went wrong."
-				}
-			} else {
-				reply.code = 400;
-				reply.error = "Bad request."; 
-			}
-		} else {
-			reply.code = 404;
-			reply.error = "No device histories found.";
 		}
-			
-		return reply;
-	},
-	// get or delete histories of devices
-	getDevHist: function (vDevId) {
-		var history,
-			dev,
-			reply = {
-				code: 500,
-				error: null,
-					data: null
-			},
-			since,
-			show,
-			sinceDevHist,
-			view = [288,96,48,24,12,6];
 
-		if (this.deviceByUser(vDevId, this.req.user) !== null) {
-
-			history = this.controller.listHistories();
-			
-			if (history) {
-
-				hash = this.controller.hashCode(vDevId);
-				dev = history.filter(function(x) {
-					return x.h === hash || x.id === vDevId;
-				});
-
-				if (dev.length > 0) {
-					if (this.req.method === "GET") {
-						show = this.req.query.hasOwnProperty("show")? (view.indexOf(parseInt(this.req.query.show, 10)) > -1 ? parseInt(this.req.query.show, 10) : 0) : 0;
-						since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;						
-						
-						sinceDevHist = this.controller.getDevHistory(dev, since, show);			
-						
-						if (dev && sinceDevHist) {
-							reply.code = 200;
-							reply.data = {
-								id: vDevId,
-								since: since,
-								deviceHistory: sinceDevHist
-							};
-						} else {
-							reply.code = 200;
-							reply.data = dev;
-						}
-
-					} else if (this.req.method === "DELETE") {
-						success = this.controller.deleteDevHistory(vDevId);
-
-						if (success) {
-							reply.code = 204;
-						} else {
-							reply.error = "Something went wrong."
-						}
-					} else {
-						reply.code = 400;
-						reply.error = "Bad request."; 
-					}
-				} else {
-					reply.code = 404;
-					reply.error = "History of device " + vDevId + " doesn't exist";
-				}
-			} else {
-				reply.code = 404;
-				reply.error = "No device histories found. Please check if app '24 Hours Device History' is active.";
-			}
-		} else {
-			reply.code = 404;
-			reply.error = "Device not found.";
-		}
-		
 		return reply;
 	},
 	// restart
-	restartController: function (profileId) {
+	restartController: function(profileId) {
 		var reply = {
 			error: null,
 			data: null,
@@ -1792,7 +1887,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		};
 
 		this.controller.restart();
-		return reply;	
+		return reply;
 	},
 	loadModuleMedia: function(moduleName, fileName) {
 		var reply = {
@@ -1803,17 +1898,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			obj;
 
 		if ((moduleName !== '' || !!moduleName || moduleName) && (fileName !== '' || !!fileName || fileName)) {
-			obj = this.controller.loadModuleMedia(moduleName,fileName);
-	
+			obj = this.controller.loadModuleMedia(moduleName, fileName);
+
 			if (!this.controller.modules[moduleName]) {
 				reply.code = 404;
-				reply.error = "Can't load file from app because app '" + moduleName + "' was not found." ;
-				
+				reply.error = "Can't load file from app because app '" + moduleName + "' was not found.";
+
 				return reply;
 
 			} else if (obj !== null) {
 				this.res.status = 200;
-				this.res.headers = { 
+				this.res.headers = {
 					"Content-Type": obj.ct,
 					"Connection": "keep-alive"
 				};
@@ -1822,14 +1917,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				return null; // let handleRequest take this.res as is
 			} else {
 				reply.code = 500;
-				reply.error = "Failed to load file from module." ;
-				
+				reply.error = "Failed to load file from module.";
+
 				return reply;
-			} 
+			}
 		} else {
 			reply.code = 400;
-			reply.error = "Incorrect app or file name" ;
-			
+			reply.error = "Incorrect app or file name";
+
 			return reply;
 		}
 	},
@@ -1842,20 +1937,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			data;
 
 		data = this.controller.loadImage(imageName);
-	
+
 		if (data !== null) {
 			this.res.status = 200;
-			this.res.headers = { 
-					"Content-Type": "image/(png|jpeg|gif)",
-					"Connection": "keep-alive"
+			this.res.headers = {
+				"Content-Type": "image/(png|jpeg|gif)",
+				"Connection": "keep-alive"
 			};
 			this.res.body = data;
 
 			return null; // let handleRequest take this.res as is
 		} else {
 			reply.code = 500;
-			reply.error = "Failed to load file." ;
-			
+			reply.error = "Failed to load file.";
+
 			return reply;
 		}
 	},
@@ -1868,20 +1963,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			file;
 
 		if (this.req.method === "POST" && this.req.body) {
-			
-			for (prop in this.req.body){
-				if(this.req.body[prop]['content']) {
+
+			for (prop in this.req.body) {
+				if (this.req.body[prop]['content']) {
 					file = this.req.body[prop];
 				}
 			}
-			
+
 			if (_.isArray(file)) {
 				file = file[0];
 			}
-			
+
 			if (file && file.name && file.content || (_.isArray(file) && file.length > 0)) {
 
-				if(~file.name.indexOf('.csv') && typeof Papa === 'object'){
+				if (~file.name.indexOf('.csv') && typeof Papa === 'object') {
 					var csv = null;
 					Papa.parse(file.content, {
 						header: true,
@@ -1891,7 +1986,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						}
 					});
 
-					if(!!csv) {
+					if (!!csv) {
 						saveObject(file.name, csv);
 					}
 				} else {
@@ -1904,15 +1999,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			} else {
 				reply.code = 500;
-				reply.error = "Failed to upload file" ;
+				reply.error = "Failed to upload file";
 			}
 		} else {
 			reply.code = 400;
-			reply.error = "Invalid request" ;
+			reply.error = "Invalid request";
 		}
 		return reply;
 	},
-	backup: function () {
+	backup: function() {
 		var self = this,
 			reply = {
 				error: null,
@@ -1928,7 +2023,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			var backupJSON = self.controller.createBackup();
 
-			reply.headers= {
+			reply.headers = {
 				"Content-Type": "application/octet-stream", // application/x-download octet-stream
 				"Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
 				"Connection": "keep-alive"
@@ -1936,14 +2031,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			reply.code = 200;
 			reply.data = Base64.encode(JSON.stringify(backupJSON));
-		} catch(e) {
+		} catch (e) {
 			reply.code = 500;
 			reply.error = e.toString();
 		}
 
 		return reply;
 	},
-	restore: function () {
+	restore: function() {
 		var self = this,
 			reqObj,
 			reply = {
@@ -1953,36 +2048,43 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			result = "",
 			langfile = this.controller.loadMainLang(),
-			waitForInstallation = function (allreadyInstalled, reqKey) {
-				var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
-		
-				while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
-						
-						if (allreadyInstalled.length === reqObj.data[reqKey].length) {
-							break;   
-						}
-						
-						processPendingCallbacks();
-				}
+			dontSave = this.controller.getIgnoredStorageFiles([
+				"__ZWay",
+				"__EnOcean",
+				"__userModules",
+				"__userSkins"
+			]);
+
+		function waitForInstallation(allreadyInstalled, reqKey) {
+			var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
+
+			while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
 
 				if (allreadyInstalled.length === reqObj.data[reqKey].length) {
-					// success
-					reply.code = 200;
+					break;
 				}
-			};
+
+				processPendingCallbacks();
+			}
+
+			if (allreadyInstalled.length === reqObj.data[reqKey].length) {
+				// success
+				reply.code = 200;
+			}
+		}
 
 		// get flag that network information should be overwritten
 		allowTopoRestore = this.req.body.hasOwnProperty("overwriteNetwork") ? retBoolean(this.req.body.overwriteNetwork) : false;
 
 		try {
 			function utf8Decode(bytes) {
-			  var chars = [];
-			
-				for(var i = 0; i < bytes.length; i++) {
+				var chars = [];
+
+				for (var i = 0; i < bytes.length; i++) {
 					chars[i] = bytes.charCodeAt(i);
 				}
-			  
-			  return chars;
+
+				return chars;
 			}
 
 			reqObj = parseToObject(this.req.body.backupFile.content);
@@ -2006,30 +2108,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// stop the controller
 			this.controller.stop();
 
+
 			for (var obj in reqObj.data) {
-				var dontSave = [
-					"__ZWay",
-					"__EnOcean",
-					"__userModules",
-					"notifications",
-					"8084AccessTimeout",
-					"__userSkins",
-					"rssidata.json",
-					"reorgLog",
-					"incomingPacket.json",
-					"outgoingPacket.json",
-					"originPackets.json",
-					"zway_incomingPacket.json",
-					"zway_outgoingPacket.json",
-					"zway_originPackets.json",
-					"zway_parsedPackets.json",
-					"zway_reorgLog",
-					"zway_rssidata.json",
-					"de.devices.json",
-					"en.devices.json",
-					"zwave_vendors.json",
-					"history"
-					]; // objects that should be ignored
 
 				if (dontSave.indexOf(obj) === -1) {
 					saveObject(obj, reqObj.data[obj]);
@@ -2039,7 +2119,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			// start controller with reload flag to apply config.json
 			this.controller.start(true);
-			
+
 			// restore Z-Wave and EnOcean
 			!!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
 				var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
@@ -2051,7 +2131,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				// global.EnOcean[zenoName] && global.EnOcean[zenoName].zeno.Restore(reqObj.data["__EnOcean"][zenoName]);
 			});
 			*/
-		   
+
 			// install userModules
 			if (reqObj.data["__userModules"]) {
 				var installedModules = [];
@@ -2059,24 +2139,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				_.forEach(reqObj.data["__userModules"], function(entry) {
 
 					http.request({
-						url:'https://developer.z-wave.me/?uri=api-module-archive/'+ entry.name,
-						method:'GET',
+						url: 'https://developer.z-wave.me/?uri=api-module-archive/' + entry.name,
+						method: 'GET',
 						async: true,
-						success: function(res){
+						success: function(res) {
 							var archiv = [],
 								item = {
 									name: entry.name
 								},
-								location = 'modules/'+ entry.name,
+								location = 'modules/' + entry.name,
 								overwriteCoreModule = false;
 
 							if (res.data.data && res.data.data.length > 0) {
-								archiv = _.filter(res.data.data, function (appEntry){
+								archiv = _.filter(res.data.data, function(appEntry) {
 									return appEntry.version === entry.version.toString();
 								})
 
 								// check if already loaded module is a core module
-								coreModule = self.controller.modules[entry.name] && self.controller.modules[entry.name].meta? (self.controller.modules[entry.name].meta.location === location) : false;
+								coreModule = self.controller.modules[entry.name] && self.controller.modules[entry.name].meta ? (self.controller.modules[entry.name].meta.location === location) : false;
 
 								// check if version of core module isn't higher than the restored one
 								if (coreModule) {
@@ -2086,25 +2166,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 								// if achive was found try to download it
 								if (archiv.length > 0 && (!coreModule || (coreModule && overwriteCoreModule))) {
 
-									console.log('Restore userModule', archiv[0].modulename, 'v'+archiv[0].version);
-									result = self.controller.installModule('https://developer.z-wave.me/archiv/'+ archiv[0].archiv, archiv[0].modulename);
+									console.log('Restore userModule', archiv[0].modulename, 'v' + archiv[0].version);
+									result = self.controller.installModule('https://developer.z-wave.me/archiv/' + archiv[0].archiv, archiv[0].modulename);
 
 									item.status = result;
 									if (result === "done") {
 										loadSuccessfully = self.controller.reinitializeModule(entry.name, 'userModules/', true);
 
-										if(!loadSuccessfully){
-											self.controller.addNotification("warning", langfile.zaap_war_restart_necessary + ' :: ' + entry.name + ' ' + 'v'+archiv[0].version, "core", "AppInstaller");
+										if (!loadSuccessfully) {
+											self.controller.addNotification("warning", langfile.zaap_war_restart_necessary + ' :: ' + entry.name + ' ' + 'v' + archiv[0].version, "core", "AppInstaller");
 										}
 									} else {
-										self.controller.addNotification("warning", langfile.zaap_err_app_install + ' :: ' + entry.name + ' ' + 'v'+archiv[0].version, "core", "AppInstaller");
+										self.controller.addNotification("warning", langfile.zaap_err_app_install + ' :: ' + entry.name + ' ' + 'v' + archiv[0].version, "core", "AppInstaller");
 									}
 								} else {
 									// downlaod latest if it isn't already there
 									if (overwriteCoreModule) {
-										
-										console.log(entry.name+':','No archive with this version found. Install latest ...');
-										result = self.controller.installModule('https://developer.z-wave.me/modules/'+ entry.name +'.tar.gz', entry.name);
+
+										console.log(entry.name + ':', 'No archive with this version found. Install latest ...');
+										result = self.controller.installModule('https://developer.z-wave.me/modules/' + entry.name + '.tar.gz', entry.name);
 
 										item.status = result;
 
@@ -2118,7 +2198,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 										self.controller.addNotification("warning", langfile.zaap_war_core_app_is_newer + ' :: ' + entry.name, "core", "AppInstaller");
 										item.status = 'failed';
 									}
-								} 
+								}
 							} else {
 								self.controller.addNotification("error", langfile.zaap_err_no_archives + ' :: ' + entry.name, "core", "AppInstaller");
 								item.status = 'failed';
@@ -2126,17 +2206,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 							installedModules.push(item);
 						},
-						error: function(res){
+						error: function(res) {
 							self.controller.addNotification("error", langfile.zaap_err_server + ' :: ' + entry.name + '::' + res.statusText, "core", "AppInstaller");
 							installedModules.push({
 								name: entry.name,
 								status: 'failed'
 							});
-						}						
+						}
 					});
 				});
 
-				waitForInstallation(installedModules,"__userModules");
+				waitForInstallation(installedModules, "__userModules");
 
 			}
 
@@ -2147,10 +2227,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 				http.request({
 					// get online list of all existing modules first
-					url:'http://hrix.net/developer-console/?uri=api-skins',
-					method:'GET',
+					url: 'https://developer.z-wave.me/?uri=api-skins',
+					method: 'GET',
 					async: true,
-					success: function(res){
+					success: function(res) {
 						if (res.data.data) {
 							remoteSkins = res.data.data;
 
@@ -2167,8 +2247,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 								if (remSkinObj[0]) {
 
-									index = _.findIndex(self.controller.skins, function(skin) { 
-										return skin.name === entry.name; 
+									index = _.findIndex(self.controller.skins, function(skin) {
+										return skin.name === entry.name;
 									});
 
 									try {
@@ -2178,22 +2258,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 									} catch (e) {
 										self.controller.addNotification("error", langfile.zaap_err_no_archives + ' :: ' + entry.name, "core", "SkinInstaller");
 									}
-								}					
+								}
 
 								installedSkins.push(item);
 
 							});
-						}					   
+						}
 					},
-					error: function(res){
+					error: function(res) {
 						self.controller.addNotification("error", langfile.zaap_err_server + ' :: ' + res.statusText, "core", "SkinInstaller");
-					}						
+					}
 				});
 
-				waitForInstallation(installedSkins,"__userSkins");
+				waitForInstallation(installedSkins, "__userSkins");
 
 			}
-			
+
 			// success
 			reply.code = 200;
 			reply.data = {
@@ -2210,14 +2290,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	resetToFactoryDefault: function() {
 		var self = this,
 			langFile = this.controller.loadMainLang();
-			reply = {
+		reply = {
 				error: null,
 				data: null,
 				code: 500
-			},
-			backupCfg = loadObject("backupConfig"),
+			};
+
+		if (checkBoxtype('popphub3')) {
+			reply.code = 200;
+
+			saveObject('performReset','1');
+
+			setTimeout(function() {
+				self.doLogout();
+			}, 3000);
+
+		} else {
+			var backupCfg = loadObject("backupConfig"),
 			storageContentList = loadObject("__storageContent"),
-			defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending 
+			defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending
 			defaultConfig = {},
 			defaultSkins = [{
 				name: "default",
@@ -2231,138 +2322,139 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}],
 			now = new Date();
 
-		try{
+			try {
 
-			if (defaultConfigExists && defaultConfigExists.type !== 'dir' && defaultConfigExists.size > 0){
-				defaultConfig = fs.loadJSON('defaultConfigs/config.json');
-			}
+				if (defaultConfigExists && defaultConfigExists.type !== 'dir' && defaultConfigExists.size > 0) {
+					defaultConfig = fs.loadJSON('defaultConfigs/config.json');
+				}
 
-			if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
+				if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
 
-				if (zway) {
-					var ts = now.getFullYear() + "-";
-					ts += ("0" + (now.getMonth()+1)).slice(-2) + "-";
-					ts += ("0" + now.getDate()).slice(-2) + "-";
-					ts += ("0" + now.getHours()).slice(-2) + "-";
-					ts += ("0" + now.getMinutes()).slice(-2);
+					if (zway) {
+						var ts = now.getFullYear() + "-";
+						ts += ("0" + (now.getMonth() + 1)).slice(-2) + "-";
+						ts += ("0" + now.getDate()).slice(-2) + "-";
+						ts += ("0" + now.getHours()).slice(-2) + "-";
+						ts += ("0" + now.getMinutes()).slice(-2);
 
-					console.log('Backup config ...');
-					// make backup of current config.json
-					saveObject('backupConfig' + ts, loadObject('config.json'));
+						console.log('Backup config ...');
+						// make backup of current config.json
+						saveObject('backupConfig' + ts, loadObject('config.json'));
 
-					// remove all active instances of moduleId
-					this.controller.instances.forEach(function (instance) {
-						if (instance.moduleId !== 'ZWave') {
-							self.controller.deleteInstance(instance.id);
-						}
-					});
-
-					// reset z-way controller
-					console.log('Reset Controller ...');
-					var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
-
-					zway.controller.SetDefault();
-
-					while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
-						processPendingCallbacks();
-					}
-
-					// remove instances of ZWave at least
-					// filter for instances of ZWave
-					zwInstances = this.controller.instances.filter(function (instance) {
-						return instance.moduleId === 'ZWave';
-					}).map(function (instance) {
-						return instance.id;
-					});
-
-					// remove instance of ZWave
-					if (zwInstances.length > 0) {
-						zwInstances.forEach(function (instanceId) {
-							console.log('Remove ZWave instance: ' + instanceId);
-							self.controller.deleteInstance(instanceId);
+						// remove all active instances of moduleId
+						this.controller.instances.forEach(function(instance) {
+							if (instance.moduleId !== 'ZWave') {
+								self.controller.deleteInstance(instance.id);
+							}
 						});
-					}
 
-					console.log('Remove and unload userModules apps ...');
-					// unload and remove modules
-					Object.keys(this.controller.modules).forEach( function(className) {
-						var meta = self.controller.modules[className],
-							unload = '',
-							locPath = meta.location.split('/'),
-							success = false;
+						// reset z-way controller
+						console.log('Reset Controller ...');
+						var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 
-						if (locPath[0] === 'userModules'){
-							console.log(className + ' remove it ...');
-							
-							success = self.controller.uninstallModule(className);
+						zway.controller.SetDefault();
 
-							if (success) {
-								console.log(className + ' has been successfully removed.');
-							} else {
-								console.log('Cannot remove app: ' + className);
-								self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+						while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
+							processPendingCallbacks();
+						}
+
+						// remove instances of ZWave at least
+						// filter for instances of ZWave
+						zwInstances = this.controller.instances.filter(function(instance) {
+							return instance.moduleId === 'ZWave';
+						}).map(function(instance) {
+							return instance.id;
+						});
+
+						// remove instance of ZWave
+						if (zwInstances.length > 0) {
+							zwInstances.forEach(function(instanceId) {
+								console.log('Remove ZWave instance: ' + instanceId);
+								self.controller.deleteInstance(instanceId);
+							});
+						}
+
+						console.log('Remove and unload userModules apps ...');
+						// unload and remove modules
+						Object.keys(this.controller.modules).forEach(function(className) {
+							var meta = self.controller.modules[className],
+								unload = '',
+								locPath = meta.location.split('/'),
+								success = false;
+
+							if (locPath[0] === 'userModules') {
+								console.log(className + ' remove it ...');
+
+								success = self.controller.uninstallModule(className);
+
+								if (success) {
+									console.log(className + ' has been successfully removed.');
+								} else {
+									console.log('Cannot remove app: ' + className);
+									self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+								}
+							}
+
+						});
+
+						// remove skins
+						_.forEach(this.controller.skins, function(skin) {
+							if (skin.name !== 'default') {
+								self.controller.uninstallSkin(skin.name);
+							}
+						});
+
+						// stop the controller
+						this.controller.stop();
+
+						// clean up storage
+						for (var ind in storageContentList) {
+							if (storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]) {
+								saveObject(storageContentList[ind], null);
 							}
 						}
 
-					});
-
-					// remove skins
-					_.forEach(this.controller.skins, function(skin) {
-						if (skin.name !== 'default') {
-							self.controller.uninstallSkin(skin.name);
+						// clean up storageContent
+						if (__storageContent.length > 0) {
+							__saveObject("__storageContent", []);
+							__storageContent = [];
 						}
-					});
 
-					// stop the controller
-					this.controller.stop();
-					
-					// clean up storage
-					for (var ind in storageContentList) {
-						if(storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]){
-							saveObject(storageContentList[ind], null);
-						}
+						// set back to default config
+						saveObject('config.json', defaultConfig);
+						saveObject('userSkins.json', defaultSkins);
+
+						// start controller with reload flag to apply config.json
+						this.controller.start(true);
+
+						reply.code = 200;
+
+						setTimeout(function() {
+							self.doLogout();
+						}, 3000);
+					} else {
+						reply.code = 404;
+						reply.error = 'Unable to reset controller. Z-Way not found.';
 					}
 
-					// clean up storageContent
-					if (__storageContent.length > 0) {
-						__saveObject("__storageContent", []);
-						__storageContent = [];
-					}
-
-					// set back to default config
-					saveObject('config.json', defaultConfig);
-					saveObject('userSkins.json', defaultSkins);
-
-					// start controller with reload flag to apply config.json
-					this.controller.start(true);
-
-					reply.code = 200;
-
-					setTimeout(function(){
-						self.doLogout();
-					}, 3000);
 				} else {
 					reply.code = 404;
-					reply.error = 'Unable to reset controller. Z-Way not found.';
+					reply.error = 'No default configuration file found.';
 				}
-				
-			} else {
-				reply.code = 404;
-				reply.error = 'No default configuration file found.';
+			} catch (e) {
+				reply.error = 'Something went wrong. Error: ' + e.toString();
 			}
-		} catch (e) {
-			reply.error = 'Something went wrong. Error: ' + e.toString();
 		}
 
 		return reply;
 	},
-	getSkins: function () {
+	getSkins: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				};
-			
+			error: null,
+			data: null,
+			code: 500
+		};
+
 		if (this.controller.skins) {
 			reply.data = this.controller.skins;
 			reply.code = 200;
@@ -2372,16 +2464,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getSkin: function (skinName) {
+	getSkin: function(skinName) {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				};
-			
+			error: null,
+			data: null,
+			code: 500
+		};
+
 		if (this.controller.skins) {
-			index = _.findIndex(this.controller.skins, function(skin) { 
-				return skin.name === skinName; 
+			index = _.findIndex(this.controller.skins, function(skin) {
+				return skin.name === skinName;
 			});
 
 			if (index > -1) {
@@ -2397,16 +2489,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getActiveSkin: function () {
+	getActiveSkin: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				};
-			
+			error: null,
+			data: null,
+			code: 500
+		};
+
 		if (this.controller.skins) {
-			index = _.findIndex(this.controller.skins, function(skin) { 
-				return skin.active === true; 
+			index = _.findIndex(this.controller.skins, function(skin) {
+				return skin.active === true;
 			});
 
 			if (index > -1) {
@@ -2422,12 +2514,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	activateOrDeactivateSkin: function (skinName) {
+	activateOrDeactivateSkin: function(skinName) {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				},
+				error: null,
+				data: null,
+				code: 500
+			},
 			reqObj = parseToObject(this.req.body),
 			skin = null;
 
@@ -2448,7 +2540,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	addOrUpdateSkin: function (skinName) {
+	addOrUpdateSkin: function(skinName) {
 		var reply = {
 				error: 'skin_failed_to_install',
 				data: null,
@@ -2460,21 +2552,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		if (skName !== 'default') {
 
-			index = _.findIndex(this.controller.skins, function(skin) { 
-				return skin.name === skName; 
+			index = _.findIndex(this.controller.skins, function(skin) {
+				return skin.name === skName;
 			});
 
-			if ((index < 0 && this.req.method === 'POST') || 
-					(index > -1 && this.req.method === 'PUT' && skinName)) {
-				
+			if ((index < 0 && this.req.method === 'POST') ||
+				(index > -1 && this.req.method === 'PUT' && skinName)) {
+
 				// download and install the skin
 				result = this.controller.installSkin(reqObj, skName, index);
 
 				if (result === "done") {
 					reply.code = 200;
-					reply.data = this.req.method === 'POST'? "skin_installation_successful" : "skin_update_successful"; // send language key as response
+					reply.data = this.req.method === 'POST' ? "skin_installation_successful" : "skin_update_successful"; // send language key as response
 					reply.error = null;
-				} 
+				}
 
 			} else if (this.req.method === 'POST' && !skinName) {
 				reply.code = 409;
@@ -2487,10 +2579,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 403;
 			reply.error = 'No Permission';
 		}
-		
+
 		return reply;
 	},
-	deleteSkin: function (skinName) {
+	deleteSkin: function(skinName) {
 		var reply = {
 				error: 'skin_failed_to_delete',
 				data: null,
@@ -2499,8 +2591,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			uninstall = false;
 
 		if (skinName !== 'default') {
-			index = _.findIndex(this.controller.skins, function(skin) { 
-				return skin.name === skinName; 
+			index = _.findIndex(this.controller.skins, function(skin) {
+				return skin.name === skinName;
 			});
 
 			if (index > -1) {
@@ -2512,7 +2604,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					reply.code = 200;
 					reply.data = "skin_delete_successful"; // send language key as response
 					reply.error = null;
-				}	   
+				}
 			} else {
 				reply.code = 404;
 				reply.error = 'skin_not_exists';
@@ -2521,56 +2613,56 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 403;
 			reply.error = 'No Permission';
 		}
-		
+
 		return reply;
 	},
-	setDefaultSkin: function () {
+	setDefaultSkin: function() {
 		var self = this,
 			reply = {
 				error: null,
 				data: null,
 				code: 500
 			};
-			
-			try {
 
-				// deactivate all skins and set default skin to active: true
-				_.forEach(this.controller.skins, function (skin) {
-					skin.active = skin.name === 'default'? true : false;
-				})
+		try {
 
-				saveObject("userSkins.json", this.controller.skins);
+			// deactivate all skins and set default skin to active: true
+			_.forEach(this.controller.skins, function(skin) {
+				skin.active = skin.name === 'default' ? true : false;
+			})
 
-				reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
-				reply.code = 200;
-				// do logout
-				setTimeout(function(){
-					self.doLogout();
-				}, 3000);
-			} catch (e) {
-				reply.error = "Something went wrong.";
-				reply.message = e.message;
-			}
+			saveObject("userSkins.json", this.controller.skins);
+
+			reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
+			reply.code = 200;
+			// do logout
+			setTimeout(function() {
+				self.doLogout();
+			}, 3000);
+		} catch (e) {
+			reply.error = "Something went wrong.";
+			reply.message = e.message;
+		}
 
 		return reply;
 	},
-	getSkinTokens: function () {
+	getSkinTokens: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				}, 
-				tokenObj = loadObject('skinTokens.json');
+				error: null,
+				data: null,
+				code: 500
+			},
+			tokenObj = loadObject('skinTokens.json');
 
 		if (tokenObj === null) {
 
 			tokenObj = {
-					skinTokens: []
+				skinTokens: []
 			};
 
 			saveObject('skinTokens.json', tokenObj);
 		}
-			
+
 		if (!!tokenObj) {
 			reply.data = tokenObj;
 			reply.code = 200;
@@ -2580,14 +2672,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	storeSkinToken: function () {
+	storeSkinToken: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				},
-				reqObj = parseToObject(this.req.body),
-				tokenObj = loadObject('skinTokens.json');
+				error: null,
+				data: null,
+				code: 500
+			},
+			reqObj = parseToObject(this.req.body),
+			tokenObj = loadObject('skinTokens.json');
 
 		if (reqObj && reqObj.token) {
 
@@ -2625,14 +2717,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	deleteSkinToken: function () {
+	deleteSkinToken: function() {
 		var reply = {
-					error: null,
-					data: null,
-					code: 500
-				},
-				reqObj = parseToObject(this.req.body),
-				tokenObj = loadObject('skinTokens.json');
+				error: null,
+				data: null,
+				code: 500
+			},
+			reqObj = parseToObject(this.req.body),
+			tokenObj = loadObject('skinTokens.json');
 
 		if (reqObj && reqObj.token && !!tokenObj && tokenObj.skinTokens) {
 			if (tokenObj.skinTokens.indexOf(reqObj.token) > -1) {
@@ -2656,7 +2748,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getIcons: function () {
+	getIcons: function() {
 		var reply = {
 			error: null,
 			data: null,
@@ -2679,8 +2771,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			code: 500
 		};
 
-		for (prop in this.req.body){
-			if(this.req.body[prop]['content']) {
+		for (prop in this.req.body) {
+			if (this.req.body[prop]['content']) {
 
 				file = this.req.body[prop];
 			}
@@ -2689,7 +2781,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		function utf8Decode(bytes) {
 			var chars = [];
 
-			for(var i = 0; i < bytes.length; i++) {
+			for (var i = 0; i < bytes.length; i++) {
 				chars[i] = bytes.charCodeAt(i);
 			}
 
@@ -2740,9 +2832,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		var data,
 			bytes = new Uint8Array(utf8Decode(file.content)),
 			re = /(?:\.([^.]+))?$/;
-			ext = re.exec(file.name)[1];
+		ext = re.exec(file.name)[1];
 
-		if(ext === 'gz') {
+		if (ext === 'gz') {
 			var gunzip = new Zlib.Gunzip(bytes);
 			data = gunzip.decompress();
 		} else {
@@ -2753,10 +2845,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		result = this.controller.installIcon('local', file, 'custom', 'icon');
 
-		if (result === "done") {
+		if (result.message === "done") {
 
 			reply.code = 200;
-			reply.data = "icon_installation_successful";
+			reply.data = result.files;
 			reply.error = null;
 		}
 
@@ -2774,18 +2866,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			id = reqObj.id;
 
 		index = _.findIndex(this.controller.icons, function(icon) {
-			return icon.source === icName+"_"+id;
+			return icon.source === icName + "_" + id;
 		});
 
-		if (index === -1 ) {
+		if (index === -1) {
 
 			// download and install the icon
 			result = this.controller.installIcon('remote', reqObj, icName, reqObj.id);
 
-			if (result === "done") {
+			if (result.message === "done") {
 
 				reply.code = 200;
-				reply.data = "icon_installation_successful";
+				reply.data = result.files;
 				reply.error = null;
 			}
 		} else {
@@ -2817,7 +2909,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getTime: function () {
+	getTime: function() {
 		var reply = {
 				error: null,
 				data: null,
@@ -2829,19 +2921,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		try {
 			var sys = system('cat /etc/timezone');
 			sys.forEach(function(i) {
-			   if(typeof i === 'string') {
-				   tz = i.replace(/\n/g, '');
-				   return;
-			   };
+				if (typeof i === 'string') {
+					tz = i.replace(/\n/g, '');
+					return;
+				};
 			});
-		} catch(e) {}
+		} catch (e) {}
 
 		if (now) {
 			reply.code = 200;
 			reply.data = {
 				localTimeUT: Math.round((now.getTime() + (now.getTimezoneOffset() * -60000)) / 1000), // generate timestamp with correct timezone offset
 				localTimeString: now.toLocaleString(),
-				localTimeZoneOffset: now.getTimezoneOffset() /60,
+				localTimeZoneOffset: now.getTimezoneOffset() / 60,
 				localTimeZone: tz
 			};
 		} else {
@@ -2853,7 +2945,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	setTimezone: function() {
 		var self = this,
 			langfile = this.controller.loadMainLang();
-			reply = {
+		reply = {
 				error: null,
 				data: null,
 				code: 500
@@ -2877,7 +2969,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		saveObject('8084AccessTimeout', 10);
 		var res = http.request(req);
 
-		if(res.status === 200 || res.status === 303) {
+		if (res.status === 200 || res.status === 303) {
 			reply.code = 200;
 			reply.data = res.statusText;
 
@@ -2899,7 +2991,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	getRemoteId: function () {
+	getRemoteId: function() {
 		var self = this,
 			reply = {
 				error: null,
@@ -2907,21 +2999,41 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500
 			};
 
-			try {
-				reply.code = 200;
-				reply.data = {
-					remote_id: self.controller.getRemoteId()
-				};
+		try {
+			reply.code = 200;
+			reply.data = {
+				remote_id: self.controller.getRemoteId()
+			};
 
-			} catch (e) {
-				if(e.name === "service-not-available") {
-					reply.code = 503;
-					reply.error = e.message;
-				} else {
-					reply.code = 500;
-					reply.error = e.message;
-				}
+		} catch (e) {
+			if (e.name === "service-not-available") {
+				reply.code = 503;
+				reply.error = e.message;
+			} else {
+				reply.code = 500;
+				reply.error = e.message;
 			}
+		}
+		return reply;
+	},
+	getIPAddress: function() {
+		var self = this,
+			reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			ip = self.controller.getIPAddress();
+
+		if (ip) {
+			reply.code = 200;
+			reply.data = {
+				ip_address: ip
+			};
+		} else {
+			reply.code = 500;
+			reply.error = "syscommad-not-set";
+		}
 		return reply;
 	},
 	// set a timout for accessing firmware update tab of 8084
@@ -2965,7 +3077,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			defaultProfile = [],
 			setLogin = {};
 		try {
-			defaultProfile = _.filter(this.controller.profiles, function (profile) {
+			defaultProfile = _.filter(this.controller.profiles, function(profile) {
 				return profile.login === 'admin' && profile.password === 'admin';
 			});
 
@@ -2978,10 +3090,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.code = 200;
 
 			} else {
-				reply.data = { firstaccess: false };
+				reply.data = {
+					firstaccess: false
+				};
 				reply.code = 200;
 			}
-		} catch (e){
+		} catch (e) {
 			reply.data = null;
 			reply.error = e.message;
 		}
@@ -2995,19 +3109,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500
 			},
 			versionArr = [];
-		
+
 		try {
 			versionArr = zway.controller.data.softwareRevisionVersion.value.substring(1).split('-');
-			version = versionArr[0]? versionArr[0] : null;
-			majurity = versionArr[1]? versionArr[1] : null;
+			version = versionArr[0] ? versionArr[0] : null;
+			majurity = versionArr[1] ? versionArr[1] : null;
 
-			reply.data = { 
-				first_start_up: this.controller.config.first_start_up, 
+			reply.data = {
+				first_start_up: this.controller.config.first_start_up,
 				count_of_reconnects: this.controller.config.count_of_reconnects,
 				current_firmware: version,
 				current_firmware_majurity: majurity,
 				remote_id: this.controller.getRemoteId(),
-				firstaccess: this.controller.config.hasOwnProperty('firstaccess')? this.controller.config.firstaccess : true
+				firstaccess: this.controller.config.hasOwnProperty('firstaccess') ? this.controller.config.firstaccess : true
 			};
 
 			// add more information if box is cit
@@ -3015,12 +3129,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				_.extend(reply.data, {
 					cit_identifier: this.controller.config.cit_identifier || '',
 					cit_authorized: this.controller.config.cit_authorized || false,
-					cit_license_countDown: zway && zway.controller.data.countDown? zway.controller.data.countDown.value : null,
+					cit_license_countDown: zway && zway.controller.data.countDown ? zway.controller.data.countDown.value : null,
 					cit_server_reachable: checkInternetConnection('https://findcit.z-wavealliance.org')
 				});
 
 				if (this.controller.config.forwardCITAuth === true && this.controller.config.cit_authorized) {
-					profile = _.filter(this.controller.profiles, function(p){
+					profile = _.filter(this.controller.profiles, function(p) {
 						return p.name === 'CIT Administrator';
 					});
 
@@ -3037,7 +3151,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 
 			reply.code = 200;
-		} catch (e){
+		} catch (e) {
 			reply.data = null;
 			reply.error = e.message;
 		}
@@ -3047,30 +3161,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	rebootBox: function() {
 		var self = this,
 			langfile = this.controller.loadMainLang();
-			reply = {
-				error: null,
-				data: null,
-				code: 500
-			};
+		reply = {
+			error: null,
+			data: null,
+			code: 500
+		};
 
-			// if reboot has flag firstaccess=true add showWelcome to controller config
-			if(this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
-				this.controller.config.showWelcome = true;
-				this.controller.saveConfig();
+		// if reboot has flag firstaccess=true add showWelcome to controller config
+		if (this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
+			this.controller.config.showWelcome = true;
+			this.controller.saveConfig();
+		}
+
+		// reboot after 5 seconds
+		setTimeout(function() {
+			try {
+				console.log("Rebooting system ...");
+				system("reboot"); // reboot the box
+			} catch (e) {
+				self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "RebootBox");
 			}
+		}, 5000);
 
-			// reboot after 5 seconds
-			setTimeout(function() {
-				try {
-					console.log("Rebooting system ...");
-					system("reboot"); // reboot the box
-				} catch (e){
-					self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "RebootBox");
-				}
-			}, 5000);
-
-			reply.code = 200;
-			reply.data = "System is rebooting ...";
+		reply.code = 200;
+		reply.data = "System is rebooting ...";
 
 		return reply;
 	},
@@ -3088,8 +3202,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			try {
 				reqObj = parseToObject(this.req.body);
 
-				if(reqObj.password !== '') {
-					if(reqObj.password.length >= 8 && reqObj.password.length <= 63) {
+				if (reqObj.password !== '') {
+					if (reqObj.password.length >= 8 && reqObj.password.length <= 63) {
 						retPp = system("sh automation/lib/configAP.sh setPp " + reqObj.password);
 					} else {
 						reply.error = "Password must between 8 and 63 characters long.";
@@ -3099,22 +3213,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					retPp[1] = "";
 				}
 
-				if(reqObj.ssid !== '') {
+				if (reqObj.ssid !== '') {
 					retSsid = system("sh automation/lib/configAP.sh setSsid " + reqObj.ssid);
 				} else {
 					retSsid[1] = "";
 				}
 
-				if((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
+				if ((retSsid[1].indexOf("successfull") !== -1 || retPp[1].indexOf("successfull") !== -1) || (retSsid[1].indexOf("successfull") !== -1 && retPp[1].indexOf("successfull") !== -1)) {
 					retR = system("sh automation/lib/configAP.sh reload");
-					if(retR[1].indexOf("Done") !== -1 ) {
+					if (retR[1].indexOf("Done") !== -1) {
 						reply.error = null;
 						reply.data = "OK";
 						reply.code = 200;
 					}
 				}
 
-			} catch(e) {
+			} catch (e) {
 				console.log(e.toString());
 				reply.error = 'Internal Server Error. ' + e.toString();
 			}
@@ -3127,10 +3241,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	},
 	getWifiSettings: function() {
 		var reply = {
-				error: null,
-				data: null,
-				code: 500
-			};
+			error: null,
+			data: null,
+			code: 500
+		};
 
 		if (fs.stat('lib/configAP.sh')) {
 			try {
@@ -3139,9 +3253,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 				var ssid = retSsid[1].replace(' 0', '').replace(/\n/g, '');
 				reply.code = 200;
-				reply.data = {"ssid": ssid};
+				reply.data = {
+					"ssid": ssid
+				};
 
-			} catch(e) {
+			} catch (e) {
 				console.log(e.toString());
 				reply.error = 'Internal Server Error. ' + e.toString();
 			}
@@ -3158,7 +3274,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null,
 				code: 500
 			},
-			actions = ["status","stop","start","restart","disable","enable","reconfigure","setDateTime"],
+			actions = ["status", "stop", "start", "restart", "disable", "enable", "reconfigure", "setDateTime"],
 			dt_regex = /[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[01][0-9]):[0-5][0-9]/;
 
 		if (fs.stat('lib/ntp.sh')) {
@@ -3167,12 +3283,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 				if (actions.indexOf(action) > -1 || (action == 'setDateTime' && reqObj.dateTime && dt_regex.exec(reqObj.dateTime))) {
 
-					res = system("./automation/lib/ntp.sh " + action + (action == 'setDateTime'? " '" + reqObj.dateTime + "'" : ""));
+					res = system("./automation/lib/ntp.sh " + action + (action == 'setDateTime' ? " '" + reqObj.dateTime + "'" : ""));
 
 					if (action === 'status' && res[1]) {
 						reply.data = JSON.parse(res[1]);
 					} else {
-						reply.data = res[1]? res[1] : res;
+						reply.data = res[1] ? res[1] : res;
 					}
 
 					reply.code = 200;
@@ -3182,7 +3298,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					reply.error = 'Bad Request. Allowed are: ' + actions.toString() + '?dateTime=yyyy-mm-dd hh:mm';
 					reply.code = 400;
 				}
-			} catch(e) {
+			} catch (e) {
 				console.log(e.toString());
 				reply.error = 'Internal Server Error. ' + e.toString();
 			}
@@ -3203,9 +3319,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			response = 'in progress',
 			cit_server_reachable = checkInternetConnection('https://certxfer.z-wavealliance.org:8443'),
 			reqObj = parseToObject(this.req.body),
-			user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
-			pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined,
-			identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : (self.controller.config.cit_identifier && self.controller.config.cit_authorized? self.controller.config.cit_identifier : undefined);
+			user = reqObj.user && reqObj.user !== '' ? reqObj.user : undefined,
+			pass = reqObj.pass && reqObj.pass !== '' ? reqObj.pass : undefined,
+			identifier = reqObj.cit_identifier && reqObj.cit_identifier !== '' ? reqObj.cit_identifier : (self.controller.config.cit_identifier && self.controller.config.cit_authorized ? self.controller.config.cit_identifier : undefined);
 
 		try {
 			// check controller vendor (cit)
@@ -3218,7 +3334,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				if (user && pass && identifier) {
 
 					// access to alliance if server is reachable
-					if (cit_server_reachable){
+					if (cit_server_reachable) {
 						var uuid = zway.controller.data.uuid.value;
 						var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
 						var cit_user = user.toLowerCase();
@@ -3227,7 +3343,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 							http.request({
 								url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Reg.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass + "&desc=" + identifier),
 								async: true,
-								success: function (resp) {
+								success: function(resp) {
 									r = parseToObject(resp);
 									res = r.data ? parseToObject(r.data) : null;
 
@@ -3242,7 +3358,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 										if (res.result) {
 											self.controller.config.cit_identifier = identifier;
 
-											if (self.controller.profiles.filter(function (p) {
+											if (self.controller.profiles.filter(function(p) {
 													return p.login === cit_user;
 												}).length === 0) {
 
@@ -3297,14 +3413,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 									response = 'done';
 
 									if (res.hasOwnProperty('result') && !res.result) {
-										_.extend(res, {key: 'cit_initialize_login_failed'});
+										_.extend(res, {
+											key: 'cit_initialize_login_failed'
+										});
 									}
 
 									reply.code = r.status;
 									reply.error = null;
 									reply.data = res;
 								},
-								error: function (resp) {
+								error: function(resp) {
 									r = parseToObject(resp);
 
 									response = 'failed';
@@ -3318,7 +3436,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 							http.request({
 								url: encodeURI("https://certxfer.z-wavealliance.org:8443/CITAuth/Auth.aspx?UID=" + uuid + "&user=" + user + "&pass=" + pass),
 								async: true,
-								success: function (resp) {
+								success: function(resp) {
 									r = parseToObject(resp);
 									res = r.data ? parseToObject(r.data) : null;
 
@@ -3327,7 +3445,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 										// update cit profile if auth is ok
 										if (res.result) {
 											// update default admin profile
-											prof = _.filter(self.controller.profiles, function (p) {
+											prof = _.filter(self.controller.profiles, function(p) {
 												return p.login === cit_user;
 											});
 
@@ -3345,14 +3463,16 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 									response = 'done';
 
 									if (res.hasOwnProperty('result') && !res.result) {
-										_.extend(res, {key: 'cit_login_failed'});
+										_.extend(res, {
+											key: 'cit_login_failed'
+										});
 									}
 
 									reply.code = r.status;
 									reply.error = null;
 									reply.data = res;
 								},
-								error: function (resp) {
+								error: function(resp) {
 									r = parseToObject(resp);
 
 									response = 'failed';
@@ -3375,7 +3495,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 							reply.code = 504;
 							reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
 						}
-					// forward local login if server isn't reachable but cit is registrated
+						// forward local login if server isn't reachable but cit is registrated
 					} else {
 						reply.code = 504;
 						reply.error = 'Gateway Time-out: No response from https://certxfer.z-wavealliance.org';
@@ -3388,7 +3508,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.error = 'Not Implemented: This function is not supported by controller.';
 				reply.code = 501;
 			}
-		} catch(e) {
+		} catch (e) {
 			console.log(e.toString());
 			reply.error = 'Internal Server Error. ' + e.toString();
 		}
@@ -3479,8 +3599,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			response = 'in progress',
 			req_user = this.profileByUser(this.req.user),
 			reqObj = parseToObject(this.req.body),
-			user = reqObj.user && reqObj.user !== ''? reqObj.user : undefined,
-			pass = reqObj.pass && reqObj.pass !== ''? reqObj.pass : undefined;
+			user = reqObj.user && reqObj.user !== '' ? reqObj.user : undefined,
+			pass = reqObj.pass && reqObj.pass !== '' ? reqObj.pass : undefined;
 
 		try {
 			// check controller vendor (cit)
@@ -3500,7 +3620,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 							async: true,
 							success: function(resp) {
 								r = parseToObject(resp);
-								res = r.data? parseToObject(r.data) : null;
+								res = r.data ? parseToObject(r.data) : null;
 
 								// check if CertXFer auth is ok
 								if (!!res && res.result) {
@@ -3514,7 +3634,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 									reply.message = "Your CIT was successfully unregistered. You'll be logged out in 3, 2, 1 ...";
 
-									setTimeout(function(){
+									setTimeout(function() {
 										self.doLogout();
 									}, 3000);
 								}
@@ -3531,7 +3651,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 								response = 'failed';
 
 								reply.code = r.status;
-								reply.error = r.error? r.error : r.status + ' ' + r.statusText;
+								reply.error = r.error ? r.error : r.status + ' ' + r.statusText;
 								reply.data = r.data;
 							}
 						});
@@ -3559,7 +3679,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.error = 'Not Implemented: This function is not supported by controller.';
 				reply.code = 501;
 			}
-		} catch(e) {
+		} catch (e) {
 			console.log(e.toString());
 			reply.error = 'Internal Server Error. ' + e.toString();
 		}
@@ -3576,7 +3696,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			response = 'in progress',
 			reqObj = parseToObject(this.req.body),
 			req_user = this.profileByUser(this.req.user),
-			identifier = reqObj.cit_identifier && reqObj.cit_identifier !== ''? reqObj.cit_identifier : undefined;
+			identifier = reqObj.cit_identifier && reqObj.cit_identifier !== '' ? reqObj.cit_identifier : undefined;
 
 		try {
 			// check controller vendor (cit)
@@ -3596,7 +3716,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						async: true,
 						success: function(resp) {
 							r = parseToObject(resp);
-							res = r.data? parseToObject(r.data) : null;
+							res = r.data ? parseToObject(r.data) : null;
 
 							// check if CertXFer auth is ok
 							if (!!res && res.result) {
@@ -3617,7 +3737,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 							response = 'failed';
 
 							reply.code = r.status;
-							reply.error = r.error? r.error : r.status + ' ' + r.statusText;
+							reply.error = r.error ? r.error : r.status + ' ' + r.statusText;
 							reply.data = r.data;
 						}
 					});
@@ -3641,7 +3761,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.error = 'Not Implemented: This function is not supported by controller.';
 				reply.code = 501;
 			}
-		} catch(e) {
+		} catch (e) {
 			console.log(e.toString());
 			reply.error = 'Internal Server Error. ' + e.toString();
 		}
@@ -3654,20 +3774,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500,
 				data: null
 			},
-			l = ['en','de'],  //this.controller.availableLang
+			l = ['en', 'de'], //this.controller.availableLang
 			devInfo = {},
-			reqObj = !this.req.query? undefined : parseToObject(this.req.query);
+			reqObj = !this.req.query ? undefined : parseToObject(this.req.query);
 
 		try {
 
-			devID = reqObj && reqObj.id? reqObj.id : null;
-			language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1? reqObj.lang : 'en';
+			devID = reqObj && reqObj.id ? reqObj.id : null;
+			language = reqObj && reqObj.lang && l.indexOf(reqObj.lang) > -1 ? reqObj.lang : 'en';
 
 			if (reqObj && reqObj.lang && l.indexOf(reqObj.lang) === -1) {
 				reply.message = 'Language not found. English is used instead.';
 			}
 
-			devInfo = loadObject(language +'.devices.json'); //this.controller.defaultLang
+			devInfo = loadObject(language + '.devices.json'); //this.controller.defaultLang
 
 
 			if (devInfo === null) {
@@ -3684,7 +3804,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 					if (!reply.data) {
 						reply.code = 404;
-						reply.error = 'No Z-Wave device with ' + devID +  ' found.';
+						reply.error = 'No Z-Wave device with ' + devID + ' found.';
 						reply.data = null;
 					}
 				}
@@ -3698,7 +3818,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	zwaveDeviceInfoUpdate: function() {
 		var self = this,
 			result = [],
-			l = ['en','de'],  //this.controller.availableLang,
+			l = ['en', 'de'], //this.controller.availableLang,
 			reply = {
 				error: null,
 				code: 500,
@@ -3729,14 +3849,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 								list.zwave_devices.push(data[index]);
 							}
 
-							saveObject(lang +'.devices.json', list);
+							saveObject(lang + '.devices.json', list);
 							obj[lang] = true;
 						}
 
 						result.push(obj);
 					},
 					error: function() {
-						self.controller.addNotification('Z-Wave device list for lang:' + lang + ' not found.');
+						self.controller.addNotification('error', 'Z-Wave device list for lang:' + lang + ' not found.', 'core', 'ZAutomationAPI');
 						result.push(obj);
 					}
 				});
@@ -3746,13 +3866,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				processPendingCallbacks();
 			}
 
-			if(result) {
+			if (result) {
 				reply.code = 200;
 				reply.data = result;
 			}
 
 		} catch (e) {
-			this.controller.addNotification('Error has occured during updating the Z-Wave devices list');
+			this.controller.addNotification('error', 'Error has occured during updating the Z-Wave devices list', 'core', 'ZAutomationAPI');
 			reply.error = 'Something went wrong:' + e.message;
 		}
 
@@ -3765,11 +3885,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null
 			},
 			devInfo = {},
-			reqObj = !this.req.query? undefined : parseToObject(this.req.query);
+			reqObj = !this.req.query ? undefined : parseToObject(this.req.query);
 
 		try {
 
-			vendorID = reqObj && reqObj.id? reqObj.id : null;
+			vendorID = reqObj && reqObj.id ? reqObj.id : null;
 
 			devInfo = loadObject('zwave_vendors.json');
 
@@ -3784,7 +3904,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					reply.data = devInfo.zwave_vendors[vendorID];
 				} else if (reqObj.id) {
 					reply.code = 404;
-					reply.error = 'No Z-Wave vendor with id "' + vendorID +  '" found.';
+					reply.error = 'No Z-Wave vendor with id "' + vendorID + '" found.';
 					reply.data = null;
 				}
 			}
@@ -3807,9 +3927,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		try {
 			// update postfix JSON
 			var list = {
-					updateTime: '',
-					zwave_vendors: {}
-				};
+				updateTime: '',
+				zwave_vendors: {}
+			};
 
 			http.request({
 				url: "http://manuals-backend.z-wave.info/make.php?mode=brand",
@@ -3828,8 +3948,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					}
 				},
 				error: function(e) {
-					var msg = 'Z-Wave vendors list could not be updated. Error: ' +e.toString();
-					self.controller.addNotification(msg);
+					var msg = 'Z-Wave vendors list could not be updated. Error: ' + e.toString();
+					self.controller.addNotification('error', msg, 'core', 'ZAutomationAPI');
 
 					result = 'failed';
 
@@ -3843,12 +3963,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				processPendingCallbacks();
 			}
 
-			if(result === 'in progress') {
+			if (result === 'in progress') {
 				result = 'failed';
 			}
 
 		} catch (e) {
-			this.controller.addNotification('Error has occured during updating the Z-Wave devices list');
+			this.controller.addNotification('error', 'Error has occured during updating the Z-Wave devices list', 'core', 'ZAutomationAPI');
 			reply.error = 'Something went wrong:' + e.message;
 		}
 
@@ -3857,7 +3977,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 });
 
 ZAutomationAPIWebRequest.prototype.profileByUser = function(userId) {
-	return _.find(this.controller.profiles, function(profile) { return profile.id === userId });
+	return _.find(this.controller.profiles, function(profile) {
+		return profile.id === userId
+	});
 };
 
 ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
@@ -3867,7 +3989,7 @@ ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
 	if (!profile) {
 		return [];
 	}
-	
+
 	if (profile.role === this.ROLE.ADMIN) {
 		return devices;
 	} else {
@@ -3883,19 +4005,21 @@ ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
 };
 
 ZAutomationAPIWebRequest.prototype.deviceByUser = function(vDevId, userId) {
-	if (this.devicesByUser(userId).filter(function (device) { return device.id === vDevId }).length) {
+	if (this.devicesByUser(userId).filter(function(device) {
+			return device.id === vDevId
+		}).length) {
 		return this.controller.devices.get(vDevId);
 	}
-	return  null;
+	return null;
 };
 
 ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
 	var profile = this.profileByUser(userId);
-	
+
 	if (!profile) {
 		return [];
 	}
-	
+
 	if (profile.role === this.ROLE.ADMIN) {
 		return this.controller.locations;
 	} else {
@@ -3909,20 +4033,20 @@ ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
 	}
 };
 
-ZAutomationAPIWebRequest.prototype.authCIT = function () {
+ZAutomationAPIWebRequest.prototype.authCIT = function() {
 	var license = true;
 	// check for license countdown
 	if (typeof zway !== 'undefined' && zway.controller.data.countDown) {
-		license = zway.controller.data.countDown.value > 0? true : false;
+		license = zway.controller.data.countDown.value > 0 ? true : false;
 	}
 	return checkBoxtype('cit') && this.controller.config.cit_authorized && license;
 };
 
-ZAutomationAPIWebRequest.prototype.getProfileResponse = function (profileObj) {
+ZAutomationAPIWebRequest.prototype.getProfileResponse = function(profileObj) {
 	var self = this,
 		resProfile = {};
 
-	Object.keys(profileObj).forEach(function(value){
+	Object.keys(profileObj).forEach(function(value) {
 		if (!~self.exclFromProfileRes.indexOf(value)) {
 			resProfile[value] = profileObj[value];
 		}
@@ -3931,7 +4055,7 @@ ZAutomationAPIWebRequest.prototype.getProfileResponse = function (profileObj) {
 	return resProfile;
 };
 
-ZAutomationAPIWebRequest.prototype.Unauthorized = function () {
+ZAutomationAPIWebRequest.prototype.Unauthorized = function() {
 	return {
 		error: 'Not logged in',
 		data: null,
@@ -3939,7 +4063,7 @@ ZAutomationAPIWebRequest.prototype.Unauthorized = function () {
 	};
 }
 
-ZAutomationAPIWebRequest.prototype.Forbidden = function () {
+ZAutomationAPIWebRequest.prototype.Forbidden = function() {
 	return {
 		error: 'Permission denied',
 		data: null,
@@ -3947,7 +4071,7 @@ ZAutomationAPIWebRequest.prototype.Forbidden = function () {
 	};
 }
 
-ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
+ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 	var self = this,
 		handlerFunc = this.NotFound, // Default handler is NotFound
 		validParams;
@@ -3968,16 +4092,19 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 				// fill user field
 				this.req.user = auth.user;
 				this.req.role = auth.role;
-				
+
 				if (matched.params.length) {
-					validParams = _.every(matched.params), function(p) { return !!p; };
+					validParams = _.every(matched.params),
+						function(p) {
+							return !!p;
+						};
 					if (validParams) {
-						handlerFunc = function () {
+						handlerFunc = function() {
 							return matched.handler.apply(this, matched.params);
 						}
 					}
 				} else {
-					handlerFunc = matched.handler? matched.handler : handlerFunc;
+					handlerFunc = matched.handler ? matched.handler : handlerFunc;
 				}
 
 				// --- Proceed to checkout =)
@@ -3994,7 +4121,7 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function (method, url) {
 	}
 };
 
-ZAutomationAPIWebRequest.prototype.reorderDevices = function () {
+ZAutomationAPIWebRequest.prototype.reorderDevices = function() {
 	var self = this,
 		reply = {
 			error: "Internal Server Error",
@@ -4007,7 +4134,7 @@ ZAutomationAPIWebRequest.prototype.reorderDevices = function () {
 	var data = reqObj.data, // ordered list of devices
 		action = reqObj.action; // Dasboard, Elelements, Room(location)
 
-	if(self.controller.reoderDevices(data, action)) {
+	if (self.controller.reoderDevices(data, action)) {
 		reply.error = "";
 		reply.data = "OK";
 		reply.code = 200;
@@ -4028,4 +4155,3 @@ ZAutomationAPIWebRequest.prototype.reorderDevices = function () {
 	return reply;
 
 }
-

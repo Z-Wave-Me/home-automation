@@ -1,0 +1,6 @@
+{
+	"m_title":"Edimax SP-2101",
+	"m_descr":"This app allows you to control your Edimax SP-2101 WLAN plugs. Simply enter the IP address of the completely configured WLAN plug.",
+	"ip":"Plug IP URL",
+	"h_ip":"in the format '192.168.0.50'"
+}

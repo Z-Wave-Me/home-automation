@@ -1,4 +1,4 @@
-Z-Way Home Automation Engine v2.3.6
+Z-Way Home Automation Engine v2.3.8
 ====================================
 
 # Introduction #
@@ -12,12 +12,11 @@ Z-Way Home Automation Engine v2.3.6
 For a better integration during running developments, please use [Home Automation develop branch](https://github.com/Z-Wave-Me/home-automation/tree/develop) for your pull requests.
 
 ## New complete Documentation:
-* [Z-Way Essentials](https://github.com/Z-Wave-Me/Z-Way-Manual/raw/3.0/ZWayManual.pdf) (PDF)
+* [Z-Way Essentials](https://new.z-wave.me/essentials) (PDF Download)
 
 ## Home Automation Documentation's : 
 * https://github.com/Z-Wave-Me/home-automation/wiki
-* [old Z-Wave.Me Developers Documentation](https://github.com/Z-Wave-Me/Z-Way-Manual/raw/master/zwayDev.pdf) (PDF)
-* see also documentations on [http://razberry.z-wave.me](http://razberry.z-wave.me/index.php?id=5) for more information
+* see also documentations on [https://z-wave.me/support/](https://z-wave.me/support/) for more information
 
 ## API Documentation:
 #### ZAutomation:
@@ -32,13 +31,13 @@ For a better integration during running developments, please use [Home Automatio
 
 ## Available Z-Way Server Downloads:
 Downloads are available for Raspbian (POPP Hub 1, also complete images), Debian, Ubuntu, Voyage, Dune HD Plugin (mips), Windows
-* http://razberry.z-wave.me/z-way-server/
+* https://storage.z-wave.me/z-way-server/
 
 ## Current changelog's:
 * [Home Automation changelog](https://github.com/Z-Wave-Me/home-automation/blob/master/CHANGELOG.md)
 * [Smart Home UI changelog](https://github.com/Z-Wave-Me/zwave-smarthome/blob/master/README.md)
 * [Expert UI changelog](https://github.com/Z-Wave-Me/ExpertUI/blob/master/README.md)
-* [Full z-way-server changelog on http://razberry.z-wave.me](http://razberry.z-wave.me/z-way-server/ChangeLog)
+* [Full z-way-server changelog on https://z-wave.me](https://storage.z-wave.me/z-way-server/ChangeLog)
 
 ## Z-Wave.Me - Developer Console (App Store)
 Create an account and upload your own z-way home automation apps, share them with a special group or verify them for public access. 
@@ -54,4 +53,3 @@ You can also find a list of all [currently published apps](https://developer.z-w
 * https://forum.z-wave.me/ (discussions available in en/de/ru/fr/it/cn, posts about: RaZberry, Z-Uno ...)
 * http://www.zwave.de/forum (de)
 * http://www.z-wave.info/forum (en)
-

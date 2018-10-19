@@ -6,6 +6,7 @@ npm-debug.log
 .SyncTrash
 storage/*
 .idea
+.history
 node_modules
 blub
 *.gitignore
