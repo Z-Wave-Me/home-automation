@@ -1,4 +1,4 @@
-#XX.XX.2018 v2.3.8
+#10.10.2018 v2.3.8
 Features:
 * remove uploaded room images
 * new base modules added that combine or enhance functionalities of already well known modules, which are working without Alpca JS.
