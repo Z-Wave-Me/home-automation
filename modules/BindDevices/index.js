@@ -1,6 +1,6 @@
 /*** BindDevices Z-Way HA module *******************************************
 
-Version: 1.0.2
+Version: 1.0.3
 (c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
@@ -51,8 +51,12 @@ BindDevices.prototype.init = function (config) {
 			if (vDev) {
 				if (vDev.get("deviceType") === "switchBinary" || vDev.get("deviceType") === "scene" || vDev.get("deviceType") === "switchMultilevel" && actionMultilevel === null) {
 					vDev.performCommand(actionBinary);
-				} else if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat") || (vDev.get("deviceType") === "sensorMultilevel")) {
+				} else if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat")) {
 					vDev.performCommand("exact", { level: actionMultilevel });
+				} else if (vDev.get("deviceType") === "sensorMultilevel"){
+					vDev.set("metrics:level", actionMultilevel);
+				} else if (vDev.get("deviceType") === "sensorBinary"){
+					vDev.set("metrics:level", actionBinary);
 				}
 			}
 		});
@@ -65,7 +69,7 @@ BindDevices.prototype.init = function (config) {
 			var vDev = self.controller.devices.get(el);
 			
 			if (vDev) {
-				if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat") || (vDev.get("deviceType") === "sensorMultilevel")) {
+				if ((vDev.get("deviceType") === "switchMultilevel") || (vDev.get("deviceType") === "thermostat")) {
 					vDev.performCommand(action);
 				}
 			}
