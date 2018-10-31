@@ -35,9 +35,9 @@ InfoWidget.prototype.init = function (config) {
 	this.vDev = [];
 
 	this.createTextWidgets = function(lang) {
-		lng = lang? lang : self.controller.defaultLang
+		var lng = lang ? lang : self.controller.defaultLang;
 
-		if (self.config.widgets.length > 0 && self.config.internationalize === false) {
+		if (self.config.widgets && self.config.widgets.length > 0 && self.config.internationalize === false) {
 
 			self.config.widgets.forEach(function (widget, indx) {
 				var devId = "InfoWidget_" + self.id + '_' + indx;
@@ -100,7 +100,7 @@ InfoWidget.prototype.init = function (config) {
 				}
 			});
 
-			this.controller.on('language.changed',self.updateIntWidgets);
+			this.controller.on('language.changed', self.updateIntWidgets);
 		}
 	};
 
@@ -108,10 +108,10 @@ InfoWidget.prototype.init = function (config) {
 		var dev = self.config.widgetsInt.filter(function(widget) {
 			   return widget.lang === lang;
 			});
-		if (dev.length > 0) {
-			self.vDev[0].set('metrics:title',dev[0].headline);
-			self.vDev[0].set('metrics:text',dev[0].text);
-			self.vDev[0].set('metrics:icon',dev[0].imgURI);
+		if (self.vDev.length > 0 && dev.length > 0) {
+			self.vDev[0].set('metrics:title', dev[0].headline);
+			self.vDev[0].set('metrics:text', dev[0].text);
+			self.vDev[0].set('metrics:icon', dev[0].imgURI);
 		}
 	};
 
@@ -122,7 +122,7 @@ InfoWidget.prototype.init = function (config) {
 InfoWidget.prototype.stop = function () {
 	var self = this;
 	
-	this.controller.off('language.changed',self.updateIntWidgets);
+	this.controller.off('language.changed', self.updateIntWidgets);
 
 	if (self.vDev) {
 		self.vDev.forEach(function (dev) {
