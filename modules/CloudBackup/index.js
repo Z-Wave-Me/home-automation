@@ -1,9 +1,9 @@
 /*** CloudBackup Z-Way HA module *******************************************
 
- Version: 0.1.3 beta
+ Version: 0.1.4 beta
  (c) Z-Wave.Me, 2016
  -----------------------------------------------------------------------------
- Author: Michael Hensche <mh@zwave.eu>
+ Author: Michael Hensche <mh@z-wave.eu>
  Description: Gives possibility to upload and store your backups on the remote server.
 
  ******************************************************************************/
@@ -20,9 +20,9 @@ _module = CloudBackup;
 CloudBackup.prototype.init = function(config) {
 	CloudBackup.super_.prototype.init.call(this, config);
 
-	this.backupcreate_url = "https://service.z-wave.me/cloudbackup/?uri=backupcreate";
-	this.usercreate_url = "https://service.z-wave.me/cloudbackup/?uri=usercreate";
-	this.userupdate_url = "https://service.z-wave.me/cloudbackup/?uri=userupdate";
+	this.backupcreate_url = "http://192.168.10.108/cloudbackup/?uri=backupcreate"; // https://service.z-wave.me
+	this.usercreate_url = "http://192.168.10.108/cloudbackup/?uri=usercreate";
+	this.userupdate_url = "http://192.168.10.108/cloudbackup/?uri=userupdate";
 
 	var self = this,
 		langFile = self.loadModuleLang();
@@ -39,7 +39,6 @@ CloudBackup.prototype.init = function(config) {
 	this.defineHandlers();
 	this.externalAPIAllow();
 	global["CloudBackupAPI"] = this.CloudBackupAPI;
-
 
 	this.uploadBackup = function() {
 		console.log("###### start Backup ");
@@ -60,6 +59,10 @@ CloudBackup.prototype.init = function(config) {
 				var data = {"data": Base64.encode(JSON.stringify(backupJSON))};
 
 				var formElements = [
+					{
+						name: 'api_token',
+						value: self.config.api_token.toString()
+					},
 					{
 						name: 'remote_id',
 						value: self.config.remoteid.toString()
@@ -88,6 +91,7 @@ CloudBackup.prototype.init = function(config) {
 
 			} else {
 				console.log("Backup file empty!");
+				self.addNotification("error", "", "module");
 			}
 
 		} catch(e) {
@@ -97,16 +101,29 @@ CloudBackup.prototype.init = function(config) {
 		return ret;
 	};
 
-	if(self.config.email !== "" && !_.isNull(self.config.remoteid) && !self.config.user_active) {
-		console.log("userCreate");
-		this.userCreate();
-	} else {
-		self.config.user_active = false;
+	self.onEmailChange = function(profile) {
+		console.log("profile", JSON.stringify(profile));
+		if(profile.id == 1) {
+			// only change if email and remote id not empty
+			if(profile.email !== "" && !_.isNull(self.config.remoteid)) {
+				self.config.email = profile.email;
+				// email change and remote id isn't know in database --> new user
+				if(!self.config.user_active) {
+					self.config.email = profile.email;
+					// create new user
+					self.userCreate();
+				//  email change but remote id is know
+				} else if(self.config.user_active) {
+					self.config.email = profile.email;
+					// update user (email)
+					self.userUpdate();
+				}
+			}
+		}
 	}
 
-	if(self.config.email !== "" && !_.isNull(self.config.remoteid)) {
-		console.log("userUpdate");
-		this.userUpdate();
+	if(self.config.email !== "" && !_.isNull(self.config.remoteid) && !self.config.user_active) {
+		this.userCreate();
 	}
 
 	if(self.config.scheduler !== "0" && self.config.user_active == true) { // manual
@@ -117,15 +134,20 @@ CloudBackup.prototype.init = function(config) {
 
 	// set up cron handler
 	self.controller.on("CloudBackup.upload", self.uploadBackup);
+
+	// set up email change hadler
+	self.controller.on("profile.change", self.onEmailChange);
+
+	self.saveConfig();
 };
 
 CloudBackup.prototype.stop = function() {
 
 	this.controller.off("CloudBackup.upload", this.uploadBackup);
+	this.controller.off("profile.change", this.onEmailChange);
 	this.controller.emit("cron.removeTask", "CloudBackup.upload");
 
 	delete global["CloudBackupAPI"];
-
 
 	CloudBackup.super_.prototype.stop.call(this);
 };
@@ -179,31 +201,33 @@ CloudBackup.prototype.userCreate = function() {
 	var obj = {
 		url: this.usercreate_url,
 		method: "POST",
+		async: true,
+		headers: {
+			"Content-Type": "application/json"
+		},
 		data: {
 			remote_id: self.config.remoteid,
 			email: self.config.email
+		},
+		success: function(response) {
+			console.log("usercreate res", JSON.stringify(response));
+			if(response.status === 200) { // user successfull added
+				self.config.api_token = response.data.api_token;
+				self.config.user_active = true;
+				self.saveConfig();
+			}
+		},
+		error: function(error){
+			if(response.status === 409) {
+				self.config.user_active = true;
+			}
+			console.log("usercreate error", JSON.stringify(error));
 		}
 	};
 
-	var res = http.request(obj);
+	console.log("usercreate obj", JSON.stringify(obj));
 
-	if(res.status === -1) { //error e.g. no connection to server
-		self.config.service_status = false;
-		self.config.user_active = false;
-	} else {
-		if(res.status === 200) {
-			self.config.user_active = true;
-		} else {
-			self.config.user_active = false;
-		}
-	}
-
-	/*if(res.data.status === 200) {
-		self.config.user_active = true
-		self.addNotification("info", res.data.message, "core");
-	} else {
-		self.addNotification("error", res.data.message, "core");
-	}*/
+	http.request(obj);
 };
 
 CloudBackup.prototype.userUpdate = function() {
@@ -212,35 +236,28 @@ CloudBackup.prototype.userUpdate = function() {
 	var obj = {
 		url: this.userupdate_url,
 		method: "POST",
+		async: true,
+		headers: {
+			"Content-Type": "application/json"
+		},
 		data: {
+			api_token: self.config.api_token,
 			remote_id: self.config.remoteid,
-			email: self.config.email,
-			email_log: self.config.email_log
+			email: self.config.email
+		},
+		success: function(response) {
+			console.log("userUpdate res", JSON.stringify(response));
+			self.config.api_token = response.data.api_token;
+			self.saveConfig();
+		},
+		error: function(error) {
+			console.log("userUpdate error", JSON.stringify(error));
 		}
 	};
 
-	var res = http.request(obj);
+	console.log("userUpdate obj", JSON.stringify(obj));
 
-	if(res.status === -1) { //error e.g. no connection to server
-		console.log("error");
-		self.config.service_status = false;
-		self.config.user_active = false;
-	} else {
-		self.config.service_status = true;
-
-		if(res.status === 200) {
-			self.config.user_active = true;
-		} else {
-			self.config.user_active = false;
-		}
-	}
-	/*if(res.data.status === 200) {
-		console.log(res.data.message);
-		//self.addNotification("info", "User update "+res.data.message, "core");
-	} else {
-		console.log(res.data.message);
-		//self.addNotification("error", res.data.message, "core");
-	}*/
+	http.request(obj);
 };
 
 // --------------- Public HTTP API -------------------

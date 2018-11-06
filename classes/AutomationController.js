@@ -194,7 +194,7 @@ AutomationController.prototype.setDefaultLang = function(lang) {
 
 AutomationController.prototype.saveConfig = function() {
 
-	// do clean up of location namespaces 
+	// do clean up of location namespaces
 	cleanupLocations = function(locations) {
 		var newLoc = [];
 
@@ -948,14 +948,14 @@ AutomationController.prototype.stopInstance = function(instance) {
 		instance.stop();
 		delete this.registerInstances[instId];
 
-		// get all devices created by instance 
+		// get all devices created by instance
 		instDevices = _.map(this.devices.filter(function(dev) {
 			return dev.get('creatorId') === instId;
 		}), function(dev) {
 			return dev.id;
 		});
 
-		// cleanup devices 
+		// cleanup devices
 		if (instDevices.length > 0) {
 			instDevices.forEach(function(id) {
 				// check for device entry again
@@ -1059,7 +1059,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 	var instDevices = [],
 		self = this;
 
-	// get all devices created by instance 
+	// get all devices created by instance
 	instDevices = this.devices.filterByCreatorId(id);
 
 	this.removeInstance(id);
@@ -1068,7 +1068,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 		return id !== model.id;
 	});
 
-	// cleanup 
+	// cleanup
 	if (instDevices.length > 0) {
 		instDevices.forEach(function(vDev) {
 			// check for vDevInfo entry
@@ -1501,10 +1501,10 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 				}
 				if (replace == '')
 					replace = 'unknown';
-				message = message.replace(search[0],replace);			
+				message = message.replace(search[0],replace);
 			}
 			count++;
-		} while(search && count < 50);		
+		} while(search && count < 50);
 		return message;
 	}
 
@@ -1878,9 +1878,10 @@ AutomationController.prototype.updateProfile = function(object, id) {
 				this.profiles[index][property] = object[property];
 			}
 		}
+		// emit profile change
+		this.emit("profile.change", this.profiles[index]);
+		this.saveConfig();
 	}
-
-	this.saveConfig();
 	return this.profiles[index];
 };
 
@@ -1902,7 +1903,8 @@ AutomationController.prototype.updateProfileAuth = function(object, id) {
 		if (object.hasOwnProperty('login') && object.login !== '' && !!object.login) {
 			p.login = object.login;
 		}
-
+		// emit profile change
+		this.emit("profile.change", this.profiles[index]);
 		this.saveConfig();
 
 		return p;
@@ -2148,10 +2150,10 @@ AutomationController.prototype.generateNamespaces = function(callback, device, l
 			return nspc;
 		};
 
-		// only triggered if there is no explicite location change - 
+		// only triggered if there is no explicite location change -
 		// on device: created, removed, destroy, change:metrics:title, change:permanently_hidden, change:metrics:removed
 		// usual update of global namespaces
-		// first setup of location namespace 
+		// first setup of location namespace
 		if (!locationNspcOnly) {
 
 			// add to location namespaces
@@ -2563,7 +2565,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 		return obj;
 	};
 
-	// generate namespace arry from filter string 
+	// generate namespace arry from filter string
 	function getNspcFromFilters(moduleMeta, nspcfilters) {
 		var namespaces = [],
 			filters = nspcfilters.split(','),
@@ -2592,7 +2594,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							return location[id[1]];
 						});
 
-						// get namespaces of devices per location - 'locations:locationId:filterPath'				   
+						// get namespaces of devices per location - 'locations:locationId:filterPath'
 					} else if (id[0] === 'locations' && id[1] === 'locationId') {
 						// don't replace set filters instead
 						namespaces = nspcfilters;
@@ -2606,7 +2608,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							jsFile = fs.load(filePath);
 
 							if (!!jsFile) {
-								//compress string 
+								//compress string
 								namespaces = jsFile.replace(/\s\s+|\t/g, ' ');
 							}
 						}
@@ -3238,7 +3240,7 @@ AutomationController.prototype.transformSimpleEntry = function(entry) {
 		} : 0));
 
 	if (vDev) {
-		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 			{
 			    deviceId: '',
 			    deviceType: '',
@@ -3265,7 +3267,7 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 
 	if (vDev) {
 		if (transformation === 'test') {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    type: '',
@@ -3281,7 +3283,7 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 			}
 
 		} else if (transformation === 'action') {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    deviceType: '',
@@ -3310,7 +3312,7 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 
 	// concat all lists to one
 	Object.keys(devices).forEach(function(key) {
-		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 			{
 			    deviceId: '',
 			    deviceType: '',
