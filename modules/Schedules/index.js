@@ -1,10 +1,11 @@
 /*** Schedules Z-Way HA module *******************************************
 
-Version: 1.1.0
+Version: 1.1.1
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
 Author: Hans-Christian Göckeritz <hcg@zwave.eu>
+Changed: Karsten Reichel <kar@z-wave.eu>
 Description:
 	This executes scene by cron
 
@@ -33,6 +34,7 @@ Schedules.prototype.init = function(config) {
 	var self = this;
 
 	this.devices = _.isArray(this.config.devices) ? this.config.devices : [];
+	this.notifications = _.isArray(this.config.notifications) ? this.config.notifications : [];
 
 	/*old = {
 		"switches": [],
@@ -46,7 +48,7 @@ Schedules.prototype.init = function(config) {
 
 		// concat all lists to one
 		Object.keys(self.config.devices).forEach(function(key) {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    deviceType: '',
@@ -89,6 +91,15 @@ Schedules.prototype.init = function(config) {
 
 		self.devices.forEach(function(el) {
 			self.shiftDevice(el);
+		});
+
+		self.notifications.forEach(function(n) {
+			if (n.target && n.target !== '') {
+				notificationType = n.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
+				notificationMessage = !n.message ? self.getInstanceTitle() : n.message;
+
+				self.addNotification(notificationType, notificationMessage, n.target);
+			}
 		});
 	};
 
