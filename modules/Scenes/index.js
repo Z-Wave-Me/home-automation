@@ -1,12 +1,13 @@
 /*** Scenes Z-Way HA module *******************************************
 
-Version: 1.2.0
+Version: 1.2.1
 (c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Changed: Michael Hensche <mh@zwave.eu>
 Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
 Changed: Niels Roche <nir@z-wave.eu>
+Changed: Karsten Reichel <kar@z-wave.eu>
 Description:
 	Implements light scene based on virtual devices of type dimmer, switch or anothe scene
 ******************************************************************************/
@@ -33,13 +34,14 @@ Scenes.prototype.init = function(config) {
 
 	var self = this,
 		devices = _.isArray(this.config.devices) ? this.config.devices : [];
+		notifications = _.isArray(this.config.notifications) ? this.config.notifications : [];
 
 	// transform old structure to new
 	if (typeof self.config.devices === 'object' && !_.isArray(self.config.devices)) {
 
 		// concat all lists to one
 		Object.keys(self.config.devices).forEach(function(key) {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    deviceType: '',
@@ -96,6 +98,15 @@ Scenes.prototype.init = function(config) {
 
 			devices.forEach(function(el) {
 				self.shiftDevice(el);
+			});
+
+			notifications.forEach(function(n) {
+				if (n.target && n.target !== '') {
+					notificationType = n.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
+					notificationMessage = !n.message ? self.getInstanceTitle() : n.message;
+
+					self.addNotification(notificationType, notificationMessage, n.target);
+				}
 			});
 
 			// update on ourself to allow catch this event
