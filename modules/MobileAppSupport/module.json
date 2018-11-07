@@ -6,13 +6,14 @@
   "homepage": "http://z-wave.me",
   "icon": "icon.png",
   "moduleName": "MobileAppSupport",
-  "version": "1.2.7",
+  "version": "1.3.2",
   "maturity": "stable",
   "defaults": {
 	"title": "__m_title__",
 	"description": "__m_descr__",
 	"delete_phone":"__m_del_phone__",
-	"devices": []
+	"devices": [],
+	"logLevelContainer": {}
   },
   "schema": {
 	"type": "object",
