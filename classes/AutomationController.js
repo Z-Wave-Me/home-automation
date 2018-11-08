@@ -194,7 +194,7 @@ AutomationController.prototype.setDefaultLang = function(lang) {
 
 AutomationController.prototype.saveConfig = function() {
 
-	// do clean up of location namespaces 
+	// do clean up of location namespaces
 	cleanupLocations = function(locations) {
 		var newLoc = [];
 
@@ -458,32 +458,34 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 		instanceModel.creationTime = Math.floor(new Date().getTime() / 1000);
 	}
 
-	if (Boolean(instanceModel.active)) {
-		try {
-			instance = new global[module.meta.id](instanceModel.id, self);
-		} catch (e) {
-			values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
+	try {
+		instance = new global[module.meta.id](instanceModel.id, self);
+	} catch (e) {
+		values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
 
-			self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
-			console.log(e.stack);
+		self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
+		console.log(e.stack);
+		return null; // not loaded
+	}
+
+	console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
+
+	cntExistInst = _.filter(self.instances, function(inst) {
+		return module.meta.id === inst.moduleId;
+	});
+
+	if (module.meta.singleton) {
+		if (in_array(self._loadedSingletons, module.meta.id) && cntExistInst.length > 1) {
+			console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
 			return null; // not loaded
 		}
 
-		console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
+		self._loadedSingletons.push(module.meta.id);
+	}
 
-		cntExistInst = _.filter(self.instances, function(inst) {
-			return module.meta.id === inst.moduleId;
-		});
+	instanceModel.active = instanceModel.active === 'true' || (typeof instanceModel.active == 'boolean' && instanceModel.active) ? true : false;
 
-		if (module.meta.singleton) {
-			if (in_array(self._loadedSingletons, module.meta.id) && cntExistInst.length > 1) {
-				console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
-				return null; // not loaded
-			}
-
-			self._loadedSingletons.push(module.meta.id);
-		}
-
+	if (instanceModel.active) {
 		try {
 			instance.init(instanceModel.params);
 		} catch (e) {
@@ -503,17 +505,15 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 			console.log(e.stack);
 			return null; // not loaded
 		}
-
-		// add module to loaded modules if at least one instance exists
-		if (this.loadedModules.indexOf(module) < 0) {
-			this.loadedModules.push(module);
-		}
-
-		self.registerInstance(instance);
-		return instance;
-	} else {
-		return null; // not loaded
 	}
+
+	// add module to loaded modules if at least one instance exists
+	if (this.loadedModules.indexOf(module) < 0) {
+		this.loadedModules.push(module);
+	}
+
+	self.registerInstance(instance);
+	return instance;
 };
 
 AutomationController.prototype.loadModule = function(module, rootModule, instancesCount) {
@@ -914,7 +914,7 @@ AutomationController.prototype.createInstance = function(reqObj) {
 
 		instance = _.extend(reqObj, {
 			id: alreadyExisting[0] ? reqObj.id : id,
-			active: reqObj.active === 'true' || reqObj.active ? true : false
+			active: reqObj.active === 'true' || (typeof reqObj.active == 'boolean' && reqObj.active) ? true : false
 		});
 
 		self.instances.push(instance);
@@ -948,14 +948,14 @@ AutomationController.prototype.stopInstance = function(instance) {
 		instance.stop();
 		delete this.registerInstances[instId];
 
-		// get all devices created by instance 
+		// get all devices created by instance
 		instDevices = _.map(this.devices.filter(function(dev) {
 			return dev.get('creatorId') === instId;
 		}), function(dev) {
 			return dev.id;
 		});
 
-		// cleanup devices 
+		// cleanup devices
 		if (instDevices.length > 0) {
 			instDevices.forEach(function(id) {
 				// check for device entry again
@@ -1059,7 +1059,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 	var instDevices = [],
 		self = this;
 
-	// get all devices created by instance 
+	// get all devices created by instance
 	instDevices = this.devices.filterByCreatorId(id);
 
 	this.removeInstance(id);
@@ -1068,7 +1068,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 		return id !== model.id;
 	});
 
-	// cleanup 
+	// cleanup
 	if (instDevices.length > 0) {
 		instDevices.forEach(function(vDev) {
 			// check for vDevInfo entry
@@ -1501,10 +1501,10 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 				}
 				if (replace == '')
 					replace = 'unknown';
-				message = message.replace(search[0],replace);			
+				message = message.replace(search[0],replace);
 			}
 			count++;
-		} while(search && count < 50);		
+		} while(search && count < 50);
 		return message;
 	}
 
@@ -2148,10 +2148,10 @@ AutomationController.prototype.generateNamespaces = function(callback, device, l
 			return nspc;
 		};
 
-		// only triggered if there is no explicite location change - 
+		// only triggered if there is no explicite location change -
 		// on device: created, removed, destroy, change:metrics:title, change:permanently_hidden, change:metrics:removed
 		// usual update of global namespaces
-		// first setup of location namespace 
+		// first setup of location namespace
 		if (!locationNspcOnly) {
 
 			// add to location namespaces
@@ -2563,7 +2563,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 		return obj;
 	};
 
-	// generate namespace arry from filter string 
+	// generate namespace arry from filter string
 	function getNspcFromFilters(moduleMeta, nspcfilters) {
 		var namespaces = [],
 			filters = nspcfilters.split(','),
@@ -2592,7 +2592,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							return location[id[1]];
 						});
 
-						// get namespaces of devices per location - 'locations:locationId:filterPath'				   
+						// get namespaces of devices per location - 'locations:locationId:filterPath'
 					} else if (id[0] === 'locations' && id[1] === 'locationId') {
 						// don't replace set filters instead
 						namespaces = nspcfilters;
@@ -2606,7 +2606,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							jsFile = fs.load(filePath);
 
 							if (!!jsFile) {
-								//compress string 
+								//compress string
 								namespaces = jsFile.replace(/\s\s+|\t/g, ' ');
 							}
 						}
@@ -3238,7 +3238,7 @@ AutomationController.prototype.transformSimpleEntry = function(entry) {
 		} : 0));
 
 	if (vDev) {
-		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 			{
 			    deviceId: '',
 			    deviceType: '',
@@ -3265,7 +3265,7 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 
 	if (vDev) {
 		if (transformation === 'test') {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    type: '',
@@ -3281,7 +3281,7 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 			}
 
 		} else if (transformation === 'action') {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    deviceType: '',
@@ -3310,7 +3310,7 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 
 	// concat all lists to one
 	Object.keys(devices).forEach(function(key) {
-		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 			{
 			    deviceId: '',
 			    deviceType: '',
