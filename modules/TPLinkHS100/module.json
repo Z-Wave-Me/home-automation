@@ -7,7 +7,7 @@
     "state": null,
     "icon": "icon.png",
     "moduleName":"TPLinkHS100",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "maturity": "stable",
     "repository": {
             "type": "git",
@@ -31,7 +31,7 @@
         "fields": {
             "url": {
                 "label": "__ip__",
-				"helper": "__h_ip__",                
+				"helper": "__h_ip__",
                 "required": true
             }
         }

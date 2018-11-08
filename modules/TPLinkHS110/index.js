@@ -1,6 +1,6 @@
 /*** TPLinkHS110 Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Karsten Reichel <kar@zwave.eu>
@@ -29,9 +29,9 @@ _module = TPLinkHS110;
 
 TPLinkHS110.prototype.init = function (config) {
 	TPLinkHS110.super_.prototype.init.call(this, config);
-		
+
 		vDevId = "TPLinkHS110_" + this.id;
-			
+
 		this.commands = {
 			on: 	'{"system":{"set_relay_state":{"state":1}}}',
 			off: 	'{"system":{"set_relay_state":{"state":0}}}',
@@ -40,10 +40,13 @@ TPLinkHS110.prototype.init = function (config) {
 
 		this.encrypt = function(data) {
 			var key = 171;
-			var result = "\0\0\0\0";
+			var result = "";
+			for (var i = 3 ; i >= 0 ; i--) {
+					result += String.fromCharCode( (data.length>>(8*i))&255 );
+			}
 			for (var i = 0, len = data.length; i < len; i++) {
-				key = key^data.charCodeAt(i);
-				result += String.fromCharCode(key);
+					key = key^data.charCodeAt(i);
+					result += String.fromCharCode(key);
 			}
 			return result
 		}
@@ -56,7 +59,7 @@ TPLinkHS110.prototype.init = function (config) {
 				key = data.charCodeAt(i);
 				result += String.fromCharCode(a);
 			}
-			return JSON.parse(result);			
+			return JSON.parse(result);
 		}
 
 		var self = this;
@@ -68,7 +71,7 @@ TPLinkHS110.prototype.init = function (config) {
 				customIcons: {},
 				metrics: {
 					icon: 'switch',
-					level: 'off', 
+					level: 'off',
 					title: self.getInstanceTitle()
 				},
 			},
