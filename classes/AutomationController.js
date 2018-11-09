@@ -485,6 +485,11 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 
 	instanceModel.active = instanceModel.active === 'true' || (typeof instanceModel.active == 'boolean' && instanceModel.active) ? true : false;
 
+	if (typeof instanceModel.instanceId != 'undefined')
+	{
+		delete instanceModel.instanceId;
+	}
+
 	if (instanceModel.active) {
 		try {
 			instance.init(instanceModel.params);
@@ -917,6 +922,11 @@ AutomationController.prototype.createInstance = function(reqObj) {
 			active: reqObj.active === 'true' || (typeof reqObj.active == 'boolean' && reqObj.active) ? true : false
 		});
 
+		if (typeof instance.instanceId != 'undefined')
+		{
+			delete instance.instanceId;
+		}
+
 		self.instances.push(instance);
 		self.saveConfig();
 		self.emit('core.instanceCreated', instance.id);
@@ -1005,6 +1015,11 @@ AutomationController.prototype.reconfigureInstance = function(id, instanceObject
 			active: instanceObject.hasOwnProperty('active') ? instanceObject.active : instance.active,
 			params: config !== {} ? config : instance.params
 		});
+
+		if (typeof this.instances[index].instanceId != 'undefined')
+		{
+			delete this.instances[index].instanceId;
+		}
 
 		if (!!register_instance) {
 			if (this.instances[index].active) { // here we read new config instead of existing
