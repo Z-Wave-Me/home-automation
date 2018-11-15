@@ -75,6 +75,12 @@
 					delete profile.skin;
 				}
 
+				//remove color
+				if (profile.color) {
+					profile.color = '';
+					delete profile.color;
+				}
+
 				// remove qrcode
 				if (profile.qrcode) {
 					if (profile.qrcode !== "") {
@@ -95,7 +101,6 @@
 				email: '',
 				name: 'Administrator',
 				lang: 'en',
-				color: '#dddddd',
 				dashboard: [],
 				interval: 2000,
 				rooms: [0],
@@ -111,7 +116,6 @@
 				email: '',
 				name: 'Local User',
 				lang: 'en',
-				color: '#dddddd',
 				dashboard: [],
 				interval: 2000,
 				rooms: [],
@@ -140,7 +144,7 @@
 				});
 			}
 
-			// loop through locations  
+			// loop through locations
 			config.locations.forEach(function(location, index) {
 
 				// add show_background param
@@ -317,7 +321,7 @@
 				}
 			});
 
-			// Update IDs in profiles	
+			// Update IDs in profiles
 			config.profiles && config.profiles.forEach(function(profile) {
 				profile.positions && profile.positions.forEach(function(id, index) {
 					var _id = getNewID(id);
@@ -374,7 +378,6 @@
 					profile.password = "admin";
 					profile.role = 1;
 					profile.lang = "en";
-					profile.color = "#dddddd";
 					profile.default_ui = 1;
 					profile.dashboard = profile.positions;
 					profile.interval = 2000;
@@ -389,7 +392,7 @@
 					delete profile.positions;
 				}
 
-				// delete profile.sid 
+				// delete profile.sid
 				if (profile.sid) {
 					delete profile.sid;
 				}
@@ -446,7 +449,7 @@
 					profile.expert_view = false;
 				}
 
-				// delete profile.passwordConfirm 
+				// delete profile.passwordConfirm
 				if (profile.passwordConfirm) {
 					delete profile.passwordConfirm;
 				}
@@ -463,7 +466,6 @@
 					password: 'local',
 					name: 'Local User',
 					lang: 'en',
-					color: '#dddddd',
 					dashboard: [],
 					interval: 2000,
 					rooms: [0],
