@@ -1,3 +1,6 @@
+v1.2.1
+- added notifications
+
 v1.1.2
 - customer icon for widget available
 

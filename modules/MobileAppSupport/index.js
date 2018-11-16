@@ -6,6 +6,7 @@
  * Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
  * Changed: Michael Hensche <mh@zwave.eu>
  * Changed: Marcel Kermer <mk@zwave.eu>
+ * Changed: Karsten Reichel <kar@zwave.eu>
  */
 function MobileAppSupport(id, controller) {
 	MobileAppSupport.super_.call(this, id, controller);
@@ -253,6 +254,8 @@ MobileAppSupport.prototype.init = function(config) {
 			appData.forEach(function(it) {
 				if (it.active === "1") {
 					console.log("(Mobile App Support) Notify listener (NotificationUpdate)");
+
+					notification.message = notification.message;
 
 					var message;
 					if (it.os === self.ANDROID) {

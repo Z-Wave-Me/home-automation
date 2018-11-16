@@ -1,6 +1,6 @@
 /*** Rules Z-Way HA module *******************************************
 
-Version: 1.0.0
+Version: 1.0.1
 (c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
 Author: Hans-Christian Göckeritz <hcg@zwave.eu>
@@ -109,7 +109,7 @@ Rules.prototype.init = function(config) {
 				}
 				*/
 
-				// do action for all target devices 
+				// do action for all target devices
 				simple.targetElements.forEach(function(el) {
 					self.shiftDevice(el);
 				});
@@ -168,6 +168,13 @@ Rules.prototype.stop = function() {
 					test.tests.forEach(function(xtest) {
 						self.attachDetach(xtest, false);
 					});
+				break;
+				case 'compare':
+					if (test.devices.length == 2) {
+						test.devices.forEach(function(xtest) {
+							self.attachDetach(xtest, false);
+						});
+					}
 					break;
 				case 'time':
 					break;
@@ -246,7 +253,7 @@ Rules.prototype.expertTriggerEventRule = function() {
 				self.attachDetach(test, true);
 				break;
 			case 'nested':
-				/*  
+				/*
 				nested = {
 				    type: 'nested',
 				    logicalOperator: 'and' // 'or'
@@ -262,11 +269,33 @@ Rules.prototype.expertTriggerEventRule = function() {
 				            testOperator: '=', '!=', '<', '>', '<=', '>='
 				        }
 				    ]
-				}     
+				}
 				*/
 				test.tests.forEach(function(xtest) {
 					self.attachDetach(xtest, true);
 				});
+				break;
+			case 'compare':
+				/*
+				compare = {
+				    type: 'compare',
+				    operator: '>=',
+				    devices: [{
+				        	deviceId: 'aaa',
+				            type: 'aaa'
+				        },
+				        {
+				        	deviceId: 'bbb,
+				            type: 'bbb'
+				    	}
+				    ]
+				}
+				*/
+				if (test.devices.length == 2) {
+					test.devices.forEach(function(xtest) {
+						self.attachDetach(xtest, true);
+					});
+				}
 				break;
 			case 'time':
 				break;
@@ -347,8 +376,16 @@ Rules.prototype.runTests = {
 			self = this;
 
 		tree.tests.forEach(function(test) {
-			var vDev = test.type !== 'nested' ? self.controller.devices.get(test.deviceId) : null,
+			var vDev = null, vDev2 = null, level = undefined, level2 = undefined;
+			if (test.type !== 'nested' && test.type !== 'time' && test.type !== 'compare') {
+				vDev = self.controller.devices.get(test.deviceId);
 				level = !!vDev ? vDev.get("metrics:level") : undefined;
+			} else if (test.type == 'compare' && test.devices.length == 2) {
+				vDev = self.controller.devices.get(test.devices[0].deviceId);
+				vDev2 = self.controller.devices.get(test.devices[1].deviceId);
+				level = !!vDev ? vDev.get("metrics:level") : undefined;
+				level2 = !!vDev2 ? vDev2.get("metrics:level") : undefined
+			}
 
 			switch (test.type) {
 				case 'doorlock':
@@ -375,6 +412,9 @@ Rules.prototype.runTests = {
 				case 'nested':
 					res = res && self.testRule(test);
 					break;
+				case 'compare':
+					res = res && self.op(level, test.operator, level2);
+					break;
 				default:
 					break;
 			}
@@ -387,8 +427,16 @@ Rules.prototype.runTests = {
 			self = this;
 
 		tree.tests.forEach(function(test) {
-			var vDev = test.type !== 'nested' ? self.controller.devices.get(test.deviceId) : null,
+			var vDev = null, vDev2 = null, level = undefined, level2 = undefined;
+			if (test.type !== 'nested' && test.type !== 'time' && test.type !== 'compare') {
+				vDev = self.controller.devices.get(test.deviceId);
 				level = !!vDev ? vDev.get("metrics:level") : undefined;
+			} else if (test.type == 'compare' && test.devices.length == 2) {
+				vDev = self.controller.devices.get(test.devices[0].deviceId);
+				vDev2 = self.controller.devices.get(test.devices[1].deviceId);
+				level = !!vDev ? vDev.get("metrics:level") : undefined;
+				level2 = !!vDev2 ? vDev2.get("metrics:level") : undefined
+			}
 
 			switch (test.type) {
 				case 'doorlock':
@@ -414,6 +462,9 @@ Rules.prototype.runTests = {
 					break;
 				case 'nested':
 					res = res || self.testRule(test);
+					break;
+				case 'compare':
+					res = res || self.op(level, test.operator, level2);
 					break;
 				default:
 					break;

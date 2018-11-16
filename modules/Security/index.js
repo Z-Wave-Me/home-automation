@@ -1,6 +1,6 @@
 /*** Security Z-Way HA module *******************************************
 
- Version: 1.0.0
+ Version: 1.0.1
  (c) Z-Wave.Me, 2018
  -----------------------------------------------------------------------------
  Author: Karsten Reichel <kar@zwave.eu>
@@ -1023,35 +1023,50 @@ Security.prototype.initStates = function() {
  */
 Security.prototype.alarmTriggering = function(alarmMsg) {
 	var self = this;
+
 	if (self.interval) {
-		self.time = this.minuteStandart * 1000 * self.interval;
+		self.alarmInterval = this.minuteStandart * 1000 * self.interval;
 	} else {
-		self.time = this.minuteStandart * 1000;
+		self.alarmInterval = null;
 	}
 	if (self.silent) {
-		self.time2 = this.secondStandart * 1000 * self.silent;
+		self.alarmDelay = this.secondStandart * 1000 * self.silent;
 	} else {
-		self.time2 = this.secondStandart * 1000;
+		self.alarmDelay = null;
 	}
+
 	if (!self.alarmtimer) {
-		if (self.silent === 0) {
+		self.silenttriggerFunction(alarmMsg);
+
+		// if no silent alarm, immediately fire normal alarm
+		if (!self.alarmDelay) {
 			self.triggerFunction(alarmMsg);
+
+			// if needed setup repeat of alarm
+			if (self.alarmInterval) {
+				self.alarmtimer = setInterval(function() {
+					self.triggerFunction(alarmMsg);
+				}, self.alarmInterval);
+			}
+		// else wait for specific time
+		} else {
+			self.alarmtimerS2 = setInterval(function() {
+
+				clearInterval(self.alarmtimerS2);
+				self.alarmtimerS2 = null;
+
+				// trigger alarm
+				self.triggerFunction(alarmMsg);
+
+				// if needed setup repeat of alarm
+				if (self.alarmInterval) {
+					self.alarmtimer = setInterval(function() {
+						self.triggerFunction(alarmMsg);
+					}, self.alarmInterval);
+				}
+			}, self.alarmDelay);
 		}
-		self.silenttriggerFunction(alarmMsg);
 	}
-	self.alarmtimerS2 = setInterval(function() {
-		self.silenttriggerFunction(alarmMsg);
-	}, self.time);
-
-	self.alarmSilenttimerS2 = setInterval(function() {
-		self.triggerFunction(alarmMsg);
-		self.alarmtimer = setInterval(function() {
-			self.triggerFunction(alarmMsg);
-		}, self.time);
-		clearInterval(self.alarmtimerS2);
-		clearInterval(self.alarmSilenttimerS2);
-	}, self.time2);
-
 };
 /**
  * Triggers the silent Alarms and his Timers

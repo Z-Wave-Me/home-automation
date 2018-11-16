@@ -73,6 +73,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.post("/instances", this.ROLE.ADMIN, this.createInstance);
 
 		this.router.post("/upload/file", this.ROLE.ADMIN, this.uploadFile);
+		this.router.post("/images/upload", this.ROLE.ADMIN, this.uploadImage);
+		this.router.del("/images/:image_name", this.ROLE.ADMIN, this.removeImage);
 
 		// patterned routes, right now we are going to just send in the wrapper
 		// function. We will let the handler consumer handle the application of
@@ -1509,7 +1511,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				name: 'User',
 				email: '',
 				lang: 'en',
-				color: '#dddddd',
 				dashboard: [],
 				interval: 2000,
 				rooms: reqObj.role === 1 ? [0] : [],
@@ -1589,7 +1590,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					profile.hide_system_events = reqObj.hide_system_events;
 					profile.hide_all_device_events = reqObj.hide_all_device_events;
 					profile.lang = reqObj.lang;
-					profile.color = reqObj.color;
 					profile.dashboard = reqObj.dashboard;
 					profile.hide_single_device_events = reqObj.hide_single_device_events;
 					profile.email = reqObj.email;
@@ -2005,6 +2005,58 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 400;
 			reply.error = "Invalid request";
 		}
+		return reply;
+	},
+	uploadImage: function() {
+		var self = this,
+			reply = {
+				error: null,
+				data: null,
+				code: 200
+			},
+			file;
+
+		if (this.req.method === "POST" && this.req.body) {
+			console.log("this.req", JSON.stringify(this.req, null, 4));
+
+			for (prop in this.req.body) {
+				if (this.req.body[prop]['content']) {
+					file = this.req.body[prop];
+				}
+			}
+
+			if(file) {
+				self.controller.uploadImage(file)
+
+				reply.code = 200;
+				reply.data = file.name;
+
+			} else {
+				reply.code = 500;
+				reply.error = "Failed to upload Image";
+			}
+		} else {
+			reply.code = 400;
+			reply.error = "Invalid request";
+		}
+		return reply;
+	},
+	removeImage: function(imageName) {
+		var reply = {
+				error: 'image_failed_to_delete',
+				data: null,
+				code: 500
+			},
+			removed = false;
+
+		removed = this.controller.removeImage(imageName);
+
+		if (removed) {
+			reply.code = 200;
+			reply.data = "image_deleted_successful";
+			reply.error = null;
+		}
+
 		return reply;
 	},
 	backup: function() {
@@ -3370,7 +3422,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 													email: '',
 													name: 'CIT Administrator',
 													lang: 'en',
-													color: '#dddddd',
 													dashboard: [],
 													interval: 2000,
 													rooms: [0],

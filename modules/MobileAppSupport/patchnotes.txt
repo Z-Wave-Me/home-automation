@@ -1,3 +1,6 @@
+v1.3.2
+- small fix
+
 v1.2.7
 - configured devices for event forwarding now available to send "all notifications"
 
@@ -12,7 +15,7 @@ v1.2.4
 - bugfix removing mobile device deletes LOCAL widget
 
 v1.2.2
-- add presence widget for LOCAL(mobile phone WLAN) or REMOTE (mobile phone mobile) 
+- add presence widget for LOCAL(mobile phone WLAN) or REMOTE (mobile phone mobile)
 
 v1.2.0
 - removed "all notification option"
