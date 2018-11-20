@@ -151,6 +151,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.post("/icons/upload", this.ROLE.ADMIN, this.uploadIcon);
 		this.router.post("/icons/install", this.ROLE.ADMIN, this.addOrUpdateIcons);
 
+		this.router.get("/images", this.ROLE.ADMIN, this.getImages);
+		this.router.del("/images/:image_name", this.ROLE.ADMIN, this.deleteImage);
+		this.router.post("/images/upload", this.ROLE.ADMIN, this.uploadImage);
+
 		this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
 		this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
 
@@ -2003,6 +2007,120 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 400;
 			reply.error = "Invalid request";
 		}
+		return reply;
+	},
+	getImages: function() {
+		var reply = {
+			error: null,
+			data: null,
+			code: 500
+		};
+
+		if (this.controller.images) {
+			reply.data = this.controller.images;
+			reply.code = 200;
+		} else {
+			reply.error = 'failed_to_load_images';
+		}
+
+		return reply;
+	},
+	uploadImage: function() {
+		var reply = {
+			error: 'image_failed_to_install',
+			data: null,
+			code: 500
+		};
+
+		for (prop in this.req.body) {
+			if (this.req.body[prop]['content']) {
+
+				file = this.req.body[prop];
+			}
+		}
+
+		function utf8Decode(bytes) {
+			var chars = [];
+
+			for (var i = 0; i < bytes.length; i++) {
+				chars[i] = bytes.charCodeAt(i);
+			}
+
+			return chars;
+		}
+
+		function Uint8ToBase64(uint8) {
+			var i,
+				extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
+				output = "",
+				temp, length;
+
+			var lookup = [
+				'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+				'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+				'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+				'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f',
+				'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+				'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
+				'w', 'x', 'y', 'z', '0', '1', '2', '3',
+				'4', '5', '6', '7', '8', '9', '+', '/'
+			];
+
+			function tripletToBase64(num) {
+				return lookup[num >> 18 & 0x3F] + lookup[num >> 12 & 0x3F] + lookup[num >> 6 & 0x3F] + lookup[num & 0x3F];
+			};
+
+			// go through the array every three bytes, we'll deal with trailing stuff later
+			for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
+				temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2]);
+				output += tripletToBase64(temp);
+			}
+
+			// this prevents an ERR_INVALID_URL in Chrome (Firefox okay)
+			switch (output.length % 4) {
+				case 1:
+					output += '=';
+					break;
+				case 2:
+					output += '==';
+					break;
+				default:
+					break;
+			}
+
+			return output;
+		}
+		var data = new Uint8Array(utf8Decode(file.content));
+
+		file.content = Uint8ToBase64(data);
+
+		result = this.controller.installImage(file);
+
+		if (result.message === "done") {
+
+			reply.code = 200;
+			reply.data = result.file;
+			reply.error = null;
+		}
+
+		return reply
+	},
+	deleteImage: function(imageName) {
+		var reply = {
+				error: 'image_failed_to_delete',
+				data: null,
+				code: 500
+			},
+			removed = false;
+
+		removed = this.controller.uninstallImage(imageName);
+
+		if (removed) {
+			reply.code = 200;
+			reply.data = "image_deleted_successful";
+			reply.error = null;
+		}
+
 		return reply;
 	},
 	backup: function() {

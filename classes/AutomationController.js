@@ -59,6 +59,7 @@ function AutomationController() {
 	}];
 
 	this.icons = loadObject('userIcons.json') || [];
+	this.images = loadObject('userImages.json') || [];
 }
 
 inherits(AutomationController, EventEmitter2);
@@ -243,6 +244,7 @@ AutomationController.prototype.start = function(reload) {
 			active: true
 		}];
 		this.icons = loadObject('userIcons.json') || [];
+		this.images = loadObject('userImages.json') || [];
 	}
 
 	// Restore persistent data
@@ -654,7 +656,7 @@ AutomationController.prototype.installModule = function(moduleUrl, moduleName) {
 	console.log('Installing app', moduleName, '...');
 
 	if (moduleUrl) {
-		installer.install(
+		installer.modules.install(
 			moduleUrl,
 			moduleName,
 			function() {
@@ -688,7 +690,7 @@ AutomationController.prototype.uninstallModule = function(moduleId, reset) {
 
 	if (unload === 'success') {
 		try {
-			installer.remove(
+			installer.modules.remove(
 				moduleId,
 				function() {
 					result = "done";
@@ -1105,7 +1107,7 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
 
 		console.log('Installing skin', skinName, '...');
 
-		skininstaller.install(
+		installer.skins.install(
 			reqObj.file_path,
 			skinName,
 			function() {
@@ -1170,7 +1172,7 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
 		result = "in progress";
 
 	try {
-		skininstaller.remove(
+		installer.skins.remove(
 			skinName,
 			function() {
 				result = "done";
@@ -1271,7 +1273,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 	if (input) {
 		console.log('Installing icon', name, '...');
 
-		iconinstaller.install(
+		installer.icons.install(
 			input,
 			iconName,
 			id,
@@ -1327,44 +1329,45 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 	return reply;
 };
 
-AutomationController.prototype.listIcons = function() {
-	var result = "in progress",
-		icons = {};
+// Deprecated or not necessary
+// AutomationController.prototype.listIcons = function() {
+// 	var result = "in progress",
+// 		icons = {};
 
-	try {
-		iconinstaller.list(
-			function(success) {
-				icons = success;
-				result = "done";
-			},
-			function() {
-				result = "failed";
-			}
-		);
+// 	try {
+// 		iconinstaller.list(
+// 			function(success) {
+// 				icons = success;
+// 				result = "done";
+// 			},
+// 			function() {
+// 				result = "failed";
+// 			}
+// 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+// 		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && result === "in progress") {
-			processPendingCallbacks();
-		}
+// 		while ((new Date()).valueOf() < d && result === "in progress") {
+// 			processPendingCallbacks();
+// 		}
 
-		if (result == "in progress") {
-			result = "failed";
-		}
+// 		if (result == "in progress") {
+// 			result = "failed";
+// 		}
 
-	} catch (e) {
-		console.log(e)
-	}
+// 	} catch (e) {
+// 		console.log(e)
+// 	}
 
-	return icons;
-}
+// 	return icons;
+// }
 
 AutomationController.prototype.uninstallIcon = function(iconName) {
 	var langFile = this.loadMainLang(),
 		result = "in progress";
 
 	try {
-		iconinstaller.remove(
+		installer.icons.remove(
 			iconName,
 			function(success) {
 				result = "done";
@@ -1402,7 +1405,7 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
 	}
 
 	return result;
-}
+};
 
 AutomationController.prototype.deleteCustomicon = function(iconName) {
 	self = this;
@@ -1435,7 +1438,7 @@ AutomationController.prototype.deleteCustomicon = function(iconName) {
 			});
 		}
 	});
-}
+};
 
 AutomationController.prototype.deleteAllCustomicons = function() {
 	self = this;
@@ -1444,7 +1447,115 @@ AutomationController.prototype.deleteAllCustomicons = function() {
 			silent: true
 		});
 	});
-}
+};
+
+AutomationController.prototype.installImage = function(reqObj) {
+	var reply = {
+			message: "in progress",
+			file: {}
+		},
+		file = [],
+		input = "",
+		name = "",
+		update = false;
+
+	input = JSON.stringify(reqObj);
+	name = reqObj.name;
+
+	if (input) {
+		console.log('Installing image', name, '...');
+
+		installer.images.install(
+			input,
+			name,
+			function(success) {
+				file = parseToObject(success);
+				reply.message = "done";
+			},
+			function() {
+				reply.message = "failed";
+			}
+		);
+
+		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+		while ((new Date()).valueOf() < d && reply.message === "in progress") {
+			processPendingCallbacks();
+		}
+
+		if (reply.message === "in progress") {
+			reply.message = "failed";
+		}
+
+		if (reply.message === 'done') {
+			if (file[0].filename && file[0].orgfilename) {
+				var image = {
+					'file': file[0].filename,
+					'orgfile': file[0].orgfilename,
+					'timestamp': Math.floor(new Date().getTime() / 1000)
+				};
+
+				reply.file = image;
+
+				this.images.push(image);
+				update = true;
+			}
+
+			if (update) {
+				saveObject("userImages.json", this.images);
+			}
+		}
+	}
+
+	return reply;
+};
+
+AutomationController.prototype.uninstallImage = function(imageName) {
+	var self = this,
+		removed = false,
+		result = "in progress";
+
+	try {
+		installer.images.remove(
+			imageName,
+			function(success) {
+				result = "done";
+			},
+			function(error) {
+				if (error == "No such image.") {
+					result = "failed";
+				} else {
+					result = "failed";
+				}
+			}
+		);
+
+		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+
+		while ((new Date()).valueOf() < d && result === "in progress") {
+			processPendingCallbacks();
+		}
+
+		if (result === "in progress") {
+			result = "failed";
+		}
+
+		if (result === "done") {
+			this.images = _.filter(this.images, function(image) {
+				return image.file !== imageName;
+			});
+
+			saveObject("userImages.json", this.images);
+			removed = true;
+		}
+	} catch (e) {
+		console.log('Remove "' + imageName + '" has failed. ERROR:', e);
+		//this.addNotification("error", langFile.ac_err_uninstall_icon + ': ' + iconName, "core", "AutomationController");
+	}
+	return removed;
+};
+
+
 
 AutomationController.prototype.deviceExists = function(vDevId) {
 	return Object.keys(this.devices).indexOf(vDevId) >= 0;
