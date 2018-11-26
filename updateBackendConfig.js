@@ -4,7 +4,9 @@
 	var config,
 		notifications,
 		oldConfigJSON,
+		imgProcessCnt = 0,
 		skins = loadObject("userSkins.json"),
+		images = loadObject('userImages.json') || [],
 		storageContentList = loadObject("__storageContent"),
 		loadDefaultCfg = function(e) {
 			var cfg = null;
@@ -157,6 +159,64 @@
 					location.main_sensors = [];
 				}
 
+				if(location.hasOwnProperty('user_img') && location.user_img != '') {
+					var img_base64 = loadObject(location.user_img); // Base64
+
+					if(img_base64) {
+						imgProcessCnt++;
+						var img = Base64.decode(img_base64),
+							data = {
+								'name': location.user_img,
+								'length': null,
+								'content': null
+							};
+
+						var img_data = new Uint8Array(utf8Decode(img));
+
+						data.content = Uint8ToBase64(img_data);
+						data.length = img.length;
+
+						var input = JSON.stringify(data);
+
+						installer.images.install(
+							input,
+							data.name,
+							function(success) {
+								console.log("success");
+								var file = parseToObject(success);
+								if (file[0].filename && file[0].orgfilename) {
+									var image = {
+										'file': file[0].filename,
+										'orgfile': file[0].orgfilename,
+										'timestamp': Math.floor(new Date().getTime() / 1000)
+									};
+
+									images.push(image);
+									// save images
+									saveObject("userImages.json", images);
+
+									// delete old image(base64) from storage
+									saveObject(location.user_img, null);
+
+									imgProcessCnt--;
+
+									// update image name in location
+									config.locations[index].user_img = file[0].filename;
+
+									saveObject('config.json',config);
+
+									if(imgProcessCnt <= 0) {
+										console.log("REBOOT");
+										system('reboot');
+									}
+								}
+							},
+							function() {
+								console.log("failed");
+							}
+						);
+					}
+				}
 				config.locations[index] = location;
 			});
 		}
