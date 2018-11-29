@@ -936,7 +936,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	          'ApplicationVersion': 5
 	        },
 	        '04': { // MaxInclusion RequestInterval [0x02]
-	          'RequestInterval': 5
+	          'RequestInterval': 2 // 5 - 99 * 128 (640 - 12672)
 
 	        },
 	        '06': { // UUID16 [0x03]
@@ -968,11 +968,11 @@ ZWave.prototype.addDSKEntry = function(entry) {
 						transformedEntry[key + 'Major'] = parseInt(appV.substring(0,2), 10);
 						transformedEntry[key + 'Minor'] = parseInt(appV.substring(3,4), 10);
 					} else if (key === 'DeviceType') {
-						transformedEntry[key + 'GenericDeviceClass'] = '0x' + dToHex(appV.substring(0,2));
-						transformedEntry[key + 'SpecificDeviceClass'] = '0x' + dToHex(appV.substring(3,4));
+						transformedEntry[key + 'GenericDeviceClass'] = '0x' + appV.substring(0,2);
+						transformedEntry[key + 'SpecificDeviceClass'] = '0x' + appV.substring(3,4);
 					} else if (key === 'InstallerIconType') {
-						transformedEntry[key + 'InstallerIconType1'] = '0x' + dToHex(appV.substring(0,2));
-						transformedEntry[key + 'InstallerIconType2'] = '0x' + dToHex(appV.substring(3,4));
+						transformedEntry[key + 'InstallerIconType1'] = '0x' + appV.substring(0,2);
+						transformedEntry[key + 'InstallerIconType2'] = '0x' + appV.substring(3,4);
 					}else {
 						transformedEntry[key] = '0x' + dToHex(value.substring(length, (length + types[type][key])));
 					}
