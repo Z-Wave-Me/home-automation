@@ -4282,6 +4282,11 @@ ZWave.prototype.gateDevicesStart = function() {
 							*/
 						}
 					}
+
+					if (deviceData.givenName.value && deviceData.givenName.value !== '') {
+						// deviceData.givenName.value = nodeName && nodeName !== '' && !!nodeName ? nodeName : deviceData.givenName.value
+						deviceData.givenName.value = 'Device_' + nodeId;
+					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
 				}
