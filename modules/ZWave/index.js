@@ -901,7 +901,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	if (entry && !!entry) {
 		// setup basic values for each QR code entry
 		transformedEntry = {
-	        id: 1,
+	        id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
 	        isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
 	        state: 'pending',
 	        nodeId: null,
