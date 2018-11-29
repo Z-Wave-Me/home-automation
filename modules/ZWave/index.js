@@ -900,92 +900,135 @@ ZWave.prototype.addDSKEntry = function(entry) {
 
 	if (entry && !!entry) {
 		// setup basic values for each QR code entry
-		var transformedEntry = {
-				id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
-				isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
-				state: 'pending',
-				nodeId: null,
-				timestamp: (new Date()).valueOf(),
-				ZW_QR: entry,
-				p_id: ''
-			},
-			// array with length values of the first 5 leading static QR code values
-			pos = [2, 2, 5, 3, 40],
-			// length values of generic TLV parts 
-			tlv = [2, 2, null],
-			// keys of the first 5 leading static QR code values
-			keys = [
-				'ZW_QR_LEADIN',
-				'ZW_QR_VERSION',
-				'ZW_QR_CHKSUM',
-				'ZW_S2_REQ_KEYS',
-				'ZW_QR_DSK'
-			],
-			// type array with all known types and their special value subdivisions
-			// all unknown types will be handled generic, see further below
-			types = {
-				'00': { // TlvType = ProductType [value]
-					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWDEVICETYPE': 5,
-					'ZW_QR_TLVVAL_PRODUCTTYPE_ZWINSTALLERICONTYPE': 5,
-				},
-				'02': { // TlvType = ProductID [value]
-					'ZW_QR_TLVVAL_PRODUCTID_ZWMANUFACTURERID': 5,
-					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTTYPE': 5,
-					'ZW_QR_TLVVAL_PRODUCTID_ZWPRODUCTID': 5,
-					'ZW_QR_TLVVAL_PRODUCTID_ZWAPPLICATIONVERSION': 5
-				},
-				'06': { // TlvType = UUID16 [value]
-					'ZW_QR_TLVVAL_UUID16_UUIDPRESFORMAT': 2,
-					'ZW_QR_TLVVAL_UUID16_UUIDDATA': 40
-				}
-			},
-			currPos = 0,
-			valLength = 0,
-			// function that will generate entries for known types
-			setTypeEntries = function(type, value) {
-				var length = 0;
+		transformedEntry = {
+	        id: 1,
+	        isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
+	        state: 'pending',
+	        nodeId: null,
+	        timestamp: (new Date()).valueOf(),
+	        ZW_QR: entry,
+	        PId: ''
+		},
+		// array with length values of the first 5 leading static QR code values
+		pos = [2, 2, 5, 3, 40],
+		// length values of generic TLV parts 
+		tlv = [2, 2, null],
+		// keys of the first 5 leading static QR code values
+		keys = [
+	        'Leadin',
+	        'Version',
+	        'Chksum',
+	        'S2ReqKeys',
+	        'DSK'
+		],
+		// type array with all known types and their special value subdivisions
+		// all unknown types will be handled generic, see further below
+		// TLV types
+		types = {
+	        '00': { // ProductType [0x00]
+	          'DeviceType': 5,
+	          'InstallerIconType': 5,
+	        },
+	        '02': { // ProductID [0x01]
+	          'ManufacturerId': 5,
+	          'ProductType': 5,
+	          'ProductId': 5,
+	          'ApplicationVersion': 5
+	        },
+	        '04': { // MaxInclusion RequestInterval [0x02]
+	          'RequestInterval': 5
 
-				if (types[type]) {
-					Object.keys(types[type]).forEach(function(key, index) {
-						transformedEntry[key] = value.substring(length, (length + types[type][key]));
-						length = length + types[type][key];
-					});
-				}
-			};
+	        },
+	        '06': { // UUID16 [0x03]
+	          'Length': 42,
+	          'UUIDPresFormat': 2,
+	          'UUIDData': 40
+	        }
+	    },
+		/*
+		UUIDPRESFORMAT
+		00 ... 32 hex digits, no delimiters
+		01 ... 16 ASCII chars, no delimiters
+		02 ... "sn:" followed by 32 hex digits, no delimiters
+		03 ... "sn:" followed by 16 ASCII chars, no delimiters
+		04 ... "UUID:" followed by 32 hex digits, no delimiters
+		05 ... "UUID:" followed by 16 ASCII chars, no delimiters
+		06 ... RFC4122 compliant presentation (e.g. “58D5E212-165B-4CA0-909B-C86B9CEE0111”)
+		*/
+		currPos = 0,
+		valLength = 0,
+		// function that will generate entries for known types
+		setTypeEntries = function(type, value) {
+			var length = 0;
+
+			if (types[type]) {
+				Object.keys(types[type]).forEach(function(key, index) {
+					appV = dToHex(value.substring(length, (length + types[type][key])));
+					if (key === 'ApplicationVersion') {
+						transformedEntry[key + 'Major'] = parseInt(appV.substring(0,2), 10);
+						transformedEntry[key + 'Minor'] = parseInt(appV.substring(3,4), 10);
+					} else if (key === 'DeviceType') {
+						transformedEntry[key + 'GenericDeviceClass'] = '0x' + dToHex(appV.substring(0,2));
+						transformedEntry[key + 'SpecificDeviceClass'] = '0x' + dToHex(appV.substring(3,4));
+					} else if (key === 'InstallerIconType') {
+						transformedEntry[key + 'InstallerIconType1'] = '0x' + dToHex(appV.substring(0,2));
+						transformedEntry[key + 'InstallerIconType2'] = '0x' + dToHex(appV.substring(3,4));
+					}else {
+						transformedEntry[key] = '0x' + dToHex(value.substring(length, (length + types[type][key])));
+					}
+
+					length = length + types[type][key];
+				});
+			}
+		},
+		dToHex = function(decimal) {
+			var decL = decimal.length,
+				dec = parseInt(decimal,10),
+				byteSize = dec > 255? 2 : (dec > 65535? 3 : 1),
+				zeros = decL > 3? '0000' : '00',
+				hex = dec.toString(16).toUpperCase().slice(-2*byteSize);
+
+			return zeros.slice(0, zeros.length - hex.length) + hex;
+		};
+
 		try {
 
 			// check if entry is no smart start entry
 			// only DSK will be added as entry
 			if (!transformedEntry.isSmartStart) {
-				transformedEntry['ZW_QR_DSK'] = entry;
-				// otherwise it is a smart entry
-				// do some more voodoo to preparate smart start entry
+			    transformedEntry['DSK'] = entry;
+			    // otherwise it is a smart entry
+			    // do some more voodoo to preparate smart start entry
 			} else {
-				// fill all keys for the first 5 leading static QR code values
-				_.forEach(pos, function(l, index) {
-					// get value end position
-					// for substring
-					valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
+			    // fill all keys for the first 5 leading static QR code values
+			    _.forEach(pos, function(l, index) {
+			        // get value end position
+			        // for substring
+			        valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
 
-					// cut out value
-					// if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
-					value = keys[index] === 'ZW_QR_DSK' ? entry.substring(currPos, valueEndPos).replace(/(.{5})/g, "$&" + "-").slice(0, -1) : entry.substring(currPos, valueEndPos);
+			        // cut out value
+			        // if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
+			        value = keys[index] === 'DSK' ? entry.substring(currPos, valueEndPos).replace(/(.{5})/g, "$&" + "-").slice(0, -1) : entry.substring(currPos, valueEndPos);
+				
+			  		// assign value to leading key
+					if (keys[index] !== 'DSK') {
+			        	transformedEntry[keys[index]] = '0x' + dToHex(value);
+			        } else {
+			        	transformedEntry[keys[index]] = value;
+			        }
 
-					// assign value to leading key
-					transformedEntry[keys[index]] = value;
+			        currPos = keys[index] === l ? currPos + valLength : currPos + l;
+			    });
 
-					currPos = keys[index] === l ? currPos + valLength : currPos + l;
-				});
+			    // get all remaining TLV values
+			    tlvString = entry.substring(52);
+			    var i = 0;
 
-				// get all remaining TLV values
-				tlvString = entry.substring(52);
-				var i = 0;
-
-				/*
-				 * Do while loop and cut out and transform all TLV entries piece by piece
-				 * until the QR string is empty
-				 */
-				while (tlvString.length > 0 && i < 50) {
+			    /*
+				* Do while loop and cut out and transform all TLV entries piece by piece
+				* until the QR string is empty
+				*/
+			    while (tlvString.length > 0 && i < tlvString.length) {
 					currPos = 0;
 					valLength = 0;
 					type = null;
@@ -1016,12 +1059,12 @@ ZWave.prototype.addDSKEntry = function(entry) {
 							// if TLV type is '02'
 							// set also the p_id
 							if (type === '02') {
-								transformedEntry['p_id'] = value.replace(/(.{5})/g, "$&" + ".").slice(0, -1);
+								transformedEntry['PId'] = value.replace(/(.{5})/g, "$&" + ".").slice(0, -1);
 							}
 						}
 
 						// if the type is unknown
-						// create generic tranformation by using
+						// create generic transformation by using
 						// keys for generic TLV entries and adding their type in front of the key
 						// devided by underscore
 						if (!types[type]) {
@@ -1030,21 +1073,12 @@ ZWave.prototype.addDSKEntry = function(entry) {
 							transformedEntry[type + '_' + tlvKeys[index]] = value;
 						}
 
-						// stop loop if length is 0
-						if (_.isNumber(tlv[index + 1]) && !!tlv[index + 1]) {
-							_valLength = parseInt(tlvString.substring(currPos + 3, currPos + 3 + tlv[index + 1]), 10);
-							if (_valLength < 1) {
-								tlvString = '';
-								return true;
-							}
-						}
-
 						// if the length of the next value is defined by the predecessor value
 						// set valLength to it's correct length for next transformation step
-						if (!_.isNumber(tlv[index + 1]) && tlv[index + 1] === null) {
+						if (tlv[index + 1] === null) {
 							valLength = parseInt(tlvString.substring(currPos, currPos + 2), 10);
 							currPos = currPos + l;
-							// otherwise simply raise it by length value
+						// otherwise simply raise it by length value
 						} else {
 							currPos = keys[index] === l ? currPos + valLength : currPos + l;
 						}
@@ -1065,7 +1099,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 			dskProvisioningList = this.getDSKProvisioningList();
 
 			// add DSK to provisioning list
-			dskProvisioningList.push(transformedEntry.ZW_QR_DSK);
+			dskProvisioningList.push(transformedEntry.DSK);
 
 			// save dskProvisioningList
 			this.saveDSKProvisioningList(dskProvisioningList);
@@ -1108,14 +1142,14 @@ ZWave.prototype.updateDSKEntry = function(dskEntry) {
 
 			// update provisioning list
 			dskIndex = _.findIndex(dskProvisioningList, function(entry) {
-				return oldDSKEntry['ZW_QR_DSK'] === entry;
+				return oldDSKEntry['DSK'] === entry;
 			});
 
 			// replace the provisioning list entry
 			if (dskIndex > -1 && dskProvisioningList[dskIndex]) {
-				dskProvisioningList[dskIndex] = dskEntry['ZW_QR_DSK'];
+				dskProvisioningList[dskIndex] = dskEntry['DSK'];
 			} else {
-				dskProvisioningList.push(dskEntry['ZW_QR_DSK']);
+				dskProvisioningList.push(dskEntry['DSK']);
 			}
 
 			// save dskProvisioningList
@@ -1159,7 +1193,7 @@ ZWave.prototype.removeDSKEntry = function(dskEntryID) {
 
 			// remove from provisioning list
 			dskProvisioningList = _.filter(dskProvisioningList, function(dsk) {
-				return dsk !== oldDSKEntry['ZW_QR_DSK'];
+				return dsk !== oldDSKEntry['DSK'];
 			});
 
 			// save dskProvisioningList
@@ -3410,6 +3444,7 @@ ZWave.prototype.defineHandlers = function() {
 	this.ZWaveAPI.RemoveDSKEntry = function(url, request) {
 		// prepare request data
 		var req = request && request.query ? parseToObject(request.query) : undefined,
+			success = false,
 			reply = {
 				status: 200,
 				headers: {
@@ -3438,7 +3473,7 @@ ZWave.prototype.defineHandlers = function() {
 
 				success = true;
 			} else {
-				var success = self.removeDSKEntry(parseInt(req.id, 10));
+				success = self.removeDSKEntry(parseInt(req.id, 10));
 			}
 
 			if (success) {
@@ -4209,15 +4244,25 @@ ZWave.prototype.gateDevicesStart = function() {
 						console.log('###');
 						console.log('########################################################################################');
 					}
-
+					/*
 					// update state of DSK entry if node is smart start device
+					if (commandClassId === 159) {
+						console.log('########################################################################################');
+						console.log('###');
+						console.log('### deviceCC.data.publicKey:', JSON.stringify(deviceCC.data.publicKey, null, 1));
+						console.log('### c.data.lastIncludedDevice.value:', c.data.lastIncludedDevice.value, '| nodeId:', nodeId);
+					}*/
+
 					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
+						//console.log('### ### ### ### ############ ###');
 						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
 						var dskEntryIndex;
 						var dskEntry = self.dskCollection.filter(function(entry, index) {
 							dskEntryIndex = index;
-							return entry['ZW_QR_DSK'] === dsk;
+							return entry['DSK'] === dsk;
 						});
+
+						//console.log('### dskEntry:', JSON.stringify(dskEntry, null, 1));
 
 						if (dskEntry[0]) {
 
@@ -4229,7 +4274,12 @@ ZWave.prototype.gateDevicesStart = function() {
 							self.dskCollection[dskEntryIndex] = dskEntry[0];
 
 							// save dsk collection
-							self.saveObject("dskCollection", this.dskCollection);
+							self.saveObject("dskCollection", self.dskCollection);
+							/*
+							console.log('### self.dskCollection:', JSON.stringify(self.dskCollection, null, 1));
+							console.log('###');
+							console.log('########################################################################################');
+							*/
 						}
 					}
 				} else {
@@ -4255,12 +4305,12 @@ ZWave.prototype.gateDevicesStart = function() {
 		});
 
 		// update state of DSK entry if node is smart start device
-		if (_id && !!_id) {
+		if (_id) {
 			var dskEntryIndex;
 			var dskEntry = self.dskCollection.filter(function(entry, index) {
-				dskEntryIndex = index;
-				return entry.nodeId === _id;
-			});
+					dskEntryIndex = index;
+					return entry.nodeId === _id;
+				});
 
 			if (dskEntry[0]) {
 
@@ -4272,7 +4322,7 @@ ZWave.prototype.gateDevicesStart = function() {
 				self.dskCollection[dskEntryIndex] = dskEntry[0];
 
 				// save dsk collection
-				self.saveObject("dskCollection", this.dskCollection);
+				self.saveObject("dskCollection", self.dskCollection);
 			}
 		}
 	}, "");
