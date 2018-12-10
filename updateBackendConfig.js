@@ -89,6 +89,12 @@
 					profile.qrcode = '';
 					delete profile.qrcode;
 				}
+
+				// add beta software functions flag
+				if(!profile.hasOwnProperty('beta')) {
+					profile.beta = false;
+				}
+
 			});
 
 		} else {
@@ -107,7 +113,8 @@
 				expert_view: false,
 				hide_all_device_events: false,
 				hide_system_events: false,
-				hide_single_device_events: []
+				hide_single_device_events: [],
+				beta: false
 			}, {
 				id: 2,
 				role: 3,
@@ -122,7 +129,8 @@
 				expert_view: false,
 				hide_all_device_events: false,
 				hide_system_events: false,
-				hide_single_device_events: []
+				hide_single_device_events: [],
+				beta: false
 			}];
 		}
 
