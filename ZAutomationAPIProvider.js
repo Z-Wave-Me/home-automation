@@ -1563,6 +1563,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						profile.role = reqObj.role;
 						profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1 ? reqObj.rooms.push(0) : reqObj.rooms;
 						profile.expert_view = reqObj.expert_view;
+						profile.beta = reqObj.beta;
 
 						try {
 							// update email adress on initial update
