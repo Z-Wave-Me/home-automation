@@ -28,7 +28,11 @@ __storageContent = loadObject("__storageContent") || [];
 
 // check against storage if listed files really exists
 __storageContent = __storageContent.filter(function(name) {
-	return !!loadObject(name);
+	try {
+		return !!loadObject(name);
+	} catch (e) {
+		console.log('Error in storage file: '+ name + ' detected. Unable to load data - ERROR:', e.toString());
+	}
 });
 
 saveObject = function(name, object) {
