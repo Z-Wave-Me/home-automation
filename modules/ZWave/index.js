@@ -131,7 +131,12 @@ ZWave.prototype.updateList = function() {
 };
 
 ZWave.prototype.loadObject = function(name) {
-	return loadObject(this.config.name + "_" + name);
+	try {
+		return loadObject(this.config.name + "_" + name);
+	} catch (e) {
+		this.addNotification('warning','Error in storage file: '+ name + ' detected. Unable to load data - ERROR: '+ e.toString() + ' File will be rewritten if possible.','z-wave');
+		return null;
+	}
 };
 
 ZWave.prototype.saveObject = function(name, obj) {
@@ -895,7 +900,7 @@ ZWave.prototype.refreshStatisticsPeriodically = function() {
  */
 ZWave.prototype.addDSKEntry = function(entry) {
 	var zway = this.zway,
-		successful = false,
+		successful = 200,
 		tlvString = '';
 
 	if (entry && !!entry) {
@@ -907,7 +912,9 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	        nodeId: null,
 	        timestamp: (new Date()).valueOf(),
 	        ZW_QR: entry,
-	        PId: ''
+	        PId: '',
+	        givenName: null,
+	        location: 0
 		},
 		// array with length values of the first 5 leading static QR code values
 		pos = [2, 2, 5, 3, 40],
@@ -991,7 +998,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 			return zeros.slice(0, zeros.length - hex.length) + hex;
 		};
 
-		try {
+		/*try {*/
 
 			// check if entry is no smart start entry
 			// only DSK will be added as entry
@@ -1092,24 +1099,31 @@ ZWave.prototype.addDSKEntry = function(entry) {
 				}
 			}
 
-			// add new entry to dsk collection
-			this.dskCollection.push(transformedEntry);
+			dskEntryIndex = this.dskCollection.length? _.findIndex(this.dskCollection,function(obj){ return obj.DSK === transformedEntry['DSK']}) : -1;
 
-			// get dskProvisioningList
-			dskProvisioningList = this.getDSKProvisioningList();
+			if ( dskEntryIndex < 0) {
+				// add new entry to dsk collection
+				this.dskCollection.push(transformedEntry);
 
-			// add DSK to provisioning list
-			dskProvisioningList.push(transformedEntry.DSK);
+				// get dskProvisioningList
+				dskProvisioningList = this.getDSKProvisioningList();
 
-			// save dskProvisioningList
-			this.saveDSKProvisioningList(dskProvisioningList);
+				// add DSK to provisioning list
+				dskProvisioningList.push(transformedEntry.DSK);
 
-			// save dsk collection
-			this.saveObject("dskCollection", this.dskCollection);
-			successful = true;
-		} catch (e) {
+				// save dskProvisioningList
+				this.saveDSKProvisioningList(dskProvisioningList);
+
+				// save dsk collection
+				this.saveObject("dskCollection", this.dskCollection);
+			} else {
+				successful = 409;
+			}
+			
+		/*} catch (e) {
 			this.addNotification("error", 'Add DSK entry error: ' + e.toString(), "module");
-		}
+			successful = 500;
+		}*/
 	}
 
 	return successful;
@@ -3513,8 +3527,23 @@ ZWave.prototype.defineHandlers = function() {
 			},
 			success = false;
 
-		try {
-			if (_.findIndex(self.dskCollection, function(qrObject) {
+		/*try {*/
+			success = self.addDSKEntry(req.dsk);
+
+			switch (success) {
+				case 200:
+					reply.body = typeof req.dsk === 'string' ? { dsk: req.dsk } : req.dsk;
+					break;
+				case 500:
+					reply.status = 500;
+					reply.message = 'Something went wrong. Cannot add DSK entry.';
+					break;
+				case 409:
+					reply.status = 409;
+					reply.message = 'Conflict - DSK entry already exists';
+					break;
+			}
+			/*if (_.findIndex(self.dskCollection, function(qrObject) {
 					return qrObject.ZW_QR === req.dsk;
 				}) < 0) {
 				success = self.addDSKEntry(req.dsk);
@@ -3529,13 +3558,13 @@ ZWave.prototype.defineHandlers = function() {
 			} else {
 				reply.status = 409;
 				reply.message = 'Conflict - DSK entry already exists';
-			}
+			}*/
 
-		} catch (e) {
+		/*} catch (e) {
 			reply.status = 500;
 			reply.message = 'Something went wrong. ERROR: ' + e.toString();
 		}
-
+*/
 		return reply;
 	};
 
@@ -3952,6 +3981,8 @@ ZWave.prototype.gateDevicesStart = function() {
 						mPId = deviceData.manufacturerProductId.value ? deviceData.manufacturerProductId.value : null,
 						appMajor = deviceData.applicationMajor.value ? deviceData.applicationMajor.value : null,
 						appMinor = deviceData.applicationMinor.value ? deviceData.applicationMinor.value : null,
+						givenName = null,
+						smartStartEntryPreset = null,
 						devId,
 						appMajorId,
 						appMajorMinorId,
@@ -4233,17 +4264,6 @@ ZWave.prototype.gateDevicesStart = function() {
 
 					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
-					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev);
-					} else if (changeVDev[ccId] && changeVDev[ccId].noVDev) {
-						var devId = "ZWayVDev_" + self.config.name + "_" + nodeId + '-' + ccId;
-						// console output
-						console.log('#######################', 'Apply postfix for:', devId, '################################');
-						console.log('###');
-						console.log('###', 'not created');
-						console.log('###');
-						console.log('########################################################################################');
-					}
 					/*
 					// update state of DSK entry if node is smart start device
 					if (commandClassId === 159) {
@@ -4256,22 +4276,25 @@ ZWave.prototype.gateDevicesStart = function() {
 					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
 						//console.log('### ### ### ### ############ ###');
 						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
-						var dskEntryIndex;
-						var dskEntry = self.dskCollection.filter(function(entry, index) {
-							dskEntryIndex = index;
+						var dskEntryIndex = _.findIndex(self.dskCollection, function(entry) {
 							return entry['DSK'] === dsk;
 						});
+						var dskEntry = self.dskCollection[dskEntryIndex] || null;
 
 						//console.log('### dskEntry:', JSON.stringify(dskEntry, null, 1));
 
-						if (dskEntry[0]) {
+						if (dskEntry) {
 
 							// update state and nodeId
-							dskEntry[0].state = 'included';
-							dskEntry[0].nodeId = nodeId;
+							dskEntry.state = 'included';
+							dskEntry.nodeId = nodeId;
+
+							// grep givenName from dskEntry
+							givenName = dskEntry.givenName? dskEntry.givenName : null; // filterIndex
 
 							// replace old DSK entry
-							self.dskCollection[dskEntryIndex] = dskEntry[0];
+							self.dskCollection[dskEntryIndex] = dskEntry;
+							smartStartEntryPreset = dskEntry;
 
 							// save dsk collection
 							self.saveObject("dskCollection", self.dskCollection);
@@ -4283,12 +4306,26 @@ ZWave.prototype.gateDevicesStart = function() {
 						}
 					}
 
-					if (deviceData.givenName.value && deviceData.givenName.value !== '') {
-						// deviceData.givenName.value = nodeName && nodeName !== '' && !!nodeName ? nodeName : deviceData.givenName.value
-						deviceData.givenName.value = 'Device_' + nodeId;
+					if ( deviceData.givenName.hasOwnProperty('value') && (!deviceData.givenName.value || deviceData.givenName.value == '')) {
+						// set givenName
+						deviceData.givenName.value = givenName? givenName : 'Device_' + nodeId;
+						// reset givenName
+						givenName = null;
+					}
+
+					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev, smartStartEntryPreset);
+					} else if (changeVDev[ccId] && changeVDev[ccId].noVDev) {
+						var devId = "ZWayVDev_" + self.config.name + "_" + nodeId + '-' + ccId;
+						// console output
+						console.log('#######################', 'Apply postfix for:', devId, '################################');
+						console.log('###');
+						console.log('###', 'not created');
+						console.log('###');
+						console.log('########################################################################################');
 					}
 				} else {
-					self.parseDelCommandClass(nodeId, instanceId, commandClassId, false);
+					self.parseDelCommandClass(nodeId, instanceId, commandClassId);
 				}
 			}, "value");
 		} else {
@@ -4311,20 +4348,19 @@ ZWave.prototype.gateDevicesStart = function() {
 
 		// update state of DSK entry if node is smart start device
 		if (_id) {
-			var dskEntryIndex;
-			var dskEntry = self.dskCollection.filter(function(entry, index) {
-					dskEntryIndex = index;
-					return entry.nodeId === _id;
-				});
+			var dskEntryIndex = _.findIndex(self.dskCollection, function(entry) {
+				return entry.nodeId === _id;
+			});
+			var dskEntry = self.dskCollection[dskEntryIndex];
 
-			if (dskEntry[0]) {
+			if (dskEntry) {
 
 				// update state and nodeId
-				dskEntry[0].state = 'pending';
-				dskEntry[0].nodeId = null;
+				dskEntry.state = 'pending';
+				dskEntry.nodeId = null;
 
 				// replace old DSK entry
-				self.dskCollection[dskEntryIndex] = dskEntry[0];
+				self.dskCollection[dskEntryIndex] = dskEntry;
 
 				// save dsk collection
 				self.saveObject("dskCollection", self.dskCollection);
@@ -4359,7 +4395,7 @@ ZWave.prototype.gateDevicesStop = function() {
 	}
 };
 
-ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClassId, scaleAdded, changeVDev) {
+ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClassId, scaleAdded, changeVDev, smartStartEntryPreset) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
@@ -4421,8 +4457,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				last = args.length - 2;
 			}
 
+			// if there is a given name preset, use it 
+			if (smartStartEntryPreset && smartStartEntryPreset.givenName && smartStartEntryPreset.givenName !== '') {
+				sortArgs.push(smartStartEntryPreset.givenName); 
+
 			// add vendorName on first position
-			if (vendorName && addVendor) {
+			} else if (vendorName && addVendor) {
 				sortArgs.push(vendorName);
 			}
 
@@ -4450,12 +4490,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			} else {
 				lastId = '(#' + lastIdArr[0] + ')';
 			}
-
-			/*if (args[last].indexOf('-0') > -1 ) {
-				lastId = args[last].split('-').shift();
-			} else {
-				lastId = '(' + args[last].replace(/-/g, '.') + ')';
-			}*/
 
 			sortArgs.push(lastId);
 
@@ -4504,6 +4538,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			defaults = {
 				deviceType: "switchBinary",
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				metrics: {
 					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren' : 'switch',
 					title: compileTitle('Switch', vDevIdNI),
@@ -4559,6 +4594,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			}
 			defaults = {
 				deviceType: "switchMultilevel",
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: probeType,
 				metrics: {
 					icon: icon,
@@ -4666,6 +4702,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 				var defaults = {
 					deviceType: "switchRGBW",
+					location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 					probeType: 'switchColor_rgb',
 					metrics: {
 						icon: 'multilevel',
@@ -4870,6 +4907,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		} else if (this.CC["SensorBinary"] === commandClassId) {
 			defaults = {
 				deviceType: 'sensorBinary',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: '',
 				metrics: {
 					probeTitle: '',
@@ -4989,6 +5027,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		} else if (this.CC["SensorMultilevel"] === commandClassId) {
 			defaults = {
 				deviceType: "sensorMultilevel",
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: '',
 				metrics: {
 					probeTitle: '',
@@ -5086,6 +5125,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		} else if (this.CC["Meter"] === commandClassId) {
 			defaults = {
 				deviceType: 'sensorMultilevel',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: '',
 				metrics: {
 					probeTitle: '',
@@ -5221,6 +5261,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		} else if (this.CC["MeterPulse"] === commandClassId) {
 			defaults = {
 				deviceType: 'sensorMultilevel',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: '',
 				metrics: {
 					probeTitle: 'meterElectric_pulse_count',
@@ -5312,6 +5353,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			defaults = {
 				deviceType: 'doorlock',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				metrics: {
 					level: '',
 					icon: 'door',
@@ -5353,6 +5395,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			defaults = {
 				deviceType: 'doorlock',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				metrics: {
 					level: '',
 					icon: 'door',
@@ -5412,6 +5455,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 					defaults = {
 						deviceType: "switchBinary",
+						location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 						probeType: 'thermostat_mode',
 						metrics: {
 							icon: 'thermostat',
@@ -5478,6 +5522,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 							var defaults = {
 								deviceType: "thermostat",
+								location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 								probeType: 'thermostat_set_point',
 								metrics: {
 									scaleTitle: DH.scaleString.value,
@@ -5526,6 +5571,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		} else if (this.CC["AlarmSensor"] === commandClassId) {
 			a_defaults = {
 				deviceType: 'sensorBinary',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: '',
 				metrics: {
 					icon: 'alarm',
@@ -5635,6 +5681,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			a_defaults = {
 				deviceType: 'sensorBinary',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: '',
 				metrics: {
 					icon: 'alarm',
@@ -5888,6 +5935,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			defaults = {
 				deviceType: 'sensorDiscrete',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : undefined,
 				probeType: 'control',
 				metrics: {
 					probeTitle: 'Control',
