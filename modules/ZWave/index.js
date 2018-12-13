@@ -914,7 +914,8 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	        ZW_QR: entry,
 	        PId: '',
 	        givenName: null,
-	        location: 0
+	        location: 0,
+	        addedAt: null
 		},
 		// array with length values of the first 5 leading static QR code values
 		pos = [2, 2, 5, 3, 40],
@@ -1160,14 +1161,15 @@ ZWave.prototype.updateDSKEntry = function(dskEntry) {
 			});
 
 			// replace the provisioning list entry
-			if (dskIndex > -1 && dskProvisioningList[dskIndex]) {
+			if (dskIndex > -1 && dskProvisioningList[dskIndex] !== dskEntry['DSK']) {
 				dskProvisioningList[dskIndex] = dskEntry['DSK'];
-			} else {
+				// save dskProvisioningList
+				this.saveDSKProvisioningList(dskProvisioningList);
+			} else if (dskProvisioningList[dskIndex] !== dskEntry['DSK']) {
 				dskProvisioningList.push(dskEntry['DSK']);
+				// save dskProvisioningList
+				this.saveDSKProvisioningList(dskProvisioningList);
 			}
-
-			// save dskProvisioningList
-			this.saveDSKProvisioningList(dskProvisioningList);
 
 			// save dsk collection
 			this.saveObject("dskCollection", this.dskCollection);
@@ -4264,30 +4266,31 @@ ZWave.prototype.gateDevicesStart = function() {
 
 					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
-					/*
+					
 					// update state of DSK entry if node is smart start device
 					if (commandClassId === 159) {
 						console.log('########################################################################################');
 						console.log('###');
 						console.log('### deviceCC.data.publicKey:', JSON.stringify(deviceCC.data.publicKey, null, 1));
 						console.log('### c.data.lastIncludedDevice.value:', c.data.lastIncludedDevice.value, '| nodeId:', nodeId);
-					}*/
+					}
 
 					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
-						//console.log('### ### ### ### ############ ###');
+						console.log('### ### ### ### ############ ###');
 						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
 						var dskEntryIndex = _.findIndex(self.dskCollection, function(entry) {
 							return entry['DSK'] === dsk;
 						});
 						var dskEntry = self.dskCollection[dskEntryIndex] || null;
 
-						//console.log('### dskEntry:', JSON.stringify(dskEntry, null, 1));
+						console.log('### dskEntry:', JSON.stringify(dskEntry, null, 1));
 
 						if (dskEntry) {
 
 							// update state and nodeId
 							dskEntry.state = 'included';
 							dskEntry.nodeId = nodeId;
+							dskEntry.addedAt = (new Date()).valueOf();
 
 							// grep givenName from dskEntry
 							givenName = dskEntry.givenName? dskEntry.givenName : null; // filterIndex
@@ -4298,11 +4301,11 @@ ZWave.prototype.gateDevicesStart = function() {
 
 							// save dsk collection
 							self.saveObject("dskCollection", self.dskCollection);
-							/*
+							
 							console.log('### self.dskCollection:', JSON.stringify(self.dskCollection, null, 1));
 							console.log('###');
 							console.log('########################################################################################');
-							*/
+							
 						}
 					}
 
@@ -4358,6 +4361,7 @@ ZWave.prototype.gateDevicesStart = function() {
 				// update state and nodeId
 				dskEntry.state = 'pending';
 				dskEntry.nodeId = null;
+				dskEntry.addedAt = null;
 
 				// replace old DSK entry
 				self.dskCollection[dskEntryIndex] = dskEntry;
