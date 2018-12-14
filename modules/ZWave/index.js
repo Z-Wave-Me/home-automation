@@ -3983,6 +3983,7 @@ ZWave.prototype.gateDevicesStart = function() {
 						mPId = deviceData.manufacturerProductId.value ? deviceData.manufacturerProductId.value : null,
 						appMajor = deviceData.applicationMajor.value ? deviceData.applicationMajor.value : null,
 						appMinor = deviceData.applicationMinor.value ? deviceData.applicationMinor.value : null,
+						hasS2 = deviceInstances[instanceId].commandClasses[159],
 						givenName = null,
 						smartStartEntryPreset = null,
 						devId,
@@ -4267,25 +4268,15 @@ ZWave.prototype.gateDevicesStart = function() {
 					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
 					
-					// update state of DSK entry if node is smart start device
-					if (commandClassId === 159) {
-						console.log('########################################################################################');
-						console.log('###');
-						console.log('### deviceCC.data.publicKey:', JSON.stringify(deviceCC.data.publicKey, null, 1));
-						console.log('### c.data.lastIncludedDevice.value:', c.data.lastIncludedDevice.value, '| nodeId:', nodeId);
-					}
-
-					if (commandClassId === 159 && deviceCC.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
-						console.log('### ### ### ### ############ ###');
-						var dsk = transformPublicKeyToDSK(deviceCC.data.publicKey.value);
+					if (hasS2 && hasS2.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
+						// console.log('########################################################################################');
+						var dsk = transformPublicKeyToDSK(hasS2.data.publicKey.value);
 						var dskEntryIndex = _.findIndex(self.dskCollection, function(entry) {
 							return entry['DSK'] === dsk;
 						});
 						var dskEntry = self.dskCollection[dskEntryIndex] || null;
 
-						console.log('### dskEntry:', JSON.stringify(dskEntry, null, 1));
-
-						if (dskEntry) {
+						if (dskEntry && dskEntry.state !== 'included') {
 
 							// update state and nodeId
 							dskEntry.state = 'included';
@@ -4302,18 +4293,12 @@ ZWave.prototype.gateDevicesStart = function() {
 							// save dsk collection
 							self.saveObject("dskCollection", self.dskCollection);
 							
-							console.log('### self.dskCollection:', JSON.stringify(self.dskCollection, null, 1));
-							console.log('###');
-							console.log('########################################################################################');
+							// console.log('###');
+							// console.log('########################################################################################');
 							
+						} else {
+							smartStartEntryPreset = dskEntry || null;
 						}
-					}
-
-					if ( deviceData.givenName.hasOwnProperty('value') && (!deviceData.givenName.value || deviceData.givenName.value == '')) {
-						// set givenName
-						deviceData.givenName.value = givenName? givenName : 'Device_' + nodeId;
-						// reset givenName
-						givenName = null;
 					}
 
 					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
@@ -4326,6 +4311,11 @@ ZWave.prototype.gateDevicesStart = function() {
 						console.log('###', 'not created');
 						console.log('###');
 						console.log('########################################################################################');
+					}
+
+					if (!deviceData.givenName.value || deviceData.givenName.value == '') {
+						// set givenName
+						deviceData.givenName.value = givenName? givenName : self.nodeNameByType(nodeId, deviceData);
 					}
 				} else {
 					self.parseDelCommandClass(nodeId, instanceId, commandClassId);
@@ -4436,18 +4426,24 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		}
 		*/
 
-		var vendorName = "";
-		if (this.zway.devices[nodeId].data.vendorString.value) {
-			vendorName = this.zway.devices[nodeId].data.vendorString.value;
-		}
-
 		function compileTitle() {
+			/*console.log('########################################################################################');
+			console.log('###');
+			console.log('### smartStartEntryPreset:', JSON.stringify(smartStartEntryPreset, null, 1));
+			console.log('###');
+			console.log('########################################################################################');
+*/
 			var args = [],
 				sortArgs = [],
 				last = 0,
 				addVendor = true,
 				lastId = '',
-				lastIdArr = [];
+				lastIdArr = [],
+				vendorName = "";
+
+			if (this.zway.devices[nodeId].data.vendorString.value) {
+				vendorName = this.zway.devices[nodeId].data.vendorString.value;
+			};
 
 			for (var i = 0; i < arguments.length; i++) {
 				args.push(arguments[i]);
@@ -6139,4 +6135,26 @@ ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
 	zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
 	// save z-way data
 	//zway.devices.SaveData();
+};
+
+ZWave.prototype.nodeNameByType = function (nodeId, nodeData) {
+	
+    var name = 'Device ' + '_' + nodeId,
+    	type = '',
+    	node = nodeData;
+
+    if(node){
+	    var isListening = node.isListening.value,
+	    	isFLiRS = !isListening && (node.sensor250.value || node.sensor1000.value),
+	    	hasWakeup = !isListening && !node.sensor250.value && !node.sensor1000.value;
+
+	    if (hasWakeup || isFLiRS) {
+	        type = 'Battery';
+	    } else if (isListening) {
+	        type = 'Mains';
+	    }
+	    name = type + name;
+	}
+
+    return name;
 };
