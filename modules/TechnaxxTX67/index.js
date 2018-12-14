@@ -1,6 +1,6 @@
 /*** TechnaxxTX67 Z-Way HA module *******************************************
 
- Version: 0.0.1
+ Version: 1.0.0
  (c) Z-Wave.Me, 2017
  -----------------------------------------------------------------------------
  Author: Michael Hensche mh@zwave.eu
@@ -49,11 +49,11 @@ _.extend(TechnaxxTX67.prototype, {
         };
 
         this.proxy_screen_url = "/" + vDevId + "/screen";
-        this.screen_url = config.ip + config.screenUrl;
+        this.screen_url = config.ip + config.screenUrl+ "&user=" + config.user +"&password=" + config.password;
         ws.proxify(this.proxy_screen_url, this.screen_url, config.user, config.password);
 
         this.proxy_url = "/" + vDevId + "/stream";
-        this.url = config.ip + config.streamUrl;
+        this.url = config.ip + config.streamUrl + "&user=" + config.user +"&password=" + config.password;
         ws.proxify(this.proxy_url, this.url, config.user, config.password);
 
         this.vDev = this.controller.devices.create({
@@ -81,13 +81,13 @@ _.extend(TechnaxxTX67.prototype, {
                 var url = null;
 
                 if (command == "left") {
-                    url = config.ip +config.leftUrl;
+                    url = config.ip +config.leftUrl + "&user=" + config.user +"&password=" + config.password;
                 } else if (command == "right") {
-                    url = config.ip + config.rightUrl;
+                    url = config.ip + config.rightUrl + "&user=" + config.user +"&password=" + config.password;
                 } else if (command == "up") {
-                    url = config.ip + config.upUrl;
+                    url = config.ip + config.upUrl + "&user=" + config.user +"&password=" + config.password;
                 } else if (command == "down") {
-                    url = config.ip + config.downUrl;
+                    url = config.ip + config.downUrl + "&user=" + config.user +"&password=" + config.password;
                 } else if (command == "open") {
                     url = config.openUrl;
                     opener(command);
@@ -95,7 +95,7 @@ _.extend(TechnaxxTX67.prototype, {
                     url = config.closeUrl;
                     opener(command);
                 };
-
+                console.log("url", url);
                 if (url) {
                     http.request({
                         url: url,
@@ -105,7 +105,7 @@ _.extend(TechnaxxTX67.prototype, {
                             password: config.password
                         }
                     });
-                    var stopUrl = config.ip + config.stopUrl;
+                    var stopUrl = config.ip + config.stopUrl + "&user=" + config.user +"&password=" + config.password;
                     http.request({
                         url: stopUrl,
                         async: false,
