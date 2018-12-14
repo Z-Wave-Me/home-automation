@@ -1,2 +1,4 @@
+#v1.0.1
+- update control urls (left, right, up, down, stop)
 #v1.0.0
 - update of the module for the newest firmware ot Technaxx TX-67 (irmVersion 2.460.0000.15.R, Build Date: 2018-07-12 WEB Version 3.2.1.490211)

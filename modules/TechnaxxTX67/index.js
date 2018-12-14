@@ -1,6 +1,6 @@
 /*** TechnaxxTX67 Z-Way HA module *******************************************
 
- Version: 1.0.0
+ Version: 1.0.1
  (c) Z-Wave.Me, 2017
  -----------------------------------------------------------------------------
  Author: Michael Hensche mh@zwave.eu
@@ -105,15 +105,18 @@ _.extend(TechnaxxTX67.prototype, {
                             password: config.password
                         }
                     });
+                    // send stop command after any move command
                     var stopUrl = config.ip + config.stopUrl + "&user=" + config.user +"&password=" + config.password;
-                    http.request({
-                        url: stopUrl,
-                        async: false,
-                        auth: {
-                            login: config.user,
-                            password: config.password
-                        }
-                    });
+                    setTimeout(function() {
+                        http.request({
+                            url: stopUrl,
+                            async: true,
+                            auth: {
+                                login: config.user,
+                                password: config.password
+                            }
+                        });
+                    }, 500);
                 }
             },
             moduleId: this.id
