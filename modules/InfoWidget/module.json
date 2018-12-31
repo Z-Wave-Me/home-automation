@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName":"InfoWidget",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -92,14 +92,14 @@
 				"default": false
 			},
 			"widgets":{
-				"label":"__l_widgets__",			
+				"label":"__l_widgets__",
 				"helper":"__h_widgets__",
 				"dependencies": {
 					"internationalize": false
 				}
 			},
 			"widgetsInt":{
-				"label":"__l_widgets__",			
+				"label":"__l_widgets__",
 				"helper":"__h_widgets__",
 				"dependencies": {
 					"internationalize": true

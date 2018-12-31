@@ -28,7 +28,11 @@ __storageContent = loadObject("__storageContent") || [];
 
 // check against storage if listed files really exists
 __storageContent = __storageContent.filter(function(name) {
-	return !!loadObject(name);
+	try {
+		return !!loadObject(name);
+	} catch (e) {
+		console.log('Error in storage file: '+ name + ' detected. Unable to load data - ERROR:', e.toString());
+	}
 });
 
 saveObject = function(name, object) {
@@ -77,7 +81,6 @@ if (!config && config === null) {
 	executeFile(config.libPath + "/BAOS_API_2011_01_29_001.js");
 	executeFile(config.libPath + "/IntelHex2bin.js");
 	executeFile(config.libPath + "/base64.js");
-	executeFile(config.libPath + "/qrcode.js");
 	executeFile(config.libPath + "/LimitedArray.js");
 	//--- Load Automation subsystem classes
 	executeFile(config.classesPath + "/VirtualDevice.js");
