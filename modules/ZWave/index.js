@@ -948,21 +948,10 @@ ZWave.prototype.addDSKEntry = function(entry) {
 
 	        },
 	        '06': { // UUID16 [0x03]
-	          'Length': 42,
 	          'UUIDPresFormat': 2,
 	          'UUIDData': 40
 	        }
 	    },
-		/*
-		UUIDPRESFORMAT
-		00 ... 32 hex digits, no delimiters
-		01 ... 16 ASCII chars, no delimiters
-		02 ... "sn:" followed by 32 hex digits, no delimiters
-		03 ... "sn:" followed by 16 ASCII chars, no delimiters
-		04 ... "UUID:" followed by 32 hex digits, no delimiters
-		05 ... "UUID:" followed by 16 ASCII chars, no delimiters
-		06 ... RFC4122 compliant presentation (e.g. “58D5E212-165B-4CA0-909B-C86B9CEE0111”)
-		*/
 		currPos = 0,
 		valLength = 0,
 		// function that will generate entries for known types
@@ -971,18 +960,63 @@ ZWave.prototype.addDSKEntry = function(entry) {
 
 			if (types[type]) {
 				Object.keys(types[type]).forEach(function(key, index) {
-					appV = dToHex(value.substring(length, (length + types[type][key])));
+					// grep the value from the current string
+					var appV = dToHex(value.substring(length, (length + types[type][key])));
+					
 					if (key === 'ApplicationVersion') {
 						transformedEntry[key + 'Major'] = parseInt(appV.substring(0,2), 10);
-						transformedEntry[key + 'Minor'] = parseInt(appV.substring(3,4), 10);
+						transformedEntry[key + 'Minor'] = parseInt(appV.substring(2), 10);
 					} else if (key === 'DeviceType') {
 						transformedEntry[key + 'GenericDeviceClass'] = '0x' + appV.substring(0,2);
-						transformedEntry[key + 'SpecificDeviceClass'] = '0x' + appV.substring(3,4);
+						transformedEntry[key + 'SpecificDeviceClass'] = '0x' + appV.substring(2);
 					} else if (key === 'InstallerIconType') {
 						transformedEntry[key + 'InstallerIconType1'] = '0x' + appV.substring(0,2);
-						transformedEntry[key + 'InstallerIconType2'] = '0x' + appV.substring(3,4);
-					}else {
-						transformedEntry[key] = '0x' + dToHex(value.substring(length, (length + types[type][key])));
+						transformedEntry[key + 'InstallerIconType2'] = '0x' + appV.substring(2);
+					} else if (key === 'UUIDData') {
+						/*
+						UUIDPRESFORMAT
+						00 ... 32 hex digits, no delimiters
+						01 ... 16 ASCII chars, no delimiters
+						02 ... "sn:" followed by 32 hex digits, no delimiters
+						03 ... "sn:" followed by 16 ASCII chars, no delimiters
+						04 ... "UUID:" followed by 32 hex digits, no delimiters
+						05 ... "UUID:" followed by 16 ASCII chars, no delimiters
+						06 ... RFC4122 compliant presentation (e.g. “58D5E212-165B-4CA0-909B-C86B9CEE0111”)
+						*/
+						var format = parseInt(transformedEntry['UUIDPresFormat'], 16),
+							// set prefix depending on uuid presentation format
+							pref = [2,3].indexOf(format) > -1? 'sn: ' : ([4,5].indexOf(format) > -1? 'UUID: ' : ''),
+							decArr = [],
+							res = '',
+							res2 = '';
+
+						// make array with 5 chars decimal blocks  
+						decArr = appV.match(/.{1,5}/g);
+
+						// transform blocks into a 32 byte long hexadecimal string
+						decArr.forEach(function(dec){
+							var code = parseInt(dec, 10);
+
+							hex = dToHex(code);
+							res +=hex;
+						});
+
+						// transform 32 byte hexadecimal string into 16 ASCII char string
+						if ([1,3,5].indexOf(format) > -1) {
+							var hexArr = res.match(/.{1,2}/g);
+							hexArr.forEach(function(hex){
+								res2 +=String.fromCharCode(parseInt(hex, 16));
+							});
+
+							res = res2;
+						// make 32 byte hexadecimal string rcf4122 conform: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+						} else if (format === 6) {
+							res = res.replace(/([A-Fa-f0-9]{8})([A-Fa-f0-9]{4})([A-Fa-f0-9]{4})([A-Fa-f0-9]{4})([A-Fa-f0-9]+)/g, "$1-$2-$3-$4-$5");
+						}
+
+						transformedEntry[key] = pref + res;
+					} else {
+						transformedEntry[key] = '0x' + appV;
 					}
 
 					length = length + types[type][key];
