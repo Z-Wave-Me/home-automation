@@ -6142,33 +6142,12 @@ ZWave.prototype.updateRSSIData = function(callback) {
 };
 
 ZWave.prototype.getDSKProvisioningList = function() {
-	var zway = this.zway;
-
-	/* TODO
-	// get controller node
-	var controllerNode = zway.controller.data.nodeId.value;
-	// return DSK provisioning list
-	return zway.devices[controllerNode].data.smartStart.dskProvisioningList.value || [];
-	*/
-
-	return zway.controller.data.smartStart.dskProvisioningList.value || [];
+	return this.zway.controller.data.smartStart.dskProvisioningList.value || [];
 };
 
 
 ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
-	var zway = this.zway;
-
-	/* TODO
-	// get controller node
-	var controllerNode = zway.controller.data.nodeId.value;
-	// update provisioning list
-	zway.devices[controllerNode].data.smartStart.dskProvisioningList.value = dskProvisioningList;
-	*/
-
-	// update provisioning list
-	zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
-	// save z-way data
-	//zway.devices.SaveData();
+	this.zway.controller.data.smartStart.dskProvisioningList.value = dskProvisioningList;
 };
 
 ZWave.prototype.nodeNameByType = function (nodeId, nodeData) {
