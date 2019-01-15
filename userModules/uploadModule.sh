@@ -18,7 +18,7 @@ COOKIES=`mktemp`
 FILE=`mktemp`
 FORM=`mktemp`
 
-(cd "${MODULE}"; tar -zcvf "${FILE}" *)
+(cd "${MODULE}"; tar -zcvf "${FILE}" --exclude=.git *)
 
 cat > ${FORM} <<END
 --FILEUPLOAD
