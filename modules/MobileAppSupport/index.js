@@ -539,7 +539,7 @@ MobileAppSupport.prototype.defineHandlers = function () {
 				};
 			}
 
-	    	if(reqObj && q.hasOwnProperty('token') && reqObj.token != '') {
+	    	if(reqObj && reqObj.hasOwnProperty('token') && reqObj.token != '') {
 	    		var app = self.getApp(reqObj.token);
 
 	    		if(app) { // app object
