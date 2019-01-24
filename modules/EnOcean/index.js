@@ -649,14 +649,16 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySwitch("setAlarm", "config3", "Set Alarm");
 		}
 		
+		// save ZDDX
+		self.zeno.devices.SaveData();
 		
 		// handling of Signal Telegrams
 		self.dataBind(self.gateDataBinding, self.zeno, nodeId, null, function(type) {
-			if (type === self.ZWAY_DATA_CHANGE_TYPE["ChildCreated"]) {
-				if (!self.controller.devices.get(vDevIdPrefix + "battery"))
-					multilevelSensor("battery", "battery", '%', "Battery level");
+			if (self.zeno.devices[nodeId].data["battery"] && !self.controller.devices.get(vDevIdPrefix + "battery")) {
+				multilevelSensor("battery", "battery", '%', "Battery level");
+				self.zeno.devices.SaveData(); // save ZDDX
 			}
-		});
+		}, "value");
 	} catch (e) {
 		var langFile = this.loadModuleLang(),
 			values = nodeId + ": " + e.toString();
