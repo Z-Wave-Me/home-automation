@@ -647,8 +647,18 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySensor("preAlarmEnabled", "config1", "Pre Alarm");
 			binarySwitch("setPreAlarm", "config2", "Set Pre Alarm");
 			binarySwitch("setAlarm", "config3", "Set Alarm");
-			//multilevelSensor("battery", "battery", '%', "Battery level");
 		}
+		
+		// save ZDDX
+		self.zeno.devices.SaveData();
+		
+		// handling of Signal Telegrams
+		self.dataBind(self.gateDataBinding, self.zeno, nodeId, null, function(type) {
+			if (self.zeno.devices[nodeId].data["battery"] && !self.controller.devices.get(vDevIdPrefix + "battery")) {
+				multilevelSensor("battery", "battery", '%', "Battery level");
+				self.zeno.devices.SaveData(); // save ZDDX
+			}
+		}, "value");
 	} catch (e) {
 		var langFile = this.loadModuleLang(),
 			values = nodeId + ": " + e.toString();
