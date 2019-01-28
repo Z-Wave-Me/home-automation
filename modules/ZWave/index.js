@@ -4444,6 +4444,11 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
 
+	// avoid errors during exclusion
+	if (!this.zway.devices[nodeId]) {
+		return;
+	}
+
 	var self = this,
 		instance = this.zway.devices[nodeId].instances[instanceId],
 		instanceCommandClasses = Object.keys(instance.commandClasses).map(function(x) {
