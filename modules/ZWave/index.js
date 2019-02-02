@@ -153,7 +153,7 @@ ZWave.prototype.init = function(config) {
 	// postfix is common for all ZWave bindings
 	updatedPostfix = loadObject("postfix.json");
 
-	if (!!updatedPostfix && updatedPostfix.last_update && this.postfix.last_update && updatedPostfix.last_update > this.postfix.last_update) {
+	if (updatedPostfix && updatedPostfix.last_update && this.postfix.last_update && updatedPostfix.last_update > this.postfix.last_update) {
 		this.postfix = updatedPostfix;
 	}
 
@@ -2570,14 +2570,15 @@ ZWave.prototype.defineHandlers = function() {
 
 		// update postfix JSON
 		http.request({
-			url: "http://manuals-backend.z-wave.info/make.php?mode=ui_postfix", //"http://zwave.dyndns.org:8088/ext_functions/support/dump/postfix.json",
+			url: "https://manuals.zwave.eu/backend/make.php?mode=ui_postfix",
 			async: true,
 			success: function(res) {
 				if (res.data) {
+					
 					rd = JSON.parse(res.data);
 
 					if (rd.fixes && rd.fixes.length > 0 && rd.last_update && rd.last_update > postfix.last_update) {
-						saveObject('postfix.json', res.data);
+						saveObject('postfix.json', rd);
 						success = 1;
 					} else {
 						success = 2;
@@ -2600,7 +2601,12 @@ ZWave.prototype.defineHandlers = function() {
 		switch (success) {
 			case 1:
 				setTimeout(function() {
-					self.controller.reinitializeModule('ZWave', 'modules/');
+					instanceObj = _.filter(self.controller.instances, function(instance){
+						return instance.id === self.id;
+					})[0];
+
+					self.controller.reconfigureInstance(self.id, instanceObj);
+					//self.controller.reinitializeModule('ZWave', 'modules/');
 				}, 3000);
 
 				return {
@@ -2708,7 +2714,12 @@ ZWave.prototype.defineHandlers = function() {
 			saveObject("custompostfix.json", custom_postfix);
 
 			setTimeout(function() {
-				self.controller.reinitializeModule('ZWave', 'modules/');
+				instanceObj = _.filter(self.controller.instances, function(instance){
+					return instance.id === self.id;
+				})[0];
+
+				self.controller.reconfigureInstance(self.id, instanceObj);
+				//self.controller.reinitializeModule('ZWave', 'modules/');
 			}, 3000);
 
 			return {
@@ -2745,7 +2756,12 @@ ZWave.prototype.defineHandlers = function() {
 					saveObject("custompostfix.json", custom_postfix);
 
 					setTimeout(function() {
-						self.controller.reinitializeModule('ZWave', 'modules/');
+						instanceObj = _.filter(self.controller.instances, function(instance){
+							return instance.id === self.id;
+						})[0];
+
+						self.controller.reconfigureInstance(self.id, instanceObj);
+						//self.controller.reinitializeModule('ZWave', 'modules/');
 					}, 3000);
 
 					return {
@@ -4427,6 +4443,11 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
+
+	// avoid errors during exclusion
+	if (!this.zway.devices[nodeId]) {
+		return;
+	}
 
 	var self = this,
 		instance = this.zway.devices[nodeId].instances[instanceId],
