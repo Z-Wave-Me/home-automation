@@ -2328,6 +2328,8 @@ ZWave.prototype.defineHandlers = function() {
 				||
 				zway.controller.data.bootloaderCRC.value === 0x9d04 // bootloader for UZB 6.70
 				||
+				zway.controller.data.bootloaderCRC.value === 0x8b4b // bootloader for Z-Box 6.70
+				||
 				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71, // bootloader for 6.71 SDK
 				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
 
