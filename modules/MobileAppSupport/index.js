@@ -99,7 +99,9 @@ MobileAppSupport.prototype.init = function(config) {
 	this.notificationCallbackWrapper = function(notice) {
 		self.config.devices.forEach(function(device) {
 			var send = false;
-
+			
+			if (!device) return;
+			
 			if(notice.source == device.id) {
 				if(isNaN(device.level)) { // open/close/on/off/all
 					if(device.level == notice.message.l || device.level == 'all') {
