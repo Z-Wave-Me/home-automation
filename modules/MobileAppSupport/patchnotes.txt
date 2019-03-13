@@ -1,5 +1,8 @@
+v1.3.4
+- fix not rendered vDevs
+
 v1.3.3
-- fix push notification, fix not rendered vDevs
+- fix push notification
 
 v1.3.2
 - small fix

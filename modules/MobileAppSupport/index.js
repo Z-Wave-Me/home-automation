@@ -1,4 +1,4 @@
-/* Mobile App Support
+/* Mobile App Support v1.3.4
  *
  * 2017
  *
@@ -175,7 +175,7 @@ MobileAppSupport.prototype.init = function(config) {
 					'message': 'OK'
 				}
 			} else if (command === "setConnection") {
-				console.log("setConnection", JSON.stringify(args));
+				//console.log("setConnection", JSON.stringify(args));
 
 				var vDevId = 'Phone-' + args.name + '-0-presence',
 					ret = {
@@ -208,7 +208,7 @@ MobileAppSupport.prototype.init = function(config) {
 
 	// wrap method with a function
 	this.notificationUpdatesCallbackWrapper = function(notification) {
-		console.log("notification", JSON.stringify(notification));
+		//console.log("notification", JSON.stringify(notification));
 		// conditions for external notifications
 		if (notification.level === 'push.notification') {
 			var vDev = self.controller.devices.get(notification.type);
