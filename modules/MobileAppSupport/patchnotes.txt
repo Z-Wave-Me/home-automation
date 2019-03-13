@@ -1,6 +1,5 @@
-v2.0.0
-- update whole module
-- change APIs
+v1.3.3
+- fix push notification, fix not rendered vDevs
 
 v1.3.2
 - small fix
