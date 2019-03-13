@@ -1,3 +1,5 @@
+v1.0.1
+- support to compare 2 devices
 v1.0.0
 - delay for trigger
 - logical rule features as "advanced" feature

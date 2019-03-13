@@ -1,3 +1,6 @@
+v1.1.1
+- added notification
+
 v1.0.1
 - Button to test schedule
 - BugFix show mobile devices and email addresses in scene select

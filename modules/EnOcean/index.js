@@ -458,20 +458,20 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "switchControl",
 					metrics: {
-												level: '',
-												icon: '',
-												title: 'Right Rocker',
-												change: ''
+						level: '',
+						icon: '',
+						title: 'Right Rocker',
+						change: ''
 					}
 				},
 				overlay: {},
 				handler: function(command) {
-										if (command === "on" || command === "off") {
-												this.set("metrics:level", command);
-										}
-										if (command === "upstart" || command === "upstop" || command === "downstart" || command === "downstop") {
-												this.set("metrics:change", command);
-										}
+					if (command === "on" || command === "off") {
+						this.set("metrics:level", command);
+					}
+					if (command === "upstart" || command === "upstop" || command === "downstart" || command === "downstop") {
+						this.set("metrics:change", command);
+					}
 				},
 				moduleId: self.id
 			}),
@@ -560,6 +560,36 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			}
 		}
 
+		function binarySwitch(dh, type, title) {
+			var vDev = self.controller.devices.create({
+				deviceId: vDevIdPrefix + type,
+				defaults: {
+					deviceType: 'switchBinary',
+					metrics: {
+						icon: 'switch',
+						level: '',
+						title: title
+					}
+				},
+				overlay: {},
+				handler: function(command) {
+					if (command === "on" || command === "off") {
+						self.zeno.devices[nodeId].data[dh].value = command === "on" ? true : false;
+						vDev.set("metrics:level", command);
+					}
+				},
+				moduleId: self.id
+			});
+			
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
+					try {
+						vDev.set("metrics:level", this.value ? "on" : "off");
+					} catch (e) {}
+				}, "value");
+			}
+		}
+
 		if (matchDevice(0xf6, 0x02, 0x01)) {
 			// Rocker
 			rockerSwitch();
@@ -603,11 +633,32 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		}
 
 		if (matchDevice(0xa5, 0x10, 0x0a)) {
-			// Temperature Sensor, Set Point Adjust and Single Inpu
-						thermostat("setpoint", "heat", '°C', "Set Point Control");
+			// Temperature Sensor, Set Point Adjust and Single Input
+			thermostat("setpoint", "heat", '°C', "Set Point Control");
 			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
 			binarySensor("contact", "door", "Door Sensor");
 		}
+		
+		if (matchDevice(0xd2, 0x06, 0x10)) {
+			// Door
+			binarySensor("windowOpen", "door", "Door Sensor");
+			binarySensor("preAlarm", "motion", "Pre Alarm");
+			binarySensor("alarm", "alarm", "Alarm");
+			binarySensor("preAlarmEnabled", "config1", "Pre Alarm");
+			binarySwitch("setPreAlarm", "config2", "Set Pre Alarm");
+			binarySwitch("setAlarm", "config3", "Set Alarm");
+		}
+		
+		// save ZDDX
+		self.zeno.devices.SaveData();
+		
+		// handling of Signal Telegrams
+		self.dataBind(self.gateDataBinding, self.zeno, nodeId, null, function(type) {
+			if (self.zeno.devices[nodeId].data["battery"] && !self.controller.devices.get(vDevIdPrefix + "battery")) {
+				multilevelSensor("battery", "battery", '%', "Battery level");
+				self.zeno.devices.SaveData(); // save ZDDX
+			}
+		}, "value");
 	} catch (e) {
 		var langFile = this.loadModuleLang(),
 			values = nodeId + ": " + e.toString();

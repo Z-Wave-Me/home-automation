@@ -49,18 +49,17 @@ TamperAutoOff.prototype.init = function (config) {
 				self.vDevsWithTimers[_vDev.id] = setTimeout(function () {
 					// Timeout fired, so we send "off" command to the virtual device
 					// Set tamper off for vDev or Z-Wave Device
+					var id;
 					if ((id = _vDev.id.match("(ZWayVDev_([^_]+)_([0-9]+))-([0-9]+)-([0-9]+)-([0-9]+)")) === null) {
 						_vDev.set("metrics:level", "off");
-            			return;
-        			} 
-        			else {
-        				console.logJS("--------",id);
-        				zway.devices[parseInt(id[3])].instances[parseInt(id[4])].commandClasses[parseInt(id[5])].data[parseInt(id[6])].level.value = false;
-        			}					
+						return;
+					} else {
+        					zway.devices[parseInt(id[3])].instances[parseInt(id[4])].commandClasses[parseInt(id[5])].data[parseInt(id[6])].level.value = false;
+					}					
 					// And clearing out this timer variable
 					delete self.vDevsWithTimers[_vDev.id];
 				}, self.config.timeout*1000);
-			})(vDev)
+			})(vDev);
 		} else {
 			// Turned off
 			if (self.vDevsWithTimers[vDev.id]) {

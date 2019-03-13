@@ -6,7 +6,7 @@
   "homepage": "http://razberry.z-wave.me",
   "icon": "icon.png",
   "moduleName":"GoogleHome",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "maturity": "beta",
   "repository": {
     "type": "git",
@@ -14,6 +14,7 @@
   },
   "defaults": {
     "title" : "__m_title__",
-    "description": "__m_descr__"
+    "description": "__m_descr__",
+    "devices": []
   }
 }

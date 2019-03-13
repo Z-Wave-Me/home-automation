@@ -1,9 +1,10 @@
 /*** InfoWidget Z-Way HA module *******************************************
 
-Version: 1.0.0
-(c) Z-Wave.Me, 2014
+Version: 1.0.1
+(c) Z-Wave.Me, 2018
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
+Changed: Karsten Reichel <kar@zwave.eu>
 Description:
 	Creates a text/information widget as devicetype 'text'.
 	It is possible to internationalize one widget with EN,DE,RU or CN translation.
@@ -35,9 +36,9 @@ InfoWidget.prototype.init = function (config) {
 	this.vDev = [];
 
 	this.createTextWidgets = function(lang) {
-		lng = lang? lang : self.controller.defaultLang
+		var lng = lang ? lang : self.controller.defaultLang;
 
-		if (self.config.widgets.length > 0 && self.config.internationalize === false) {
+		if (self.config.widgets && self.config.widgets.length > 0 && self.config.internationalize === false) {
 
 			self.config.widgets.forEach(function (widget, indx) {
 				var devId = "InfoWidget_" + self.id + '_' + indx;
@@ -50,7 +51,7 @@ InfoWidget.prototype.init = function (config) {
 								title: widget.headline,
 								text: widget.text,
 								icon: widget.imgURI
-							}		  
+							}
 						},
 						overlay: {
 							deviceType: "text",
@@ -58,7 +59,7 @@ InfoWidget.prototype.init = function (config) {
 								title: widget.headline,
 								text: widget.text,
 								icon: widget.imgURI
-							} 
+							}
 						},
 						moduleId: self.id
 					});
@@ -69,7 +70,7 @@ InfoWidget.prototype.init = function (config) {
 		}
 
 		if (self.config.widgetsInt && self.config.widgetsInt.length > 0 && self.config.internationalize === true) {
-			
+
 			self.config.widgetsInt.forEach(function (widget) {
 				if (widget.lang === lng) {
 					var devId = "InfoWidget_" + self.id + "_Int";
@@ -82,7 +83,7 @@ InfoWidget.prototype.init = function (config) {
 									title: widget.headline,
 									text: widget.text,
 									icon: widget.imgURI
-								}		  
+								}
 							},
 							overlay: {
 								deviceType: "text",
@@ -90,7 +91,7 @@ InfoWidget.prototype.init = function (config) {
 									title: widget.headline,
 									text: widget.text,
 									icon: widget.imgURI
-								} 
+								}
 							},
 							moduleId: self.id
 						});
@@ -108,7 +109,7 @@ InfoWidget.prototype.init = function (config) {
 		var dev = self.config.widgetsInt.filter(function(widget) {
 			   return widget.lang === lang;
 			});
-		if (dev.length > 0) {
+		if (dev.length > 0 && self.vDev[0]) {
 			self.vDev[0].set('metrics:title',dev[0].headline);
 			self.vDev[0].set('metrics:text',dev[0].text);
 			self.vDev[0].set('metrics:icon',dev[0].imgURI);
@@ -116,12 +117,12 @@ InfoWidget.prototype.init = function (config) {
 	};
 
 	this.createTextWidgets(self.controller.defaultLang);
-	
+
 };
 
 InfoWidget.prototype.stop = function () {
 	var self = this;
-	
+
 	this.controller.off('language.changed',self.updateIntWidgets);
 
 	if (self.vDev) {

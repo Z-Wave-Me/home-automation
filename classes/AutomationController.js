@@ -194,7 +194,7 @@ AutomationController.prototype.setDefaultLang = function(lang) {
 
 AutomationController.prototype.saveConfig = function() {
 
-	// do clean up of location namespaces 
+	// do clean up of location namespaces
 	cleanupLocations = function(locations) {
 		var newLoc = [];
 
@@ -458,32 +458,39 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 		instanceModel.creationTime = Math.floor(new Date().getTime() / 1000);
 	}
 
-	if (Boolean(instanceModel.active)) {
-		try {
-			instance = new global[module.meta.id](instanceModel.id, self);
-		} catch (e) {
-			values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
+	try {
+		instance = new global[module.meta.id](instanceModel.id, self);
+	} catch (e) {
+		values = ((module && module.meta) ? module.meta.id : instanceModel.moduleId) + ": " + e.toString();
 
-			self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
-			console.log(e.stack);
+		self.addNotification("error", langFile.ac_err_init_module + values, "core", "AutomationController");
+		console.log(e.stack);
+		return null; // not loaded
+	}
+
+	console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
+
+	cntExistInst = _.filter(self.instances, function(inst) {
+		return module.meta.id === inst.moduleId;
+	});
+
+	if (module.meta.singleton) {
+		if (in_array(self._loadedSingletons, module.meta.id) && cntExistInst.length > 1) {
+			console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
 			return null; // not loaded
 		}
 
-		console.log("Instantiating module", instanceModel.id, "from class", module.meta.id);
+		self._loadedSingletons.push(module.meta.id);
+	}
 
-		cntExistInst = _.filter(self.instances, function(inst) {
-			return module.meta.id === inst.moduleId;
-		});
+	instanceModel.active = instanceModel.active === 'true' || (typeof instanceModel.active == 'boolean' && instanceModel.active) ? true : false;
 
-		if (module.meta.singleton) {
-			if (in_array(self._loadedSingletons, module.meta.id) && cntExistInst.length > 1) {
-				console.log("WARNING: Module", instanceModel.id, "is a singleton and already has been instantiated. Skipping.");
-				return null; // not loaded
-			}
+	if (typeof instanceModel.instanceId != 'undefined')
+	{
+		delete instanceModel.instanceId;
+	}
 
-			self._loadedSingletons.push(module.meta.id);
-		}
-
+	if (instanceModel.active) {
 		try {
 			instance.init(instanceModel.params);
 		} catch (e) {
@@ -503,17 +510,15 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 			console.log(e.stack);
 			return null; // not loaded
 		}
-
-		// add module to loaded modules if at least one instance exists
-		if (this.loadedModules.indexOf(module) < 0) {
-			this.loadedModules.push(module);
-		}
-
-		self.registerInstance(instance);
-		return instance;
-	} else {
-		return null; // not loaded
 	}
+
+	// add module to loaded modules if at least one instance exists
+	if (this.loadedModules.indexOf(module) < 0) {
+		this.loadedModules.push(module);
+	}
+
+	self.registerInstance(instance);
+	return instance;
 };
 
 AutomationController.prototype.loadModule = function(module, rootModule, instancesCount) {
@@ -914,8 +919,13 @@ AutomationController.prototype.createInstance = function(reqObj) {
 
 		instance = _.extend(reqObj, {
 			id: alreadyExisting[0] ? reqObj.id : id,
-			active: reqObj.active === 'true' || reqObj.active ? true : false
+			active: reqObj.active === 'true' || (typeof reqObj.active == 'boolean' && reqObj.active) ? true : false
 		});
+
+		if (typeof instance.instanceId != 'undefined')
+		{
+			delete instance.instanceId;
+		}
 
 		self.instances.push(instance);
 		self.saveConfig();
@@ -948,14 +958,14 @@ AutomationController.prototype.stopInstance = function(instance) {
 		instance.stop();
 		delete this.registerInstances[instId];
 
-		// get all devices created by instance 
+		// get all devices created by instance
 		instDevices = _.map(this.devices.filter(function(dev) {
 			return dev.get('creatorId') === instId;
 		}), function(dev) {
 			return dev.id;
 		});
 
-		// cleanup devices 
+		// cleanup devices
 		if (instDevices.length > 0) {
 			instDevices.forEach(function(id) {
 				// check for device entry again
@@ -985,7 +995,7 @@ AutomationController.prototype.reconfigureInstance = function(id, instanceObject
 		result;
 
 	if (instance) {
-		if (register_instance) {
+		if (register_instance && instance.active) {
 			this.stopInstance(register_instance);
 		}
 
@@ -1006,10 +1016,15 @@ AutomationController.prototype.reconfigureInstance = function(id, instanceObject
 			params: config !== {} ? config : instance.params
 		});
 
+		if (typeof this.instances[index].instanceId != 'undefined')
+		{
+			delete this.instances[index].instanceId;
+		}
+
 		if (!!register_instance) {
 			if (this.instances[index].active) { // here we read new config instead of existing
 				register_instance.init(config);
-				this.registerInstance(register_instance);
+				//this.registerInstance(register_instance);
 			} else {
 				register_instance.saveNewConfig(config);
 			}
@@ -1059,7 +1074,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 	var instDevices = [],
 		self = this;
 
-	// get all devices created by instance 
+	// get all devices created by instance
 	instDevices = this.devices.filterByCreatorId(id);
 
 	this.removeInstance(id);
@@ -1068,7 +1083,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 		return id !== model.id;
 	});
 
-	// cleanup 
+	// cleanup
 	if (instDevices.length > 0) {
 		instDevices.forEach(function(vDev) {
 			// check for vDevInfo entry
@@ -1501,10 +1516,10 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 				}
 				if (replace == '')
 					replace = 'unknown';
-				message = message.replace(search[0],replace);			
+				message = message.replace(search[0],replace);
 			}
 			count++;
-		} while(search && count < 50);		
+		} while(search && count < 50);
 		return message;
 	}
 
@@ -1951,6 +1966,8 @@ AutomationController.prototype.getIPAddress = function() {
 	try {
 		if (checkBoxtype('poppbox')) {
 			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
+		} else if (checkBoxtype('popphub3')) {
+			ip = system("hostname -I")[1].replace(/[\n]/g, '').split(' ')[0].replace(/[\s]/g, '');
 		} else {
 			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
 		}
@@ -2148,10 +2165,10 @@ AutomationController.prototype.generateNamespaces = function(callback, device, l
 			return nspc;
 		};
 
-		// only triggered if there is no explicite location change - 
+		// only triggered if there is no explicite location change -
 		// on device: created, removed, destroy, change:metrics:title, change:permanently_hidden, change:metrics:removed
 		// usual update of global namespaces
-		// first setup of location namespace 
+		// first setup of location namespace
 		if (!locationNspcOnly) {
 
 			// add to location namespaces
@@ -2563,7 +2580,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 		return obj;
 	};
 
-	// generate namespace arry from filter string 
+	// generate namespace arry from filter string
 	function getNspcFromFilters(moduleMeta, nspcfilters) {
 		var namespaces = [],
 			filters = nspcfilters.split(','),
@@ -2592,7 +2609,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							return location[id[1]];
 						});
 
-						// get namespaces of devices per location - 'locations:locationId:filterPath'				   
+						// get namespaces of devices per location - 'locations:locationId:filterPath'
 					} else if (id[0] === 'locations' && id[1] === 'locationId') {
 						// don't replace set filters instead
 						namespaces = nspcfilters;
@@ -2606,7 +2623,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							jsFile = fs.load(filePath);
 
 							if (!!jsFile) {
-								//compress string 
+								//compress string
 								namespaces = jsFile.replace(/\s\s+|\t/g, ' ');
 							}
 						}
@@ -3238,7 +3255,7 @@ AutomationController.prototype.transformSimpleEntry = function(entry) {
 		} : 0));
 
 	if (vDev) {
-		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 			{
 			    deviceId: '',
 			    deviceType: '',
@@ -3265,7 +3282,7 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 
 	if (vDev) {
 		if (transformation === 'test') {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    type: '',
@@ -3281,7 +3298,7 @@ AutomationController.prototype.transformAdvancedEntry = function(transformation,
 			}
 
 		} else if (transformation === 'action') {
-			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+			/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 				{
 				    deviceId: '',
 				    deviceType: '',
@@ -3310,7 +3327,7 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 
 	// concat all lists to one
 	Object.keys(devices).forEach(function(key) {
-		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes 
+		/* transform each single entry to the new format: switches, thermostats, dimmers, locks, scenes
 			{
 			    deviceId: '',
 			    deviceType: '',

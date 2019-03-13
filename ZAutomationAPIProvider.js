@@ -1509,7 +1509,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				name: 'User',
 				email: '',
 				lang: 'en',
-				color: '#dddddd',
 				dashboard: [],
 				interval: 2000,
 				rooms: reqObj.role === 1 ? [0] : [],
@@ -1564,6 +1563,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						profile.role = reqObj.role;
 						profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === 1 ? reqObj.rooms.push(0) : reqObj.rooms;
 						profile.expert_view = reqObj.expert_view;
+						profile.beta = reqObj.beta;
 
 						try {
 							// update email adress on initial update
@@ -1589,7 +1589,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					profile.hide_system_events = reqObj.hide_system_events;
 					profile.hide_all_device_events = reqObj.hide_all_device_events;
 					profile.lang = reqObj.lang;
-					profile.color = reqObj.color;
 					profile.dashboard = reqObj.dashboard;
 					profile.hide_single_device_events = reqObj.hide_single_device_events;
 					profile.email = reqObj.email;
@@ -3370,7 +3369,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 													email: '',
 													name: 'CIT Administrator',
 													lang: 'en',
-													color: '#dddddd',
 													dashboard: [],
 													interval: 2000,
 													rooms: [0],

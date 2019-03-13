@@ -198,6 +198,8 @@ SwitchControlGenerator.prototype.init = function (config) {
 						self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value, "S"]);
 					}
 				}, "");
+				/*
+				CentralScene do not require SwitchControlGenerator as this CC is handled correctly in Z-Wave binding
 				self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["CentralScene"], "currentScene", function(type) {
 					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
 						self.remove(zwayName, [dataB.srcNodeId.value, dataB.srcInstanceId.value, n, "S"]);
@@ -205,6 +207,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 						self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value, "S"]);
 					}
 				}, "");
+				*/
 			})(i);
 		}
 	};
