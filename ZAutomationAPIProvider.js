@@ -199,11 +199,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	},
 
-	setLogin: function(profile) {
-		var sid = crypto.guid(),
-			resProfile = {};
+	setLogin: function(profile, req) {
+		var sid, resProfile = {};
 
-		this.controller.auth.checkIn(profile, sid);
+		sid = this.controller.auth.checkIn(profile, req);
 
 		resProfile = this.getProfileResponse(profile);
 		resProfile.sid = sid;
@@ -242,7 +241,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	},
 	// Returns user session information for the smarthome UI
 	verifySession: function() {
-		var auth = controller.auth.resolve(this.req, 2);
+		var auth = controller.auth.resolve(this.req, controller.auth.ROLE.USER);
 
 		if (!auth) {
 			return this.denyLogin("No valid user session found");
@@ -298,7 +297,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// - registered cit & login forwarding is active
 			//if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
 			if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
-				return this.setLogin(profile);
+				return this.setLogin(profile, this.req);
 			} else {
 				return this.denyLogin();
 			}
@@ -314,22 +313,26 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 400,
 				headers: null
 			},
+			self = this,
 			session;
 
 		var sessionId = this.controller.auth.getSessionId(this.req);
 
 		if (sessionId) {
-			//session = this.req.headers.ZWAYSession;
-
 			reply.headers = {
 				"Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
 			};
 
 			reply.code = 200;
-
-			if (this.controller.auth.sessions[sessionId]) {
-				delete this.controller.auth.sessions[sessionId];
-			}
+			
+			var sessionProfile = _.find(this.controller.profiles, function(profile) {
+				return _.find(profile.authTokens, function(authToken) {
+					return authToken.sid == sessionId;
+				});
+			});
+			sessionProfile.authTokens = sessionProfile.authTokens.filter(function(authToken) {
+				return authToken.sid != sessionId;
+			});
 		} else {
 			reply.code = 404;
 			reply.error = 'Could not logout. No session found.';

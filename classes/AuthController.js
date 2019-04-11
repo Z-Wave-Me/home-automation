@@ -17,9 +17,6 @@ function AuthController (controller) {
 		ANONYMOUS: 4
 	};
 
-	// TODO: replace with tokens
-	// list of saved sessions
-	this.sessions = [];
 	this.forgottenPwdCollector = {};
 	
 	// link to controller to get profiles
@@ -60,7 +57,11 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		return profile.login === 'admin' && profile.password === 'admin';
 	});
 	
-	session = this.sessions[this.getSessionId(request)];
+	session = _.find(this.controller.profiles, function(profile) {
+		return _.find(profile.authTokens, function(authToken) {
+			return authToken.sid == self.getSessionId(request);
+		});
+	});
 
 	if (!session) {
 		// no session found or session expired
@@ -130,8 +131,42 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 	return {user: session.id, role: role};
 };
 
-AuthController.prototype.checkIn = function(profile, sid) {
-  this.sessions[sid] = profile;
+AuthController.prototype.checkIn = function(profile, req) {
+	var sid;
+	
+	// generate a new sid and make sure it is unique
+	do {
+		sid = crypto.guid();
+		
+		var found = _.find(this.controller.profiles, function(profile) {
+			_.find(profile.authTokens, function(authToken) {
+				authToken.sid == sid;
+			});
+		});
+		if (!found) break;
+	} while(true);
+	
+	// save user agent
+	var userAgent;
+	if (req && req.headers && req.headers['User-Agent']) {
+		userAgent = req.headers['User-Agent'];
+	}
+	
+	// save auth token in the profile
+	if (!profile.authTokens) {
+		profile.authTokens = [];
+	}
+	
+	profile.authTokens.push({
+		sid: sid,
+		agent: userAgent,
+		date: (new Date()).valueOf()
+	});
+	
+	this.controller.config.profiles
+	this.controller.saveConfig();
+	
+	return sid
 };
 
 AuthController.prototype.forgottenPwd = function(email, token) {
