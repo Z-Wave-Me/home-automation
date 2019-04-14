@@ -1505,6 +1505,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				dashboard: [],
 				interval: 2000,
 				rooms: reqObj.role === this.ROLE.ADMIN ? [0] : [],
+				devices: [],
 				expert_view: false,
 				hide_all_device_events: false,
 				hide_system_events: false,
@@ -1555,6 +1556,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						// login is changed by updateProfileAuth()
 						profile.role = reqObj.role;
 						profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === this.ROLE.ADMIN ? reqObj.rooms.push(0) : reqObj.rooms;
+						profile.devices = reqObj.devices;
 						profile.expert_view = reqObj.expert_view;
 						profile.beta = reqObj.beta;
 
@@ -3394,6 +3396,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 													dashboard: [],
 													interval: 2000,
 													rooms: [0],
+													devices: [],
 													expert_view: false,
 													hide_all_device_events: false,
 													hide_system_events: false,
@@ -4013,13 +4016,29 @@ ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
 	if (profile.role === this.ROLE.ADMIN) {
 		return devices;
 	} else {
+		// explicitelly allowed devices
+		var allowedDevices = [];
+		if (!!profile.devices) {
+			allowedDevices = devices.filter(function(dev) {
+				return profile.devices.indexOf(dev.id) !== -1;
+			});
+		}
+		
+		// devices from allowed rooms
 		if (!!profile.rooms) {
-			return devices.filter(function(dev) {
+			var allowedDevicesFromRooms = devices.filter(function(dev) {
 				// show only devices from allowed rooms (don't show unallocated devices)
 				return dev.get("location") != 0 && profile.rooms.indexOf(dev.get("location")) !== -1;
 			});
+			// append explicitedly allowed devices (unique concat)
+			allowedDevices.forEach(function(dev) {
+				if (allowedDevicesFromRooms.map(function(d) { return d.id; }).indexOf(dev.id) === -1) {
+					allowedDevicesFromRooms.push(dev);
+				}
+			});
+			return allowedDevicesFromRooms;
 		} else {
-			return [];
+			return allowedDevices;
 		}
 	}
 };
