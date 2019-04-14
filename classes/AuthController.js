@@ -134,13 +134,14 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 AuthController.prototype.checkIn = function(profile, req) {
 	var sid;
 	
-	// generate a new sid and make sure it is unique
+	// generate a new sid
 	do {
 		sid = crypto.guid();
 		
+		// and make sure it is unique (first 6 letters can be used to show to the user and to delete sid)
 		var found = _.find(this.controller.profiles, function(profile) {
 			_.find(profile.authTokens, function(authToken) {
-				authToken.sid == sid;
+				authToken.sid.substr(0, 6) == sid.substr(0, 6);
 			});
 		});
 		if (!found) break;

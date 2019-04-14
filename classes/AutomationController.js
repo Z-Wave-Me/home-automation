@@ -1830,20 +1830,38 @@ AutomationController.prototype.getIgnoredStorageFiles = function(list) {
 	return _.uniq(dontSave.concat(matches));
 };
 
+AutomationController.prototype.safeProfile = function(profile, exclude) {
+	var prof = {},
+		excl = ["password", "salt", "authTokens"].concat(exclude);
+		
+	for (var property in profile) {
+		if (excl.indexOf(property) === -1) {
+			prof[property] = profile[property];
+		}
+	}
+
+	// explicitelly copy authTokens
+	prof.authTokens = [];
+	if (profile.authTokens) {
+		profile.authTokens.forEach(function(authToken) {
+			prof.authTokens.push({
+				sid: authToken.sid.substr(0,6) + "...", // first 6 symbols are uniq - see AuthController
+				agent: authToken.agent,
+				date: authToken.date
+			});
+		});
+	}
+	
+	return prof;
+};
+
+// safely return all profiles removing sensitive data
 AutomationController.prototype.getListProfiles = function() {
-	var getProfiles = [];
+	var getProfiles = [],
+		self = this;
 
 	this.profiles.forEach(function(profile) {
-		var prof = {},
-			excl = ["login", "password", "role"];
-
-		for (var property in profile) {
-			if (excl.indexOf(property) === -1) {
-				prof[property] = profile[property];
-			}
-		}
-
-		getProfiles.push(prof);
+		getProfiles.push(self.safeProfile(profile));
 	});
 	return getProfiles;
 };
@@ -1933,6 +1951,25 @@ AutomationController.prototype.removeProfile = function(profileId) {
 	});
 
 	this.saveConfig();
+};
+
+AutomationController.prototype.removeToken = function(profile, token) {
+	var indx = -1;
+	
+	if (!profile.authTokens) return false;
+	
+	profile.authTokens.forEach(function(authToken, index) {
+		if (authToken.sid.substr(0, 6) === token.substr(0, 6)) {
+			indx = index;
+		}
+	});
+	
+	if (indx !== -1) {
+		profile.authTokens.splice(indx, 1);
+		return true;
+	} else {
+		return false;
+	}
 };
 
 /*AutomationController.prototype.allowLoginForwarding = function (request) {

@@ -27,10 +27,6 @@ function ZAutomationAPIWebRequest(controller) {
 		},
 		body: null
 	};
-	this.exclFromProfileRes = [
-		'password',
-		'salt'
-	];
 
 	this.registerRoutes();
 };
@@ -92,6 +88,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.put("/notifications/:notification_id", this.ROLE.USER, this.redeemNotifications, [parseInt]);
 
 		this.router.post("/profiles/qrcode/:profile_id", this.ROLE.USER, this.getQRCodeString, [parseInt]);
+		this.router.del("/profiles/:profile_id/token/:token", this.ROLE.USER, this.removeToken, [parseInt, undefined]);
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -204,7 +201,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		sid = this.controller.auth.checkIn(profile, req);
 
-		resProfile = this.getProfileResponse(profile);
+		resProfile = this.controller.safeProfile(profile);
 		resProfile.sid = sid;
 
 		if (profile.password !== 'admin' && !this.controller.config.hasOwnProperty('firstaccess') || this.controller.config.firstaccess === true) {
@@ -251,7 +248,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return profile.id === auth.user;
 		});
 
-		res = _.extend(this.getProfileResponse(profile), {sid: controller.auth.getSessionId(this.req)});
+		res = _.extend(this.controller.safeProfile(profile), {sid: controller.auth.getSessionId(this.req)});
 
 		return {
 			error: null,
@@ -732,7 +729,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				});
 			} else {
 				reply.code = 403;
-				reply.error = "Permission denied.";
+				reply.error = "Permission denied";
 			}
 		} else {
 			reply.code = 400;
@@ -1427,7 +1424,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			profiles,
 			getProfile,
-			filteredProfile = {},
 			excl = [];
 
 		// list all profiles only if user has 'admin' permissions
@@ -1435,14 +1431,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			if (this.req.role === this.ROLE.ADMIN) {
 				profiles = this.controller.getListProfiles();
 			} else {
-				getProfile = this.controller.getProfile(this.req.user);
-				if (getProfile && this.req.user === getProfile.id) {
+				getProfile = this.controller.safeProfile(this.controller.getProfile(this.req.user), ["role"]);
+				if (getProfile) {
 					profiles = [getProfile];
 				}
 			}
 			if (!Array.isArray(profiles)) {
 				reply.code = 500;
-				reply.error = "Unknown error. profiles isn't array";
+				reply.error = "Unknown error";
 			} else {
 				reply.code = 200;
 				reply.data = profiles;
@@ -1451,21 +1447,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			getProfile = this.controller.getProfile(profileId);
 			if (!!getProfile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === getProfile.id))) {
 
-				// do not send password (also role if user is no admin)
+				// do not send password (also role if user is not admin)
 				if (this.req.role === this.ROLE.ADMIN) {
-					excl = ["password"];
+					excl = [];
 				} else {
-					excl = ["password", "role"];
-				}
-
-				for (var property in getProfile) {
-					if (excl.indexOf(property) === -1) {
-						filteredProfile[property] = getProfile[property];
-					}
+					excl = ["role"];
 				}
 
 				reply.code = 200;
-				reply.data = filteredProfile;
+				reply.data = this.controller.safeProfile(getProfile);
 			} else {
 				reply.code = 404;
 				reply.error = "Profile not found.";
@@ -1600,7 +1590,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					profile = this.controller.updateProfile(profile, profile.id);
 
 					if (profile !== undefined && profile.id !== undefined) {
-						reply.data = this.getProfileResponse(profile);
+						reply.data = this.controller.safeProfile(profile);
 						reply.code = 200;
 					} else {
 						reply.code = 500;
@@ -1655,7 +1645,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				profile = this.controller.updateProfileAuth(reqObj, profileId);
 
 				if (!!profile && profile.id !== undefined) {
-					reply.data = this.getProfileResponse(profile);
+					reply.data = this.controller.safeProfile(profile);
 					reply.code = 200;
 				} else {
 					reply.code = 500;
@@ -1791,6 +1781,35 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			} else {
 				reply.code = 403;
 				reply.error = "Deleting own profile is not allowed.";
+			}
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
+
+		return reply;
+	},
+	removeToken: function(profileId, token) {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			profile = this.controller.getProfile(profileId);
+
+		if (profile) {
+			// Manage own tokens for users or any token for admin
+			if (profile.id === this.req.user && this.req.role === this.ROLE.USER || this.req.role === this.ROLE.ADMIN) {
+				if (this.controller.removeToken(profile, token)) {
+					reply.data = null;
+					reply.code = 204;
+				} else {
+					reply.code = 404;
+					reply.error = "Token not found";
+				}
+			} else {
+				reply.code = 403;
+				reply.error = "Permission denied";
 			}
 		} else {
 			reply.code = 404;
@@ -4043,18 +4062,6 @@ ZAutomationAPIWebRequest.prototype.authCIT = function() {
 	return checkBoxtype('cit') && this.controller.config.cit_authorized && license;
 };
 
-ZAutomationAPIWebRequest.prototype.getProfileResponse = function(profileObj) {
-	var self = this,
-		resProfile = {};
-
-	Object.keys(profileObj).forEach(function(value) {
-		if (!~self.exclFromProfileRes.indexOf(value)) {
-			resProfile[value] = profileObj[value];
-		}
-	});
-
-	return resProfile;
-};
 
 ZAutomationAPIWebRequest.prototype.Unauthorized = function() {
 	return {
