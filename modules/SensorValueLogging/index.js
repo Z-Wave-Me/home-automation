@@ -46,7 +46,7 @@ SensorValueLogging.prototype.init = function (config) {
 
 			storedLog.deviceId = vDev.id;
 			storedLog.deviceName = vDev.get("metrics:title");
-			storedLog.location = this.controller.locations.filter(function(l) { return vDev.get("location") === l.id; }).map(function(l) { return l.title; })[0];
+			storedLog.location = self.controller.locations.filter(function(l) { return vDev.get("location") === l.id; }).map(function(l) { return l.title; })[0];
 			storedLog.sensorData.push({"time": Date.now(), "value": vDev.get("metrics:level")});
 
 			saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
