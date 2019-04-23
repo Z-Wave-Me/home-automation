@@ -1,13 +1,10 @@
 /*** SensorValueLogging Z-Way Home Automation module *************************************
-
  Version: 1.0.1
  (c) Z-Wave.Me, 2014
-
  -----------------------------------------------------------------------------
  Author: Poltorak Serguei <ps@z-wave.me>
  Description:
 	 Log sensor value in JSON file
-
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -37,14 +34,21 @@ SensorValueLogging.prototype.init = function (config) {
 	this.handler = function (vDev) {
 		if (self.config.logTo === "JSONFile") {
 			var storedLog = loadObject("SensorValueLogging_" + vDev.id + "_" + self.id);
+	
 			if (!storedLog) {
 				storedLog = {
-					deviceId: vDev.id,
-					deviceName: vDev.get("metrics:title"),
+					deviceId: '',
+					deviceName: '',
+					location: '',
 					sensorData: []
 				};
 			}
+
+			storedLog.deviceId = vDev.id;
+			storedLog.deviceName = vDev.get("metrics:title");
+			storedLog.location = this.controller.locations.filter(function(l) { return vDev.get("location") === l.id; }).map(function(l) { return l.title; })[0];
 			storedLog.sensorData.push({"time": Date.now(), "value": vDev.get("metrics:level")});
+
 			saveObject("SensorValueLogging_" + vDev.id + "_" + self.id, storedLog);
 			storedLog = null;
 		}
