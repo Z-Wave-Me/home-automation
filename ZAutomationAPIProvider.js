@@ -89,6 +89,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.post("/profiles/qrcode/:profile_id", this.ROLE.USER, this.getQRCodeString, [parseInt]);
 		this.router.del("/profiles/:profile_id/token/:token", this.ROLE.USER, this.removeToken, [parseInt, undefined]);
+		this.router.put("/profiles/:profile_id/token/:token", this.ROLE.USER, this.permanentToken, [parseInt, undefined]);
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -1803,6 +1804,35 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// Manage own tokens for users or any token for admin
 			if (profile.id === this.req.user && this.req.role === this.ROLE.USER || this.req.role === this.ROLE.ADMIN) {
 				if (this.controller.removeToken(profile, token)) {
+					reply.data = null;
+					reply.code = 204;
+				} else {
+					reply.code = 404;
+					reply.error = "Token not found";
+				}
+			} else {
+				reply.code = 403;
+				reply.error = "Permission denied";
+			}
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
+
+		return reply;
+	},
+	permanentToken: function(profileId, token) {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			profile = this.controller.getProfile(profileId);
+
+		if (profile) {
+			// Manage own tokens for users or any token for admin
+			if (profile.id === this.req.user && this.req.role === this.ROLE.USER || this.req.role === this.ROLE.ADMIN) {
+				if (this.controller.permanentToken(profile, token)) {
 					reply.data = null;
 					reply.code = 204;
 				} else {

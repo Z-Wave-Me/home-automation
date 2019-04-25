@@ -1847,7 +1847,8 @@ AutomationController.prototype.safeProfile = function(profile, exclude) {
 			prof.authTokens.push({
 				sid: authToken.sid.substr(0,6) + "...", // first 6 symbols are uniq - see AuthController
 				agent: authToken.agent,
-				date: authToken.date
+				date: authToken.date,
+				expire: authToken.expire
 			});
 		});
 	}
@@ -1953,7 +1954,7 @@ AutomationController.prototype.removeProfile = function(profileId) {
 	this.saveConfig();
 };
 
-AutomationController.prototype.removeToken = function(profile, token) {
+AutomationController.prototype.removeToken = function(profile, token, skipSave) {
 	var indx = -1;
 	
 	if (!profile.authTokens) return false;
@@ -1966,10 +1967,29 @@ AutomationController.prototype.removeToken = function(profile, token) {
 	
 	if (indx !== -1) {
 		profile.authTokens.splice(indx, 1);
+		if (!skipSave) this.saveConfig();
 		return true;
 	} else {
 		return false;
 	}
+};
+
+AutomationController.prototype.permanentToken = function(profile, token) {
+	var self = this;
+	
+	if (!profile.authTokens) return false;
+	
+	var found = false;
+	
+	profile.authTokens.forEach(function(authToken, index) {
+		if (authToken.sid.substr(0, 6) === token.substr(0, 6)) {
+			authToken.expire = 0;
+			self.saveConfig();
+			found = true;
+		}
+	});
+	
+	return found;
 };
 
 /*AutomationController.prototype.allowLoginForwarding = function (request) {

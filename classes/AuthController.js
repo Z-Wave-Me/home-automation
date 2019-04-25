@@ -57,11 +57,19 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		return profile.login === 'admin' && profile.password === 'admin';
 	});
 	
+	var removedExpired = false;
 	session = _.find(this.controller.profiles, function(profile) {
 		return _.find(profile.authTokens, function(authToken) {
+			// remove expired tokens
+			if (authToken.expire > 0 && authToken.expire < (new Date()).valueOf()) {
+				self.controller.removeToken(profile, authToken, true); // skip save
+				removedExpired = true;
+			}
 			return authToken.sid == self.getSessionId(request);
 		});
 	});
+	
+	if (removedExpired) this.controller.saveConfig();
 
 	if (!session) {
 		// no session found or session expired
@@ -131,7 +139,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 	return {user: session.id, role: role};
 };
 
-AuthController.prototype.checkIn = function(profile, req) {
+AuthController.prototype.checkIn = function(profile, req, permanent) {
 	var sid;
 	
 	// generate a new sid
@@ -158,13 +166,16 @@ AuthController.prototype.checkIn = function(profile, req) {
 		profile.authTokens = [];
 	}
 	
+	var TTL = 7 * 24 * 60 * 60 * 1000; // 1 week in ms
+	var d = (new Date()).valueOf();
+	
 	profile.authTokens.push({
 		sid: sid,
 		agent: userAgent,
-		date: (new Date()).valueOf()
+		date: d,
+		expire: permanent ? 0 : (d + TTL)
 	});
 	
-	this.controller.config.profiles
 	this.controller.saveConfig();
 	
 	return sid
