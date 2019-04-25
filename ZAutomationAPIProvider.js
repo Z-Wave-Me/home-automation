@@ -1473,7 +1473,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			reqObj,
 			profile,
-			resProfile = {},
 			uniqueEmail = [],
 			uniqueLogin = [];
 
@@ -1481,6 +1480,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqObj = JSON.parse(this.req.body);
 		} catch (ex) {
 			reply.error = ex.message;
+			return reply;
 		}
 
 		uniqueEmail = _.filter(this.controller.profiles, function(p) {
@@ -1518,7 +1518,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			profile = this.controller.createProfile(reqObj);
 			if (profile !== undefined && profile.id !== undefined) {
-				reply.data = resProfile;
+				reply.data = this.controller.safeProfile(profile);
 				reply.code = 201;
 			} else {
 				reply.code = 500;
