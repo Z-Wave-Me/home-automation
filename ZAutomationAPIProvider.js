@@ -93,6 +93,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
+		this.router.post("/oauth2", this.ROLE.ADMIN, this.createOAuth2Profile);
 
 		this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
 		this.router.post("/auth/forgotten/:profile_id", this.ROLE.ANONYMOUS, this.restorePassword, [parseInt]);
@@ -1526,6 +1527,81 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		}
 
+		return reply;
+	},
+	createOAuth2Profile: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			reqObj,
+			profile,
+			profileReply,
+			zbwToken,
+			sid,
+			oauthReply,
+			authToken,
+			clientId;
+		
+		// check that find.z-wave.me token is present
+		if (request.headers['Cookie']) {
+			var zbwCookie = request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" })[0];
+			if (zbwCookie) zbwToken = zbwCookie[1];
+		}
+		if (!zbwToken) {
+			reply.code = 405;
+			reply.error = "This method must be called thru find.z-wave.me";
+			return reply;
+		}
+		
+		try {
+			reqObj = JSON.parse(this.req.body);
+			clientId = reqObj.client_id;
+		} catch (ex) {
+			reply.code = 500;
+			reply.error = ex.message;
+			return reply;
+		}
+		
+		profileReply = this.createProfile();
+		
+		if (profileReply.code !== 200 && profileReply.code !== 201) return profileReply;
+		
+		profile = profileReply.data;
+		
+		// create permanent auth token for this user
+		sid = this.controller.auth.checkIn(profile, req, true);
+		
+		oauthReply = http.request({
+			url: "https://oauth2.z-wave.me:5000/newToken",
+			method: "POST",
+			async: false,
+			data: {
+				acccess_token: zbwToken + "|" + sid,
+				client_id: cleintId
+			}
+		});
+		
+		if (oauthReply.status != 200) {
+			reply.code = oauthReply.status;
+			reply.error = oauthReply.statusText;
+			return reply
+		}
+		
+		authToken = oauthReply.data.auth_token;
+		
+		if (!authToken) {
+			reply.code = 500;
+			reply.error = "OAuth2 auth token is empty";
+			return reply
+		}
+		
+		reply.code = 200;
+		reply.data = {
+			auth_token: authToken
+		};
+		
 		return reply;
 	},
 	updateProfile: function(profileId) {
