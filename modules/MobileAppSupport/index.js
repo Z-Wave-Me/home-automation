@@ -404,13 +404,24 @@ MobileAppSupport.prototype.createMobileAppSupportPhone = function(deviceToken, h
 				if (alarmMessage && deviceToken && hubId && os) {
 					var message;
 
-					message = {
-						to: deviceToken,
-						notification: {
-							title: "Z-Way Control",
-							body: alarmMessage
-						}
-					}
+                                        if (os === self.ANDROID) {
+                                                message = {
+                                                        to: deviceToken,
+                                                        data: {
+                                                                type: "alarm:message",
+                                                                data: alarmMessage,
+                                                                hubId: hubId
+                                                        }
+                                                }
+                                        } else if (os === self.IOS) {
+                                                message = {
+                                                        to: deviceToken,
+                                                        notification: {
+                                                                title: "Z-Way Control",
+                                                                body: alarmMessage
+                                                        }
+                                                }
+                                        }
 
 					if (message) {
 						self.notifyListener(message, os);
