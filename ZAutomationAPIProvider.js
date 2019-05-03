@@ -1558,6 +1558,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		try {
 			reqObj = JSON.parse(this.req.body);
 			clientId = reqObj.client_id;
+			redirectUri = reqObj.redirect_uri;
+			responseType = reqObj.response_type; 
 		} catch (ex) {
 			reply.code = 500;
 			reply.error = ex.message;
@@ -1574,10 +1576,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		sid = this.controller.auth.checkIn(profile, this.req, true);
 		data = {
 			access_token: zbwToken + "|" + sid,
-			client_id: clientId
+			client_id: clientId,
+			redirect_uri: redirectUri,
+			response_type: responseTypeo
 		}
 		oauthReply = http.request({
-			url: "https://oauth2.z-wave.me:5000/newToken",
+			url: "https://oauth2.z-wave.me:5000/saveToken",
 			method: "POST",
 			async: false,
 			headers: {
@@ -1585,7 +1589,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			data: JSON.stringify(data)
 		});
-		
 		if (oauthReply.status != 200) {
 			reply.code = oauthReply.status;
 			reply.error = oauthReply.statusText;
@@ -1602,7 +1605,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		reply.data = {
 			auth_code: authCode
 		};
-		console.logJS(reply)
 		return reply;
 	},
 	updateProfile: function(profileId) {
