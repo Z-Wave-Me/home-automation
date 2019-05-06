@@ -198,7 +198,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
 		'Access-Control-Allow-Headers': 'Authorization'
 	};
 	
-	if (response.code === 401) {
+	if (response.code === 401 && !response.suppress401Auth) {
 		_.extend(headers, {'WWW-Authenticate': 'Basic realm="Z-Way ZAutomation API"'});
 	}
 	

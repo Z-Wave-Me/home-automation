@@ -233,6 +233,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			error: error,
 			data: null,
 			code: 401,
+			suppress401Auth: true, // to suppress basic auth form from the browser
 			headers: {
 				"Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
 			}
