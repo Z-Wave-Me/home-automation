@@ -1578,7 +1578,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			access_token: zbwToken + "|" + sid,
 			client_id: clientId,
 			redirect_uri: redirectUri,
-			response_type: responseTypeo
+			response_type: responseType
 		}
 		oauthReply = http.request({
 			url: "https://oauth2.z-wave.me:5000/saveToken",
