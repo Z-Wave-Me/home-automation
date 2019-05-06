@@ -1591,12 +1591,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			data: JSON.stringify(data)
 		});
 		if (oauthReply.status != 200) {
+			this.removeProfile(profile.id); // revert creation of the user
 			reply.code = oauthReply.status;
 			reply.error = oauthReply.statusText;
 			return reply
 		}
 		authCode = oauthReply.data.auth_code;
 		if (!authCode) {
+			this.removeProfile(profile.id); // revert creation of the user
 			reply.code = 500;
 			reply.error = "OAuth2 auth token is empty";
 			return reply
