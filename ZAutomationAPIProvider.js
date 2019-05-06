@@ -1545,8 +1545,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			clientId;
 		
 		// check that find.z-wave.me token is present
-		if (request.headers['Cookie']) {
-			var zbwCookie = request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" })[0];
+		if (this.req.headers['Cookie']) {
+			var zbwCookie = this.req.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" })[0];
 			if (zbwCookie) zbwToken = zbwCookie[1];
 		}
 		if (!zbwToken) {
@@ -1558,6 +1558,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		try {
 			reqObj = JSON.parse(this.req.body);
 			clientId = reqObj.client_id;
+			redirectUri = reqObj.redirect_uri;
+			responseType = reqObj.response_type; 
 		} catch (ex) {
 			reply.code = 500;
 			reply.error = ex.message;
@@ -1571,27 +1573,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		profile = profileReply.data;
 		
 		// create permanent auth token for this user
-		sid = this.controller.auth.checkIn(profile, req, true);
-		
+		sid = this.controller.auth.checkIn(profile, this.req, true);
+		data = {
+			access_token: zbwToken + "|" + sid,
+			client_id: clientId,
+			redirect_uri: redirectUri,
+			response_type: responseTypeo
+		}
 		oauthReply = http.request({
-			url: "https://oauth2.z-wave.me:5000/newToken",
+			url: "https://oauth2.z-wave.me:5000/saveToken",
 			method: "POST",
 			async: false,
-			data: {
-				acccess_token: zbwToken + "|" + sid,
-				client_id: cleintId
-			}
+			headers: {
+				'Content-Type':'application/json'
+			},
+			data: JSON.stringify(data)
 		});
-		
 		if (oauthReply.status != 200) {
 			reply.code = oauthReply.status;
 			reply.error = oauthReply.statusText;
 			return reply
 		}
-		
-		authToken = oauthReply.data.auth_token;
-		
-		if (!authToken) {
+		authCode = oauthReply.data.auth_code;
+		if (!authCode) {
 			reply.code = 500;
 			reply.error = "OAuth2 auth token is empty";
 			return reply
@@ -1599,9 +1603,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		
 		reply.code = 200;
 		reply.data = {
-			auth_token: authToken
+			auth_code: authCode
 		};
-		
 		return reply;
 	},
 	updateProfile: function(profileId) {
