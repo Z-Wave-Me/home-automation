@@ -177,6 +177,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/system/zwave/vendorsInfoUpdate", this.ROLE.ADMIN, this.zwaveVendorsInfoUpdate);
 
 		this.router.put("/devices/reorder", this.ROLE.ADMIN, this.reorderDevices);
+		
+		this.router.get("/redirect", this.ROLE.ANONYMOUS, this.redirectURL);
+		this.router.post("/redirect", this.ROLE.ANONYMOUS, this.redirectURL);
 	},
 
 	// Used by the android app to request server status
@@ -4108,6 +4111,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		}
 
 		return reply;
+	},
+	redirectURL: function() {
+		var self = this;
+		console.logJS(this.req);
+		var params = Object.keys(this.req.query).filter(function(k) { return k != "to"; }).map(function(k) { return k + "=" + self.req.query[k]; }).join("&");
+		return {
+			error: null,
+			code: 302,
+			headers: {
+				"Location": this.req.query["to"] + (params ? "?" + params : "")
+			}
+		};
 	}
 });
 
