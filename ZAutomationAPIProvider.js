@@ -1570,11 +1570,19 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return reply;
 		}
 		
+		// do not store those in the profile
+		delete reqObj.client_id;
+		delete reqObj.redirect_uri;
+		delete reqObj.response_type;
+		
 		profileReply = this.createProfile();
 		
 		if (profileReply.code !== 200 && profileReply.code !== 201) return profileReply;
 		
-		profile = profileReply.data;
+		// profileReply.data is a safe copy, so get the original profile for checkIn
+		profile = _.find(this.controller.profiles, function (_profile) {
+			return _profile.id == profileReply.data.id;
+		});
 		
 		// create permanent auth token for this user
 		sid = this.controller.auth.checkIn(profile, this.req, true);
