@@ -3130,7 +3130,22 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}, 5000);
 
 		} else {
-			reply.error = res.statusText;
+			// try another way
+			try {
+				if (
+					! (
+						system("timedatectl set-timezone '" + reqObj.time_zone + "'")[0] === 0 ||
+						system("timedatectl set-timezone '" + reqObj.time_zone + "'")[0] === 0
+						// twice because for some reason it might fail on first time
+					)
+				) {
+					throw "Failed to set timezone";
+				} else {
+					reply.code = 200;
+				}
+			} catch (e) {
+				reply.error = res.statusText + "; " + e.toString();
+			}
 		}
 
 		saveObject('8084AccessTimeout', null);
