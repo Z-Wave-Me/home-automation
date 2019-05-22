@@ -67,6 +67,8 @@ NotificationSMSru.prototype.init = function (config) {
 					}
 				});
 			}
+			
+			self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
 		},
 		moduleId: this.id
 	});

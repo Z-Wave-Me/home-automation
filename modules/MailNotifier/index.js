@@ -93,6 +93,8 @@ MailNotifier.prototype.init = function (config) {
 				if(!self.timer && send_mail){
 					self.sendSendMessageWithDelay();
 				}
+				
+				self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
 			}
 		},
 		moduleId: this.id

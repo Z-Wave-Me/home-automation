@@ -50,6 +50,8 @@ GlobalCache.prototype.init = function (config) {
 			} finally {
 				sock.close();
 			}
+			
+			self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
 		},
 		moduleId: this.id
 	});
