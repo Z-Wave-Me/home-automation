@@ -34,19 +34,29 @@ AuthController.prototype.isAuthorized = function(myRole, requiredRole) {
 
 AuthController.prototype.getSessionId = function(request) {
 	// check if session id is specified in cookie or header
-	var profileSID = request.headers['ZWAYSession'];
-	if (!profileSID) {
-		var cookie,
-			cookiesHeader = request.headers['Cookie'];
-		if (cookiesHeader) {
-			cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZWAYSession" });
-			if (!!cookie && !!cookie[0]) {
-				profileSID = cookie[0][1];
-			}
+	var profileSID;
+	
+	// first try Authorization Bearer
+	var authHeader = request.headers['Authorization'];
+	if (authHeader && authHeader.indexOf('Bearer ') === 0) {
+		profileSID = authHeader.substr('Bearer '.length).split('/')[1];
+		if (profileSID) return profileSID;
+	}
+	
+	// second try ZWAYSession
+	profileSID = request.headers['ZWAYSession'];
+	if (profileSID) return profileSID;
+	
+	// third try cookie
+	var cookiesHeader = request.headers['Cookie'];
+	if (cookiesHeader) {
+		var cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZWAYSession" });
+		if (!!cookie && !!cookie[0]) {
+			return cookie[0][1];
 		}
 	}
 	
-	return profileSID;
+	return '';
 }
 
 AuthController.prototype.resolve = function(request, requestedRole) {
@@ -57,19 +67,29 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		return profile.login === 'admin' && profile.password === 'admin';
 	});
 	
-	var removedExpired = false;
-	session = _.find(this.controller.profiles, function(profile) {
-		return _.find(profile.authTokens, function(authToken) {
-			// remove expired tokens
-			if (authToken.expire > 0 && authToken.expire < (new Date()).valueOf()) {
-				self.controller.removeToken(profile, authToken, true); // skip save
-				removedExpired = true;
-			}
-			return authToken.sid == self.getSessionId(request);
-		});
-	});
+	var noAnonymous = false;
 	
-	if (removedExpired) this.controller.saveConfig();
+	var reqSession = self.getSessionId(request);
+	if (reqSession) {
+		noAnonymous = true;
+		
+		var removedExpired = false;
+		session = _.find(this.controller.profiles, function(profile) {
+			var toRemove = [];
+			return _.find(profile.authTokens, function(authToken) {
+				// remove expired tokens
+				if (authToken.expire > 0 && authToken.expire < (new Date()).valueOf()) {
+					toRemove.push(authToken.sid);
+					removedExpired = true;
+				}
+				return authToken.sid == reqSession;
+			});
+			toRemove.forEach(function(token) {
+				self.controller.removeToken(profile, token, true); // skip save
+			});
+		});
+		if (removedExpired) this.controller.saveConfig();
+	}
 
 	if (!session) {
 		// no session found or session expired
@@ -79,6 +99,8 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		if (authHeader && authHeader.substring(0, 6) === "Basic ") {
 			authHeader = Base64.decode(authHeader.substring(6));
 			if (authHeader) {
+				noAnonymous = true;
+				
 				var authInfo = authHeader.split(':');
 				if (authInfo.length === 2 && authInfo[0].length > 0) {
 					var profile = _.find(this.controller.profiles, function (profile) {
@@ -96,7 +118,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		if (!session && requestedRole === this.ROLE.USER) {
 			// try to find Local user account
 			if (request.peer.address === "127.0.0.1" && defaultProfile.length < 1 && !this.controller.config.firstaccess) {
-				// dont' treat find.z-wave.me as local user (connection comes from local ssh server)
+				// don't treat find.z-wave.me as local user (connection comes from local ssh server)
 				if (!(request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }))) {
 					// TODO: cache this in future
 					session = _.find(this.controller.profiles, function (profile) {
@@ -116,7 +138,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 
 		if (!session) {
 			// no session found, but requested role is anonymous - use dummy session.
-			if (requestedRole === this.ROLE.ANONYMOUS) {
+			if (requestedRole === this.ROLE.ANONYMOUS && !noAnonymous) {
 				session = {
 					id: -1, // non-existant ID
 					role: this.ROLE.ANONYMOUS

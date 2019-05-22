@@ -1563,7 +1563,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqObj = JSON.parse(this.req.body);
 			clientId = reqObj.client_id;
 			redirectUri = reqObj.redirect_uri;
-			responseType = reqObj.response_type; 
+			responseType = reqObj.response_type;
 		} catch (ex) {
 			reply.code = 500;
 			reply.error = ex.message;
@@ -1587,7 +1587,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		// create permanent auth token for this user
 		sid = this.controller.auth.checkIn(profile, this.req, true);
 		data = {
-			access_token: zbwToken + "|" + sid,
+			access_token: zbwToken + "/" + sid,
 			client_id: clientId,
 			redirect_uri: redirectUri,
 			response_type: responseType
