@@ -40,18 +40,25 @@ AuthController.prototype.getSessionId = function(request) {
 	var authHeader = request.headers['Authorization'];
 	if (authHeader && authHeader.indexOf('Bearer ') === 0) {
 		profileSID = authHeader.substr('Bearer '.length).split('/')[1];
-		if (profileSID) return profileSID;
+		if (profileSID) {
+			request.__authMethod = 'Authorization Bearer';
+			return profileSID;
+		}
 	}
 	
 	// second try ZWAYSession
 	profileSID = request.headers['ZWAYSession'];
-	if (profileSID) return profileSID;
+	if (profileSID) {
+		request.__authMethod = 'ZWAYSession';
+		return profileSID;
+	}
 	
 	// third try cookie
 	var cookiesHeader = request.headers['Cookie'];
 	if (cookiesHeader) {
 		var cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZWAYSession" });
 		if (!!cookie && !!cookie[0]) {
+			request.__authMethod = 'Cookie';
 			return cookie[0][1];
 		}
 	}
@@ -82,7 +89,13 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 					toRemove.push(authToken.sid);
 					removedExpired = true;
 				}
-				return authToken.sid == reqSession;
+				if (authToken.sid == reqSession) {
+					// make the Authorization Bearer always permanent
+					if (authToken.expire != 0 && request.__authMethod == 'Authorization Bearer') {
+						this.controller.permanentToken(profile, authToken.sid);
+					}
+					return true;
+				}
 			});
 			toRemove.forEach(function(token) {
 				self.controller.removeToken(profile, token, true); // skip save
