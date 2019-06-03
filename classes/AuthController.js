@@ -92,7 +92,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 				if (authToken.sid == reqSession) {
 					// make the Authorization Bearer always permanent
 					if (authToken.expire != 0 && request.__authMethod == 'Authorization Bearer') {
-						this.controller.permanentToken(profile, authToken.sid);
+						self.controller.permanentToken(profile, authToken.sid);
 					}
 					return true;
 				}
