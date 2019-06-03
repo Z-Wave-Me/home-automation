@@ -1,10 +1,10 @@
 /*** AutoOff Z-Way Home Automation module *************************************
 
- Version: 1.0.1
- (c) Z-Wave.Me, 2014
+ Version: 1.0.3
+ (c) Z-Wave.Me, 2019
 
  -----------------------------------------------------------------------------
- Author: Gregory Sitnin <sitnin@z-wave.me> and Poltorak Serguei <ps@z-wave.me>
+ Author: Gregory Sitnin <sitnin@z-wave.me>, Poltorak Serguei <ps@z-wave.me>, Vitaliy Yurkin <aivs@z-wave.me>
  Description:
 	 This module listens given VirtualDevice (which MUSt be typed as switch)
 	 level metric update events and switches off device after configured
@@ -42,7 +42,7 @@ AutoOff.prototype.init = function (config) {
 	this.handler = function (vDev) {
 		var value = vDev.get("metrics:level");
 		
-		if ("on" === value || (parseInt(value) && value > 0)) {
+		if ("on" === value || "open" === value || (parseInt(value) && value > 0) ) {
 			// Device reported "on", set (or reset) timer to new timeout
 			
 			if (self.timer && self.config.ignoreUpdates) {
@@ -59,7 +59,12 @@ AutoOff.prototype.init = function (config) {
 			self.timer = setTimeout(function () {
 				// Timeout fired, so we send "off" command to the virtual device
 				// (every switch device should handle it)
-				vDev.performCommand("off");
+				if (vDev.get("deviceType") === "doorlock") {
+					vDev.performCommand("close");
+				}
+				else {
+					vDev.performCommand("off");
+				}
 				// And clearing out this.timer variable
 				self.timer = null;
 			}, self.config.timeout*1000);

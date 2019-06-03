@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName": "AutoOff",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -25,7 +25,7 @@
 			"device": {
 				"field": "enum",
 				"datasource": "namespaces",
-				"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId",
+				"enum": "namespaces:devices_switchBinary:deviceId,namespaces:devices_switchMultilevel:deviceId,namespaces:devices_doorlock:deviceId",
 				"required": true
 			},
 			"timeout": {
@@ -44,7 +44,7 @@
 				"label": "__l_dev__",
 				"datasource": "namespaces",
 				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName"
+				"optionLabels": "namespaces:devices_switchBinary:deviceName,namespaces:devices_switchMultilevel:deviceName,namespaces:devices_doorlock:deviceName"
 			},
 			"timeout": {
 				"label": "__l_timeout__"
