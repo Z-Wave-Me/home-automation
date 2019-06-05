@@ -4803,6 +4803,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							color.r = parseInt(args.red, 10);
 							color.g = parseInt(args.green, 10);
 							color.b = parseInt(args.blue, 10);
+							vDev_rgb.set("metrics:oldColor", color);
 						}
 						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
 					},
@@ -4822,9 +4823,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								b: cc.data[COLOR_BLUE].level.value
 							};
 							vDev_rgb.set("metrics:color", color);
-							if (isOn) {
-								vDev_rgb.set('metrics:oldColor', color);
-							}
 						}
 
 						vDev_rgb.set("metrics:level", isOn ? "on" : "off");
