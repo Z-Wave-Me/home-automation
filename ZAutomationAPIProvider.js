@@ -3065,7 +3065,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			now = new Date();
 
 		try {
-			var sys = system('cat /etc/timezone');
+			var sys = system("sh automation/lib/timezone.sh get");
 			sys.forEach(function(i) {
 				if (typeof i === 'string') {
 					tz = i.replace(/\n/g, '');
@@ -3113,8 +3113,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		// Set access for 10 seconds
 		saveObject('8084AccessTimeout', 10);
+		
 		var res = http.request(req);
-
+		
 		if (res.status === 200 || res.status === 303) {
 			reply.code = 200;
 			reply.data = res.statusText;
@@ -3132,16 +3133,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		} else {
 			// try another way
 			try {
-				if (
-					! (
-						system("timedatectl set-timezone '" + reqObj.time_zone + "'")[0] === 0 ||
-						system("timedatectl set-timezone '" + reqObj.time_zone + "'")[0] === 0
-						// twice because for some reason it might fail on first time
-					)
-				) {
+				if (system("sh automation/lib/timezone.sh set " + reqObj.time_zone)[0] !== 0) {
 					throw "Failed to set timezone";
 				} else {
 					reply.code = 200;
+					
+					// reboot after 5 seconds
+					setTimeout(function() {
+						try {
+							console.log("Rebooting system ...");
+							system("reboot"); // reboot the box
+						} catch (e) {
+							self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "SetTimezone");
+						}
+					}, 5000);
 				}
 			} catch (e) {
 				reply.error = res.statusText + "; " + e.toString();
