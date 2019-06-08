@@ -3065,7 +3065,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			now = new Date();
 
 		try {
-			var sys = system("sh automation/lib/timezone.sh get");
+			var sys = system("sh automation/lib/timezone.sh getTZ");
 			sys.forEach(function(i) {
 				if (typeof i === 'string') {
 					tz = i.replace(/\n/g, '');
@@ -3133,7 +3133,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		} else {
 			// try another way
 			try {
-				if (system("sh automation/lib/timezone.sh set " + reqObj.time_zone)[0] !== 0) {
+				if (system("sh automation/lib/timezone.sh setTZ " + reqObj.time_zone)[0] !== 0) {
 					throw "Failed to set timezone";
 				} else {
 					reply.code = 200;
