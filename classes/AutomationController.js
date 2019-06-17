@@ -23,6 +23,7 @@ function AutomationController() {
 		'If-None-Match',
 		'Content-Language',
 		'Accept-Language',
+		'X-ZBW-SESSID',
 		'ZWAYSession'
 	];
 	this.config = config.controller || {};

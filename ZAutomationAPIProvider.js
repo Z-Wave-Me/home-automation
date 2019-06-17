@@ -226,7 +226,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			data: resProfile,
 			code: 200,
 			headers: {
-				"Set-Cookie": "ZWAYSession=" + sid + "; Path=/; HttpOnly" // set cookie - it will duplicate header just in case client prefers cookies
+				"ZWAYSession": resProfile.sid,
+				"Set-Cookie": "ZWAYSession=" + sid + "; Path=/" // set cookie - it will duplicate header just in case client prefers cookies
 			}
 		};
 	},
@@ -238,7 +239,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			code: 401,
 			suppress401Auth: true, // to suppress basic auth form from the browser
 			headers: {
-				"Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+				"Set-Cookie": "ZWAYSession=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
 			}
 		}
 	},
@@ -261,7 +262,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			data: res,
 			code: 200,
 			headers: {
-				"Set-Cookie": "ZWAYSession=" + res.sid + "; Path=/; HttpOnly" // set cookie - it will duplicate header just in case client prefers cookies
+				"ZWAYSession": res.sid,
+				"Set-Cookie": "ZWAYSession=" + res.sid + "; Path=/" // set cookie - it will duplicate header just in case client prefers cookies
 			}
 		};
 	},
@@ -323,7 +325,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		if (sessionId) {
 			reply.headers = {
-				"Set-Cookie": "ZWAYSession=deleted; Path=/; HttpOnly; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+				"Set-Cookie": "ZWAYSession=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
 			};
 
 			reply.code = 200;
