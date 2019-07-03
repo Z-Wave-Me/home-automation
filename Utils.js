@@ -354,3 +354,44 @@ function findSmallestNotAssignedIntegerValue (array, key) {
 
  	return dsk;
  }
+
+
+/*
+ * Dump object and fix circular references to output it
+ * (for debug purposes)
+ */
+function dumpObject(obj, ancetors) {
+	if (typeof obj !== "object") return obj;
+	if (obj === null) return null;
+	if (obj === undefined) return undefined;
+	
+	var result = Array.isArray(obj) ? [] : {} ;
+	var keys = Object.keys(obj);
+	
+	if (!ancetors) ancetors = [];
+		
+	for (var i in keys) {
+		var key = keys[i];
+		if (typeof obj[key] === "object") {
+			var circular = false;
+			
+			for (var j in ancetors) {
+				if (obj[key] === ancetors[j]) {
+					circular = true;
+					break;
+				}
+			}
+			if (circular) {
+				result[key] = "circular reference to ancetor (" + (ancetors.length - j) + " up)";
+			} else {
+				var new_ancetors = ancetors.slice(); // copy array
+				new_ancetors.push(obj);
+				result[key] = dumpObject(obj[key], new_ancetors);
+			}
+		} else {
+			result[key] = obj[key];
+		}
+	}
+	
+	return result;
+}
