@@ -1458,6 +1458,7 @@ AutomationController.prototype.getVdevInfo = function(id) {
 AutomationController.prototype.setVdevInfo = function(id, device) {
 	this.vdevInfo[id] = _.pick(device,
 		"deviceType",
+		"probeType",
 		"metrics",
 		"location",
 		"tags",
