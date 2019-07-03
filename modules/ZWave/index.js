@@ -4386,7 +4386,7 @@ ZWave.prototype.gateDevicesStart = function() {
 				return el.id;
 			}).concat(
 				Object.keys(self.controller.vdevInfo).filter(function(__id) {
-					return _id.indexOf("ZWayVDev_" + self.config.name + "_" + id + '-') === 0;
+					return __id.indexOf("ZWayVDev_" + self.config.name + "_" + _id + '-') === 0;
 				})
 			);
 
