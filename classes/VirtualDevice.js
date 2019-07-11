@@ -27,6 +27,7 @@ VirtualDevice = function (options) {
 			'deviceType',
 			'metrics',
 			'location',
+			'locationName',
 			'tags',
 			'updateTime',
 			'permanently_hidden',
@@ -44,6 +45,7 @@ VirtualDevice = function (options) {
 		metrics: {},
 		ready: false,
 		location: 0,
+		locationName: "",
 		tags: [],
 		updateTime: 0,
 		attributes: {
@@ -55,6 +57,7 @@ VirtualDevice = function (options) {
 			tags: tags,
 			permanently_hidden: permHidden,
 			location: location,
+			locationName: "",
 			h: options.controller.hashCode(options.deviceId),
 			hasHistory: false,
 			visibility: visibility,
@@ -137,6 +140,7 @@ _.extend(VirtualDevice.prototype, {
 		'use strict';
 		_.bindAll(this, 'get', 'set');
 		_.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
+		_.extend(this.attributes, { locationName: controller.locationName(this.attributes.location) });
 		_.extend(this.attributes, this.overlay);
 		_.defaults(this.attributes, { "metrics" : {} });
 		_.extend(this.attributes.metrics, this.overlay_metrics);

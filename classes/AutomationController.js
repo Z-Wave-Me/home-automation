@@ -124,6 +124,8 @@ AutomationController.prototype.init = function() {
 					}
 				});
 			}
+			
+			device.set("locationName", self.locationName(locationId));
 		});
 
 		// update namespaces if device permanently_hidden status has changed
@@ -1461,6 +1463,7 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 		"probeType",
 		"metrics",
 		"location",
+		// do not save locationName - recalculate on the fly
 		"tags",
 		"permanently_hidden",
 		"creationTime",
@@ -1636,6 +1639,11 @@ AutomationController.prototype.redeemAllNotifications = function(redeemed, callb
 			callback(false);
 		}
 	}
+};
+
+AutomationController.prototype.locationName = function(locationId) {
+	var location = _.find(this.locations, function(loc) { return loc.id === locationId; });
+	return location ? location.title : "";
 };
 
 AutomationController.prototype.getLocation = function(locations, locationId) {
