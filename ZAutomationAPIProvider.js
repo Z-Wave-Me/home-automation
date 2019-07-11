@@ -206,7 +206,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		sid = this.controller.auth.checkIn(profile, req);
 
-		resProfile = this.controller.safeProfile(profile);
+		resProfile = this.controller.safeProfile(profile, ["authTokens"]);
 		resProfile.sid = sid;
 
 		if (profile.password !== 'admin' && !this.controller.config.hasOwnProperty('firstaccess') || this.controller.config.firstaccess === true) {
@@ -255,7 +255,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return profile.id === auth.user;
 		});
 
-		res = _.extend(this.controller.safeProfile(profile), {sid: controller.auth.getSessionId(this.req)});
+		res = _.extend(this.controller.safeProfile(profile, ["authTokens"]), {sid: controller.auth.getSessionId(this.req)});
 
 		return {
 			error: null,
@@ -1439,7 +1439,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			if (this.req.role === this.ROLE.ADMIN) {
 				profiles = this.controller.getListProfiles();
 			} else {
-				getProfile = this.controller.safeProfile(this.controller.getProfile(this.req.user), ["role"]);
+				getProfile = this.controller.safeProfile(this.controller.getProfile(this.req.user), ["role", "authTokens"]);
 				if (getProfile) {
 					profiles = [getProfile];
 				}

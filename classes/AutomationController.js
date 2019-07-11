@@ -1842,17 +1842,19 @@ AutomationController.prototype.safeProfile = function(profile, exclude) {
 		}
 	}
 
-	// explicitelly copy authTokens
-	prof.authTokens = [];
-	if (profile.authTokens) {
-		profile.authTokens.forEach(function(authToken) {
-			prof.authTokens.push({
-				sid: authToken.sid.substr(0,6) + "...", // first 6 symbols are uniq - see AuthController
-				agent: authToken.agent,
-				date: authToken.date,
-				expire: authToken.expire
+	// explicitelly copy authTokens if not in exclude list
+	if (!exclude || exclude.indexOf("authTokens") === -1) {
+		prof.authTokens = [];
+		if (profile.authTokens) {
+			profile.authTokens.forEach(function(authToken) {
+				prof.authTokens.push({
+					sid: authToken.sid.substr(0,6) + "...", // first 6 symbols are uniq - see AuthController
+					agent: authToken.agent,
+					date: authToken.date,
+					expire: authToken.expire
+				});
 			});
-		});
+		}
 	}
 	
 	return prof;
@@ -1864,7 +1866,7 @@ AutomationController.prototype.getListProfiles = function() {
 		self = this;
 
 	this.profiles.forEach(function(profile) {
-		getProfiles.push(self.safeProfile(profile));
+		getProfiles.push(self.safeProfile(profile, ["authTokens"]));
 	});
 	return getProfiles;
 };
