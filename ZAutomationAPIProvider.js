@@ -588,13 +588,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			expLocations = [];
 
 		// generate namespaces per location
-		if (locations.length > 0) {
-			reply.code = 200;
-			reply.data = locations;
-		} else {
-			reply.code = 404;
-			reply.error = 'Could not list locations.';
-		}
+		reply.code = 200;
+		reply.data = locations;
 
 		return reply;
 	},
