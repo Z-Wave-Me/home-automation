@@ -6,10 +6,19 @@ var console = {
 	error: debugPrint,
 	debug: debugPrint,
 	logJS: function () {
-		var arr = [];
-		for (var key in arguments)
-			arr.push(JSON.stringify(arguments[key]));
+		var arr = [], pretty = undefined;
+		for (var key in arguments) {
+			if (key == 0 && arguments[key] === "pretty") { // unstrict key == 0 since it is a string
+				pretty = "  ";
+				continue;
+			}
+			arr.push(JSON.stringify(arguments[key], undefined, pretty));
+		}
 		debugPrint(arr);
+	},
+	logJSP: function() {
+		Array.prototype.unshift.call(arguments, "pretty");
+		console.logJS.apply(null, arguments);
 	}
 };
 
