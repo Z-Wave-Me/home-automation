@@ -1,3 +1,66 @@
+#18.07.2019 v3.0.0
+New features:
+* Implemented Authentication Bearer for OAuth2.0.
+* Permanent tokens
+* Per device access for users added
+* Making automaticaly permanent tokens with Authorization Bearer
+* Add locationName attribure to vDev
+* Thermostat commands improved
+* HTTP redirect API added
+* RemoveToken API added.
+* Rework of profiles API
+* Made session permanent and stored in config.js
+* Added new bootloader to Z-Wave OTW
+
+Improvements:
+* EnOcean improvements
+* Updated encryption function for TP Link Wifi Plugs
+* Сapability to change level of sensorMultilevel and sensorBinary, useful for CodeDevice and HTTPDevice
+* Support of postfix application for all devices of the same manufacturer
+
+Fixes:
+* Do not return 404 if no rooms granted to the user. Return empty0
+* Save vDev probeType in config.json
+* ThermostatSetPoint posfix fix
+* Removed HttpOnly from the ZWaySession cookie.
+* Duplicate ZWaySession in the header
+* Timezone fixed for Raspberry Pi
+* Fixed RGBW off oldColor save
+* Added missing set of metrics:level for toggleButton
+* Old tokens cleanup fixed.
+* Do not apply Anonymous if there was and attempt to login (Auth Basic, Bearer or SESSID)
+* Remove profile on OAuth2 failures
+* Added WWW-Authenticate header to HTTP 401 reply
+* Fixed bug in MobileAppSupport leading to error
+* SwitchControlGenerator. Do not create device for CentralScene as it is handled in ZWave module
+* Merge pull request #463 from RobertGebauer/master
+* Update check of level to set: must be a number
+* SHUI-546 Fix Info Widget
+* SHUI-543 do not save unneeded instanceId in instance
+* https://github.com/Z-Wave-Me/home-automation/issues/475
+* update MobileAppSupport
+* SHUI-521 add notification to scenes
+* SHUI-534 fix silent and normal alarm
+* SHUI-519 Support to compare 2 devices
+* fix: getting new sid/session although the old session is still available,
+* add default checks to VirtualDevice function for params tags, order, location, creationTime
+* [SHUI-508] fix broken password reset
+* [SHUI-507] Rules: Fix reverse function problem with 0
+* Update check of level to set: must be a number
+* Bugfix. Level "0" won't be set with previous check as !!level evaluates to "false" for level=0. As level "0" should be a valid level to set, the level is checked to be a number now.
+
+AutoOff:
+ * Doorlock support for AutoOff module
+
+DeviceHistory:
+ * externalAPIRevoke to DeviceHistory stop function added
+
+IfThen:
+ * handling dimmer correctly in IfThen
+
+NotificationSMSru:
+ * Huawei 3G/4G modems support
+
 #10.10.2018 v2.3.8
 Features:
 * remove uploaded room images
