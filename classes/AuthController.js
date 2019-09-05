@@ -82,8 +82,9 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		
 		var removedExpired = false;
 		session = _.find(this.controller.profiles, function(profile) {
-			var toRemove = [];
-			return _.find(profile.authTokens, function(authToken) {
+			var _profile, toRemove = [];
+			
+			_profile = _.find(profile.authTokens, function(authToken) {
 				// remove expired tokens
 				if (authToken.expire > 0 && authToken.expire < (new Date()).valueOf()) {
 					toRemove.push(authToken.sid);
@@ -100,6 +101,8 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 			toRemove.forEach(function(token) {
 				self.controller.removeToken(profile, token, true); // skip save
 			});
+			
+			return _profile;
 		});
 		if (removedExpired) this.controller.saveConfig();
 	}
