@@ -4852,6 +4852,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 							defaults = {
 								deviceType: "switchMultilevel",
+								location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : 0,
 								probeType: '',
 								metrics: {
 									icon: 'multilevel',
@@ -5371,6 +5372,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			defaults = {
 				deviceType: 'battery',
+				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : 0,
 				metrics: {
 					probeTitle: 'Battery',
 					scaleTitle: '%',
