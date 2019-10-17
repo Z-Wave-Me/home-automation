@@ -1917,15 +1917,22 @@ AutomationController.prototype.updateProfile = function(object, id) {
 		index;
 
 	if (profile) {
+		var devicesUpdated = false;
 		index = this.profiles.indexOf(profile);
 
 		for (var property in object) {
 			if (object.hasOwnProperty(property) && profile.hasOwnProperty(property)) {
+				if (property === "devices" && JSON.stringify(this.profiles[index].devices) != JSON.stringify(object.devices)) {
+					devicesUpdated = true;
+				}
+
 				this.profiles[index][property] = object[property];
 			}
 		}
+		if (devicesUpdated) {
+			this.emit('profile.devices', object.devices);
+		}
 	}
-
 	this.saveConfig();
 	return this.profiles[index];
 };
