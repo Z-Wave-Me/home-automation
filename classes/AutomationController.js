@@ -1027,7 +1027,7 @@ AutomationController.prototype.reconfigureInstance = function(id, instanceObject
 		if (!!register_instance) {
 			if (this.instances[index].active) { // here we read new config instead of existing
 				register_instance.init(config);
-				//this.registerInstance(register_instance);
+				this.registerInstance(register_instance);
 			} else {
 				register_instance.saveNewConfig(config);
 			}
