@@ -93,6 +93,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
+		this.router.del("/profile", this.ROLE.USER, this.removeOwnProfile);
 		this.router.post("/oauth2", this.ROLE.ADMIN, this.createOAuth2Profile);
 
 		this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
@@ -1625,7 +1626,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500
 			},
 			reqObj,
-			profile = this.controller.getProfile(profileId),
+			profile = _.clone(this.controller.getProfile(profileId)), // clone to allow check changes in controller.updateProfile
 			uniqueProfProps = [];
 
 		if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
@@ -1647,7 +1648,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						// login is changed by updateProfileAuth()
 						profile.role = reqObj.role;
 						profile.rooms = reqObj.rooms.indexOf(0) === -1 && reqObj.role === this.ROLE.ADMIN ? reqObj.rooms.push(0) : reqObj.rooms;
-						profile.devices = reqObj.devices;
+						profile.devices = reqObj.devices || [];
 						profile.expert_view = reqObj.expert_view;
 						profile.beta = reqObj.beta;
 
@@ -1880,6 +1881,29 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.error = "Profile not found";
 		}
 
+		return reply;
+	},
+	removeOwnProfile: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+			profile = this.controller.getProfile(this.req.user);
+		if (profile) {
+			// It is possible to delete own profile if the role is USER
+			if (this.req.role === profile.role) {
+				this.controller.removeProfile(this.req.user);
+				reply.data = null;
+				reply.code = 204;
+			} else {
+				reply.code = 403;
+				reply.error = "Deleting is possible only for own user profile.";
+			}
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
 		return reply;
 	},
 	removeToken: function(profileId, token) {
