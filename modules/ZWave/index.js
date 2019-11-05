@@ -697,6 +697,11 @@ ZWave.prototype.CommunicationLogger = function() {
 		} else {
 			result.application = decodePayload(payload);
 		}
+
+		if (packetType === 'in') {
+			this.controller.emit("ZWave.incomingPacket", result.src, result.dst, payload);
+		}
+
 		return result;
 	}
 
