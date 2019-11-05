@@ -1924,8 +1924,9 @@ AutomationController.prototype.updateProfile = function(object, id) {
 				this.profiles[index][property] = object[property];
 			}
 		}
-	}
 
+		this.emit('profile.updated', profile);
+	}
 	this.saveConfig();
 	return this.profiles[index];
 };
