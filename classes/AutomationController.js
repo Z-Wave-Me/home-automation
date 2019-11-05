@@ -44,6 +44,8 @@ function AutomationController() {
 
 	this.notifications = [];
 	this.lastStructureChangeTime = 0;
+	
+	this.notificationChannels = [];
 
 	this._loadedSingletons = [];
 
@@ -1546,9 +1548,9 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 	}
 
 	this.notifications.push(notice);
-
-	this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
+	
 	console.log("Notification:", severity, "(" + type + "):", msg);
+	this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
 };
 
 AutomationController.prototype.deleteNotifications = function(ts, before, callback) {
@@ -3022,6 +3024,26 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 			vDev.set('metrics:isFailed', isFailed);
 		}
 	});
+};
+
+AutomationController.prototype.updateNotificationChannelNamespace = function() {
+	var self = this;
+	
+	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) { return {channelId: id, channelName: self.notificationChannels[id].name}; }));
+};
+
+AutomationController.prototype.registerNotificationChannel = function(id, user, name, handler) {
+	this.notificationChannels[id] = {user: user, name: name, handler: handler};
+	this.updateNotificationChannelNamespace();
+};
+
+AutomationController.prototype.unregisterNotificationChannel = function(id) {
+	delete this.notificationChannels[id];
+	this.updateNotificationChannelNamespace();
+};
+
+AutomationController.prototype.notificationChannelSend = function(id, message) {
+	this.notificationChannels[id].handler(message);
 };
 
 AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
