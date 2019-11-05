@@ -174,7 +174,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 		role = session.role;
 	}
 	
-	return {user: session.id, role: role};
+	return {user: session.id, role: role, token: reqSession.substr(0, 6)};
 };
 
 AuthController.prototype.checkIn = function(profile, req, permanent) {

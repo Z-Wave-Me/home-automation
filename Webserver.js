@@ -29,6 +29,7 @@ ws = new WebServer(8083, function(req) {
 			// fill user field
 			req.user = auth.user;
 			req.role = auth.role;
+			req.authToken = auth.token;
 			
 			var cache = this.evalCache || (this.evalCache = {});
 			var handler = cache[found.name] || (cache[found.name] = evalPath(found.name));
