@@ -2360,8 +2360,8 @@ AutomationController.prototype.getListNamespaces = function(path, namespacesObj,
 			for (var i = 0; i < pathArr.length; i++) {
 				var currPath = pathArr[i + shift],
 					obj = {},
-					lastPath = ['deviceId', 'deviceName'];
-
+					lastPath = ['deviceId', 'deviceName', 'channelId', 'channelName'];
+				
 				if (nspc[currPath]) {
 					nspc = nspc[currPath];
 					result = nspc;
