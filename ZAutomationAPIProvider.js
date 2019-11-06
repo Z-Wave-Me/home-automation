@@ -1517,7 +1517,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				skin: ''
 			});
 
-			reqObj = _.omit(reqObj, 'passwordConfirm');
+			// skip OAuth2 and other metadata (keep redirect_uri - it can be used to link the profile with the user on the third party side)
+			reqObj = _.omit(reqObj, 'passwordConfirm', 'client_id', 'response_type');
 
 			profile = this.controller.createProfile(reqObj);
 			if (profile !== undefined && profile.id !== undefined) {
@@ -1567,11 +1568,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.error = ex.message;
 			return reply;
 		}
-		
-		// do not store those in the profile
-		delete reqObj.client_id;
-		delete reqObj.redirect_uri;
-		delete reqObj.response_type;
 		
 		profileReply = this.createProfile();
 		
