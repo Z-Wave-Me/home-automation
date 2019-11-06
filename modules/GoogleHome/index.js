@@ -22,6 +22,9 @@ GoogleHome.prototype.init = function(config) {
 
     GoogleHome.super_.prototype.init.call(this, config);
 
+    this.HOMEGRAPH_URL = 'https://ghome.z-wave.me:5002/zway/api/v1.0/';
+    this.GOOGLE_PROFILE_NAME = 'https://oauth-redirect.googleusercontent.com';
+    
     this.deferredVDevCreation = [];
     this.deferredVDevCreationTimer = null;
 
@@ -49,7 +52,7 @@ GoogleHome.prototype.init = function(config) {
       self.requestSyncProfiles(self.getActiveAgentUsers().filter(function(agentUser) {
         return agentUser.name === profile.login;
       }).map(function(agentUser) {
-        return agentUser.name;
+        return agentUser.agentId;
       }));
     });
 };
@@ -60,7 +63,7 @@ GoogleHome.prototype.requestSyncProfiles = function(agentUserIds) {
       data = JSON.stringify({'agentUserIds': agentUserIds});
       http.request({
         method: 'POST',
-        url: 'https://testflask11.pagekite.me/zway/api/v1.0/requestSync',
+        url: this.HOMEGRAPH_URL + 'requestSync',
         async: true,
         data: data,
         headers: {
@@ -85,8 +88,8 @@ GoogleHome.prototype.requestSyncDevices = function(devices) {
     
     devices.forEach(function(dev) {
       agentUsers.forEach(function(agentUser) {
-        if (agentUser.dev.indexOf(dev.id) !== -1 && agentUserIds.indexOf(agentUser.name) === -1) {
-          agentUserIds.push(agentUser.name);
+        if (agentUserIds.indexOf(agentUser.agentId) === -1 && self.controller.devicesByUser(agentUser.id).indexOf(dev.id) !== -1) {
+          agentUserIds.push(agentUser.agentId);
         }
       });
     });
@@ -101,9 +104,9 @@ GoogleHome.prototype.reportState = function(dev) {
   var agentUsers = this.getActiveAgentUsers();
   // check every profile if its list of devices has changed and make request to server
   agentUsers.forEach(function(profile) {
-    if (profile.dev.indexOf(dev.id) != -1) {
+    if (self.controller.deviceByUser(dev.id, profile.id)) {
       data.push({
-        agentUserId: profile.name,
+        agentUserId: profile.agentId,
         devices: dev
       })
     }
@@ -112,7 +115,7 @@ GoogleHome.prototype.reportState = function(dev) {
   if (data.length != 0) {
     http.request({
       method: 'POST',
-      url: 'https://testflask11.pagekite.me/zway/api/v1.0/reportState',
+      url: this.HOMEGRAPH_URL + 'reportState',
       async: true,
       data: JSON.stringify(data),
       headers: {
@@ -129,15 +132,16 @@ GoogleHome.prototype.reportState = function(dev) {
 };
 
 GoogleHome.prototype.getActiveAgentUsers = function() {
-  // get only active Google OAuth profiles with their devices list
-  return this.controller.profiles.map(function(profile){
-    if (profile.hasOwnProperty('redirect_uri')) {
-      if (profile.redirect_uri.indexOf('googleusercontent')) {
-        return {
-          name: profile.login,
-          dev: profile.devices
-        }
-      }
-    }
-  }).filter(function(o) {return o !== undefined});
+  var self = this;
+  
+  // get only active Google OAuth profiles
+  return this.controller.profiles.filter(function(profile) {
+    return profile.login.indexOf(self.GOOGLE_PROFILE_NAME) !== -1 && profile.hasOwnProperty('redirect_uri');
+  }).map(function(profile) {
+    return {
+      id: profile.id,
+      name: profile.login,
+      agentId: profile.redirect_uri
+    };
+  });
 }
