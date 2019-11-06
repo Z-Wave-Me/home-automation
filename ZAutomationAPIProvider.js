@@ -360,7 +360,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0;
 
 		reply.data.structureChanged = this.controller.lastStructureChangeTime >= since && since? true : false;
-		reply.data.devices = this.devicesByUser(this.req.user, function(dev) {
+		reply.data.devices = this.controller.devicesByUser(this.req.user, function(dev) {
 			return dev.get("updateTime") >= (reply.data.structureChanged ? 0 : since);
 		});
 		if (Boolean(this.req.query.pagination)) {
@@ -374,7 +374,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				error: null,
 				data: null
 			},
-			device = _.find(this.devicesByUser(this.req.user), function(device) {
+			device = _.find(this.controller.devicesByUser(this.req.user), function(device) {
 				return device.id === vDevId;
 			});
 
@@ -414,7 +414,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				result = true;
 			}
 		} else {
-			device = this.deviceByUser(vDevId, this.req.user);
+			device = this.controller.deviceByUser(vDevId, this.req.user);
 			if (device) {
 				reply.data = device.set(reqObj);
 				result = true;
@@ -436,7 +436,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 200
 			},
 			result_execution_command,
-			vDev = this.deviceByUser(vDevId, this.req.user);
+			vDev = this.controller.deviceByUser(vDevId, this.req.user);
 
 		if (vDev) {
 			result_execution_command = vDev.performCommand.call(vDev, commandId, this.req.query);
@@ -459,8 +459,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			timestamp = new Date().getTime(),
 			since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
 			to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
-			profile = this.profileByUser(this.req.user),
-			devices = this.devicesByUser(this.req.user).map(function(device) {
+			profile = this.controller.profileByUser(this.req.user),
+			devices = this.controller.devicesByUser(this.req.user).map(function(device) {
 				return device.id;
 			}),
 			test = function(n) {
@@ -585,7 +585,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null,
 				error: null
 			},
-			locations = this.locationsByUser(this.req.user),
+			locations = this.controller.locationsByUser(this.req.user),
 			expLocations = [];
 
 		// generate namespaces per location
@@ -600,7 +600,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null,
 				error: null
 			},
-			locations = this.locationsByUser(this.req.user),
+			locations = this.controller.locationsByUser(this.req.user),
 			_location = [],
 			locationId = !isNaN(locationId) ? parseInt(locationId, 10) : locationId;
 
@@ -623,7 +623,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null,
 				error: null
 			},
-			locations = this.locationsByUser(this.req.user),
+			locations = this.controller.locationsByUser(this.req.user),
 			_location = [],
 			locationId = !isNaN(locationId) ? parseInt(locationId, 10) : locationId;
 
@@ -3784,7 +3784,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500
 			},
 			response = 'in progress',
-			req_user = this.profileByUser(this.req.user),
+			req_user = this.controller.profileByUser(this.req.user),
 			reqObj = parseToObject(this.req.body),
 			user = reqObj.user && reqObj.user !== '' ? reqObj.user : undefined,
 			pass = reqObj.pass && reqObj.pass !== '' ? reqObj.pass : undefined;
@@ -3882,7 +3882,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			},
 			response = 'in progress',
 			reqObj = parseToObject(this.req.body),
-			req_user = this.profileByUser(this.req.user),
+			req_user = this.controller.profileByUser(this.req.user),
 			identifier = reqObj.cit_identifier && reqObj.cit_identifier !== '' ? reqObj.cit_identifier : undefined;
 
 		try {
@@ -4175,78 +4175,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	}
 });
 
-ZAutomationAPIWebRequest.prototype.profileByUser = function(userId) {
-	return _.find(this.controller.profiles, function(profile) {
-		return profile.id === userId
-	});
-};
-
-ZAutomationAPIWebRequest.prototype.devicesByUser = function(userId, filter) {
-	var devices = this.controller.devices.filter(filter),
-		profile = this.profileByUser(userId);
-
-	if (!profile) {
-		return [];
-	}
-
-	if (profile.role === this.ROLE.ADMIN) {
-		return devices;
-	} else {
-		// explicitelly allowed devices
-		var allowedDevices = [];
-		if (!!profile.devices) {
-			allowedDevices = devices.filter(function(dev) {
-				return profile.devices.indexOf(dev.id) !== -1;
-			});
-		}
-		
-		// devices from allowed rooms
-		if (!!profile.rooms) {
-			var allowedDevicesFromRooms = devices.filter(function(dev) {
-				// show only devices from allowed rooms (don't show unallocated devices)
-				return dev.get("location") != 0 && profile.rooms.indexOf(dev.get("location")) !== -1;
-			});
-			// append explicitedly allowed devices (unique concat)
-			allowedDevices.forEach(function(dev) {
-				if (allowedDevicesFromRooms.map(function(d) { return d.id; }).indexOf(dev.id) === -1) {
-					allowedDevicesFromRooms.push(dev);
-				}
-			});
-			return allowedDevicesFromRooms;
-		} else {
-			return allowedDevices;
-		}
-	}
-};
-
-ZAutomationAPIWebRequest.prototype.deviceByUser = function(vDevId, userId) {
-	if (this.devicesByUser(userId).filter(function(device) {
-			return device.id === vDevId
-		}).length) {
-		return this.controller.devices.get(vDevId);
-	}
-	return null;
-};
-
-ZAutomationAPIWebRequest.prototype.locationsByUser = function(userId) {
-	var profile = this.profileByUser(userId);
-
-	if (!profile) {
-		return [];
-	}
-
-	if (profile.role === this.ROLE.ADMIN) {
-		return this.controller.locations;
-	} else {
-		if (!!profile.rooms) {
-			return this.controller.locations.filter(function(location) {
-				return profile.rooms.indexOf(location.id) !== -1;
-			});
-		} else {
-			return [];
-		}
-	}
-};
 
 ZAutomationAPIWebRequest.prototype.authCIT = function() {
 	var license = true;

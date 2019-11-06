@@ -3438,3 +3438,76 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 	// update params and instance
 	return newDevArr;
 };
+
+AutomationController.prototype.profileByUser = function(userId) {
+	return _.find(this.profiles, function(profile) {
+		return profile.id === userId
+	});
+};
+
+AutomationController.prototype.devicesByUser = function(userId, filter) {
+	var devices = this.devices.filter(filter),
+		profile = this.profileByUser(userId);
+
+	if (!profile) {
+		return [];
+	}
+
+	if (profile.role === this.auth.ROLE.ADMIN) {
+		return devices;
+	} else {
+		// explicitelly allowed devices
+		var allowedDevices = [];
+		if (!!profile.devices) {
+			allowedDevices = devices.filter(function(dev) {
+				return profile.devices.indexOf(dev.id) !== -1;
+			});
+		}
+		
+		// devices from allowed rooms
+		if (!!profile.rooms) {
+			var allowedDevicesFromRooms = devices.filter(function(dev) {
+				// show only devices from allowed rooms (don't show unallocated devices)
+				return dev.get("location") != 0 && profile.rooms.indexOf(dev.get("location")) !== -1;
+			});
+			// append explicitedly allowed devices (unique concat)
+			allowedDevices.forEach(function(dev) {
+				if (allowedDevicesFromRooms.map(function(d) { return d.id; }).indexOf(dev.id) === -1) {
+					allowedDevicesFromRooms.push(dev);
+				}
+			});
+			return allowedDevicesFromRooms;
+		} else {
+			return allowedDevices;
+		}
+	}
+};
+
+AutomationController.prototype.deviceByUser = function(vDevId, userId) {
+	if (this.devicesByUser(userId).filter(function(device) {
+			return device.id === vDevId
+		}).length) {
+		return this.devices.get(vDevId);
+	}
+	return null;
+};
+
+AutomationController.prototype.locationsByUser = function(userId) {
+	var profile = this.profileByUser(userId);
+
+	if (!profile) {
+		return [];
+	}
+
+	if (profile.role === this.auth.ROLE.ADMIN) {
+		return this.locations;
+	} else {
+		if (!!profile.rooms) {
+			return this.locations.filter(function(location) {
+				return profile.rooms.indexOf(location.id) !== -1;
+			});
+		} else {
+			return [];
+		}
+	}
+};
