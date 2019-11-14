@@ -2318,7 +2318,10 @@
 		"product": "Qubino Flush 1 Relay",
 		"apply_postfix": "1",
 		"preInterview": [],
-		"postInterview": ["renameNode,Qubino Flush 1 Relay\"; \"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"],
+		"postInterview": [
+			"renameNode, Qubino Flush 1 Relay",
+			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+		],
 		"author_last_update": "2019-01-25 10:46:15",
 		"author": "SPRS",
 		"tester": "SPRS",
