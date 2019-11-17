@@ -27,31 +27,34 @@ _module = EasyScripting;
 EasyScripting.prototype.init = function (config) {
 	EasyScripting.super_.prototype.init.call(this, config);
 
+	// make sure to hide all local variables in script execution
 	var self = this;
-
-	this.setVDevHelper();
+	
+	// helpers in script
+	this.setHelpers();
 	
 	// extract events and the code
-	var code = this.config.script.split('\n').filter(function(s) { return !s.match(/^###/); }).join('\n');
+	this.code = this.config.script.split('\n').filter(function(s) { return !s.match(/^###/); }).join('\n');
 	this.events = this.config.script.split('\n').filter(function(s) { return s.match(/^###/); }).map(function(s) { return s.match(/^###\W*([\w-]*)\W*/)[1]; });
 	
 	try {
-		eval('this.script = function(vdev, on, off) { "use strict";' + code + '};');
+		eval('this.script = function(global, vdev, setTimer, stopTimer, on, off) { "use strict";' + this.code + '};');
 	} catch (e) {
 		this.addNotification("error", e.toString(), "module");
 		return;
 	}
 	
-	console.logJS(this.vDevHelper().value);
 	this.onEvent = function() {
 		if (self.running) {
 			self.addNotification("error", "Loop detected", "module");
 			return;
 		}
 		self.running = true;
-		(function(vdev) {
-			self.script(vdev, "on", "off");
-		})(self.vDevHelper);
+		// make sure to hide outer scope variables and global variables
+		var _script = self.script;
+		(function(global, self, vdev, setTimer, stopTimer) {
+			_script(global, vdev, setTimer, stopTimer, "on", "off");
+		})(EasyScripting.globals, undefined, self.vDevHelper, self.setTimer, self.stopTimer);
 		self.running = false;
 	};
 
@@ -81,8 +84,32 @@ EasyScripting.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-EasyScripting.prototype.setVDevHelper = function() {
+EasyScripting.prototype.setHelpers = function() {
 	var self = this;
+	
+	var constr = this.constructor;
+	
+	// glabal.xxx in scrpits
+	// create one static propery for globals
+	if (!constr.globals) {
+		constr.globals = {};
+		constr.timers = {11: 42};
+	}
+	
+	// Timers
+	
+	this.setTimer = function(name, func, timeout) {
+		self.stopTimer(name);
+		constr.timers[name] = setTimeout(func, timeout*1000);
+		console.logJS(timeout);
+	};
+	this.stopTimer = function(name) {
+		if (constr.timers[name]) {
+			clearTimeout(constr.timers[name]);
+		}
+	};
+	
+	// VDev
 	
 	var vDevWrapper = function(vDevId) {
 		this.dev = self.controller.devices.get(vDevId);
@@ -124,3 +151,4 @@ EasyScripting.prototype.setVDevHelper = function() {
 		return new vDevWrapper(vDevId);
 	}
 };
+
