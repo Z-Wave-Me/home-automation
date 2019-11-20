@@ -1889,9 +1889,20 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (profile) {
 			// It is possible to delete own profile if the role is USER
 			if (this.req.role === profile.role) {
-				this.controller.removeProfile(this.req.user);
-				reply.data = null;
-				reply.code = 204;
+				if (profile.authTokens.length == 1) {
+					// remove full profile
+					this.controller.removeProfile(this.req.user);
+					reply.data = null;
+					reply.code = 204;
+				} else if (profile.authTokens.length > 1) {
+					// remove single token
+					this.controller.removeToken(profile, this.req.token)
+					reply.data = null;
+					reply.code = 204;
+				} else {
+					reply.code = 404;
+					reply.error = "No tokens found - how have you logged in?";
+				}
 			} else {
 				reply.code = 403;
 				reply.error = "Deleting is possible only for own user profile.";
