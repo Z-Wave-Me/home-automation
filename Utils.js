@@ -404,3 +404,11 @@ function dumpObject(obj, ancetors) {
 	
 	return result;
 }
+
+function debugPrintStack() {
+	try {
+		throw new Error("Printing stack trace");
+	} catch(e) {
+		console.log(e.stack);
+	}
+}
