@@ -1903,6 +1903,7 @@ AutomationController.prototype.createProfile = function(profile) {
 
 	profile.salt = generateSalt();
 	profile.password = hashPassword(profile.password, profile.salt);
+	profile.uuid = crypto.guid();
 
 	this.profiles.push(profile);
 

@@ -1517,8 +1517,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				skin: ''
 			});
 
-			// skip OAuth2 and other metadata (keep redirect_uri - it can be used to link the profile with the user on the third party side)
-			reqObj = _.omit(reqObj, 'passwordConfirm', 'client_id', 'response_type');
+			// skip OAuth2 and other metadata
+			reqObj = _.omit(reqObj, 'passwordConfirm', 'client_id', 'response_type', 'redirect_uri');
 
 			profile = this.controller.createProfile(reqObj);
 			if (profile !== undefined && profile.id !== undefined) {
