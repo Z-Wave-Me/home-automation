@@ -57,26 +57,28 @@ GoogleHome.prototype.init = function(config) {
     });
 };
 
+GoogleHome.prototype.stop = function() {
+    GoogleHome.super_.prototype.stop.call(this);
+};
+
 GoogleHome.prototype.requestSyncProfiles = function(agentUserIds) {
   if (agentUserIds.length != 0) {
-    if (agentUserIds[0] != null) {
-      data = JSON.stringify({'agentUserIds': agentUserIds});
-      http.request({
-        method: 'POST',
-        url: this.HOMEGRAPH_URL + 'requestSync',
-        async: true,
-        data: data,
-        headers: {
-          "Content-Type": "application/json"
-        },
-        success: function(response) {
-          console.log("Google Home updated");
-        },
-        error: function(response) {
-          console.log("Google Home update error: " + response.statusText + ", " + response.data);
-        }
-      });
-    }
+    data = JSON.stringify({'agentUserIds': agentUserIds});
+    http.request({
+      method: 'POST',
+      url: this.HOMEGRAPH_URL + 'requestSync',
+      async: true,
+      data: data,
+      headers: {
+        "Content-Type": "application/json"
+      },
+      success: function(response) {
+        console.log("Google Home updated");
+      },
+      error: function(response) {
+        console.log("Google Home update error: " + response.statusText + ", " + response.data);
+      }
+    });
   }
 };
 
@@ -101,13 +103,12 @@ GoogleHome.prototype.reportState = function(dev) {
   var self = this,
       data = [];
   
-  var agentUsers = this.getActiveAgentUsers();
   // check every profile if its list of devices has changed and make request to server
-  agentUsers.forEach(function(profile) {
+  this.getActiveAgentUsers().forEach(function(profile) {
     if (self.controller.deviceByUser(dev.id, profile.id)) {
       data.push({
         agentUserId: profile.agentId,
-        devices: dev
+        device: dev
       })
     }
   });
@@ -136,12 +137,17 @@ GoogleHome.prototype.getActiveAgentUsers = function() {
   
   // get only active Google OAuth profiles
   return this.controller.profiles.filter(function(profile) {
-    return profile.login.indexOf(self.GOOGLE_PROFILE_NAME) !== -1 && profile.hasOwnProperty('redirect_uri');
+    // TODO: Change this to some special mark of token
+    return profile.login.indexOf(self.GOOGLE_PROFILE_NAME) !== -1;
   }).map(function(profile) {
     return {
       id: profile.id,
       name: profile.login,
-      agentId: profile.redirect_uri
+      agentId: profile.uuid
     };
   });
 }
+
+// TODO: API to notify this module that the token has to be marked as Google Home (and the profile too)
+
+// TODO: !!! Check that you can link two times the same profile with two Google accounts and Google will not complain on this (same agentId). In that case change agentID to tokenID
