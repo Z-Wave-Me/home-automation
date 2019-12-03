@@ -1,0 +1,93 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "support_external_dev",
+	"author": "Jorge Rivera",
+	"homepage": "https://github.com/latchdevel/home-automation/tree/SR201Device",
+	"icon": "icon.png",
+	"moduleName": "SR201Device",
+	"version": "2.3.8",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"deviceType": "switchBinary",
+		"deviceIp" : "",
+		"devicePort" : "6722",
+		"channelNumber" : "1",
+		"getterPollInterval_switchBinary": 0,
+		"updateOnAction": false,
+		"skipEventIfSameValue": false
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			
+
+			"deviceIp": {
+				"type": "string",
+				"required": true
+			},
+			"devicePort": {
+				"type": "string",
+				"default": "6722",
+				"required": true
+			},
+			"channelNumber": {
+				"type": "string",
+				"enum": ["1", "2", "3", "4", "5", "6", "7", "8"],
+				"default": "1",
+				"required": true
+			},
+			"getterPollInterval_switchBinary": {
+				"type": "integer",
+				"required": false
+			},
+			"updateOnAction": {
+				"type": "boolean",
+				"required": true
+			},
+			"skipEventIfSameValue": {
+				"type": "boolean",
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"deviceIp": {
+				"label": "__l_deviceIp__",
+				"placeholder": "__p_deviceIp__"
+			},
+			"devicePort": {
+				"label": "__l_devicePort__",
+				"placeholder": "__p_devicePort__",
+				"helper": "__h_devicePort__"
+			},
+			"channelNumber": {
+				"label": "__l_channelNumber__",
+				"placeholder": "__p_channelNumber__",
+				"helper": "__h_channelNumber__"
+			},
+			"getterPollInterval_switchBinary": {
+				"label": "__l_getterPollInterval__",
+				"helper": "__h_getterPollInterval__"
+			},
+			"updateOnAction": {
+				"type": "checkbox",
+				"rightLabel": "__rl_updateOnAction__",
+				"helper": "__h_updateOnAction__"
+			},
+			"skipEventIfSameValue": {
+				"type": "checkbox",
+				"rightLabel": "__rl_skipEventIfSameValue__",
+				"helper": "__h_skipEventIfSameValue__"
+			}
+		}
+	}
+}
+

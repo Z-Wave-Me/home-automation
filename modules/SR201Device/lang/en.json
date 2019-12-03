@@ -1,0 +1,20 @@
+{
+	"m_title":"SR-201 Device",
+	"m_descr":"This app allows you creating an element based on <b>SR-201 Ethernet Relay Boards.</b> It can be switched by sending commands over TCP or UDP, but this app only support connections to TCP port. You need to add IP address or hostname of SR-201 board and relay channel number for executing the commands like as a binary switches one link of “on” and “off”. <br><br>SR-201 switching relays over ethernet, resulted in at least four different models:<br><br><ul><li>SR-201-1CH - Cased, single relay (1)</li><li>SR-201-2 - Plain board, two relays  (2)</li><li>SR-201-RTC - Cased, four relays (4)</li><li>SR-201-E8B - Plain board, eight relays (8)</li></ul><br>They all seem to work same way. Although, e.g., the SR-201-2 only has two relays, it also has an extension port with another 6 pins which can be switched, too.<br><br>Previously you must configure the IP address of your board by means of the tools provided by the manufacturer <a href='http://www.tutuuu.com'><font color='blue'>http://www.tutuuu.com</font></a> or with some other alternative tool such as this <a href='https://github.com/cryxli/sr201'><font color='blue'>https://github.com/cryxli/sr201</font></a>",
+	"l_icon":"Icon",
+	"l_deviceIp":"IP address or hostname of SR-201 board",
+	"p_deviceIp":"192.168.10.21",
+	"l_devicePort":"TCP port of SR-201 board",
+	"p_devicePort":"6722",
+	"h_devicePort":"SR-201 board listen always at TCP 6722, but others network settings as NAT or Port Forwarding can change it.",
+	"l_channelNumber":"Relay channel number",
+	"p_channelNumber":"1",
+	"h_channelNumber":"Relay channel number must be kind from 1 to 8.",
+	"l_getterPollInterval":"Interval in seconds between polling requests",
+	"h_getterPollInterval":"Empty or 0 to disable periodical requests (explicit update command will still initiate request process).",
+	"rl_updateOnAction": "Update value on action",
+	"h_updateOnAction": "On actions (on/off) update value accordingly before it is polled.",
+	"rl_skipEventIfSameValue": "Don't send update event if value has not changed",
+	"h_skipEventIfSameValue": "If same value is reported, do not send update event. In this case no update listeners will be called."
+}
+
