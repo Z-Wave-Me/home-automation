@@ -5650,7 +5650,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				MODE_COOL = 2;
 
 			// Handle Mode with proper changeVDev
-			if (withMode && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatMode"]) && this.CC["ThermostatMode"] === commandClassId) {
+			if (withMode && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatMode"])) {
 				var withModeOff = !!instance.ThermostatMode.data[MODE_OFF],
 					withModeHeat = !!instance.ThermostatMode.data[MODE_HEAT],
 					withModeCool = !!instance.ThermostatMode.data[MODE_COOL];
@@ -5707,7 +5707,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			}
 
 			// Handle Set Point with proper changeVDev
-			if (withTemp && this.CC["ThermostatSetPoint"] === commandClassId) {
+			if (withTemp) {
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL],
 					modes = [];
