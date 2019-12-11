@@ -6021,6 +6021,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									a_defaults.metrics.icon = 'alarm';
 									a_defaults.probeType = 'alarm_clock';
 									break;
+								case 0x0e: // Siren
+									a_defaults.metrics.icon = 'alarm';
+									a_defaults.probeType = 'siren';
+									break;
 								case 0x12: // Gas Alarm (V7)
 									a_defaults.metrics.icon = 'gas';
 									a_defaults.probeType = 'gas';
