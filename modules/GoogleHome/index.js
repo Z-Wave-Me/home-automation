@@ -29,7 +29,9 @@ GoogleHome.prototype.init = function(config) {
     this.deferredVDevCreationTimer = null;
 
     this.controller.devices.on('change:metrics:level', function(dev) {
-      self.reportState(dev);
+      if (!dev.get('permanently_hidden')) {
+        self.reportState(dev);
+      }
     });
     this.controller.devices.on('change:metrics:title', function(dev) {
       self.requestSyncDevices([dev]);
