@@ -27,28 +27,22 @@ GoogleHome.prototype.init = function(config) {
     
     this.deferredVDevCreation = [];
     this.deferredVDevCreationTimer = null;
+    this.deferredVDevReport = [];
+    this.deferredVDevReportTimer = null;
 
     this.controller.devices.on('change:metrics:level', function(dev) {
       if (!dev.get('permanently_hidden')) {
-        self.reportState(dev);
+        self.delayedReportStateDevices(dev);
       }
     });
     this.controller.devices.on('change:metrics:title', function(dev) {
-      self.requestSyncDevices([dev]);
+      self.delayedRequestSyncDevices(dev);
     });
     this.controller.devices.on('change:location', function(dev) {
-      self.requestSyncDevices([dev]);
+      self.delayedRequestSyncDevices(dev);
     });
     this.controller.devices.on('created', function(dev) {
-      self.deferredVDevCreation.push(dev);
-      if (self.deferredVDevCreationTimer) {
-        clearTimeout(self.deferredVDevCreationTimer);
-      }
-      self.deferredVDevCreationTimer = setTimeout(function() {
-        self.requestSyncDevices(self.deferredVDevCreation);
-        self.deferredVDevCreation = [];
-        self.deferredVDevCreationTimer = null;
-      }, 10*1000);
+      self.delayedRequestSyncDevices(dev);
     });
     this.controller.on('profile.updated', function(profile) {
       self.requestSyncProfiles(self.getActiveAgentUsers().filter(function(agentUser) {
@@ -61,6 +55,55 @@ GoogleHome.prototype.init = function(config) {
 
 GoogleHome.prototype.stop = function() {
     GoogleHome.super_.prototype.stop.call(this);
+};
+
+GoogleHome.prototype.delayedReportStateDevices = function(dev) {
+  var self = this;
+  
+  // remove the device from the list if it was already there
+  for (var i = 0; i < this.deferredVDevReport.length; i++) {
+    if (this.deferredVDevReport[i].id === dev.id) {
+      this.deferredVDevReport.splice(i, 1);
+      break;
+    }
+  }
+  
+  this.deferredVDevReport.push(dev);
+  
+  // set a short timer and send after the delay
+  if (!this.deferredVDevReportTimer) {
+    console.logJS("++++", this.deferredVDevReportTimer);
+    this.deferredVDevReportTimer = setTimeout(function() {
+      self.reportState(self.deferredVDevReport);
+      self.deferredVDevReport = [];
+      self.deferredVDevReportTimer = null;
+    }, 3*1000);
+  }
+};
+
+GoogleHome.prototype.delayedRequestSyncDevices = function(dev) {
+  var self = this;
+  
+  // remove the device from the list if it was already there
+  for (var i = 0; i < this.deferredVDevCreation.length; i++) {
+    if (this.deferredVDevCreation[i].id === dev.id) {
+      this.deferredVDevCreation.splice(i, 1);
+      break;
+    }
+  }
+  
+  this.deferredVDevCreation.push(dev);
+  
+  // restart the timer everty time to collect more data
+  if (this.deferredVDevCreationTimer) {
+    clearTimeout(this.deferredVDevCreationTimer);
+  }
+  
+  this.deferredVDevCreationTimer = setTimeout(function() {
+    self.requestSyncDevices(self.deferredVDevCreation);
+    self.deferredVDevCreation = [];
+    self.deferredVDevCreationTimer = null;
+  }, 10*1000);
 };
 
 GoogleHome.prototype.requestSyncProfiles = function(agentUserIds) {
@@ -92,7 +135,7 @@ GoogleHome.prototype.requestSyncDevices = function(devices) {
     
     devices.forEach(function(dev) {
       agentUsers.forEach(function(agentUser) {
-        if (agentUserIds.indexOf(agentUser.agentId) === -1 && self.controller.devicesByUser(agentUser.id).indexOf(dev.id) !== -1) {
+        if (agentUserIds.indexOf(agentUser.agentId) === -1 && self.controller.deviceByUser(dev.id, agentUser.id)) {
           agentUserIds.push(agentUser.agentId);
         }
       });
@@ -101,37 +144,39 @@ GoogleHome.prototype.requestSyncDevices = function(devices) {
     this.requestSyncProfiles(agentUserIds);
 }
 
-GoogleHome.prototype.reportState = function(dev) {
+GoogleHome.prototype.reportState = function(devices) {
   var self = this,
       data = [];
   
-  // check every profile if its list of devices has changed and make request to server
-  this.getActiveAgentUsers().forEach(function(profile) {
-    if (self.controller.deviceByUser(dev.id, profile.id)) {
-      data.push({
-        agentUserId: profile.agentId,
-        device: dev
-      })
-    }
-  });
-
-  if (data.length != 0) {
-    http.request({
-      method: 'POST',
-      url: this.HOMEGRAPH_URL + 'reportState',
-      async: true,
-      data: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json"
-      },
-      success: function(response) {
-        // not to spam in the log // console.log("Google Home updated");
-      },
-      error: function(response) {
-        console.log("Google Home update error: " + response.statusText + ", " + response.data + ", " + JSON.stringify(data));
+  devices.forEach(function(dev) {
+    // check every profile if its list of devices has changed and make request to server
+    self.getActiveAgentUsers().forEach(function(profile) {
+      if (self.controller.deviceByUser(dev.id, profile.id)) {
+        data.push({
+          agentUserId: profile.agentId,
+          device: dev
+        })
       }
     });
-  }
+
+    if (data.length != 0) {
+      http.request({
+        method: 'POST',
+        url: self.HOMEGRAPH_URL + 'reportState',
+        async: true,
+        data: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json"
+        },
+        success: function(response) {
+          // not to spam in the log // console.log("Google Home updated");
+        },
+        error: function(response) {
+          console.log("Google Home update error: " + response.statusText + ", " + response.data + ", " + JSON.stringify(data));
+        }
+      });
+    }
+  });
 };
 
 GoogleHome.prototype.getActiveAgentUsers = function() {
