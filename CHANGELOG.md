@@ -1,4 +1,4 @@
-#20.01.2020
+#20.01.2020 v3.0.4
 New features:
 * Google Home integration
 * Added Sirent Notification/Alarm type for Goap Luxy
