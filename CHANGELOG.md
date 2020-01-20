@@ -1,3 +1,27 @@
+#20.01.2020
+New features:
+* Google Home integration
+* Added Sirent Notification/Alarm type for Goap Luxy
+* Added SoundSwitch CC support
+* Added debugPrintStack for easier debugging
+* EasyScripting app
+* Qubino Flush 1 Relay postfix
+
+Fixes:
+* Fixed Base64 bug with 0D 0A -> 0A. This issue resulted in corrupted images in rooms
+* Fixed bug with Thermostat Operation toggle missing after inclusion until reboot
+* Remove redirect_uri from profile and add uniq uuid to each profile
+* Delete full profile on DELETE ZAutomation/api/v1/profile if only one token exists or only the token if there are others
+* OAuth2 profiles metadata cleanup
+* Moved devicesByUser, deviceByUser, locationsByUser and profileByUser to AutomationController
+
+#06.09.2019 v3.0.2
+Fixes:
+* location added to switchMultilevel and battery vDev types
+* Version updated
+* Fixed removal of old sessions
+* fix undefined location
+
 #18.07.2019 v3.0.0
 New features:
 * Implemented Authentication Bearer for OAuth2.0.
