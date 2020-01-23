@@ -138,7 +138,7 @@ MobileAppSupport.prototype.init = function(config) {
 
 
 	this.defineHandlers();
-    this.externalAPIAllow();
+        this.externalAPIAllow();
 	global["MobileAppSupportAPI"] = this.MobileAppSupportAPI;
 }
 
@@ -365,14 +365,13 @@ MobileAppSupport.prototype.removeCallbacks = function() {
 };
 
 MobileAppSupport.prototype.stop = function() {
-	var self = this;
-
 	// remove event callbacks 'change:metrics:level', 'notifications.push'
-	self.removeCallbacks();
+	this.removeCallbacks();
 
-	delete global["ZWaveAPI"];
+	this.externalAPIRevoke();
+	delete global["MobileAppSupportAPI"];
 
-	MobileAppSupport.super_.prototype.stop.call(self);
+	MobileAppSupport.super_.prototype.stop.call(this);
 };
 
 // --------------- Public HTTP API -------------------
