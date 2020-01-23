@@ -1,6 +1,6 @@
 /*** DummyDevice Z-Way HA module *******************************************
 
-Version: 1.1.0
+Version: 1.1.1
 (c) Z-Wave.Me, 2017
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Ray Glendenning <ray.glendenning@gmail.com>
@@ -28,6 +28,8 @@ _module = DummyDevice;
 DummyDevice.prototype.init = function (config) {
 	DummyDevice.super_.prototype.init.call(this, config);
 
+	var lastLevel = loadObject("DummyDevice_" + this.id + "_level");
+
 	var self = this,
 		icon = "",
 		level = "",
@@ -36,11 +38,11 @@ DummyDevice.prototype.init = function (config) {
 	switch(deviceType) {
 		case "switchBinary":
 			icon = "switch";
-			level = "off";
+			level = lastLevel || "off";
 			break;
 		case "switchMultilevel":
 			icon = "multilevel";
-			level = 0;
+			level = lastLevel || 0;
 			break;
 	}
 	
@@ -78,6 +80,7 @@ DummyDevice.prototype.init = function (config) {
 				}
 
 				this.set("metrics:level", level);
+				saveObject(this.id + "_level" , level);
 			}
 		},
 		moduleId: this.id
