@@ -6,5 +6,5 @@
 	"l_logTo_json":"als JSON-Datei im Z-Way Speicher",
 	"l_logTo_http":"als HTTP-Request versenden",
 	"l_url":"Sende einen HTTP-Request an: ",
-	"h_url":"Example: http://meindomainname.org/pfad/zu/irgendwas/${id}?meinwert=${wert} - '${id}' und '${wert}' müssen mit der Sensor ID und dem entsprechenden Wert ersetzt werden."
+	"h_url":"Example: http://meindomainname.org/pfad/zu/irgendwas/${id}?meinwert=${value} - '${id}' und '${value}' werden mit der Sensor ID und dem entsprechenden Wert ersetzt."
 }
