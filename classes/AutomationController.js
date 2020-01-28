@@ -663,7 +663,8 @@ AutomationController.prototype.installModule = function(moduleUrl, moduleName) {
 			function() {
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing app " + moduleName + ": " + e);
 				result = "failed";
 			}
 		);
@@ -696,7 +697,8 @@ AutomationController.prototype.uninstallModule = function(moduleId, reset) {
 				function() {
 					result = "done";
 				},
-				function() {
+				function(e) {
+					console.log("Error removing app " + moduleName + ": " + e);
 					result = "failed";
 				}
 			);
@@ -1114,7 +1116,8 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
 			function() {
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing skin " + skinName + ": " + e);
 				result = "failed";
 			}
 		);
@@ -1178,7 +1181,8 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
 			function() {
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing skin " + skinName + ": " + e);
 				result = "failed";
 			}
 		);
@@ -1282,7 +1286,8 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 				filelist = parseToObject(success);
 				reply.message = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing icons set " + name + ": " + e);
 				reply.message = "failed";
 			}
 		);
@@ -1340,7 +1345,8 @@ AutomationController.prototype.listIcons = function() {
 				icons = success;
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing icons set " + name + ": " + e);
 				result = "failed";
 			}
 		);
