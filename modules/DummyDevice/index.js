@@ -46,16 +46,14 @@ DummyDevice.prototype.init = function (config) {
 	
 	var defaults = {
 		metrics: {
-			title: self.getInstanceTitle()
+			title: self.getInstanceTitle(),
+			icon: icon, // here to allow changing icon to custom one
+			level: level // here to restore last value
 		}
 	};
  
 	var overlay = {
-			deviceType: deviceType,
-			metrics: {
-				icon: icon,
-				level: level
-			}	  
+			deviceType: deviceType // here to allow changing type
 	};
 
 	this.vDev = this.controller.devices.create({
