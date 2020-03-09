@@ -1,7 +1,7 @@
 /*** ThermostatDevice Z-Way HA module *******************************************
 
-Version: 1.1.0
-(c) Z-Wave.Me, 2017
+Version: 1.1.1
+(c) Z-Wave.Me, 2019
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>
 Description:
@@ -45,7 +45,7 @@ ThermostatDevice.prototype.init = function (config) {
 		},
 		overlay: {},
 		handler: function (command, args) {
-			self.vDev.set("metrics:level", args.level);
+			self.vDev.set("metrics:level", parseInt(args.level, 10));
 			self.checkTemp();
 		},
 		moduleId: this.id
