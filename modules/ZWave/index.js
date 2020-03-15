@@ -42,6 +42,7 @@ function ZWave(id, controller) {
 		"SwitchBinary": 0x25,
 		"SwitchMultilevel": 0x26,
 		"SwitchColor": 0x33,
+		"SoundSwitch": 0x79,
 		"SceneActivation": 0x2b,
 		"Alarm": 0x71,
 		"AlarmSensor": 0x9c,
@@ -4596,12 +4597,22 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		}
 
 		if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
-
+			var icon = "switch";
+			var probeType = "switch";
+			if (this.zway.devices[nodeId].data.specificType.value == 0x05) {
+				icon = "siren";
+				probeType = "siren";
+			} else if (this.zway.devices[nodeId].data.specificType.value == 0x06) {
+				icon = "valve";
+				probeType = "valve";
+			}
+			
 			defaults = {
 				deviceType: "switchBinary",
 				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : 0,
+				probeType: probeType,
 				metrics: {
-					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren' : 'switch',
+					icon: icon,
 					title: compileTitle('Switch', vDevIdNI),
 					isFailed: false
 				}
@@ -4963,6 +4974,146 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						}
 					}
 				});
+			}
+		} else if (this.CC["SoundSwitch"] === commandClassId) {
+			if (cc.data) {
+				// tones
+				defaults = {
+					deviceType: 'toggleButton',
+					location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : 0,
+					metrics: {
+						icon: 'scene',
+						level: 'on',
+						title: '',
+						isFailed: false
+					}
+				};
+
+				for(var toneId = 0; toneId <= cc.data.tonesNumber.value; toneId++) {
+					(function(toneId) {
+						if ((toneId == 0 || cc.data[toneId]) && !self.controller.devices.get(vDevId + separ + toneId)) {
+							var cVDId = changeDevId + separ + toneId;
+							// check if it should be created
+							if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+
+								// apply postfix if available
+								if (changeVDev[cVDId]) {
+									defaults = applyPostfix(defaults, changeVDev[cVDId], vDevId + separ + toneId, vDevIdNI);
+								}
+
+								defaults.metrics.title = compileTitle(toneId ? cc.data[toneId].toneName.value : 'Mute', vDevIdNI)
+								var vDev = self.controller.devices.create({
+									deviceId: vDevId + separ + toneId,
+									defaults: defaults,
+									overlay: {},
+									handler: function(command) {
+										if (command === "on") {
+											cc.TonePlaySet(toneId);
+										}
+									},
+									moduleId: self.id
+								});
+
+								if (vDev) {
+									vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, toneId + ".toneName", function(type) {
+										try {
+											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+												self.controller.devices.remove(vDevId + separ + toneId);
+											}
+										} catch (e) {}
+									}, "value");
+								}
+							}
+						}
+					})(toneId);
+				}
+				
+				if (!self.controller.devices.get(vDevId)) {
+					// volume
+					defaults = {
+						deviceType: "switchMultilevel",
+						location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : 0,
+						probeType: 'volume',
+						metrics: {
+							icon: 'multilevel',
+							title: compileTitle('Volume', vDevIdNI),
+							isFailed: false
+						}
+					};
+
+					// apply postfix if available
+					if (changeVDev[changeDevId]) {
+						defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
+					}
+
+
+					var vDev = self.controller.devices.create({
+						deviceId: vDevId,
+						defaults: defaults,
+						overlay: {},
+						handler: function(command, args) {
+							var newVal = this.get('metrics:level');
+							if ("on" === command) {
+								newVal = 255;
+							} else if ("off" === command) {
+								newVal = 0;
+							} else if ("min" === command) {
+								newVal = 10;
+							} else if ("max" === command) {
+								newVal = 99;
+							} else if ("increase" === command) {
+								newVal = newVal + 10;
+								if (0 !== newVal % 10) {
+									newVal = Math.round(newVal / 10) * 10;
+								}
+								if (newVal > 99) {
+									newVal = 99;
+								}
+							} else if ("decrease" === command) {
+								newVal = newVal - 10;
+								if (newVal < 0) {
+									newVal = 0;
+								}
+								if (0 !== newVal % 10) {
+									newVal = Math.round(newVal / 10) * 10;
+								}
+							} else if ("exact" === command) {
+								newVal = parseInt(args.level, 10);
+								if (newVal < 0) {
+									newVal = 0;
+								} else if (newVal === 255) {
+									newVal = 255;
+								} else if (newVal > 99) {
+									if (newVal === 100) {
+										newVal = 99;
+									} else {
+										newVal = null;
+									}
+								}
+							} else if ("update" === command) {
+								cc.ConfigurationGet();
+								return;
+							}
+
+							if (0 === newVal || !!newVal) {
+								cc.ConfigurationSet(0, newVal);
+							}
+						},
+						moduleId: self.id
+					});
+
+					if (vDev) {
+						vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "defaultVolume", function(type) {
+							try {
+								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+									vDev.set("metrics:level", this.value);
+								}
+							} catch (e) {}
+						}, "value");
+					}
+				}
 			}
 		} else if (this.CC["SensorBinary"] === commandClassId) {
 			defaults = {
@@ -5508,7 +5659,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				MODE_COOL = 2;
 
 			// Handle Mode with proper changeVDev
-			if (withMode && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatMode"]) && this.CC["ThermostatMode"] === commandClassId) {
+			if (withMode && !self.controller.devices.get(deviceNamePrefix + this.CC["ThermostatMode"])) {
 				var withModeOff = !!instance.ThermostatMode.data[MODE_OFF],
 					withModeHeat = !!instance.ThermostatMode.data[MODE_HEAT],
 					withModeCool = !!instance.ThermostatMode.data[MODE_COOL];
@@ -5565,7 +5716,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			}
 
 			// Handle Set Point with proper changeVDev
-			if (withTemp && this.CC["ThermostatSetPoint"] === commandClassId) {
+			if (withTemp) {
 				var withTempHeat = instance.ThermostatSetPoint.data[MODE_HEAT],
 					withTempCool = instance.ThermostatSetPoint.data[MODE_COOL],
 					modes = [];
@@ -5878,6 +6029,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								case 0x0b: // Clock
 									a_defaults.metrics.icon = 'alarm';
 									a_defaults.probeType = 'alarm_clock';
+									break;
+								case 0x0e: // Siren
+									a_defaults.metrics.icon = 'alarm';
+									a_defaults.probeType = 'siren';
 									break;
 								case 0x12: // Gas Alarm (V7)
 									a_defaults.metrics.icon = 'gas';

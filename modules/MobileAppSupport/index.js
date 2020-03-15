@@ -48,7 +48,7 @@ MobileAppSupport.prototype.init = function(config) {
 	};
 	
 	this.config.apps.forEach(this.announceApp, this);
-}
+};
 
 MobileAppSupport.prototype.stop = function() {
 	this.config.apps.forEach(this.unannounceApp, this);
@@ -57,6 +57,7 @@ MobileAppSupport.prototype.stop = function() {
 
 	MobileAppSupport.super_.prototype.stop.call(this);
 };
+
 MobileAppSupport.prototype.channelIDPrefix = function() {
 	return this.constructor.name + "_" + this.id + "_";
 };

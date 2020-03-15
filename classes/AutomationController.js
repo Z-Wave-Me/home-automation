@@ -665,7 +665,8 @@ AutomationController.prototype.installModule = function(moduleUrl, moduleName) {
 			function() {
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing app " + moduleName + ": " + e);
 				result = "failed";
 			}
 		);
@@ -698,7 +699,8 @@ AutomationController.prototype.uninstallModule = function(moduleId, reset) {
 				function() {
 					result = "done";
 				},
-				function() {
+				function(e) {
+					console.log("Error removing app " + moduleName + ": " + e);
 					result = "failed";
 				}
 			);
@@ -1116,7 +1118,8 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
 			function() {
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing skin " + skinName + ": " + e);
 				result = "failed";
 			}
 		);
@@ -1180,7 +1183,8 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
 			function() {
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing skin " + skinName + ": " + e);
 				result = "failed";
 			}
 		);
@@ -1284,7 +1288,8 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 				filelist = parseToObject(success);
 				reply.message = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing icons set " + name + ": " + e);
 				reply.message = "failed";
 			}
 		);
@@ -1342,7 +1347,8 @@ AutomationController.prototype.listIcons = function() {
 				icons = success;
 				result = "done";
 			},
-			function() {
+			function(e) {
+				console.log("Error installing icons set " + name + ": " + e);
 				result = "failed";
 			}
 		);
@@ -1905,6 +1911,7 @@ AutomationController.prototype.createProfile = function(profile) {
 
 	profile.salt = generateSalt();
 	profile.password = hashPassword(profile.password, profile.salt);
+	profile.uuid = crypto.guid();
 
 	this.profiles.push(profile);
 
@@ -1926,8 +1933,9 @@ AutomationController.prototype.updateProfile = function(object, id) {
 				this.profiles[index][property] = object[property];
 			}
 		}
-	}
 
+		this.emit('profile.updated', profile);
+	}
 	this.saveConfig();
 	return this.profiles[index];
 };
@@ -2780,10 +2788,60 @@ AutomationController.prototype.loadMainLang = function(pathPrefix) {
 };
 
 AutomationController.prototype.loadModuleMedia = function(moduleName, fileName) {
-	var img = ["png", "PNG", "jpg", "jpeg", "JPG", "JPEG", "gif", "GIF"],
-		text = ["css", "js", "txt", "rtf", "xml"],
-		html = ["htm", "html", "shtml"],
-		video = ["mpeg", "mpg", "mpe", "qt", "mov", "viv", "vivo", "avi", "movie", "mp4"],
+	var contentTypes = {
+			"png": "image/png",
+			"jpg": "image/jpeg",
+			"jpeg": "image/jpeg",
+			"gif": "image/gif",
+			
+			"css": "text/css",
+			"js": "text/javascript",
+			"txt": "text/txt",
+			"rtf": "text/rtf",
+			"xml": "text/xml",
+			
+			"htm": "text/htm",
+			"html": "text/html",
+			"shtml": "text/shtml",
+			
+			"mpeg": "video/mpeg",
+			"mpg": "video/mpg",
+			"mpe": "video/mpe",
+			"qt": "video/qt",
+			"mov": "video/mov",
+			"viv": "video/viv",
+			"vivo": "video/vivo",
+			"avi": "video/avi",
+			"movie": "video/movie",
+			"mp4": "video/mp4",
+			
+			"doc": "application/msword",
+			"dot": "application/msword",
+			"docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			"dotx": "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+			"docm": "application/vnd.ms-word.document.macroEnabled.12",
+			"dotm": "application/vnd.ms-word.template.macroEnabled.12",
+			"xls": "application/vnd.ms-excel",
+			"xlt": "application/vnd.ms-excel",
+			"xla": "application/vnd.ms-excel",
+			"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+			"xltx": "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+			"xlsm": "application/vnd.ms-excel.sheet.macroEnabled.12",
+			"xltm": "application/vnd.ms-excel.template.macroEnabled.12",
+			"xlam": "application/vnd.ms-excel.addin.macroEnabled.12",
+			"xlsb": "application/vnd.ms-excel.sheet.binary.macroEnabled.12",
+			"ppt": "application/vnd.ms-powerpoint",
+			"pot": "application/vnd.ms-powerpoint",
+			"pps": "application/vnd.ms-powerpoint",
+			"ppa": "application/vnd.ms-powerpoint",
+			"pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+			"potx": "application/vnd.openxmlformats-officedocument.presentationml.template",
+			"ppsx": "application/vnd.openxmlformats-officedocument.presentationml.slideshow",
+			"ppam": "application/vnd.ms-powerpoint.addin.macroEnabled.12",
+			"pptm": "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
+			"potm": "application/vnd.ms-powerpoint.presentation.macroEnabled.12",
+			"ppsm": "application/vnd.ms-powerpoint.slideshow.macroEnabled.12",
+		},
 		fe,
 		resObject = {
 			data: null,
@@ -2791,35 +2849,18 @@ AutomationController.prototype.loadModuleMedia = function(moduleName, fileName) 
 		};
 
 	try {
-
-		fe = fileName.split(".").pop();
-
-		if (img.indexOf(fe) > -1) {
-			resObject.ct = "image/(png|jpeg|gif)";
-		}
-
-		if (text.indexOf(fe) > -1) {
-			resObject.ct = "text/(css|html|javascript|plain|rtf|xml)";
-		}
-
-		if (html.indexOf(fe) > -1) {
-			resObject.ct = "text/html";
-		}
-
-		if (video.indexOf(fe) > -1) {
-			resObject.ct = "video/(mpeg|quicktime|vnd.vivo|x-msvideo|x-sgi-movie|mp4)";
-		}
-
+		fe = fileName.split(".").pop().toLowerCase();
+		resObject.ct = contentTypes[fe] || "text/plain";
+		
 		try {
 			resObject.data = fs.load('userModules/' + moduleName + '/htdocs/' + fileName);
 		} catch (e) {
 			resObject.data = fs.load('modules/' + moduleName + '/htdocs/' + fileName);
 		}
-
 	} catch (e) {
 		resObject = null;
 	}
-
+	
 	return resObject;
 };
 
@@ -3458,4 +3499,77 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 
 	// update params and instance
 	return newDevArr;
+};
+
+AutomationController.prototype.profileByUser = function(userId) {
+	return _.find(this.profiles, function(profile) {
+		return profile.id === userId
+	});
+};
+
+AutomationController.prototype.devicesByUser = function(userId, filter) {
+	var devices = this.devices.filter(filter),
+		profile = this.profileByUser(userId);
+
+	if (!profile) {
+		return [];
+	}
+
+	if (profile.role === this.auth.ROLE.ADMIN) {
+		return devices;
+	} else {
+		// explicitelly allowed devices
+		var allowedDevices = [];
+		if (!!profile.devices) {
+			allowedDevices = devices.filter(function(dev) {
+				return profile.devices.indexOf(dev.id) !== -1;
+			});
+		}
+		
+		// devices from allowed rooms
+		if (!!profile.rooms) {
+			var allowedDevicesFromRooms = devices.filter(function(dev) {
+				// show only devices from allowed rooms (don't show unallocated devices)
+				return dev.get("location") != 0 && profile.rooms.indexOf(dev.get("location")) !== -1;
+			});
+			// append explicitedly allowed devices (unique concat)
+			allowedDevices.forEach(function(dev) {
+				if (allowedDevicesFromRooms.map(function(d) { return d.id; }).indexOf(dev.id) === -1) {
+					allowedDevicesFromRooms.push(dev);
+				}
+			});
+			return allowedDevicesFromRooms;
+		} else {
+			return allowedDevices;
+		}
+	}
+};
+
+AutomationController.prototype.deviceByUser = function(vDevId, userId) {
+	if (this.devicesByUser(userId).filter(function(device) {
+			return device.id === vDevId
+		}).length) {
+		return this.devices.get(vDevId);
+	}
+	return null;
+};
+
+AutomationController.prototype.locationsByUser = function(userId) {
+	var profile = this.profileByUser(userId);
+
+	if (!profile) {
+		return [];
+	}
+
+	if (profile.role === this.auth.ROLE.ADMIN) {
+		return this.locations;
+	} else {
+		if (!!profile.rooms) {
+			return this.locations.filter(function(location) {
+				return profile.rooms.indexOf(location.id) !== -1;
+			});
+		} else {
+			return [];
+		}
+	}
 };

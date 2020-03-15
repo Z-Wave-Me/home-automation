@@ -171,7 +171,6 @@ var Base64 = {
 		return t
 	},
 	_utf8_encode: function (e) {
-		e = e.replace(/\r\n/g, "\n");
 		var t = "";
 		for (var n = 0; n < e.length; n++) {
 			var r = e.charCodeAt(n);
@@ -403,4 +402,12 @@ function dumpObject(obj, ancetors) {
 	}
 	
 	return result;
+}
+
+function debugPrintStack() {
+	try {
+		throw new Error("Printing stack trace");
+	} catch(e) {
+		console.log(e.stack);
+	}
 }

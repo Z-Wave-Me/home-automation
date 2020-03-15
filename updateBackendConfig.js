@@ -94,7 +94,11 @@
 				if(!profile.hasOwnProperty('beta')) {
 					profile.beta = false;
 				}
-
+				
+				// add uuid to old profiles
+				if (!profile.hasOwnProperty('uuid')) {
+					profile.uuid = crypto.guid();
+				}
 			});
 
 		} else {

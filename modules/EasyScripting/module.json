@@ -1,0 +1,38 @@
+{
+	"singleton": false,
+	"dependencies": [],
+	"category": "developers_stuff",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "EasyScripting",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"script": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"script": {
+				"type": "string",
+				"required": false
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"script": {
+				"type": "textarea",
+				"label": "__l_script__",
+				"helper": "__h_script__"
+			}
+		}
+	}
+}
