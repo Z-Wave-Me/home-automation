@@ -4989,7 +4989,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					}
 				};
 
-				console.logJS("!!!", cc.data.tonesNumber.value, cc.data[1]);
 				for(var toneId = 0; toneId <= cc.data.tonesNumber.value; toneId++) {
 					(function(toneId) {
 						if ((toneId == 0 || cc.data[toneId]) && !self.controller.devices.get(vDevId + separ + toneId)) {
