@@ -465,6 +465,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			"nodeId": data.nodeId.value,
 			"dstNodeId": data.dstNodeId.value,
 			"RSSI": data.RSSI.value,
+			"hops": data.hops.value,
 			"frameType": data.frameType.value,
 			"value": data.value
 		});
