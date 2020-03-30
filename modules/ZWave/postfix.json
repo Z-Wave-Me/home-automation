@@ -365,7 +365,7 @@
 			"rename,0-113-7-3,Tamper",
 			"rename,0-113-6,Door/Window Sensor",
 			"noVDev,0-156-0",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].MultiChannelAssociation.Remove(1,1,0);self.zway.devices[nodeId].Association.Set(1,1);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].MultiChannelAssociation.Remove(1,1,0);self.zway.devices[nodeId].Association.Set(1,1);}"
 		],
 		"author_last_update": "2018-01-03 10:58:01",
 		"author": "NIR,SP",
@@ -1175,7 +1175,7 @@
 			"hide,0-113-8-254",
 			"rename,0-50-0,Total consumption",
 			"rename,0-50-2,Current consumption",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2018-07-20 11:20:51",
 		"author": "SP ; RS",
@@ -1191,7 +1191,7 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": ["renameNode,Qubino Flush Dimmer 0-10V",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}",
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}",
 			"setConfig(0,250,1,1)"
 		],
 		"author_last_update": "2018-07-17 15:25:55",
@@ -1331,7 +1331,7 @@
 			"rename,1-50-2,Current consumption",
 			"rename,1-50-0,Active energy consumption",
 			"hide,1-37",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2018-07-05 13:08:45",
 		"author": "SP",
@@ -1368,7 +1368,7 @@
 			"rename,0-50-0,Total consumption",
 			"rename,0-50-2,Current consumption",
 			"setConfig(0,40,1,1)",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2018-04-19 14:32:47",
 		"author": "SP",
@@ -1762,7 +1762,7 @@
 			"noVDev,0-48",
 			"rename,0-37,Switch all on/off",
 			"renameNode,Qubino Flush 1D Relay",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2019-01-25 10:45:08",
 		"author": "SP",
@@ -2270,7 +2270,7 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": ["renameNode,Qubino PWM Thermostat",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}",
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}",
 			"setConfig(0,40,1,1)"
 		],
 		"author_last_update": "2019-01-21 09:54:51",
@@ -2320,7 +2320,7 @@
 		"preInterview": [],
 		"postInterview": [
 			"renameNode, Qubino Flush 1 Relay",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2019-01-25 10:46:15",
 		"author": "SPRS",
@@ -2504,7 +2504,7 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": ["renameNode,Qubino Flush Shutter",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2018-07-17 14:31:25",
 		"author": "RS",
@@ -2535,7 +2535,7 @@
 			"noVDev,2-113-7-254",
 			"noVDev,3-113-7-254",
 			"setConfig(0,250,1,1)",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2018-07-17 14:19:50",
 		"author": "RS",
@@ -2552,7 +2552,7 @@
 		"preInterview": [],
 		"postInterview": ["renameNode,Qubino Flush Shutter DC",
 			"hide,0-37",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
 		],
 		"author_last_update": "2018-07-17 13:41:41",
 		"author": "RS",
@@ -2975,7 +2975,7 @@
 			"noVDev,3-37",
 			"noVDev,0-37",
 			"setConfig(0,31,2,1)",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1); self.zway.devices[nodeId].Association.Set(3,1);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1); self.zway.devices[nodeId].Association.Set(3,1);}"
 		],
 		"author_last_update": "2018-01-04 12:26:13",
 		"author": "SP",
@@ -3626,7 +3626,7 @@
 			"rename,0-113-6,Door/Window Sensor",
 			"noVDev,0-156-0",
 			"noVDev,0-48-1",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].MultiChannelAssociation.Remove(1,1,0);self.zway.devices[nodeId].Association.Set(1,1);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].MultiChannelAssociation.Remove(1,1,0);self.zway.devices[nodeId].Association.Set(1,1);}"
 		],
 		"author_last_update": "2018-01-03 10:58:01",
 		"author": "AIVS,NIR",
@@ -4296,7 +4296,7 @@
 			"rename,2-37,Switch 2",
 			"renameNode,Philio Double Relay Insert 2*1.5 kW with Metering Function",
 			"setConfig(0,31,2,1)",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1); self.zway.devices[nodeId].Association.Set(3,1);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1); self.zway.devices[nodeId].Association.Set(3,1);}"
 		],
 		"author_last_update": "2018-04-10 11:40:24",
 		"author": "RSSP",
@@ -4881,7 +4881,7 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": ["renameNode,Everspring Panic Button",
-			"if(self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1,0);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1,0);}"
 		],
 		"author_last_update": "2018-07-05 13:09:09",
 		"author": "SP",
