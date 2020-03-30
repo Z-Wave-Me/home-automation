@@ -330,6 +330,8 @@ ZWave.prototype.startBinding = function() {
 	this.refreshStatisticsPeriodically();
 
 	this.CommunicationLogger();
+	
+	this.networkReorganizationInit();
 };
 
 ZWave.prototype.stop = function() {
@@ -349,6 +351,8 @@ ZWave.prototype.stop = function() {
 ZWave.prototype.stopBinding = function() {
 	this.controller.emit("ZWave.unregister", this.config.name);
 
+	this.networkReorganization = null;
+	
 	if (this.config.createVDev !== false) {
 		this.gateDevicesStop();
 		this.deadDetectionStop();
@@ -1278,6 +1282,222 @@ ZWave.prototype.getDSKCollection = function(dskEntryID) {
 		return this.dskCollection;
 	}
 }
+
+ZWave.prototype.networkReorganizationInit = function() {
+	// 1. Walk thru all mains first
+	// 1.1 If some failes, do them in second round and repeat it 4 times (max hops in Z-Wave)
+	// 2. Walk thru all FLiRS (2 tries)
+	// 3. Walk thru batteries
+
+	console.logJS("init -- !!!!!");
+	function NetworkReorganization(that) {
+	    this.nodes = [];
+	    this.log = [];
+	    
+	    this.zway = that.zway;
+	    this.langFile = that.loadModuleLang();
+	}
+
+	NetworkReorganization.prototype.start = function() {
+	    this.addLog(this.langFile.reorg_start, 0);
+	    this.addLog(this.langFile.reorg_start_mains, 0);
+	    
+	    this.nodes = this.getNodesList();
+	    
+	    console.logJS(this.nodes, "!!!!!");
+	    
+	    this.log = [];
+
+	    var self = this;
+	    
+	    this.nodes.forEach(function(node) {
+		// first walk thru Mains only
+		if (node.isMains) {
+		    console.logJS(node.nodeId, "!!!!!");
+		    self.doNode(node.nodeId);
+		}
+	    });
+	};
+
+	NetworkReorganization.prototype.getNodesList = function() {
+	    var self = this;
+	    
+	    console.logJS(this.zway, "!!!!!");
+	    return Object.keys(this.zway.devices).filter(function(nodeId) {
+		// filter self and portable controllers
+		return nodeId != self.zway.controller.data.nodeId.value && self.zway.devices[nodeId].data.basicType.value !== 1;
+	    }).map(function(nodeId) {
+		var node = self.zway.devices[nodeId],
+		    isListening = node.data.isListening.value,
+		    isFLiRS = node.data.sensor250.value || node.data.sensor1000.value;
+		
+		return {
+		    nodeId: nodeId,
+		    isMains: isListening,
+		    isFLiRS: isFLiRS,
+		    isSleeping: !isListening && !isFLiRS,
+		    tries: 0,
+		    fail: false,
+		    done: false
+		};
+	    });
+	};
+
+	NetworkReorganization.prototype.getNodeById = function(nodeId) {
+	    return this.nodes.filter(function(node) { return nodeId == node.nodeId; })[0];
+	};
+
+	NetworkReorganization.prototype.successCbk = function(nodeId) {
+	    this.addLog(this.langFile.reorg_node_done, nodeId);
+	    
+	    var node = this.getNodeById(nodeId);
+	    if (node) {
+		node.done = true;
+	    }
+	    
+	    this.assignRoutesToAssociated(nodeid);
+	    
+	    this.checkNextStep();
+	};
+
+	NetworkReorganization.prototype.failureCbk = function(nodeId) {
+	    this.addLog(this.langFile.reorg_node_failed, nodeId);
+	    
+	    var node = this.getNodeById(nodeId);
+	    if (node) {
+		node.tries++;
+		if (node.tries <= 3) {
+		    this.doNode(nodeId); // it will be placed after all existing jobs, so no need to wait before placing this job
+		} else {
+		    node.fail = true;
+		}
+	    }
+	    
+	    this.checkNextStep();
+	};
+
+	NetworkReorganization.prototype.doNode = function(nodeId) {
+	    if (!this.zway.devices[nodeId].data.isFailed.value) {
+		this.addLog(this.langFile.reorg_node_start, nodeId);
+		
+		var self = this;
+		
+		this.zway.RequestNodeNeighbourUpdate(nodeId, function() {
+		    self.successCbk(nodeId);
+		}, function() {
+		    self.failureCbk(nodeId);
+		});
+	    } else {
+		this.addLog(this.langFile.reorg_node_skip, nodeId);
+	    }
+	};
+
+        NetworkReorganization.prototype.getAssociations = function(nodeId) {
+		var nodes = [];
+		
+		// Association & MultiChannelAssociation
+		for(var i in this.zway.devices[nodeId].instances) {
+		    if (this.zway.devices[nodeId].instances[i].Association) {
+			for(var g in this.zway.devices[nodeId].instances[i].Association.data) {
+			    if (parseInt(g)) {
+				nodes = nodes.concat(this.zway.devices[nodeId].instances[i].Association.data[g].nodes.value);
+			    }
+			}
+		    }
+		    if (this.zway.devices[nodeId].instances[i].MultiChannelAssociation) {
+			for(var g in this.zway.devices[nodeId].instances[i].MultiChannelAssociation.data) {
+			    if (parseInt(g)) {
+				nodes = nodes.concat(this.zway.devices[nodeId].instances[i].MultiChannelAssociation.data[g].nodesInstances.value.filter(function(e, i) { return i % 2 == 0; }));
+			    }
+			}
+		    }
+		}
+		
+		if (this.zway.devices[nodeId].Wakeup) {
+			nodes.push(this.zway.devices[nodeId].Wakeup.data.nodeId.value);
+		}
+		
+		return nodes.filter(function(e, i, s) {
+			return s.indexOf(e) === i; // unique
+		});
+	};
+
+	NetworkReorganization.prototype.assignRoutesToAssociated = function(nodeId) {
+		var self = this,
+		    associations = this.getAssociations(nodeId);
+		
+		// clear all routes
+		this.zway.devices[nodeId].DeleteSUCReturnRoute();
+		this.zway.devices[nodeId].DeleteReturnRoute();
+		
+		// return routes to SUC
+		this.zway.devices[nodeId].AssignSUCReturnRoute();
+		
+		// return routes to associated devices
+		associations.forEach(function(association) {
+			self.zway.devices[nodeId].AssignReturnRoute(association);
+		});
+	};
+	
+	NetworkReorganization.prototype.checkNextStep = function() {
+	    var self = this;
+	    
+	    var finishedMains = true,
+		finishedFLiRS = true,
+		finishedSleeping = true,
+		waitingFLiRS = true,
+		waitingSleeping = true;
+	    
+	    this.nodes.forEach(function(node) {
+		if (node.isMains) {
+		    finishedMains &= node.done || node.fail;
+		}
+		if (node.isFLiRS) {
+		    finishedFLiRS &= node.done || node.fail;
+		    waitingFLiRS &= node.tries == 0;
+		}
+		if (node.isSleeping) {
+		    finishedSleeping &= node.done || node.fail;
+		    waitingSleeping &= node.tries == 0;
+		}
+	    });
+	    
+	    if (finishedMains && waitingFLiRS) {
+		this.addLog(this.langFile.reorg_start_flirs, 0);
+		
+		this.nodes.forEach(function(node) {
+		    if (node.isFLiRS) {
+			self.doNode(node.nodeId);
+		    }
+		});
+	    }
+	    
+	    if (finishedMains && finishedFLiRS) {
+		this.addLog(this.langFile.reorg_start_battery, 0);
+		
+		this.nodes.forEach(function(node) {
+		    if (node.isSleeping) {
+			self.doNode(node.nodeId);
+		    }
+		});
+	    }
+	    
+	    if (finishedSleeping && waitingSleeping || !waitingSleeping) {
+		this.addLog(this.langFile.reorg_finished, 0);
+	    }
+	};
+
+	NetworkReorganization.prototype.addLog = function(message, nodeId) {
+	    this.log.push([message, nodeId]);
+	    console.log(this.langFile.reorg_title + ": " + (nodeId ? (this.langFile.reorg_node_title + nodeId + " ") : "") + message);
+	};
+	
+	NetworkReorganization.prototype.getLog = function() {
+		return this.log;
+	};
+	
+	this.networkReorganization = new NetworkReorganization(this);
+};
 
 // --------------- Public HTTP API -------------------
 
@@ -3006,9 +3226,8 @@ ZWave.prototype.defineHandlers = function() {
 	};
 
 	this.ZWaveAPI.NetworkReorganization = function(url, request) {
-		var reorgState = {}, // local object that will store the reorg results - should be reworked TODO(!!!!)
-			reply = {
-				status: 500,
+		var reply = {
+				status: 200,
 				headers: {
 					"Content-Type": "application/json",
 					"Access-Control-Allow-Origin": "*",
@@ -3017,361 +3236,13 @@ ZWave.prototype.defineHandlers = function() {
 					"Connection": "close"
 				},
 				body: null
-			},
-			// prepare request data
-			req = request && request.query ? request.query : undefined,
-			req = parseToObject(req),
-			cntNodes = 0,
-			requestInterval = 10000, // wait 10 sec between each node reorganization
-			// check if all reorganizations of types have finished
-			finished = function() {
-				var f = true;
-				Object.keys(reorgState.progress).forEach(function(type) {
-					f = !reorgState.progress[type] || (reorgState.progress[type] && reorgState.progress[type].pendingCbk.length < 1);
-					if (!f) {
-						return;
-					}
-				});
-				return f;
-			},
-			reorgMain, reorgBattery;
+			};
+		
+		self.networkReorganization.start();
 
-		// reorganization log array
-		reorgState.reorgLog = [];
-		// warpper that includes all node responses
-		reorgState.nodeRes = {};
-		// object that shows progress of each container
-		reorgState.progress = {};
-		// outstanding node objects of reorganization interval
-		reorgState.nodesPending = [];
-		// timeout for reorg interval
-		reorgState.reorgIntervalTimeout = (new Date().valueOf() + 1200000); // no more than 20 min
-		// load module language keys
-		reorgState.langFile = self.loadModuleLang();
-		// prepare request properties
-		reorgMain = req && req.hasOwnProperty('reorgMain') ? req.reorgMain == 'true' : true;
-		reorgBattery = req && req.hasOwnProperty('reorgBattery') ? req.reorgBattery == 'true' : false;
-
-		/*
-		 * Add a progress container of special type to progress object
-		 */
-		function addTypeToProgress(type, reorg) {
-			if (!reorgState.progress[type]) {
-				reorgState.progress[type] = {
-					reorg: reorg,
-					status: '',
-					pendingCbk: [],
-					timeout: [],
-					all: [],
-					intervalNodesPending: [],
-					nodesPending: []
-				};
-			}
+		reply.body = {
+			data: self.networkReorganization.getLog()
 		};
-
-		/*
-		 * Add a log entry to reorgLog array
-		 */
-		function addLog(message, nodeId) {
-			var entry = {
-				timestamp: (new Date()).valueOf(),
-				message: message,
-				node: nodeId ? nodeId : undefined,
-				type: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].type : undefined,
-				status: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].status : undefined,
-				tries: nodeId && reorgState.nodeRes[nodeId] ? reorgState.nodeRes[nodeId].tries : undefined
-			};
-
-			reorgState.reorgLog.push(entry);
-
-			if (reorgState.reorgLog.length > 0) {
-				self.saveObject('reorgLog', reorgState.reorgLog);
-			}
-		}
-
-		/*
-		 * Remove pending node after done/failed/timeout
-		 */
-		function removeFromPending(type, nodeId) {
-			if (reorgState.progress[type].pendingCbk.indexOf(nodeId) > -1) {
-				reorgState.progress[type].pendingCbk = reorgState.progress[type].pendingCbk.filter(function(node) {
-					return node != nodeId;
-				});
-			}
-		}
-
-		/*
-		 * Remove pending node after delayed done/failed callback from timeout list
-		 */
-		function removeFromTimeout(type, nodeId) {
-			if (reorgState.progress[type].timeout.indexOf(nodeId) > -1) {
-				reorgState.progress[type].timeout = reorgState.progress[type].timeout.filter(function(node) {
-					return node != nodeId;
-				});
-			}
-		}
-
-		/*
-		 * Trigger reorganization of a node and define their callback functions
-		 */
-		function doReorg(nodeId, type) {
-
-			// add single node status
-			if (!reorgState.nodeRes[nodeId]) {
-				reorgState.nodeRes[nodeId] = {
-					status: "in progress",
-					type: type,
-					tries: 0,
-					timeout: 0
-				};
-			}
-
-			/*
-			 * success calback function
-			 * - set node response
-			 * - update routing table
-			 * - update pending/timeout arrays
-			 */
-			var succesCbk = function() {
-				var message = '#' + nodeId + ' (' + type + ') ';
-
-				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId], {
-					status: 'done',
-					type: type,
-					tries: reorgState.nodeRes[nodeId].tries
-				});
-
-				zway.GetRoutingTableLine(nodeId);
-
-				addLog(message + '... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_success, nodeId);
-
-				removeFromPending(type, nodeId);
-				removeFromTimeout(type, nodeId);
-
-				i = 4;
-			};
-
-			/*
-			 * fail calback function
-			 * - set node response
-			 * - trigger reorganization 3 times for failed main devices
-			 * - update pending/timeout arrays
-			 */
-			var failCbk = function() {
-				var preMessage = '#' + nodeId + ' (' + type + ') ',
-					message = '',
-					tries = 0;
-
-				reorgState.nodeRes[nodeId] = _.extend(reorgState.nodeRes[nodeId], {
-					status: 'failed',
-					type: type,
-					tries: reorgState.nodeRes[nodeId].tries + 1
-				});
-
-				tries = reorgState.nodeRes[nodeId].tries;
-
-				if (type === 'main' && tries < 3) {
-					addLog(preMessage + '... ' + tries + reorgState.langFile.reorg_try_failed + ' ' + reorgState.langFile.reorg_next_try);
-					reorgUpdate(nodeId);
-				} else {
-					message = type === 'main' ? reorgState.langFile.reorg_all_tries_failed : '... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_failed;
-
-					addLog(preMessage + message, nodeId);
-
-					removeFromPending(type, nodeId);
-					removeFromTimeout(type, nodeId);
-				}
-			};
-
-			/*
-			 * Trigger RequestNodeNeighbourUpdate
-			 * - set callback timeout of 15 sec
-			 * - respond immediately if it fails
-			 */
-			var reorgUpdate = function(nodeId) {
-				try {
-					reorgState.nodeRes[nodeId].timeout = (new Date()).valueOf() + 30000; // wait not more than 15 seconds
-					zway.RequestNodeNeighbourUpdate(nodeId, succesCbk, failCbk);
-				} catch (e) {
-					console.log(reorgState.langFile.reorg_err_node + nodeId + ': ' + e.message);
-					reorgState.nodeRes[nodeId].status = 'failed';
-					removeFromPending(type, nodeId);
-					addLog('#' + nodeId + ' (' + reorgState.nodeRes[nodeId].type + ') ... ' + reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_failed, nodeId);
-				}
-			}
-
-			// initial reorganization request
-			reorgUpdate(nodeId);
-		}
-
-		/*
-		 * reorganize each outstanding node step by step and remove it from list
-		 */
-		function nodeReorg() {
-			var nodeId = reorgState.nodesPending[0].nodeId,
-				type = reorgState.nodesPending[0].type,
-				currProgressType = reorgState.progress[type],
-				all = currProgressType.all,
-				intervalNodesPending = currProgressType.intervalNodesPending,
-				status = currProgressType.status,
-				reorg = currProgressType.reorg,
-				key = reorgState.langFile['reorg_all_' + type] ? reorgState.langFile['reorg_all_' + type] : reorgState.langFile['reorg_all'] + reorgState.langFile[type] + ': ';
-
-			if (all.length > 0 && all.length === intervalNodesPending.length) {
-				addLog(key + JSON.stringify(all));
-			} else if (intervalNodesPending.length < 1 && status === 'in progress' && reorg) {
-				reorgState.progress[type].status = 'done';
-				addLog(reorgState.langFile.reorg_of + reorgState.langFile[type] + ' ' + reorgState.langFile.reorg_complete);
-			}
-
-			// do reorg for node
-			doReorg(nodeId, type);
-
-			// remove node from intervalNodesPending
-			if (reorgState.progress[type].intervalNodesPending.indexOf(nodeId) > -1) {
-				reorgState.progress[type].intervalNodesPending = reorgState.progress[type].intervalNodesPending.filter(function(node) {
-					return node != nodeId;
-				});
-			}
-
-			// remove first entry from outstanding nodes list
-			reorgState.nodesPending = reorgState.nodesPending.filter(function(entry) {
-				return !_.isEqual(entry, {
-					nodeId: nodeId,
-					type: type
-				})
-			});
-		};
-
-		var initialMsg = reorgBattery && reorgMain ? reorgState.langFile.reorg_with_battery : reorgBattery && !reorgMain ? reorgState.langFile.reorg_battery_only : reorgState.langFile.reorg_without_battery;
-
-		// add initial message to reorganization log
-		addLog(reorgState.langFile.reorg_started + initialMsg);
-
-		// go through all zway devices and push them in their type specific progress container
-		Object.keys(zway.devices).forEach(function(nodeId) {
-			var node = zway.devices[nodeId],
-				isListening = node.data.isListening.value,
-				isMain = (isListening && node.data.isRouting.value) || (isListening && !node.data.isRouting.value),
-				isFLiRS = node.data.sensor250.value || node.data.sensor1000.value,
-				isBattery = !isListening && (!node.data.sensor250.value || !node.data.sensor1000.value),
-				// depending on request params decide if node should be added
-				add = (reorgBattery && isBattery && !isFLiRS) || (reorgMain && !isBattery) || (reorgMain && isBattery && isFLiRS) ? true : false,
-				type = isBattery && !isFLiRS ? 'battery' : (isFLiRS ? 'flirs' : 'main');
-
-			if (add) {
-				addTypeToProgress(type, add);
-				reorgState.progress[type].all.push(nodeId);
-				// add list of pending nodes for callback
-				reorgState.progress[type].pendingCbk = reorgState.progress[type].all;
-				// add list of pending nodes for interval
-				reorgState.progress[type].intervalNodesPending = reorgState.progress[type].all;
-				// add node/type object to type specific list of outstanding nodes - is necessary for interval progress chain
-				reorgState.progress[type].nodesPending.push({
-					nodeId: nodeId,
-					type: type
-				});
-				cntNodes++;
-			}
-		});
-
-		// set initial status of progress container
-		if (reorgState.progress['main']) {
-			reorgState.progress['main'].status = 'in progress';
-		} else if (reorgState.progress['battery']) {
-			reorgState.progress['battery'].status = 'in progress';
-		}
-
-		// merge all lists with node/type objects of outstanding node together
-		Object.keys(reorgState.progress).forEach(function(type) {
-			reorgState.nodesPending = _.uniq(reorgState.nodesPending.concat(reorgState.progress[type].nodesPending));
-		});
-
-		// initial reorganization of first node
-		if (reorgState.nodesPending[0]) {
-			nodeReorg();
-		}
-
-		// process interval that starts reorganization of each node after 10 sec
-		// TODO(!!!) this has to be changed from global handler to the local one
-		reorgState.progressInterval = setInterval(function() {
-			if (reorgState.nodesPending[0]) {
-				nodeReorg();
-			} else {
-				clearInterval(reorgState.progressInterval);
-				reorgState.progressInterval = null;
-				reorgState.nodesPending = [];
-			}
-		}, requestInterval);
-
-		/*
-		 * Global reorganization interval that checks for:
-		 * - callback timeouts
-		 * - whole reorganization progress has timed out
-		 * - whole reorganization progress has finished
-		 */
-		// TODO(!!!) this has to be changed from global handler to the local one
-		reorgState.reorgInterval = setInterval(function() {
-			var nodes = [],
-				cntNodes = Object.keys(reorgState.nodeRes).length,
-				now = (new Date()).valueOf();
-
-			Object.keys(reorgState.nodeRes).forEach(function(nodeId) {
-				var nodeRes = reorgState.nodeRes[nodeId],
-					type = nodeRes.type,
-					status = nodeRes.status,
-					currArr = reorgState.progress[type];
-
-				if (nodes.indexOf(nodeId) < 0) {
-
-					if (status !== 'in progress') {
-						nodes.push(nodeId);
-					} else if (status === 'in progress' && nodeRes.timeout < now) {
-						reorgState.nodeRes[nodeId].status = 'timeout';
-						addLog('#' + nodeId + ' (' + type + ') ... ' + reorgState.langFile.reorg_timeout, nodeId);
-						removeFromPending(type, nodeId);
-						nodes.push(nodeId);
-						currArr.timeout.push(nodeId);
-					} else {
-						if (currArr.pendingCbk.indexOf(nodeId) < 0) {
-							currArr.pendingCbk.push(nodeId);
-						}
-					}
-				}
-			});
-
-			// remove all
-			if (reorgState.reorgInterval &&
-				(nodes.length >= cntNodes && finished()) ||
-				reorgState.reorgIntervalTimeout < now) {
-
-				var allTimeout = [];
-
-				Object.keys(reorgState.progress).forEach(function(type) {
-					allTimeout = _.uniq(allTimeout.concat(reorgState.progress[type].timeout));
-				});
-
-				if (reorgState.reorgIntervalTimeout < now) {
-					addLog(reorgState.langFile.reorg_timeout + ' ... ' + reorgState.langFile.reorg_canceled);
-					addLog('finished');
-				} else {
-					if (allTimeout && allTimeout.length > 0) {
-						addLog(reorgState.langFile.reorg_timeout_nodes + ' ' + JSON.stringify(allTimeout));
-					}
-					addLog(reorgState.langFile.reorg + ' ' + reorgState.langFile.reorg_complete);
-					addLog('finished');
-				}
-
-				clearInterval(reorgState.reorgInterval);
-			}
-		}, 5000);
-
-		if (reorgState.nodeRes) {
-			reply.status = 201;
-			reply.body = {
-				data: reorgState.langFile.reorg + initialMsg + reorgState.langFile.reorg_starting
-			};
-		}
 
 		return reply;
 	};
@@ -3387,10 +3258,11 @@ ZWave.prototype.defineHandlers = function() {
 					"Connection": "close"
 				},
 				body: null
-			},
-			reorgLog = self.loadObject('reorgLog');
+			};
 
-		reply.body = !!reorgLog ? reorgLog : [];
+		reply.body = {
+			data: self.networkReorganization.getLog()
+		};
 
 		return reply;
 	}
