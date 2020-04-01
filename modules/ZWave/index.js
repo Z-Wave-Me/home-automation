@@ -912,16 +912,16 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	if (entry && !!entry) {
 		// setup basic values for each QR code entry
 		transformedEntry = {
-	        id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
-	        isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
-	        state: 'pending',
-	        nodeId: null,
-	        timestamp: (new Date()).valueOf(),
-	        ZW_QR: entry,
-	        PId: '',
-	        givenName: null,
-	        location: 0,
-	        addedAt: null
+			id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
+			isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
+			state: 'pending',
+			nodeId: null,
+			timestamp: (new Date()).valueOf(),
+			ZW_QR: entry,
+			PId: '',
+			givenName: null,
+			location: 0,
+			addedAt: null
 		},
 		// array with length values of the first 5 leading static QR code values
 		pos = [2, 2, 5, 3, 40],
@@ -929,35 +929,34 @@ ZWave.prototype.addDSKEntry = function(entry) {
 		tlv = [2, 2, null],
 		// keys of the first 5 leading static QR code values
 		keys = [
-	        'Leadin',
-	        'Version',
-	        'Chksum',
-	        'S2ReqKeys',
-	        'DSK'
+			'Leadin',
+			'Version',
+			'Chksum',
+			'S2ReqKeys',
+			'DSK'
 		],
 		// type array with all known types and their special value subdivisions
 		// all unknown types will be handled generic, see further below
 		// TLV types
 		types = {
-	        '00': { // ProductType [0x00]
-	          'DeviceType': 5,
-	          'InstallerIconType': 5,
-	        },
-	        '02': { // ProductID [0x01]
-	          'ManufacturerId': 5,
-	          'ProductType': 5,
-	          'ProductId': 5,
-	          'ApplicationVersion': 5
-	        },
-	        '04': { // MaxInclusion RequestInterval [0x02]
-	          'RequestInterval': 2 // 5 - 99 * 128 (640 - 12672)
-
-	        },
-	        '06': { // UUID16 [0x03]
-	          'UUIDPresFormat': 2,
-	          'UUIDData': 40
-	        }
-	    },
+			'00': { // ProductType [0x00]
+			  'DeviceType': 5,
+			  'InstallerIconType': 5,
+			},
+			'02': { // ProductID [0x01]
+			  'ManufacturerId': 5,
+			  'ProductType': 5,
+			  'ProductId': 5,
+			  'ApplicationVersion': 5
+			},
+			'04': { // MaxInclusion RequestInterval [0x02]
+			  'RequestInterval': 2 // 5 - 99 * 128 (640 - 12672)
+			},
+			'06': { // UUID16 [0x03]
+			  'UUIDPresFormat': 2,
+			  'UUIDData': 40
+			}
+		},
 		currPos = 0,
 		valLength = 0,
 		// function that will generate entries for known types
@@ -1044,39 +1043,39 @@ ZWave.prototype.addDSKEntry = function(entry) {
 			// check if entry is no smart start entry
 			// only DSK will be added as entry
 			if (!transformedEntry.isSmartStart) {
-			    transformedEntry['DSK'] = entry;
-			    // otherwise it is a smart entry
-			    // do some more voodoo to preparate smart start entry
+				transformedEntry['DSK'] = entry;
+				// otherwise it is a smart entry
+				// do some more voodoo to preparate smart start entry
 			} else {
-			    // fill all keys for the first 5 leading static QR code values
-			    _.forEach(pos, function(l, index) {
-			        // get value end position
-			        // for substring
-			        valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
+				// fill all keys for the first 5 leading static QR code values
+				_.forEach(pos, function(l, index) {
+					// get value end position
+					// for substring
+					valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
 
-			        // cut out value
-			        // if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
-			        value = keys[index] === 'DSK' ? entry.substring(currPos, valueEndPos).replace(/(.{5})/g, "$&" + "-").slice(0, -1) : entry.substring(currPos, valueEndPos);
+					// cut out value
+					// if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
+					value = keys[index] === 'DSK' ? entry.substring(currPos, valueEndPos).replace(/(.{5})/g, "$&" + "-").slice(0, -1) : entry.substring(currPos, valueEndPos);
 
 			  		// assign value to leading key
 					if (keys[index] !== 'DSK') {
-			        	transformedEntry[keys[index]] = '0x' + dToHex(value);
-			        } else {
-			        	transformedEntry[keys[index]] = value;
-			        }
+						transformedEntry[keys[index]] = '0x' + dToHex(value);
+					} else {
+						transformedEntry[keys[index]] = value;
+					}
 
-			        currPos = keys[index] === l ? currPos + valLength : currPos + l;
-			    });
+					currPos = keys[index] === l ? currPos + valLength : currPos + l;
+				});
 
-			    // get all remaining TLV values
-			    tlvString = entry.substring(52);
-			    var i = 0;
+				// get all remaining TLV values
+				tlvString = entry.substring(52);
+				var i = 0;
 
-			    /*
+				/*
 				* Do while loop and cut out and transform all TLV entries piece by piece
 				* until the QR string is empty
 				*/
-			    while (tlvString.length > 0 && i < tlvString.length) {
+				while (tlvString.length > 0 && i < tlvString.length) {
 					currPos = 0;
 					valLength = 0;
 					type = null;
@@ -1289,128 +1288,123 @@ ZWave.prototype.networkReorganizationInit = function() {
 	// 2. Walk thru all FLiRS (2 tries)
 	// 3. Walk thru batteries
 
-	console.logJS("init -- !!!!!");
 	function NetworkReorganization(that) {
-	    this.nodes = [];
-	    this.log = [];
-	    
-	    this.zway = that.zway;
-	    this.langFile = that.loadModuleLang();
+		this.nodes = [];
+		this.log = [];
+		
+		this.zway = that.zway;
+		this.langFile = that.loadModuleLang();
 	}
 
 	NetworkReorganization.prototype.start = function() {
-	    this.addLog(this.langFile.reorg_start, 0);
-	    this.addLog(this.langFile.reorg_start_mains, 0);
-	    
-	    this.nodes = this.getNodesList();
-	    
-	    console.logJS(this.nodes, "!!!!!");
-	    
-	    this.log = [];
+		this.addLog(this.langFile.reorg_start, 0);
+		this.addLog(this.langFile.reorg_start_mains, 0);
+		
+		this.nodes = this.getNodesList();
+		
+		this.log = [];
 
-	    var self = this;
-	    
-	    this.nodes.forEach(function(node) {
+		var self = this;
+		
+		this.nodes.forEach(function(node) {
 		// first walk thru Mains only
 		if (node.isMains) {
-		    console.logJS(node.nodeId, "!!!!!");
-		    self.doNode(node.nodeId);
+			self.doNode(node.nodeId);
 		}
-	    });
+		});
 	};
 
 	NetworkReorganization.prototype.getNodesList = function() {
-	    var self = this;
-	    
-	    console.logJS(this.zway, "!!!!!");
-	    return Object.keys(this.zway.devices).filter(function(nodeId) {
+		var self = this;
+		
+		return Object.keys(this.zway.devices).filter(function(nodeId) {
 		// filter self and portable controllers
 		return nodeId != self.zway.controller.data.nodeId.value && self.zway.devices[nodeId].data.basicType.value !== 1;
-	    }).map(function(nodeId) {
+		}).map(function(nodeId) {
 		var node = self.zway.devices[nodeId],
-		    isListening = node.data.isListening.value,
-		    isFLiRS = node.data.sensor250.value || node.data.sensor1000.value;
+			isListening = node.data.isListening.value,
+			isFLiRS = node.data.sensor250.value || node.data.sensor1000.value;
 		
 		return {
-		    nodeId: nodeId,
-		    isMains: isListening,
-		    isFLiRS: isFLiRS,
-		    isSleeping: !isListening && !isFLiRS,
-		    tries: 0,
-		    fail: false,
-		    done: false
+			nodeId: nodeId,
+			isMains: isListening,
+			isFLiRS: isFLiRS,
+			isSleeping: !isListening && !isFLiRS,
+			tries: 0,
+			fail: false,
+			done: false
 		};
-	    });
+		});
 	};
 
 	NetworkReorganization.prototype.getNodeById = function(nodeId) {
-	    return this.nodes.filter(function(node) { return nodeId == node.nodeId; })[0];
+		return this.nodes.filter(function(node) { return nodeId == node.nodeId; })[0];
 	};
 
 	NetworkReorganization.prototype.successCbk = function(nodeId) {
-	    this.addLog(this.langFile.reorg_node_done, nodeId);
-	    
-	    var node = this.getNodeById(nodeId);
-	    if (node) {
+		this.addLog(this.langFile.reorg_node_done, nodeId);
+		
+		var node = this.getNodeById(nodeId);
+		if (node) {
 		node.done = true;
-	    }
-	    
-	    this.assignRoutesToAssociated(nodeid);
-	    
-	    this.checkNextStep();
+		}
+		
+		this.assignRoutesToAssociated(nodeid);
+		
+		this.checkNextStep();
 	};
 
 	NetworkReorganization.prototype.failureCbk = function(nodeId) {
-	    this.addLog(this.langFile.reorg_node_failed, nodeId);
-	    
-	    var node = this.getNodeById(nodeId);
-	    if (node) {
+		this.addLog(this.langFile.reorg_node_failed, nodeId);
+		
+		var node = this.getNodeById(nodeId);
+		if (node) {
 		node.tries++;
 		if (node.tries <= 3) {
-		    this.doNode(nodeId); // it will be placed after all existing jobs, so no need to wait before placing this job
+			this.doNode(nodeId); // it will be placed after all existing jobs, so no need to wait before placing this job
 		} else {
-		    node.fail = true;
+			node.fail = true;
 		}
-	    }
-	    
-	    this.checkNextStep();
+		}
+		
+		this.checkNextStep();
 	};
 
 	NetworkReorganization.prototype.doNode = function(nodeId) {
-	    if (!this.zway.devices[nodeId].data.isFailed.value) {
-		this.addLog(this.langFile.reorg_node_start, nodeId);
+		if (!this.zway.devices[nodeId].data.isFailed.value) {
+			this.addLog(this.langFile.reorg_node_start, nodeId);
 		
-		var self = this;
+			var self = this;
 		
-		this.zway.RequestNodeNeighbourUpdate(nodeId, function() {
-		    self.successCbk(nodeId);
-		}, function() {
-		    self.failureCbk(nodeId);
-		});
-	    } else {
-		this.addLog(this.langFile.reorg_node_skip, nodeId);
-	    }
+			this.zway.RequestNodeNeighbourUpdate(nodeId, function() {
+				self.successCbk(nodeId);
+			}, function() {
+				self.failureCbk(nodeId);
+			});
+		} else {
+			this.addLog(this.langFile.reorg_node_skip, nodeId);
+		}
 	};
 
-        NetworkReorganization.prototype.getAssociations = function(nodeId) {
+	NetworkReorganization.prototype.getAssociations = function(nodeId) {
 		var nodes = [];
 		
 		// Association & MultiChannelAssociation
 		for(var i in this.zway.devices[nodeId].instances) {
-		    if (this.zway.devices[nodeId].instances[i].Association) {
-			for(var g in this.zway.devices[nodeId].instances[i].Association.data) {
-			    if (parseInt(g)) {
-				nodes = nodes.concat(this.zway.devices[nodeId].instances[i].Association.data[g].nodes.value);
-			    }
+			if (this.zway.devices[nodeId].instances[i].Association) {
+				for(var g in this.zway.devices[nodeId].instances[i].Association.data) {
+					if (parseInt(g)) {
+						nodes = nodes.concat(this.zway.devices[nodeId].instances[i].Association.data[g].nodes.value);
+					}
+				}
 			}
-		    }
-		    if (this.zway.devices[nodeId].instances[i].MultiChannelAssociation) {
-			for(var g in this.zway.devices[nodeId].instances[i].MultiChannelAssociation.data) {
-			    if (parseInt(g)) {
-				nodes = nodes.concat(this.zway.devices[nodeId].instances[i].MultiChannelAssociation.data[g].nodesInstances.value.filter(function(e, i) { return i % 2 == 0; }));
-			    }
+			if (this.zway.devices[nodeId].instances[i].MultiChannelAssociation) {
+				for(var g in this.zway.devices[nodeId].instances[i].MultiChannelAssociation.data) {
+					if (parseInt(g)) {
+						nodes = nodes.concat(this.zway.devices[nodeId].instances[i].MultiChannelAssociation.data[g].nodesInstances.value.filter(function(e, i) { return i % 2 == 0; }));
+					}
+				}
 			}
-		    }
 		}
 		
 		if (this.zway.devices[nodeId].Wakeup) {
@@ -1440,56 +1434,56 @@ ZWave.prototype.networkReorganizationInit = function() {
 	};
 	
 	NetworkReorganization.prototype.checkNextStep = function() {
-	    var self = this;
-	    
-	    var finishedMains = true,
-		finishedFLiRS = true,
-		finishedSleeping = true,
-		waitingFLiRS = true,
-		waitingSleeping = true;
-	    
-	    this.nodes.forEach(function(node) {
-		if (node.isMains) {
-		    finishedMains &= node.done || node.fail;
-		}
-		if (node.isFLiRS) {
-		    finishedFLiRS &= node.done || node.fail;
-		    waitingFLiRS &= node.tries == 0;
-		}
-		if (node.isSleeping) {
-		    finishedSleeping &= node.done || node.fail;
-		    waitingSleeping &= node.tries == 0;
-		}
-	    });
-	    
-	    if (finishedMains && waitingFLiRS) {
-		this.addLog(this.langFile.reorg_start_flirs, 0);
+		var self = this;
+		
+		var finishedMains = true,
+		    finishedFLiRS = true,
+		    finishedSleeping = true,
+		    waitingFLiRS = true,
+		    waitingSleeping = true;
 		
 		this.nodes.forEach(function(node) {
-		    if (node.isFLiRS) {
-			self.doNode(node.nodeId);
-		    }
+			if (node.isMains) {
+				finishedMains &= node.done || node.fail;
+			}
+			if (node.isFLiRS) {
+				finishedFLiRS &= node.done || node.fail;
+				waitingFLiRS &= node.tries == 0;
+			}
+			if (node.isSleeping) {
+				finishedSleeping &= node.done || node.fail;
+				waitingSleeping &= node.tries == 0;
+			}
 		});
-	    }
-	    
-	    if (finishedMains && finishedFLiRS) {
-		this.addLog(this.langFile.reorg_start_battery, 0);
 		
-		this.nodes.forEach(function(node) {
-		    if (node.isSleeping) {
-			self.doNode(node.nodeId);
-		    }
-		});
-	    }
-	    
-	    if (finishedSleeping && waitingSleeping || !waitingSleeping) {
-		this.addLog(this.langFile.reorg_finished, 0);
-	    }
+		if (finishedMains && waitingFLiRS) {
+			this.addLog(this.langFile.reorg_start_flirs, 0);
+		
+			this.nodes.forEach(function(node) {
+				if (node.isFLiRS) {
+					self.doNode(node.nodeId);
+				}
+			});
+		}
+		
+		if (finishedMains && finishedFLiRS) {
+			this.addLog(this.langFile.reorg_start_battery, 0);
+		
+			this.nodes.forEach(function(node) {
+				if (node.isSleeping) {
+					self.doNode(node.nodeId);
+				}
+			});
+		}
+		
+		if (finishedSleeping && waitingSleeping || !waitingSleeping) {
+			this.addLog(this.langFile.reorg_finished, 0);
+		}
 	};
 
 	NetworkReorganization.prototype.addLog = function(message, nodeId) {
-	    this.log.push([message, nodeId]);
-	    console.log(this.langFile.reorg_title + ": " + (nodeId ? (this.langFile.reorg_node_title + nodeId + " ") : "") + message);
+		this.log.push([message, nodeId]);
+		console.log(this.langFile.reorg_title + ": " + (nodeId ? (this.langFile.reorg_node_title + nodeId + " ") : "") + message);
 	};
 	
 	NetworkReorganization.prototype.getLog = function() {
@@ -6218,22 +6212,22 @@ ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
 
 ZWave.prototype.nodeNameByType = function (nodeId, nodeData) {
 
-    var name = 'Device ' + '_' + nodeId,
-    	type = '',
-    	node = nodeData;
+	var name = 'Device ' + '_' + nodeId,
+	    type = '',
+	    node = nodeData;
 
-    if(node){
-	    var isListening = node.isListening.value,
-	    	isFLiRS = !isListening && (node.sensor250.value || node.sensor1000.value),
-	    	hasWakeup = !isListening && !node.sensor250.value && !node.sensor1000.value;
+	if (node){
+		var isListening = node.isListening.value,
+		    isFLiRS = !isListening && (node.sensor250.value || node.sensor1000.value),
+		    hasWakeup = !isListening && !node.sensor250.value && !node.sensor1000.value;
 
-	    if (hasWakeup || isFLiRS) {
-	        type = 'Battery';
-	    } else if (isListening) {
-	        type = 'Mains';
-	    }
-	    name = type + name;
+		if (hasWakeup || isFLiRS) {
+			type = 'Battery';
+		} else if (isListening) {
+			type = 'Mains';
+		}
+		name = type + name;
 	}
 
-    return name;
+	return name;
 };
