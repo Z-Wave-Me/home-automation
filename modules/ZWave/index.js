@@ -1482,7 +1482,11 @@ ZWave.prototype.networkReorganizationInit = function() {
 	};
 
 	NetworkReorganization.prototype.addLog = function(message, nodeId) {
-		this.log.push([message, nodeId]);
+		this.log.push({
+			updatetime: Date.now(),
+			message: message,
+			nodeId: nodeId
+		});
 		console.log(this.langFile.reorg_title + ": " + (nodeId ? (this.langFile.reorg_node_title + nodeId + " ") : "") + message);
 	};
 	
