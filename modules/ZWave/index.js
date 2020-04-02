@@ -1318,22 +1318,22 @@ ZWave.prototype.networkReorganizationInit = function() {
 		var self = this;
 		
 		return Object.keys(this.zway.devices).filter(function(nodeId) {
-		// filter self and portable controllers
-		return nodeId != self.zway.controller.data.nodeId.value && self.zway.devices[nodeId].data.basicType.value !== 1;
+			// filter self and portable controllers
+			return nodeId != self.zway.controller.data.nodeId.value && self.zway.devices[nodeId].data.basicType.value !== 1;
 		}).map(function(nodeId) {
-		var node = self.zway.devices[nodeId],
-			isListening = node.data.isListening.value,
-			isFLiRS = node.data.sensor250.value || node.data.sensor1000.value;
-		
-		return {
-			nodeId: nodeId,
-			isMains: isListening,
-			isFLiRS: isFLiRS,
-			isSleeping: !isListening && !isFLiRS,
-			tries: 0,
-			fail: false,
-			done: false
-		};
+			var node = self.zway.devices[nodeId],
+			    isListening = node.data.isListening.value,
+			    isFLiRS = node.data.sensor250.value || node.data.sensor1000.value;
+			
+			return {
+				nodeId: nodeId,
+				isMains: isListening,
+				isFLiRS: isFLiRS,
+				isSleeping: !isListening && !isFLiRS,
+				tries: 0,
+				fail: false,
+				done: false
+			};
 		});
 	};
 
@@ -1346,7 +1346,7 @@ ZWave.prototype.networkReorganizationInit = function() {
 		
 		var node = this.getNodeById(nodeId);
 		if (node) {
-		node.done = true;
+			node.done = true;
 		}
 		
 		this.assignRoutesToAssociated(nodeid);
@@ -1359,12 +1359,12 @@ ZWave.prototype.networkReorganizationInit = function() {
 		
 		var node = this.getNodeById(nodeId);
 		if (node) {
-		node.tries++;
-		if (node.tries <= 3) {
-			this.doNode(nodeId); // it will be placed after all existing jobs, so no need to wait before placing this job
-		} else {
-			node.fail = true;
-		}
+			node.tries++;
+			if (node.tries <= 4) {
+				this.doNode(nodeId); // it will be placed after all existing jobs, so no need to wait before placing this job
+			} else {
+				node.fail = true;
+			}
 		}
 		
 		this.checkNextStep();
