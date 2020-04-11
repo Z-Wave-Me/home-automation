@@ -177,7 +177,8 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 	return {user: session.id, role: role, token: reqSession.substr(0, 6)};
 };
 
-AuthController.prototype.checkIn = function(profile, req, permanent) {
+// ttlHours: undefined - default, 0 - permanent token, >0 - in hours
+AuthController.prototype.checkIn = function(profile, req, ttlHours) {
 	var sid;
 	
 	// generate a new sid
@@ -204,7 +205,11 @@ AuthController.prototype.checkIn = function(profile, req, permanent) {
 		profile.authTokens = [];
 	}
 	
-	var TTL = 7 * 24 * 60 * 60 * 1000; // 1 week in ms
+	var permanent = ttlHours === 0;
+	
+	if (!ttlHours) ttlHours = 7 * 24; // one week by default
+	
+	var TTL = ttlHours * 3600 * 1000; // in ms
 	var d = (new Date()).valueOf();
 	
 	profile.authTokens.push({

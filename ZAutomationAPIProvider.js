@@ -232,6 +232,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		};
 	},
+	supportToken: function(profile, req) {
+		var sid, resProfile = {};
+
+		sid = this.controller.auth.checkIn(profile, req);
+
+		resProfile = this.controller.safeProfile(profile, ["authTokens"]);
+		resProfile.sid = sid;
+
+		var profile = _.find(this.controller.profiles, function(profile) {
+			return profile.id === auth.user;
+		});
+
+		res = _.extend(this.controller.safeProfile(profile, ["authTokens"]), {sid: controller.auth.getSessionId(this.req)});
+
+		return {
+			error: null,
+			data: resProfile,
+			code: 200,
+			headers: {
+				"ZWAYSession": resProfile.sid,
+				"Set-Cookie": "ZWAYSession=" + sid + "; Path=/" // set cookie - it will duplicate header just in case client prefers cookies
+			}
+		};
+	},
 	// Method to return a 401 to the user
 	denyLogin: function(error) {
 		return {
@@ -1579,7 +1603,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		});
 		
 		// create permanent auth token for this user
-		sid = this.controller.auth.checkIn(profile, this.req, true);
+		sid = this.controller.auth.checkIn(profile, this.req, 0);
 		data = {
 			access_token: zbwToken + "/" + sid,
 			client_id: clientId,
