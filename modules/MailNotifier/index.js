@@ -1,11 +1,12 @@
 /*** MailNotifier Z-Way HA module *******************************************
 
- Version: 1.2.0
- (c) Z-Wave.Me, 2017
+ Version: 3.0.0
+ (c) Z-Wave.Me, 2019
  -----------------------------------------------------------------------------
  Author: Niels Roche <nir@zwave.eu>
  Changed: Marcel Kermer <mk@zwave.eu>
  Changed: Hans-Christian Göckeritz <hcg@zwave.eu>
+ Changed: Serguei Poltorak <ps@z-wave.me>
  Description:
  This module allows to send notifications via mail.
 
@@ -31,123 +32,29 @@ _module = MailNotifier;
 MailNotifier.prototype.init = function (config) {
 	MailNotifier.super_.prototype.init.call(this, config);
 
-	this.remote_id = this.controller.getRemoteId;
+	this.remote_id = this.controller.getRemoteId();
 	this.subject = config.subject;
 
-	// TODO check for undefined e-mail
-	// first check input
-	if (config.mail_to_input !== "" && config.allow_input)
-	{
-		this.mail_to = config.mail_to_input;
-	}
-	// use select field if assigned
-	else if(config.mail_to_select !== "")
-	{
-		this.mail_to = config.mail_to_select;
-	}
-
-
-	//console.log(this.mail_to);
-	this.message = config.mail_message;
 	this.collectMessages = [];
 
 	var self = this;
 
-	this.vDev = this.controller.devices.create({
-		deviceId: "MailNotifier_" + this.id,
-		defaults: {
-			metrics: {
-				level: 'on',
-				title: self.getInstanceTitle(this.id),
-				icon: "/ZAutomation/api/v1/load/modulemedia/MailNotifier/icon.png",
-				message: ""
-			}
-		},
-		overlay: {
-			deviceType: 'toggleButton',
-			probeType: 'notification_email'
-		},
-		handler: function(command, args) {
-			var mailObject = {};
-			var send_mail = false;
-			if (command !== 'update') {
-				if (send_mail |= command === "on") {
-					//self.collectMessages++;
-					mailObject.message = self.config.mail_message;
-					mailObject.mail_to = self.config.mail_to_input === '' ? self.config.mail_to_select : self.config.mail_to_input;
-					self.collectMessages.push(mailObject);
-				} else if (send_mail |= command === "send") {
-					//self.collectMessages++;
-					mailObject.message = args.message;
-					mailObject.mail_to = args.mail_to;
-					self.collectMessages.push(mailObject);
-				}
-
-				// TODO check for mail address
-				if (!mailObject.mail_to || mailObject.mail_to === '') {
-					self.addNotification('error', 'Missing receiver e-mail address. Please check your configuration in the following app instance: ' + self.config.title, 'module');
-					return;
-				}
-
-				// add delay timer if not existing
-				if(!self.timer && send_mail){
-					self.sendSendMessageWithDelay();
-				}
-				
-				self.vDev.set("metrics:level", "on"); // update on ourself to allow catch this event
-			}
-		},
-		moduleId: this.id
-	});
-
-	if (config.hide === true) {
-		this.vDev.set('visibility', false, {silent: true});
-	} else {
-		this.vDev.set('visibility', true, {silent: true});
-	}
-
-	// wrap method with a function
-	this.notificationMailWrapper = function(notification) {
-		if (notification.level === 'mail.notification'){
-			var instance = self.controller.instances.filter(function (instance){
-				return instance.params.mail_to_select === notification.type;
-			});
-
-			if(typeof instance[0] !== 'undefined') {
-				var new_vDev = self.controller.devices.get(instance[0].moduleId + '_' + instance[0].id);
-
-				if (instance[0].id === self.vDev.get('creatorId')) {
-					new_vDev.performCommand('send', {mail_to: notification.type, message: notification.message});
-				}
-			} else {
-				var def_instance = self.controller.instances.filter(function (instance){
-					return instance.moduleId === 'MailNotifier';
-				});
-				if(typeof def_instance[0] !== 'undefined') {
-					var def_vDev = self.controller.devices.get(def_instance[0].moduleId + '_' + def_instance[0].id);
-
-					if (def_instance[0].id === self.vDev.get('creatorId')) {
-						def_vDev.performCommand('send', {mail_to: notification.type, message: notification.message});
-					}
-				}
-			}
-		}
-	};
-
-	self.controller.on('notifications.push', self.notificationMailWrapper);
+	// Do we need this ______________ !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	this.controller.on('notifications.push', this.getNotificationChannelSender());
+	
+	// Looop thru all configured mails and mails of users !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	this.controller.registerNotificationChannel(this.vDev.id + "_" + this.mail_to, this.mail_to, this.getNotificationChannelSender());
 };
 
 MailNotifier.prototype.stop = function () {
-	if (this.vDev) {
-		this.controller.devices.remove(this.vDev.id);
-		this.vDev = null;
-	}
-
 	if (this.timer) {
 		clearInterval(this.timer);
 		this.timer = undefined;
 	}
 
+	// Looop thru all configured mails and mails of users !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	this.controller.unregisterNotificationChannel(this.vDev.id + "_" + this.mail_to);
+	
 	this.controller.off('notifications.push', this.notificationMailWrapper);
 	MailNotifier.super_.prototype.stop.call(this);
 };
@@ -155,6 +62,23 @@ MailNotifier.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+MailNotifier.prototype.getNotificationChannelSender = function() {
+	var self = this;
+	
+	return function(to, message) {
+		// check mail validity !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+		self.collectMessages.push({
+			mail_to: to,
+			message: message
+		});
+
+		if (!self.timer) {
+			self.sendSendMessageWithDelay();
+		}
+	};
+}
 
 MailNotifier.prototype.sendSendMessageWithDelay = function () {
 	var self = this,
@@ -173,7 +97,7 @@ MailNotifier.prototype.sendSendMessageWithDelay = function () {
 					remote_id: self.remote_id,
 					mail_to: mailObject.mail_to,
 					subject: self.subject,
-					message: self.vDev.get('metrics:message') !== ''? self.vDev.get('metrics:message') : mailObject.message,
+					message: mailObject.message,
 					language: self.controller.defaultLang
 				},
 				headers: {

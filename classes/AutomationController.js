@@ -44,6 +44,8 @@ function AutomationController() {
 
 	this.notifications = [];
 	this.lastStructureChangeTime = 0;
+	
+	this.notificationChannels = {};
 
 	this._loadedSingletons = [];
 
@@ -1552,9 +1554,9 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 	}
 
 	this.notifications.push(notice);
-
-	this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
+	
 	console.log("Notification:", severity, "(" + type + "):", msg);
+	this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
 };
 
 AutomationController.prototype.deleteNotifications = function(ts, before, callback) {
@@ -2366,8 +2368,9 @@ AutomationController.prototype.getListNamespaces = function(path, namespacesObj,
 			for (var i = 0; i < pathArr.length; i++) {
 				var currPath = pathArr[i + shift],
 					obj = {},
-					lastPath = ['deviceId', 'deviceName'];
-
+					lastPath = ['deviceId', 'deviceName', 'channelId', 'channelName'];
+				
+				console.logJS(">>>", currPath, nspc[currPath]);
 				if (nspc[currPath]) {
 					nspc = nspc[currPath];
 					result = nspc;
@@ -3063,6 +3066,32 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 			vDev.set('metrics:isFailed', isFailed);
 		}
 	});
+};
+
+AutomationController.prototype.updateNotificationChannelNamespace = function() {
+	var self = this;
+	
+	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) { return {channelId: id, channelName: self.notificationChannels[id].name}; }));
+};
+
+AutomationController.prototype.registerNotificationChannel = function(id, user, name, handler) {
+	console.log("Registering notification channel: " + name + ", user: " + user);
+	this.notificationChannels[id] = {user: user, name: name, handler: handler};
+	this.updateNotificationChannelNamespace();
+};
+
+AutomationController.prototype.unregisterNotificationChannel = function(id) {
+	console.log("Unregistering notification channel: " + (this.notificationChannels[id] ? this.notificationChannels[id].name : "(not found)"));
+	delete this.notificationChannels[id];
+	this.updateNotificationChannelNamespace();
+};
+
+AutomationController.prototype.notificationChannelSend = function(id, message) {
+	if (!this.notificationChannels[id]) {
+		console.log("Error: Notification channel not found: " + id + " (message: " + message + ")");
+		return;
+	}
+	this.notificationChannels[id].handler(message);
 };
 
 AutomationController.prototype.transformIntoNewInstance = function(moduleName) {
