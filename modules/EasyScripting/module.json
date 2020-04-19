@@ -34,5 +34,6 @@
 				"helper": "__h_script__"
 			}
 		}
-	}
+	},
+	"postRender": "loadFunction:postRender.js"
 }
