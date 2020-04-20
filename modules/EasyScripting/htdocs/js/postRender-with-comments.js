@@ -104,7 +104,7 @@ function modulePostRender(control) {
 	}
 
 	// syntax highlight
-	$('#alpaca2').addClass('editor allow-tabs').wrap(
+	$(".alpaca-field.alpaca-field-textarea textarea").addClass('editor allow-tabs').wrap(
 		$('<div></div>').addClass('scroller')
 	).parent().append(
 		$('<pre></pre>').append(
@@ -119,6 +119,7 @@ function modulePostRender(control) {
 	// menu handling
 	function modalBackground(id) {
 		var suffix = '-modal';
+		$('#' + id + suffix).remove();
 		return $('<div></div>')
 			.attr('id', id + suffix)
 			.attr('role', 'menu-modal')
@@ -136,6 +137,7 @@ function modulePostRender(control) {
 	}
 	
 	function modalMenu(id) {
+		$('#' + id).remove();
 		return $('<ul></ul>')
 			.attr('id', id)
 			.attr('role', 'menu')
@@ -280,7 +282,7 @@ function modulePostRender(control) {
 	    expression = '\u2026',
 	    placeHolders = [exprBool, exprVal, expression];
 	
-	var textArea = $('#alpaca2.editor');
+	var textArea = $(".alpaca-field.alpaca-field-textarea textarea");
 	
 	menuItemAddText('easy-scripting-syntax', 'if', 'if (' + exprBool + ') {\n  ' + expression + '\n}');
 	menuItemAddText('easy-scripting-syntax', 'for loop', 'for (var i = 0; i < ' + exprVal + '; i++) {\n  ' + expression + '\n}');
@@ -400,7 +402,7 @@ function modulePostRender(control) {
 	$(textArea).keypress(function(e) {
 		if (e.key === '.') {
 			// check that before is vdev("...")
-			if (this.value.substr(0, this.selectionStart).match(/.*vdev\("\w+"\)$/)) {
+			if (this.value.substr(0, this.selectionStart).match(/.*vdev\("[\w-]+"\)$/)) {
 				// get cursor position
 				var pos = getCaretCoordinates(this, this.selectionEnd),
 				    thisPos = this.getBoundingClientRect();
