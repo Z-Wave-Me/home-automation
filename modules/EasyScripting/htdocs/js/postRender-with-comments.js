@@ -224,13 +224,13 @@ function modulePostRender(control) {
 		$('#' + menu_id + '-menu').append($('<li></li>').addClass('divider'));
 	}
 	
-	function toolbarMenuAdd(menu_id, icon) {
+	function toolbarMenuAdd(menu_id, icon, name) {
 		$('.highlight-editor-holder .toolbar').append(
 				menuAttach(
 					$('<li></li>')
 						.append(
 							$('<a></a>').append(
-								$('<i></i>').addClass('fa ' + icon)
+								$('<i> ' + name +'</i>').addClass('fa ' + icon)
 							)
 						),
 					menu_id,
@@ -242,15 +242,15 @@ function modulePostRender(control) {
 	
 	// fill toolbar with menus
 	
-	toolbarMenuAdd('easy-scripting-devices-events', 'fa-play');
-	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb-o');
+	toolbarMenuAdd('easy-scripting-devices-events', 'fa-play', 'Events');
+	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb-o', 'Devices');
 		
 	$('.highlight-editor-holder .toolbar').append(
 			menuAttach(
 				$('<li></li>')
 					.append(
 						$('<a></a>').append(
-							$('<i></i>').addClass('fa fa-code')
+							$('<i> Expressions</i>').addClass('fa fa-code')
 						)
 					) ,
 				'easy-scripting-syntax',
@@ -292,6 +292,7 @@ function modulePostRender(control) {
 	menuItemAddText('easy-scripting-syntax', 'and', '' + exprVal + ' && ' + exprVal + '');
 	menuItemAddDelimiter('easy-scripting-syntax');
 	menuItemAddText('easy-scripting-syntax', 'HTTP request', 'http.request({method: "GET", async: true, url: ' + exprVal + '});');
+	menuItemAddText('easy-scripting-syntax', 'Timer', 'var timer5sec = setTimeout(function() {\n  ' + exprVal + '\n}, 5*1000)');
 
 	menu('easy-scripting-device-methods');
 	menuItemAddText('easy-scripting-device-methods', 'on', 'on()');
@@ -299,9 +300,9 @@ function modulePostRender(control) {
 	menuItemAddText('easy-scripting-device-methods', 'set', 'set(' + exprVal + ')');
 	menuItemAddDelimiter('easy-scripting-device-methods');
 	menuItemAddText('easy-scripting-device-methods', 'value', 'value()');
-	menuItemAddText('easy-scripting-device-methods', '= on', 'value() === "on"');
-	menuItemAddText('easy-scripting-device-methods', '= off', 'value() === "off"');
-	menuItemAddText('easy-scripting-device-methods', '= ?', 'value() === ' + exprVal + '');
+	menuItemAddText('easy-scripting-device-methods', 'value === on', 'value() === "on"');
+	menuItemAddText('easy-scripting-device-methods', 'value === off', 'value() === "off"');
+	menuItemAddText('easy-scripting-device-methods', 'value === ?', 'value() === ' + exprVal + '');
 	
 	// TextArea functions
 
