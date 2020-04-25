@@ -2457,14 +2457,27 @@ AutomationController.prototype.getListModulesCategories = function(id) {
 	return result;
 };
 
+
+AutomationController.prototype.applyLanguage = function(template, language) {
+	if (language === null) return template;
+	Object.keys(language).forEach(function(key) {
+		var regExp = new RegExp('__' + key + '__', 'g');
+		if (language[key]) {
+			template = template.replace(regExp, language[key]);
+		}
+	});
+	
+	return template;
+};
+
 AutomationController.prototype.getModuleData = function(moduleName) {
-	var self = this,
-		defaultLang = self.defaultLang,
-		moduleMeta = self.modules[moduleName] && self.modules[moduleName].meta || null,
-		languageFile = self.loadModuleLang(moduleName),
+	var
+		defaultLang = this.defaultLang,
+		moduleMeta = this.modules[moduleName] && this.modules[moduleName].meta || null,
+		languageFile = this.loadModuleLang(moduleName),
 		data = {};
 
-	if (!self.modules[moduleName]) {
+	if (!this.modules[moduleName]) {
 		return {}; // module not found (deleted from filesystem or broken?), return empty meta
 	}
 
@@ -2483,15 +2496,10 @@ AutomationController.prototype.getModuleData = function(moduleName) {
 	}
 
 	if (languageFile !== null) {
-		Object.keys(languageFile).forEach(function(key) {
-			var regExp = new RegExp('__' + key + '__', 'g');
-			if (languageFile[key]) {
-				metaStringify = metaStringify.replace(regExp, languageFile[key]);
-			}
-		});
+		metaStringify = this.applyLanguage(metaStringify, languageFile);
 		data = JSON.parse(metaStringify);
 	} else {
-		data = self.modules[moduleName].meta;
+		data = this.modules[moduleName].meta;
 	}
 
 	return data;
@@ -2698,6 +2706,10 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 
 						if (id[1] && jsFile && jsFile.type === 'file') {
 							jsFile = fs.load(filePath);
+							
+							if (moduleMeta.moduleName) {
+								jsFile = this.controller.applyLanguage(jsFile, this.controller.loadModuleLang(moduleMeta.moduleName));
+							}
 
 							if (!!jsFile) {
 								//compress string
