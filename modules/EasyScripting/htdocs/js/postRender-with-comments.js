@@ -1,4 +1,10 @@
 function modulePostRender(control) {
+	// advanced code editor is available only on Chome
+	if (!window.chrome) {
+		$(".alpaca-field.alpaca-field-textarea textarea").parent().prepend($('<div></div>').text('__h_unsupported__'));
+		return;
+	}
+
 	// detect cursor position on screen
 	// https://openbase.io/js/textarea-caret
 	function getCaretCoordinates(element, position, options) {
@@ -242,32 +248,23 @@ function modulePostRender(control) {
 	
 	// fill toolbar with menus
 	
-	toolbarMenuAdd('easy-scripting-devices-events', 'fa-play', 'Events');
-	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb-o', 'Devices');
-		
-	$('.highlight-editor-holder .toolbar').append(
-			menuAttach(
-				$('<li></li>')
-					.append(
-						$('<a></a>').append(
-							$('<i> Expressions</i>').addClass('fa fa-code')
-						)
-					) ,
-				'easy-scripting-syntax',
-				'click'
-			)
-	);
-	menu('easy-scripting-syntax');
-	
+	toolbarMenuAdd('easy-scripting-devices-events', 'fa-play', '__m_events__');
+	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb-o', '__m_devices__');
+	toolbarMenuAdd('easy-scripting-syntax', 'fa-code', '__m_expressions__');
+
 	// fill menu with devices
 	$.ajax('/ZAutomation/api/v1/devices')
 		.done(function (response) {
-			response.data.devices.forEach(function(dev) {
+			response.data.devices.sort(function(a, b) {
+				if (a.metrics.title === b.metrics.title) return (a.id < b.id) ? -1 : 1;
+				return (a.metrics.title < b.metrics.title) ? -1 : 1;
+				
+			}).forEach(function(dev) {
 				// events
-				menuItemAdd("easy-scripting-devices-events", dev.id, dev.metrics.title, function() {
+				menuItemAdd("easy-scripting-devices-events", dev.id, dev.metrics.title + ' (' + dev.id + ')', function() {
 					textareaTextAtTop('### ' + dev.id + ' // ' + dev.metrics.title + '\n');
 				});
-				menuItemAdd("easy-scripting-devices-objects", dev.id, dev.metrics.title, function() {
+				menuItemAdd("easy-scripting-devices-objects", dev.id, dev.metrics.title + ' (' + dev.id + ')', function() {
 					textareaTextAt('vdev("' + dev.id + '")');
 				});
 			});
@@ -284,25 +281,31 @@ function modulePostRender(control) {
 	
 	var textArea = $(".alpaca-field.alpaca-field-textarea textarea");
 	
-	menuItemAddText('easy-scripting-syntax', 'if', 'if (' + exprBool + ') {\n  ' + expression + '\n}');
-	menuItemAddText('easy-scripting-syntax', 'for loop', 'for (var i = 0; i < ' + exprVal + '; i++) {\n  ' + expression + '\n}');
-	menuItemAddText('easy-scripting-syntax', 'while loop', 'while (' + exprBool + ') {\n  ' + expression + '\n}');
+	menu('easy-scripting-syntax');
+	menuItemAddText('easy-scripting-syntax', '__m_if__', 'if (' + exprBool + ') {\n  ' + expression + '\n}');
+	menuItemAddText('easy-scripting-syntax', '__m_for_loop__', 'for (var i = 0; i < ' + exprVal + '; i++) {\n  ' + expression + '\n}');
+	menuItemAddText('easy-scripting-syntax', '__m_while_loop__', 'while (' + exprBool + ') {\n  ' + expression + '\n}');
 	menuItemAddDelimiter('easy-scripting-syntax');
-	menuItemAddText('easy-scripting-syntax', 'or', '' + exprVal + ' || ' + exprVal + '');
-	menuItemAddText('easy-scripting-syntax', 'and', '' + exprVal + ' && ' + exprVal + '');
+	menuItemAddText('easy-scripting-syntax', '__m_or__', '' + exprBool + ' || ' + exprBool + '');
+	menuItemAddText('easy-scripting-syntax', '__m_and__', '' + exprBool + ' && ' + exprBool + '');
 	menuItemAddDelimiter('easy-scripting-syntax');
-	menuItemAddText('easy-scripting-syntax', 'HTTP request', 'http.request({method: "GET", async: true, url: ' + exprVal + '});');
-	menuItemAddText('easy-scripting-syntax', 'Timer', 'var timer5sec = setTimeout(function() {\n  ' + exprVal + '\n}, 5*1000)');
+	menuItemAddText('easy-scripting-syntax', '__m_http_request__', 'http.request({method: "GET", async: true, url: ' + exprVal + '});');
+	menuItemAddText('easy-scripting-syntax', '__m_set_timeout__', 'setTimeout(function() {\n  ' + expression + '\n}, ' + exprVal + '*1000)');
 
 	menu('easy-scripting-device-methods');
-	menuItemAddText('easy-scripting-device-methods', 'on', 'on()');
-	menuItemAddText('easy-scripting-device-methods', 'off', 'off()');
-	menuItemAddText('easy-scripting-device-methods', 'set', 'set(' + exprVal + ')');
+	menuItemAddText('easy-scripting-device-methods', '__m_turn_on__', 'on()');
+	menuItemAddText('easy-scripting-device-methods', '__m_turn_off__', 'off()');
+	menuItemAddText('easy-scripting-device-methods', '__m_turn_set__', 'set(' + exprVal + ')');
 	menuItemAddDelimiter('easy-scripting-device-methods');
-	menuItemAddText('easy-scripting-device-methods', 'value', 'value()');
-	menuItemAddText('easy-scripting-device-methods', 'value === on', 'value() === "on"');
-	menuItemAddText('easy-scripting-device-methods', 'value === off', 'value() === "off"');
-	menuItemAddText('easy-scripting-device-methods', 'value === ?', 'value() === ' + exprVal + '');
+	menuItemAddText('easy-scripting-device-methods', '__m_is_on__', 'value() === "on"');
+	menuItemAddText('easy-scripting-device-methods', '__m_is_off__', 'value() === "off"');
+	menuItemAddText('easy-scripting-device-methods', '__m_equals__', 'value() === ' + exprVal);
+	menuItemAddText('easy-scripting-device-methods', '__m_ne__', 'value() !== ' + exprVal);
+	menuItemAddText('easy-scripting-device-methods', '__m_gt__', 'value() > ' + exprVal);
+	menuItemAddText('easy-scripting-device-methods', '__m_ge__', 'value() >= ' + exprVal);
+	menuItemAddText('easy-scripting-device-methods', '__m_lt__', 'value() < ' + exprVal);
+	menuItemAddText('easy-scripting-device-methods', '__m_le__', 'value() <= ' + exprVal);
+	menuItemAddText('easy-scripting-device-methods', '__m_value__', 'value()');
 	
 	// TextArea functions
 
