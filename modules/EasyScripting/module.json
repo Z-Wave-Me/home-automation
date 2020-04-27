@@ -30,7 +30,6 @@
 		"fields": {
 			"script": {
 				"type": "textarea",
-				"label": "__l_script__",
 				"helper": "__h_script__"
 			}
 		}
