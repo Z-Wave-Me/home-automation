@@ -5,7 +5,7 @@
 	"m_events":"Events",
 	"m_devices":"Devices",
 	"m_expressions":"Expressions",
-	"m_if":"If",
+	"m_if":"If then",
 	"m_for_loop":"Loop from-to",
 	"m_while_loop":"Loop while",
 	"m_or":"Or",
