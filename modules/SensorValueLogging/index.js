@@ -52,7 +52,7 @@ SensorValueLogging.prototype.init = function (config) {
 		if (self.config.logTo === "HTTPGET") {
 			http.request({
 				method: 'GET',
-				url: self.config.url.replace("${id}", vDev.id).replace("${value}", vDev.get('metrics:level'))
+				url: self.config.url.replace("${id}", vDev.id).replace("${title}", vDev.get('metrics:title')).replace("${value}", vDev.get('metrics:level'))
 			});
 		}
 	};
