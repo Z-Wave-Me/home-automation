@@ -1349,7 +1349,7 @@ ZWave.prototype.networkReorganizationInit = function() {
 			node.done = true;
 		}
 		
-		this.assignRoutesToAssociated(nodeid);
+		this.assignRoutesToAssociated(nodeId);
 		
 		this.checkNextStep();
 	};
