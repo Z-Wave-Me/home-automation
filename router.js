@@ -56,11 +56,11 @@ Router.prototype = {
 	var parts = path.split("/"),
 		parameters = [];
 
-	var pattern = _.map(parts, function(segment) {
+	var pattern = _.map(parts, function(segment, index) {
 	  if (segment.length > 0 && segment.indexOf(':') !== -1) {
 		// Keep track of the parameters we've replaced
 		parameters.push(segment.slice(1));
-		return "(.+)";
+		return index == parts.length - 1 ? "(.+)" : "([^/]+)"; // last argument can contain /
 	  }
 	  return segment;
 	}).join("/");
