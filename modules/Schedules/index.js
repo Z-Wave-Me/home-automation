@@ -116,27 +116,16 @@ Schedules.prototype.init = function(config) {
 	}
 
 	wds.forEach(function(wd) {
-		if (_.isArray(self.config.times)) {
-			self.config.times.forEach(function(time) {
-				self.controller.emit("cron.addTask", "scheduledScene.run." + self.id, {
-					minute: parseInt(time.split(":")[1], 10),
-					hour: parseInt(time.split(":")[0], 10),
-					weekDay: wd,
-					day: null,
-					month: null
-				});
-			});
-		}
-		// compatibility configuration to version 2.2
-		else {
+		var times = _.isArray(self.config.times) ? self.config.times : [self.config.times];
+		times.forEach(function(time) {
 			self.controller.emit("cron.addTask", "scheduledScene.run." + self.id, {
-				minute: parseInt(self.config.time.split(":")[1], 10),
-				hour: parseInt(self.config.time.split(":")[0], 10),
+				minute: parseInt(time.split(":")[1], 10),
+				hour: parseInt(time.split(":")[0], 10),
 				weekDay: wd,
 				day: null,
 				month: null
 			});
-		}
+		});
 	});
 };
 
