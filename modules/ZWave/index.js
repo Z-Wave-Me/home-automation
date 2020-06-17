@@ -4283,8 +4283,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				lastIdArr = [],
 				vendorName = "";
 
-			if (this.zway.devices[nodeId].data.vendorString.value) {
-				vendorName = this.zway.devices[nodeId].data.vendorString.value;
+			if (self.zway.devices[nodeId].data.vendorString.value) {
+				vendorName = self.zway.devices[nodeId].data.vendorString.value;
 			};
 
 			for (var i = 0; i < arguments.length; i++) {
