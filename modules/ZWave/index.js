@@ -1,9 +1,9 @@
 /*** Z-Wave Binding module ********************************************************
 
-Version: 3.0.1
+Version: 3.0.2
 -------------------------------------------------------------------------------
 Author: Serguei Poltorak <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
-Copyright: (c) Z-Wave.Me, 2019
+Copyright: (c) Z-Wave.Me, 2020
 
 ******************************************************************************/
 
@@ -70,7 +70,6 @@ function ZWave(id, controller) {
 		'notes': '',
 		'ssid_name': '',
 		'currentDateTime': '',
-		'cit_identifier': '',
 		'rss': ''
 	};
 
@@ -318,15 +317,6 @@ ZWave.prototype.startBinding = function() {
 		}
 	);
 
-	// do license check if controller type CIT
-	if (this.zway.controller.data.manufacturerId.value === 797 &&
-		this.zway.controller.data.manufacturerProductType.value === 257 &&
-		this.zway.controller.data.manufacturerProductId.value === 1) {
-		// check if the controller license is still up to date
-		// and set update timer
-		this.certXFCheck();
-	}
-
 	this.refreshStatisticsPeriodically();
 
 	this.CommunicationLogger();
@@ -403,14 +393,6 @@ ZWave.prototype.stopBinding = function() {
 		this.saveDataXMLTimer = undefined;
 	}
 
-	// do license check if controller type CIT and stop polling routine
-	if (typeof zway !== 'undefined' && zway.controller.data.manufacturerId.value === 797 &&
-		zway.controller.data.manufacturerProductType.value === 257 &&
-		zway.controller.data.manufacturerProductId.value === 1) {
-		this.controller.emit("cron.removeTask", "zwayCertXFCheck.poll");
-		this.controller.off("zwayCertXFCheck.poll", this.checkForCertFxLicense);
-	}
-
 	this.stopped = true;
 	if (this.zway) {
 		try {
@@ -454,8 +436,7 @@ ZWave.prototype.terminating = function() {
 };
 
 ZWave.prototype.CommunicationLogger = function() {
-	var self = this,
-		zway = this.zway;
+	var self = this;
 
 	var inH = function(type) {
 		var data = this;
@@ -796,58 +777,8 @@ ZWave.prototype.CommunicationLogger = function() {
 	}
 };
 
-ZWave.prototype.certXFCheck = function() {
-	var zway = this.zway;
-
-	// polling function
-	this.checkForCertFxLicense = function() {
-		zway.ZMECapabilities(null, function() {
-			if (zway.controller.data.countDown.value < 5) {
-				var capsNonce = zway.controller.data.capsNonce.value.map(function(i) {
-					return ("00" + i.toString(16)).slice(-2);
-				}).join("");
-
-				var uuid = zway.controller.data.uuid.value;
-
-				http.request({
-					url: "https://CertXFer.Z-WaveAlliance.org:8443/CITAuth/CITAuth.aspx?uid=" + uuid + "&nonce=" + capsNonce,
-					async: true,
-					success: function(resp) {
-						var key = resp.data.split(": ")[1].split(" ").map(function(i) {
-							return parseInt(i, 16);
-						});
-						zway.ZMECapabilities(key);
-
-						// refresh caps
-						zway.ZMECapabilities();
-					},
-					error: function(resp) {
-						console.log(JSON.stringify(resp, null, 1));
-					}
-				});
-			}
-		})
-	};
-
-	// add daily cron job
-	this.controller.emit("cron.addTask", "zwayCertXFCheck.poll", {
-		minute: 0,
-		hour: 0,
-		weekDay: null,
-		day: null,
-		month: null
-	});
-
-	// add event listener
-	this.controller.on("zwayCertXFCheck.poll", this.checkForCertFxLicense);
-
-	// initial certXF check
-	this.checkForCertFxLicense();
-};
-
 ZWave.prototype.refreshStatisticsPeriodically = function() {
 	var self = this;
-	var zway = this.zway;
 
 	this.updateNetStats = function() {
 		try {
@@ -859,23 +790,23 @@ ZWave.prototype.refreshStatisticsPeriodically = function() {
 
 			// reset network statistics
 			if (maxPaketCnt > 32768) { // 2^15
-				zway.ClearNetworkStats();
+				self.zway.ClearNetworkStats();
 
-				zway.GetNetworkStats(function() {
+				self.zway.GetNetworkStats(function() {
 					stats.forEach(function(key) {
 						self.statistics[key] = {
-							value: zway.controller.data.statistics[key].value,
-							updateTime: zway.controller.data.statistics[key].updateTime
+							value: self.zway.controller.data.statistics[key].value,
+							updateTime: self.zway.controller.data.statistics[key].updateTime
 						}
 					});
 				});
 				// update network statistics
 			} else {
-				zway.GetNetworkStats(function() {
+				self.zway.GetNetworkStats(function() {
 					stats.forEach(function(key) {
 						self.statistics[key] = {
-							value: self.statistics[key].value ? self.statistics[key].value + zway.controller.data.statistics[key].value : zway.controller.data.statistics[key].value,
-							updateTime: zway.controller.data.statistics[key].updateTime
+							value: self.statistics[key].value ? self.statistics[key].value + self.zway.controller.data.statistics[key].value : self.zway.controller.data.statistics[key].value,
+							updateTime: self.zway.controller.data.statistics[key].updateTime
 						}
 					});
 				});
@@ -905,9 +836,8 @@ ZWave.prototype.refreshStatisticsPeriodically = function() {
  * DSKs of new entries will also be added automatically to the provisioning list
  */
 ZWave.prototype.addDSKEntry = function(entry) {
-	var zway = this.zway,
-		successful = 200,
-		tlvString = '';
+	var successful = 200,
+	    tlvString = '';
 
 	if (entry && !!entry) {
 		// setup basic values for each QR code entry
@@ -1174,12 +1104,11 @@ ZWave.prototype.addDSKEntry = function(entry) {
  * DSKs of changed entries will also be changed automatically in the provisioning list
  */
 ZWave.prototype.updateDSKEntry = function(dskEntry) {
-	var zway = this.zway,
-		oldDSKEntry = {},
-		entryIndex = _.findIndex(this.dskCollection, function(entry) {
-			return entry.id === dskEntry.id;
-		}),
-		successful = false;
+	var oldDSKEntry = {},
+	    entryIndex = _.findIndex(this.dskCollection, function(entry) {
+		return entry.id === dskEntry.id;
+	    }),
+	    successful = false;
 
 	// update DSK in provisioning list and this.dskCollection
 	try {
@@ -1227,12 +1156,11 @@ ZWave.prototype.updateDSKEntry = function(dskEntry) {
  * DSKs of removed entries will also be removed automatically from the provisioning list
  */
 ZWave.prototype.removeDSKEntry = function(dskEntryID) {
-	var zway = this.zway,
-		oldDSKEntry = {},
-		entryIndex = _.findIndex(this.dskCollection, function(entry) {
-			return entry.id === dskEntryID || entry.id === parseInt(dskEntryID, 10);
-		}),
-		successful = false;
+	var oldDSKEntry = {},
+	    entryIndex = _.findIndex(this.dskCollection, function(entry) {
+		return entry.id === dskEntryID || entry.id === parseInt(dskEntryID, 10);
+	    }),
+	    successful = false;
 
 	// remove DSK from provisioning list
 	try {
@@ -1585,7 +1513,7 @@ ZWave.prototype.externalAPIRevoke = function(name) {
 };
 
 ZWave.prototype.defineHandlers = function() {
-	var zway = this.zway;
+	var zway = this.zway; // for with() statement in Run and other APIs
 	var postfix = this.postfix;
 	var self = this;
 
@@ -1605,29 +1533,7 @@ ZWave.prototype.defineHandlers = function() {
 
 	this.ZWaveAPI.list = function() {
 		try {
-			var zwayList = ZWave.list() || [];
-
-			/* TODO: search for remote IP adresses
-			if (this.config.publicAPI && zwayList.length > 0) {
-				_.forEach(zwayList, function(zwayName, index){
-					http.request({
-						method: "POST",
-						url: data.url,
-						contentType: "application/json",
-						async: true,
-						success: function (res) {
-							// do nothing
-						},
-						error: function (res) {
-							// remove from list
-							zwayList = zwayList.splice(index, 1);
-						}
-					});
-				});
-			}
-			console.log("zwayList:", JSON.stringify(zwayList));
-			*/
-			return zwayList;
+			return ZWave.list() || [];
 		} catch (e) {
 			return {
 				status: 500,
@@ -1698,7 +1604,7 @@ ZWave.prototype.defineHandlers = function() {
 
 			// do backup
 			var data = zway.controller.Backup();
-			var filename = (checkBoxtype('cit') ? "cit" : "z-way") + "-backup-" + ts + ".zbk"
+			var filename = "z-way-backup-" + ts + ".zbk"
 
 			return {
 				status: 200,
@@ -1790,7 +1696,7 @@ ZWave.prototype.defineHandlers = function() {
 			var now = new Date();
 			// create a timestamp in format yyyy-MM-dd-HH-mm
 			var ts = getHRDateformat(now);
-			var box_type = checkBoxtype('cit') ? 'cit' : 'z-way';
+			var box_type = 'z-way';
 
 			// prepare system information
 			for (param in reqObj) {
@@ -3045,7 +2951,6 @@ ZWave.prototype.defineHandlers = function() {
 					'notes',
 					'ssid_name',
 					'currentDateTime',
-					'cit_identifier',
 					'rss',
 					'node_positions',
 					'routemap_img'
