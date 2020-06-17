@@ -2433,15 +2433,19 @@ ZWave.prototype.defineHandlers = function() {
 					contentType: "application/octet-stream", // enforce binary response,
 					async: true,
 					success: function(res) {
-
-						//console.log('upgrade res:', JSON.stringify(res, null, 1));
-						var fw;
 						try {
-							if (res.data.substr(0, 1) === ":") {
+							var data = new Uint8Array(res.data);
+							var data_str = "";
+							for (var i = 0; i < data.length; i++) {
+								data_str += String.fromCharCode(data[i]);
+							}
+							
+							var fw;
+							if (data_str.substr(0, 1) === ":") {
 								// this is a .hex file
-								fw = IntelHex2bin(res.data);
+								fw = IntelHex2bin(data_str);
 							} else {
-								fw = res.data;
+								fw = data_str;
 							}
 							fwUpdate.Perform(manufacturerId, firmwareId, targetId, fw);
 
