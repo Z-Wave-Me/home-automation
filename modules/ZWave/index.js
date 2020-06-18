@@ -1442,6 +1442,7 @@ ZWave.prototype.externalAPIAllow = function(name) {
 	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PacketLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".Zniffer.SetPromisc", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RSSIGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".TestNode", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -1484,6 +1485,7 @@ ZWave.prototype.externalAPIRevoke = function(name) {
 	ws.revokeExternalAccess(_name + ".CommunicationHistory");
 	ws.revokeExternalAccess(_name + ".PacketLog");
 	ws.revokeExternalAccess(_name + ".Zniffer");
+	ws.revokeExternalAccess(_name + ".Zniffer.SetPromisc");
 	ws.revokeExternalAccess(_name + ".RSSIGet");
 	ws.revokeExternalAccess(_name + ".TestNode");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
@@ -2125,6 +2127,30 @@ ZWave.prototype.defineHandlers = function() {
 		body.updateTime = Math.round((new Date()).getTime() / 1000);
 		body.data.reverse(); // newer on top
 
+		return {
+			status: 200,
+			headers: {
+				"Access-Control-Allow-Origin": "*",
+				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+				"Access-Control-Allow-Headers": "Authorization",
+				"Content-Type": "application/json",
+				"Connection": "keep-alive"
+			},
+			body: body
+		};
+	};
+	
+	this.ZWaveAPI.Zniffer.SetPromisc = function(url, request) {
+		var body = {
+			"code": 200,
+			"message": "200 OK",
+			"updateTime": null,
+			"data": []
+		};
+		
+		var promiscMode = url.substring(1) === "true" || parseInt(url.substring(1), 10);
+		self.zway.SetPromiscuousMode(promiscMode);
+		
 		return {
 			status: 200,
 			headers: {
