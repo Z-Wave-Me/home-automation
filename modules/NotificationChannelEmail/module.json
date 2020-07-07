@@ -37,7 +37,7 @@
 						"user": {
 							"field": "enum",
 							"datasource": "namespaces",
-							"enum": "namespaces:users:userId",
+							"enum": "users:id",
 							"required": false
 						}
 					}
@@ -62,7 +62,7 @@
 						"user": {
 							"type": "select",
 							"datasource": "namespaces",
-							"enum": "namespaces:users:userName",
+							"optionLabels": "users:title",
 							"noneLabel": "__l_not_assigned_to_user__",
 							"label": "__l_assignedToUser__",
 							"helper": "__h_assignedToUser__"

@@ -48,7 +48,7 @@
 							"dependencies": "recipient_type",
 							"field": "enum",
 							"datasource": "namespaces",
-							"enum": "namespaces:users:userId",
+							"enum": "users:id",
 							"required": true
 						},
 						"logLevel": {
@@ -433,7 +433,7 @@
 							},
 							"type": "select",
 							"datasource": "namespaces",
-							"enum": "namespaces:users:userName",
+							"optionLabels": "users:title",
 							"required": true,
 							"label": "__l_user__",
 							"helper": "__h_user__",

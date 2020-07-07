@@ -2700,7 +2700,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 	function getNspcFromFilters(moduleMeta, nspcfilters) {
 		var namespaces = [],
 			filters = nspcfilters.split(','),
-			apis = ['locations', 'namespaces', 'loadFunction'],
+			apis = ['locations', 'users', 'namespaces', 'loadFunction'],
 			filteredDev = [];
 
 		try {
@@ -2723,6 +2723,12 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							return location[id[1]] !== 0 && location[id[1]] !== 'globalRoom';
 						}).map(function(location) {
 							return location[id[1]];
+						});
+
+						// get namespaces of users - 'users:id' or 'users:title'
+					} else if (id[0] === 'users' && (id[1] === 'id' || id[1] === 'title')) {
+						namespaces = _.map(self.profiles, function(profile) {
+							return profile[id[1] === 'id' ? 'id' : 'name'];
 						});
 
 						// get namespaces of devices per location - 'locations:locationId:filterPath'
