@@ -1,0 +1,13 @@
+{
+  "m_title": "Notifications by E-mail",
+  "m_descr": "This app sends notifications by e-mail.",
+  "l_emails": "Recepients",
+  "h_emails": "User's E-mails are registered automatically. Add here additional recipients.",
+  "l_email": "E-mail",
+  "l_assignedToUser": "Assign this E-Mail to a user",
+  "h_assignedToUser": "If set, this E-Mail will be also used to send notifications to the user",
+  "l_not_assigned_to_user": "Don't assign to a user",
+  "m_subject": "Z-Way Notification",
+  "l_subject": "Subject",
+  "h_subject": "The subject for E-mail messages"
+}

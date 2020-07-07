@@ -1,0 +1,76 @@
+{
+	"dependencies": [],
+	"singleton": true,
+	"category": "notifications",
+	"author": "Z-Wave.Me",
+	"homepage": "https://z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "NotificationChannelEmail",
+	"version": "3.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"subject": "__m_subject__",
+		"channels": []
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"subject": {
+				"type" : "string",
+				"required" : true
+			},
+			"channels": {
+				"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"email": {
+							"type" : "string",
+							"required": true
+						},
+						"user": {
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:users:userId",
+							"required": false
+						}
+					}
+				}
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"subject": {
+				"label": "__l_subject__",
+				"helper": "__h_subject__"
+			},
+			"channels": {
+				"label": "__l_emails__",
+				"helper": "__h_emails__",
+				"items": {
+					"fields": {
+						"email": {
+							"label": "__l_email__"
+						},
+						"user": {
+							"type": "select",
+							"datasource": "namespaces",
+							"enum": "namespaces:users:userName",
+							"noneLabel": "__l_not_assigned_to_user__",
+							"label": "__l_assignedToUser__",
+							"helper": "__h_assignedToUser__"
+						}
+					}
+				}
+			}
+		}
+	},
+	"postRender": "loadFunction:postRender.js"
+}

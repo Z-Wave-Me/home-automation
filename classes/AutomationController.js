@@ -1914,9 +1914,41 @@ AutomationController.prototype.createProfile = function(profile) {
 	profile.uuid = crypto.guid();
 
 	this.profiles.push(profile);
+	
+	this.emit('profile.added', profile);
 
 	this.saveConfig();
 	return profile;
+};
+
+// Detect devices added to the profile
+AutomationController.prototype.updateProfileDevices = function(profile, oldLocations, oldDevices, newLocations, newDevices) {
+	oldLocations = oldLocations || [];
+	oldDevices = oldDevices || [];
+	newLocations = newLocations || [];
+	newDevices = newDevices || [];
+
+	var addedLocations   = _.difference(newLocations, oldLocations), addedDevices   = _.difference(newDevices, oldDevices),
+	    removedLocations = _.difference(oldLocations, newLocations), removedDevices = _.difference(oldDevices, newDevices);
+	
+	var devicesInAddedLocations   = this.devices.filter(function(d) { return addedLocations.indexOf(d.get("location")) > -1;   }).map(function(d) { return d.id; }),
+	    devicesInRemovedLocations = this.devices.filter(function(d) { return removedLocations.indexOf(d.get("location")) > -1; }).map(function(d) { return d.id; });
+
+	var devicesInOldLocations = this.devices.filter(function(d) { return oldLocations.indexOf(d.get("location")) > -1; }).map(function(d) { return d.id; }),
+	    devicesInNewLocations = this.devices.filter(function(d) { return newLocations.indexOf(d.get("location")) > -1;  }).map(function(d) { return d.id; });
+	
+	    // Device is added if it was added in granted device list or in granted location and was not in those lists before
+	var devicesAdded   = _.difference(_.union(addedDevices,   devicesInAddedLocations),   _.union(oldDevices, devicesInOldLocations)),
+	    // Device is removed if it was deleted from granted device list or from granted location and is not in those lists now
+	    devicesRemoved = _.difference(_.union(removedDevices, devicesInRemovedLocations), _.union(newDevices, devicesInNewLocations));
+	
+	this.emit('profile.deviceListUpdated', {
+		profile: profile,
+		added: devicesAdded,
+		deleted: devicesRemoved
+	});
+	
+	this.emit('profile.updated', profile);
 };
 
 AutomationController.prototype.updateProfile = function(object, id) {
@@ -1928,14 +1960,18 @@ AutomationController.prototype.updateProfile = function(object, id) {
 	if (profile) {
 		index = this.profiles.indexOf(profile);
 
+		var oldLocations = profile.rooms, oldDevices = profile.devices;
+		
+		// update properties
 		for (var property in object) {
 			if (object.hasOwnProperty(property) && profile.hasOwnProperty(property)) {
 				this.profiles[index][property] = object[property];
 			}
 		}
-
-		this.emit('profile.updated', profile);
+		
+		this.updateProfileDevices(profile, oldLocations, oldDevices, profile.rooms, profile.devices);
 	}
+	
 	this.saveConfig();
 	return this.profiles[index];
 };
@@ -1973,6 +2009,8 @@ AutomationController.prototype.removeProfile = function(profileId) {
 		return profile.id !== profileId;
 	});
 
+	this.emit('profile.removed', profileId);
+	
 	this.saveConfig();
 };
 
@@ -3092,6 +3130,19 @@ AutomationController.prototype.notificationChannelSend = function(id, message) {
 		return;
 	}
 	this.notificationChannels[id].handler(message);
+};
+
+AutomationController.prototype.notificationUserChannelSend = function(id, message) {
+	var self = this;
+	Object.keys(this.notificationChannels).forEach(function(ncId) {
+		if (self.notificationChannels[ncId].user === id) {
+			self.notificationChannels[ncId].handler(message);
+		}
+	});
+};
+
+AutomationController.prototype.getNotificationChannel = function(id) {
+	return this.notificationChannels[id];
 };
 
 AutomationController.prototype.transformIntoNewInstance = function(moduleName) {

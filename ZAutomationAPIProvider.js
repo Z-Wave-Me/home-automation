@@ -1647,24 +1647,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						profile.devices = reqObj.devices || [];
 						profile.expert_view = reqObj.expert_view;
 						profile.beta = reqObj.beta;
-
-						try {
-							// update email adress on initial update
-							if (profile.login === 'admin' && this.controller.config.initial && reqObj.email !== '') {
-								var emailMe = _.findIndex(this.controller.instances, function(instance) {
-									return instance.moduleId === 'MailNotifier' &&
-										instance.params.mail_to_input === '' &&
-										instance.params.mail_to_select === ''
-								});
-
-								if (emailMe > -1) {
-									this.controller.instances[emailMe].params.mail_to_select = reqObj.email;
-									delete this.controller.config.initial;
-								}
-							}
-						} catch (e) {
-							this.controller.addNotification('error', 'Failed to set email address: ' + e.toString(), 'core', 'ZAutomationAPI');
-						}
 					}
 					// could be changed by user role
 					profile.name = reqObj.name; // profile name

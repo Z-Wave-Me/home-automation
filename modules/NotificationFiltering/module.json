@@ -15,12 +15,14 @@
 	"defaults": {
 		"title": "__m_title__",
 		"description": "__m_descr__",
-		"channels": []
+		"rules": [{"recipient_type": "user", "user": 1, "logLevel": "errors,warnings,notifications"}],
+		"autogenOnDeviceListUpdate": true,
+		"normalizeRules": true
 	},
 	"schema": {
 		"type": "object",
 		"properties": {
-                	"channels": {
+                	"rules": {
                 		"type": "array",
 				"items": {
 					"type": "object",
@@ -66,16 +68,16 @@
 										"type": "string",
 										"enum": [
 											"unselected",
-											"filter_devices_toggleButton",
-											"filter_devices_switchControl",
-											"filter_devices_switchBinary",
-											"filter_devices_switchMultilevel",
-											"filter_devices_sensorBinary",
-											"filter_devices_sensorMultilevel",
-											"filter_devices_sensorMultiline",
-											"filter_devices_fan",
-											"filter_devices_doorLock",
-											"filter_devices_thermostat"
+											"dev_toggleButton",
+											"dev_switchControl",
+											"dev_switchBinary",
+											"dev_switchMultilevel",
+											"dev_sensorBinary",
+											"dev_sensorMultilevel",
+											"dev_sensorMultiline",
+											"dev_fan",
+											"dev_doorLock",
+											"dev_thermostat"
 										],
 										"required": true
 									},
@@ -88,15 +90,6 @@
 												"datasource": "namespaces",
 												"enum": "namespaces:devices_toggleButton:deviceId",
 												"required": true
-											},
-											"dev_matchValue": {
-												"type": "string",
-												"enum": [
-													"on",
-													"off"
-												],
-												"title": "__l_dev_matchValue__",
-												"required": false
 											},
 											"dev_message": {
 												"required": false
@@ -213,6 +206,7 @@
 											"dev_matchValue": {
 												"type": "string",
 												"enum": [
+													"all",
 													"on",
 													"off"
 												],
@@ -343,25 +337,12 @@
 												"required": true
 											},
 											"dev_matchValue": {
-												"type": "object",
-												"properties": {
-													"dev_matchValueOperation": {
-														"type": "string",
-														"enum": [
-															"<",
-															">",
-															"=",
-															"<=",
-															">="
-														],
-														"required": false,
-														"title": "__l_dev_matchValueOperation__"
-													},
-													"dev_matchValueOperand": {
-														"pattern": "[0-9]*",
-														"required": false
-													}
-												}
+												"type": "string",
+												"enum": [
+													"all",
+													"open",
+													"close"
+												]
 											},
 											"dev_message": {
 												"required": false
@@ -409,13 +390,21 @@
 						}
 					}
 				}
+			},
+			"autogenOnDeviceListUpdate": {
+				"type": "boolean",
+				"default": true
+			},
+			"normalizeRules": {
+				"type": "boolean",
+				"default": true
 			}
 		},
 		"required": false
 	},
 	"options": {
 		"fields": {
-			"channels": {
+			"rules": {
 				"items": {
 					"fields": {
 						"recipient_type": {
@@ -469,22 +458,22 @@
 										"type": "select",
 										"optionLabels": [
 											"__unselected__",
-											"__filter_devices_toggleButton__",
-											"__filter_devices_switchControl__",
-											"__filter_devices_switchBinary__",
-											"__filter_devices_switchMultilevel__",
-											"__filter_devices_sensorBinary__",
-											"__filter_devices_sensorMultilevel__",
-											"__filter_devices_sensorMultiline__",
-											"__filter_devices_fan__",
-											"__filter_devices_doorLock__",
-											"__filter_devices_thermostat__"
+											"__dev_toggleButton__",
+											"__dev_switchControl__",
+											"__dev_switchBinary__",
+											"__dev_switchMultilevel__",
+											"__dev_sensorBinary__",
+											"__dev_sensorMultilevel__",
+											"__dev_sensorMultiline__",
+											"__dev_fan__",
+											"__dev_doorLock__",
+											"__dev_thermostat__"
 										]
 									},
 									"dev_toggleButton": {
 										"label": "__l_ToggleButton__",
 										"dependencies": {
-											"dev_filter": "filter_devices_toggleButton"
+											"dev_filter": "dev_toggleButton"
 										},
 										"fields": {
 											"dev_select": {
@@ -492,14 +481,6 @@
 												"datasource": "namespaces",
 												"field": "optionLabels",
 												"optionLabels": "namespaces:devices_toggleButton:deviceName"
-											},
-											"dev_matchValue": {
-												"helper": "__h_dev_matchValue__",
-												"type": "select",
-												"optionLabels": [
-													"On",
-													"Off"
-												]
 											},
 											"dev_message": {
 												"label": "__l_dev_message__",
@@ -510,7 +491,7 @@
 									"dev_switchControl": {
 										"label": "__l_switchControl__",
 										"dependencies": {
-											"dev_filter": "filter_devices_switchControl"
+											"dev_filter": "dev_switchControl"
 										},
 										"fields": {
 											"dev_select": {
@@ -549,7 +530,7 @@
 									"dev_switchBinary": {
 										"label": "__l_switchBinary__",
 										"dependencies": {
-											"dev_filter": "filter_devices_switchBinary"
+											"dev_filter": "dev_switchBinary"
 										},
 										"fields": {
 											"dev_select": {
@@ -576,7 +557,7 @@
 									"dev_switchMultilevel": {
 										"label": "__l_switchMultilevel__",
 										"dependencies": {
-											"dev_filter": "filter_devices_switchMultilevel"
+											"dev_filter": "dev_switchMultilevel"
 										},
 										"fields": {
 											"dev_select": {
@@ -615,7 +596,7 @@
 									"dev_sensorBinary": {
 										"label": "__l_sensorBinary__",
 										"dependencies": {
-											"dev_filter": "filter_devices_sensorBinary"
+											"dev_filter": "dev_sensorBinary"
 										},
 										"fields": {
 											"dev_select": {
@@ -628,6 +609,7 @@
 												"helper": "__h_dev_matchValue__",
 												"type": "select",
 												"optionLabels": [
+													"All",
 													"On",
 													"Off"
 												]
@@ -641,7 +623,7 @@
 									"dev_sensorMultilevel": {
 										"label": "__l_sensorMultilevel__",
 										"dependencies": {
-											"dev_filter": "filter_devices_sensorMultilevel"
+											"dev_filter": "dev_sensorMultilevel"
 										},
 										"fields": {
 											"dev_select": {
@@ -680,7 +662,7 @@
 									"dev_sensorMultiline": {
 										"label": "__l_sensorMultiline__",
 										"dependencies": {
-											"dev_filter": "filter_devices_sensorMultiline"
+											"dev_filter": "dev_sensorMultiline"
 										},
 										"fields": {
 											"dev_select": {
@@ -719,7 +701,7 @@
 									"dev_fan": {
 										"label": "__l_fan__",
 										"dependencies": {
-											"dev_filter": "filter_devices_fan"
+											"dev_filter": "dev_fan"
 										},
 										"fields": {
 											"dev_select": {
@@ -758,7 +740,7 @@
 									"dev_doorLock": {
 										"label": "__l_doorLock__",
 										"dependencies": {
-											"dev_filter": "filter_devices_doorLock"
+											"dev_filter": "dev_doorLock"
 										},
 										"fields": {
 											"dev_select": {
@@ -769,24 +751,12 @@
 											},
 											"dev_matchValue": {
 												"label": "__l_dev_matchValue__",
-												"fields": {
-													"dev_matchValueOperation": {
-														"type": "select",
-														"optionLabels": [
-															"<",
-															">",
-															"=",
-															"<=",
-															">="
-														],
-														"label": "__l_dev_matchValueOperation__",
-														"helper": "__h_dev_matchValueOperation__"
-													},
-													"dev_matchValueOperand": {
-														"label": "__l_dev_matchValueOperand__",
-														"helper": "__h_dev_matchValueOperand__"
-													}
-												}
+												"type": "select",
+												"optionLabels": [
+													"All",
+													"Open",
+													"Close"
+												]
 											},
 											"dev_message": {
 												"label": "__l_dev_message__",
@@ -797,7 +767,7 @@
 									"dev_thermostat": {
 										"label": "__l_thermostat__",
 										"dependencies": {
-											"dev_filter": "filter_devices_thermostat"
+											"dev_filter": "dev_thermostat"
 										},
 										"fields": {
 											"dev_select": {
@@ -838,6 +808,16 @@
 						}
 					}
 				}
+			},
+			"autogenOnDeviceListUpdate": {
+				"type": "checkbox",
+				"rightLabel": "__rl_autogenOnDeviceListUpdate__",
+				"helper": "__h_autogenOnDeviceListUpdate__"
+			},
+			"normalizeRules": {
+				"type": "checkbox",
+				"rightLabel": "__rl_normalizeRules__",
+				"helper": "__h_normalizeRules__"
 			}
 		}
 	}

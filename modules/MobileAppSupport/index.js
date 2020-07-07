@@ -38,7 +38,7 @@ MobileAppSupport.prototype.init = function(config) {
 
 	var self = this;
 
-	this.defineHandlers();	
+	this.defineHandlers();
 	this.externalAPIAllow("MobileAppSupportAPI");
 	
 	this.config.apps.forEach(this.announceApp, this);
@@ -53,7 +53,7 @@ MobileAppSupport.prototype.stop = function() {
 };
 
 MobileAppSupport.prototype.channelID = function(token, app_profile) {
-	return this.constructor.name + "_" + this.id + "_" + token + "_" + app_profile;
+	return this.getName() + "_" + this.id + "_" + token + "_" + app_profile;
 };
 
 MobileAppSupport.prototype.announceApp = function(app) {
@@ -74,7 +74,6 @@ MobileAppSupport.prototype.getAppByToken = function(token) {
 	});
 };
 
-
 MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile, user, authToken) {
 	var found_app = _.findWhere(this.config.apps, {
 		token: token,
@@ -89,11 +88,9 @@ MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile,
 		
 		this.announceApp(app);
 		
-		this.welcomeSignup(app); // default subscriptions
-		
 		var profile = this.controller.getProfile(user) || {};
 		var lang = this.loadModuleLang();
-		this.controller.addNotification("notification", lang.m_welcome + ": " + app.title + " (" + profile.name + " / " + profile.login + ")", "module", this.constructor.name);
+		this.addNotification("notification", lang.m_welcome + ": " + app.title + " (" + profile.name + " / " + profile.login + ")", "module");
 		
 		this.permanentAuthToken(user, authToken);
 		
@@ -130,9 +127,7 @@ MobileAppSupport.prototype.unregisterApp = function(token, app_profile) {
 	if (app) {
 		var profile = this.controller.getProfile(app.user) || {};
 		var lang = this.loadModuleLang();
-		this.controller.addNotification("notification", lang.m_goodby + ": " + app.title + " (" + profile.name + " / " + profile.login + ")", "module", this.constructor.name);
-		
-		this.goodbySignout(app); // remove subscriptions
+		this.addNotification("notification", lang.m_goodby + ": " + app.title + " (" + profile.name + " / " + profile.login + ")", "module");
 		
 		this.config.apps = _.without(this.config.apps, _.findWhere(this.config.apps, app));
 		this.saveConfig();
@@ -173,19 +168,6 @@ MobileAppSupport.prototype.removeAuthToken = function(user, authToken) {
 	}
 };
 
-MobileAppSupport.prototype.welcomeSignup = function(app) {
-	// Add by default notifications filtering for that phone:
-	//  - binary sensors (alarms)
-	//  - doorlock sensors
-	//  - errors (valid for admin only)
-	this.controller.emit('notificationsfiltering.addDefault', this.channelID());
-};
-
-MobileAppSupport.prototype.goodbySignout = function(app) {
-	// Remove notifications filtering for that phone
-	this.controller.emit('notificationsfiltering.remove', this.channelIDPrefix());
-};
-
 MobileAppSupport.prototype.sendNotification = function(token, app_profile, notification) {
 	var app = this.config.apps.filter(function(app) { return app.token === token && app.app_profile === app_profile; })[0];
 	
@@ -195,7 +177,7 @@ MobileAppSupport.prototype.sendNotification = function(token, app_profile, notif
 			os: app.os,
 			profileId: app.app_profile,
 			url: this.URL,
-			title: notification, // this.ZWayTitle, // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			title: this.ZWayTitle,
 			body: notification
 		};
 		
@@ -315,7 +297,7 @@ MobileAppSupport.prototype.defineHandlers = function () {
 			} else {
 				return {
 					status: 400,
-					body: 'Missing argument token'
+					body: 'Missing argument token or profileId'
 				};
 	   		}
 		} else {
