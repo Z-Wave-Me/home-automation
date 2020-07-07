@@ -72,7 +72,6 @@ GoogleHome.prototype.delayedReportStateDevices = function(dev) {
   
   // set a short timer and send after the delay
   if (!this.deferredVDevReportTimer) {
-    console.logJS("++++", this.deferredVDevReportTimer);
     this.deferredVDevReportTimer = setTimeout(function() {
       self.reportState(self.deferredVDevReport);
       self.deferredVDevReport = [];

@@ -81,7 +81,7 @@ AutomationModule.prototype.saveConfig = function(config) {
 };
 
 AutomationModule.prototype.getName = function() {
-	return /(\w+)\(/.exec(this.constructor.toString())[1];
+	return this.constructor.name;
 };
 
 // This method returns JSON representation

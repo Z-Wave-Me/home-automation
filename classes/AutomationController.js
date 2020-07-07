@@ -150,7 +150,6 @@ AutomationController.prototype.init = function() {
 
 		self.devices.on('destroy', function(device) {
 			ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
-
 		});
 
 		self.devices.on('removed', function(device) {
@@ -2408,7 +2407,6 @@ AutomationController.prototype.getListNamespaces = function(path, namespacesObj,
 					obj = {},
 					lastPath = ['deviceId', 'deviceName', 'channelId', 'channelName'];
 				
-				console.logJS(">>>", currPath, nspc[currPath]);
 				if (nspc[currPath]) {
 					nspc = nspc[currPath];
 					result = nspc;

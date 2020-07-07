@@ -1632,6 +1632,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.code = 403;
 				reply.error = "Revoking self Admin priviledge is not allowed.";
 			} else {
+				// check that e-mail is unique or empty
 				uniqueProfProps = _.filter(this.controller.profiles, function(p) {
 					return (p.email !== '' && p.email === reqObj.email) &&
 						p.id !== profileId;
