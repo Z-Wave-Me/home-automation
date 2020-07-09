@@ -12,13 +12,5 @@
 	"sun":"Sonntag",
 	"l_warning_lvl":"Benachrichtigungslevel",
 	"h_warning_lvl":"Das Modul sendet eine Benachrichtigung, wenn der Batteriestatus eines Gerätes unterhalb dieses Levels fällt.",
-	"warning":"Achtung! Das Batterielevel des Gerätes beträgt nur noch >:> ",
-	"l_choose_target":"--- Ziel wählen ---",
-	"l_notification":"Benachrichtigung",
-	"l_notification_mail":"Email",
-	"l_notification_message": "Nachricht",
-	"h_notification_message": "Inhalt der Benachrichtigung. Über __device__ können Sie den Gerätenamen in der Nachricht ausgeben lassen.",
-	"h_nomail":"Aktuell ist keine Benachrichtigung über Email möglich, da die EMailMe-App nicht installiert/aktiviert ist.",
-	"b_createmail": "Aktiviere EMailMe",
-	"m_createmail": "ACHTUNG!<br />Beim Verlassen des Konfigurationsfensters gehen alle bisherigen Einstellungen verloren.<br /><br />HINWEIS:<br />Sie können mit 'Abbrechen' ohne die Konfiguration der EMailMe-App fortfahren, diese im Nachgang anlegen und anschließend in der IfThen-Konfiguration hinzufügen."
+	"warning":"Achtung! Das Batterielevel des Gerätes beträgt nur noch: "
 }

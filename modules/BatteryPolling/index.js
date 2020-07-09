@@ -1,9 +1,9 @@
 /*** BatteryPolling Z-Way HA module *******************************************
 
-Version: 2.2.0
-(c) Z-Wave.Me, 2017
+Version: 2.3.0
+(c) Z-Wave.Me, 2020
 -----------------------------------------------------------------------------
-Author: Gregory Sitnin <sitnin@z-wave.me> nad Serguei Poltorak <ps@z-wave.me>,
+Author: Gregory Sitnin <sitnin@z-wave.me> and Serguei Poltorak <ps@z-wave.me>,
 Karsten Reichel <kar@z-wave.eu>
 Description:
 	This module periodically requests all battery devices for battery level report
@@ -71,23 +71,11 @@ BatteryPolling.prototype.init = function (config) {
 		
 		self.vDev.set("metrics:level", self.minimalBatteryValue());
 		var now = Math.round(new Date().getTime()/1000);
-		if (vDev.get("metrics:level") <= self.config.warningLevel && (typeof self.lastTriggered[vDev.id] === 'undefined' || self.lastTriggered[vDev.id] <= (now-43200))) {
-			var values = vDev.get("metrics:title"),
+		if (vDev.get("metrics:level") <= self.config.warningLevel && (typeof self.lastTriggered[vDev.id] === 'undefined' || self.lastTriggered[vDev.id] <= (now - 12*60*60))) {
+			var value = vDev.get("metrics:title"),
 				langFile = self.loadModuleLang();
 
-			// add notification
-			if(typeof self.config.notification.target !== 'undefined' || typeof self.config.notification.mail_to_input !== 'undefined') {
-			    var mail;
-			    if(self.config.notification.target.search('@') > 0 || (mail = typeof self.config.notification.mail_to_input !== 'undefined')) {
-			        self.addNotification('mail.notification', typeof self.config.notification.message === 'undefined' ? langFile.warning + values : self.config.notification.message.replace('__device__',values), mail ? self.config.notification.mail_to_input : self.config.notification.target);
-			    } else {
-			        self.addNotification('push.notification', typeof self.config.notification.message === 'undefined' ? langFile.warning + values : self.config.notification.message.replace('__device__',values), self.config.notification.target);
-			    }
-			}
-			else
-			{
-				self.addNotification("warning", langFile.warning + values, "battery", self.vDev.id);
-			}
+			self.addNotification("device-info", langFile.warning + value, "battery", self.vDev.id);
 			self.lastTriggered[vDev.id] = now;
 		}
 	};
