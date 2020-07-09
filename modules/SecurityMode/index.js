@@ -1,10 +1,10 @@
 /*** SecurityMode Z-Way HA module *******************************************
 
-Version: 1.3.0
-(c) Z-Wave.Me, 2017
+Version: 2.0.0
+(c) Z-Wave.Me, 2020
 -----------------------------------------------------------------------------
 Authors: Poltorak Serguei <ps@z-wave.me>
-		 Yurkin Vitaliy   <aivs@z-wave.me>
+         Yurkin Vitaliy   <aivs@z-wave.me>
 Description:
 	Implements Security rules and send notifications and activates scene on rule match.
 ******************************************************************************/
@@ -42,12 +42,6 @@ SecurityMode.prototype.init = function (config) {
 
 	var self = this;
 
-	if (config.action.message) {this.message = config.action.message.toString();}
-	if (config.action.api_key_sms) {this.api_key_sms = config.action.api_key_sms.toString();};
-	if (config.action.api_key_email) {this.api_key_email = config.action.api_key_email.toString();};	
-	if (config.action.phone) {this.phone = config.action.phone.toString();};
-	if (config.action.email) {this.email = config.action.email.toString();}
-	
 	this.vDev = this.controller.devices.create({
 			deviceId: "SecurityMode_"+ this.id,
 			defaults: {
@@ -170,36 +164,6 @@ SecurityMode.prototype.testRule = function (tree) {
 			// And clearing out this.timer variable
 			self.timer = null;
 		}, self.config.timeout*1000);
-
-		// If API Key from sms.ru and Phone number exist, then send sms
-		if (self.api_key_sms && self.phone) {
-			http.request({
-				method: 'POST',
-				url: "http://sms.ru/sms/send",
-				data: {
-					api_id: self.api_key_sms,
-					to: self.phone,
-					text: self.message
-				}
-			});
-		}
-
-		// If API Key from mandrillapp.com and Email exist, then send email
-		if (self.api_key_email && self.email) {
-			http.request({
-				method: 'POST',
-				url: "https://mandrillapp.com/api/1.0/messages/send.json",
-				data: {
-					key: self.api_key_email,
-					message: {
-						from_email: self.email,
-						to: [{email: self.email, type: "to"}],
-						subject: "Notification from Smart Home",
-						text: self.message
-					}
-				}
-			});
-		}
 
 		// Send Notification
 		self.addNotification("warning", self.message, "module");
