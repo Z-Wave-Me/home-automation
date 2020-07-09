@@ -3136,12 +3136,19 @@ AutomationController.prototype.notificationChannelSend = function(id, message) {
 	this.notificationChannels[id].handler(message);
 };
 
-AutomationController.prototype.notificationUserChannelSend = function(id, message) {
+AutomationController.prototype.notificationUserChannelsSend = function(id, message) {
 	var self = this;
 	Object.keys(this.notificationChannels).forEach(function(ncId) {
 		if (self.notificationChannels[ncId].user === id) {
 			self.notificationChannels[ncId].handler(message);
 		}
+	});
+};
+
+AutomationController.prototype.notificationAllChannelsSend = function(message) {
+	var self = this;
+	Object.keys(this.notificationChannels).forEach(function(ncId) {
+		self.notificationChannels[ncId].handler(message);
 	});
 };
 

@@ -1,0 +1,93 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "notifications",
+	"author": "Z-Wave.Me",
+	"homepage": "https://z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "NotificationSend",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"recipient_type": "all",
+		"message": ""
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"recipient_type": {
+				"type": "string",
+				"enum": [
+					"all",
+					"user",
+					"channel"
+				],
+				"default": "all",
+				"required": true
+			},
+			"channel": {
+				"dependencies": "recipient_type",
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:notificationChannels:channelId",
+				"required": true
+			},
+			"user": {
+				"dependencies": "recipient_type",
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "users:id",
+				"required": true
+			},
+			"message": {
+				"required": true
+			}
+		}
+	},
+	"options": {
+		"fields": {
+			"recipient_type": {
+				"label": "__l_recipient_type__",
+				"type": "select",
+				"optionLabels": [
+					"__l_all__",
+					"__l_user__",
+					"__l_channel__"
+				]
+			},
+			"channel": {
+				"dependencies": {
+					"recipient_type": "channel"
+				},
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:notificationChannels:channelName",
+				"label": "__l_channel__",
+				"helper": "__h_channel__"
+			},
+			"user": {
+				"dependencies": {
+					"recipient_type": "user"
+				},
+				"type": "select",
+				"datasource": "namespaces",
+				"optionLabels": "users:title",
+				"required": true,
+				"label": "__l_user__",
+				"helper": "__h_user__",
+				"title": "__t_user__"
+			},
+			"message": {
+				"label": "__l_message__",
+				"helper": "__h_message__"
+			}
+		}
+	}
+}

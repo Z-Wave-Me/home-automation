@@ -135,7 +135,8 @@ NotificationChannelEmail.prototype.sendSendMessageWithDelay = function () {
 					"Content-Type": "application/x-www-form-urlencoded"
 				},
 				error: function(response) {
-					self.addNotification('error', (typeof response !== 'string'? JSON.stringify(response) : response), 'module');
+					console.log("NotificationChannelEmail error: " + (typeof response !== 'string'? JSON.stringify(response) : response));
+					self.addNotification('error', 'NotificationChannelEmail error' + (typeof response === 'string'? ': ' + response : ''), 'module');
 				}
 			});
 		} else {

@@ -26,7 +26,7 @@ function MobileAppSupport(id, controller) {
 
 	this.PNS = "https://pns.z-wave.me:5010/v1.0/push";
 	this.ZWayTitle = "Z-Way Notification";
-	this.URL = "/smarthome/#/events"; // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ссылка на отдельные сообщения
+	this.URL = "/smarthome/#/events"; // TODO make URL specific to the event
 }
 
 inherits(MobileAppSupport, AutomationModule);

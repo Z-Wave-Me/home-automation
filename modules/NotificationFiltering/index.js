@@ -77,6 +77,8 @@ NotificationFiltering.prototype.onNotificationHandler = function (notice) {
 		) {
 			self.logLevels[level].forEach(function(ch) {
 				sendTo.push({
+					type: ch.type,
+					user: ch.user,
 					channel: ch.channel,
 					message: defaultMessage
 				});
@@ -102,6 +104,7 @@ NotificationFiltering.prototype.onNotificationHandler = function (notice) {
 			
 			if (send) {
 				sendTo.push({
+					type: device.type,
 					user: device.user,
 					channel: device.channel,
 					message: device.message ? device.message : defaultMessage
@@ -110,11 +113,13 @@ NotificationFiltering.prototype.onNotificationHandler = function (notice) {
 		}
 	});
 
-	sendTo.forEach(function(to){
-		if (to.user) {
-			self.controller.notificationUserChannelSend(to.user, to.message);
-		} else {
+	sendTo.forEach(function(to) {
+		if (to.type === "user") {
+			self.controller.notificationUserChannelsSend(to.user, to.message);
+		} else if (to.type === "channel") {
 			self.controller.notificationChannelSend(to.channel, to.message);
+		} else {
+			self.controller.notificationAllChannelsSend(to.message);
 		}
 	});
 };
@@ -260,6 +265,7 @@ NotificationFiltering.prototype.readConfig = function () {
 				"id": d.dev_select,
 				"message": d.dev_message,
 				"comparator": comparator,
+				"type": recipientType,
 				"user": user,
 				"channel": channel
 			});
