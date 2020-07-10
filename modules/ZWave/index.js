@@ -2206,7 +2206,8 @@ ZWave.prototype.defineHandlers = function() {
 				var par = url.split("/")[1];
 
 				if (par == "realtime") {
-					body.data = self.lastRSSIData();
+					self.updateRSSIData(null); // request new update to update the UI more often when user is on the page (page is polling this API).
+					body.data = self.lastRSSIData(); // get last know data
 				} else {
 					body.data = self.loadObject('rssidata.json');
 				}
@@ -6124,11 +6125,32 @@ ZWave.prototype.parseDelCommandClass = function(nodeId, instanceId, commandClass
 ZWave.prototype.lastRSSIData = function() {
 	var rssi = this.zway.controller.data.statistics.backgroundRSSI;
 
+	function valueToRSSI(rssi) {
+		// From z-way/ZDefsPublic.h
+		var
+			RSSI_VALID_LOWEST        = -94, // Valid values are in range from -94 dBm
+			RSSI_VALID_HIGHEST       = -32, // to -32 dBm
+			RSSI_BELOW_SENSITIVITY   = 125, // No signal detected. The RSSI is too low to measure precisely
+			RSSI_MAX_POWER_SATURATED = 126, // Receiver saturated. RSSI too high to measure precisely
+			RSSI_NOT_AVAILABLE       = 127; // RSSI measurement not available
+		
+		switch (rssi) {
+			case RSSI_BELOW_SENSITIVITY:
+				return RSSI_VALID_LOWEST - 1;
+			case RSSI_MAX_POWER_SATURATED:
+				return RSSI_VALID_HIGHEST + 1;
+			case RSSI_NOT_AVAILABLE:
+				return null;
+			default:
+				return rssi - 256;
+		}
+	}
+	
 	return {
 		"time": Math.round((new Date()).getTime() / 1000),
-		"channel1": (rssi.channel1.value - 256) >= -115 && !_.isNaN(rssi.channel1.value) ? rssi.channel1.value - 256 : null,
-		"channel2": (rssi.channel2.value - 256) >= -115 && !_.isNaN(rssi.channel2.value) ? rssi.channel2.value - 256 : null,
-		"channel3": (rssi.channel3.value - 256) >= -115 && !_.isNaN(rssi.channel3.value) ? rssi.channel3.value - 256 : null
+		"channel1": valueToRSSI(rssi.channel1.value),
+		"channel2": valueToRSSI(rssi.channel2.value),
+		"channel3": valueToRSSI(rssi.channel3.value)
 	};
 };
 
@@ -6136,7 +6158,9 @@ ZWave.prototype.updateRSSIData = function(callback) {
 	var self = this;
 
 	this.zway.GetBackgroundRSSI(function() {
-		callback(self.lastRSSIData());
+		if (callback) {
+			callback(self.lastRSSIData());
+		}
 	});
 };
 

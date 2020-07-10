@@ -1,11 +1,12 @@
 /*** IfThen Z-Way HA module *******************************************
 
-Version: 2.5.1
-(c) Z-Wave.Me, 2017
+Version: 2.6.0
+(c) Z-Wave.Me, 2020
 -----------------------------------------------------------------------------
 Author: Niels Roche <nir@zwave.eu>
 Author: Hans-Christian Göckeritz <hcg@zwave.eu>
 Author: Karsten Reichel <kar@zwave.eu>
+Author: Serguei Poltorak <ps@z-wave.me>
 Description:
 	Bind actions on one device to other devices or scenes
 ******************************************************************************/
@@ -58,49 +59,35 @@ IfThen.prototype.init = function (config) {
 		if (value === 0 && ifLevel === "off") value = "off";
 		
 		if(check || value === ifLevel || sDev.get('deviceType') === 'toggleButton'){
-
 			self.config.targets.forEach(function(el) {
 				var type = el.filterThen;
-
-				if(type === "notification") {
-					if(typeof el.notification.target !== 'undefined' || typeof el.notification.mail_to_input !== 'undefined') {
-						var mail;
-						if(el.notification.target.search('@') > 0 || (mail = typeof el.notification.mail_to_input !== 'undefined')) {
-							self.addNotification('mail.notification', typeof el.notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets) : el.notification.message, mail ? el.notification.mail_to_input : el.notification.target);
-						} else {
-							self.addNotification('push.notification', typeof el.notification.message === 'undefined' ? 'Source: ' + JSON.stringify(self.config.sourceDevice) + ' Target: ' + JSON.stringify(self.config.targets) : el.notification.message, el.notification.target);
-						}
-					}
-				} else {
-					var id = el[type].target,
-						lvl = el[type].status === 'level' && typeof el[type].level === 'number' ? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
-						vDev = that.controller.devices.get(id),
-						// compare old and new level to avoid unneccessary updates
-						compareValues = function(valOld,valNew){
-							var vO = _.isNaN(parseFloat(valOld))? valOld : parseFloat(valOld),
-								vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
-
-							return vO !== vN;
-						},
-						set = compareValues(vDev.get("metrics:level"), lvl);
-
-
-					//if (vDev && set) {
-					if (vDev && (!el[type].sendAction || (el[type].sendAction && set))) {
-
-						if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat" || type === "switchRGBW")) {
-							if (lvl === 'on' || lvl === 'off'){
-								vDev.performCommand(lvl);
-							} else if (typeof lvl === 'object') {
-								vDev.performCommand("exact", lvl);
-							} else {
-								vDev.performCommand("exact", { level: lvl });
-							}
-						} else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
-							vDev.performCommand("on");
-						} else if (vDev.get("deviceType") === type) {
+				
+				var id = el[type].target,
+					lvl = el[type].status === 'level' && typeof el[type].level === 'number' ? el[type].level : (el[type].status === 'color' && el[type].color? el[type].color: el[type].status),
+					vDev = that.controller.devices.get(id),
+					// compare old and new level to avoid unneccessary updates
+					compareValues = function(valOld,valNew){
+						var vO = _.isNaN(parseFloat(valOld))? valOld : parseFloat(valOld),
+						    vN = _.isNaN(parseFloat(valNew))? valNew : parseFloat(valNew);
+						
+						return vO !== vN;
+					},
+					set = compareValues(vDev.get("metrics:level"), lvl);
+				
+				//if (vDev && set) {
+				if (vDev && (!el[type].sendAction || (el[type].sendAction && set))) {
+					if (vDev.get("deviceType") === type && (type === "switchMultilevel" || type === "thermostat" || type === "switchRGBW")) {
+						if (lvl === 'on' || lvl === 'off'){
 							vDev.performCommand(lvl);
+						} else if (typeof lvl === 'object') {
+							vDev.performCommand("exact", lvl);
+						} else {
+							vDev.performCommand("exact", { level: lvl });
 						}
+					} else if (vDev.get("deviceType") === "toggleButton" && type === "scene") {
+						vDev.performCommand("on");
+					} else if (vDev.get("deviceType") === type) {
+						vDev.performCommand(lvl);
 					}
 				}
 			});

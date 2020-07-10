@@ -101,7 +101,6 @@ EasyScripting.prototype.setHelpers = function() {
 	this.setTimer = function(name, func, timeout) {
 		self.stopTimer(name);
 		constr.timers[name] = setTimeout(func, timeout*1000);
-		console.logJS(timeout);
 	};
 	this.stopTimer = function(name) {
 		if (constr.timers[name]) {
@@ -114,21 +113,6 @@ EasyScripting.prototype.setHelpers = function() {
 	var vDevWrapper = function(vDevId) {
 		this.dev = self.controller.devices.get(vDevId);
 	};
-	
-	/*
-	Not working
-	vDevWrapper.prototype = {
-		get val() {
-			console.logJS("G". this.dev);
-			return this.dev.get("metrics:level");
-		},
-		set val(v) {
-			if (v == "on") this.on();
-			else if (v == "off") this.off();
-			else this.set(v);
-		}
-	};
-	*/
 	
 	vDevWrapper.prototype.on = function() {
 		this.dev.performCommand("on");

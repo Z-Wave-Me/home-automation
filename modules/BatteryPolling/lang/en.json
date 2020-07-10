@@ -12,13 +12,5 @@
 	"sun":"Sunday",
 	"l_warning_lvl":"Warning Level",
 	"h_warning_lvl":"Warn if device's battery is below this level",
-	"warning":"Attention! Device is low battery >:> ",
-	"l_choose_target":"--- Choose a target ---",
-	"l_notification":"Message",
-	"l_notification_mail":"Email",
-	"l_notification_message": "Message",
-	"h_notification_message": "Content of the notification. You can use __device__ to display the device name in the message.",	
-	"h_nomail":"Currently, no email notification is possible because the EMailMe app is not installed/activated.",
-	"b_createmail": "Activate EMailMe",
-	"m_createmail": "ATTENTION! <br /> When leaving the current configuration, all previous settings are lost. <br /><br /> NOTE: <br /> You can continue with 'Cancel' without configuring the EMailMe app, create it afterwards, and add it then in the If -> Then configuration."
+	"warning":"Attention! Device is low battery: "
 }

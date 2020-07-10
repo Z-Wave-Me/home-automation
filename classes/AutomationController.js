@@ -44,6 +44,8 @@ function AutomationController() {
 
 	this.notifications = [];
 	this.lastStructureChangeTime = 0;
+	
+	this.notificationChannels = {};
 
 	this._loadedSingletons = [];
 
@@ -148,7 +150,6 @@ AutomationController.prototype.init = function() {
 
 		self.devices.on('destroy', function(device) {
 			ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
-
 		});
 
 		self.devices.on('removed', function(device) {
@@ -1552,9 +1553,9 @@ AutomationController.prototype.addNotification = function(severity, message, typ
 	}
 
 	this.notifications.push(notice);
-
-	this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
+	
 	console.log("Notification:", severity, "(" + type + "):", msg);
+	this.emit("notifications.push", notice); // notify modules to allow SMS and E-Mail notifications
 };
 
 AutomationController.prototype.deleteNotifications = function(ts, before, callback) {
@@ -1912,9 +1913,41 @@ AutomationController.prototype.createProfile = function(profile) {
 	profile.uuid = crypto.guid();
 
 	this.profiles.push(profile);
+	
+	this.emit('profile.added', profile);
 
 	this.saveConfig();
 	return profile;
+};
+
+// Detect devices added to the profile
+AutomationController.prototype.updateProfileDevices = function(profile, oldLocations, oldDevices, newLocations, newDevices) {
+	oldLocations = oldLocations || [];
+	oldDevices = oldDevices || [];
+	newLocations = newLocations || [];
+	newDevices = newDevices || [];
+
+	var addedLocations   = _.difference(newLocations, oldLocations), addedDevices   = _.difference(newDevices, oldDevices),
+	    removedLocations = _.difference(oldLocations, newLocations), removedDevices = _.difference(oldDevices, newDevices);
+	
+	var devicesInAddedLocations   = this.devices.filter(function(d) { return addedLocations.indexOf(d.get("location")) > -1;   }).map(function(d) { return d.id; }),
+	    devicesInRemovedLocations = this.devices.filter(function(d) { return removedLocations.indexOf(d.get("location")) > -1; }).map(function(d) { return d.id; });
+
+	var devicesInOldLocations = this.devices.filter(function(d) { return oldLocations.indexOf(d.get("location")) > -1; }).map(function(d) { return d.id; }),
+	    devicesInNewLocations = this.devices.filter(function(d) { return newLocations.indexOf(d.get("location")) > -1;  }).map(function(d) { return d.id; });
+	
+	    // Device is added if it was added in granted device list or in granted location and was not in those lists before
+	var devicesAdded   = _.difference(_.union(addedDevices,   devicesInAddedLocations),   _.union(oldDevices, devicesInOldLocations)),
+	    // Device is removed if it was deleted from granted device list or from granted location and is not in those lists now
+	    devicesRemoved = _.difference(_.union(removedDevices, devicesInRemovedLocations), _.union(newDevices, devicesInNewLocations));
+	
+	this.emit('profile.deviceListUpdated', {
+		profile: profile,
+		added: devicesAdded,
+		deleted: devicesRemoved
+	});
+	
+	this.emit('profile.updated', profile);
 };
 
 AutomationController.prototype.updateProfile = function(object, id) {
@@ -1926,14 +1959,18 @@ AutomationController.prototype.updateProfile = function(object, id) {
 	if (profile) {
 		index = this.profiles.indexOf(profile);
 
+		var oldLocations = profile.rooms, oldDevices = profile.devices;
+		
+		// update properties
 		for (var property in object) {
 			if (object.hasOwnProperty(property) && profile.hasOwnProperty(property)) {
 				this.profiles[index][property] = object[property];
 			}
 		}
-
-		this.emit('profile.updated', profile);
+		
+		this.updateProfileDevices(profile, oldLocations, oldDevices, profile.rooms, profile.devices);
 	}
+	
 	this.saveConfig();
 	return this.profiles[index];
 };
@@ -1971,6 +2008,8 @@ AutomationController.prototype.removeProfile = function(profileId) {
 		return profile.id !== profileId;
 	});
 
+	this.emit('profile.removed', profileId);
+	
 	this.saveConfig();
 };
 
@@ -2366,8 +2405,8 @@ AutomationController.prototype.getListNamespaces = function(path, namespacesObj,
 			for (var i = 0; i < pathArr.length; i++) {
 				var currPath = pathArr[i + shift],
 					obj = {},
-					lastPath = ['deviceId', 'deviceName'];
-
+					lastPath = ['deviceId', 'deviceName', 'channelId', 'channelName'];
+				
 				if (nspc[currPath]) {
 					nspc = nspc[currPath];
 					result = nspc;
@@ -2669,7 +2708,7 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 	function getNspcFromFilters(moduleMeta, nspcfilters) {
 		var namespaces = [],
 			filters = nspcfilters.split(','),
-			apis = ['locations', 'namespaces', 'loadFunction'],
+			apis = ['locations', 'users', 'namespaces', 'loadFunction'],
 			filteredDev = [];
 
 		try {
@@ -2692,6 +2731,12 @@ AutomationController.prototype.replaceNamespaceFilters = function(moduleMeta) {
 							return location[id[1]] !== 0 && location[id[1]] !== 'globalRoom';
 						}).map(function(location) {
 							return location[id[1]];
+						});
+
+						// get namespaces of users - 'users:id' or 'users:title'
+					} else if (id[0] === 'users' && (id[1] === 'id' || id[1] === 'title')) {
+						namespaces = _.map(self.profiles, function(profile) {
+							return profile[id[1] === 'id' ? 'id' : 'name'];
 						});
 
 						// get namespaces of devices per location - 'locations:locationId:filterPath'
@@ -3075,6 +3120,52 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 			vDev.set('metrics:isFailed', isFailed);
 		}
 	});
+};
+
+AutomationController.prototype.updateNotificationChannelNamespace = function() {
+	var self = this;
+	
+	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) { return {channelId: id, channelName: self.notificationChannels[id].name}; }));
+};
+
+AutomationController.prototype.registerNotificationChannel = function(id, user, name, handler) {
+	console.log("Registering notification channel: " + name + ", user: " + user);
+	this.notificationChannels[id] = {user: user, name: name, handler: handler};
+	this.updateNotificationChannelNamespace();
+};
+
+AutomationController.prototype.unregisterNotificationChannel = function(id) {
+	console.log("Unregistering notification channel: " + (this.notificationChannels[id] ? this.notificationChannels[id].name : "(not found)"));
+	delete this.notificationChannels[id];
+	this.updateNotificationChannelNamespace();
+};
+
+AutomationController.prototype.notificationChannelSend = function(id, message) {
+	if (!this.notificationChannels[id]) {
+		console.log("Error: Notification channel not found: " + id + " (message: " + message + ")");
+		return;
+	}
+	this.notificationChannels[id].handler(message);
+};
+
+AutomationController.prototype.notificationUserChannelsSend = function(id, message) {
+	var self = this;
+	Object.keys(this.notificationChannels).forEach(function(ncId) {
+		if (self.notificationChannels[ncId].user === id) {
+			self.notificationChannels[ncId].handler(message);
+		}
+	});
+};
+
+AutomationController.prototype.notificationAllChannelsSend = function(message) {
+	var self = this;
+	Object.keys(this.notificationChannels).forEach(function(ncId) {
+		self.notificationChannels[ncId].handler(message);
+	});
+};
+
+AutomationController.prototype.getNotificationChannel = function(id) {
+	return this.notificationChannels[id];
 };
 
 AutomationController.prototype.transformIntoNewInstance = function(moduleName) {

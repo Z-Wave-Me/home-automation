@@ -1,4 +1,6 @@
 {
 	"m_title":"Mobile App Support",
-	"m_descr":"This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module)."
+	"m_descr":"This module is required for Z-Way mobile app (Android and iOS) for Push Notification.",
+	"m_welcome": "Phone connected to Z-Way",
+	"m_goodby": "Phone disconnected from Z-Way"
 }

@@ -1632,6 +1632,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.code = 403;
 				reply.error = "Revoking self Admin priviledge is not allowed.";
 			} else {
+				// check that e-mail is unique or empty
 				uniqueProfProps = _.filter(this.controller.profiles, function(p) {
 					return (p.email !== '' && p.email === reqObj.email) &&
 						p.id !== profileId;
@@ -1647,24 +1648,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						profile.devices = reqObj.devices || [];
 						profile.expert_view = reqObj.expert_view;
 						profile.beta = reqObj.beta;
-
-						try {
-							// update email adress on initial update
-							if (profile.login === 'admin' && this.controller.config.initial && reqObj.email !== '') {
-								var emailMe = _.findIndex(this.controller.instances, function(instance) {
-									return instance.moduleId === 'MailNotifier' &&
-										instance.params.mail_to_input === '' &&
-										instance.params.mail_to_select === ''
-								});
-
-								if (emailMe > -1) {
-									this.controller.instances[emailMe].params.mail_to_select = reqObj.email;
-									delete this.controller.config.initial;
-								}
-							}
-						} catch (e) {
-							this.controller.addNotification('error', 'Failed to set email address: ' + e.toString(), 'core', 'ZAutomationAPI');
-						}
 					}
 					// could be changed by user role
 					profile.name = reqObj.name; // profile name

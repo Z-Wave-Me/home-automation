@@ -218,18 +218,46 @@ _.extend(VirtualDevice.prototype, {
 		accessAttrs = options.accessAttrs || that.accessAttrs;
 
 		if (_.isString(keyName) && typeof(val) != "undefined" && keyName.split(':').length === 1) {
+			// to track location change
+			var profilesDevicesBefore;
+			if ("location" === keyName) {
+				profilesDevicesBefore = this.collection.controller.profiles.map(function(p) { return { id: p.id, devices: that.collection.controller.devicesByUser(p.id) }; });
+			}
+
 			findObj = findX(this.attributes, keyName);
 			if (findObj[keyName] !== val) {
 				that.attributes[keyName] = val;
 				changes.push(keyName);
 				that.changed[keyName] = val;
 			}
+			
+			if ("location" === keyName) {
+				this.collection.controller.profiles.forEach(function(p) {
+					var isPresent = that.collection.controller.devicesByUser(p.id).filter(function(d) { return d.id === that.id; }).length,
+					    wasPresent = profilesDevicesBefore.filter(function(pp) { return pp.id === p.id && pp.devices.filter(function(d) { return d.id === that.id; }).length; }).length;
+					
+					if (isPresent != wasPresent) {
+						that.collection.controller.emit('profile.deviceListUpdated', {
+							profile: p,
+							added: isPresent ? [that.id] : [],
+							deleted: wasPresent ? [that.id] : []
+						});
+					}
+				});
+			}
+			
 		} else {
 			if (_.isString(keyName) && val !== undefined && keyName.split(':').length > 1) {
 				setObj(current, keyName.split(':'), val);
 				_.extend(that.attributes, current);
 				changes.push(keyName);
 			} else {
+				// to track location change
+				var profilesDevicesBefore;
+				if ("location" in keyName) {
+					profilesDevicesBefore = this.collection.controller.profiles.map(function(p) { return { id: p.id, devices: that.collection.controller.devicesByUser(p.id) }; });
+				}
+				
 				attrs = _.extend(that.attributes, _.pick(keyName, accessAttrs));
 				Object.keys(attrs).forEach(function (key) {
 					if (!_.isEqual(current[key], attrs[key])) {
@@ -252,6 +280,22 @@ _.extend(VirtualDevice.prototype, {
 						delete that.changed[key];
 					}
 				});
+				
+				if ("location" in keyName) {
+					this.collection.controller.profiles.forEach(function(p) {
+						var isPresent = that.collection.controller.devicesByUser(p.id).filter(function(d) { return d.id === that.id; }).length,
+						    wasPresent = profilesDevicesBefore.filter(function(pp) { return pp.id === p.id && pp.devices.filter(function(d) { return d.id === that.id; }).length; }).length;
+						
+						if (isPresent != wasPresent) {
+							that.collection.controller.emit('profile.deviceListUpdated', {
+								profile: p,
+								added: isPresent ? [that.id] : [],
+								deleted: wasPresent ? [that.id] : []
+							});
+						}
+					});
+				}
+				
 			}
 		}
 

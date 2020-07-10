@@ -1,3 +1,5 @@
+v2.6.0
+- removed notifications in favor of new notification system
 v2.5.1
 - allow negativ values for multilevel sensors
 v2.5.0

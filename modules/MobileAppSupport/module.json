@@ -9,7 +9,7 @@
     "version": "2.0.0",
     "maturity": "beta",
     "defaults": {
-  	    "title": "__m_title__",
+        "title": "__m_title__",
         "description": "__m_descr__",
         "apps": [],
         "devices": []

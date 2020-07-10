@@ -1,0 +1,824 @@
+{
+	"dependencies": [],
+	"singleton": true,
+	"category": "notifications",
+	"author": "Z-Wave.Me",
+	"homepage": "https://z-wave.me",
+	"icon": "icon.png",
+	"moduleName": "NotificationFiltering",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"rules": [{"recipient_type": "user", "user": 1, "logLevel": "errors,warnings,notifications"}],
+		"autogenOnDeviceListUpdate": true,
+		"normalizeRules": true
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+                	"rules": {
+                		"type": "array",
+				"items": {
+					"type": "object",
+					"properties": {
+						"recipient_type": {
+							"type": "string",
+							"enum": [
+								"all",
+								"user",
+								"channel"
+							],
+							"default": "all",
+							"required": true
+						},
+						"channel": {
+							"dependencies": "recipient_type",
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "namespaces:notificationChannels:channelId",
+							"required": true
+						},
+						"user": {
+							"dependencies": "recipient_type",
+							"field": "enum",
+							"datasource": "namespaces",
+							"enum": "users:id",
+							"required": true
+						},
+						"logLevel": {
+							"type": "string",
+							"enum": [
+								"errors",
+								"warnings",
+								"notifications"
+							]
+						},
+						"devices": {
+							"type": "array",
+							"items": {
+								"type": "object",
+								"properties": {
+									"dev_filter": {
+										"type": "string",
+										"enum": [
+											"unselected",
+											"dev_toggleButton",
+											"dev_switchControl",
+											"dev_switchBinary",
+											"dev_switchMultilevel",
+											"dev_sensorBinary",
+											"dev_sensorMultilevel",
+											"dev_sensorMultiline",
+											"dev_fan",
+											"dev_doorLock",
+											"dev_thermostat"
+										],
+										"required": true
+									},
+									"dev_toggleButton": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_toggleButton:deviceId",
+												"required": true
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_switchControl": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_switchControl:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "object",
+												"properties": {
+													"dev_matchValueOperation": {
+														"type": "string",
+														"enum": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"required": false,
+														"title": "__l_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"pattern": "[0-9]*",
+														"required": false
+													}
+												}
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_switchBinary": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_switchBinary:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "string",
+												"enum": [
+													"all",
+													"on",
+													"off"
+												],
+												"title": "__l_dev_matchValue__",
+												"required": true
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_switchMultilevel": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_switchMultilevel:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "object",
+												"properties": {
+													"dev_matchValueOperation": {
+														"type": "string",
+														"enum": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"required": false,
+														"title": "__l_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"pattern": "[0-9]*",
+														"required": false
+													}
+												}
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_sensorBinary": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_sensorBinary:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "string",
+												"enum": [
+													"all",
+													"on",
+													"off"
+												],
+												"title": "__l_dev_matchValue__",
+												"required": false
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_sensorMultilevel": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_sensorMultilevel:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "object",
+												"properties": {
+													"dev_matchValueOperation": {
+														"type": "string",
+														"enum": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"required": false,
+														"title": "__l_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"pattern": "[0-9]*",
+														"required": false
+													}
+												}
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_sensorMultiline": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_sensorMultiline:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "object",
+												"properties": {
+													"dev_matchValueOperation": {
+														"type": "string",
+														"enum": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"required": false,
+														"title": "__l_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"pattern": "[0-9]*",
+														"required": false
+													}
+												}
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_fan": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_fan:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "object",
+												"properties": {
+													"dev_matchValueOperation": {
+														"type": "string",
+														"enum": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"required": false,
+														"title": "__l_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"pattern": "[0-9]*",
+														"required": false
+													}
+												}
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_doorLock": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_doorlock:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "string",
+												"enum": [
+													"all",
+													"open",
+													"close"
+												]
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									},
+									"dev_thermostat": {
+										"type": "object",
+										"dependencies": "dev_filter",
+										"properties": {
+											"dev_select": {
+												"field": "enum",
+												"datasource": "namespaces",
+												"enum": "namespaces:devices_thermostat:deviceId",
+												"required": true
+											},
+											"dev_matchValue": {
+												"type": "object",
+												"properties": {
+													"dev_matchValueOperation": {
+														"type": "string",
+														"enum": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"required": false,
+														"title": "__l_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"pattern": "[0-9]*",
+														"required": false
+													}
+												}
+											},
+											"dev_message": {
+												"required": false
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"autogenOnDeviceListUpdate": {
+				"type": "boolean",
+				"default": true
+			},
+			"normalizeRules": {
+				"type": "boolean",
+				"default": true
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"rules": {
+				"items": {
+					"fields": {
+						"recipient_type": {
+							"label": "__l_recipient_type__",
+							"type": "select",
+							"optionLabels": [
+								"__l_all__",
+								"__l_user__",
+								"__l_channel__"
+							]
+						},
+						"channel": {
+							"dependencies": {
+								"recipient_type": "channel"
+							},
+							"type": "select",
+							"datasource": "namespaces",
+							"field": "optionLabels",
+							"optionLabels": "namespaces:notificationChannels:channelName",
+							"label": "__l_channel__",
+							"helper": "__h_channel__"
+						},
+						"user": {
+							"dependencies": {
+								"recipient_type": "user"
+							},
+							"type": "select",
+							"datasource": "namespaces",
+							"optionLabels": "users:title",
+							"required": true,
+							"label": "__l_user__",
+							"helper": "__h_user__",
+							"title": "__t_user__"
+						},
+						"logLevel": {
+							"type": "checkbox",
+							"optionLabels": [
+								"__errors__",
+								"__warnings__",
+								"__notifications__"
+							],
+							"label": "__l_logLevel__",
+							"helper": "__h_logLevel__"
+						},
+						"devices": {
+							"label": "__l_devices__",
+							"helper": "__h_devices__",
+							"items": {
+								"fields": {
+									"dev_filter": {
+										"type": "select",
+										"optionLabels": [
+											"__unselected__",
+											"__dev_toggleButton__",
+											"__dev_switchControl__",
+											"__dev_switchBinary__",
+											"__dev_switchMultilevel__",
+											"__dev_sensorBinary__",
+											"__dev_sensorMultilevel__",
+											"__dev_sensorMultiline__",
+											"__dev_fan__",
+											"__dev_doorLock__",
+											"__dev_thermostat__"
+										]
+									},
+									"dev_toggleButton": {
+										"label": "__l_ToggleButton__",
+										"dependencies": {
+											"dev_filter": "dev_toggleButton"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_toggleButton:deviceName"
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_switchControl": {
+										"label": "__l_switchControl__",
+										"dependencies": {
+											"dev_filter": "dev_switchControl"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_switchControl:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"fields": {
+													"dev_matchValueOperation": {
+														"type": "select",
+														"optionLabels": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"label": "__l_dev_matchValueOperation__",
+														"helper": "__h_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"label": "__l_dev_matchValueOperand__",
+														"helper": "__h_dev_matchValueOperand__"
+													}
+												}
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_switchBinary": {
+										"label": "__l_switchBinary__",
+										"dependencies": {
+											"dev_filter": "dev_switchBinary"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_switchBinary:deviceName"
+											},
+											"dev_matchValue": {
+												"helper": "__h_dev_matchValue__",
+												"type": "select",
+												"optionLabels": [
+													"All",
+													"On",
+													"Off"
+												]
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_switchMultilevel": {
+										"label": "__l_switchMultilevel__",
+										"dependencies": {
+											"dev_filter": "dev_switchMultilevel"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_switchMultilevel:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"fields": {
+													"dev_matchValueOperation": {
+														"type": "select",
+														"optionLabels": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"label": "__l_dev_matchValueOperation__",
+														"helper": "__h_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"label": "__l_dev_matchValueOperand__",
+														"helper": "__h_dev_matchValueOperand__"
+													}
+												}
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_sensorBinary": {
+										"label": "__l_sensorBinary__",
+										"dependencies": {
+											"dev_filter": "dev_sensorBinary"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_sensorBinary:deviceName"
+											},
+											"dev_matchValue": {
+												"helper": "__h_dev_matchValue__",
+												"type": "select",
+												"optionLabels": [
+													"All",
+													"On",
+													"Off"
+												]
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_sensorMultilevel": {
+										"label": "__l_sensorMultilevel__",
+										"dependencies": {
+											"dev_filter": "dev_sensorMultilevel"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_sensorMultilevel:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"fields": {
+													"dev_matchValueOperation": {
+														"type": "select",
+														"optionLabels": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"label": "__l_dev_matchValueOperation__",
+														"helper": "__h_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"label": "__l_dev_matchValueOperand__",
+														"helper": "__h_dev_matchValueOperand__"
+													}
+												}
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_sensorMultiline": {
+										"label": "__l_sensorMultiline__",
+										"dependencies": {
+											"dev_filter": "dev_sensorMultiline"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_sensorMultiline:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"fields": {
+													"dev_matchValueOperation": {
+														"type": "select",
+														"optionLabels": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"label": "__l_dev_matchValueOperation__",
+														"helper": "__h_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"label": "__l_dev_matchValueOperand__",
+														"helper": "__h_dev_matchValueOperand__"
+													}
+												}
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_fan": {
+										"label": "__l_fan__",
+										"dependencies": {
+											"dev_filter": "dev_fan"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_fan:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"fields": {
+													"dev_matchValueOperation": {
+														"type": "select",
+														"optionLabels": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"label": "__l_dev_matchValueOperation__",
+														"helper": "__h_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"label": "__l_dev_matchValueOperand__",
+														"helper": "__h_dev_matchValueOperand__"
+													}
+												}
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_doorLock": {
+										"label": "__l_doorLock__",
+										"dependencies": {
+											"dev_filter": "dev_doorLock"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_doorlock:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"type": "select",
+												"optionLabels": [
+													"All",
+													"Open",
+													"Close"
+												]
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									},
+									"dev_thermostat": {
+										"label": "__l_thermostat__",
+										"dependencies": {
+											"dev_filter": "dev_thermostat"
+										},
+										"fields": {
+											"dev_select": {
+												"type": "select",
+												"datasource": "namespaces",
+												"field": "optionLabels",
+												"optionLabels": "namespaces:devices_thermostat:deviceName"
+											},
+											"dev_matchValue": {
+												"label": "__l_dev_matchValue__",
+												"fields": {
+													"dev_matchValueOperation": {
+														"type": "select",
+														"optionLabels": [
+															"<",
+															">",
+															"=",
+															"<=",
+															">="
+														],
+														"label": "__l_dev_matchValueOperation__",
+														"helper": "__h_dev_matchValueOperation__"
+													},
+													"dev_matchValueOperand": {
+														"label": "__l_dev_matchValueOperand__",
+														"helper": "__h_dev_matchValueOperand__"
+													}
+												}
+											},
+											"dev_message": {
+												"label": "__l_dev_message__",
+												"helper": "__h_dev_message__"
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			},
+			"autogenOnDeviceListUpdate": {
+				"type": "checkbox",
+				"rightLabel": "__rl_autogenOnDeviceListUpdate__",
+				"helper": "__h_autogenOnDeviceListUpdate__"
+			},
+			"normalizeRules": {
+				"type": "checkbox",
+				"rightLabel": "__rl_normalizeRules__",
+				"helper": "__h_normalizeRules__"
+			}
+		}
+	}
+}

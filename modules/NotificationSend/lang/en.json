@@ -1,0 +1,12 @@
+{
+	"m_title":"Send a notification",
+	"m_descr":"Send a notification to all, to a user or to a specific channel",
+	"l_recipient_type": "Recipient",
+	"l_all": "All users",
+	"l_user": "User",
+	"h_user": "Select the user to notify",
+	"l_channel": "A specific communication channel",
+	"h_channel": "Select the notifciation channel to use.",
+	"l_message" : "Device specific message",
+	"h_message" : "Enter a message that should be sent instead of the default notification. Empty to keep the default."
+}
