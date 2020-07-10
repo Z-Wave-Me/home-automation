@@ -2372,7 +2372,7 @@ AutomationController.prototype.getListNamespaces = function(path, namespacesObj,
 		return _.map(list, function(entry) {
 			var locationTitle = '';
 
-			if (setLocationTitle) {
+			if (setLocationTitle && 0) { // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				var vDev = self.devices.get(entry.deviceId),
 					location = self.getLocation(self.locations, vDev.get('location'));
 
