@@ -120,6 +120,7 @@ NotificationChannelEmail.prototype.sendSendMessageWithDelay = function () {
 		if (self.collectedMessages.length > 0) {
 			mailObject = self.collectedMessages.shift();
 
+			console.log(self.getName() + " Sending a message to " + mailObject.mail_to);
 			http.request({
 				method: "POST",
 				url: "https://service.z-wave.me/emailnotification/index.php",
