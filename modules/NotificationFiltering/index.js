@@ -141,7 +141,7 @@ NotificationFiltering.prototype.normalizeConfig = function() {
 			
 			userRules.forEach(function(rule) {
 				rule.devices.forEach(function(dev) {
-					devices.concat(dev);
+					devices = devices.concat(dev);
 				});
 			});
 			newRules.push({
@@ -178,7 +178,7 @@ NotificationFiltering.prototype.normalizeConfig = function() {
 			
 			allRules.forEach(function(rule) {
 				rule.devices.forEach(function(dev) {
-					devices.concat(dev);
+					devices = devices.concat(dev);
 				});
 			});
 			newRules.push({
