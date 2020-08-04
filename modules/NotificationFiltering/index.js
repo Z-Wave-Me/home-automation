@@ -46,6 +46,11 @@ NotificationFiltering.prototype.init = function (config) {
 		};
 		this.controller.on('profile.deviceListUpdated', this.handleDeviceListUpdate);
 	}
+	
+	this.handlerUserConfigUpdate = function(user, config) {
+		self.userConfigUpdate(user, config);
+	};
+	this.controller.on('notificationFiltering.userConfigUpdate', this.handlerUserConfigUpdate);
 };
 
 NotificationFiltering.prototype.stop = function () {
@@ -55,6 +60,7 @@ NotificationFiltering.prototype.stop = function () {
 		this.controller.off('profile.deviceListUpdated', this.handleDeviceListUpdate);
 	}
 	this.controller.off('notifications.push', this.handler);
+	this.controller.off('notificationFiltering.userConfigUpdate', this.handlerUserConfigUpdate);
 };
 
 // ----------------------------------------------------------------------------
@@ -350,3 +356,55 @@ NotificationFiltering.prototype.onDeviceListUpdate = function (params) {
 	this.normalizeConfig();
 	this.readConfig();
 };
+
+NotificationFiltering.prototype.userConfigUpdate = function(user, config) {
+	var self = this;
+	var devsStruct = [];
+	
+	// remove all rules for that user and his channels (keep global flags)
+	var toRemove = [];
+	this.config.rules.forEach(function(rule, index) {
+		if (
+		   (rule.recipient_type === "user" && rule.user == user) || // non-strict == because might be as string in module params
+		   (rule.recipient_type === "channel" && self.controller.getNotificationChannel(rule.channel).user == user) // non-strict == because might be as string in module params
+		) {
+			rule.devices = [];
+			if (!rule.logLevel) { // if no global flags, remove
+				toRemove.unshift(index); // add to remove list in reverse order
+			}
+		}
+	});
+	
+	toRemove.forEach(function(i) {
+		self.config.rules.splice(i, 1);
+	});
+	
+	var userDevices = this.controller.devicesByUser(user).map(function(dev) { return dev.id; });
+	
+	config.forEach(function(rule) {
+		var channel = self.controller.getNotificationChannel(rule.channel);
+		
+		// validity and access checks
+		
+		if (rule.recipient_type === "channel") {
+			if (!rule.channel || !channel) return; // invalid format
+			if (channel.user != user) return; // access violation
+		}
+		if (rule.recipient_type === "user") {
+			if (!rule.user) return; // invalid format
+			if (rule.user != user) return; // access violation
+		}
+		// filter by device validity and access
+		rule.devices = rule.devices.filter(function(d) {
+			if (!d["dev_filter"]) return false; // invalid format
+			if (!d[d["dev_filter"]] || !d[d["dev_filter"]]["dev_select"]) return false; // invalid format
+			return userDevices.indexOf(d[d["dev_filter"]]["dev_select"]) > -1;
+		});
+		
+		
+		self.config.rules.push(rule);
+	});
+
+	this.normalizeConfig();
+	this.readConfig();			
+}

@@ -3125,7 +3125,7 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 AutomationController.prototype.updateNotificationChannelNamespace = function() {
 	var self = this;
 	
-	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) { return {channelId: id, channelName: self.notificationChannels[id].name}; }));
+	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) { return {channelId: id, userId: self.notificationChannels[id].user, channelName: self.notificationChannels[id].name}; }));
 };
 
 AutomationController.prototype.registerNotificationChannel = function(id, user, name, handler) {

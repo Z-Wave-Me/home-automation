@@ -96,6 +96,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.del("/profile", this.ROLE.USER, this.removeOwnProfile);
 		this.router.post("/oauth2", this.ROLE.ADMIN, this.createOAuth2Profile);
 
+		this.router.get("/notificationFiltering", this.ROLE.USER, this.notificationFilteringGet);
+		this.router.put("/notificationFiltering", this.ROLE.USER, this.notificationFilteringSet);
+
 		this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
 		this.router.post("/auth/forgotten/:profile_id", this.ROLE.ANONYMOUS, this.restorePassword, [parseInt]);
 		this.router.put("/auth/update/:profile_id", this.ROLE.ANONYMOUS, this.updateProfileAuth, [parseInt]);
@@ -1992,6 +1995,80 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 404;
 			reply.error = "Profile not found";
 		}
+
+		return reply;
+	},
+	notificationFilteringGet: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+		    self = this;
+		
+		var userDevices = this.controller.devicesByUser(this.req.user).map(function(dev) { return dev.id; });
+		var nfInstance = this.controller.listInstances().filter(function(i) { return i.moduleId === "NotificationFiltering"})[0]; // dirty hack - think about exported function by NotificationFiltering app
+		
+		if (nfInstance) {
+			var devsStruct = [];
+			var arr = nfInstance.params.rules.filter(function(rule) {
+				return false || 
+				   (rule.recipient_type === "user" && rule.user == self.req.user) || // non-strict == because might be as string in module params
+				   (rule.recipient_type === "channel" && self.controller.getNotificationChannel(rule.channel).user == self.req.user); // non-strict == because might be as string in module params
+			}).forEach(function(rule) { // flatten structure
+				rule.devices.forEach(function(devStruct) {
+					if (userDevices.indexOf(devStruct[devStruct["dev_filter"]]["dev_select"]) > -1) { // filter devices by allowed list
+						var _devStruct = _.clone(devStruct);
+						_devStruct.channel = rule.recipient_type === "channel" ? rule.channel : null;
+						devsStruct.push(_devStruct);
+					}
+				});
+			});
+			reply.data = devsStruct;
+			reply.code = 200;
+		} else {
+			reply.code = 501;
+			reply.error = "Not implemented. Activate NotificationFilter app";
+		}
+
+		return reply;
+	},
+	notificationFilteringSet: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+		    self = this;
+
+		var userConfig = [];
+		try {
+			var reqObj = parseToObject(this.req.body);
+			
+			// Transform to NotificationFiltring format
+			// Do sanity check not to let user break global NotificationFiltring config
+			reqObj.forEach(function(rule) {
+				var channel = rule.channel;
+				rule.channel = undefined;
+				
+				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				//if (!rule["dev_filtering"] || !rule[rule["dev_filtering"]]["dev_select"] || )
+				
+				userConfig.push({
+					recipient_type: channel ? "channel" : "user",
+					user: channel ? undefined : self.req.user,
+					channel: channel ? channel : undefined,
+					logLevel: "",
+					devices: [rule]
+				});
+			});
+		} catch (e) {
+			return reply.error = e.message;
+		}
+		
+		this.controller.emit('notificationFiltering.userConfigUpdate', this.req.user, userConfig);
+		
+		reply.code = 200;
 
 		return reply;
 	},

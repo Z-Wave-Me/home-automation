@@ -38,6 +38,7 @@
 							"required": true
 						},
 						"channel": {
+							"type": "string",
 							"dependencies": "recipient_type",
 							"field": "enum",
 							"datasource": "namespaces",
@@ -45,6 +46,7 @@
 							"required": true
 						},
 						"user": {
+							"type": "integer",
 							"dependencies": "recipient_type",
 							"field": "enum",
 							"datasource": "namespaces",
@@ -75,7 +77,6 @@
 											"dev_sensorBinary",
 											"dev_sensorMultilevel",
 											"dev_sensorMultiline",
-											"dev_fan",
 											"dev_doorLock",
 											"dev_thermostat"
 										],
@@ -114,14 +115,16 @@
 														"enum": [
 															"<",
 															">",
-															"=",
+															"==",
 															"<=",
-															">="
+															">=",
+															"!="
 														],
 														"required": false,
 														"title": "__l_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": "dev_matchValueOperation",
 														"pattern": "[0-9]*",
 														"required": false
 													}
@@ -175,14 +178,16 @@
 														"enum": [
 															"<",
 															">",
-															"=",
+															"==",
 															"<=",
-															">="
+															">=",
+															"!="
 														],
 														"required": false,
 														"title": "__l_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": "dev_matchValueOperation",
 														"pattern": "[0-9]*",
 														"required": false
 													}
@@ -236,14 +241,16 @@
 														"enum": [
 															"<",
 															">",
-															"=",
+															"==",
 															"<=",
-															">="
+															">=",
+															"!="
 														],
 														"required": false,
 														"title": "__l_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": "dev_matchValueOperation",
 														"pattern": "[0-9]*",
 														"required": false
 													}
@@ -272,50 +279,16 @@
 														"enum": [
 															"<",
 															">",
-															"=",
+															"==",
 															"<=",
-															">="
+															">=",
+															"!="
 														],
 														"required": false,
 														"title": "__l_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
-														"pattern": "[0-9]*",
-														"required": false
-													}
-												}
-											},
-											"dev_message": {
-												"required": false
-											}
-										}
-									},
-									"dev_fan": {
-										"type": "object",
-										"dependencies": "dev_filter",
-										"properties": {
-											"dev_select": {
-												"field": "enum",
-												"datasource": "namespaces",
-												"enum": "namespaces:devices_fan:deviceId",
-												"required": true
-											},
-											"dev_matchValue": {
-												"type": "object",
-												"properties": {
-													"dev_matchValueOperation": {
-														"type": "string",
-														"enum": [
-															"<",
-															">",
-															"=",
-															"<=",
-															">="
-														],
-														"required": false,
-														"title": "__l_dev_matchValueOperation__"
-													},
-													"dev_matchValueOperand": {
+														"dependencies": "dev_matchValueOperation",
 														"pattern": "[0-9]*",
 														"required": false
 													}
@@ -367,14 +340,16 @@
 														"enum": [
 															"<",
 															">",
-															"=",
+															"==",
 															"<=",
-															">="
+															">=",
+															"!="
 														],
 														"required": false,
 														"title": "__l_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": "dev_matchValueOperation",
 														"pattern": "[0-9]*",
 														"required": false
 													}
@@ -465,7 +440,6 @@
 											"__dev_sensorBinary__",
 											"__dev_sensorMultilevel__",
 											"__dev_sensorMultiline__",
-											"__dev_fan__",
 											"__dev_doorLock__",
 											"__dev_thermostat__"
 										]
@@ -509,13 +483,25 @@
 															"<",
 															">",
 															"=",
-															"<=",
-															">="
+															"≤",
+															"≥",
+															"≠"
 														],
+														"noneLabel": "All",
 														"label": "__l_dev_matchValueOperation__",
 														"helper": "__h_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": {
+															"dev_matchValueOperation": [
+																"<",
+																">",
+																"==",
+																"<=",
+																">=",
+																"!="
+															]
+														},
 														"label": "__l_dev_matchValueOperand__",
 														"helper": "__h_dev_matchValueOperand__"
 													}
@@ -575,13 +561,25 @@
 															"<",
 															">",
 															"=",
-															"<=",
-															">="
+															"≤",
+															"≥",
+															"≠"
 														],
+														"noneLabel": "All",
 														"label": "__l_dev_matchValueOperation__",
 														"helper": "__h_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": {
+															"dev_matchValueOperation": [
+																"<",
+																">",
+																"==",
+																"<=",
+																">=",
+																"!="
+															]
+														},
 														"label": "__l_dev_matchValueOperand__",
 														"helper": "__h_dev_matchValueOperand__"
 													}
@@ -641,13 +639,25 @@
 															"<",
 															">",
 															"=",
-															"<=",
-															">="
+															"≤",
+															"≥",
+															"≠"
 														],
+														"noneLabel": "All",
 														"label": "__l_dev_matchValueOperation__",
 														"helper": "__h_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": {
+															"dev_matchValueOperation": [
+																"<",
+																">",
+																"==",
+																"<=",
+																">=",
+																"!="
+															]
+														},
 														"label": "__l_dev_matchValueOperand__",
 														"helper": "__h_dev_matchValueOperand__"
 													}
@@ -680,52 +690,25 @@
 															"<",
 															">",
 															"=",
-															"<=",
-															">="
+															"≤",
+															"≥",
+															"≠"
 														],
+														"noneLabel": "All",
 														"label": "__l_dev_matchValueOperation__",
 														"helper": "__h_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
-														"label": "__l_dev_matchValueOperand__",
-														"helper": "__h_dev_matchValueOperand__"
-													}
-												}
-											},
-											"dev_message": {
-												"label": "__l_dev_message__",
-												"helper": "__h_dev_message__"
-											}
-										}
-									},
-									"dev_fan": {
-										"label": "__l_fan__",
-										"dependencies": {
-											"dev_filter": "dev_fan"
-										},
-										"fields": {
-											"dev_select": {
-												"type": "select",
-												"datasource": "namespaces",
-												"field": "optionLabels",
-												"optionLabels": "namespaces:devices_fan:deviceName"
-											},
-											"dev_matchValue": {
-												"label": "__l_dev_matchValue__",
-												"fields": {
-													"dev_matchValueOperation": {
-														"type": "select",
-														"optionLabels": [
-															"<",
-															">",
-															"=",
-															"<=",
-															">="
-														],
-														"label": "__l_dev_matchValueOperation__",
-														"helper": "__h_dev_matchValueOperation__"
-													},
-													"dev_matchValueOperand": {
+														"dependencies": {
+															"dev_matchValueOperation": [
+																"<",
+																">",
+																"==",
+																"<=",
+																">=",
+																"!="
+															]
+														},
 														"label": "__l_dev_matchValueOperand__",
 														"helper": "__h_dev_matchValueOperand__"
 													}
@@ -785,13 +768,25 @@
 															"<",
 															">",
 															"=",
-															"<=",
-															">="
+															"≤",
+															"≥",
+															"≠"
 														],
+														"noneLabel": "All",
 														"label": "__l_dev_matchValueOperation__",
 														"helper": "__h_dev_matchValueOperation__"
 													},
 													"dev_matchValueOperand": {
+														"dependencies": {
+															"dev_matchValueOperation": [
+																"<",
+																">",
+																"==",
+																"<=",
+																">=",
+																"!="
+															]
+														},
 														"label": "__l_dev_matchValueOperand__",
 														"helper": "__h_dev_matchValueOperand__"
 													}

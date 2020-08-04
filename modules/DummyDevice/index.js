@@ -59,7 +59,7 @@ DummyDevice.prototype.init = function (config) {
 	};
 
 	this.vDev = this.controller.devices.create({
-		deviceId: "DummyDevice_" + this.id,
+		deviceId: this.getName() + "_" + this.id,
 		defaults: defaults,
 		overlay: overlay,
 		handler: function(command, args) {
