@@ -1914,6 +1914,7 @@ AutomationController.prototype.createProfile = function(profile) {
 
 	this.profiles.push(profile);
 	
+	this.updateProfileDevices(profile, [], [], profile.rooms, profile.devices);
 	this.emit('profile.added', profile);
 
 	this.saveConfig();
@@ -1946,8 +1947,6 @@ AutomationController.prototype.updateProfileDevices = function(profile, oldLocat
 		added: devicesAdded,
 		deleted: devicesRemoved
 	});
-	
-	this.emit('profile.updated', profile);
 };
 
 AutomationController.prototype.updateProfile = function(object, id) {
@@ -1969,6 +1968,7 @@ AutomationController.prototype.updateProfile = function(object, id) {
 		}
 		
 		this.updateProfileDevices(profile, oldLocations, oldDevices, profile.rooms, profile.devices);
+		this.emit('profile.updated', profile);
 	}
 	
 	this.saveConfig();

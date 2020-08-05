@@ -98,6 +98,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.get("/notificationFiltering", this.ROLE.USER, this.notificationFilteringGet);
 		this.router.put("/notificationFiltering", this.ROLE.USER, this.notificationFilteringSet);
+		this.router.get("/notificationChannels", this.ROLE.USER, this.notificationChannelsGet);
 
 		this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
 		this.router.post("/auth/forgotten/:profile_id", this.ROLE.ANONYMOUS, this.restorePassword, [parseInt]);
@@ -168,12 +169,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.post("/system/wifi/settings", this.ROLE.ADMIN, this.setWifiSettings);
 		this.router.get("/system/wifi/settings", this.ROLE.ADMIN, this.getWifiSettings);
-
-		this.router.post("/system/certfxAuth", this.ROLE.ANONYMOUS, this.certfxAuth);
-		//this.router.post("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxSetAuthForwarding);
-		//this.router.get("/system/certfxAuthForwarding", this.ROLE.ADMIN, this.certfxGetAuthForwarding);
-		this.router.post("/system/certfxUnregister", this.ROLE.ADMIN, this.certfxUnregister);
-		this.router.post("/system/certfxUpdateIdentifier", this.ROLE.ADMIN, this.certfxUpdateIdentifier);
 
 		this.router.get("/system/zwave/deviceInfoGet", this.ROLE.ADMIN, this.zwaveDeviceInfoGet);
 		this.router.get("/system/zwave/deviceInfoUpdate", this.ROLE.ADMIN, this.zwaveDeviceInfoUpdate);
@@ -2012,9 +2007,10 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (nfInstance) {
 			var devsStruct = [];
 			var arr = nfInstance.params.rules.filter(function(rule) {
+				var channel = self.controller.getNotificationChannel(rule.channel);
 				return false || 
 				   (rule.recipient_type === "user" && rule.user == self.req.user) || // non-strict == because might be as string in module params
-				   (rule.recipient_type === "channel" && self.controller.getNotificationChannel(rule.channel).user == self.req.user); // non-strict == because might be as string in module params
+				   (rule.recipient_type === "channel" && channel && channel.user == self.req.user); // non-strict == because might be as string in module params
 			}).forEach(function(rule) { // flatten structure
 				rule.devices.forEach(function(devStruct) {
 					if (userDevices.indexOf(devStruct[devStruct["dev_filter"]]["dev_select"]) > -1) { // filter devices by allowed list
@@ -2051,8 +2047,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				var channel = rule.channel;
 				rule.channel = undefined;
 				
-				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-				//if (!rule["dev_filtering"] || !rule[rule["dev_filtering"]]["dev_select"] || )
+				if (!rule["dev_filtering"] || !rule[rule["dev_filtering"]]["dev_select"]) return;
 				
 				userConfig.push({
 					recipient_type: channel ? "channel" : "user",
@@ -2068,6 +2063,21 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		
 		this.controller.emit('notificationFiltering.userConfigUpdate', this.req.user, userConfig);
 		
+		reply.code = 200;
+
+		return reply;
+	},
+	notificationChannelsGet: function() {
+		var reply = {
+				error: null,
+				data: null,
+				code: 500
+			},
+		    self = this;
+		
+		var channels = this.controller.notificationChannels;
+		
+		reply.data = Object.keys(channels).map(function(ch) { return _.extend({id: ch}, channels[ch]); }).filter(function(ch) { return ch.user == self.req.user; });
 		reply.code = 200;
 
 		return reply;

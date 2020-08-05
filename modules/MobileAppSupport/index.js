@@ -8,10 +8,6 @@
 
 /* Module configuration format:
 	config
-		devices[]			- list of devices
-			level			- open/close/on/off/all or a level to compare with
-			operator		- to compare the level in case it is a number
-			msg			- will be sent instead of the default message if not null
 		apps[]				- list of phones
 			token			- phone FCM token
 			title			- phone name
@@ -72,6 +68,17 @@ MobileAppSupport.prototype.getAppByToken = function(token) {
 	return _.findWhere(this.config.apps, {
 		token: token
 	});
+};
+
+MobileAppSupport.prototype.getAppByTokenAppProfile = function(token, app_profile) {
+	return _.findWhere(this.config.apps, {
+		token: token,
+		app_profile: app_profile
+	});
+};
+
+MobileAppSupport.prototype.getApps = function(user) {
+	return this.config.apps.filter(function(app) { return user === undefined || app.user === user; });
 };
 
 MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile, user, authToken) {
@@ -210,8 +217,8 @@ MobileAppSupport.prototype.sendPushMessage = function(message) {
 // --------------- Public HTTP API -------------------
 
 MobileAppSupport.prototype.externalAPIAllow = function (_name) {
-	ws.allowExternalAccess(_name, this.controller.auth.ROLE.ADMIN);
-	ws.allowExternalAccess(_name + ".app", this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name, this.controller.auth.ROLE.USER);
+	ws.allowExternalAccess(_name + ".app", this.controller.auth.ROLE.USER);
 	
 	global[_name] = this[_name];
 };
@@ -231,7 +238,16 @@ MobileAppSupport.prototype.defineHandlers = function () {
 	};
 
 	this.MobileAppSupportAPI.app = function(url, request) {
-		if (request.method == 'POST') {
+		if (request.method == 'GET') {
+			return {
+				status: 200,
+				body: _.clone(self.getApps(request.role === self.controller.auth.ROLE.ADMIN ? undefined : request.user)).map(function(app) {
+					var profile = self.controller.getProfile(app.user);
+					app.userName = profile ? profile.name : '';
+					return app;
+				})
+			};
+		} else if (request.method == 'POST') {
 			var reqObj;
 			try {
 				reqObj = parseToObject(request.body);
@@ -282,7 +298,13 @@ MobileAppSupport.prototype.defineHandlers = function () {
 				reqObj.hasOwnProperty('token') && reqObj.token != '' &&
 				reqObj.hasOwnProperty('profileId') && reqObj.profileId != ''
 			) {
-				if (self.unregisterApp(reqObj.token, reqObj.profileId)) {
+				var app = self.getAppByTokenAppProfile(reqObj.token, reqObj.profileId);
+				
+				if (
+					app &&
+					(request.role === self.controller.auth.ROLE.ADMIN || request.user == app.user) &&
+					self.unregisterApp(reqObj.token, reqObj.profileId)
+				) {
 					return {
 						status: 200,
 						body: 'Deleted'

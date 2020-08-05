@@ -11,8 +11,7 @@
     "defaults": {
         "title": "__m_title__",
         "description": "__m_descr__",
-        "apps": [],
-        "devices": []
+        "apps": []
     },
     "schema": {},
     "options": {}

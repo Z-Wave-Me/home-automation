@@ -319,8 +319,12 @@ NotificationFiltering.prototype.onDeviceListUpdate = function (params) {
 	});
 	
 	params.added.forEach(function(id) {
-		var dt = self.controller.devices.get(id).get('deviceType'),
-		    pt = self.controller.devices.get(id).get('probeType');
+		var dev = self.controller.devices.get(id)
+		
+		if (dev.get("permanently_hidden") || !dev.get("visibility")) return;
+		
+		var dt = dev.get('deviceType'),
+		    pt = dev.get('probeType');
 		
 		// Notify on alarm trigger
 		if (
