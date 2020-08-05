@@ -54,6 +54,7 @@ NotificationChannelSMSru.prototype.sender = function (message) {
 	http.request({
 		method: 'POST',
 		url: "https://sms.ru/sms/send",
+		async: true,
 		data: {
 			api_id: this.config.api_key.toString(),
 			to: this.config.phone.toString(),
