@@ -402,6 +402,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return reply;
 		}
 
+		// check security hole here!!!!
+		
 		if (this.req.query.hasOwnProperty('icon')) {
 			device = this.controller.devices.get(vDevId);
 			if (device) {
@@ -2047,7 +2049,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				var channel = rule.channel;
 				rule.channel = undefined;
 				
-				if (!rule["dev_filtering"] || !rule[rule["dev_filtering"]]["dev_select"]) return;
+				if (!rule["dev_filter"] || !rule[rule["dev_filter"]]["dev_select"]) return;
 				
 				userConfig.push({
 					recipient_type: channel ? "channel" : "user",
