@@ -35,6 +35,7 @@
 							"required": true
 						},
 						"user": {
+							"type": "integer",
 							"field": "enum",
 							"datasource": "namespaces",
 							"enum": "users:id",
