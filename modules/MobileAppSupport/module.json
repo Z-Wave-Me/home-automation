@@ -13,6 +13,98 @@
         "description": "__m_descr__",
         "apps": []
     },
-    "schema": {},
-    "options": {}
+    "schema" : {
+        "type": "object",
+        "properties": {
+            "apps": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "token": {
+                            "type": "string",
+                            "readonly": true
+                        },
+                        "title": {
+                            "type": "string",
+                            "readonly": true
+                        },
+                        "os": {
+                            "type": "string",
+                            "readonly": true
+                        },
+                        "app_profile": {
+                            "type": "string",
+                            "readonly": true
+                        },
+                        "user": {
+                            "type": "integer",
+                            "field": "enum",
+                            "datasource": "namespaces",
+                            "enum": "users:id",
+                            "readonly": true
+                        },
+                        "userName": {
+                            "type": "string",
+                            "readonly": true
+                        },
+                        "auth_token": {
+                            "type": "string",
+                            "readonly": true
+                        },
+                        "last_seen": {
+                            "type": "integer",
+                            "readonly": true
+                        },
+                        "created": {
+                            "type": "integer",
+                            "readonly": true
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "options" : {
+        "fields": {
+            "apps": {
+                "items": {
+                    "fields": {
+                        "token": {
+                            "type": "hidden"
+                        },
+                        "title": {
+                            "type": "text",
+                            "label": "__l_title__"
+                        },
+                        "os": {
+                            "type": "text",
+                            "label": "__l_os__"
+                        },
+                        "app_profile": {
+                            "type": "hidden"
+                        },
+                        "user": {
+                            "type": "select",
+                            "datasource": "namespaces",
+                            "optionLabels": "users:title",
+                            "label": "__l_user__"
+                        },
+                        "userName": {
+                            "type": "hidden"
+                        },
+                        "auth_token": {
+                            "type": "hidden"
+                        },
+                        "last_seen": {
+                            "type": "hidden"
+                        },
+                        "created": {
+                            "type": "hidden"
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

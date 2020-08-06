@@ -8,13 +8,16 @@
 
 /* Module configuration format:
 	config
-		apps[]				- list of phones
-			token			- phone FCM token
-			title			- phone name
-			os			- target OS: ios/android
-			app_profile		- UUID of the profile in the app in case of multiple profiles
-			last_seen		- last seen date
-			created			- creation date
+		apps[]				list of phones
+			token		str	phone FCM token
+			title		str	phone name
+			os		str	target OS: ios/android
+			app_profile	str	UUID of the profile in the app in case of multiple profiles
+			user		int	user Id
+			userName	str	user name
+			auth_token	str	first digits of auth token to revoke it on delete
+			last_seen	int	last seen date
+			created		int	creation date
 */
 
 function MobileAppSupport(id, controller) {

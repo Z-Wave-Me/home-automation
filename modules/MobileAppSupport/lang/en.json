@@ -2,5 +2,8 @@
 	"m_title":"Mobile App Support",
 	"m_descr":"This module is required for Z-Way mobile app (Android and iOS) for Push Notification.",
 	"m_welcome": "Phone connected to Z-Way",
-	"m_goodby": "Phone disconnected from Z-Way"
+	"m_goodby": "Phone disconnected from Z-Way",
+	"l_title": "Phone name",
+	"l_user": "User",
+	"l_os": "Type"
 }
