@@ -398,7 +398,7 @@
 							"type": "select",
 							"datasource": "namespaces",
 							"field": "optionLabels",
-							"optionLabels": "namespaces:notificationChannels:channelName",
+							"optionLabels": "namespaces:notificationChannels:channelNameEx",
 							"label": "__l_channel__",
 							"helper": "__h_channel__"
 						},

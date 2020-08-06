@@ -2079,7 +2079,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		
 		var channels = this.controller.notificationChannels;
 		
-		reply.data = Object.keys(channels).map(function(ch) { return _.extend({id: ch}, channels[ch]); }).filter(function(ch) { return ch.user == self.req.user; });
+		reply.data = Object.keys(channels).map(function(ch) {
+			var profile = self.controller.getProfile(channels[ch].user);
+			return _.extend({id: ch, userName: profile ? profile.name : "-" }, channels[ch]);
+		}).filter(function(ch) {
+			return ch.user == self.req.user;
+		});
 		reply.code = 200;
 
 		return reply;

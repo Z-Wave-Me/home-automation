@@ -2405,7 +2405,7 @@ AutomationController.prototype.getListNamespaces = function(path, namespacesObj,
 			for (var i = 0; i < pathArr.length; i++) {
 				var currPath = pathArr[i + shift],
 					obj = {},
-					lastPath = ['deviceId', 'deviceName', 'channelId', 'channelName'];
+					lastPath = ['deviceId', 'deviceName', 'channelId', 'channelName', 'channelNameEx'];
 				
 				if (nspc[currPath]) {
 					nspc = nspc[currPath];
@@ -3125,7 +3125,9 @@ AutomationController.prototype.vDevFailedDetection = function(nodeId, isFailed, 
 AutomationController.prototype.updateNotificationChannelNamespace = function() {
 	var self = this;
 	
-	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) { return {channelId: id, userId: self.notificationChannels[id].user, channelName: self.notificationChannels[id].name}; }));
+	this.setNamespace("notificationChannels", this.namespaces, Object.keys(this.notificationChannels).map(function(id) {
+		var profile = self.getProfile(self.notificationChannels[id].user);
+		return {channelId: id, userId: self.notificationChannels[id].user, channelName: self.notificationChannels[id].name, channelNameEx: self.notificationChannels[id].name + " (" + (profile ? profile.name : "-") + ")"}; }));
 };
 
 AutomationController.prototype.registerNotificationChannel = function(id, user, name, handler) {
