@@ -49,13 +49,18 @@ EasyScripting.prototype.init = function (config) {
 			self.addNotification("error", "Loop detected", "module");
 			return;
 		}
-		self.running = true;
-		// make sure to hide outer scope variables and global variables
-		var _script = self.script;
-		(function(global, self, vdev, setTimer, stopTimer) {
-			_script(global, vdev, setTimer, stopTimer, "on", "off");
-		})(EasyScripting.globals, undefined, self.vDevHelper, self.setTimer, self.stopTimer);
-		self.running = false;
+		
+		try {
+			self.running = true;
+			
+			// make sure to hide outer scope variables and global variables
+			var _script = self.script;
+			(function(global, self, vdev, setTimer, stopTimer) {
+				_script(global, vdev, setTimer, stopTimer, "on", "off");
+			})(EasyScripting.globals, undefined, self.vDevHelper, self.setTimer, self.stopTimer);
+		} finally {
+			self.running = false;
+		}
 	};
 
 	this.events.forEach(function(vDevId) {
