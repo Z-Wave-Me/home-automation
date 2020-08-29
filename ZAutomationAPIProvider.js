@@ -99,6 +99,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/notificationFiltering", this.ROLE.USER, this.notificationFilteringGet);
 		this.router.put("/notificationFiltering", this.ROLE.USER, this.notificationFilteringSet);
 		this.router.get("/notificationChannels", this.ROLE.USER, this.notificationChannelsGet);
+		this.router.get("/notificationChannels/all", this.ROLE.ADMIN, this.notificationChannelsGetAll);
 
 		this.router.post("/auth/forgotten", this.ROLE.ANONYMOUS, this.restorePassword);
 		this.router.post("/auth/forgotten/:profile_id", this.ROLE.ANONYMOUS, this.restorePassword, [parseInt]);
@@ -2069,7 +2070,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		return reply;
 	},
-	notificationChannelsGet: function() {
+	notificationChannelsGet: function(all) {
 		var reply = {
 				error: null,
 				data: null,
@@ -2083,11 +2084,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			var profile = self.controller.getProfile(channels[ch].user);
 			return _.extend({id: ch, userName: profile ? profile.name : "-" }, channels[ch]);
 		}).filter(function(ch) {
-			return ch.user == self.req.user;
+			return ch.user == self.req.user || (all && self.req.role === self.ROLE.ADMIN);
 		});
 		reply.code = 200;
 
 		return reply;
+	},
+	notificationChannelsGetAll: function() {
+		return this.notificationChannelsGet(true);
 	},
 	// namespaces
 	listNamespaces: function() {
