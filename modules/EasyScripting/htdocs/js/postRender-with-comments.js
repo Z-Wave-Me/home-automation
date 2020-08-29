@@ -236,7 +236,7 @@ function modulePostRender(control) {
 					$('<li></li>')
 						.append(
 							$('<a></a>').append(
-								$('<i> ' + name +'</i>').addClass('fa ' + icon)
+								$('<i> ' + name +'</i>').addClass('fas ' + icon)
 							)
 						),
 					menu_id,
@@ -249,7 +249,7 @@ function modulePostRender(control) {
 	// fill toolbar with menus
 	
 	toolbarMenuAdd('easy-scripting-devices-events', 'fa-play', '__m_events__');
-	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb-o', '__m_devices__');
+	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb', '__m_devices__');
 	toolbarMenuAdd('easy-scripting-syntax', 'fa-code', '__m_expressions__');
 
 	// fill menu with devices
