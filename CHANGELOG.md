@@ -1,3 +1,42 @@
+#31.08.2020 v3.1.0
+New features:
+- New notifications style in Automation
+- Added /notificationChannels and /notificationChannels/all API calls
+- Added namespaces:notificationChannels:channelNameEx
+- Added NotificationChannelEmail (replacement for MailNotifier), NotificationChannelSMSru (replacement for old NotificationSMSru)
+- Adopted IfThen, SecurityMode to the new notification style
+- Removed notifications from BatteryPolling - adopting new notifications style
+- Removed modules MailNotifier (replaced by NotificationChannelEmail), Notification (deprecated) and NotificationSMSru (replaced by NotificationChannelSMSru)
+- Added MobileAppSupport and NotificationFiltering.
+- Added Zniffer SetPromisc API
+- Improved Background RSSI measurement, made it more precise in time when polling
+Fixes:
+- Fixed EasyScripting Loop detected issue after an error
+- Fixed NotificationChannelEmail userId saved as integer and not as string
+- Temp fix of namespaces - to be reworked
+- Added NotificationChannelEmail and improved NotificationFiltering.
+- Fixed RSSI for sent packet for Zniffer
+- Fixed bug with two dongles
+- Cleanup. CIT code removed
+- Fixed FW update via URL download
+- Allow / in last argument in API router
+- Network reorg fix
+
+#28.04.2020 v3.0.6
+New features:
+- EasyScripting app added
+
+#02.04.2020 v3.0.5
+Fixes:
+- Postfix Association wrapped in lastIncludedDevice check
+- Full rework of NetworkReorganization
+- Fixed incoming packet in RouteMap
+- Fixed bug in ThemostatDevice
+- Allow restore of Dummy Device value
+- Added more error logging
+- Added probeType, icon valve and siren.
+- AutomationController.loadModuleMedia handles MIME types
+
 #20.01.2020 v3.0.4
 New features:
 * Google Home integration
