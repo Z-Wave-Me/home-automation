@@ -95,10 +95,7 @@ Schedules.prototype.init = function(config) {
 
 		self.notifications.forEach(function(n) {
 			if (n.target && n.target !== '') {
-				notificationType = n.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
-				notificationMessage = !n.message ? self.getInstanceTitle() : n.message;
-
-				self.addNotification(notificationType, notificationMessage, n.target);
+				self.controller.notificationChannelSend(n.target, n.message ? n.message : self.getInstanceTitle());
 			}
 		});
 	};

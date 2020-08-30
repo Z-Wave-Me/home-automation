@@ -496,10 +496,7 @@ Rules.prototype.sendNotification = function(notification, conditions, actions) {
 		notificationMessage = '';
 
 	if (notification.target && notification.target !== '') {
-		notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
-		notificationMessage = !notification.message ? 'Condition: ' + JSON.stringify(conditions) + ' Actions: ' + JSON.stringify(actions) : notification.message;
-
-		this.addNotification(notificationType, notificationMessage, notification.target);
+		this.controller.notificationChannelSend(notification.target, notification.message ? notification.message : this.getInstanceTitle());
 	}
 };
 

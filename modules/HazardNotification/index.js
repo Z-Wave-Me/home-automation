@@ -156,11 +156,6 @@ HazardNotification.prototype.init = function(config) {
 			var icon = config.hazardType == "fire" ? "fire_warning.png" : "leakage_warning.png";
 			self.vDev.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
 
-			//send notification: OK
-			//console.log('Leakage Protection state is "OK". Still armed ...');
-			//stop sending notifications
-			//console.log('Stop sending notifications ...');
-
 			self.triggerNotification('revert');
 
 			if (self.sendInterval) {
@@ -180,9 +175,6 @@ HazardNotification.prototype.init = function(config) {
 		// trigger reaction
 		self.triggerEvents();
 
-		//start sending notifications
-		//console.log('Alert detected. Start sending notifications ...');
-
 		if (!self.sendInterval) {
 			self.triggerNotification('alarm');
 			self.sendInterval = setInterval(function() {
@@ -199,10 +191,7 @@ HazardNotification.prototype.init = function(config) {
 					notificationMessage = '';
 
 				if (notification.target && notification.target !== '') {
-					notificationType = notification.target.search('@') > -1 ? 'mail.notification' : 'push.notification';
-					notificationMessage = !notification.message ? fallbackMessage : notification.message;
-
-					self.addNotification(notificationType, notificationMessage, notification.target);
+					self.controller.notificationChannelSend(notification.target, notification.message ? notification.message : self.getInstanceTitle());
 				}
 			}
 		});
@@ -330,9 +319,6 @@ HazardNotification.prototype.init = function(config) {
 					this.set('metrics:level', 'OK');
 					this.set('metrics:icon', '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon);
 				}
-
-				//stop sending notifications
-				//console.log('Disarmed. Stop sending notifications ...');
 
 				self.triggerNotification('off');
 

@@ -959,47 +959,8 @@ Security.prototype.initStates = function() {
 		self.vDev.set("metrics:level", 'on');
 	}, function(args) {
 		self.shiftTriggerDevices(self.confirmDatas, self.confirmNots, 'arm');
-		/*if (self.confirmDatas) {
-			self.confirmDatas.forEach(
-				function(args) {
-					var vDev = self.controller.devices.get(args.devices);
-					if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
-						vDev.performCommand(args.level);
-					}
-				}
-			);
-		}
-
-		if (typeof self.confirmNots.target !== 'undefined' || typeof self.confirmNots.mail_to_input !== 'undefined') {
-			var mail;
-			if (self.confirmNots.target.search('@') > 0 || (mail = typeof self.confirmNots.mail_to_input !== 'undefined')) {
-				self.addNotification('mail.notification', typeof self.confirmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.confirmNots.message, mail ? self.confirmNots.mail_to_input : self.confirmNots.target);
-			} else {
-				self.addNotification('push.notification', typeof self.confirmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.confirmNots.message, self.confirmNots.target);
-			}
-		}*/
-
 	}, function() {
 		//self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
-		/*if (self.disconfirmDatas) {
-			self.disconfirmDatas.forEach(
-				function(args) {
-					var vDev = self.controller.devices.get(args.devices);
-					if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
-						vDev.performCommand(args.level);
-					}
-				}
-			);
-		}
-
-		if (typeof self.disconfirmNots.target !== 'undefined' || typeof self.disconfirmNots.mail_to_input !== 'undefined') {
-			var mail;
-			if (self.disconfirmNots.target.search('@') > 0 || (mail = typeof self.disconfirmNots.mail_to_input !== 'undefined')) {
-				self.addNotification('mail.notification', typeof self.disconfirmNots.message === 'undefined' ? self.getInstanceTitle() + ' - disarm' : self.disconfirmNots.message, mail ? self.disconfirmNots.mail_to_input : self.disconfirmNots.target);
-			} else {
-				self.addNotification('push.notification', typeof self.disconfirmNots.message === 'undefined' ? self.getInstanceTitle() + ' - disarm' : self.disconfirmNots.message, self.disconfirmNots.target);
-			}
-		}*/
 	});
 	//--Alarming-State--
 	self.alarmed = new this.State(this.StateStatus, this.StateEnum.ALARMED, function() {
@@ -1076,26 +1037,6 @@ Security.prototype.silenttriggerFunction = function(alarmMsg) {
 	this.log("error", "ALARM silent " + "Security_" + this.id + " " + alarmMsg, false);
 
 	this.shiftTriggerDevices(this.silentalarmDatas, this.silentalarmNots, 'arm');
-	/*if (self.silentalarmDatas) {
-		self.silentalarmDatas.forEach(
-			function(args) {
-				var vDev = self.controller.devices.get(args.devices);
-				if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
-					vDev.performCommand(args.level);
-				}
-			}
-		);
-	}
-
-	if (typeof self.silentalarmNots.target !== 'undefined' || typeof self.silentalarmNots.mail_to_input !== 'undefined') {
-		var mail;
-		if (self.silentalarmNots.target.search('@') > 0 || (mail = typeof self.silentalarmNots.mail_to_input !== 'undefined')) {
-			self.addNotification('mail.notification', typeof self.silentalarmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.silentalarmNots.message, mail ? self.silentalarmNots.mail_to_input : self.silentalarmNots.target);
-		} else {
-			self.addNotification('push.notification', typeof self.silentalarmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.silentalarmNots.message, self.silentalarmNots.target);
-		}
-	}*/
-
 };
 /**
  * broadcast the Alarm to all Alarming devices and the Log and the own Alarm Scene Vdev
@@ -1107,26 +1048,6 @@ Security.prototype.triggerFunction = function(alarmMsg) {
 	this.vDevALARM.performCommand("on");
 
 	this.shiftTriggerDevices(this.alarmDatas, this.alarmNots, 'arm');
-	/*if (self.alarmDatas) {
-		self.alarmDatas.forEach(
-			function(args) {
-				var vDev = self.controller.devices.get(args.devices);
-				if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
-					vDev.performCommand(args.level);
-				}
-			}
-		);
-	}
-
-	if (typeof self.alarmNots.target !== 'undefined' || typeof self.alarmNots.mail_to_input !== 'undefined') {
-		var mail;
-		if (self.alarmNots.target.search('@') > 0 || (mail = typeof self.alarmNots.mail_to_input !== 'undefined')) {
-			self.addNotification('mail.notification', typeof self.alarmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.alarmNots.message, mail ? self.alarmNots.mail_to_input : self.alarmNots.target);
-		} else {
-			self.addNotification('push.notification', typeof self.alarmNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.alarmNots.message, self.alarmNots.target);
-		}
-	}*/
-
 };
 /**
  * Second Main Method for State Transitions
@@ -1319,25 +1240,6 @@ Security.prototype.alarmCancel = function() {
 	}
 
 	this.shiftTriggerDevices(this.cleanDatas, this.cleanNots, 'arm');
-	/*if (self.cleanDatas) {
-		self.cleanDatas.forEach(
-			function(args) {
-				var vDev = self.controller.devices.get(args.devices);
-				if (vDev && ((args.level && !args.sendAction) || (args.sendAction && args.level !== vDev.get('metrics:level')))) {
-					vDev.performCommand(args.level);
-				}
-			}
-		);
-	}
-
-	if (typeof self.cleanNots.target !== 'undefined' || typeof self.cleanNots.mail_to_input !== 'undefined') {
-		var mail;
-		if (self.cleanNots.target.search('@') > 0 || (mail = typeof self.cleanNots.mail_to_input !== 'undefined')) {
-			self.addNotification('mail.notification', typeof self.cleanNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.cleanNots.message, mail ? self.cleanNots.mail_to_input : self.cleanNots.target);
-		} else {
-			self.addNotification('push.notification', typeof self.cleanNots.message === 'undefined' ? self.getInstanceTitle() + ' - arm' : self.cleanNots.message, self.cleanNots.target);
-		}
-	}*/
 };
 
 /**
@@ -1397,13 +1299,7 @@ Security.prototype.shiftTriggerDevices = function(datas, notification, level) {
 		});
 	}
 
-	if (typeof notification.target !== 'undefined' || typeof notification.mail_to_input !== 'undefined') {
-		var mail;
-		if (notification.target.search('@') > 0 || (mail = typeof notification.mail_to_input !== 'undefined')) {
-			this.addNotification('mail.notification', typeof notification.message === 'undefined' ? this.getInstanceTitle() + ' - ' + level : notification.message, mail ? notification.mail_to_input : notification.target);
-		} else {
-			this.addNotification('push.notification', typeof notification.message === 'undefined' ? this.getInstanceTitle() + ' - ' + level : notification.message, notification.target);
-		}
+	if (typeof notification.target && notification.target !== '') {
+		this.controller.notificationChannelSend(notification.target, notification.message ? notification.message : this.getInstanceTitle());
 	}
-
 };
