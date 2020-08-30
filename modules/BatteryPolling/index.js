@@ -38,7 +38,7 @@ BatteryPolling.prototype.init = function (config) {
 	// polling function
 	this.onPoll = function () {
 		self.controller.devices.filter(function (el) {
-			return el.get("deviceType") === "battery" && (el.id != "BatteryPolling_" + self.id);
+			return el.get("deviceType") === "battery" && (el.id != self.getName() + "_" + self.id);
 		}).map(function(el) {
 			el.performCommand("update");
 		});
@@ -46,13 +46,14 @@ BatteryPolling.prototype.init = function (config) {
 
 	// create vDev
 	this.vDev = this.controller.devices.create({
-		deviceId: "BatteryPolling_" + this.id,
+		deviceId: this.getName() + "_" + this.id,
 		defaults: {
 			deviceType: "battery",
 			metrics: {
 				probeTitle: "Battery",
 				scaleTitle: "%",
-				title: self.getInstanceTitle()
+				title: self.getInstanceTitle(),
+				icon: "battery"
 			}
 		},
 		overlay: {},
