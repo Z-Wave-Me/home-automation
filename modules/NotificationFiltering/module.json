@@ -77,7 +77,7 @@
 											"dev_sensorBinary",
 											"dev_sensorMultilevel",
 											"dev_sensorMultiline",
-											"dev_doorLock",
+											"dev_doorlock",
 											"dev_thermostat"
 										],
 										"required": true
@@ -299,7 +299,7 @@
 											}
 										}
 									},
-									"dev_doorLock": {
+									"dev_doorlock": {
 										"type": "object",
 										"dependencies": "dev_filter",
 										"properties": {
@@ -440,7 +440,7 @@
 											"__dev_sensorBinary__",
 											"__dev_sensorMultilevel__",
 											"__dev_sensorMultiline__",
-											"__dev_doorLock__",
+											"__dev_doorlock__",
 											"__dev_thermostat__"
 										]
 									},
@@ -720,10 +720,10 @@
 											}
 										}
 									},
-									"dev_doorLock": {
-										"label": "__l_doorLock__",
+									"dev_doorlock": {
+										"label": "__l_doorlock__",
 										"dependencies": {
-											"dev_filter": "dev_doorLock"
+											"dev_filter": "dev_doorlock"
 										},
 										"fields": {
 											"dev_select": {

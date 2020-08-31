@@ -245,8 +245,8 @@ NotificationFiltering.prototype.readConfig = function () {
 			} else if (device.dev_fan) {
 				d = device.dev_fan;
 				ml = true;
-			} else if (device.dev_doorLock) {
-				d = device.dev_doorLock;
+			} else if (device.dev_doorlock) {
+				d = device.dev_doorlock;
 				ml = true;
 			} else if (device.dev_thermostat) {
 				d = device.dev_thermostat;
@@ -348,7 +348,7 @@ NotificationFiltering.prototype.onDeviceListUpdate = function (params) {
 		
 		// Notify on doorlock open/close
 		if (dt === "switchBinary" && pt === "doorlock") {
-			self.addRule(userId, id, "dev_doorLock", null, "all");
+			self.addRule(userId, id, "dev_doorlock", null, "all");
 		}
 		
 		// Notify on low battery

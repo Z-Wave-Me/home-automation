@@ -36,7 +36,7 @@
   "dev_sensorMultilevel": "Sensor Multilevel",
   "dev_sensorMultiline": "Sensor Multiline",
   "dev_fan": "Fan",
-  "dev_doorLock": "Doorlock",
+  "dev_doorlock": "Doorlock",
   "dev_thermostat": "Thermostat",
   "l_ToggleButton": "Toggle Button",
   "l_switchControl": "Switch Control",
@@ -46,6 +46,6 @@
   "l_sensorMultilevel": "Sensor Multilevel",
   "l_sensorMultiline": "Sensor Multiline",
   "l_fan": "Fan",
-  "l_doorLock": "Doorlock",
+  "l_doorlock": "Doorlock",
   "l_thermostat": "Thermostat"
 }
