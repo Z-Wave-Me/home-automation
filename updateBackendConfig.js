@@ -536,7 +536,7 @@
 					"params": {
 						"rules": [{
 							"recipient_type": "user",
-							"user": "1",
+							"user": 1,
 							"logLevel": "errors,warnings",
 							"devices": []
 						}],

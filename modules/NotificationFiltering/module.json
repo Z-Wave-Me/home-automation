@@ -46,7 +46,7 @@
 							"required": true
 						},
 						"user": {
-							"type": "integer",
+							"type": "number",
 							"dependencies": "recipient_type",
 							"field": "enum",
 							"datasource": "namespaces",
