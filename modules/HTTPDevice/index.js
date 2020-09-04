@@ -33,14 +33,17 @@ HTTPDevice.prototype.init = function (config) {
 		level = "",
 		scaleTitle = "",
 		deviceType = this.config.deviceType;
+		probeType = ""
 		
 	switch(deviceType) {
 		case "sensorBinary":
-			icon = self.config.iconSensorBinary;
+			icon = this.config.iconSensorBinary;
+			probeType = this.config.iconSensorBinary == "door" ? "door-window" : this.config.iconSensorBinary;
 			level = "off";
 			break;
 		case "sensorMultilevel":
-			icon = self.config.iconSensorMultilevel;
+			icon = this.config.iconSensorMultilevel;
+			probeType = this.config.iconSensorMultilevel;
 			scaleTitle = this.config.scale_sensorMultilevel;
 			level = 0;
 			break;
@@ -66,6 +69,7 @@ HTTPDevice.prototype.init = function (config) {
  
 	var overlay = {
 			deviceType: deviceType,
+			probeType: probeType,
 			metrics: {
 				icon: icon,
 				level: level,
