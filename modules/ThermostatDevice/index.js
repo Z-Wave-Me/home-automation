@@ -34,6 +34,7 @@ ThermostatDevice.prototype.init = function (config) {
 		deviceId: "ThermostatDevice_" + this.id,
 		defaults: {
 			deviceType: "thermostat",
+			probeType: "thermostat_set_point",
 			metrics: {
 				scaleTitle:  this.config.scale === 'C' ? '°C' : '°F',
 				level: this.config.scale === 'C' ? 18 : 65,
