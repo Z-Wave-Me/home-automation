@@ -338,7 +338,6 @@ Heating.prototype.createHouseControl = function() {
             }
 
             metrRooms = self.vDev.get('metrics:rooms');
-
             // update value in widget
             metrRooms.forEach(function(room) {
                 if (parseInt(room.room, 10) === locId) {
@@ -399,7 +398,6 @@ Heating.prototype.createHouseControl = function() {
         if (thermostats.length > 0) {
 
             metrRooms = self.vDev.get('metrics:rooms');
-
             // get all rooms controlled by Heating app, and update them
             // update value in widget
             metrRooms.forEach(function(room) {
@@ -550,14 +548,11 @@ Heating.prototype.createHouseControl = function() {
             self.newRooms.forEach(function(room, index) {
 
                 var roomId = parseInt(room.room, 10);
-
                 if (argRoom === null || argRoom === roomId) {
-
                     // set custom configs if configured
                     if (argRoom === null && command === 'custom') {
                         roomCmd = room.state;
                     }
-
                     var thermostats = self.getThermostats(roomId),
                         // set the current temperature depending on performed command
                         setCurrTemp = function(cmd) {
@@ -597,7 +592,7 @@ Heating.prototype.createHouseControl = function() {
                         self.checkEntry(thermostats, room);
 
                         if (!self.configureSchedules(roomId)) {
-                            currTemp = parseFloat(room.energySave);
+                            currTemp = parseFloat(room.comfort);
                             thermostats.forEach(function(device) {
                                 self.performChangesOnThermostats(device, currTemp);
                             });
