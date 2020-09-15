@@ -1,3 +1,9 @@
+## 16.09.2020 v3.1.1
+Fixes:
+* Automation/Climate: current temperature always Comfort
+* Added probeType to Http and Code devices
+* Added probeType: "thermostat_set_point"
+
 ## 31.08.2020 v3.1.0
 New features:
 - New notifications style in Automation
