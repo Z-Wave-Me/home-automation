@@ -2,6 +2,8 @@
 
 LAST_TAG=`git describe --tags --match 'v*' --abbrev=0`
 
+git pull || exit
+
 if [ -n "$1" ]; then
 	TAG="$1"
 	if [ -z "`grep -E '^## [0-9.]* '"$TAG"'$' CHANGELOG.md`" ]; then
@@ -21,13 +23,11 @@ if [ -n "$1" ]; then
 	fi
 	
 	echo "Releasing $TAG"
-else
-	echo "Last released version was $LAST_TAG"
-fi
-
-if [ -n "$TAG" ]; then
+	
 	git add CHANGELOG.md &&
 	git commit -m "dist" && git tag "$TAG" &&
 	git push && git push --tags &&
 	git checkout master && git merge develop && git push && git checkout develop # merge with master
+else
+	echo "Last released version was $LAST_TAG"
 fi
