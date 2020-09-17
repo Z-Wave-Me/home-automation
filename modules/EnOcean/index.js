@@ -649,6 +649,17 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySwitch("setAlarm", "config3", "Set Alarm");
 		}
 		
+		if (matchDevice(0xd2, 0x06, 0xff)) {
+			// Door
+			binarySensor("windowOpen", "door", "Door Sensor");
+			binarySensor("windowTilt", "window_tilt", "Tilt Sensor");
+			binarySensor("preAlarm", "motion", "Pre Alarm");
+			binarySensor("alarm", "alarm", "Alarm");
+			binarySensor("preAlarmEnabled", "config1", "Pre Alarm");
+			binarySwitch("setPreAlarm", "config2", "Set Pre Alarm");
+			binarySwitch("setAlarm", "config3", "Set Alarm");
+		}
+		
 		// save ZDDX
 		self.zeno.devices.SaveData();
 		
