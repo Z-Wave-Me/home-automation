@@ -2486,8 +2486,16 @@ ZWave.prototype.defineHandlers = function() {
 				||
 				zway.controller.data.bootloaderCRC.value === 0x8b4b // bootloader for Z-Box 6.70
 				||
-				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71, // bootloader for 6.71 SDK
+				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71; // bootloader for 6.71 SDK
+
+			var addr;
+			if (parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12) {
+				// ZGM130S/ZG14
+				addr = 0x3A000;
+			} else {
+				// ZM5101/SD3503/ZM5202
 				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
+			}
 
 			if (data.file && data.file.content) {
 				console.log("Fetching firmware from file " + data.file);
@@ -2595,7 +2603,8 @@ ZWave.prototype.defineHandlers = function() {
 				}
 
 				var L = 32,
-					seg = 6, // Функция бутлодера принимает номер сегмента
+					seg = parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12 ? 0x74 : 6, // Функция бутлодера принимает номер сегмента 
+
 					addr = seg * 0x800, // ==12k
 					data = buf;
 
@@ -2625,7 +2634,7 @@ ZWave.prototype.defineHandlers = function() {
 					contentType: "application/octet-stream",
 					success: function(response) {
 						var L = 32,
-							seg = 6, // Функция бутлодера принимает номер сегмента
+							seg = parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12 ? 0x74 : 6, // Функция бутлодера принимает номер сегмента 
 							addr = seg * 0x800, // ==12k
 							data = response.data;
 
