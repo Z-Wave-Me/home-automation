@@ -5739,7 +5739,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						// check if it should be created
 						if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
 
-							maskArrayToTypes = function(bitmaskArray) {
+							function maskArrayToTypes(bitmaskArray) {
 								var types = [],
 									n = 0;
 
@@ -5756,11 +5756,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 								return types;
 							};
+							
+							var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
 
 							var DOOR_OPEN = 0x16,
 							    DOOR_CLOSE = 0x17,
 							    PARAM_TILT = 0x01;
-							var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
 							if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1)) { // Very special case of Door
 								a_defaults.metrics.icon = 'door';
 
@@ -5958,7 +5959,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								}
 							}
 
-							maskArrayToTypes(cc.data[notificationTypeId].eventMask.value).forEach(function(eventTypeId) {
+							eventMaskArray.forEach(function(eventTypeId) {
 
 								eventTypeId = parseInt(eventTypeId, 10);
 
