@@ -5758,7 +5758,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							};
 
 							var DOOR_OPEN = 0x16,
-								DOOR_CLOSE = 0x17;
+							    DOOR_CLOSE = 0x17,
+							    PARAM_TILT = 0x01;
 							var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
 							if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1)) { // Very special case of Door
 								a_defaults.metrics.icon = 'door';
@@ -5786,6 +5787,31 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										},
 										moduleId: self.id
 									});
+									
+									var a_id_tilt = vDevId + separ + notificationTypeId + separ + 'Tilt' + separ + "A";									
+									var a_vDev_tilt = null;
+									function createTiltVDev(a_id) {
+										a_defaults.metrics.icon = 'window_tilt';
+										a_defaults.metrics.title = compileTitle('Window Tilt', vDevIdNI);
+										a_defaults.probeType = 'window_tilt';
+
+										return self.controller.devices.create({
+											deviceId: a_id,
+											defaults: a_defaults,
+											overlay: {},
+											handler: function(command) {
+												if (command === "update") {
+													cc.Get(0, notificationTypeId, DOOR_OPEN);
+													cc.Get(0, notificationTypeId, DOOR_CLOSE);
+												}
+											},
+											moduleId: self.id
+										});
+									}
+									if (Object.keys(self.controller.getVdevInfo(a_id_tilt)).length) {
+										// add Tilt vDev if it was previously created and saved
+										a_vDev_tilt = createTiltVDev(a_id_tilt);
+									}
 
 									if (a_vDev) {
 										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
@@ -5793,9 +5819,27 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 											try {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
-												} else if (this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE &&
-													(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
-													a_vDev.set("metrics:level", (this.event.value == DOOR_OPEN) ? "on" : "off");
+												} else if (
+													(this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) &&
+													!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
+												) {
+													
+													if (this.event.value === DOOR_OPEN) {
+														if (this.eventParameters.value[0] == PARAM_TILT) {
+															if (!a_vDev_tilt) {
+																// create the Tilt vDev on the fly
+																a_vDev_tilt = createTiltVDev(a_id_tilt);
+															}
+															a_vDev_tilt.set("metrics:level", "on");
+														} else {
+															a_vDev.set("metrics:level", "on");
+														}
+													} else {
+														a_vDev.set("metrics:level", "off");
+														if (a_vDev_tilt) {
+															a_vDev_tilt.set("metrics:level", "off");
+														}
+													}
 												}
 											} catch (e) {}
 										}, "value");
