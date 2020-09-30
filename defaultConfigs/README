@@ -10,6 +10,7 @@ config.json_ttyAMA0 - for RaZberry
 config.json_ttyAMA0_NonExpert - for RaZberry but no expert view
 config.json_ttyS0 - for ttyS0 for embedded boxes
 config.json_ttyS0-JBox - for James Box
+config.json_ttyS0-ReHub - for Rehau Hub
 config.json_ttyS1 - for ttyS1 for embedded boxes
 config.json_ttyUSB0_ZBW-no_vDev-no - for old white Z-Stick without any HA and with public Z-Wave API
 config.json_windows - for Windows
