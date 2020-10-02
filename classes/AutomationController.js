@@ -11,6 +11,7 @@ function AutomationController() {
 	AutomationController.super_.call(this);
 
 	this.allow_headers = [
+		'Authorization',
 		'Accept-Ranges',
 		'Content-Encoding',
 		'Content-Length',
