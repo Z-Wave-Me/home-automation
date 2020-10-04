@@ -105,7 +105,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 						} 
 					},
 					handler: self.widgetHandler,
-					moduleId: this.id
+					moduleId: self.id
 				});
 			}
 		});
