@@ -1867,6 +1867,8 @@ AutomationController.prototype.safeProfile = function(profile, exclude) {
 					sid: authToken.sid.substr(0,6) + "...", // first 6 symbols are uniq - see AuthController
 					agent: authToken.agent,
 					date: authToken.date,
+					lastSeen: authToken.lastSeen,
+					ip: authToken.ip,
 					expire: authToken.expire
 				});
 			});

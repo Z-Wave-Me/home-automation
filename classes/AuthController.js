@@ -95,6 +95,11 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 					if (authToken.expire != 0 && request.__authMethod == 'Authorization Bearer') {
 						self.controller.permanentToken(profile, authToken.sid);
 					}
+					
+					// Update last seen and IP
+					authToken.lastSeen = (new Date()).valueOf();
+					authToken.ip = self.getClientIP(request);
+					
 					return true;
 				}
 			});
@@ -211,6 +216,8 @@ AuthController.prototype.checkIn = function(profile, req, permanent) {
 		sid: sid,
 		agent: userAgent,
 		date: d,
+		lastSeen: d,
+		ip: this.getClientIP(req),
 		expire: permanent ? 0 : (d + TTL)
 	});
 	
@@ -276,4 +283,17 @@ AuthController.prototype.getForgottenPwdToken = function(token) {
 	}
 
 	return result;
+};
+
+AuthController.prototype.getClientIP = function(request) {
+	var ip = request.peer.address;
+	
+	if (request.peer.address === "127.0.0.1") {
+		// don't treat find.z-wave.me as local user (connection comes from local ssh server)
+		if (request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }) && request.headers['X-Forwarded-For']) {
+			ip = request.headers['X-Forwarded-For'].split(",")[0].trim();
+		}
+	}
+	
+	return ip;
 };
