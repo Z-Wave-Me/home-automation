@@ -330,14 +330,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			reply.code = 200;
 			
+			var session = {};
 			var sessionProfile = _.find(this.controller.profiles, function(profile) {
-				return _.find(profile.authTokens, function(authToken) {
+				var sess = _.find(profile.authTokens, function(authToken) {
 					return authToken.sid == sessionId;
 				});
+				if (sess) session = sess;
+				return sess;
 			});
-			sessionProfile.authTokens = sessionProfile.authTokens.filter(function(authToken) {
-				return authToken.sid != sessionId;
-			});
+			if (session.expire !== 0) {
+				// do not logout from permanent tokens - they should be deleted explicitelly via remoteToken API call
+				this.controller.removeToken(sessionProfile, session.sid);
+			}
 		} else {
 			reply.code = 404;
 			reply.error = 'Could not logout. No session found.';
