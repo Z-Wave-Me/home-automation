@@ -288,9 +288,9 @@ ZAutomationWebRequest.prototype.NotFound = function () {
 };
 
 ZAutomationWebRequest.prototype.CORSRequest = function () {
-
 	this.responseHeader('Access-Control-Allow-Origin', '*');
 	this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
 	this.responseHeader('Access-Control-Allow-Headers', this.controller.allow_headers.join(', '));
+	this.responseHeader('Access-Control-Expose-Headers', this.controller.allow_headers.join(', '));
 	this.res.status = 200;
 };
