@@ -139,6 +139,7 @@ Heating.prototype.init = function(config) {
             "room": roomId,
             "comfort": sc.comfortTemp,
             "energySave": sc.energySaveTemp,
+            "frostProtection": sc.frostProtectionTemp,
             "fallback": sc.fallbackTemp,
             "mainSensor": sc.sensorId
         }
@@ -346,13 +347,13 @@ Heating.prototype.createHouseControl = function() {
                     if (!!schedulePreset) {
                         switch (schedulePreset) {
                             case 'F':
-                                temp = 6;
+                                temp = parseFloat(room.frostProtection);;
                                 break;
                             case 'E':
                                 temp = parseFloat(room.energySave);
                                 break;
                             case 'C':
-                                temp = room.comfort;
+                                temp = parseFloat(room.comfort);
                                 break;
                             default:
                                 temp = schedulePreset;
@@ -403,7 +404,7 @@ Heating.prototype.createHouseControl = function() {
             metrRooms.forEach(function(room) {
                 if (parseInt(room.room, 10) === locId) {
                     if (room.fallback) {
-                        temp = room.fallback == 'F' ? 6 : (room.fallback == 'C' ? room.comfort : parseFloat(room.energySave));
+                        temp = room.fallback == 'F' ? parseFloat(room.frostProtection) : (room.fallback == 'C' ? parseFloat(room.comfort) : parseFloat(room.energySave));
                     } else {
                         temp = parseFloat(room.energySave);
                     }
@@ -564,7 +565,7 @@ Heating.prototype.createHouseControl = function() {
                                     currTemp = parseFloat(room.energySave);
                                     break;
                                 case 'frostProtection':
-                                    currTemp = 6; // tbf frost protection check for lowest value of thermostat
+                                    currTemp = parseFloat(room.frostProtection);
                                     break;
                                 default:
                                     currTemp = null;
