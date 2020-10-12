@@ -1407,7 +1407,8 @@
 			"hide,0-113-8-10",
 			"hide,0-113-8-11",
 			"hide,0-113-9-3",
-			"setConfig(0,6,1,1)"
+			"hide,0-38",
+			"setConfig(0,6,5,1)"
 		],
 		"author_last_update": "2020-10-12 14:00:00",
 		"author": "RS",
