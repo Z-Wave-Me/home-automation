@@ -1,7 +1,7 @@
 /*** Heating Z-Way HA module *******************************************
 
- Version: 1.2.0 stable
- (c) Z-Wave.Me, 2017
+ Version: 1.2.1 stable
+ (c) Z-Wave.Me, 2020
  -----------------------------------------------------------------------------
  Author:    Niels Roche <nir@zwave.eu>,
 			Martin Petzold <mp@zwave.eu>,
@@ -249,6 +249,14 @@ Heating.prototype.init = function(config) {
 
     // restart app after server restart
     this.controller.on('core.start', this.initialCCTurnON);
+
+    // update the list of rooms after deleting a room
+    this.controller.on('location.removed', function(id) {
+        delete self.config.roomSettings[id];
+        self.saveConfig();
+        var newRooms = self.vDev.get('metrics:rooms').filter(function(el) { return parseInt(el.room) != id });
+        self.vDev.set('metrics:rooms', newRooms);
+    })
 };
 
 Heating.prototype.stop = function() {
