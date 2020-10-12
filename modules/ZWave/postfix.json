@@ -1404,13 +1404,12 @@
 			"rename,0-67-1,Eurotronic Thermostat Heat",
 			"rename,0-49-1,Eurotronic Thermostat Temperature",
 			"noVDev,0-113-9-4",
-			"noVDev,0-38",
-			"hide,0-38",
 			"hide,0-113-8-10",
 			"hide,0-113-8-11",
-			"hide,0-113-9-3"
+			"hide,0-113-9-3",
+			"setConfig(0,6,1,1)"
 		],
-		"author_last_update": "2017-01-12 15:46:22",
+		"author_last_update": "2020-10-12 14:00:00",
 		"author": "RS",
 		"tester": "RS",
 		"tester_last_update": "2017-01-12 15:46:22",
