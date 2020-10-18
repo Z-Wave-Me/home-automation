@@ -1,7 +1,7 @@
 /*** Heating Z-Way HA module *******************************************
 
- Version: 1.2.0 stable
- (c) Z-Wave.Me, 2017
+ Version: 1.2.1 stable
+ (c) Z-Wave.Me, 2020
  -----------------------------------------------------------------------------
  Author:    Niels Roche <nir@zwave.eu>,
 			Martin Petzold <mp@zwave.eu>,
@@ -139,6 +139,7 @@ Heating.prototype.init = function(config) {
             "room": roomId,
             "comfort": sc.comfortTemp,
             "energySave": sc.energySaveTemp,
+            "frostProtection": sc.frostProtectionTemp,
             "fallback": sc.fallbackTemp,
             "mainSensor": sc.sensorId
         }
@@ -248,6 +249,14 @@ Heating.prototype.init = function(config) {
 
     // restart app after server restart
     this.controller.on('core.start', this.initialCCTurnON);
+
+    // update the list of rooms after deleting a room
+    this.controller.on('location.removed', function(id) {
+        delete self.config.roomSettings[id];
+        self.saveConfig();
+        var newRooms = self.vDev.get('metrics:rooms').filter(function(el) { return parseInt(el.room) != id });
+        self.vDev.set('metrics:rooms', newRooms);
+    })
 };
 
 Heating.prototype.stop = function() {
@@ -346,13 +355,13 @@ Heating.prototype.createHouseControl = function() {
                     if (!!schedulePreset) {
                         switch (schedulePreset) {
                             case 'F':
-                                temp = 6;
+                                temp = parseFloat(room.frostProtection);;
                                 break;
                             case 'E':
                                 temp = parseFloat(room.energySave);
                                 break;
                             case 'C':
-                                temp = room.comfort;
+                                temp = parseFloat(room.comfort);
                                 break;
                             default:
                                 temp = schedulePreset;
@@ -403,7 +412,7 @@ Heating.prototype.createHouseControl = function() {
             metrRooms.forEach(function(room) {
                 if (parseInt(room.room, 10) === locId) {
                     if (room.fallback) {
-                        temp = room.fallback == 'F' ? 6 : (room.fallback == 'C' ? room.comfort : parseFloat(room.energySave));
+                        temp = room.fallback == 'F' ? parseFloat(room.frostProtection) : (room.fallback == 'C' ? parseFloat(room.comfort) : parseFloat(room.energySave));
                     } else {
                         temp = parseFloat(room.energySave);
                     }
@@ -564,7 +573,7 @@ Heating.prototype.createHouseControl = function() {
                                     currTemp = parseFloat(room.energySave);
                                     break;
                                 case 'frostProtection':
-                                    currTemp = 6; // tbf frost protection check for lowest value of thermostat
+                                    currTemp = parseFloat(room.frostProtection);
                                     break;
                                 default:
                                     currTemp = null;
