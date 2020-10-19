@@ -677,12 +677,11 @@ Heating.prototype.createHouseControl = function() {
         // activate schedule if exists
         if (self.schedule) {
             room.hasSchedule = _.findWhere(self.schedule, {
-                'RoomID': roomId
+                'RoomID': roomId.toString()
             }) ? true : false;
         } else {
             room.hasSchedule = false;
         }
-
 
         if (room.state === 'schedule') {
             // activate schedule
