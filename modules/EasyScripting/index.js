@@ -98,7 +98,7 @@ EasyScripting.prototype.setHelpers = function() {
 	// create one static propery for globals
 	if (!constr.globals) {
 		constr.globals = {};
-		constr.timers = {11: 42};
+		constr.timers = {};
 	}
 	
 	// Timers
