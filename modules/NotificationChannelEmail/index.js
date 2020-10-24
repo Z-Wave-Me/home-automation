@@ -34,6 +34,8 @@ NotificationChannelEmail.prototype.init = function (config) {
 	this.remote_id = this.controller.getRemoteId();
 	this.subject = config.subject;
 
+	this.disabled = false;
+	
 	this.collectedMessages = [];
 
 	var self = this;
@@ -95,6 +97,8 @@ NotificationChannelEmail.prototype.channelID = function(profileId, email) {
 };
 
 NotificationChannelEmail.prototype.sender = function(to, message) {
+	if (this.disabled) return;
+	
 	// check mail validity
 	if (!this.emailRe.test(to)) {
 		this.addNotification('error', 'invalid e-mail addrress ' + to, 'module');
@@ -137,7 +141,9 @@ NotificationChannelEmail.prototype.sendSendMessageWithDelay = function () {
 				},
 				error: function(response) {
 					console.log("NotificationChannelEmail error: " + (typeof response !== 'string'? JSON.stringify(response) : response));
+					self.disabled = true; // disable infinite loop sending e-mail notification about faulure to send e-mail notification
 					self.addNotification('error', 'NotificationChannelEmail error' + (typeof response === 'string'? ': ' + JSON.stringify(response) : ''), 'module');
+					self.disabled = false;
 				}
 			});
 		} else {
