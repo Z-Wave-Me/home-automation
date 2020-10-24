@@ -180,6 +180,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		
 		this.router.get("/redirect", this.ROLE.ANONYMOUS, this.redirectURL);
 		this.router.post("/redirect", this.ROLE.ANONYMOUS, this.redirectURL);
+		
+		this.router.get("/demultiplex/:paths", this.ROLE.ANONYMOUS, this.demultiplex);
 	},
 
 	// Used by the android app to request server status
@@ -3805,6 +3807,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				"Location": this.req.query["to"] + (params ? "?" + params : "")
 			}
 		};
+	},
+	demultiplex: function(paths) {
+		var self = this;
+		var reply = {
+			error: null,
+			data: [],
+			code: 200
+		};
+
+		paths.split(";").forEach(function(url) {
+			self.req.url = _.first(self.req.url.split("/"), 2).join("/") + "/" + url;
+
+			var ret = self.handleRequest(self.req.url, self.req);
+
+			var body;
+			try {
+				body = JSON.parse(ret.body);
+			} catch(ex) {
+				body = ret.body;
+			}
+			reply.data.push({
+				status: ret.status,
+				body: body
+			});
+		});
+		
+		return reply;
 	}
 });
 
