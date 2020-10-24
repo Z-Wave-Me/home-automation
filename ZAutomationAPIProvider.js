@@ -288,22 +288,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			return profile.login === reqObj.login;
 		});
 
-		//if ((profile && reqObj.password === profile.password) || (profile && boxTypeIsCIT)) {
-		/*if (profile &&
-		 ((!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) ||
-		 (this.authCIT() && (!profile.salt && profile.password === reqObj.password || profile.salt && profile.password === hashPassword(reqObj.password, profile.salt))))) {
-		 */
-
 		if (profile) {
 			// check if the pwd matches
 			var pwd_check = reqObj.password ? (!profile.salt && profile.password === reqObj.password) || (profile.salt && profile.password === hashPassword(reqObj.password, profile.salt)) : false;
 
-			// do login if
-			// - login & pwd match (no cit)
-			// - registered cit & login and pwd match
-			// - registered cit & login forwarding is active
-			//if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && (pwd_check || this.controller.allowLoginForwarding(this.req)))) { // deactivate forwarding
-			if ((!checkBoxtype('cit') && pwd_check) || (this.authCIT() && pwd_check)) {
+			if (pwd_check) {
 				return this.setLogin(profile, this.req);
 			} else {
 				return this.denyLogin();
@@ -3405,32 +3394,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				firstaccess: this.controller.config.hasOwnProperty('firstaccess') ? this.controller.config.firstaccess : true
 			};
 
-			// add more information if box is cit
-			if (checkBoxtype('cit')) {
-				_.extend(reply.data, {
-					cit_identifier: this.controller.config.cit_identifier || '',
-					cit_authorized: this.controller.config.cit_authorized || false,
-					cit_license_countDown: zway && zway.controller.data.countDown ? zway.controller.data.countDown.value : null,
-					cit_server_reachable: checkInternetConnection('https://findcit.z-wavealliance.org')
-				});
-
-				if (this.controller.config.forwardCITAuth === true && this.controller.config.cit_authorized) {
-					profile = _.filter(this.controller.profiles, function(p) {
-						return p.name === 'CIT Administrator';
-					});
-
-					if (profile[0]) {
-						_.extend(reply.data, {
-							cit_forward_auth: {
-								user: profile[0].login,
-								allowed: this.controller.allowLoginForwarding(this.req)
-							}
-						});
-					}
-
-				}
-			}
-
 			reply.code = 200;
 		} catch (e) {
 			reply.data = null;
@@ -3798,7 +3761,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	},
 	redirectURL: function() {
 		var self = this;
-		console.logJS(this.req);
 		var params = Object.keys(this.req.query).filter(function(k) { return k != "to"; }).map(function(k) { return k + "=" + self.req.query[k]; }).join("&");
 		return {
 			error: null,
@@ -3836,16 +3798,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		return reply;
 	}
 });
-
-
-ZAutomationAPIWebRequest.prototype.authCIT = function() {
-	var license = true;
-	// check for license countdown
-	if (typeof zway !== 'undefined' && zway.controller.data.countDown) {
-		license = zway.controller.data.countDown.value > 0 ? true : false;
-	}
-	return checkBoxtype('cit') && this.controller.config.cit_authorized && license;
-};
 
 
 ZAutomationAPIWebRequest.prototype.Unauthorized = function() {
