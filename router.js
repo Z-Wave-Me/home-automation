@@ -56,7 +56,7 @@ Router.prototype = {
 	var parts = path.split("/"),
 		parameters = [];
 
-	var pattern = _.map(parts, function(segment, index) {
+	var pattern = "^" + _.map(parts, function(segment, index) {
 	  if (segment.length > 0 && segment.indexOf(':') !== -1) {
 		// Keep track of the parameters we've replaced
 		parameters.push(segment.slice(1));
