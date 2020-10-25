@@ -3770,7 +3770,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		};
 	},
-	demultiplex: function(paths) {
+	demultiplex: function(_path) {
 		var self = this;
 		var reply = {
 			error: null,
@@ -3778,9 +3778,33 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			code: 200
 		};
 
-		paths.split(";").forEach(function(url) {
-			self.req.url = _.first(self.req.url.split("/"), 2).join("/") + "/" + url;
-
+		var fullUrl = this.req.fullUrl,
+		    prefix = "/demultiplex/",
+		    ind;
+		
+		// A bit urgly logic to remove API prefix
+		if (!fullUrl || (ind = fullUrl.indexOf(prefix + _path)) === -1) return { code: 500 };
+		fullUrlPrefix = fullUrl.slice(0, fullUrl.indexOf(this.req.url));
+		fullUrl = fullUrl.slice(ind + prefix.length);
+		var prefix = _.first(self.req.url.split("/"), 2).join("/") + "/";
+		
+		fullUrl.split(";").forEach(function(url) {
+			var path = url,
+			    query = {},
+			    qind = url.indexOf("?");
+			if (qind > -1) {
+				var q = url.slice(qind + 1);
+				path = url.slice(0, qind);
+				q.split("&").forEach(function(kv) {
+					var kv_arr = kv.split("=");
+					query[kv_arr[0]] = kv_arr[1];
+				});
+			}
+			
+			self.req.fullUrl = fullUrlPrefix + prefix + url;
+			self.req.url =  prefix + path;
+			self.req.query = query;
+			
 			var ret = self.handleRequest(self.req.url, self.req);
 
 			var body;
