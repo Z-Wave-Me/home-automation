@@ -53,6 +53,7 @@
             "ip": {
                 "label": "__l_cam_url__",
                 "type": "url",
+                "allowIntranet": true,
                 "required": true
             },
             "user": {

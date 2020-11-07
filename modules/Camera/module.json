@@ -96,51 +96,61 @@
 			"url": {
 				"label": "__l_cam_url__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": true
 			},
 			"screenUrl": {
 				"label": "__l_screen_url__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"zoomInUrl": {
 				"label": "__l_zoomin__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"zoomOutUrl": {
 				"label": "__l_zoomout__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"leftUrl": {
 				"label": "__l_left__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"rightUrl": {
 				"label": "__l_right__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"upUrl": {
 				"label": "__l_up__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"downUrl": {
 				"label": "__l_down__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"openUrl": {
 				"label": "__l_open__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"closeUrl": {
 				"label": "__l_close__",
 				"type": "url",
+				"allowIntranet": true,
 				"required": false
 			},
 			"user": {
