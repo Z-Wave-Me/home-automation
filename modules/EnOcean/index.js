@@ -375,6 +375,7 @@ EnOcean.prototype.removeProfile = function (nodeId) {
 	});
 };
 
+// EnOcean Equipment Profiles (EEP)
 EnOcean.prototype.parseProfile = function (nodeId) {
 	var self = this,
 		deviceData = this.zeno.devices[nodeId].data,
@@ -406,7 +407,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				handler: function(command) {},
 				moduleId: self.id
 			});
-
+			
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
 					try {
@@ -433,7 +434,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				handler: function(command) {},
 				moduleId: self.id
 			});
-
+			
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
 					try {
@@ -557,7 +558,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				},
 				moduleId: self.id
 			});
-
+			
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
 					try {
