@@ -326,6 +326,13 @@ EnOcean.prototype.gateDevicesStart = function () {
 		if (type === self.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceAdded"] && self.zeno.devices[nodeId].data.funcId !== null && self.zeno.devices[nodeId].data.typeId !== null || type === self.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceProfileChanged"]) {
 			self.parseProfile(nodeId);
 		}
+		if (type === self.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceAdded"]) {
+			self.dataBind(self.gateDataBinding, self.zeno, nodeId, "channels", function(type) {
+				if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"]) {
+					self.parseGenericProfile(nodeId);
+				}
+			}, "value");
+		}
 	}, this.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceAdded"] | this.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceRemoved"] | this.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceProfileChanged"] | this.ENOCEAN_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
 };
 
@@ -670,6 +677,91 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				self.zeno.devices.SaveData(); // save ZDDX
 			}
 		}, "value");
+	} catch (e) {
+		var langFile = this.loadModuleLang(),
+			values = nodeId + ": " + e.toString();
+			
+		this.addNotification("error", langFile.err_dev_create + values, "core");
+		console.log(e.stack);
+	}
+};
+
+// Enocean Generic Profile (GP)
+EnOcean.prototype.parseGenericProfile = function (nodeId) {
+	var self = this,
+		deviceData = this.zeno.devices[nodeId].data,
+		vDevIdPrefix = "ZEnoVDev_" + this.config.name + "_" + nodeId + "_";
+		// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
+
+	try {
+		if (deviceData.rorg.value != 0xb0) return;
+		
+		function binarySensorGP(o, type, title) {
+			var vDev = self.controller.devices.create({
+				deviceId: vDevIdPrefix + type + "_" + o,
+				defaults: {
+					deviceType: 'sensorBinary',
+					metrics: {
+						probeTitle: type,
+						scaleTitle: '',
+						icon: type,
+						level: '',
+						title: title
+					}
+				},
+				overlay: {},
+				handler: function(command) {},
+				moduleId: self.id
+			});
+			
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zeno, nodeId, "channels." + o + ".level", function(type) {
+					try {
+						vDev.set("metrics:level", this.value ? "on" : "off");
+					} catch (e) {}
+				}, "value");
+			}
+		}
+		
+		function binarySwitchGP(o, i, type, title) {
+			var vDev = self.controller.devices.create({
+				deviceId: vDevIdPrefix + type + "_" + o + "_" + i,
+				defaults: {
+					deviceType: 'switchBinary',
+					metrics: {
+						icon: 'switch',
+						level: '',
+						title: title
+					}
+				},
+				overlay: {},
+				handler: function(command) {
+					if (command === "on" || command === "off") {
+						self.zeno.devices[nodeId].data.channels[i].level.value = command === "on" ? true : false;
+						// check if it reports back // vDev.set("metrics:level", command);
+					}
+				},
+				moduleId: self.id
+			});
+			
+			if (vDev) {
+				self.dataBind(self.gateDataBinding, self.zeno, nodeId, "channels." + o + ".level", function(type) {
+					try {
+						vDev.set("metrics:level", this.value ? "on" : "off");
+					} catch (e) {}
+				}, "value");
+			}
+		}
+
+		if (deviceData.manufacturerId.value == 0x02d && deviceData.productId.value == 0x08) {
+			// Afriso siren
+			binarySwitchGP("o1", "i1", "switch", "Siren");
+			binarySwitchGP("o2", "i2", "switch", "Arm Status");
+			binarySensorGP("o3", "alarm", "Power status");
+		}
+		
+		// save ZDDX
+		self.zeno.devices.SaveData();
 	} catch (e) {
 		var langFile = this.loadModuleLang(),
 			values = nodeId + ": " + e.toString();
