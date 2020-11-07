@@ -673,7 +673,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		
 		// handling of Signal Telegrams
 		self.dataBind(self.gateDataBinding, self.zeno, nodeId, null, function(type) {
-			if (self.zeno.devices[nodeId].data["battery"] && !self.controller.devices.get(vDevIdPrefix + "battery")) {
+			if (self.zeno.devices[nodeId] && self.zeno.devices[nodeId].data["battery"] && !self.controller.devices.get(vDevIdPrefix + "battery")) {
 				multilevelSensor("battery", "battery", '%', "Battery level");
 				self.zeno.devices.SaveData(); // save ZDDX
 			}
