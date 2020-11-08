@@ -3973,6 +3973,32 @@ ZWave.prototype.gateDevicesStart = function() {
 						}
 					}
 
+					// change device entries by entering (runs once after inclusion):
+					// dataType ... data type object that should be changed -e.g. security, version, interviewDone
+					// key ... of this data type object
+					// value ... new value
+					function setDeviceData(dataType, key, value) {
+						if (c.data.lastIncludedDevice.value === nodeId) {
+
+							// set value
+							if (typeof value !== 'undefined' &&
+								deviceData[dataType] &&
+								deviceData[dataType][key] !== value) {
+
+								deviceData[dataType][key] = value;
+
+								// console output
+								console.log('#######################', 'SET DEVICE DATA OF:', devId, '################################');
+								console.log('###');
+								console.log('###', 'Change Device entry:');
+								console.log('###', 'data type object that has changed:', dataType);
+								console.log('###', 'new value for ' + key + ':', value);
+								console.log('###');
+								console.log('##############################################################################################');
+							}
+						}
+					}
+
 					// change the node name (runs once after inclusion):
 					function renameNode(nodeName) {
 
