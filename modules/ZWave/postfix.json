@@ -5511,5 +5511,22 @@
 		"tester_last_update": "2019-01-21 13:46:50",
 		"commentary": "rename node",
 		"created": "2019-01-21 13:46:50"
+	}, {
+		"id": "357",
+		"p_id": "316.8.29",
+		"p_sku": "PSC03",
+		"product": "Philio PSC03-B",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"setDeviceData('acceptSetSecurityLevel', 'value', 0)",
+			"emulateOff,0-113-10-3,10000"
+		],
+		"author_last_update": "2020-11-08 18:46:50",
+		"author": "PS",
+		"tester": "PS",
+		"tester_last_update": "2020-11-08 18:46:50",
+		"commentary": "rename node and allow less secure Set",
+		"created": "2020-11-08 18:46:50"
 	}]
 }
