@@ -5965,6 +5965,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 													});
 
 													if (a_vDev) {
+														if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+															a_vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
+														}
+
 														a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 														self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 															try {
@@ -5972,10 +5976,31 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 																	self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
 																} else if (this.event.value === eventTypeId || this.event.value === 0 &&
 																	(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
-																	a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+																	if (a_vDev.__emulateOff_timeout) {
+																	l1
+																		if (this.event.value) {
+																			if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
+																				a_vDev.set("metrics:level", "on");
+																			}
+																			a_vDev.__emulateOff_timer && clearTimeout(a_vDev.__emulateOff_timer);
+																			a_vDev.__emulateOff_timer = setTimeout(function() {
+																				a_vDev.set("metrics:level", "off");
+																				a_vDev.__emulateOff_timer = 0;
+																			}, a_vDev.__emulateOff_timeout);
+																		} // off from the sensor is ignored
+																	} else {
+																		a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+																	}
 																}
 															} catch (e) {}
 														}, "value");
+														
+														if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+															// on start we need to set it to off
+															if (a_vDev.get("metrics:level") === "on") {
+																a_vDev.set("metrics:level", "off");
+															}
+														}
 													}
 												}
 											}
@@ -6014,6 +6039,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										});
 
 										if (a_vDev) {
+											if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+												a_vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
+											}
+
 											a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
 											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
 												try {
@@ -6021,10 +6050,30 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 														self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
 													} else if (this.event.value === eventTypeId || this.event.value === 0 &&
 														(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
-														a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+														if (a_vDev.__emulateOff_timeout) {
+															if (this.event.value) {
+																if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
+																	a_vDev.set("metrics:level", "on");
+																}
+																a_vDev.__emulateOff_timer && clearTimeout(a_vDev.__emulateOff_timer);
+																a_vDev.__emulateOff_timer = setTimeout(function() {
+																	a_vDev.set("metrics:level", "off");
+																	a_vDev.__emulateOff_timer = 0;
+																}, a_vDev.__emulateOff_timeout);
+															} // off from the sensor is ignored
+														} else {
+															a_vDev.set("metrics:level", this.event.value ? "on" : "off");
+														}
 													}
 												} catch (e) {}
 											}, "value");
+											
+											if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+												// on start we need to set it to off
+												if (a_vDev.get("metrics:level") === "on") {
+													a_vDev.set("metrics:level", "off");
+												}
+											}
 										}
 									}
 								}
