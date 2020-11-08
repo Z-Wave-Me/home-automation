@@ -2580,24 +2580,24 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 				if (!!defaultConfig && !_.isEmpty(defaultConfig)) {
 
-					if (zway) {
-						var ts = now.getFullYear() + "-";
-						ts += ("0" + (now.getMonth() + 1)).slice(-2) + "-";
-						ts += ("0" + now.getDate()).slice(-2) + "-";
-						ts += ("0" + now.getHours()).slice(-2) + "-";
-						ts += ("0" + now.getMinutes()).slice(-2);
+					var ts = now.getFullYear() + "-";
+					ts += ("0" + (now.getMonth() + 1)).slice(-2) + "-";
+					ts += ("0" + now.getDate()).slice(-2) + "-";
+					ts += ("0" + now.getHours()).slice(-2) + "-";
+					ts += ("0" + now.getMinutes()).slice(-2);
 
-						console.log('Backup config ...');
-						// make backup of current config.json
-						saveObject('backupConfig' + ts, loadObject('config.json'));
+					console.log('Backup config ...');
+					// make backup of current config.json
+					saveObject('backupConfig' + ts, loadObject('config.json'));
 
-						// remove all active instances of moduleId
-						this.controller.instances.forEach(function(instance) {
-							if (instance.moduleId !== 'ZWave') {
-								self.controller.deleteInstance(instance.id);
-							}
-						});
+					// remove all active instances of moduleId
+					this.controller.instances.forEach(function(instance) {
+						if (instance.moduleId !== 'ZWave') {
+							self.controller.deleteInstance(instance.id);
+						}
+					});
 
+					if (typeof zway !== "undefined" && zway) {
 						// reset z-way controller
 						console.log('Reset Controller ...');
 						var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
@@ -2623,70 +2623,66 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 								self.controller.deleteInstance(instanceId);
 							});
 						}
-
-						console.log('Remove and unload userModules apps ...');
-						// unload and remove modules
-						Object.keys(this.controller.modules).forEach(function(className) {
-							var meta = self.controller.modules[className],
-								unload = '',
-								locPath = meta.location.split('/'),
-								success = false;
-
-							if (locPath[0] === 'userModules') {
-								console.log(className + ' remove it ...');
-
-								success = self.controller.uninstallModule(className);
-
-								if (success) {
-									console.log(className + ' has been successfully removed.');
-								} else {
-									console.log('Cannot remove app: ' + className);
-									self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
-								}
-							}
-
-						});
-
-						// remove skins
-						_.forEach(this.controller.skins, function(skin) {
-							if (skin.name !== 'default') {
-								self.controller.uninstallSkin(skin.name);
-							}
-						});
-
-						// stop the controller
-						this.controller.stop();
-
-						// clean up storage
-						for (var ind in storageContentList) {
-							if (storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]) {
-								saveObject(storageContentList[ind], null);
-							}
-						}
-
-						// clean up storageContent
-						if (__storageContent.length > 0) {
-							__saveObject("__storageContent", []);
-							__storageContent = [];
-						}
-
-						// set back to default config
-						saveObject('config.json', defaultConfig);
-						saveObject('userSkins.json', defaultSkins);
-
-						// start controller with reload flag to apply config.json
-						this.controller.start(true);
-
-						reply.code = 200;
-
-						setTimeout(function() {
-							self.doLogout();
-						}, 3000);
-					} else {
-						reply.code = 404;
-						reply.error = 'Unable to reset controller. Z-Way not found.';
 					}
 
+					console.log('Remove and unload userModules apps ...');
+					// unload and remove modules
+					Object.keys(this.controller.modules).forEach(function(className) {
+						var meta = self.controller.modules[className],
+							unload = '',
+							locPath = meta.location.split('/'),
+							success = false;
+
+						if (locPath[0] === 'userModules') {
+							console.log(className + ' remove it ...');
+
+							success = self.controller.uninstallModule(className);
+
+							if (success) {
+								console.log(className + ' has been successfully removed.');
+							} else {
+								console.log('Cannot remove app: ' + className);
+								self.addNotification("warning", langFile.zaap_err_uninstall_mod + ' ' + className, "core", "AutomationController");
+							}
+						}
+
+					});
+
+					// remove skins
+					_.forEach(this.controller.skins, function(skin) {
+						if (skin.name !== 'default') {
+							self.controller.uninstallSkin(skin.name);
+						}
+					});
+
+					// stop the controller
+					this.controller.stop();
+
+					// clean up storage
+					for (var ind in storageContentList) {
+						if (storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]) {
+							saveObject(storageContentList[ind], null);
+						}
+					}
+
+					// clean up storageContent
+					if (__storageContent.length > 0) {
+						__saveObject("__storageContent", []);
+						__storageContent = [];
+					}
+
+					// set back to default config
+					saveObject('config.json', defaultConfig);
+					saveObject('userSkins.json', defaultSkins);
+
+					// start controller with reload flag to apply config.json
+					this.controller.start(true);
+
+					reply.code = 200;
+
+					setTimeout(function() {
+						self.doLogout();
+					}, 3000);
 				} else {
 					reply.code = 404;
 					reply.error = 'No default configuration file found.';
