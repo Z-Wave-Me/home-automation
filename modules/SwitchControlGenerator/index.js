@@ -35,8 +35,8 @@ SwitchControlGenerator.prototype.init = function (config) {
 		"SwitchBinary": 0x25,
 		"SwitchMultilevel": 0x26,
 		"SceneActivation": 0x2b,
-		"SimpleAVControl": 0x94
-		"CentralScene": 0x5b,
+		"SimpleAVControl": 0x94,
+		"CentralScene": 0x5b
 	};
 
 	this.ZWAY_DEVICE_CHANGE_TYPES = {
