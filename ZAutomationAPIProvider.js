@@ -3348,7 +3348,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			});
 
 			if ((!this.controller.config.first_start_up && defaultProfile.length > 0) || (defaultProfile.length > 0 && (typeof this.controller.config.firstaccess === 'undefined' || this.controller.config.firstaccess)) || (defaultProfile.length > 0 && !this.controller.config.firstaccess)) {
-				setLogin = this.setLogin(defaultProfile[0]);
+				setLogin = this.setLogin(defaultProfile[0], this.req);
 				reply.headers = setLogin.headers; // set '/' Z-Way-Session root cookie
 				reply.data.defaultProfile = setLogin.data; // set login data of default profile
 				reply.data.firstaccess = true;
