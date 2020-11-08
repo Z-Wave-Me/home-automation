@@ -3955,7 +3955,6 @@ ZWave.prototype.gateDevicesStart = function() {
 							// set value
 							if (typeof value !== 'undefined' &&
 								deviceInstances[instId].commandClasses[commandClass].data[dataType] &&
-								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] &&
 								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] !== value) {
 
 								deviceInstances[instId].commandClasses[commandClass].data[dataType][key] = value;
