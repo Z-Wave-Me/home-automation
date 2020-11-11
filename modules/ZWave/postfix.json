@@ -5526,7 +5526,7 @@
 		"author": "PS",
 		"tester": "PS",
 		"tester_last_update": "2020-11-08 18:46:50",
-		"commentary": "rename node and allow less secure Set",
+		"commentary": "AutoOff on the Alarm button and Allow less secure Set",
 		"created": "2020-11-08 18:46:50"
 	}]
 }
