@@ -2494,7 +2494,11 @@ ZWave.prototype.defineHandlers = function() {
 				addr = 0x3A000;
 			} else {
 				// ZM5101/SD3503/ZM5202
-				addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE10
+				if (zway.controller.data.manufacturerId.value === 0) { // Z-Wave.Me Hub
+					addr =  0x7800; // M25PE10
+				} else {
+					addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE40 on old and new SDKs
+				}
 			}
 
 			if (data.file && data.file.content) {
