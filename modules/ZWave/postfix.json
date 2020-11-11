@@ -5470,8 +5470,8 @@
 	}, {
 		"id": "357",
 		"p_id": "316.8.29",
-		"p_sku": "PSC03",
-		"product": "Philio PSC03-B",
+		"p_sku": "PSR03-B",
+		"product": "Philio PSR03-B",
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": [
@@ -5527,7 +5527,7 @@
 		"tester_last_update": "2020-11-09 23:20:00",
 		"commentary": "rename Node, hide double alarms",
 		"created": "2020-11-09 23:20:00"
-	},{
+	}, {
 		"id": "359",
 		"p_id": "411.3.520",
 		"p_sku": "HEAE4512554",
@@ -5550,7 +5550,7 @@
 		"tester_last_update": "2020-11-09 23:20:00",
 		"commentary": "rename Node, stop switch",
 		"created": "2020-11-09 23:20:00"
-	},{
+	}, {
 		"id": "360",
 		"p_id": "564.3.274",
 		"p_sku": "HEAE4512561",
@@ -5567,13 +5567,13 @@
 			"noVDev,11-37",
 			"noVDev,12-37"
 		],
-		"author_last_update": "2019-01-14 12:09:29",
-		"author": "SP",
-		"tester": "SP",
-		"tester_last_update": "2019-01-14 12:09:29",
+		"author_last_update": "2020-11-09 12:09:29",
+		"author": "AIVS",
+		"tester": "AIVS",
+		"tester_last_update": "2020-11-09 12:09:29",
 		"commentary": "rename node",
-		"created": "2019-01-14 12:09:29"
-	},{
+		"created": "2020-11-09 12:09:29"
+	}, {
 		"id": "361",
 		"p_id": "411.3.522",
 		"p_sku": "HEAE4512475",
@@ -5602,11 +5602,46 @@
 			"setConfig(0,5,0,1);",
 			"setConfig(0,6,0,1);"
 		],
-		"author_last_update": "2019-01-16 15:37:22",
-		"author": "SP",
-		"tester": "PS",
-		"tester_last_update": "2019-01-16 15:37:22",
+		"author_last_update": "2020-11-09 12:09:29",
+		"author": "AIVS",
+		"tester": "AIVS",
+		"tester_last_update": "2020-11-09 12:09:29",
 		"commentary": "rename Node and Devices, disable temperature reports",
-		"created": "2019-01-16 15:25:43"
+		"created": "2020-11-09 12:09:29"
+	}, {
+		"id": "362",
+		"p_id": "316.8.38",
+		"p_sku": "PSR03-A",
+		"product": "Philio PSR03-A",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"setDeviceData('acceptSetSecurityLevel', 'value', 0)",
+			"emulateOff,0-113-10-3,10000"
+		],
+		"author_last_update": "2020-11-08 18:46:50",
+		"author": "PS",
+		"tester": "PS",
+		"tester_last_update": "2020-11-08 18:46:50",
+		"commentary": "AutoOff on the Alarm button and Allow less secure Set",
+		"created": "2020-11-08 18:46:50"
+	}, {
+		"id": "363",
+		"p_id": "316.4.10",
+		"p_sku": "PSE02",
+		"product": "Philio PSE02",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"noVDev,0-48-1",
+			"noVDev,0-48-8",
+			"noVDev,0-113-7-3"
+		],
+		"author_last_update": "2020-11-08 18:46:50",
+		"author": "PS",
+		"tester": "PS",
+		"tester_last_update": "2020-11-08 18:46:50",
+		"commentary": "Removed extra widgets",
+		"created": "2020-11-08 18:46:50"
 	}]
 }
