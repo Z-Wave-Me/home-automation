@@ -158,6 +158,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
 		this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
+		this.router.get("/system/wifiCli/settings", this.ROLE.ADMIN, this.getWiFiCliSettings)
+		this.router.post("/system/wifiCli/settings", this.ROLE.ADMIN, this.setWiFiCliSettings)
+		this.router.get("/system/connectionType", this.ROLE.ADMIN, this.getConnectionType)
 
 		this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
 		this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);
@@ -3427,6 +3430,85 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		reply.data = "System is rebooting ...";
 
 		return reply;
+	},
+	getWiFiCliSettings: function() {
+		// for Z-Wave.Me Hub
+		try {
+			var list = system("/lib/wifi-helper.sh LIST")[1].split("\n");
+			list.pop(); list.pop(); list.shift(); list.shift(); // remove header and footer
+  
+			// sprintf(msg+strlen(msg),"%-4s%-33s%-20s%-23s%-9s%-7s%-7s%-3s\n",
+			//  "Ch", "SSID", "BSSID", "Security", "Siganl(%)", "W-Mode", " ExtCH"," NT");
+			// sprintf(msg+strlen(msg)-1,"%-4s%-5s\n", " WPS", " DPID");
+			return {
+				data: list.map(function(l) {
+					var m = l.match(/(.{4})(.{33})(.{20})(.{23})(.{9})(.{7})/);
+					var sec = m[4].trim().split("/");
+					return {
+						channel: parseInt(m[1]),
+						essid: m[2].trim(),
+						security: sec[0],
+						encryption: sec[1],
+						signal: parseInt(m[5])
+					};
+					// TODO!!! Parse WPA1PSKWPA2PSK and TKIPAES
+				}),
+				code: 200
+			};
+		} catch (e) {
+			console.log(e.toString());
+			return {
+				error: 'Internal Server Error. Can not get the list of WiFi networks: ' + e.toString(),
+				code: 500
+			}
+		}
+	},
+	setWiFiCliSettings: function() {
+		// for Z-Wave.Me Hub
+		try {
+			var reqObj = parseToObject(this.req.body),
+			    essid = reqObj.essid,
+			    security = reqObj.security,
+			    encryption = reqObj.encryption,
+			    password = reqObj.password;
+			
+			if (!essid || !security || !encryption || !password) throw "Missing mandatory options: essid, security, encryption, password";
+			
+			system('/lib/wifi-helper.sh "' + essid + '" "' + security + '" "' + encryption + '" "' + password + '"')
+			return {
+				data: {
+				},
+				code: 200
+			};
+		} catch (e) {
+			console.log(e.toString());
+			return {
+				error: 'Internal Server Error. Can not set WiFi network: ' + e.toString(),
+				code: 500
+			}
+		}
+	},
+	getConnectionType: function() {
+		// for Z-Wave.Me Hub
+		try {
+                    var currentConnection = system("route | grep default | awk '$5 == 0 { if ($8 == \"eth0.1\") print \"ethernet\"; else if ($8 == \"apcli0\") print \"wifi\"; else if ($8 == \"eth1\") print \"mobile\"; else print $8 }'")[1].trim();
+                    var availableConnections = system("route | grep default | awk '$5 != 0 { if ($8 == \"eth0.1\") print \"ethernet\"; else if ($8 == \"apcli0\") print \"wifi\"; else if ($8 == \"eth1\") print \"mobile\"; else print $8 }'")[1].split("\n").filter(function(x) { return x != "" });
+                    var possibleConnections = [ "ethernet", "wifi", "mobile" ]; // possible values
+                    return {
+                            data: {
+                                    currentConnection: currentConnection,
+                                    availableConnections: availableConnections,
+                                    possibleConnections: possibleConnections
+                            },
+                            code: 200
+                    };
+		} catch (e) {
+			console.log(e.toString());
+			return {
+				error: 'Internal Server Error. Can not check current connection type: ' + e.toString(),
+				code: 500
+			}
+		}
 	},
 	setWifiSettings: function() {
 		var reply = {
