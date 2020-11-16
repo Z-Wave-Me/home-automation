@@ -5877,6 +5877,51 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								}
 							}
 
+							var AC_DISCONNECTED = 0x02,
+								AC_RECONNECTED = 0x03;
+							if (notificationTypeId === 0x08 && (eventMaskArray.indexOf(AC_DISCONNECTED) !== -1 && eventMaskArray.indexOf(AC_RECONNECTED) !== -1)) { // Very special case of AC Disconnected
+								a_defaults.metrics.icon = 'alarm';
+
+								var a_id = vDevId + separ + notificationTypeId + separ + 'AC' + separ + "A";
+
+								if (!self.controller.devices.get(a_id)) {
+										a_defaults.metrics.title = compileTitle('Alarm', cc.data[notificationTypeId].typeString.value, vDevIdNI);
+										a_defaults.probeType = 'alarm_power';
+
+										// apply postfix if available
+										if (changeVDev[cVDId]) {
+											a_defaults = applyPostfix(a_defaults, changeVDev[cVDId], a_id, vDevIdNI);
+										}
+
+										var a_vDev = self.controller.devices.create({
+											deviceId: a_id,
+											defaults: a_defaults,
+											overlay: {},
+											handler: function(command) {
+												if (command === "update") {
+													cc.Get(0, notificationTypeId, AC_DISCONNECTED);
+													cc.Get(0, notificationTypeId, AC_RECONNECTED);
+												}
+											},
+											moduleId: self.id
+										});
+
+										if (a_vDev) {
+											a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+											self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+												try {
+													if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+														self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Power' + separ + "A");
+													} else if (this.event.value === AC_DISCONNECTED || this.event.value === AC_RECONNECTED &&
+														(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+														a_vDev.set("metrics:level", (this.event.value == AC_DISCONNECTED) ? "on" : "off");
+													}
+												} catch (e) {}
+										}, "value");
+									}
+								}
+							}
+
 							// we handle only few Notification Types
 							switch (notificationTypeId) {
 								case 0x01: // Smoke
