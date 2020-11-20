@@ -31,7 +31,8 @@ __storageContent = __storageContent.filter(function(name) {
 	try {
 		return !!loadObject(name);
 	} catch (e) {
-		console.log('Error in storage file: '+ name + ' detected. Unable to load data - ERROR:', e.toString());
+		console.log("Error loading " + name + " from storage: JSON file corrupted: " + e.toString());
+		return false;
 	}
 });
 
