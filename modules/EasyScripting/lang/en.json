@@ -12,6 +12,7 @@
 	"m_and":"And",
 	"m_http_request":"HTTP request",
 	"m_set_timeout":"Set timer",
+	"m_remove_timeout": "Remove timer",
 	"m_turn_on":"turn on",
 	"m_turn_off":"turn Off",
 	"m_turn_set":"set to value",
