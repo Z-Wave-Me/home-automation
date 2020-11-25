@@ -219,8 +219,7 @@ EnOcean.prototype.defineHandlers = function () {
 			return {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: r
 			};
@@ -234,8 +233,7 @@ EnOcean.prototype.defineHandlers = function () {
 		return {
 			status: 200,
 			headers: {
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: zeno.data(timestamp)
 		};

@@ -33,14 +33,6 @@ ZAutomationWebRequest.prototype.handlerFunc = function () {
 	};
 };
 
-ZAutomationWebRequest.prototype.responseHeader = function (name, value) {
-	if (!!value) {
-		this.res.headers[name] = value;
-	} else {
-		return this.res.headers[name];
-	}
-}
-
 ZAutomationWebRequest.prototype.initResponse = function (response) {
 	var that = this,
 		reply,
@@ -49,7 +41,6 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
 		object = {},
 		data,
 		mainKey = null,
-		date = new Date(),
 		subPaths = ['notifications', 'devices'],
 		tempData,
 		pager = null,
@@ -191,11 +182,6 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
 	var headers = {
 		'Content-Type': response.contentType,
 		'X-API-VERSION': version,
-		'Date': date.toUTCString(),
-		'Access-Control-Expose-Headers': that.controller.allow_headers.join(', '),
-		'Access-Control-Allow-Origin': '*',
-		'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-		'Access-Control-Allow-Headers': 'Authorization'
 	};
 	
 	if (response.code === 401 && !response.suppress401Auth) {
@@ -286,12 +272,4 @@ ZAutomationWebRequest.prototype.NotFound = function () {
 		},
 		body: "Not Found"
 	};
-};
-
-ZAutomationWebRequest.prototype.CORSRequest = function () {
-	this.responseHeader('Access-Control-Allow-Origin', '*');
-	this.responseHeader('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
-	this.responseHeader('Access-Control-Allow-Headers', this.controller.allow_headers.join(', '));
-	this.responseHeader('Access-Control-Expose-Headers', this.controller.allow_headers.join(', '));
-	this.res.status = 200;
 };

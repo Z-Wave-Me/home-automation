@@ -2162,8 +2162,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			} else if (obj !== null) {
 				this.res.status = 200;
 				this.res.headers = {
-					"Content-Type": obj.ct,
-					"Connection": "keep-alive"
+					"Content-Type": obj.ct
 				};
 				this.res.body = obj.data;
 
@@ -2194,8 +2193,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (data !== null) {
 			this.res.status = 200;
 			this.res.headers = {
-				"Content-Type": "image/(png|jpeg|gif)",
-				"Connection": "keep-alive"
+				"Content-Type": "image/(png|jpeg|gif)"
 			};
 			this.res.body = data;
 
@@ -2278,8 +2276,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 			reply.headers = {
 				"Content-Type": "application/octet-stream", // application/x-download octet-stream
-				"Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab",
-				"Connection": "keep-alive"
+				"Content-Disposition": "attachment; filename=z-way-backup-" + ts + ".zab"
 			};
 
 			reply.code = 200;
@@ -3923,48 +3920,43 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 		handlerFunc = this.NotFound, // Default handler is NotFound
 		validParams;
 
-	if ("OPTIONS" === method) {
-		handlerFunc = this.CORSRequest;
-		return handlerFunc;
-	} else {
-		var matched = this.router.dispatch(method, url);
-		if (matched) {
-			var auth = this.controller.auth.resolve(this.req, matched.role);
-			if (!auth) {
+	var matched = this.router.dispatch(method, url);
+	if (matched) {
+		var auth = this.controller.auth.resolve(this.req, matched.role);
+		if (!auth) {
 
-				return this.Unauthorized;
+			return this.Unauthorized;
 
-			} else if (this.controller.auth.isAuthorized(auth.role, matched.role)) {
+		} else if (this.controller.auth.isAuthorized(auth.role, matched.role)) {
 
-				// fill user field
-				this.req.user = auth.user;
-				this.req.role = auth.role;
+			// fill user field
+			this.req.user = auth.user;
+			this.req.role = auth.role;
 
-				if (matched.params.length) {
-					validParams = _.every(matched.params),
-						function(p) {
-							return !!p;
-						};
-					if (validParams) {
-						handlerFunc = function() {
-							return matched.handler.apply(this, matched.params);
-						}
+			if (matched.params.length) {
+				validParams = _.every(matched.params),
+					function(p) {
+						return !!p;
+					};
+				if (validParams) {
+					handlerFunc = function() {
+						return matched.handler.apply(this, matched.params);
 					}
-				} else {
-					handlerFunc = matched.handler ? matched.handler : handlerFunc;
 				}
-
-				// --- Proceed to checkout =)
-				return handlerFunc;
-
 			} else {
-
-				return this.Forbidden;
-
+				handlerFunc = matched.handler ? matched.handler : handlerFunc;
 			}
-		} else {
+
+			// --- Proceed to checkout =)
 			return handlerFunc;
+
+		} else {
+
+			return this.Forbidden;
+
 		}
+	} else {
+		return handlerFunc;
 	}
 };
 

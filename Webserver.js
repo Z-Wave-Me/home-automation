@@ -11,6 +11,12 @@ ws = new WebServer(8083, function(req) {
 	var q = req.url.substring(1).replace(/\//g, '.');
 	if (!q) return null;
 	
+	if (req.method === "OPTIONS") {
+		return this.addHTTPHeaders({
+			status: 200
+		});
+	}
+	
 	var found = null;
 	if (this.externalNames.some(function(ext) {
 		found = ext;
@@ -18,12 +24,10 @@ ws = new WebServer(8083, function(req) {
 	}) && found) {
 		var auth = controller.auth.resolve(req, found.role);
 		if (!auth) {
-
-			return {
+			return this.addHTTPHeaders({
 				status: 401,
 				body: "Not logged in"
-			};
-
+			});
 		} else if (controller.auth.isAuthorized(auth.role, found.role)) {
 
 			// fill user field
@@ -33,14 +37,14 @@ ws = new WebServer(8083, function(req) {
 			
 			var cache = this.evalCache || (this.evalCache = {});
 			var handler = cache[found.name] || (cache[found.name] = evalPath(found.name));
-			return handler(req.url.substring(found.name.length + 1), req);
+			return this.addHTTPHeaders(handler(req.url.substring(found.name.length + 1), req));
 
 		} else {
 
-			return {
+			return this.addHTTPHeaders({
 				status: 403,
 				body: 'Permission denied'
-			};
+			});
 			
 		}
 	}
@@ -75,3 +79,33 @@ ws.revokeExternalAccess = function(name) {
 	this.externalNames.splice(idx, 1);
 };
 
+// Standard HTTP headers: HTTP and keep-laive
+ws.allow_headers = [
+		'Authorization',
+		'Accept-Ranges',
+		'Content-Encoding',
+		'Content-Length',
+		'Content-Range',
+		'Content-Type',
+		'ETag',
+		'X-API-VERSION',
+		'Date',
+		'Cache-Control',
+		'If-None-Match',
+		'Content-Language',
+		'Accept-Language',
+		'X-ZBW-SESSID',
+		'ZWAYSession'
+	].join(', ');
+
+ws.addHTTPHeaders = function (ret) {
+	if (!ret.headers) ret.headers = {};
+	ret.headers['Access-Control-Allow-Origin'] = '*';
+	ret.headers['Access-Control-Allow-Methods'] = 'GET, PUT, POST, DELETE, OPTIONS';
+	ret.headers['Access-Control-Allow-Headers'] = this.allow_headers;
+	ret.headers['Access-Control-Expose-Headers'] = this.allow_headers;
+	ret.headers['Connection'] = 'keep-alive';
+	ret.headers['Date'] = (new Date()).toUTCString();
+	
+	return ret;
+};

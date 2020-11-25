@@ -1551,11 +1551,7 @@ ZWave.prototype.defineHandlers = function() {
 			return {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: r
 			};
@@ -1572,11 +1568,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: zway.data(timestamp)
 		};
@@ -1586,11 +1578,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: zway.InspectQueue()
 		};
@@ -1612,11 +1600,7 @@ ZWave.prototype.defineHandlers = function() {
 				status: 200,
 				headers: {
 					"Content-Type": "application/x-download",
-					"Content-Disposition": "attachment; filename=" + filename,
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Disposition": "attachment; filename=" + filename
 				},
 				body: data
 			};
@@ -1760,11 +1744,7 @@ ZWave.prototype.defineHandlers = function() {
 					return {
 						status: 200,
 						headers: {
-							"Content-Type": "application/json",
-							"Access-Control-Allow-Origin": "*",
-							"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-							"Access-Control-Allow-Headers": "Authorization",
-							"Connection": "keep-alive"
+							"Content-Type": "application/json"
 						},
 						body: null
 					};
@@ -1977,9 +1957,6 @@ ZWave.prototype.defineHandlers = function() {
 			"status": 200,
 			"body": zddx.toString(),
 			"headers": {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
 				"Content-Type": "application/xml"
 			}
 		};
@@ -2130,11 +2107,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: body
 		};
@@ -2154,11 +2127,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: body
 		};
@@ -2168,11 +2137,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: {
 				"code": 200,
@@ -2186,11 +2151,7 @@ ZWave.prototype.defineHandlers = function() {
 
 	this.ZWaveAPI.RSSIGet = function(url, request) {
 		var headers = {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body = {
 				"code": 200,
@@ -2356,12 +2317,6 @@ ZWave.prototype.defineHandlers = function() {
 				// update firmware from url
 				http.request({
 					url: data.url,
-					headers: {
-						"Access-Control-Allow-Origin": "*",
-						"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-						"Access-Control-Allow-Headers": "Authorization",
-						"Connection": "keep-alive"
-					},
 					contentType: "application/octet-stream", // enforce binary response,
 					async: true,
 					success: function(res) {
@@ -2718,11 +2673,7 @@ ZWave.prototype.defineHandlers = function() {
 			return {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: pfix
 			};
@@ -2808,11 +2759,7 @@ ZWave.prototype.defineHandlers = function() {
 			return {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: fix[0]
 			};
@@ -2963,11 +2910,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Connection": "close"
+				"Content-Type": "application/json"
 			},
 			body: self.expert_config
 		};
@@ -3175,11 +3118,7 @@ ZWave.prototype.defineHandlers = function() {
 		var reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "close"
+					"Content-Type": "application/json"
 				},
 				body: null
 			};
@@ -3197,11 +3136,7 @@ ZWave.prototype.defineHandlers = function() {
 		var reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "close"
+					"Content-Type": "application/json"
 				},
 				body: null
 			};
@@ -3217,11 +3152,7 @@ ZWave.prototype.defineHandlers = function() {
 		return {
 			status: 200,
 			headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: statistics
 		};
@@ -3234,11 +3165,7 @@ ZWave.prototype.defineHandlers = function() {
 		var reply = {
 			status: 200,
 			headers: {
-				"Content-Type": "application/json",
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: null,
 			error: null,
@@ -3266,11 +3193,7 @@ ZWave.prototype.defineHandlers = function() {
 			reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: null,
 				error: null,
@@ -3310,11 +3233,7 @@ ZWave.prototype.defineHandlers = function() {
 			reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: self.getDSKCollection(id),
 				error: null,
@@ -3336,11 +3255,7 @@ ZWave.prototype.defineHandlers = function() {
 			reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: null,
 				error: null,
@@ -3389,11 +3304,7 @@ ZWave.prototype.defineHandlers = function() {
 			reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: null,
 				error: null,
@@ -3453,11 +3364,7 @@ ZWave.prototype.defineHandlers = function() {
 			reply = {
 				status: 200,
 				headers: {
-					"Content-Type": "application/json",
-					"Access-Control-Allow-Origin": "*",
-					"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-					"Access-Control-Allow-Headers": "Authorization",
-					"Connection": "keep-alive"
+					"Content-Type": "application/json"
 				},
 				body: null,
 				error: null,
@@ -3578,10 +3485,7 @@ ZWave.prototype.defineHandlers = function() {
 			"status": 200,
 			"body": x.toString(),
 			"headers": {
-				"Content-Type": "application/xml",
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
+				"Content-Type": "application/xml"
 			}
 		};
 	};

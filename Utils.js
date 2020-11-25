@@ -228,11 +228,7 @@ var formRequest = {
 		obj.method = method;
 		// set headers
 		obj.headers = {
-			"Connection": "keep-alive",
-			"Content-Type": "multipart/form-data; boundary=" + boundary,
-			"Access-Control-Allow-Origin": "*",
-			"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-			"Access-Control-Allow-Headers": "Authorization"
+			"Content-Type": "multipart/form-data; boundary=" + boundary
 		};
 		// set url
 		obj.url = url;

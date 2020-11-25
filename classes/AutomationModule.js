@@ -130,16 +130,13 @@ AutomationModule.prototype.addNotification = function(severity, message, type) {
 	this.controller.addNotification(severity, message, type, this.getName());
 };
 
+// TODO: delete it, should not be here
 AutomationModule.prototype.prepareHTTPResponse = function(body) {
 	var result = {},
 		ret = {
 			status: 500,
 			headers: {
-				"Access-Control-Allow-Origin": "*",
-				"Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-				"Access-Control-Allow-Headers": "Authorization",
-				"Content-Type": "application/json",
-				"Connection": "keep-alive"
+				"Content-Type": "application/json"
 			},
 			body: {
 				code: 500,

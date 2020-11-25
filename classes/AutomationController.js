@@ -10,23 +10,6 @@
 function AutomationController() {
 	AutomationController.super_.call(this);
 
-	this.allow_headers = [
-		'Authorization',
-		'Accept-Ranges',
-		'Content-Encoding',
-		'Content-Length',
-		'Content-Range',
-		'Content-Type',
-		'ETag',
-		'X-API-VERSION',
-		'Date',
-		'Cache-Control',
-		'If-None-Match',
-		'Content-Language',
-		'Accept-Language',
-		'X-ZBW-SESSID',
-		'ZWAYSession'
-	];
 	this.config = config.controller || {};
 	this.debug = false;
 	this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se', 'fr', 'es']; // will be updated by correct ISO language codes in future

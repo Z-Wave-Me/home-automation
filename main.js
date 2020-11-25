@@ -143,8 +143,7 @@ if (!config && config === null) {
 				return {
 					status: 204,
 					headers: {
-						"Content-Type": "application/json",
-						"Connection": "keep-alive"
+						"Content-Type": "application/json"
 					}
 				}
 			}
@@ -152,8 +151,7 @@ if (!config && config === null) {
 			return {
 					status: 200,
 					headers: {
-							"Content-Type": "application/json",
-							"Connection": "keep-alive"
+							"Content-Type": "application/json"
 					},
 					body: JSON.stringify(r)
 			};

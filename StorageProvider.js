@@ -102,8 +102,7 @@ ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
 				'Content-Type': file.type,
 				ETag: 'W/' + fileId + file.createdAt,
 				'Cache-Control': 'public, max-age=31536000',
-				'Last-Modified': (new Date(file.createdAt)).toUTCString(),
-				'Access-Control-Expose-Headers': self.controller.allow_headers.join(', ')
+				'Last-Modified': (new Date(file.createdAt)).toUTCString()
 			};
 			self.res.body = file.content;
 			self.res.code = 200;
@@ -112,9 +111,7 @@ ZAutomationStorageWebRequest.prototype.getFileFunc = function (fileId) {
 				status: 304,
 				headers: {
 					"API-Version": "2.0.1",
-					'Content-Type': file.type,
-					'Access-Control-Expose-Headers': self.controller.allow_headers.join(', '),
-					'Access-Control-Allow-Origin': '*'
+					'Content-Type': file.type
 				},
 				body: ''
 			};
@@ -139,9 +136,7 @@ ZAutomationStorageWebRequest.prototype.dispatchRequest = function (method, url) 
 		handlerFunc = self.statusReport();
 	} else if ("POST" === method) {
 		handlerFunc = self.uploadFileFunc();
-	} else if ("OPTIONS" === method) {
-		handlerFunc = self.CORSRequest();
-	};
+	}
 
 	// ---------- Test regexp URIs --------------------------------------------
 	var re, reTest, fileId;
