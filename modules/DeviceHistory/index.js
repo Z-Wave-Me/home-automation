@@ -169,7 +169,6 @@ _.extend(DeviceHistory.prototype, {
 		this.assignHistory = function (vDev) {
 			if (vDev && vDev.id &&
 				vDev.get('permanently_hidden') === false &&			  						// only none permanently_hidden devices
-				(!vDev.get('metrics:removed') || vDev.get('metrics:removed') === false) &&	// only none removed devices
 				_.unique(self.config.devices).indexOf(vDev.id) === -1 &&	  				// in module excluded devices
 				self.devTypes.indexOf(vDev.get('deviceType')) > -1 &&						// allowed device types
 				self.exclSensors.indexOf(vDev.id) === -1) {									// excluded sensors
@@ -231,7 +230,6 @@ _.extend(DeviceHistory.prototype, {
 
 		return this.controller.devices.filter(function(dev){
 			return  dev.get('permanently_hidden') === false &&			  						// only none permanently_hidden devices
-					(!dev.get('metrics:removed') || dev.get('metrics:removed') === false) && 	// only none removed devices
 					_.unique(self.config.devices).indexOf(dev.id) === -1 &&	  					// in module excluded devices
 					self.devTypes.indexOf(dev.get('deviceType')) > -1 &&						// allowed device types
 					self.exclSensors.indexOf(dev.id) === -1;									// excluded sensors

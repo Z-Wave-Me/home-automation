@@ -13,7 +13,6 @@ VirtualDevice = function (options) {
 		permHidden = options.defaults.hasOwnProperty('permanently_hidden')? options.defaults.permanently_hidden : false,
 		visibility = options.defaults.hasOwnProperty('visibility')? options.defaults.visibility : true,
 		customicons = options.defaults.hasOwnProperty('customIcons') ? options.defaults.customIcons : {},
-		removed = this.metrics && this.metrics.hasOwnProperty('removed')? this.metrics.removed : false,
 		isFailed = this.metrics && this.metrics.hasOwnProperty('isFailed')? this.metrics.isFailed : false,
 		tags = options.defaults.hasOwnProperty('tags')? options.defaults.tags : [],
 		order = options.defaults.hasOwnProperty('order') ? options.defaults.order : { rooms: 0, elements: 0, dashboard: 0 },
@@ -51,8 +50,7 @@ VirtualDevice = function (options) {
 		attributes: {
 			id: options.deviceId,
 			metrics: _.extend(this.metrics, {
-				isFailed: isFailed,
-				removed: removed
+				isFailed: isFailed
 			}),
 			tags: tags,
 			permanently_hidden: permHidden,
