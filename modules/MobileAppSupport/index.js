@@ -11,6 +11,7 @@
 		apps[]				list of phones
 			token		str	phone FCM token
 			title		str	phone name
+			profileName	str	name of the profile in the phone app
 			os		str	target OS: ios/android
 			app_profile	str	UUID of the profile in the app in case of multiple profiles
 			user		int	user Id
@@ -58,7 +59,7 @@ MobileAppSupport.prototype.channelID = function(token, app_profile) {
 MobileAppSupport.prototype.announceApp = function(app) {
 	var self = this;
 	
-	this.controller.registerNotificationChannel(this.channelID(app.token, app.app_profile), app.user, app.title, function(message) {
+	this.controller.registerNotificationChannel(this.channelID(app.token, app.app_profile), app.user, app.title + "(" + app.profileName + ")", function(message) {
 		self.sendNotification(app.token, app.app_profile, message);
 	});
 };
@@ -84,7 +85,7 @@ MobileAppSupport.prototype.getApps = function(user) {
 	return this.config.apps.filter(function(app) { return user === undefined || app.user === user; });
 };
 
-MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile, user, authToken) {
+MobileAppSupport.prototype.registerApp = function(token, title, profileName, os, app_profile, user, authToken) {
 	var found_app = _.findWhere(this.config.apps, {
 		token: token,
 		app_profile: app_profile
@@ -92,7 +93,7 @@ MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile,
 	
 	if (!found_app) {
 		// new app
-		var app = this.generateApp(token, title, os, app_profile, user, authToken);
+		var app = this.generateApp(token, title, profileName, os, app_profile, user, authToken);
 		
 		this.config.apps.push(app);
 		
@@ -100,7 +101,7 @@ MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile,
 		
 		var profile = this.controller.getProfile(user) || {};
 		var lang = this.loadModuleLang();
-		this.addNotification("notification", lang.m_welcome + ": " + app.title + " (" + profile.name + " / " + profile.login + ")", "module");
+		this.addNotification("notification", lang.m_welcome + ": " + app.title + " (" + profile.name + " / " + profile.login + + ", " + profileName + ")", "module");
 		
 		this.permanentAuthToken(user, authToken);
 		
@@ -116,12 +117,13 @@ MobileAppSupport.prototype.registerApp = function(token, title, os, app_profile,
 			}
 			
 			found_app.title = title;
+			found_app.profileName = profileName;
 			found_app.last_seen = Date.now();
 		} else {
 			// re-register under new token
 			var lang = this.loadModuleLang();
 			this.unregisterApp(token, app_profile);
-			this.registerApp(token, title, os, app_profile, user);
+			this.registerApp(token, title, profileName, os, app_profile, user);
 		}
 	}
 	
@@ -137,7 +139,7 @@ MobileAppSupport.prototype.unregisterApp = function(token, app_profile) {
 	if (app) {
 		var profile = this.controller.getProfile(app.user) || {};
 		var lang = this.loadModuleLang();
-		this.addNotification("notification", lang.m_goodby + ": " + app.title + " (" + profile.name + " / " + profile.login + ")", "module");
+		this.addNotification("notification", lang.m_goodby + ": " + app.title + " (" + profile.name + " / " + profile.login + ", " + profile.profileName + ")", "module");
 		
 		this.config.apps = _.without(this.config.apps, _.findWhere(this.config.apps, app));
 		this.saveConfig();
@@ -151,10 +153,11 @@ MobileAppSupport.prototype.unregisterApp = function(token, app_profile) {
 	return false;
 };
 
-MobileAppSupport.prototype.generateApp = function(token, title, os, app_profile, user, authToken) {
+MobileAppSupport.prototype.generateApp = function(token, title, profileName, os, app_profile, user, authToken) {
 	return {
 		token: token,
 		title: title,
+		profileName: profileName,
 		os: os,
 		app_profile: app_profile,
 		user: user,
@@ -187,7 +190,7 @@ MobileAppSupport.prototype.sendNotification = function(token, app_profile, notif
 			os: app.os,
 			profileId: app.app_profile,
 			url: this.URL,
-			title: this.ZWayTitle,
+			title: this.ZWayTitle + (profileName ? " (" + app.profileName + ")" : ""),
 			body: notification
 		};
 		
@@ -268,7 +271,7 @@ MobileAppSupport.prototype.defineHandlers = function () {
 				reqObj.hasOwnProperty('token') && reqObj.token != ''&&
 				reqObj.hasOwnProperty('title') && reqObj.title != ''
 			) {
-				if (self.registerApp(reqObj.token, reqObj.title, reqObj.os, reqObj.profileId, request.user, request.authToken)) {
+				if (self.registerApp(reqObj.token, reqObj.title, reqObj.profileName, reqObj.os, reqObj.profileId, request.user, request.authToken)) {
 					return {
 						status: 200,
 						body: 'Registrated'
