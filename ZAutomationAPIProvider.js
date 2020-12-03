@@ -3353,14 +3353,12 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.data.defaultProfile = setLogin.data; // set login data of default profile
 				reply.data.firstaccess = true;
 				reply.data.defaultProfile.showWelcome = true;
-				reply.code = 200;
-
 			} else {
-				reply.data = {
-					firstaccess: false
-				};
-				reply.code = 200;
+				reply.data.data.firstaccess = false;
 			}
+			reply.data.remote_id = this.controller.getRemoteId();
+			reply.data.ip_address = this.controller.getIPAddress();
+			reply.code = 200;
 		} catch (e) {
 			reply.data = null;
 			reply.error = e.message;
