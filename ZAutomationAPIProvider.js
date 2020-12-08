@@ -158,9 +158,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.get("/system/webif-access", this.ROLE.ADMIN, this.setWebifAccessTimout);
 		this.router.get("/system/reboot", this.ROLE.ADMIN, this.rebootBox);
-		this.router.get("/system/wifiCli/settings", this.ROLE.ADMIN, this.getWiFiCliSettings)
-		this.router.post("/system/wifiCli/settings", this.ROLE.ADMIN, this.setWiFiCliSettings)
-		this.router.get("/system/connectionType", this.ROLE.ADMIN, this.getConnectionType)
+		this.router.get("/system/wifiCli/settings", this.ROLE.ADMIN, this.getWiFiCliSettings);
+		this.router.post("/system/wifiCli/settings", this.ROLE.ADMIN, this.setWiFiCliSettings);
+		this.router.get("/system/connectionType", this.ROLE.ADMIN, this.getConnectionType);
 
 		this.router.post("/system/timezone", this.ROLE.ADMIN, this.setTimezone);
 		this.router.get("/system/time/get", this.ROLE.ANONYMOUS, this.getTime);
@@ -3431,23 +3431,59 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		try {
 			var list = system("/lib/wifi-helper.sh LIST")[1].split("\n");
 			list.pop(); list.pop(); list.shift(); list.shift(); // remove header and footer
-  
+
+			var saved = system("/lib/wifi-helper.sh GETSAVEDCONNECTION")[1].split("\n"),
+			    savedEssid = saved[0].trim(), // LIST returns with spaces, so we trim in current too for uniform comparison
+			    savedSecurity = saved[1],
+			    savedEncryption = saved[2],
+			    savedChannel = parseInt(saved[3]),
+			    current = system("/lib/wifi-helper.sh GETCURRENTCONNECTION")[1].split("\n"),
+			    currentEssid = current[0].trim(), // LIST returns with spaces, so we trim in current too for uniform comparison
+			    currentChannel = parseInt(current[1]);
+			
 			// sprintf(msg+strlen(msg),"%-4s%-33s%-20s%-23s%-9s%-7s%-7s%-3s\n",
 			//  "Ch", "SSID", "BSSID", "Security", "Siganl(%)", "W-Mode", " ExtCH"," NT");
 			// sprintf(msg+strlen(msg)-1,"%-4s%-5s\n", " WPS", " DPID");
+			
+			var ret = list.map(function(l) {
+				var m = l.match(/(.{4})(.{33})(.{20})(.{23})(.{9})(.{7})/);
+				var sec = m[4].trim().split("/");
+console.logJS(m[2].trim(), sec[0], sec[1], parseInt(m[1]), savedEssid === m[2].trim(), savedSecurity === sec[0], savedEncryption === sec[1], savedChannel === parseInt(m[1]));
+				return {
+					saved: savedEssid === m[2].trim() && savedSecurity === sec[0] && savedEncryption === sec[1] && savedChannel === parseInt(m[1]),
+					current: false, // to be filled later
+					channel: parseInt(m[1]),
+					essid: m[2].trim(),
+					security: sec[0],
+					encryption: sec[1],
+					signal: parseInt(m[5])
+				};
+				// TODO!!! Parse WPA1PSKWPA2PSK and TKIPAES
+			});
+			
+			var savedEntry = ret.filter(function(entry) {
+				return entry.saved;
+			})[0];
+
+console.logJS(savedEssid,savedSecurity,savedEncryption,savedChannel,currentEssid,currentChannel,savedEntry);
+			if (savedEntry) {
+				savedEntry.current = savedEntry.saved && currentEssid === savedEntry.essid && currentChannel === savedEntry.channel;
+			} else {
+				if (savedEssid && savedSecurity && savedEncryption && savedChannel) {
+					ret.push({
+						saved: true,
+						current: false,
+						channel: savedChannel,
+						essid: savedEssid,
+						security: savedSecurity,
+						encryption: savedEncryption,
+						signal: 0
+					});
+				}
+			}
+
 			return {
-				data: list.map(function(l) {
-					var m = l.match(/(.{4})(.{33})(.{20})(.{23})(.{9})(.{7})/);
-					var sec = m[4].trim().split("/");
-					return {
-						channel: parseInt(m[1]),
-						essid: m[2].trim(),
-						security: sec[0],
-						encryption: sec[1],
-						signal: parseInt(m[5])
-					};
-					// TODO!!! Parse WPA1PSKWPA2PSK and TKIPAES
-				}),
+				data: ret,
 				code: 200
 			};
 		} catch (e) {
@@ -3467,9 +3503,14 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			    encryption = reqObj.encryption,
 			    password = reqObj.password;
 			
-			if (!essid || !security || !encryption || !password) throw "Missing mandatory options: essid, security, encryption, password";
+			if (essid && (!security || !encryption || !password)) throw "Missing mandatory options: essid, security, encryption, password";
 			
-			system('/lib/wifi-helper.sh "' + essid + '" "' + security + '" "' + encryption + '" "' + password + '"')
+			if (essid) {
+				system('/lib/wifi-helper.sh "' + essid + '" "' + security + '" "' + encryption + '" "' + password + '"');
+			} else {
+				system('/lib/wifi-helper.sh DISCONNECT');
+			}
+			
 			return {
 				data: {
 				},
