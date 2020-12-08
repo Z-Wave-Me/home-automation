@@ -3448,7 +3448,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			var ret = list.map(function(l) {
 				var m = l.match(/(.{4})(.{33})(.{20})(.{23})(.{9})(.{7})/);
 				var sec = m[4].trim().split("/");
-console.logJS(m[2].trim(), sec[0], sec[1], parseInt(m[1]), savedEssid === m[2].trim(), savedSecurity === sec[0], savedEncryption === sec[1], savedChannel === parseInt(m[1]));
 				return {
 					saved: savedEssid === m[2].trim() && savedSecurity === sec[0] && savedEncryption === sec[1] && savedChannel === parseInt(m[1]),
 					current: false, // to be filled later
@@ -3465,7 +3464,6 @@ console.logJS(m[2].trim(), sec[0], sec[1], parseInt(m[1]), savedEssid === m[2].t
 				return entry.saved;
 			})[0];
 
-console.logJS(savedEssid,savedSecurity,savedEncryption,savedChannel,currentEssid,currentChannel,savedEntry);
 			if (savedEntry) {
 				savedEntry.current = savedEntry.saved && currentEssid === savedEntry.essid && currentChannel === savedEntry.channel;
 			} else {
