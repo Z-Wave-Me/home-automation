@@ -1,0 +1,62 @@
+{
+    "singleton": true,
+    "dependencies": [],
+    "category": "support_external_ui",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "icon.png",
+    "moduleName": "HomeKitGate",
+    "version": "2.1.0",
+    "maturity": "stable",
+    "repository": {
+        "type": "git",
+        "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "__m_title__",
+        "description": "__m_descr__",
+        "name": "RaZberry",
+        "pin": "",
+        "skippedDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "required": true
+            },
+            "pin": {
+                "type": "string",
+                "readonly": true
+            },
+            "skippedDevices": {
+                "type": "array",
+                "field": "enum",
+                "datasource": "namespaces",
+                "enum": "namespaces:devices_all:deviceId",
+                "required": false
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "name": {
+                "label": "__l_options__"
+            },
+            "pin": {
+                "label": "__l_pin__"
+            },
+            "skippedDevices": {
+                "label": "__l_skipped_devices__",
+                "helper": "__h_skipped_devices__",
+                "type": "checkbox",
+                "datasource": "namespaces",
+                "field": "optionLabels",
+                "optionLabels": "namespaces:devices_all:deviceName"
+            }
+        }
+    },
+    "postRender": "loadFunction:postRender.js"
+}
