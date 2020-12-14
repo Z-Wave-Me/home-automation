@@ -3458,6 +3458,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					signal: parseInt(m[5])
 				};
 				// TODO!!! Parse WPA1PSKWPA2PSK and TKIPAES
+			}).filter(function(entry) {
+				return entry.essid; // skip entries with empty ESSID (can be as a result of error on weak signal)
 			});
 			
 			var savedEntry = ret.filter(function(entry) {
