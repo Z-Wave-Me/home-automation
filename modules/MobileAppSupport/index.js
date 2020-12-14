@@ -190,7 +190,7 @@ MobileAppSupport.prototype.sendNotification = function(token, app_profile, notif
 			os: app.os,
 			profileId: app.app_profile,
 			url: this.URL,
-			title: this.ZWayTitle + (profileName ? " (" + app.profileName + ")" : ""),
+			title: this.ZWayTitle + (app.profileName ? " (" + app.profileName + ")" : ""),
 			body: notification
 		};
 		
