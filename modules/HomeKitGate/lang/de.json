@@ -1,0 +1,8 @@
+{
+	"m_title":"Apple HomeKit Gateway",
+	"m_descr":"Fügt alle im Z-Way verfügbaren Widgets zum Apple HomeKit hinzu.<br><br>If you don't want to export some device in HomeKit, add <i>homekit-skip</i> tag to that device. Make a switch look like a bulb: add tag <i>type-light</i>, for fun: <i>type-fun</i>.<br><br>NB! Works only with Z-Way v3.0.0 and upper.",
+	"l_options":"Name, wie er in iOS Geräten angezeigt werden soll:",
+	"l_pin":"Apple Homekit Pin",
+	"l_skipped_devices":"Devices that don't need to be displayed in HomeKit",
+	"h_skipped_devices":"<b>homekit-skip</b> tag will be added to each selected device."
+}
