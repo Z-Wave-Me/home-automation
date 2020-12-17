@@ -654,6 +654,8 @@ HomeKitGate.prototype.stop = function () {
 	this.controller.devices.off("created", this.onDeviceAdded);
 	this.controller.devices.off("removed", this.onDeviceRemoved);
 	this.controller.devices.off("change:metrics:level", this.onLevelChanged);
+	this.controller.devices.off("change:tags", this.onTagsChanged);
+
 
 	if (this.hk) {
 		this.hk.stop();
