@@ -3354,7 +3354,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				reply.data.firstaccess = true;
 				reply.data.defaultProfile.showWelcome = true;
 			} else {
-				reply.data.data.firstaccess = false;
+				reply.data.firstaccess = false;
 			}
 			reply.data.remote_id = this.controller.getRemoteId();
 			reply.data.ip_address = this.controller.getIPAddress();
