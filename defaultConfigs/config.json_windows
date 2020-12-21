@@ -173,5 +173,17 @@
 		"params" : {
 			"apps" : []
 		}
+	 },
+	 {
+		"id": 11,
+		"moduleId": "HomeKitGate",
+		"active": true,
+		"title": "Apple HomeKit Gate",
+		"params": {
+			"name": "Z-Wave.Me",
+			"pin": "000-11-222",
+			"skippedDevices": [],
+			"idMapping": {}
+		}
 	}]
 }
