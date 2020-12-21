@@ -4220,6 +4220,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 	// vDev is not in this scope, but in {} scope for each type of device to allow reuse it without closures
 
 	try {
+		if (!cc) {
+			return; // do not handle destroyed Command Classes
+		}
+		
 		if (!cc.data.supported.value) {
 			return; // do not handle unsupported Command Classes
 		}
