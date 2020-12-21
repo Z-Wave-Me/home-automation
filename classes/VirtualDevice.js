@@ -138,12 +138,18 @@ _.extend(VirtualDevice.prototype, {
 		'use strict';
 		_.bindAll(this, 'get', 'set');
 		_.extend(this.attributes, this.collection.controller.getVdevInfo(this.id));
-		_.extend(this.attributes, { locationName: controller.locationName(this.attributes.location) });
 		_.extend(this.attributes, this.overlay);
 		_.defaults(this.attributes, { "metrics" : {} });
 		_.extend(this.attributes.metrics, this.overlay_metrics);
 		_.defaults(this.attributes, this.defaults); // set default params
 		_.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
+
+		// check that location exists
+		var l = _.find(this.locations, function(loc) { return loc.id === this.attributes.location; });
+		if (!l) {
+			this.attributes.location = 0; // reset to globalRoom if location is not found
+		}
+		_.extend(this.attributes, { locationName: controller.locationName(this.attributes.location) });
 
 		// set device creation time
 		this.setCreationTime();
