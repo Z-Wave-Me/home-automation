@@ -290,7 +290,7 @@ function modulePostRender(control) {
 	menuItemAddText('easy-scripting-syntax', '__m_and__', '' + exprBool + ' && ' + exprBool + '');
 	menuItemAddDelimiter('easy-scripting-syntax');
 	menuItemAddText('easy-scripting-syntax', '__m_http_request__', 'http.request({method: "GET", async: true, url: ' + exprVal + '});');
-	menuItemAddText('easy-scripting-syntax', '__m_set_timeout__', 'setTimer("' + expression + '",() => {\n  ' + expression + '\n}, ' + exprVal + ')');
+	menuItemAddText('easy-scripting-syntax', '__m_set_timeout__', 'setTimer("' + expression + '", function() {\n  ' + expression + '\n}, ' + exprVal + ')');
 	menuItemAddText('easy-scripting-syntax', '__m_remove_timeout__', 'stopTimer("' + expression + '")');
 
 	menu('easy-scripting-device-methods');
