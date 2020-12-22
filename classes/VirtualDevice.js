@@ -145,11 +145,12 @@ _.extend(VirtualDevice.prototype, {
 		_.defaults(this.attributes.metrics, this.defaults.metrics); // set default metrics
 
 		// check that location exists
-		var l = _.find(this.locations, function(loc) { return loc.id === this.attributes.location; });
+		var self = this;
+		var l = _.find(this.collection.controller.locations, function(loc) { return loc.id === self.attributes.location; });
 		if (!l) {
 			this.attributes.location = 0; // reset to globalRoom if location is not found
 		}
-		_.extend(this.attributes, { locationName: controller.locationName(this.attributes.location) });
+		_.extend(this.attributes, { locationName: this.collection.controller.locationName(this.attributes.location) });
 
 		// set device creation time
 		this.setCreationTime();
