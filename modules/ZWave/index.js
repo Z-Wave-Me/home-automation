@@ -4246,7 +4246,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			console.log('### smartStartEntryPreset:', JSON.stringify(smartStartEntryPreset, null, 1));
 			console.log('###');
 			console.log('########################################################################################');
-*/
+			*/
 			var args = [],
 				sortArgs = [],
 				last = 0,

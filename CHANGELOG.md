@@ -1,3 +1,34 @@
+## 24.12.2020 v3.1.2
+New features:
+* Added SimpleAV to SwitchControlGenerator
+* Added demultiplexer API call for HTTP GET request
+* Added lastSeen and IP to sessions in user profile
+* Added support for Window Tilt device
+* Added support for Alarm AC Reconnect/Disconnect widgets
+* FirmwareUpdate added support for 7th gen UZB/RaZberry
+* Added WiFiCli API for Z-Wave.Me Hub to select WiFi network
+* Added IP and RemoteID to first-access API
+* Added profileName (hub name) to MobileAppSupportAPI
+* HomeKit integration reworked and included in standard delivery
+Fixes:
+* Fixed problem with local URL in Camera settings
+* Fixed battery error in EnOcean
+* Added support for EnOCean GP
+* Fixed NotificationChannelEmail not to report failure on mail send error
+* Fixed HTTP API search to always match from the beginning
+* Time driven item enabled in Heating widget
+* Heating module. Update the list of rooms after deleting a room, frostProtection field
+* Fixed moduleId in SwitchControlGenerator
+* Do not logout permanent tokens
+* Added CORS Allow-Control-Expose-Headers
+* Added Authorization to Access-Control-Expose-Headers
+* Default config.json updated
+* Improved Alarm CC handler to fix error with undefined forEach
+* Fixed FirmwareUpdate for target > 0
+* Fixed Factory Reset on a controller w/o Z-Wave running (no zway object)
+* Removed 'metrics:removed'
+* Reset vDev to globalRoom if location does not exist
+
 ## 16.09.2020 v3.1.1
 Fixes:
 * Automation/Climate: current temperature always Comfort
@@ -6,42 +37,42 @@ Fixes:
 
 ## 31.08.2020 v3.1.0
 New features:
-- New notifications style in Automation
-- Added /notificationChannels and /notificationChannels/all API calls
-- Added namespaces:notificationChannels:channelNameEx
-- Added NotificationChannelEmail (replacement for MailNotifier), NotificationChannelSMSru (replacement for old NotificationSMSru)
-- Adopted IfThen, SecurityMode to the new notification style
-- Removed notifications from BatteryPolling - adopting new notifications style
-- Removed modules MailNotifier (replaced by NotificationChannelEmail), Notification (deprecated) and NotificationSMSru (replaced by NotificationChannelSMSru)
-- Added MobileAppSupport and NotificationFiltering.
-- Added Zniffer SetPromisc API
-- Improved Background RSSI measurement, made it more precise in time when polling
+* New notifications style in Automation
+* Added /notificationChannels and /notificationChannels/all API calls
+* Added namespaces:notificationChannels:channelNameEx
+* Added NotificationChannelEmail (replacement for MailNotifier), NotificationChannelSMSru (replacement for old NotificationSMSru)
+* Adopted IfThen, SecurityMode to the new notification style
+* Removed notifications from BatteryPolling - adopting new notifications style
+* Removed modules MailNotifier (replaced by NotificationChannelEmail), Notification (deprecated) and NotificationSMSru (replaced by NotificationChannelSMSru)
+* Added MobileAppSupport and NotificationFiltering.
+* Added Zniffer SetPromisc API
+* Improved Background RSSI measurement, made it more precise in time when polling
 Fixes:
-- Fixed EasyScripting Loop detected issue after an error
-- Fixed NotificationChannelEmail userId saved as integer and not as string
-- Temp fix of namespaces - to be reworked
-- Added NotificationChannelEmail and improved NotificationFiltering.
-- Fixed RSSI for sent packet for Zniffer
-- Fixed bug with two dongles
-- Cleanup. CIT code removed
-- Fixed FW update via URL download
-- Allow / in last argument in API router
-- Network reorg fix
+* Fixed EasyScripting Loop detected issue after an error
+* Fixed NotificationChannelEmail userId saved as integer and not as string
+* Temp fix of namespaces - to be reworked
+* Added NotificationChannelEmail and improved NotificationFiltering.
+* Fixed RSSI for sent packet for Zniffer
+* Fixed bug with two dongles
+* Cleanup. CIT code removed
+* Fixed FW update via URL download
+* Allow / in last argument in API router
+* Network reorg fix
 
 ## 28.04.2020 v3.0.6
 New features:
-- EasyScripting app added
+* EasyScripting app added
 
 ## 02.04.2020 v3.0.5
 Fixes:
-- Postfix Association wrapped in lastIncludedDevice check
-- Full rework of NetworkReorganization
-- Fixed incoming packet in RouteMap
-- Fixed bug in ThemostatDevice
-- Allow restore of Dummy Device value
-- Added more error logging
-- Added probeType, icon valve and siren.
-- AutomationController.loadModuleMedia handles MIME types
+* Postfix Association wrapped in lastIncludedDevice check
+* Full rework of NetworkReorganization
+* Fixed incoming packet in RouteMap
+* Fixed bug in ThemostatDevice
+* Allow restore of Dummy Device value
+* Added more error logging
+* Added probeType, icon valve and siren.
+* AutomationController.loadModuleMedia handles MIME types
 
 ## 20.01.2020 v3.0.4
 New features:
