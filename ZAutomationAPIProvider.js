@@ -2546,16 +2546,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500
 			};
 
-		if (checkBoxtype('popphub3')) {
-			reply.code = 200;
-
-			saveObject('performReset','1');
-
-			setTimeout(function() {
-				self.doLogout();
-			}, 3000);
-
-		} else {
+		{
 			var backupCfg = loadObject("backupConfig"),
 			storageContentList = loadObject("__storageContent"),
 			defaultConfigExists = fs.stat('defaultConfigs/config.json'), // will be added during build - build depending

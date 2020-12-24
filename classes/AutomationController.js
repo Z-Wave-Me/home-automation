@@ -2064,12 +2064,10 @@ AutomationController.prototype.permanentToken = function(profile, token) {
 };*/
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = false;
+	var ip = "";
 	try {
-		if (checkBoxtype('poppbox')) {
+		if (checkBoxtype('zme_hub')) {
 			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
-		} else if (checkBoxtype('popphub3')) {
-			ip = system("hostname -I")[1].replace(/[\n]/g, '').split(' ')[0].replace(/[\s]/g, '');
 		} else {
 			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
 		}
