@@ -2432,27 +2432,30 @@ ZWave.prototype.defineHandlers = function() {
 			}
 
 			var L = 32,
-				bootloader_6_70 =
-				zway.controller.data.bootloaderCRC.value === 0x8aaa // bootloader for RaZberry 6.70
-				||
-				zway.controller.data.bootloaderCRC.value === 0x7278 // bootloader for UZB 6.70
-				||
-				zway.controller.data.bootloaderCRC.value === 0x9d04 // bootloader for UZB 6.70
-				||
-				zway.controller.data.bootloaderCRC.value === 0x8b4b // bootloader for Z-Box 6.70
-				||
-				parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 6.71; // bootloader for 6.71 SDK
+			    addr,
+			    skip1800;
 
-			var addr;
 			if (parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12) {
 				// ZGM130S/ZG14
+				skip1800 = false;
 				addr = 0x3A000;
 			} else {
 				// ZM5101/SD3503/ZM5202
 				if (zway.controller.data.manufacturerId.value === 0) { // Z-Wave.Me Hub
+					skip1800 = true;
 					addr =  0x7800; // M25PE10
 				} else {
-					addr = bootloader_6_70 ? 0x20000 : 0x7800; // M25PE40 on old and new SDKs
+					skip1800 =
+						zway.controller.data.bootloaderCRC.value !== 0x8aaa // bootloader for RaZberry 6.70
+						&&
+						zway.controller.data.bootloaderCRC.value !== 0x7278 // bootloader for UZB 6.70
+						&&
+						zway.controller.data.bootloaderCRC.value !== 0x9d04 // bootloader for UZB 6.70
+						&&
+						zway.controller.data.bootloaderCRC.value !== 0x8b4b // bootloader for Z-Box 6.70
+						&&
+						parseFloat(zway.controller.data.SDK.value.substr(0, 4)) < 6.71; // bootloader for 6.71 SDK
+					addr = skip1800 ? 0x7800: 0x20000; // M25PE40 on old and new SDKs
 				}
 			}
 
@@ -2465,7 +2468,7 @@ ZWave.prototype.defineHandlers = function() {
 					bufView[i] = data.file.content.charCodeAt(i);
 				}
 
-				var data = bootloader_6_70 ? buf : buf.slice(0x1800);
+				var data = skip1800 ? buf.slice(0x1800) : buf;
 
 				for (var i = 0; i < data.byteLength; i += L) {
 					var arr = (new Uint8Array(data.slice(i, i + L)));
@@ -2491,7 +2494,7 @@ ZWave.prototype.defineHandlers = function() {
 					async: true,
 					contentType: "application/octet-stream",
 					success: function(response) {
-						var data = bootloader_6_70 ? response.data : response.data.slice(0x1800);
+						var data = skip1800 ? response.data.slice(0x1800) : response.data;
 
 						for (var i = 0; i < data.byteLength; i += L) {
 							var arr = (new Uint8Array(data.slice(i, i + L)));
