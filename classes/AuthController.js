@@ -55,7 +55,8 @@ AuthController.prototype.getSessionId = function(request) {
 	
 	// third try cookie
 	var cookiesHeader = request.headers['Cookie'];
-	if (cookiesHeader) {
+	var cookiesIgnore = !!request.headers['ZWAYSessionCookieIgnore'];
+	if (cookiesHeader && !cookiesIgnore) {
 		var cookie = cookiesHeader.split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZWAYSession" });
 		if (!!cookie && !!cookie[0]) {
 			request.__authMethod = 'Cookie';
