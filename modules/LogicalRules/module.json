@@ -193,7 +193,7 @@
 													"device": {
 														"field": "enum",
 														"datasource": "namespaces",
-														"enum": "namespaces:devices_switchControl:deviceId, namespaces:devices_toggleButton:deviceId",
+														"enum": "namespaces:devices_switchControl:deviceId,namespaces:devices_toggleButton:deviceId",
 														"required": true
 													},
 													"testValue": {
@@ -423,7 +423,7 @@
 										"type": "select",
 										"datasource": "namespaces",
 										"field": "optionLabels",
-										"optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName"
+										"optionLabels": "namespaces:devices_switchControl:deviceName,namespaces:devices_toggleButton:deviceName"
 									},
 									"testValue": {
 										"optionLabels": ["__off__", "__on__", "__upstart__", "__upstop__", "__downstart__", "__downstop__"]
@@ -514,7 +514,7 @@
 																"type": "select",
 																"datasource": "namespaces",
 																"field": "optionLabels",
-																"optionLabels": "namespaces:devices_switchControl:deviceName, namespaces:devices_toggleButton:deviceName"
+																"optionLabels": "namespaces:devices_switchControl:deviceName,namespaces:devices_toggleButton:deviceName"
 															},
 															"testValue": {
 																"optionLabels": ["__off__", "__on__", "__upstart__", "__upstop__", "__downstart__", "__downstop__"]
