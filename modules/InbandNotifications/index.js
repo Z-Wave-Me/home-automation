@@ -1,14 +1,12 @@
 /*** InbandNotifications Z-Way HA module *******************************************
 
-Version: 1.1.1
-(c) Z-Wave.Me, 2015
+Version: 1.1.2
+(c) Z-Wave.Me, 2020
 -----------------------------------------------------------------------------
-Author: Niels Roche <nir@zwave.eu>
+Author: Niels Roche <nir@zwave.eu>, Serguei Poltorak <ps@z-wave.me>
 Description:
-	Creates a module that listens to the status of every device in the background. 
-	It sends notifications automatically if it has changed.
-	Notifications are stored hourly to storage and checked once a day if they are older than one week. 
-	The older ones will eb deleted
+	Listens to the statuses of all devices and
+	emits notifications on changed.
 ******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -32,129 +30,87 @@ InbandNotifications.prototype.init = function (config) {
 	InbandNotifications.super_.prototype.init.call(this, config);
 
 	var self = this,
-		lastChanges = [];
+	    lastChanges = [];
 
 	this.writeNotification = function (vDev) {
-		if (!Boolean(vDev.get('permanently_hidden')) && !Boolean(vDev.get('metrics:removed'))){ // write notification if vdev is active - not permanently hidden or removed
+		if (!vDev.get('permanently_hidden')) {
 			var devId = vDev.get('id'),
-				devType = vDev.get('deviceType'),
-				devProbeType = vDev.get('probeType'),
-				devName = vDev.get('metrics:title'),
-				scaleUnit = vDev.get('metrics:scaleTitle'),
-				lvl = vDev.get('metrics:level'),
-				location = vDev.get('location'),
-				customIcons = vDev.get('customIcons') !== {}? vDev.get('customIcons') : undefined,
-				eventType = function(){
-					if (vDev.get('metrics:probeTitle')){
-						return vDev.get('metrics:probeTitle').toLowerCase();
-					} else {
-						return 'status';
-					}
-				},
-				createItem = 0,
-				item, msg, msgType,
-				getCustomIcon = function(){
-					return customIcons.level? customIcons.level[lvl] : customIcons.default;
+			    devType = vDev.get('deviceType'),
+			    devProbeType = vDev.get('probeType'),
+			    devName = vDev.get('metrics:title'),
+			    scaleUnit = vDev.get('metrics:scaleTitle'),
+			    level = vDev.get('metrics:level');
+			
+			function getCustomIcon() {
+				var customIcons = vDev.get('customIcons');
+				if (!customIcons || Object.keys(customIcons).length === 0) return undefined;
+				return customIcons.level ? customIcons.level[level] : customIcons.default;
+			};
+
+			function eventType(){
+				var probeTitle = vDev.get('metrics:probeTitle');
+				return probeTitle ? probeTitle.toLowerCase() : 'status';
+			};
+
+			var lastEvent = lastChanges.filter(function(e) {
+				return e.id === devId;
+			})[0];
+			
+			if (!lastEvent) {
+				lastEvent = {
+					id: devId,
+					l: null
 				};
-
-
-
-			if(lastChanges.filter(function(o){
-							return o.id === devId;
-										}).length < 1){
-				item = {
-						id: devId,
-						l: lvl
-					};
-
-				lastChanges.push(item);
-				createItem = 1;
+				lastChanges.push(lastEvent);
 			}
 
-			for(var i = 0; i < lastChanges.length; i++){
-				var cl = lastChanges[i]['l'],
-					cid = lastChanges[i]['id'];
+			var msg = {
+				dev: devName,
+				l: level, // will be extended below
+				location: vDev.get('location'),
+				customIcon: getCustomIcon()
+			};
+			var msgType = "";
+			
+			if (lastEvent.l === level && ["sensorBinary", "sensorDiscrete", "toggleButton", "switchControl"].indexOf(devType) === - 1)  return; // emit only for new values (not same as previous) or sensorBinary/sensorDiscrete/toggleButton/switchControl events
 
-				if(lvl === +lvl && lvl !== (lvl|0)) {
-					lvl = lvl.toFixed(1);
-				}
-
-				if((cid === devId && cl !== lvl) || (cid === devId && cl === lvl && (createItem === 1 || devType === "toggleButton" || devType === "switchControl"))){
-
-					// depending on device type choose the correct notification
-					switch(devType) {
-						case 'switchBinary':
-						case 'switchControl':
-						case 'sensorBinary':
-						case 'fan':
-						case 'doorlock':
-						case 'toggleButton':
-							msg = {
-								dev: devName,
-								l:lvl,
-								location: location === 0? '' : location,
-								customIcon: getCustomIcon()
-								};
-							msgType = 'device-OnOff';
-
-							self.controller.addNotification('device-info', msg , msgType, devId);
-							break;
-						case 'switchMultilevel':
-							msg = {
-								dev: devName,
-								l: lvl + '%',
-								location: location === 0? '' : location,
-								customIcon: getCustomIcon()
-								};
-							msgType = 'device-status';
-
-							self.controller.addNotification('device-info', msg , msgType, devId);
-							break;
-						case 'sensorDiscrete':
-							msg = {
-								dev: devName,
-								l: lvl,
-								location: location === 0? '' : location,
-								customIcon: getCustomIcon()
-							};
-							msgType = 'device-status';
-
-							self.controller.addNotification('device-info', msg , msgType, devId);
-							break;
-						case 'sensorMultilevel':
-						case 'sensorMultiline':
-						case 'thermostat':
-							if (!~devProbeType.indexOf('meterElectric_')){
-								msg = {
-									dev: devName,
-									l: lvl + (scaleUnit? ' ' + scaleUnit: ''),
-									location: location === 0? '' : location,
-									customIcon: getCustomIcon()
-								};
-								msgType = 'device-' + eventType();
-
-								self.controller.addNotification('device-info', msg , msgType, devId);
-							}
-							break;
-						case 'switchRGBW':
-							msg = {
-								dev: devName,
-								l: lvl,
-								color: vDev.get('metrics:color'),
-								location: location === 0? '' : location,
-								customIcon: getCustomIcon()
-								};
-							msgType = 'device-' + eventType();
-
-							self.controller.addNotification('device-info', msg , msgType, devId);
-							break;
-						default:
-							break;
-					}
-					lastChanges[i]['l'] = lvl;
-					createItem = 0;
-				}
+			// depending on device type choose the correct notification
+			switch(devType) {
+				case 'switchBinary':
+				case 'switchControl':
+				case 'sensorBinary':
+				case 'fan':
+				case 'doorlock':
+				case 'toggleButton':
+					msgType = 'device-OnOff';
+					break;
+				case 'switchMultilevel':
+					msg.l +=  '%';
+					msgType = 'device-status';
+					break;
+				case 'sensorDiscrete':
+					msgType = 'device-status';
+					break;
+				case 'sensorMultilevel':
+					if (devProbeType.indexOf('meterElectric_') !== -1) return;
+					// skip electric meters
+					// for others continue with no break
+				case 'sensorMultiline':
+				case 'thermostat':
+					msg.l += (scaleUnit ? ' ' + scaleUnit : '');
+					msgType = 'device-' + eventType();
+					break;
+				case 'switchRGBW':
+					msg.color = vDev.get('metrics:color');
+					msgType = 'device-' + eventType();
+					break;
+				default:
+					return; // don't add the notification
 			}
+			
+			lastEvent.l = level;
+			
+			self.controller.addNotification('device-info', msg , msgType, devId);
 		}	 
 	};
 

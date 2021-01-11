@@ -1,12 +1,12 @@
 {
 	"singleton" : true,
-	"dependencies" : ["Cron"],
+	"dependencies" : [],
 	"category" : "basic_gateway_modules",
 	"author" : "Z-Wave.Me",
-	"homepage" : "http://razberry.z-wave.me",
+	"homepage" : "https://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName":"InbandNotifications",
-	"version" : "1.1.1",
+	"version" : "1.1.2",
 	"maturity" : "stable",
 	"repository" : {
 		"type" : "git",
