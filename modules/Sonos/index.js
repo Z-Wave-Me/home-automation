@@ -1,7 +1,7 @@
 /*** Sonos Z-Way HA module *******************************************
 
- Version: 1.2.3
- (c) Z-Wave.Me, 2017
+ Version: 1.2.4
+ (c) Z-Wave.Me, 2020
  -----------------------------------------------------------------------------
  Author: Poltorak Serguei <ps@z-wave.me>
  Modified by: Martin Petzold <mp@zwave.eu>, Niels Roche <nir@zwave.eu>, Karsten Reichel <kar@zwave.eu>
@@ -10,7 +10,6 @@
  ******************************************************************************/
 
 /*
-
  TODO
 
  Add periodic M-SEARCH if needed
@@ -187,11 +186,10 @@ Sonos.prototype.detectHostname = function(household, host) {
 
 Sonos.prototype.renderPlayer = function(household, host) {
 	var self = this;
-	var vDevPlayer = self.controller.devices.create({
+	var vDevPlayer = this.controller.devices.create({
 		deviceId: 'Sonos_Device_' + host + '_' + this.id,
 		defaults: {
 			deviceType: 'audioPlayer',
-			customIcons: {},
 			metrics: {
 				title: 'Sonos ' + host + ' ' + this.id,
 				icon: '/ZAutomation/api/v1/load/modulemedia/Sonos/icon.png',
@@ -238,15 +236,14 @@ Sonos.prototype.renderPlayer = function(household, host) {
 				self.action(host, pStatus);
 			}
 		},
-		moduleId: self.id
+		moduleId: this.id
 	});
-	var vDevSwitch = self.controller.devices.create({
-		deviceId: 'Sonos_Device_Play_' + host + '_' + self.id,
+	var vDevSwitch = this.controller.devices.create({
+		deviceId: 'Sonos_Device_Play_' + host + '_' + this.id,
 		defaults: {
 			deviceType: 'switchBinary',
-			customIcons: {},
 			metrics: {
-				title: 'Sonos Play ' + host + ' ' + self.id,
+				title: 'Sonos Play ' + host + ' ' + this.id,
 				icon: '/ZAutomation/api/v1/load/modulemedia/Sonos/icon.png'
 			}
 		},
@@ -254,15 +251,14 @@ Sonos.prototype.renderPlayer = function(household, host) {
 		handler: function (command, args) {
 			self.action(host, command === 'on' ? 'Play' : 'Pause');
 		},
-		moduleId: self.id
+		moduleId: this.id
 	});
-	var vDevVolume = self.controller.devices.create({
-		deviceId: 'Sonos_Device_Volume_' + host + '_' + self.id,
+	var vDevVolume = this.controller.devices.create({
+		deviceId: 'Sonos_Device_Volume_' + host + '_' + this.id,
 		defaults: {
 			deviceType: 'switchMultilevel',
-			customIcons: {},
 			metrics: {
-				title: 'Sonos Volume ' + host + ' ' + self.id,
+				title: 'Sonos Volume ' + host + ' ' + this.id,
 				icon: '/ZAutomation/api/v1/load/modulemedia/Sonos/icon.png',
 				probeType: 'multilevel'
 			}
@@ -275,16 +271,15 @@ Sonos.prototype.renderPlayer = function(household, host) {
 			if (command === 'exact') level = parseInt(args.level, 10);
 			self.volume(host, level);
 		},
-		moduleId: self.id
+		moduleId: this.id
 	});
 
-	var vDevPrevious = self.controller.devices.create({
-	   deviceId: 'Sonos_Device_Previous_' + host + '_' + self.id,
+	var vDevPrevious = this.controller.devices.create({
+	   deviceId: 'Sonos_Device_Previous_' + host + '_' + this.id,
 	   defaults: {
 			deviceType: 'toggleButton',
-			customIcons: {},
 			metrics: {
-				title: 'Sonos Previous ' + host + ' ' + self.id,
+				title: 'Sonos Previous ' + host + ' ' + this.id,
 				icon: '/ZAutomation/api/v1/load/modulemedia/Sonos/icon.png',
 				level: 'on'
 			}
@@ -293,16 +288,15 @@ Sonos.prototype.renderPlayer = function(household, host) {
 		handler: function (command, args) {
 			self.action(host, 'Previous');
 		},
-		moduleId: self.id
+		moduleId: this.id
 	});
 
-	var vDevNext = self.controller.devices.create({
-		deviceId: 'Sonos_Device_Next_' + host + '_' + self.id,
+	var vDevNext = this.controller.devices.create({
+		deviceId: 'Sonos_Device_Next_' + host + '_' + this.id,
 		defaults: {
 			deviceType: 'toggleButton',
-			customIcons: {},
 			metrics: {
-				title: 'Sonos Next ' + host + ' ' + self.id,
+				title: 'Sonos Next ' + host + ' ' + this.id,
 				icon: '/ZAutomation/api/v1/load/modulemedia/Sonos/icon.png',
 				level: 'on'
 			}
@@ -311,13 +305,15 @@ Sonos.prototype.renderPlayer = function(household, host) {
 		handler: function (command, args) {
 			self.action(host, 'Next');
 		},
-		moduleId: self.id
+		moduleId: this.id
 	});
 
+	// by default hide addiitonal elements, but allow to use them in Apps
 	vDevVolume.set('visibility', false, {silent: true});
 	vDevSwitch.set('visibility', false, {silent: true});
 	vDevPrevious.set('visibility', false, {silent: true});
-	vDevNext.set('visibility', false, {silent: true});    
+	vDevNext.set('visibility', false, {silent: true});
+	
 	// subscribe to notifications
 	this.subscribe(household, host);
 
@@ -469,7 +465,7 @@ Sonos.prototype.action = function (host, action) {
 					vDevSwitch.set('metrics:level', 'on');
 				}
 				else if (action == 'Stop' || action == 'Pause') {
-					vDevSwitch.set('metrics:level', 'off');	
+					vDevSwitch.set('metrics:level', 'off');
 				}
 			}
 		},
