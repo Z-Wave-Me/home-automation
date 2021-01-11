@@ -42,7 +42,6 @@ EdimaxSP1101.prototype.init = function (config) {
 			deviceId: vDevId,
 			defaults: {
 				deviceType: 'switchBinary',
-				customIcons: {},
 				metrics: {
 					icon: 'switch',
 					level: 'off', 
