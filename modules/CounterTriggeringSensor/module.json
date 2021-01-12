@@ -27,7 +27,7 @@
 			"binarySensor": {
 				"field": "enum",
 				"datasource": "namespaces",
-				"enum": "namespaces:devices_sensorBinary:deviceId, namespaces:devices_switchBinary:deviceId",
+				"enum": "namespaces:devices_sensorBinary:deviceId,namespaces:devices_switchBinary:deviceId",
 				"required": true
 			},
 			"eventSensor": {
@@ -58,7 +58,7 @@
 				"type": "select",
 				"datasource": "namespaces",
 				"field": "optionLabels",
-				"optionLabels": "namespaces:devices_sensorBinary:deviceName, namespaces:devices_switchBinary:deviceName"
+				"optionLabels": "namespaces:devices_sensorBinary:deviceName,namespaces:devices_switchBinary:deviceName"
 			},
 			"eventSensor": {
 				"label": "__l_EventSensor__",
