@@ -1,7 +1,7 @@
 /*** LogicalRules Z-Way HA module *******************************************
 
-Version: 1.2.2
-(c) Z-Wave.Me, 2014
+Version: 1.5
+(c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
 Description:
@@ -45,6 +45,10 @@ LogicalRules.prototype.init = function (config) {
 			self.attachDetach(test.testMultilevel, true);
 		} else if (test.testType === "remote") {
 			self.attachDetach(test.testRemote, true);
+		} else if (test.testType === "sensorDiscrete") {
+			self.attachDetach(test.testSensorDiscrete, true);
+		} else if ( test.testType === "time") {
+			self.attachDetach(test.testTime, true);
 		} else if (test.testType === "nested") {
 			test.testNested.tests.forEach(function(xtest) {
 				if (xtest.testType === "binary") {
@@ -53,10 +57,14 @@ LogicalRules.prototype.init = function (config) {
 					self.attachDetach(xtest.testMultilevel, true);
 				} else if (xtest.testType === "remote") {
 					self.attachDetach(xtest.testRemote, true);
+				} else if (xtest.testType === "sensorDiscrete") {
+					self.attachDetach(xtest.testSensorDiscrete, true);
+				} else if ( xtest.testType === "time") {
+					self.attachDetach(xtest.testTime, true);
 				}
 			});
 		}
-	});	
+	});
 
 	if (this.config.eventSource) {
 		this.config.eventSource.forEach(function(scene) {
@@ -81,6 +89,10 @@ LogicalRules.prototype.stop = function () {
 			self.attachDetach(test.testMultilevel, false);
 		} else if (test.testType === "remote") {
 			self.attachDetach(test.testRemote, false);
+		} else if (test.testType === "sensorDiscrete") {
+			self.attachDetach(test.testSensorDiscrete, false);
+		} else if ( test.testType === "time") {
+			self.attachDetach(test.testTime, false);
 		} else if (test.testType === "nested") {
 			test.testNested.tests.forEach(function(xtest) {
 				if (xtest.testType === "binary") {
@@ -89,6 +101,10 @@ LogicalRules.prototype.stop = function () {
 					self.attachDetach(xtest.testMultilevel, false);
 				} else if (xtest.testType === "remote") {
 					self.attachDetach(xtest.testRemote, false);
+				} else if (xtest.testType === "sensorDiscrete") {
+					self.attachDetach(xtest.testSensorDiscrete, false);
+				} else if(xtest.testType === "time") {
+					self.attachDetach(xtest.testTime, false);
 				}
 			});
 		}
@@ -122,8 +138,9 @@ LogicalRules.prototype.attachDetach = function (test, attachOrDetach) {
 
 LogicalRules.prototype.testRule = function (tree) {
 	var res = null,
-		topLevel = !tree;
-		self = this;
+		topLevel = !tree,
+		self = this,
+		langFile = self.loadModuleLang();
 	
 	if (!tree) {
 		tree = this.config;
@@ -140,6 +157,8 @@ LogicalRules.prototype.testRule = function (tree) {
 			} else if (test.testType === "remote") {
 				var dev = self.controller.devices.get(test.testRemote.device);
 				res = res && ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
+			} else if (test.testType === "sensorDiscrete") {
+				res = res && (self.controller.devices.get(test.testSensorDiscrete.device).get("metrics:level") === test.testSensorDiscrete.testValue);
 			} else if (test.testType === "time") {
 				var curTime = new Date(),
 					time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
@@ -159,6 +178,8 @@ LogicalRules.prototype.testRule = function (tree) {
 			} else if (test.testType === "remote") {
 				var dev = self.controller.devices.get(test.testRemote.device);
 				res = res || ((_.contains(["on", "off"], test.testRemote.testValue) && dev.get("metrics:level") === test.testRemote.testValue) || (_.contains(["upstart", "upstop", "downstart", "downstop"], test.testRemote.testValue) && dev.get("metrics:change") === test.testRemote.testValue));
+			} else if (test.testType === "sensorDiscrete") {
+				res = res || (self.controller.devices.get(test.testSensorDiscrete.device).get("metrics:level") === test.testSensorDiscrete.testValue);
 			} else if (test.testType === "time") {
 				var curTime = new Date(),
 					time_arr = test.testTime.testValue.split(":").map(function(x) { return parseInt(x, 10); });
@@ -173,7 +194,7 @@ LogicalRules.prototype.testRule = function (tree) {
 		tree.action.switches && tree.action.switches.forEach(function(devState) {
 			var vDev = self.controller.devices.get(devState.device);
 			if (vDev) {
-				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
 					vDev.performCommand(devState.status);
 				}
 			}
@@ -181,7 +202,7 @@ LogicalRules.prototype.testRule = function (tree) {
 		tree.action.dimmers && tree.action.dimmers.forEach(function(devState) {
 			var vDev = self.controller.devices.get(devState.device);
 			if (vDev) {
-				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
 					vDev.performCommand("exact", { level: devState.status });
 				}
 			}
@@ -189,7 +210,7 @@ LogicalRules.prototype.testRule = function (tree) {
 		tree.action.thermostats && tree.action.thermostats.forEach(function(devState) {
 			var vDev = self.controller.devices.get(devState.device);
 			if (vDev) {
-				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
 					vDev.performCommand("exact", { level: devState.status });
 				}
 			}
@@ -197,7 +218,7 @@ LogicalRules.prototype.testRule = function (tree) {
 		tree.action.locks && tree.action.locks.forEach(function(devState) {
 			var vDev = self.controller.devices.get(devState.device);
 			if (vDev) {
-				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") != devState.status)) {
+				if (!devState.sendAction || (devState.sendAction && vDev.get("metrics:level") !== devState.status)) {
 					vDev.performCommand(devState.status);
 				}
 			}
