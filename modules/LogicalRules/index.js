@@ -47,8 +47,6 @@ LogicalRules.prototype.init = function (config) {
 			self.attachDetach(test.testRemote, true);
 		} else if (test.testType === "sensorDiscrete") {
 			self.attachDetach(test.testSensorDiscrete, true);
-		} else if ( test.testType === "time") {
-			self.attachDetach(test.testTime, true);
 		} else if (test.testType === "nested") {
 			test.testNested.tests.forEach(function(xtest) {
 				if (xtest.testType === "binary") {
@@ -59,8 +57,6 @@ LogicalRules.prototype.init = function (config) {
 					self.attachDetach(xtest.testRemote, true);
 				} else if (xtest.testType === "sensorDiscrete") {
 					self.attachDetach(xtest.testSensorDiscrete, true);
-				} else if ( xtest.testType === "time") {
-					self.attachDetach(xtest.testTime, true);
 				}
 			});
 		}
@@ -91,8 +87,6 @@ LogicalRules.prototype.stop = function () {
 			self.attachDetach(test.testRemote, false);
 		} else if (test.testType === "sensorDiscrete") {
 			self.attachDetach(test.testSensorDiscrete, false);
-		} else if ( test.testType === "time") {
-			self.attachDetach(test.testTime, false);
 		} else if (test.testType === "nested") {
 			test.testNested.tests.forEach(function(xtest) {
 				if (xtest.testType === "binary") {
@@ -103,8 +97,6 @@ LogicalRules.prototype.stop = function () {
 					self.attachDetach(xtest.testRemote, false);
 				} else if (xtest.testType === "sensorDiscrete") {
 					self.attachDetach(xtest.testSensorDiscrete, false);
-				} else if(xtest.testType === "time") {
-					self.attachDetach(xtest.testTime, false);
 				}
 			});
 		}
