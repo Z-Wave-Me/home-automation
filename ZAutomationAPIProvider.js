@@ -74,6 +74,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		// function. We will let the handler consumer handle the application of
 		// the parameters.
 		this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
+		this.router.get("/devices/:v_dev_id/referenced", this.ROLE.ADMIN, this.getDeviceReference);
 
 		this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 		this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
@@ -445,6 +446,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.code = 404;
 			reply.error = "Device " + vDevId + " doesn't exist";
 		}
+		return reply;
+	},
+	getDeviceReference: function(vDevId) {
+		var reply = {
+				error: null,
+				data: this.controller.findModulesReferencingDeviceId(vDevId),
+				code: 200
+			};
+
 		return reply;
 	},
 	// Notifications
