@@ -3,6 +3,7 @@
 	"m_descr":"This app is the by far most complex but also most powerful app preloaded to your gateway. It allows to combine multiple status and events in a logical way using the Boolean operators AND, OR and NOT. You need to have basic knowledge about Boolean logic and/or software development to properly use this widget. Please note that the final target of the Boolean logic is to trigger an action. This mean you need at least one (dynamic) event source that essentially triggers but many more (static) status information that you can make the action depending on. It is not suitable to combine two events because the final action will only happen if both events would occur at the very same moment. This is quite unlikely. The difference between a dynamic event and a static status can be explained using a simple motion sensor. The dynamic event is the moment when the motion sensor trips. The static status is the information if the motion sensor is actually in tripped state (has just detected a motion and wait for a few seconds before turning back into inactivity mode).<br><br>Settings: Select the status information and the events you want to logically combine and select the Boolean operators to combine them.",
 	"rl_options":"Trigger the rule check on change of any device mentioned in conditions.",
 	"l_eventSource":"Trigger the rule check on activation of the following scenes:",
+	"h_eventSource":"When you start any scene from the list below, this logical rule will be checked. If necessary, you can run a logical rule by time: 1) Create a scene 2) Run the scene on a schedule 3) Select the created scene from the list below.",
 	"l_logicalOperator":"Boolean operator",
 	"h_logicalOperator":"This option links all following conditions with a logical 'OR' or 'AND' rule. 'OR' will trigger an action if at least one condition is true. 'AND' will only trigger an action if all conditions are true.",
 	"l_tests":"Conditions",
@@ -31,7 +32,12 @@
 	"and": "AND",
 	"l_testType": "Type of condition:",
 	"h_testNested": "Add a new nested condition - like in logical notation: A AND B AND (C OR D). The additional nested condition is (C OR D). An action is only triggered if the conditions A and B and either the condition C or D are met together. Example: If outside the light sensor A > 80% and the temperature sensor B > 26°C and (time < 12:00 am or time > 02:00 pm) then the jalousie in the living room is set to 50%.",
-	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off",
-	"h_sendAction":"Need to avoid flooding the network.",
-	"h_testTime":"This condition checks if the current time is 'less than or equal to' or 'greater than or equal to' the entered time. E.g. current time: 09:00 and condition: >= 10:00 will return 'false' and not pass the rule. 24-h-format - hh:mm"
+	"l_sendAction":"Don't send On command, if device is already turned On, similarly for Off. Need to avoid flooding the network.",
+	"h_sendAction":"Prevents unnecessary network commands.",
+	"h_testTime":"This condition checks if the current time is 'less than or equal to' or 'greater than or equal to' the entered time. E.g. current time: 09:00 and condition: >= 10:00 will return 'false' and not pass the rule. 24-h-format - hh:mm",
+	"h_triggerOnDevicesChange": "By default the logical rule listens to all changes of devices listed in conditions. If a change is recognized by the logical rule it will check the condition wether to trigger an action or not. Deactivate this option if the logical rule condition should only be checked by triggered scenes. It is recommented to use this field in combination with 'Trigger the rule check on activation of the following scenes' option.",
+    "l_sensorDiscrete":"Scene Controller",
+    "l_choose_dev":"--- Choose a device ---",
+    "l_controller_action":"Controller Actions",
+	"h_controller_action":"The action is described with a two-digit value: The first digit is the button number, the second digit points to the action of this button (0=short press, 1=release, 2=hold, 3=short press two times, 4 = short press three times, and so on. Examples: Double Click button 2 => 23, Single Click button 1 = 10)"
 }
