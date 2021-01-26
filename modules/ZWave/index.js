@@ -1212,9 +1212,11 @@ ZWave.prototype.getDSKCollection = function(dskEntryID) {
 
 ZWave.prototype.networkReorganizationInit = function() {
 	// 1. Walk thru all mains first
-	// 1.1 If some failes, do them in second round and repeat it 4 times (max hops in Z-Wave)
-	// 2. Walk thru all FLiRS (2 tries)
+	// 1.1 If some failes, do them in second round and repeat it N_TRIES times (max hops in Z-Wave)
+	// 2. Walk thru all FLiRS (N_TRIES tries)
 	// 3. Walk thru batteries
+	
+	var N_TRIES = 4;
 
 	function NetworkReorganization(that) {
 		this.nodes = [];
@@ -1226,20 +1228,12 @@ ZWave.prototype.networkReorganizationInit = function() {
 
 	NetworkReorganization.prototype.start = function() {
 		this.addLog(this.langFile.reorg_start, 0);
-		this.addLog(this.langFile.reorg_start_mains, 0);
 		
 		this.nodes = this.getNodesList();
 		
 		this.log = [];
 
-		var self = this;
-		
-		this.nodes.forEach(function(node) {
-		// first walk thru Mains only
-		if (node.isMains) {
-			self.doNode(node.nodeId);
-		}
-		});
+		this.checkNextStep();
 	};
 
 	NetworkReorganization.prototype.getNodesList = function() {
@@ -1288,7 +1282,7 @@ ZWave.prototype.networkReorganizationInit = function() {
 		var node = this.getNodeById(nodeId);
 		if (node) {
 			node.tries++;
-			if (node.tries <= 4) {
+			if (node.tries < N_TRIES) {
 				this.doNode(nodeId); // it will be placed after all existing jobs, so no need to wait before placing this job
 			} else {
 				node.fail = true;
@@ -1310,6 +1304,7 @@ ZWave.prototype.networkReorganizationInit = function() {
 				self.failureCbk(nodeId);
 			});
 		} else {
+			this.getNodeById(nodeId).fail = true;
 			this.addLog(this.langFile.reorg_node_skip, nodeId);
 		}
 	};
@@ -1367,24 +1362,47 @@ ZWave.prototype.networkReorganizationInit = function() {
 		var finishedMains = true,
 		    finishedFLiRS = true,
 		    finishedSleeping = true,
-		    waitingFLiRS = true,
-		    waitingSleeping = true;
+		    hasMains = false,
+		    hasFLiRS = false,
+		    hasSleeping = false,
+		    startedMains = false,
+		    startedFLiRS = false,
+		    startedSleeping = false;
 		
 		this.nodes.forEach(function(node) {
 			if (node.isMains) {
 				finishedMains &= node.done || node.fail;
+				startedMains |= node.done || node.tries > 0;
+				hasMains = true;
 			}
 			if (node.isFLiRS) {
 				finishedFLiRS &= node.done || node.fail;
-				waitingFLiRS &= node.tries == 0;
+				startedFLiRS |= node.done || node.tries > 0;
+				hasFLiRS = true;
 			}
 			if (node.isSleeping) {
 				finishedSleeping &= node.done || node.fail;
-				waitingSleeping &= node.tries == 0;
+				startedSleeping |= node.done || node.tries > 0;
+				hasSleeping = true;
 			}
 		});
 		
-		if (finishedMains && waitingFLiRS) {
+		// if no devices of that type, skip the block
+		finishedMains |= !hasMains;
+		finishedFLiRS |= !hasFLiRS;
+		finishedSleeping |= !hasSleeping;
+		
+		if (!finishedMains && !startedMains) {
+			this.addLog(this.langFile.reorg_start_mains, 0);
+			
+			this.nodes.forEach(function(node) {
+				if (node.isMains) {
+					self.doNode(node.nodeId);
+				}
+			});
+		}
+
+		if (finishedMains && !finishedFLiRS && !startedFLiRS) {
 			this.addLog(this.langFile.reorg_start_flirs, 0);
 		
 			this.nodes.forEach(function(node) {
@@ -1394,7 +1412,7 @@ ZWave.prototype.networkReorganizationInit = function() {
 			});
 		}
 		
-		if (finishedMains && finishedFLiRS) {
+		if (finishedMains && finishedFLiRS && !finishedSleeping && !startedSleeping) {
 			this.addLog(this.langFile.reorg_start_battery, 0);
 		
 			this.nodes.forEach(function(node) {
@@ -1404,7 +1422,7 @@ ZWave.prototype.networkReorganizationInit = function() {
 			});
 		}
 		
-		if (finishedSleeping && waitingSleeping || !waitingSleeping) {
+		if (finishedMains && finishedFLiRS && finishedSleeping) {
 			this.addLog(this.langFile.reorg_finished, 0);
 		}
 	};

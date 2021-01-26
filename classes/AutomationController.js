@@ -3640,3 +3640,70 @@ AutomationController.prototype.locationsByUser = function(userId) {
 		}
 	}
 };
+
+AutomationController.prototype.findModulesReferencingDeviceId = function(device) {
+	function findAllUsages(device) {
+		var ret = [];
+		for (var indx in controller.instances) {
+			var instance = controller.instances[indx];
+			var moduleId = instance.moduleId;
+			var schema = controller.modules[moduleId].meta.schema;
+			var config = instance.params;
+			
+			try {
+				if (findUsage(schema, config, device)) {
+					ret.push({
+						moduleId: moduleId,
+						instanceId: instance.id,
+						instanceTitle: instance.title
+					});
+				}
+			} catch(e) {
+				console.log("Error in searching for references in " + moduleId + " instance " + instance.id + ": " + e);
+			}
+		}
+		return ret;
+	}
+
+	function findUsage(schema, config, device) {
+		if (schema && config) {
+			// module with a pretty config
+			switch(schema.type) {
+				case "object":
+					for (var prop in schema.properties) {
+						if (findUsage(schema.properties[prop], config[prop], device)) {
+							return true;
+						}
+					}
+					break;
+				case "array":
+					for (var index in config) {
+						if (findUsage(schema.items, config[index], device)) {
+							return true;
+						}
+					}
+					break;
+				case undefined:
+					if (schema.field === "enum" && schema.datasource === "namespaces" && schema.enum.split(",").filter(function(f){ return f.match(/namespaces:.*:deviceId/); }).length) {
+						if (config === device) {
+							return true;
+						}
+					}
+					break;
+				default:
+					/*
+					if (config === device) {
+					return true;
+					}
+					*/
+					break;
+			}
+			return false;
+		} else {
+			// all other modules
+			return JSON.stringify(config).match(device);
+		}
+	}
+
+	return findAllUsages(device);
+};
