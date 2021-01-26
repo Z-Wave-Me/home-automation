@@ -1,12 +1,13 @@
 /*** Heating Z-Way HA module *******************************************
 
- Version: 1.2.1 stable
- (c) Z-Wave.Me, 2020
+ Version: 1.3 stable
+ (c) Z-Wave.Me, 2021
  -----------------------------------------------------------------------------
  Author:    Niels Roche <nir@zwave.eu>,
 			Martin Petzold <mp@zwave.eu>,
 			Michael Hensche <mh@zwave.eu>,
-			Karsten Reichel <kar@zwave.eu>
+			Karsten Reichel <kar@zwave.eu>,
+            Vitaliy Yurkin <aivs@z-wave.me>
  Description:
  This module creates a central heat control that can control all thermostats of a room
  by defining a temperature sensor and a target temperature.
@@ -36,7 +37,6 @@ Heating.prototype.prepareSchedule = function(rooms) {
     _.each(rooms, function(data, roomID) {
 
         _.each(data.schedule, function(sc, day) {
-
             _.each(sc, function(s) {
                 // is there already some schedule with same start && end && temp ? -> just add day to list
                 sched = _.filter(schedule, function(entry) {
@@ -315,7 +315,6 @@ Heating.prototype.createHouseControl = function() {
         vdevEntry = this.controller.vdevInfo["Heating_" + this.id] && this.controller.vdevInfo["Heating_" + this.id].metrics ? this.controller.vdevInfo["Heating_" + this.id].metrics : undefined;
 
     this.pollByStart = function(filter) {
-
         var pollIdentifier = this.event || filter,
             identifierArr = pollIdentifier.split('.'),
             locId = parseInt(identifierArr[1], 10),
@@ -367,7 +366,6 @@ Heating.prototype.createHouseControl = function() {
                                 temp = schedulePreset;
                         }
                     }
-
                     room.targetTemp = 't ~ ' + temp;
                 }
             });
@@ -381,8 +379,6 @@ Heating.prototype.createHouseControl = function() {
     };
 
     this.pollByEnd = function() {
-        //console.log('do by end ...');
-
         var pollIdentifier = this.event,
             identifierArr = pollIdentifier.split('.'),
             locId = parseInt(identifierArr[1], 10),
@@ -436,14 +432,26 @@ Heating.prototype.createHouseControl = function() {
         if (typeof self.registerdSchedules['start'] === 'undefined' || typeof self.registerdSchedules['end'] === 'undefined')
             return false;
 
-        var scheduleFilter = self.registerdSchedules['start'].concat(self.registerdSchedules['end']);
+        // Remove records 'end' with the same data and time as 'start'
+        var registerdSchedulesEnd = self.registerdSchedules['end'].filter(function(scheduleEnd) {
+            var scheduleEndArray = scheduleEnd.split('.')
+
+            var isEndTimeNotEqualStartTime = true;
+            _.forEach(self.registerdSchedules['start'], function(scheduleStart) {
+                var scheduleStartArray = scheduleStart.split('.')
+                if (scheduleStartArray[3] === scheduleEndArray[3] &&
+                    scheduleStartArray[5] === scheduleEndArray[5] &&
+                    scheduleStartArray[6] === scheduleEndArray[6]) {
+                    isEndTimeNotEqualStartTime = false;
+                }
+            });
+            return isEndTimeNotEqualStartTime;
+        });
+        var scheduleFilter = self.registerdSchedules['start'].concat(registerdSchedulesEnd);
 
         scheduleFilter = scheduleFilter.filter(function(schedule) {
             return ~schedule.indexOf(subString);
         });
-
-
-
         _.forEach(scheduleFilter, function(scheduleEntry) {
             var scheduleItems = scheduleEntry.split('.'),
                 now = new Date(),
@@ -601,7 +609,7 @@ Heating.prototype.createHouseControl = function() {
                         self.checkEntry(thermostats, room);
 
                         if (!self.configureSchedules(roomId)) {
-                            currTemp = parseFloat(room.comfort);
+                            currTemp = parseFloat(room.energySave);
                             thermostats.forEach(function(device) {
                                 self.performChangesOnThermostats(device, currTemp);
                             });
@@ -815,7 +823,7 @@ Heating.prototype.initializeSchedules = function(day, rSc, index) {
         endMinute = parseInt(rSc.Endtime.substring(3, 5), 10),
         start = 0,
         end = 0,
-        newDay = day === 6 ? 0 : (day + 1),
+        newDay = parseInt(day) === 6 ? 0 : (parseInt(day) + 1),
         setStart = null,
         setEnd = null,
         tempOrModus = rSc.Temperature;
