@@ -452,6 +452,7 @@ Heating.prototype.createHouseControl = function() {
         scheduleFilter = scheduleFilter.filter(function(schedule) {
             return ~schedule.indexOf(subString);
         });
+
         _.forEach(scheduleFilter, function(scheduleEntry) {
             var scheduleItems = scheduleEntry.split('.'),
                 now = new Date(),
@@ -607,7 +608,6 @@ Heating.prototype.createHouseControl = function() {
                     if ((argRoom === null && command === 'schedule' && room.state !== 'schedule') || (argRoom === null && command === 'custom' && roomCmd === 'schedule') || (!!argRoom && roomCmd === 'schedule')) {
                         // activate schedule
                         self.checkEntry(thermostats, room);
-
                         if (!self.configureSchedules(roomId)) {
                             currTemp = parseFloat(room.energySave);
                             thermostats.forEach(function(device) {
