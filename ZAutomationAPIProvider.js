@@ -2203,7 +2203,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (data !== null) {
 			this.res.status = 200;
 			this.res.headers = {
-				"Content-Type": "image/(png|jpeg|gif)"
+				"Content-Type": "image/*"
 			};
 			this.res.body = data;
 

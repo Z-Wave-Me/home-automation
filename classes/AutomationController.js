@@ -2832,6 +2832,7 @@ AutomationController.prototype.loadModuleMedia = function(moduleName, fileName) 
 			"jpg": "image/jpeg",
 			"jpeg": "image/jpeg",
 			"gif": "image/gif",
+			"svg": "image/svg+xml",
 			
 			"css": "text/css",
 			"js": "text/javascript",
