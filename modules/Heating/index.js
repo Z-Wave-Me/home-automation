@@ -56,7 +56,6 @@ Heating.prototype.prepareSchedule = function(rooms) {
 
                     if (sched) {
                         if (startTime === sched.Endtime) {
-                            console.log("startTime", startTime);
                             hours = parseInt(startTime.substr(0, 2), 10);
                             minutes = parseInt(startTime.substr(3, 2), 10);
 
@@ -250,13 +249,15 @@ Heating.prototype.init = function(config) {
     // restart app after server restart
     this.controller.on('core.start', this.initialCCTurnON);
 
-    // update the list of rooms after deleting a room
-    this.controller.on('location.removed', function(id) {
+    this.updateRoomsList = function(id) {
         delete self.config.roomSettings[id];
         self.saveConfig();
         var newRooms = self.vDev.get('metrics:rooms').filter(function(el) { return parseInt(el.room) != id });
         self.vDev.set('metrics:rooms', newRooms);
-    })
+    }
+
+    // update the list of rooms after deleting a room
+    this.controller.on('location.removed', this.updateRoomsList);
 };
 
 Heating.prototype.stop = function() {
@@ -274,7 +275,6 @@ Heating.prototype.stop = function() {
     for (var key in self.registerdSchedules) {
         self.registerdSchedules[key].forEach(function(pollEntry) {
             self.controller.emit("cron.removeTask", pollEntry);
-            //console.log('remove task ...', self.registerdSchedules[key]);
             if (key === 'start') {
                 self.controller.off(pollEntry, self.pollByStart);
             } else {
@@ -298,8 +298,9 @@ Heating.prototype.stop = function() {
 
     this.controller.emit("cron.removeTask", "HeatingReset_" + this.id + ".poll");
     this.controller.off("HeatingReset_" + this.id + ".poll", this.pollReset);
-
     this.controller.off('core.start', self.initialCCTurnON);
+    this.controller.devices.off('created', this.triggerControl);
+    this.controller.off('location.removed', this.updateRoomsList);
 
     Heating.super_.prototype.stop.call(this);
 };
@@ -385,6 +386,18 @@ Heating.prototype.createHouseControl = function() {
             thermostats = [],
             metrRooms = [];
 
+        // If the end time is equal to the start time do not run the end command
+        var isEndTimeEqualStartTime = false;
+        _.forEach(self.registerdSchedules['start'], function(scheduleStart) {
+            var scheduleStartArray = scheduleStart.split('.');
+            var scheduleEndArray = pollIdentifier.split('.');
+            if (scheduleStartArray[3] === scheduleEndArray[3] &&
+                scheduleStartArray[5] === scheduleEndArray[5] &&
+                scheduleStartArray[6] === scheduleEndArray[6]) {
+                isEndTimeEqualStartTime = true;
+            }
+        });
+        if (isEndTimeEqualStartTime) return;
 
         /*
          * identifierArr[1] ... room name
@@ -432,22 +445,7 @@ Heating.prototype.createHouseControl = function() {
         if (typeof self.registerdSchedules['start'] === 'undefined' || typeof self.registerdSchedules['end'] === 'undefined')
             return false;
 
-        // Remove records 'end' with the same data and time as 'start'
-        var registerdSchedulesEnd = self.registerdSchedules['end'].filter(function(scheduleEnd) {
-            var scheduleEndArray = scheduleEnd.split('.')
-
-            var isEndTimeNotEqualStartTime = true;
-            _.forEach(self.registerdSchedules['start'], function(scheduleStart) {
-                var scheduleStartArray = scheduleStart.split('.')
-                if (scheduleStartArray[3] === scheduleEndArray[3] &&
-                    scheduleStartArray[5] === scheduleEndArray[5] &&
-                    scheduleStartArray[6] === scheduleEndArray[6]) {
-                    isEndTimeNotEqualStartTime = false;
-                }
-            });
-            return isEndTimeNotEqualStartTime;
-        });
-        var scheduleFilter = self.registerdSchedules['start'].concat(registerdSchedulesEnd);
+        var scheduleFilter = self.registerdSchedules['start'].concat(self.registerdSchedules['end']);
 
         scheduleFilter = scheduleFilter.filter(function(schedule) {
             return ~schedule.indexOf(subString);
