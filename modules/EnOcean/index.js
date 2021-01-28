@@ -608,7 +608,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		
 		if (matchDevice(0xa5, 0x04, 0x01)) {
 			// Tempretature & Humidity
-			multilevelSensor("humidity", "humidity", '%', "Humidity Sesnor");
+			multilevelSensor("humidity", "humidity", '%', "Humidity Sensor");
 			if (deviceData.TSensor.value) {
 				multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
 			}
@@ -616,9 +616,9 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 
 		if (matchDevice(0xa5, 0x09, 0x04)) {
 			// CO2 & Tempretature & Humidity
-			multilevelSensor("concentration", "co", 'ppm', "CO2 Sesnor");
+			multilevelSensor("concentration", "co", 'ppm', "CO2 Sensor");
 			if (deviceData.HSensor.value) {
-				multilevelSensor("humidity", "humidity", '%', "Humidity Sesnor");
+				multilevelSensor("humidity", "humidity", '%', "Humidity Sensor");
 						}
 			if (deviceData.TSensor.value) {
 				multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");

@@ -4,7 +4,7 @@
 	"category": "peripherals",
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
-	"icon": "icon.png",
+	"icon": "icon.svg",
 	"moduleName":"EnOcean",
 	"version": "1.0.0",
 	"maturity": "stable",
