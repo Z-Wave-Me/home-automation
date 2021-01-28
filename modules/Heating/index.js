@@ -1,12 +1,13 @@
 /*** Heating Z-Way HA module *******************************************
 
- Version: 1.2.1 stable
- (c) Z-Wave.Me, 2020
+ Version: 1.3 stable
+ (c) Z-Wave.Me, 2021
  -----------------------------------------------------------------------------
  Author:    Niels Roche <nir@zwave.eu>,
 			Martin Petzold <mp@zwave.eu>,
 			Michael Hensche <mh@zwave.eu>,
-			Karsten Reichel <kar@zwave.eu>
+			Karsten Reichel <kar@zwave.eu>,
+            Vitaliy Yurkin <aivs@z-wave.me>
  Description:
  This module creates a central heat control that can control all thermostats of a room
  by defining a temperature sensor and a target temperature.
@@ -36,7 +37,6 @@ Heating.prototype.prepareSchedule = function(rooms) {
     _.each(rooms, function(data, roomID) {
 
         _.each(data.schedule, function(sc, day) {
-
             _.each(sc, function(s) {
                 // is there already some schedule with same start && end && temp ? -> just add day to list
                 sched = _.filter(schedule, function(entry) {
@@ -56,7 +56,6 @@ Heating.prototype.prepareSchedule = function(rooms) {
 
                     if (sched) {
                         if (startTime === sched.Endtime) {
-                            console.log("startTime", startTime);
                             hours = parseInt(startTime.substr(0, 2), 10);
                             minutes = parseInt(startTime.substr(3, 2), 10);
 
@@ -250,13 +249,15 @@ Heating.prototype.init = function(config) {
     // restart app after server restart
     this.controller.on('core.start', this.initialCCTurnON);
 
-    // update the list of rooms after deleting a room
-    this.controller.on('location.removed', function(id) {
+    this.updateRoomsList = function(id) {
         delete self.config.roomSettings[id];
         self.saveConfig();
         var newRooms = self.vDev.get('metrics:rooms').filter(function(el) { return parseInt(el.room) != id });
         self.vDev.set('metrics:rooms', newRooms);
-    })
+    }
+
+    // update the list of rooms after deleting a room
+    this.controller.on('location.removed', this.updateRoomsList);
 };
 
 Heating.prototype.stop = function() {
@@ -274,7 +275,6 @@ Heating.prototype.stop = function() {
     for (var key in self.registerdSchedules) {
         self.registerdSchedules[key].forEach(function(pollEntry) {
             self.controller.emit("cron.removeTask", pollEntry);
-            //console.log('remove task ...', self.registerdSchedules[key]);
             if (key === 'start') {
                 self.controller.off(pollEntry, self.pollByStart);
             } else {
@@ -298,8 +298,9 @@ Heating.prototype.stop = function() {
 
     this.controller.emit("cron.removeTask", "HeatingReset_" + this.id + ".poll");
     this.controller.off("HeatingReset_" + this.id + ".poll", this.pollReset);
-
     this.controller.off('core.start', self.initialCCTurnON);
+    this.controller.devices.off('created', this.triggerControl);
+    this.controller.off('location.removed', this.updateRoomsList);
 
     Heating.super_.prototype.stop.call(this);
 };
@@ -315,7 +316,6 @@ Heating.prototype.createHouseControl = function() {
         vdevEntry = this.controller.vdevInfo["Heating_" + this.id] && this.controller.vdevInfo["Heating_" + this.id].metrics ? this.controller.vdevInfo["Heating_" + this.id].metrics : undefined;
 
     this.pollByStart = function(filter) {
-
         var pollIdentifier = this.event || filter,
             identifierArr = pollIdentifier.split('.'),
             locId = parseInt(identifierArr[1], 10),
@@ -367,7 +367,6 @@ Heating.prototype.createHouseControl = function() {
                                 temp = schedulePreset;
                         }
                     }
-
                     room.targetTemp = 't ~ ' + temp;
                 }
             });
@@ -381,14 +380,24 @@ Heating.prototype.createHouseControl = function() {
     };
 
     this.pollByEnd = function() {
-        //console.log('do by end ...');
-
         var pollIdentifier = this.event,
             identifierArr = pollIdentifier.split('.'),
             locId = parseInt(identifierArr[1], 10),
             thermostats = [],
             metrRooms = [];
 
+        // If the end time is equal to the start time do not run the end command
+        var isEndTimeEqualStartTime = false;
+        _.forEach(self.registerdSchedules['start'], function(scheduleStart) {
+            var scheduleStartArray = scheduleStart.split('.');
+            var scheduleEndArray = pollIdentifier.split('.');
+            if (scheduleStartArray[3] === scheduleEndArray[3] &&
+                scheduleStartArray[5] === scheduleEndArray[5] &&
+                scheduleStartArray[6] === scheduleEndArray[6]) {
+                isEndTimeEqualStartTime = true;
+            }
+        });
+        if (isEndTimeEqualStartTime) return;
 
         /*
          * identifierArr[1] ... room name
@@ -441,8 +450,6 @@ Heating.prototype.createHouseControl = function() {
         scheduleFilter = scheduleFilter.filter(function(schedule) {
             return ~schedule.indexOf(subString);
         });
-
-
 
         _.forEach(scheduleFilter, function(scheduleEntry) {
             var scheduleItems = scheduleEntry.split('.'),
@@ -599,9 +606,8 @@ Heating.prototype.createHouseControl = function() {
                     if ((argRoom === null && command === 'schedule' && room.state !== 'schedule') || (argRoom === null && command === 'custom' && roomCmd === 'schedule') || (!!argRoom && roomCmd === 'schedule')) {
                         // activate schedule
                         self.checkEntry(thermostats, room);
-
                         if (!self.configureSchedules(roomId)) {
-                            currTemp = parseFloat(room.comfort);
+                            currTemp = parseFloat(room.energySave);
                             thermostats.forEach(function(device) {
                                 self.performChangesOnThermostats(device, currTemp);
                             });
@@ -815,7 +821,7 @@ Heating.prototype.initializeSchedules = function(day, rSc, index) {
         endMinute = parseInt(rSc.Endtime.substring(3, 5), 10),
         start = 0,
         end = 0,
-        newDay = day === 6 ? 0 : (day + 1),
+        newDay = parseInt(day) === 6 ? 0 : (parseInt(day) + 1),
         setStart = null,
         setEnd = null,
         tempOrModus = rSc.Temperature;

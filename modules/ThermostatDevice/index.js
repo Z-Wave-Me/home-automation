@@ -46,7 +46,7 @@ ThermostatDevice.prototype.init = function (config) {
 		},
 		overlay: {},
 		handler: function (command, args) {
-			self.vDev.set("metrics:level", parseInt(args.level, 10));
+			self.vDev.set("metrics:level", parseFloat(args.level));
 			self.checkTemp();
 		},
 		moduleId: this.id
