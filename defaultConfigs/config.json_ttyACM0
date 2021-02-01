@@ -112,7 +112,7 @@
 	}, {
 		"id": 6,
 		"moduleId": "SensorsPolling",
-		"active": true,
+		"active": false,
 		"title": "Periodical Sensor Polling",
 		"description": "Queries in an adjustable interval all measurement sensors. It can be entered a list of sensors, which should not be queried.\n(Added by default)",
 		"params": {
