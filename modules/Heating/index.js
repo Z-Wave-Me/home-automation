@@ -482,7 +482,7 @@ Heating.prototype.createHouseControl = function() {
             if (now.getDay() === d) {
                 if (startStop === 'start') {
                     var nowTs = now.getTime(),
-                        midnight = (new Date()).setHours(23, 59),
+                        midnight = (new Date()).setHours(24, 0),
                         startI = startStop === 'start' ? (new Date()).setHours(h, m) : undefined,
                         endI = startStop === 'end' ? (new Date()).setHours(h, m) : undefined,
                         compareString = scheduleItems[0] + '.' + scheduleItems[1] + '.' + scheduleItems[2] + '.' + d;
@@ -497,10 +497,8 @@ Heating.prototype.createHouseControl = function() {
                     if (startStop === 'start' && ((!endI && startI) || (startI && endI && endI < startI))) {
                         nextDay = d === 6 ? 0 : d + 1;
                         newCS = scheduleItems[0] + '.' + scheduleItems[1] + '.' + scheduleItems[2] + '.' + nextDay;
-
-                        endI = getTime(scheduleFilter, compareString + '.end') + 86400000; // add 24h
+                        endI = getTime(scheduleFilter, newCS + '.end') + 86400000; // add 24h
                     }
-
                     if ((!startI && endI && nowTs < endI) ||
                         (!endI && startI && startI <= midnight) || // if now is between start and end AND if end is on new day
                         (startI && endI && startI <= nowTs && nowTs < endI)) { // if now is between start and end
@@ -665,6 +663,11 @@ Heating.prototype.createHouseControl = function() {
             }
 
             //this.set('metrics:state', command);
+            if (argRoom) {
+                // Save current state to config
+                self.config.roomSettings[argRoom].state = command;
+                self.saveConfig();
+            }
 
             this.set('metrics:rooms', self.newRooms);
         },
@@ -676,7 +679,7 @@ Heating.prototype.createHouseControl = function() {
         var roomId = parseInt(room.room, 10);
 
         // check for the stored state
-        room.state = vdevEntry && vdevEntry.rooms[i] && vdevEntry.rooms[i].state ? vdevEntry.rooms[i].state : "energySave";
+        room.state = self.config.roomSettings[roomId].state;
         room.energySave = parseFloat(room.energySave);
         room.targetTemp = vdevEntry && vdevEntry.rooms[i] && vdevEntry.rooms[i].targetTemp ? parseFloat(vdevEntry.rooms[i].targetTemp) : parseFloat(room.comfort);
 
