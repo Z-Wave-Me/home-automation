@@ -16,6 +16,7 @@
 	"m_turn_on":"turn on",
 	"m_turn_off":"turn Off",
 	"m_turn_set":"set to value",
+	"m_update": "request value update",
 	"m_value":"value",
 	"m_is_on":"is on",
 	"m_is_off":"is off",

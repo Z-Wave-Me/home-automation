@@ -297,6 +297,7 @@ function modulePostRender(control) {
 	menuItemAddText('easy-scripting-device-methods', '__m_turn_on__', 'on()');
 	menuItemAddText('easy-scripting-device-methods', '__m_turn_off__', 'off()');
 	menuItemAddText('easy-scripting-device-methods', '__m_turn_set__', 'set(' + exprVal + ')');
+	menuItemAddText('easy-scripting-device-methods', '__m_update__', 'update()');
 	menuItemAddDelimiter('easy-scripting-device-methods');
 	menuItemAddText('easy-scripting-device-methods', '__m_is_on__', 'value() === "on"');
 	menuItemAddText('easy-scripting-device-methods', '__m_is_off__', 'value() === "off"');
