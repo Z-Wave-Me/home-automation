@@ -816,7 +816,7 @@ Heating.prototype.checkEntry = function(thermostats, room) {
 Heating.prototype.initializeSchedules = function(day, rSc, index) {
     var self = this,
         transformHour = function(hour) {
-            return hour === 24 ? 0 : hour;
+            return hour % 24;
         },
         startHour = transformHour(parseInt(rSc.Starttime.substring(0, 2), 10)),
         startMinute = parseInt(rSc.Starttime.substring(3, 5), 10),
@@ -824,7 +824,7 @@ Heating.prototype.initializeSchedules = function(day, rSc, index) {
         endMinute = parseInt(rSc.Endtime.substring(3, 5), 10),
         start = 0,
         end = 0,
-        newDay = parseInt(day) === 6 ? 0 : (parseInt(day) + 1),
+        newDay = (parseInt(day) + 1) % 7,
         setStart = null,
         setEnd = null,
         tempOrModus = rSc.Temperature;
