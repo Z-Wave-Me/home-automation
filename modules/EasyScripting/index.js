@@ -127,6 +127,10 @@ EasyScripting.prototype.setHelpers = function() {
 		this.dev.performCommand("off");
 	};
 	
+	vDevWrapper.prototype.update = function() {
+		this.dev.performCommand("update");
+	};
+	
 	vDevWrapper.prototype.set = function(level) {
 		this.dev.performCommand("exact", { level: level });
 	};
