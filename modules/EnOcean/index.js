@@ -388,7 +388,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 
 		// below vDevIdPrefix and nodeId comes from this scope
 		
-		function binarySensor(dh, type, title) {
+		function binarySensor(dh, type, title, withTimeout) {
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type,
 				defaults: {
@@ -410,6 +410,11 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
 					try {
 						vDev.set("metrics:level", this.value ? "on" : "off");
+						if (withTimeout && this.value) {
+							setTimeout(function() {
+								vDev.set("metrics:level", "off");
+							}, 1000);
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -606,6 +611,18 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySensor("contact", "door", "Door Sensor");
 		}
 		
+		if (matchDevice(0xf6, 0x10, 0x00)) {
+			// Window
+			binarySensor("open", "window", "Window Open Sensor");
+			binarySensor("tilt", "window_tilt", "Window Tilt Sensor");
+		}
+		
+		if (matchDevice(0xf6, 0x10, 0x01)) {
+			// Window
+			binarySensor("open", "window", "Window Open Sensor");
+			binarySensor("tilt", "window_tilt", "Window Tilt Sensor");
+		}
+		
 		if (matchDevice(0xa5, 0x04, 0x01)) {
 			// Tempretature & Humidity
 			multilevelSensor("humidity", "humidity", '%', "Humidity Sensor");
@@ -614,6 +631,23 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			}
 		}
 
+		if (matchDevice(0xa5, 0x06, 0x01)) {
+			// Luminance
+			multilevelSensor("illumination" + deviceData.rangeSelect.value.toString(), "luminance", 'lux', "Luminance");
+		}
+
+		if (matchDevice(0xa5, 0x02, 0x05)) {
+			// Tempretature
+			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
+		}
+
+		if (matchDevice(0xa5, 0x08, 0x01)) {
+			// Motion, Luminance and Temperature Sensor
+			multilevelSensor("illumination", "luminance", 'lux', "Luminance");
+			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
+			binarySensor("pir", "motion", "Motion Sensor", true);
+		}
+		
 		if (matchDevice(0xa5, 0x09, 0x04)) {
 			// CO2 & Tempretature & Humidity
 			multilevelSensor("concentration", "co", 'ppm', "CO2 Sensor");
@@ -655,8 +689,19 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySwitch("setAlarm", "config3", "Set Alarm");
 		}
 		
-		if (matchDevice(0xd2, 0x06, 0xff)) {
+		if (matchDevice(0xd2, 0x06, 0x11)) {
 			// Door
+			binarySensor("windowOpen", "door", "Door Sensor");
+			binarySensor("windowTilt", "window_tilt", "Tilt Sensor");
+			binarySensor("preAlarm", "motion", "Pre Alarm");
+			binarySensor("alarm", "alarm", "Alarm");
+			binarySensor("preAlarmEnabled", "config1", "Pre Alarm");
+			binarySwitch("setPreAlarm", "config2", "Set Pre Alarm");
+			binarySwitch("setAlarm", "config3", "Set Alarm");
+		}
+		
+		if (matchDevice(0xd2, 0x06, 0xff)) {
+			// Door // TODO(Rehau Smart Guard XT development sample - to be removed after Aug 2021)
 			binarySensor("windowOpen", "door", "Door Sensor");
 			binarySensor("windowTilt", "window_tilt", "Tilt Sensor");
 			binarySensor("preAlarm", "motion", "Pre Alarm");
