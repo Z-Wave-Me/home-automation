@@ -153,11 +153,6 @@ Heating.prototype.init = function(config) {
     this.waitingTime = self.config.resetTime * 1000 * 60 * 60; // convert in hours
     self.initFunctions();
     this.createHouseControl();
-    this.initialCCTurnON = function() {
-        self.activateCC = setTimeout(function() {
-            self.vDev.performCommand(self.vDev.get('metrics:state'));
-        }, 20000);
-    };
 
     this.pollReset = function() {
         var now = (new Date()).getTime();
@@ -207,10 +202,44 @@ Heating.prototype.init = function(config) {
 
         if (isThermostat && roomId > 0) {
 
+            var state = self.config.roomSettings[roomId].state,
+                stateName = state + "Temp";
+            if (state === "schedule") {
+                var now = new Date(),
+                    today = (now.getDay()).toString(),
+                    minutesToday = (now.getHours() * 60) + now.getMinutes();
+
+                _.forEach(self.schedule, function(entry) {
+                    if (parseInt(entry.RoomID) === roomId && entry.Weekday.indexOf(today) >= 0) {
+                        var Starttime = entry.Starttime,
+                            Endtime = entry.Endtime,
+                            sHours = parseInt(Starttime.substr(0, 2), 10),
+                            sMinutes = parseInt(Starttime.substr(3, 2), 10),
+                            eHours = parseInt(Endtime.substr(0, 2), 10),
+                            eMinutes = parseInt(Endtime.substr(3, 2), 10),
+                            startMinutesToday = (sHours * 60) + sMinutes,
+                            endMinutesToday = (eHours * 60) + eMinutes;
+                        // Check that now time in schedule range
+                        if (minutesToday >= startMinutesToday && minutesToday < endMinutesToday) {
+                            // Set temperature from schedule
+                            setTimeout(function(){self.performChangesOnThermostats(vdev, parseFloat(entry.Temperature))}, 500);
+                        }
+                        else {
+                            // Set temperature from state frostProtection/energySave/comfort
+                            setTimeout(function(){self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName])}, 500);
+                        }
+                    }
+                });
+            }
+            else {
+                // Set temperature from state frostProtection/energySave/comfort
+                setTimeout(function(){self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName])}, 500);
+            }
+
+
             var entryExists = _.filter(self.fallbackOverTime, function(entry) {
                 return entry.id === vdev.id;
             })
-
             if (entryExists[0]) {
                 entryExists[0].temperature = vdev.get('metrics:level');
             } else {
@@ -219,7 +248,6 @@ Heating.prototype.init = function(config) {
                     temperature: vdev.get('metrics:level')
                 });
             }
-
             //deregister thermostat
             self.controller.devices.off(vdev.id, "change:metrics:level", self.sensorFunction);
             //register thermostat
@@ -232,9 +260,6 @@ Heating.prototype.init = function(config) {
 
     // remove restart listener and timeouts
     this.removeInitListener = setTimeout(function() {
-
-        self.controller.off('core.start', self.initialCCTurnON);
-
         if (self.activateCC) {
             clearTimeout(self.activateCC);
             self.activateCC = null;
@@ -245,9 +270,6 @@ Heating.prototype.init = function(config) {
         }
 
     }, 60000); // wait a minute*/
-
-    // restart app after server restart
-    this.controller.on('core.start', this.initialCCTurnON);
 
     this.updateRoomsList = function(id) {
         delete self.config.roomSettings[id];
@@ -298,7 +320,6 @@ Heating.prototype.stop = function() {
 
     this.controller.emit("cron.removeTask", "HeatingReset_" + this.id + ".poll");
     this.controller.off("HeatingReset_" + this.id + ".poll", this.pollReset);
-    this.controller.off('core.start', self.initialCCTurnON);
     this.controller.devices.off('created', this.triggerControl);
     this.controller.off('location.removed', this.updateRoomsList);
 
@@ -560,13 +581,23 @@ Heating.prototype.createHouseControl = function() {
 
             // do commands for each room entry
             self.newRooms.forEach(function(room, index) {
-
                 var roomId = parseInt(room.room, 10);
                 if (argRoom === null || argRoom === roomId) {
                     // set custom configs if configured
                     if (argRoom === null && command === 'custom') {
                         roomCmd = room.state;
                     }
+
+                    // Set one state for all rooms
+                    if (argRoom === null && command !== 'custom') {
+                        self.config.roomSettings[roomId].state = command;
+                    }
+
+                    // Set state for one room
+                    if (argRoom === roomId && command !== 'custom') {
+                        self.config.roomSettings[roomId].state = command;
+                    }
+
                     var thermostats = self.getThermostats(roomId),
                         // set the current temperature depending on performed command
                         setCurrTemp = function(cmd) {
@@ -653,6 +684,8 @@ Heating.prototype.createHouseControl = function() {
                 }
             });
 
+            self.saveConfig();
+
             if (!!argRoom) {
                 // set state to custom
                 this.set('metrics:state', 'custom');
@@ -660,13 +693,6 @@ Heating.prototype.createHouseControl = function() {
             } else {
                 this.set('metrics:state', command);
                 this.set('metrics:icon', command === 'custom' ? '/ZAutomation/api/v1/load/modulemedia/Heating/heating_custom.png' : 'climatecontrol');
-            }
-
-            //this.set('metrics:state', command);
-            if (argRoom) {
-                // Save current state to config
-                self.config.roomSettings[argRoom].state = command;
-                self.saveConfig();
             }
 
             this.set('metrics:rooms', self.newRooms);
