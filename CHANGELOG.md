@@ -1,3 +1,24 @@
+## 09.02.2021 v3.1.3
+New features:
+* New EnOcean profiles added
+* Added update() to EasyScripting menu
+* Added SVG content-type to the list of loadable images
+* Added ZWAYSessionCookieIgnore header to the auth API
+* Added /devices/:v_dev_id/referenced API to show references to a vDev
+Improvements:
+* Logical Rules 1.5
+* ThermostatDevice with float value
+* Improved InboundNotifications module to allow some duplicate events. General rework
+Fixes:
+* Heating App: Correct start after reboot, correct handling of subsequent time slots, correct handling of rooms deletion and device load/unload
+* Heating App: The schedule follows each other without reset to energy save, also when switching to another day. Without a schedule, energy saving is activated
+* Fixed Network Reorganization infinite loop
+* Removed SensorsPolling from default config - it blocks the queue and is not needed for most of customers anymore
+* Removed empty customIcons
+* Fixed a space before namespace that lead to this type of device not being displayed in the drop list
+* Fixed that toogleButtons names were not displayed
+* Sonos app cleanup
+
 ## 24.12.2020 v3.1.2
 New features:
 * Added SimpleAV to SwitchControlGenerator
