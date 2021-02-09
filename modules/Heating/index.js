@@ -222,18 +222,18 @@ Heating.prototype.init = function(config) {
                         // Check that now time in schedule range
                         if (minutesToday >= startMinutesToday && minutesToday < endMinutesToday) {
                             // Set temperature from schedule
-                            setTimeout(function(){self.performChangesOnThermostats(vdev, parseFloat(entry.Temperature))}, 500);
+                            self.performChangesOnThermostats(vdev, parseFloat(entry.Temperature));
                         }
                         else {
                             // Set temperature from state frostProtection/energySave/comfort
-                            setTimeout(function(){self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName])}, 500);
+                            self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName]);
                         }
                     }
                 });
             }
             else {
                 // Set temperature from state frostProtection/energySave/comfort
-                setTimeout(function(){self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName])}, 500);
+                self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName]);
             }
 
 
