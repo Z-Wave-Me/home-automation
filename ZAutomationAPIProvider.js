@@ -1704,14 +1704,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reqToken = this.req.reqObj.hasOwnProperty("token") ? this.req.reqObj.token : null,
 			tokenObj = {};
 
-		if (typeof this.req.body !== 'object') {
-			reqObj = JSON.parse(this.req.body);
-		} else {
-			// !!! do we need this branch of else?
-			console.log("throw");
-			throw "updateProfileAuth";
-			reqObj = this.req.body;
-		}
+		reqObj = JSON.parse(this.req.body);
 
 		if (profile && (this.req.role === this.ROLE.ADMIN || (this.req.role === this.ROLE.USER && this.req.user === profile.id))) {
 
