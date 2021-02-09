@@ -258,19 +258,6 @@ Heating.prototype.init = function(config) {
     this.controller.devices.on('created', this.triggerControl);
     this.controller.devices.forEach(this.triggerControl);
 
-    // remove restart listener and timeouts
-    this.removeInitListener = setTimeout(function() {
-        if (self.activateCC) {
-            clearTimeout(self.activateCC);
-            self.activateCC = null;
-        }
-        if (self.removeInitListener) {
-            clearTimeout(self.removeInitListener);
-            self.removeInitListener = null;
-        }
-
-    }, 60000); // wait a minute*/
-
     this.updateRoomsList = function(id) {
         delete self.config.roomSettings[id];
         self.saveConfig();
@@ -306,16 +293,6 @@ Heating.prototype.stop = function() {
 
         // clean registry 
         self.registerdSchedules[key] = [];
-    }
-
-    if (self.activateCC) {
-        clearTimeout(self.activateCC);
-        self.activateCC = null;
-    }
-
-    if (self.removeInitListener) {
-        clearTimeout(self.removeInitListener);
-        self.removeInitListener = null;
     }
 
     this.controller.emit("cron.removeTask", "HeatingReset_" + this.id + ".poll");
