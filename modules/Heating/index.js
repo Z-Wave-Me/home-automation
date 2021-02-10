@@ -4,9 +4,9 @@
  (c) Z-Wave.Me, 2021
  -----------------------------------------------------------------------------
  Author:    Niels Roche <nir@zwave.eu>,
-			Martin Petzold <mp@zwave.eu>,
-			Michael Hensche <mh@zwave.eu>,
-			Karsten Reichel <kar@zwave.eu>,
+            Martin Petzold <mp@zwave.eu>,
+            Michael Hensche <mh@zwave.eu>,
+            Karsten Reichel <kar@zwave.eu>,
             Vitaliy Yurkin <aivs@z-wave.me>
  Description:
  This module creates a central heat control that can control all thermostats of a room
@@ -207,10 +207,11 @@ Heating.prototype.init = function(config) {
             if (state === "schedule") {
                 var now = new Date(),
                     today = (now.getDay()).toString(),
-                    minutesToday = (now.getHours() * 60) + now.getMinutes();
+                    minutesToday = (now.getHours() * 60) + now.getMinutes(),
+                    scheduleFounded = false;
 
                 _.forEach(self.schedule, function(entry) {
-                    if (parseInt(entry.RoomID) === roomId && entry.Weekday.indexOf(today) >= 0) {
+                    if (parseInt(entry.RoomID) === roomId) {
                         var Starttime = entry.Starttime,
                             Endtime = entry.Endtime,
                             sHours = parseInt(Starttime.substr(0, 2), 10),
@@ -218,18 +219,21 @@ Heating.prototype.init = function(config) {
                             eHours = parseInt(Endtime.substr(0, 2), 10),
                             eMinutes = parseInt(Endtime.substr(3, 2), 10),
                             startMinutesToday = (sHours * 60) + sMinutes,
-                            endMinutesToday = (eHours * 60) + eMinutes;
-                        // Check that now time in schedule range
-                        if (minutesToday >= startMinutesToday && minutesToday < endMinutesToday) {
+                            endMinutesToday = (eHours * 60) + eMinutes,
+                            weekday = entry.Weekday;
+
+                        // If time in schedule range set schedule temperature
+                        if (weekday.indexOf(today) >= 0 && minutesToday >= startMinutesToday && minutesToday < endMinutesToday) {
                             // Set temperature from schedule
+                            scheduleFounded = true;
                             self.performChangesOnThermostats(vdev, parseFloat(entry.Temperature));
-                        }
-                        else {
-                            // Set temperature from state frostProtection/energySave/comfort
-                            self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName]);
                         }
                     }
                 });
+                // If schedule is not founded set energySave
+                if (scheduleFounded == false) {
+                    self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId].energySaveTemp);
+                }
             }
             else {
                 // Set temperature from state frostProtection/energySave/comfort
@@ -256,7 +260,6 @@ Heating.prototype.init = function(config) {
     }
 
     this.controller.devices.on('created', this.triggerControl);
-    this.controller.devices.forEach(this.triggerControl);
 
     this.updateRoomsList = function(id) {
         delete self.config.roomSettings[id];
@@ -440,8 +443,18 @@ Heating.prototype.createHouseControl = function() {
         var subString = 'Heating.' + roomId + '.',
             tempSet = false;
 
-        if (typeof self.registerdSchedules['start'] === 'undefined' || typeof self.registerdSchedules['end'] === 'undefined')
-            return false;
+        if (typeof self.registerdSchedules['start'] === 'undefined' || typeof self.registerdSchedules['end'] === 'undefined') {
+            // Create listeners for each schedule of the each rooms
+            self.schedule.forEach(function(rSc, index) {
+                // check if there is a '1-3' string and create schedules for each day
+                if (_.isArray(rSc.Weekday) && rSc.Weekday.length > 0) {
+                    rSc.Weekday.forEach(function(day) {
+                        self.initializeSchedules(day, rSc, index);
+                    });
+                }
+            });
+        }
+
 
         var scheduleFilter = self.registerdSchedules['start'].concat(self.registerdSchedules['end']);
 
@@ -553,25 +566,21 @@ Heating.prototype.createHouseControl = function() {
          */
         handler: function(command, args) {
             var argRoom = !args || args.room === "null" ? null : parseInt(args.room, 10),
-                currTemp = null,
                 roomCmd = command;
 
             // do commands for each room entry
             self.newRooms.forEach(function(room, index) {
-                var roomId = parseInt(room.room, 10);
+                var currTemp = null,
+                    roomId = parseInt(room.room, 10);
                 if (argRoom === null || argRoom === roomId) {
+
                     // set custom configs if configured
                     if (argRoom === null && command === 'custom') {
                         roomCmd = room.state;
                     }
 
-                    // Set one state for all rooms
-                    if (argRoom === null && command !== 'custom') {
-                        self.config.roomSettings[roomId].state = command;
-                    }
-
-                    // Set state for one room
-                    if (argRoom === roomId && command !== 'custom') {
+                    // Set state for room
+                    if (command !== 'custom') {
                         self.config.roomSettings[roomId].state = command;
                     }
 
@@ -609,7 +618,7 @@ Heating.prototype.createHouseControl = function() {
                     }
 
                     // activate schedule by room or if comfort mode for all rooms is choosen
-                    if ((argRoom === null && command === 'schedule' && room.state !== 'schedule') || (argRoom === null && command === 'custom' && roomCmd === 'schedule') || (!!argRoom && roomCmd === 'schedule')) {
+                    if ((argRoom === null && command === 'schedule') || (argRoom === null && command === 'custom' && roomCmd === 'schedule') || (!!argRoom && roomCmd === 'schedule')) {
                         // activate schedule
                         self.checkEntry(thermostats, room);
                         if (!self.configureSchedules(roomId)) {
