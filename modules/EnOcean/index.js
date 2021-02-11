@@ -388,7 +388,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 
 		// below vDevIdPrefix and nodeId comes from this scope
 		
-		function binarySensor(dh, type, title, withTimeout) {
+		function binarySensor(dh, type, title, withTimeout, handler) {
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type,
 				defaults: {
@@ -409,8 +409,13 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
 					try {
-						vDev.set("metrics:level", this.value ? "on" : "off");
-						if (withTimeout && this.value) {
+						var val = this.value;
+						if (handler) {
+							val = handler(val);
+							if (val === null) return; // don't hanlde if null
+						}
+						vDev.set("metrics:level", val ? "on" : "off");
+						if (withTimeout && val) {
 							setTimeout(function() {
 								vDev.set("metrics:level", "off");
 							}, 1000);
@@ -692,7 +697,14 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		if (matchDevice(0xd2, 0x06, 0x11)) {
 			// Door
 			binarySensor("windowOpen", "door", "Door Sensor");
-			binarySensor("windowTilt", "window_tilt", "Tilt Sensor");
+			binarySensor("windowTilt", "window_tilt", "Tilt Sensor", undefined, function(val) {
+				switch(val) {
+					case 0: return false; // treat unknow as non-tilted
+					case 1: return true;
+					case 2: return false;
+					case 3: return null; // reserved - don't handle
+				}
+			});
 			binarySensor("preAlarm", "motion", "Pre Alarm");
 			binarySensor("alarm", "alarm", "Alarm");
 			binarySensor("preAlarmEnabled", "config1", "Pre Alarm");
