@@ -208,7 +208,7 @@ Heating.prototype.init = function(config) {
                 var now = new Date(),
                     today = (now.getDay()).toString(),
                     minutesToday = (now.getHours() * 60) + now.getMinutes(),
-                    scheduleFounded = false;
+                    scheduleFound = false;
 
                 _.forEach(self.schedule, function(entry) {
                     if (parseInt(entry.RoomID) === roomId) {
@@ -225,13 +225,13 @@ Heating.prototype.init = function(config) {
                         // If time in schedule range set schedule temperature
                         if (weekday.indexOf(today) >= 0 && minutesToday >= startMinutesToday && minutesToday < endMinutesToday) {
                             // Set temperature from schedule
-                            scheduleFounded = true;
+                            scheduleFound = true;
                             self.performChangesOnThermostats(vdev, parseFloat(entry.Temperature));
                         }
                     }
                 });
-                // If schedule is not founded set energySave
-                if (scheduleFounded == false) {
+                // If schedule is not found set energySave
+                if (scheduleFound == false) {
                     self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId].energySaveTemp);
                 }
             }
