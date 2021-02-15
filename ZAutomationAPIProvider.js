@@ -316,15 +316,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			self = this,
 			session;
 
+		reply.headers = {
+			"Set-Cookie": "ZWAYSession=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+		};
+
+		reply.code = 200;
+			
 		var sessionId = this.controller.auth.getSessionId(this.req);
 
 		if (sessionId) {
-			reply.headers = {
-				"Set-Cookie": "ZWAYSession=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
-			};
-
-			reply.code = 200;
-			
 			var session = {};
 			var sessionProfile = _.find(this.controller.profiles, function(profile) {
 				var sess = _.find(profile.authTokens, function(authToken) {
@@ -337,11 +337,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				// do not logout from permanent tokens - they should be deleted explicitelly via remoteToken API call
 				this.controller.removeToken(sessionProfile, session.sid);
 			}
-		} else {
-			reply.code = 404;
-			reply.error = 'Could not logout. No session found.';
 		}
-
+		
 		return reply;
 	},
 	// Devices
