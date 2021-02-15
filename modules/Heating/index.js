@@ -808,16 +808,16 @@ Heating.prototype.checkEntry = function(thermostats, room) {
                     self.initializeSchedules(day, rSc, index);
                 });
             } else {
-                self.controller.addNotification('error', self.langFile.err_wrong_date_format, 'module', 'Heating');
+                console.log("---  Heating_" + self.id,self.langFile.err_wrong_date_format);
             }
         });
 
     } else if (self.schedule && _.isArray(thermostats) && thermostats.length < 1) {
         var thisRoom = self.controller.getLocation(self.controller.locations, room.room);
         var roomName = thisRoom ? thisRoom.title : room.room;
-        self.controller.addNotification('warning', self.langFile.err_no_thermostats + roomName, 'module', 'Heating');
+        console.log("---  Heating_" + self.id,self.langFile.err_no_thermostats + roomName);
     } else {
-        self.controller.addNotification('warning', self.langFile.err_parsing_schedule_data, 'module', 'Heating');
+        console.log("---  Heating_" + self.id,self.langFile.err_parsing_schedule_data);
     }
 };
 
@@ -842,7 +842,6 @@ Heating.prototype.initializeSchedules = function(day, rSc, index) {
         tempOrModus = rSc.Temperature;
 
     if (tempOrModus !== '') {
-
         if (_.isNumber(tempOrModus) && (tempOrModus < 5 || tempOrModus > 29)) {
             self.controller.addNotification('warning', self.langFile.err_temp_out_of_range, 'module', 'Heating');
         } else {
@@ -872,11 +871,9 @@ Heating.prototype.initializeSchedules = function(day, rSc, index) {
         }
     } else if ((startHour < 0 && startHour > 24) && (endHour < 0 && endHour > 24) &&
         (startMinute < 0 && startMinute > 60) && (endMinute < 0 && endMinute > 60)) {
-
-        self.controller.addNotification('warning', self.langFile.err_wrong_time_format, 'module', 'Heating');
+        console.log("---  Heating_" + self.id,self.langFile.err_wrong_time_format);
     } else {
-
-        self.controller.addNotification('warning', self.langFile.err_something_went_wrong, 'module', 'Heating');
+        console.log("---  Heating_" + self.id,self.langFile.err_something_went_wrong);
     }
 };
 
