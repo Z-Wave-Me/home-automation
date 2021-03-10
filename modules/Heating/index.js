@@ -365,7 +365,7 @@ Heating.prototype.createHouseControl = function() {
                                 temp = parseFloat(room.comfort);
                                 break;
                             default:
-                                temp = schedulePreset;
+                                temp = parseFloat(schedulePreset);
                         }
                     }
                     room.targetTemp = 't ~ ' + temp;
@@ -747,9 +747,7 @@ Heating.prototype.performChangesOnThermostats = function(thermostat, temp) {
     }
 
     // perform command on thermostat
-    thermostat.performCommand("exact", {
-        "level": String(temp)
-    });
+    thermostat.performCommand("exact", {"level": temp});
 };
 
 Heating.prototype.initFunctions = function() {
