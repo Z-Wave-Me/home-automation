@@ -470,6 +470,9 @@ Heating.prototype.createHouseControl = function() {
                 h = parseInt(scheduleItems[5], 10),
                 d = parseInt(scheduleItems[3], 10);
 
+
+            // At first remove, so that there are no duplicates
+            self.controller.emit("cron.removeTask", scheduleEntry);
             self.controller.emit("cron.addTask", scheduleEntry, {
                 minute: m,
                 hour: h,
@@ -712,7 +715,7 @@ Heating.prototype.createHouseControl = function() {
             self.checkEntry(thermostats, room);
 
             // set and activate schedule entries for rooms
-            self.configureSchedules(roomId);
+            //self.configureSchedules(roomId);
         }
 
         //deregister reset
