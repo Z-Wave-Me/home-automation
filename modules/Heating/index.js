@@ -333,10 +333,7 @@ Heating.prototype.createHouseControl = function() {
         schedulePreset = identifierArr[7] !== 'poll' ? identifierArr[7].replace('-', '.') : null;
 
         //get thermostats
-        thermostats = self.controller.devices.filter(function(device) {
-            return device.get('deviceType') === 'thermostat' &&
-                device.get('location') === locId;
-        });
+        thermostats = self.getThermostats(locId);
 
         if (thermostats.length > 0) {
 
@@ -409,10 +406,7 @@ Heating.prototype.createHouseControl = function() {
         //schedulePreset = identifierArr[7] !== 'poll'? identifierArr[7].replace('-', '.') : null;
 
         //get thermostats
-        thermostats = self.controller.devices.filter(function(device) {
-            return device.get('deviceType') === 'thermostat' &&
-                device.get('location') === locId;
-        });
+        thermostats = self.getThermostats(locId);
 
         if (thermostats.length > 0) {
 
