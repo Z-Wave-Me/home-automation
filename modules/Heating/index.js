@@ -40,93 +40,28 @@ Heating.prototype.prepareSchedule = function(rooms) {
             _.each(sc, function(s) {
                 // is there already some schedule with same start && end && temp ? -> just add day to list
                 sched = _.filter(schedule, function(entry) {
-                    return entry.Starttime == s.stime && entry.Endtime == s.etime && entry.Temperature == s.temp;
+                    return entry.RoomID == roomID && entry.Starttime == s.stime && entry.Endtime == s.etime && entry.Temperature == s.temp;
                 });
 
                 if (!_.isEmpty(sched)) {
                     sched[0].Weekday.push(day);
                 } else {
-                    // if there is some prevoius schedule, we maybe need to add some gap between both
-                    sched = _.filter(schedule, function(entry) {
-                        return entry.Weekday.indexOf(day) && (entry.Endtime == s.stime || entry.Starttime == s.etime);
-                    });
-
-                    startTime = s.stime;
-                    endTime = s.etime;
-
-                    if (sched) {
-                        if (startTime === sched.Endtime) {
-                            hours = parseInt(startTime.substr(0, 2), 10);
-                            minutes = parseInt(startTime.substr(3, 2), 10);
-
-                            // add one minute
-                            minutes++;
-
-                            if (minutes > 59) {
-                                minutes = 0;
-                                hours++;
-                                if (hours > 23) {
-                                    hours = 0;
-                                }
-                            }
-
-                            if (minutes < 10) {
-                                minutes = "0" + minutes;
-                            }
-
-                            if (hours < 10) {
-                                hours = "0" + hours;
-                            }
-                            startTime = hours + ":" + minutes;
-                        }
-                        if (endTime === s.Starttime) {
-                            hours = parseInt(endTime.substr(0, 2), 10);
-                            minutes = parseInt(endTime.substr(3, 2), 10);
-
-                            // remove one minute
-                            minutes--;
-
-                            if (minutes < 0) {
-                                minutes = 59;
-                                hours--;
-                                if (hours < 0) {
-                                    hours = 23;
-                                }
-                            }
-
-                            if (minutes < 10) {
-                                minutes = "0" + minutes;
-                            }
-
-                            if (hours < 10) {
-                                hours = "0" + hours;
-                            }
-
-                            endTime = hours + ":" + minutes;
-                        }
-                    }
-
                     // add schedule
                     schedule.push({
                         "RoomID": roomID,
                         "Room": "",
                         "Weekday": [day],
-                        "Starttime": startTime,
-                        "Endtime": endTime,
+                        "Starttime": s.stime,
+                        "Endtime": s.etime,
                         "Temperature": s.temp
                     });
                 }
             });
-
         });
-
-
     });
 
     return schedule;
 };
-
-
 
 Heating.prototype.init = function(config) {
     Heating.super_.prototype.init.call(this, config);
@@ -219,7 +154,7 @@ Heating.prototype.init = function(config) {
                             eHours = parseInt(Endtime.substr(0, 2), 10),
                             eMinutes = parseInt(Endtime.substr(3, 2), 10),
                             startMinutesToday = (sHours * 60) + sMinutes,
-                            endMinutesToday = (eHours * 60) + eMinutes,
+                            endMinutesToday = (eHours * 60) + eMinutes === 0 ? 24*60 : (eHours * 60) + eMinutes,
                             weekday = entry.Weekday;
 
                         // If time in schedule range set schedule temperature
@@ -482,7 +417,7 @@ Heating.prototype.createHouseControl = function() {
             }
 
             /*
-             * filter for start /end - by index of or substring 'Heating.1.0.2.'
+             * filter for start/end - by index of or substring 'Heating.1.0.2.'
              * check if start <= n < end
              * check logic
              *
@@ -491,18 +426,12 @@ Heating.prototype.createHouseControl = function() {
                 if (startStop === 'start') {
                     var nowTs = now.getTime(),
                         midnight = (new Date()).setHours(24, 0),
-                        startI = startStop === 'start' ? (new Date()).setHours(h, m) : undefined,
-                        endI = startStop === 'end' ? (new Date()).setHours(h, m) : undefined,
-                        compareString = scheduleItems[0] + '.' + scheduleItems[1] + '.' + scheduleItems[2] + '.' + d;
-
-                    if (startStop === 'start') {
+                        startI = (new Date()).setHours(h, m),
+                        compareString = scheduleItems[0] + '.' + scheduleItems[1] + '.' + scheduleItems[2] + '.' + d,
                         endI = getTime(scheduleFilter, compareString + '.end');
-                    } else {
-                        startI = getTime(scheduleFilter, compareString + '.start');
-                    }
 
                     // check if end is next day
-                    if (startStop === 'start' && ((!endI && startI) || (startI && endI && endI < startI))) {
+                    if ((!endI && startI) || (startI && endI && endI < startI)) {
                         nextDay = d === 6 ? 0 : d + 1;
                         newCS = scheduleItems[0] + '.' + scheduleItems[1] + '.' + scheduleItems[2] + '.' + nextDay;
                         endI = getTime(scheduleFilter, newCS + '.end') + 86400000; // add 24h
@@ -567,7 +496,7 @@ Heating.prototype.createHouseControl = function() {
 
             // do commands for each room entry
             self.newRooms.forEach(function(room, index) {
-                var currTemp = null,
+                var currTemp,
                     roomId = parseInt(room.room, 10);
                 if (argRoom === null || argRoom === roomId) {
 
@@ -581,27 +510,22 @@ Heating.prototype.createHouseControl = function() {
                         self.config.roomSettings[roomId].state = command;
                     }
 
-                    var thermostats = self.getThermostats(roomId),
-                        // set the current temperature depending on performed command
-                        setCurrTemp = function(cmd) {
-                            switch (cmd) {
-                                case 'comfort':
-                                    currTemp = parseFloat(room.comfort);
-                                    break;
-                                case 'energySave':
-                                    currTemp = parseFloat(room.energySave);
-                                    break;
-                                case 'frostProtection':
-                                    currTemp = parseFloat(room.frostProtection);
-                                    break;
-                                default:
-                                    currTemp = null;
-                            }
-                        };
+                    var thermostats = self.getThermostats(roomId);
 
                     // set current temperature
-                    if (roomCmd !== 'schedule') {
-                        setCurrTemp(roomCmd);
+                    switch (roomCmd) {
+                        case 'comfort':
+                            currTemp = parseFloat(room.comfort);
+                            break;
+                        case 'energySave':
+                            currTemp = parseFloat(room.energySave);
+                            break;
+                        case 'frostProtection':
+                            currTemp = parseFloat(room.frostProtection);
+                            break;
+                        case 'schedule':
+                        default:
+                            currTemp = null;
                     }
 
                     // set thermostat temperature
@@ -639,10 +563,8 @@ Heating.prototype.createHouseControl = function() {
                         }
 
                         for (var startStop in self.registerdSchedules) {
-                            var newScheduleRegistry = [];
-
-                            // search in registry for all regsitered schedules that schould be removed from Cron
-                            newScheduleRegistry = _.filter(self.registerdSchedules[startStop], function(schedule) {
+                            // search in registry for all regsitered schedules that should be removed from Cron
+                            var newScheduleRegistry = _.filter(self.registerdSchedules[startStop], function(schedule) {
                                 return ~schedule.indexOf(subString);
                             });
 
