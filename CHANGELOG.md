@@ -1,3 +1,12 @@
+## 12.03.2021 v.3.1.4
+New features:
+* New EnOcean profiles added
+Improvements:
+* EnOcean: periodical save of zddx, Made API non-public by default
+* Improved Security App
+* Improved Heating App
+* ThermostatDevice: Allow calling handler from create event
+
 ## 09.02.2021 v3.1.3
 New features:
 * New EnOcean profiles added
