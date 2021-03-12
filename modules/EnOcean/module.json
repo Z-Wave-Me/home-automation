@@ -18,7 +18,7 @@
 		"name": "zeno",
 		"port": "/dev/ttyUSB0",
 		"enableAPI": true,
-		"publicAPI": true,
+		"publicAPI": false,
 		"createVDev": true,
 		"config": "config"
 	},

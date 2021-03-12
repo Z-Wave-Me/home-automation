@@ -124,6 +124,11 @@ EnOcean.prototype.startBinding = function () {
 	if (this.config.createVDev !== false) {
 		this.gateDevicesStart();
 	}
+	
+	// save data every hour for hot start
+	this.saveDataXMLTimer = setInterval(function() {
+		self.zeno.devices.SaveData();
+	}, 3600 * 1000);
 };
 
 EnOcean.prototype.stop = function () {
@@ -158,6 +163,11 @@ EnOcean.prototype.stopBinding = function () {
 	}
 	if (global.EnOcean) {
 		delete global.EnOcean[this.config.name];
+	}
+
+	if (this.saveDataXMLTimer) {
+		clearInterval(this.saveDataXMLTimer);
+		this.saveDataXMLTimer = undefined;
 	}
 
 	this.stopped = true;
@@ -646,6 +656,13 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
 		}
 
+		if (matchDevice(0xa5, 0x07, 0x03)) {
+			// Motion, Luminance and Supply Voltage
+			multilevelSensor("illumination", "luminance", 'lux', "Luminance");
+			multilevelSensor("voltage", "voltage", 'V', "Supply Voltage");
+			binarySensor("pir", "motion", "Motion Sensor", true);
+		}
+		
 		if (matchDevice(0xa5, 0x08, 0x01)) {
 			// Motion, Luminance and Temperature Sensor
 			multilevelSensor("illumination", "luminance", 'lux', "Luminance");
