@@ -656,6 +656,13 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			multilevelSensor("temperature", "temperature", '°C', "Temperature Sensor");
 		}
 
+		if (matchDevice(0xa5, 0x07, 0x03)) {
+			// Motion, Luminance and Supply Voltage
+			multilevelSensor("illumination", "luminance", 'lux', "Luminance");
+			multilevelSensor("voltage", "voltage", 'V', "Supply Voltage");
+			binarySensor("pir", "motion", "Motion Sensor", true);
+		}
+		
 		if (matchDevice(0xa5, 0x08, 0x01)) {
 			// Motion, Luminance and Temperature Sensor
 			multilevelSensor("illumination", "luminance", 'lux', "Luminance");
