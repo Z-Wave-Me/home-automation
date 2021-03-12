@@ -225,16 +225,8 @@ Security.prototype.init = function(config) {
 	this.start = config.times.start;
 	this.interval = config.times.interval;
 	this.silent = config.times.silent;
-	this.makeVDevs(config);
-	this.wipeOwnVDevs();
-
-	if (config.times.aktive) {
-		self.setAutomation('on');
-	} else {
-		self.setAutomation('off');
-	}
-
-	/**
+	this.autoDeviceTrigger = "on";
+		/**
 	 * function who will Connected to devices who trigger the Alarm
 	 * @param idev device
 	 */
@@ -295,16 +287,23 @@ Security.prototype.init = function(config) {
 		busDatas = self.busDataMap[idev.id + '#' + true];
 		this.inputFunctionIF();
 	};
-	this.autoDeviceTrigger = "on";
-	/*if (self.timeSchedule && self.timeSchedule[0]) {
-		self.timeSchedule = self.scheduleAnalyse(self.timeSchedule);
-	}*/
-	this.initStates();
-	this.state = self.initState;
-	this.initDevices();
-	this.state.doEntry();
-	this.state.doMake();
-	this.vDev.performCommand(self.performEnum.COFF.name);
+
+	setTimeout(function(){ 
+		console.log("------------------Security start"); 
+		self.makeVDevs(config);
+		self.wipeOwnVDevs();
+		if (config.times.aktive) {
+			self.setAutomation('on');
+		} else {
+			self.setAutomation('off');
+		}
+		self.initStates();
+		self.state = self.initState;
+		self.initDevices();
+		self.state.doEntry();
+		self.state.doMake();
+		self.vDev.performCommand(self.performEnum.COFF.name);
+	}, 30000);
 };
 
 /**

@@ -333,10 +333,7 @@ Heating.prototype.createHouseControl = function() {
         schedulePreset = identifierArr[7] !== 'poll' ? identifierArr[7].replace('-', '.') : null;
 
         //get thermostats
-        thermostats = self.controller.devices.filter(function(device) {
-            return device.get('deviceType') === 'thermostat' &&
-                device.get('location') === locId;
-        });
+        thermostats = self.getThermostats(locId);
 
         if (thermostats.length > 0) {
 
@@ -365,7 +362,7 @@ Heating.prototype.createHouseControl = function() {
                                 temp = parseFloat(room.comfort);
                                 break;
                             default:
-                                temp = schedulePreset;
+                                temp = parseFloat(schedulePreset);
                         }
                     }
                     room.targetTemp = 't ~ ' + temp;
@@ -409,10 +406,7 @@ Heating.prototype.createHouseControl = function() {
         //schedulePreset = identifierArr[7] !== 'poll'? identifierArr[7].replace('-', '.') : null;
 
         //get thermostats
-        thermostats = self.controller.devices.filter(function(device) {
-            return device.get('deviceType') === 'thermostat' &&
-                device.get('location') === locId;
-        });
+        thermostats = self.getThermostats(locId);
 
         if (thermostats.length > 0) {
 
@@ -470,6 +464,9 @@ Heating.prototype.createHouseControl = function() {
                 h = parseInt(scheduleItems[5], 10),
                 d = parseInt(scheduleItems[3], 10);
 
+
+            // At first remove, so that there are no duplicates
+            self.controller.emit("cron.removeTask", scheduleEntry);
             self.controller.emit("cron.addTask", scheduleEntry, {
                 minute: m,
                 hour: h,
@@ -712,7 +709,7 @@ Heating.prototype.createHouseControl = function() {
             self.checkEntry(thermostats, room);
 
             // set and activate schedule entries for rooms
-            self.configureSchedules(roomId);
+            //self.configureSchedules(roomId);
         }
 
         //deregister reset
@@ -744,9 +741,7 @@ Heating.prototype.performChangesOnThermostats = function(thermostat, temp) {
     }
 
     // perform command on thermostat
-    thermostat.performCommand("exact", {
-        "level": String(temp)
-    });
+    thermostat.performCommand("exact", {"level": temp});
 };
 
 Heating.prototype.initFunctions = function() {
