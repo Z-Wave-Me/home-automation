@@ -124,6 +124,11 @@ EnOcean.prototype.startBinding = function () {
 	if (this.config.createVDev !== false) {
 		this.gateDevicesStart();
 	}
+	
+	// save data every hour for hot start
+	this.saveDataXMLTimer = setInterval(function() {
+		self.zeno.devices.SaveData();
+	}, 3600 * 1000);
 };
 
 EnOcean.prototype.stop = function () {
@@ -158,6 +163,11 @@ EnOcean.prototype.stopBinding = function () {
 	}
 	if (global.EnOcean) {
 		delete global.EnOcean[this.config.name];
+	}
+
+	if (this.saveDataXMLTimer) {
+		clearInterval(this.saveDataXMLTimer);
+		this.saveDataXMLTimer = undefined;
 	}
 
 	this.stopped = true;
