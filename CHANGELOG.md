@@ -1,4 +1,4 @@
-## 12.03.2021 v.3.1.4
+## 12.03.2021 v3.1.4
 New features:
 * New EnOcean profiles added
 Improvements:
