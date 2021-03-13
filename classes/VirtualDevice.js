@@ -260,6 +260,7 @@ _.extend(VirtualDevice.prototype, {
 				// to track location change
 				var profilesDevicesBefore;
 				if ("location" in keyName) {
+					delete keyName["locationName"]; // remove locationName if present - it will be recalculated
 					profilesDevicesBefore = this.collection.controller.profiles.map(function(p) { return { id: p.id, devices: that.collection.controller.devicesByUser(p.id) }; });
 				}
 				
