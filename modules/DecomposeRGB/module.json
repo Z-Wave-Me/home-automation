@@ -1,0 +1,43 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "legacy_products_workaround",
+	"author": "Z-Wave.Me",
+	"homepage": "http://razberry.z-wave.me",
+	"icon": "icon.png",
+	"moduleName":"DecomposeRGB",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"rgb": null
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"rgb": {
+				"field": "enum",
+				"datasource": "namespaces",
+				"enum": "namespaces:devices_switchRGBW:deviceId",
+				"required": true
+			}
+		},
+		"required": true
+	},
+	"options": {
+		"fields": {
+			"rgb": {
+				"label": "__l_rgb__",
+				"type": "select",
+				"datasource": "namespaces",
+				"field": "optionLabels",
+				"optionLabels": "namespaces:devices_switchRGBW:deviceName"
+			}
+		}
+	}
+}
