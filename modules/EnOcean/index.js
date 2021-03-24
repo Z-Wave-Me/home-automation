@@ -399,6 +399,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		// below vDevIdPrefix and nodeId comes from this scope
 		
 		function binarySensor(dh, type, title, withTimeout, handler) {
+			if (self.controller.devices.get(vDevIdPrefix + type)) return;
+			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type,
 				defaults: {
@@ -436,6 +438,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		}
 
 		function multilevelSensor(dh, type, scale, title) {
+			if (self.controller.devices.get(vDevIdPrefix + type)) return;
+			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type,
 				defaults: {
@@ -463,6 +467,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		}
 
 		function rockerSwitch() {
+			if (self.controller.devices.get(vDevIdPrefix + "switch" + "_left") || self.controller.devices.get(vDevIdPrefix + "switch" + "_right")) return;
+			
 			var vDevL = self.controller.devices.create({
 				deviceId: vDevIdPrefix + "switch" + "_left",
 				defaults: {
@@ -557,6 +563,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		}
 
 		function thermostat(dh, type, scale, title) {
+			if (self.controller.devices.get(vDevIdPrefix + type)) return;
+			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type,
 				defaults: {
@@ -587,6 +595,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 		}
 
 		function binarySwitch(dh, type, title) {
+			if (self.controller.devices.get(vDevIdPrefix + type)) return;
+			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type,
 				defaults: {
@@ -772,6 +782,8 @@ EnOcean.prototype.parseGenericProfile = function (nodeId) {
 		if (deviceData.rorg.value != 0xb0) return;
 		
 		function binarySensorGP(o, type, title) {
+			if (self.controller.devices.get(vDevIdPrefix + type + "_" + o)) return;
+			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type + "_" + o,
 				defaults: {
@@ -799,6 +811,8 @@ EnOcean.prototype.parseGenericProfile = function (nodeId) {
 		}
 		
 		function binarySwitchGP(o, i, type, title) {
+			if (self.controller.devices.get(vDevIdPrefix + type + "_" + o + "_" + i)) return;
+			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevIdPrefix + type + "_" + o + "_" + i,
 				defaults: {
