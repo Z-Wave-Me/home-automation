@@ -6,7 +6,7 @@ git pull || exit
 
 if [ -n "$1" ]; then
 	TAG="$1"
-	if [ -z "`grep -E '^## [0-9.]* '"$TAG"'$' CHANGELOG.md`" ]; then
+	if [ -z "`grep -E '^## [0-9\.]* '"$TAG"'$' CHANGELOG.md`" ]; then
 		echo "Please update CHANGELOG.md:"
 		echo "##" `date +'%d.%m.%Y'` "$TAG"
 		echo "New features:"
