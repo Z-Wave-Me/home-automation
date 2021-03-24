@@ -4372,14 +4372,30 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
 			var icon = "switch";
 			var probeType = "switch";
-			if (this.zway.devices[nodeId].data.specificType.value == 0x05) {
-				icon = "siren";
-				probeType = "siren";
-			} else if (this.zway.devices[nodeId].data.specificType.value == 0x06) {
-				icon = "valve";
-				probeType = "valve";
-			}
-			
+
+			switch (this.zway.devices[nodeId].data.specificType.value) {
+				case 0x01:
+					probeType = "power_switch_binary";
+					break;
+				case 0x03:
+					probeType = "scene_switch_binary";
+					break;
+				case 0x04:
+					probeType = "power_strip";
+					break;
+				case 0x05:
+					icon = "siren";
+					probeType = "siren";
+					break;
+				case 0x06:
+					icon = "valve";
+					probeType = "valve";
+					break;
+				default:
+					probeType = "switch";
+					break;
+			};
+
 			defaults = {
 				deviceType: "switchBinary",
 				location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location)? smartStartEntryPreset.location : 0,
