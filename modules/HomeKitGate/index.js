@@ -1,7 +1,7 @@
 /*** HomeKitGate Z-Way HA module *******************************************
  
-Version: 2.1.0
-(c) Z-Wave.Me, 2020
+Version: 2.2
+(c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Yurkin Vitaliy <aivs@z-wave.me>
 Description:
@@ -84,11 +84,9 @@ HomeKitGate.prototype.init = function (config) {
 	this.hk.accessories = new HKAccessoryCollection(this.hk);
 	
 	// add main accessory
-	var razberryAccessory = this.hk.accessories.addAccessory("Z-Way", "Z-Wave.Me", "RaZberry", "0123456789", self.getAccessoryIdByVDevId("__RaZberry_Controller"));
-	var razberryService = razberryAccessory.addService("49FB9D4D-0FEA-4BF1-8FA6-E7B18AB86DCE", "razberryService");
-	razberryService.addCharacteristic(HomeKit.Characteristics.State, "uint8" , 0, ["pr", "ev"], {"maxValue":1, "minValue":0, "minStep":1});
-	razberryService.addCharacteristic(HomeKit.Characteristics.Version, "string", "1.0", ["pr", "ev"]);
-	razberryService.addCharacteristic(HomeKit.Characteristics.ControlPoint, "data", "", ["pr", "pw", "ev"]);
+	var razberryAccessory = this.hk.accessories.addAccessory("Z-Way", "Z-Wave.Me", "RaZberry", "12345678", "3.1.4", self.getAccessoryIdByVDevId("__RaZberry_Controller"));
+	var razberryService = razberryAccessory.addService(HomeKit.Services.HAPProtocolInformation, "RaZberry Service");
+	razberryService.addCharacteristic(HomeKit.Characteristics.Version, "string", "2.2", ["pr", "ev"]);
 
 	this.mapping = {}
 
