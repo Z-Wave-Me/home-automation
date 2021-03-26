@@ -368,9 +368,10 @@ NotificationFiltering.prototype.userConfigUpdate = function(user, config) {
 	// remove all rules for that user and his channels (keep global flags)
 	var toRemove = [];
 	this.config.rules.forEach(function(rule, index) {
+		var chUser;
 		if (
 		   (rule.recipient_type === "user" && rule.user == user) || // non-strict == because might be as string in module params
-		   (rule.recipient_type === "channel" && self.controller.getNotificationChannel(rule.channel).user == user) // non-strict == because might be as string in module params
+		   (rule.recipient_type === "channel" && (chUser = self.controller.getNotificationChannel(rule.channel)) && chUser.user == user) // non-strict == because might be as string in module params
 		) {
 			rule.devices = [];
 			if (!rule.logLevel) { // if no global flags, remove
