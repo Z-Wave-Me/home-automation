@@ -22,9 +22,6 @@ executeFile("Utils.js");
 // do transition script to adopt old versions to new
 executeFile("updateBackendConfig.js");
 
-// Homekit
-executeFile("HomeKit-debug.js");
-
 // overload saveObject to allow backup/restore of all JSON files in storage
 __saveObject = saveObject;
 __storageContent = loadObject("__storageContent") || [];
