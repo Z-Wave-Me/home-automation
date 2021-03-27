@@ -3702,7 +3702,7 @@ AutomationController.prototype.findModulesReferencingDeviceId = function(device)
 			return false;
 		} else {
 			// all other modules
-			return JSON.stringify(config).match(device);
+			return config ? JSON.stringify(config).match(device) : false;
 		}
 	}
 
