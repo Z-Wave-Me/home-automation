@@ -7,8 +7,10 @@ Improvements:
 * Improved Security App
 * Improved Heating App
 * ThermostatDevice: Allow calling handler from create event
+* HomeKit support improved
 Fixes:
 * Fixed EnOcean duplicate devices
+* Fixed error in NotificationFiltering when Channel is absent
 
 ## 09.02.2021 v3.1.3
 New features:
