@@ -101,7 +101,7 @@ MobileAppSupport.prototype.registerApp = function(token, title, profileName, os,
 		
 		var profile = this.controller.getProfile(user) || {};
 		var lang = this.loadModuleLang();
-		this.addNotification("notification", lang.m_welcome + ": " + app.title + " (" + profile.name + " / " + profile.login + + ", " + profileName + ")", "module");
+		this.addNotification("notification", lang.m_welcome + ": " + app.title + " (" + profile.name + " / " + profile.login + ", " + profileName + ")", "module");
 		
 		this.permanentAuthToken(user, authToken);
 		
