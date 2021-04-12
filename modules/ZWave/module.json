@@ -17,6 +17,7 @@
 		"description": "__m_descr__",
 		"name": "zway",
 		"port": "/dev/ttyACM0",
+		"speed": 115200,
 		"enableAPI": true,
 		"publicAPI": false,
 		"createVDev": true,
@@ -29,6 +30,10 @@
 		"properties": {
 			"port": {
 				"type": "string",
+				"required": true
+			},
+			"speed": {
+				"type": "number",
 				"required": true
 			},
 			"name": {
@@ -66,6 +71,9 @@
 		"fields": {
 			"port": {
 				"label": "__l_port__"
+			},
+			"speed": {
+				"label": "__l_speed__"
 			},
 			"name": {
 				"label": "__l_name__",

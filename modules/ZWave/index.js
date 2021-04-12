@@ -222,7 +222,7 @@ ZWave.prototype.startBinding = function() {
 	var self = this;
 
 	try {
-		this.zway = new ZWaveBinding(this.config.name, this.config.port, {
+		this.zway = new ZWaveBinding(this.config.name, this.config.port, this.config.speed || 115200, {
 			configFolder: this.config.config || 'config',
 			translationsFolder: this.config.translations || 'translations',
 			zddxFolder: this.config.ZDDX || 'ZDDX',
@@ -322,6 +322,21 @@ ZWave.prototype.startBinding = function() {
 	this.CommunicationLogger();
 	
 	this.networkReorganizationInit();
+	
+	var uartSpeed = function(type) {
+		var data = this;
+
+		if (type === self.ZWAY_DATA_CHANGE_TYPE["Updated"])
+		if (self.config.speed !== data.value) {
+			self.config.speed = data.value;
+			self.saveConfig();
+			self.zway.stop();
+			self.tryRestartLater();
+		}
+		
+	}
+	
+	this.zway.controller.data.hardware.uartSpeed.bind(uartSpeed);
 };
 
 ZWave.prototype.stop = function() {

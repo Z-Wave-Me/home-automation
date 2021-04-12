@@ -2,6 +2,7 @@
 	"m_title":"Z-Wave Netzwerksteuerung",
 	"m_descr":"Diese App bildet die Information zu Ihrem Z-Wave Netzwerk in Ihrer UI ab. Infolgedessen muss dieses während der ganzen Zeit aktiviert sein, in welcher Sie mit dem Z-Wave Geräte arbeiten wollen. In der Verwendung mit diesem Modul kann sehr viel falsch gemacht werden, daher lassen Sie es unberührt, solange es nicht wirklich benötigt wird.",
 	"l_port":"Serieller Port der verwendet werden soll:",
+	"l_speed":"Serial Port speed in kbps",
 	"l_name":"Interner Name",
 	"h_name":"Dies sollte ein valider JS key String sein. Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
 	"rl_enableAPI":"Aktiviere Z-Wave API",
