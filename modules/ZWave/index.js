@@ -525,8 +525,7 @@ ZWave.prototype.CommunicationLogger = function() {
 	function RSSItoText(rssiValue) {
 		if (rssiValue === 125) return "too low";
 		if (rssiValue === 126) return "too high";
-		if (rssiValue === 127) return "";
-		if (rssiValue > 10 && rssiValue < 128) return "invalid";
+		if (rssiValue === 127) return "not available";
 		if (rssiValue > 127) rssiValue -= 256;
 		return rssiValue.toString(10) + ' dBm';
 	}
@@ -3524,8 +3523,8 @@ ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId,
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
 	// three prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
-	//  (dataBindings, zway, nodeId,							 path, func)
-	//  (dataBindings, zway,									 path, func) // bind to controller data
+	//  (dataBindings, zway, nodeId,                             path, func)
+	//  (dataBindings, zway,                                     path, func) // bind to controller data
 
 	var pathArr = [],
 		data = null,
@@ -6249,8 +6248,8 @@ ZWave.prototype.lastRSSIData = function() {
 	function valueToRSSI(rssi) {
 		// From z-way/ZDefsPublic.h
 		var
-			RSSI_VALID_LOWEST        = -94, // Valid values are in range from -94 dBm
-			RSSI_VALID_HIGHEST       = -32, // to -32 dBm
+			RSSI_VALID_LOWEST        = -100, // Valid values are in range from -128 dBm, but actual sensitivity is -100 dBm
+			RSSI_VALID_HIGHEST       = 124, // to -32 dBm
 			RSSI_BELOW_SENSITIVITY   = 125, // No signal detected. The RSSI is too low to measure precisely
 			RSSI_MAX_POWER_SATURATED = 126, // Receiver saturated. RSSI too high to measure precisely
 			RSSI_NOT_AVAILABLE       = 127; // RSSI measurement not available

@@ -2037,32 +2037,6 @@ AutomationController.prototype.permanentToken = function(profile, token) {
 	return found;
 };
 
-/*AutomationController.prototype.allowLoginForwarding = function (request) {
-	var forward = false,
-		find = false,
-		zbw_cookie;
-
-
-	// check if find.z-wave.me
-	if (request.headers['Cookie']) {
-		zbw_cookie = request.headers['Cookie'].split(";").map(function(el) {
-			return el.trim().split("=");
-		}).filter(function(el) {
-			return el[0] === "ZBW_SESSID"
-		})
-	}
-
-	find = zbw_cookie && zbw_cookie.length > 0;
-
-	// check for forwarding if license for controller is still active and forwarding is set
-	// dont' treat find.z-wave.me as local user (connection comes from local ssh server)
-	if (this.config.forwardCITAuth && zway && zway.controller.data.countDown && zway.controller.data.countDown.value > 0 && !find) {
-		forward = true;
-	}
-
-	return forward;
-};*/
-
 AutomationController.prototype.getIPAddress = function() {
 	var ip = "";
 	try {
