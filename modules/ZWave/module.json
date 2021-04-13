@@ -34,7 +34,9 @@
 			},
 			"speed": {
 				"type": "number",
-				"required": true
+				"required": true,
+				"enum": [ 1200, 2400, 1800, 4800, 7200, 9600, 14400, 19200, 28800, 38400, 57600, 115200, 230400, 460800, 921600 ],
+				"default": 115200
 			},
 			"name": {
 				"type": "string",
@@ -73,7 +75,10 @@
 				"label": "__l_port__"
 			},
 			"speed": {
-				"label": "__l_speed__"
+				"label": "__l_speed__",
+				"type": "select",
+				"optionLabels": [ "1200 bits/s", "2400 bits/s", "1800 bits/s", "4800 bits/s", "7200 bits/s", "9600 bits/s", "14400 bits/s", "19200 bits/s", "28800 bits/s", "38400 bits/s", "57600 bits/s", "115200 bits/s", "230400 bits/s", "460800 bits/s", "921600 bits/s" ],
+				"sort": false
 			},
 			"name": {
 				"label": "__l_name__",
