@@ -2492,7 +2492,7 @@ ZWave.prototype.defineHandlers = function() {
 			}
 
 			if (data.file && data.file.content) {
-				console.log("Fetching firmware from file " + data.file);
+				console.log("Fetching firmware from file " + data.file.name);
 
 				var buf = new ArrayBuffer(data.file.content.length);
 				var bufView = new Uint8Array(buf);
@@ -2590,6 +2590,8 @@ ZWave.prototype.defineHandlers = function() {
 			var result = "in progress";
 
 			if (data.file && data.file.content) {
+				console.log("Fetching bootloader from file " + data.file.name);
+				
 				var buf = new ArrayBuffer(data.file.content.length);
 				var bufView = new Uint8Array(buf);
 				for (var i = 0; i < data.file.content.length; i++) {
