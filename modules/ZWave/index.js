@@ -4236,8 +4236,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
 
-	// avoid errors during exclusion
-	if (!this.zway.devices[nodeId]) {
+	// avoid errors during binding stop and device exclusion
+	if (!this.zway || !this.zway.devices[nodeId]) {
 		return;
 	}
 
