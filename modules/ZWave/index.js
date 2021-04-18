@@ -2597,62 +2597,80 @@ ZWave.prototype.defineHandlers = function() {
 				for (var i = 0; i < data.file.content.length; i++) {
 					bufView[i] = data.file.content.charCodeAt(i);
 				}
+				var data = buf;
 
-				var L = 32,
-					seg = parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12 ? 0x74 : 6, // Функция бутлодера принимает номер сегмента 
-
-					addr = seg * 0x800, // ==12k
-					data = buf;
-
-				for (var i = 0; i < data.byteLength; i += L) {
-					var arr = (new Uint8Array(data.slice(i, i + L)));
-					if (arr.length == 1) {
-						arr = [arr[0]]
-						arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-					}
-					zway.NVMExtWriteLongBuffer(addr + i, arr);
-				}
-
-				zway.NVMExtWriteLongBuffer(addr - 2, [0, 0], // we only need one byte, but a due to some error single byte is not read
-					function() {
-						//Вызываем перезапись bootloder
-						zway.ZMEBootloaderFlash(seg, function() {
-							result = "done";
-							zway.stop(); // to force re-start Z-Way
-						}, function() {
-							result = "failed";
-						});
+				if (parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12) {
+					var arr = (new Uint8Array(data.slice(0, 30)));
+					zway.ZMEBootloaderLoadFlash(data.slice(0, 5), function() {
+						result = "done";
+						zway.stop(); // to force re-start Z-Way
+					}, function() {
+						result = "failed";
 					});
+				} else {
+					var L = 32,
+						seg = 6, // Функция бутлодера принимает номер сегмента
+						addr = seg * 0x800; // ==12k
+
+					for (var i = 0; i < data.byteLength; i += L) {
+						var arr = (new Uint8Array(data.slice(i, i + L)));
+						if (arr.length == 1) {
+							arr = [arr[0]]
+							arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+						}
+						zway.NVMExtWriteLongBuffer(addr + i, arr);
+					}
+
+					zway.NVMExtWriteLongBuffer(addr - 2, [0, 0], // we only need one byte, but a due to some error single byte is not read
+						function() {
+							//Вызываем перезапись bootloder
+							zway.ZMEBootloaderFlash(seg, function() {
+								result = "done";
+								zway.stop(); // to force re-start Z-Way
+							}, function() {
+								result = "failed";
+							});
+						});
+				}
 			} else if (data.url) {
 				http.request({
 					url: data.url,
 					async: true,
 					contentType: "application/octet-stream",
 					success: function(response) {
-						var L = 32,
-							seg = parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12 ? 0x74 : 6, // Функция бутлодера принимает номер сегмента 
-							addr = seg * 0x800, // ==12k
-							data = response.data;
-
-						for (var i = 0; i < data.byteLength; i += L) {
-							var arr = (new Uint8Array(data.slice(i, i + L)));
-							if (arr.length == 1) {
-								arr = [arr[0]]
-								arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
-							}
-							zway.NVMExtWriteLongBuffer(addr + i, arr);
-						}
-
-						zway.NVMExtWriteLongBuffer(addr - 2, [0, 0], // we only need one byte, but a due to some error single byte is not read
-							function() {
-								//Вызываем перезапись bootloder
-								zway.ZMEBootloaderFlash(seg, function() {
-									result = "done";
-									zway.stop(); // to force re-start Z-Way
-								}, function() {
-									result = "failed";
-								});
+						if (parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12) {
+							zway.ZMEBootloaderLoadFlash(data, function() {
+								result = "done";
+								zway.stop(); // to force re-start Z-Way
+							}, function() {
+								result = "failed";
 							});
+						} else {
+							var L = 32,
+								seg = 6, // Функция бутлодера принимает номер сегмента
+								addr = seg * 0x800, // ==12k
+								data = response.data;
+
+							for (var i = 0; i < data.byteLength; i += L) {
+								var arr = (new Uint8Array(data.slice(i, i + L)));
+								if (arr.length == 1) {
+									arr = [arr[0]]
+									arr.push(0xff); // we only need one byte, but a due to some error single byte is not read
+								}
+								zway.NVMExtWriteLongBuffer(addr + i, arr);
+							}
+
+							zway.NVMExtWriteLongBuffer(addr - 2, [0, 0], // we only need one byte, but a due to some error single byte is not read
+								function() {
+									//Вызываем перезапись bootloder
+									zway.ZMEBootloaderFlash(seg, function() {
+										result = "done";
+										zway.stop(); // to force re-start Z-Way
+									}, function() {
+										result = "failed";
+									});
+								});
+						}
 					},
 					error: function(res) {
 						console.error("Failed to download bootloader: " + res.statusText);
