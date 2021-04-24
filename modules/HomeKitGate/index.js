@@ -1,6 +1,6 @@
 /*** HomeKitGate Z-Way HA module *******************************************
  
-Version: 2.2
+Version: 2.2.1
 (c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Yurkin Vitaliy <aivs@z-wave.me>
@@ -86,7 +86,9 @@ HomeKitGate.prototype.init = function (config) {
 	// add main accessory
 	var razberryAccessory = this.hk.accessories.addAccessory("Z-Way", "Z-Wave.Me", "RaZberry", "12345678", "3.1.4", self.getAccessoryIdByVDevId("__RaZberry_Controller"));
 	var razberryService = razberryAccessory.addService(HomeKit.Services.HAPProtocolInformation, "RaZberry Service");
-	razberryService.addCharacteristic(HomeKit.Characteristics.Version, "string", "2.2", ["pr", "ev"]);
+	razberryService.addCharacteristic(HomeKit.Characteristics.State, "uint8" , 0, ["pr", "ev"], {"maxValue":1, "minValue":0, "minStep":1});
+	razberryService.addCharacteristic(HomeKit.Characteristics.Version, "string", "1.0", ["pr", "ev"]);
+	razberryService.addCharacteristic(HomeKit.Characteristics.ControlPoint, "data", "", ["pr", "pw", "ev"]);
 
 	this.mapping = {}
 
