@@ -47,6 +47,7 @@
 		"params": {
 			"name": "zway",
 			"port": "/dev/ttyAMA0",
+			"speed": 115200,
 			"enableAPI": true,
 			"publicAPI": false,
 			"createVDev": true,
