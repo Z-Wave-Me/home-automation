@@ -462,6 +462,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + type,
 				defaults: {
 					deviceType: 'sensorBinary',
+					technology: "EnOcean",
 					metrics: {
 						probeTitle: type,
 						scaleTitle: '',
@@ -501,6 +502,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + type,
 				defaults: {
 					deviceType: "sensorMultilevel",
+					technology: "EnOcean",
 					metrics: {
 						probeTitle: type,
 						scaleTitle: scale,
@@ -530,6 +532,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + "switch" + "_left",
 				defaults: {
 					deviceType: "switchControl",
+					technology: "EnOcean",
 					metrics: {
 						level: '',
 						icon: '',
@@ -546,6 +549,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + "switch" + "_right",
 				defaults: {
 					deviceType: "switchControl",
+					technology: "EnOcean",
 					metrics: {
 						level: '',
 						icon: '',
@@ -628,6 +632,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + type,
 				defaults: {
 					deviceType: "thermostat",
+					technology: "EnOcean",
 					metrics: {
 						scaleTitle: scale, // TODO!!! Check if F scale is defined in EnOcean
 						level: '',
@@ -660,6 +665,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + type,
 				defaults: {
 					deviceType: 'switchBinary',
+					technology: "EnOcean",
 					metrics: {
 						icon: 'switch',
 						level: '',
@@ -856,6 +862,7 @@ EnOcean.prototype.parseGenericProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + type + "_" + o,
 				defaults: {
 					deviceType: 'sensorBinary',
+					technology: "EnOcean",
 					metrics: {
 						probeTitle: type,
 						scaleTitle: '',
@@ -885,6 +892,7 @@ EnOcean.prototype.parseGenericProfile = function (nodeId) {
 				deviceId: vDevIdPrefix + type + "_" + o + "_" + i,
 				defaults: {
 					deviceType: 'switchBinary',
+					technology: "EnOcean",
 					metrics: {
 						icon: 'switch',
 						level: '',
