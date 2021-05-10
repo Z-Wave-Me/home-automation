@@ -19,6 +19,13 @@ VirtualDevice = function (options) {
 		location = options.defaults.hasOwnProperty('location')? options.defaults.location : 0,
 		creationTime = options.defaults.hasOwnProperty('creationTime')? options.defaults.creationTime : 0;
 
+	_.defaults(options.defaults, {
+                technology: "Virtual",
+                manufacturer: "Z-Wave.Me",
+                product: "Virtual device",
+                firmware: zwayVersion.release
+	});
+	
 	_.extend(this, options, {
 		id: options.deviceId,
 		accessAttrs: [
@@ -37,6 +44,10 @@ VirtualDevice = function (options) {
 			'creationTime',
 			'probeType',
 			'customIcons',
+			'technology',
+			'manufacturer',
+			'product',
+			'firmware',
 			'order',
 			'nodeId'
 		],
