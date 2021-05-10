@@ -84,7 +84,7 @@ HomeKitGate.prototype.init = function (config) {
 	this.hk.accessories = new HKAccessoryCollection(this.hk);
 	
 	// add main accessory
-	var razberryAccessory = this.hk.accessories.addAccessory("Z-Way", "Z-Wave.Me", "RaZberry", "12345678", "3.1.4", self.getAccessoryIdByVDevId("__RaZberry_Controller"));
+	var razberryAccessory = this.hk.accessories.addAccessory("Z-Way", "Z-Wave.Me", "RaZberry", "12345678", zwayVersion.release, self.getAccessoryIdByVDevId("__RaZberry_Controller"));
 	var razberryService = razberryAccessory.addService(HomeKit.Services.HAPProtocolInformation, "RaZberry Service");
 	razberryService.addCharacteristic(HomeKit.Characteristics.State, "uint8" , 0, ["pr", "ev"], {"maxValue":1, "minValue":0, "minStep":1});
 	razberryService.addCharacteristic(HomeKit.Characteristics.Version, "string", "1.0", ["pr", "ev"]);
@@ -106,11 +106,14 @@ HomeKitGate.prototype.init = function (config) {
 			return;
 
 		var title = vDev.get("metrics:title") || vDev.id;
-		var manufacturer = "z-wave.me"; // todo
+		var manufacturer = vDev.get("manufacturer") || "Z-Wave.Me";
+		var firmwareVersion = vDev.get("firmware") || zwayVersion.release;
+		var product = vDev.get("product") || deviceType;
 
 		var m = self.mapping[vDev.id] = {};
-		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, deviceType, vDev.id, self.getAccessoryIdByVDevId(vDev.id));
 
+		var accessory = m.$accessory = self.hk.accessories.addAccessory(title, manufacturer, product, vDev.id, firmwareVersion, self.getAccessoryIdByVDevId(vDev.id));
+		
 		if (deviceType === "switchBinary") {
 			// skip thermostat mode
 			if (vDev.id.slice(-2) === "64") return;
