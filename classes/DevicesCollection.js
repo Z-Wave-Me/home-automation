@@ -148,6 +148,7 @@ _.extend(DevicesCollection.prototype, {
 			console.log("Can not cleanup device info: device " + identificator + " exists");
 		}
 		
+		that.emit('wipedOut', identificator);
 		that.controller.clearVdevInfo(identificator);
 	},
 	where: function (obj) {
