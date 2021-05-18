@@ -955,7 +955,7 @@ AutomationController.prototype.stopInstance = function(instance) {
 			return dev.id;
 		});
 
-		// cleanup devices
+		// remove devices
 		if (instDevices.length > 0) {
 			instDevices.forEach(function(id) {
 				// check for device entry again
@@ -1073,7 +1073,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 		return id !== model.id;
 	});
 
-	// cleanup
+	// remove and cleanup
 	if (instDevices.length > 0) {
 		instDevices.forEach(function(vDev) {
 			// check for vDevInfo entry
