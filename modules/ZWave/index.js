@@ -2052,16 +2052,6 @@ ZWave.prototype.defineHandlers = function() {
 		};
 	})(this);
 
-	// attach packetlog handler. on Z-Way binding stop it will be released itself, no need to write stop code
-	if (zway.controller && zway.controller.data && zway.controller.data.incomingPacket) {
-		zway.controller.data.incomingPacket.bind(function() {
-			ws.push({
-				type: 'me.z-wave.namespaces.z-wave.packetLog',
-				data: this.value
-			});
-		});
-	};
-
 	this.ZWaveAPI.CommunicationHistory = function(url, request) {
 		var body = {
 				"code": 200,
