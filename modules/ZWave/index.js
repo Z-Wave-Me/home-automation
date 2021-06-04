@@ -2468,13 +2468,13 @@ ZWave.prototype.defineHandlers = function() {
 					addr =  0x7800; // M25PE10
 				} else {
 					skip1800 =
-						zway.controller.data.bootloaderCRC.value !== 0x8aaa // bootloader for RaZberry 6.70
+						zway.controller.data.bootloader.crc.value !== 0x8aaa // bootloader for RaZberry 6.70
 						&&
-						zway.controller.data.bootloaderCRC.value !== 0x7278 // bootloader for UZB 6.70
+						zway.controller.data.bootloader.crc.value !== 0x7278 // bootloader for UZB 6.70
 						&&
-						zway.controller.data.bootloaderCRC.value !== 0x9d04 // bootloader for UZB 6.70
+						zway.controller.data.bootloader.crc.value !== 0x9d04 // bootloader for UZB 6.70
 						&&
-						zway.controller.data.bootloaderCRC.value !== 0x8b4b // bootloader for Z-Box 6.70
+						zway.controller.data.bootloader.crc.value !== 0x8b4b // bootloader for Z-Box 6.70
 						&&
 						parseFloat(zway.controller.data.SDK.value.substr(0, 4)) < 6.71; // bootloader for 6.71 SDK
 					addr = skip1800 ? 0x7800: 0x20000; // M25PE40 on old and new SDKs
