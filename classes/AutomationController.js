@@ -62,22 +62,27 @@ AutomationController.prototype.init = function() {
 
 	function pushNamespaces(device, locationNspcOnly) {
 		self.generateNamespaces(function(namespaces) {
-			ws.push('me.z-wave.namespaces.update', JSON.stringify(namespaces));
+			ws.push('me.z-wave.namespaces.update', JSON.stringify(namespaces), self.profilesByRole(self.auth.ROLE.ADMIN));
 		}, device, locationNspcOnly);
 	}
 
 	self.loadModules(function() {
 		self.emit("core.init");
 
+		// update device state
+		self.devices.on('change:metrics:level', function(device) {
+			ws.push("me.z-wave.devices.level", JSON.stringify(device.toJSON()), self.profilesByDevice(device.id));
+		});
+
 		// update namespaces if device title has changed
 		self.devices.on('change:metrics:title', function(device) {
-			ws.push("me.z-wave.devices.title_update", JSON.stringify(device.toJSON()));
+			ws.push("me.z-wave.devices.title_update", JSON.stringify(device.toJSON()), self.profilesByDevice(device.id));
 			pushNamespaces(device, false);
 		});
 
 		// update only location namespaces if device location has changed
 		self.devices.on('change:location', function(device) {
-			ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()));
+			ws.push("me.z-wave.devices.location_update", JSON.stringify(device.toJSON()), self.profilesByRole(self.auth.ROLE.ADMIN));
 			pushNamespaces(device, true);
 			var id = device.get('id');
 			locationId = device.get('location'),
@@ -116,24 +121,24 @@ AutomationController.prototype.init = function() {
 
 		// update namespaces if device permanently_hidden status has changed
 		self.devices.on('change:permanently_hidden', function(device) {
-			ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()));
+			ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()), self.profilesByDevice(device.id));
 			pushNamespaces(device, false);
 		});
 
 		// update namespaces if device removed status has changed
 		self.devices.on('change:metrics:removed', function(device) {
-			ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()));
+			ws.push("me.z-wave.devices.visibility_update", JSON.stringify(device.toJSON()), self.profilesByDevice(device.id));
 			pushNamespaces(device, false);
 		});
 
 		// update namespaces if structure of devices collection changed
 		self.devices.on('created', function(device) {
-			ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()));
+			ws.push("me.z-wave.devices.add", JSON.stringify(device.toJSON()), self.profilesByDevice(device.id));
 			pushNamespaces(device);
 		});
 
 		self.devices.on('destroy', function(device) {
-			ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()));
+			ws.push("me.z-wave.devices.destroy", JSON.stringify(device.toJSON()), self.profilesByDevice(device.id));
 		});
 
 		self.devices.on('removed', function(device) {
@@ -164,7 +169,7 @@ AutomationController.prototype.init = function() {
 		});
 
 		self.on("notifications.push", function(notice) {
-			ws.push("me.z-wave.notifications.add", JSON.stringify(notice));
+			ws.push("me.z-wave.notifications.add", JSON.stringify(notice), self.profilesByRole(self.auth.ROLE.ADMIN));
 		});
 	});
 };
@@ -3546,6 +3551,24 @@ AutomationController.prototype.concatDeviceListEntries = function(devices) {
 AutomationController.prototype.profileByUser = function(userId) {
 	return _.find(this.profiles, function(profile) {
 		return profile.id === userId
+	});
+};
+
+AutomationController.prototype.profilesByRole = function(role) {
+	return this.profiles.filter(function(profile) {
+		return profile.role === role;
+	}).map(function(profile) {
+		return profile.id;
+	});
+};
+
+AutomationController.prototype.profilesByDevice = function(devId) {
+	var self = this;
+	
+	return this.profiles.filter(function(profile) {
+		return profile.role === self.auth.ROLE.ADMIN || (profile.devices && (profile.devices.indexOf(devId) !== -1));
+	}).map(function(profile) {
+		return profile.id;
 	});
 };
 

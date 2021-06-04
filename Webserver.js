@@ -50,6 +50,13 @@ ws = new WebServer(8083, function(req) {
 	}
 	
 	return null;
+}, function(req) {
+	var auth = controller.auth.resolve(req, controller.auth.ROLE.USER);
+	if (!auth) {
+		return 0; // there is no profile with Id = 0
+	} else {
+		return auth.user;
+	}
 }, {
 	document_root: "htdocs"
 });
