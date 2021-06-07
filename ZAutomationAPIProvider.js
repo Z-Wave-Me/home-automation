@@ -2151,10 +2151,17 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null,
 				code: 200
 			},
-			obj;
+			obj, _obj;
 
 		if ((moduleName !== '' || !!moduleName || moduleName) && (fileName !== '' || !!fileName || fileName)) {
 			obj = this.controller.loadModuleMedia(moduleName, fileName);
+			
+			if (obj && obj.data === "") { // for folder we will get empty - try to open index.html
+				_obj = this.controller.loadModuleMedia(moduleName, fileName + "/index.html");
+				if (_obj && !!_obj.data) {
+					obj = _obj;
+				}
+			}
 
 			if (!this.controller.modules[moduleName]) {
 				reply.code = 404;
