@@ -224,7 +224,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			resProfile.showWelcome = true;
 
 			delete this.controller.config.showWelcome;
-			this.controller.saveConfig();
+			this.controller.saveConfig(true);
 		}
 
 		return {
@@ -3402,7 +3402,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		// if reboot has flag firstaccess=true add showWelcome to controller config
 		if (this.req.query.hasOwnProperty('firstaccess') && this.req.query.firstaccess) {
 			this.controller.config.showWelcome = true;
-			this.controller.saveConfig();
+			this.controller.saveConfig(true);
 		}
 
 		// reboot after 5 seconds

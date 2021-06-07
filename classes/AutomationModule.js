@@ -77,7 +77,7 @@ AutomationModule.prototype.saveConfig = function(config) {
 		}));
 
 	this.controller.instances[index].params = config || this.config;
-	this.controller.saveConfig();
+	this.controller.saveConfig(true);
 };
 
 AutomationModule.prototype.getName = function() {

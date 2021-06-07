@@ -139,8 +139,8 @@ ZWave.prototype.loadObject = function(name) {
 	}
 };
 
-ZWave.prototype.saveObject = function(name, obj) {
-	return saveObject(this.config.name + "_" + name, obj);
+ZWave.prototype.saveObject = function(name, obj, immediate) {
+	return saveObject(this.config.name + "_" + name, obj, immediate);
 };
 
 ZWave.prototype.init = function(config) {
@@ -161,7 +161,7 @@ ZWave.prototype.init = function(config) {
 
 	if (!!!this.expert_config) {
 		this.expert_config = self.default_expert_config;
-		this.saveObject("expertconfig.json", this.expert_config);
+		this.saveObject("expertconfig.json", this.expert_config, true);
 	}
 
 	this.cmdClasses = this.loadModuleJSON("cmd_classes.json").zw_classes.cmd_class;
@@ -1085,7 +1085,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 				this.saveDSKProvisioningList(dskProvisioningList);
 
 				// save dsk collection
-				this.saveObject("dskCollection", this.dskCollection);
+				this.saveObject("dskCollection", this.dskCollection, true);
 			} else {
 				successful = 409;
 			}
@@ -1140,7 +1140,7 @@ ZWave.prototype.updateDSKEntry = function(dskEntry) {
 			}
 
 			// save dsk collection
-			this.saveObject("dskCollection", this.dskCollection);
+			this.saveObject("dskCollection", this.dskCollection, true);
 
 			successful = true;
 		}
@@ -1183,7 +1183,7 @@ ZWave.prototype.removeDSKEntry = function(dskEntryID) {
 			this.saveDSKProvisioningList(dskProvisioningList);
 
 			// save dsk collection
-			this.saveObject("dskCollection", this.dskCollection);
+			this.saveObject("dskCollection", this.dskCollection, true);
 
 			successful = true;
 		}
@@ -2721,7 +2721,7 @@ ZWave.prototype.defineHandlers = function() {
 					rd = JSON.parse(res.data);
 
 					if (rd.fixes && rd.fixes.length > 0 && rd.last_update && rd.last_update > postfix.last_update) {
-						saveObject('postfix.json', rd);
+						saveObject('postfix.json', rd, true);
 						success = 1;
 					} else {
 						success = 2;
@@ -2850,7 +2850,7 @@ ZWave.prototype.defineHandlers = function() {
 
 			}
 
-			saveObject("custompostfix.json", custom_postfix);
+			saveObject("custompostfix.json", custom_postfix, true);
 
 			setTimeout(function() {
 				instanceObj = _.filter(self.controller.instances, function(instance){
@@ -2892,7 +2892,7 @@ ZWave.prototype.defineHandlers = function() {
 
 					custom_postfix.fixes = fixes;
 
-					saveObject("custompostfix.json", custom_postfix);
+					saveObject("custompostfix.json", custom_postfix, true);
 
 					setTimeout(function() {
 						instanceObj = _.filter(self.controller.instances, function(instance){
@@ -2959,7 +2959,7 @@ ZWave.prototype.defineHandlers = function() {
 					'routemap_img'
 				));
 
-				self.saveObject('expertconfig.json', self.expert_config);
+				self.saveObject('expertconfig.json', self.expert_config, true);
 
 				return {
 					status: 200,
@@ -3293,7 +3293,7 @@ ZWave.prototype.defineHandlers = function() {
 				self.saveDSKProvisioningList([]);
 
 				// save dsk collection
-				self.saveObject("dskCollection", self.dskCollection);
+				self.saveObject("dskCollection", self.dskCollection, true);
 
 				success = true;
 			} else {
@@ -4113,7 +4113,7 @@ ZWave.prototype.gateDevicesStart = function() {
 							smartStartEntryPreset = dskEntry;
 
 							// save dsk collection
-							self.saveObject("dskCollection", self.dskCollection);
+							self.saveObject("dskCollection", self.dskCollection, true);
 
 							// console.log('###');
 							// console.log('########################################################################################');
@@ -4183,7 +4183,7 @@ ZWave.prototype.gateDevicesStart = function() {
 				self.dskCollection[dskEntryIndex] = dskEntry;
 
 				// save dsk collection
-				self.saveObject("dskCollection", self.dskCollection);
+				self.saveObject("dskCollection", self.dskCollection, true);
 			}
 		}
 	}, "");

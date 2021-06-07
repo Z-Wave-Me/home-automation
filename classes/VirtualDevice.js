@@ -329,7 +329,6 @@ _.extend(VirtualDevice.prototype, {
 			this.set(attrs, options);
 		}
 		this.collection.controller.setVdevInfo(this.id, this.attributes);
-		//this.collection.controller.saveConfig();
 		return this;
 	},
 	toJSON: function () {

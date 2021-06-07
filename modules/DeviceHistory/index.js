@@ -70,7 +70,7 @@ _.extend(DeviceHistory.prototype, {
 				}
 			});
 
-			saveObject('history',null);
+			saveObject('history', null, true);
 			oldHistory = undefined;
 		} else {
 			oldHistory = undefined;
@@ -115,7 +115,7 @@ _.extend(DeviceHistory.prototype, {
 		this.history[vdevId] = new LimitedArray(
 			loadObject('history_' + vdevId) || [],
 			function (arr) {
-				saveObject('history_' + vdevId, arr);
+				saveObject('history_' + vdevId, arr, true);
 			},
 			5, // check it every 10 entries
 			1000, // save up to 1000 entries
@@ -200,7 +200,7 @@ _.extend(DeviceHistory.prototype, {
 				// remove history array
 				if (self.history[vDev.id]) {
 					self.history[vDev.id].finalize();
-					saveObject("history_"+vDev.id, null);
+					saveObject("history_"+vDev.id, null, true);
 					delete self.history[vDev.id];
 				}
 
@@ -254,7 +254,7 @@ _.extend(DeviceHistory.prototype, {
 			storedDevHistories.forEach(function(historyFileName){
 				if (!self.history[historyFileName]) {
 					self.addNotification('info', historyFileName + self.langFile.info_transformation, 'module');
-					saveObject('history_' + historyFileName, null);
+					saveObject('history_' + historyFileName, null, true);
 				}
 			});
 		}

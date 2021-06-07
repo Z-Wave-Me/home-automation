@@ -24,6 +24,7 @@ executeFile("updateBackendConfig.js");
 
 // overload saveObject to allow backup/restore of all JSON files in storage
 __saveObject = saveObject;
+__saveObjectTimer = {};
 __storageContent = loadObject("__storageContent") || [];
 
 // check against storage if listed files really exists
@@ -36,7 +37,46 @@ __storageContent = __storageContent.filter(function(name) {
 	}
 });
 
-saveObject = function(name, object) {
+// Saves object as name, adds name to the storageContent.
+// Defer save: immediate can be undefined (to use default seconds), true or 0 (save now), integer (to defer by N seconds)
+saveObject = function(name, object, immediate) {
+	// defer tests
+	
+	var deferTime;
+	
+	if (immediate === true || immediate === 0) {
+		deferTime = 0;
+	} else if (immediate > 0) {
+		deferTime = immediate;
+	} else {
+		deferTime = 5 * 60;
+	}
+	deferTime *= 1000;
+	
+	if (!__saveObjectTimer[name]) {
+		__saveObjectTimer[name] = {
+			timer: null,
+			lastSave: 0
+		};
+	}
+	
+	if (__saveObjectTimer[name].timer) {
+		clearTimeout(__saveObjectTimer[name].timer);
+	}
+	
+	deferTime -= Date.now() - __saveObjectTimer[name].lastSave;
+	if (deferTime > 0) {
+		// restart the time with the new object and remaining time
+		__saveObjectTimer[name].timer = setTimeout(function() {
+			saveObject(name, object);
+			__saveObjectTimer[name].timer = null;
+		}, deferTime);
+		
+		return; // defer save
+	}
+	
+	__saveObjectTimer[name].lastSave = Date.now();
+	
 	// add entry to __storageContent if it does not already exist
 	if (__storageContent.indexOf(name) === -1 && !!name) {
 		__storageContent.push(name);
