@@ -110,7 +110,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 			
 			return _profile;
 		});
-		if (removedExpired) this.controller.saveConfig();
+		if (removedExpired) this.controller.saveConfig(false);
 	}
 
 	if (!session) {
@@ -222,7 +222,7 @@ AuthController.prototype.checkIn = function(profile, req, permanent) {
 		expire: permanent ? 0 : (d + TTL)
 	});
 	
-	this.controller.saveConfig();
+	this.controller.saveConfig(false);
 	
 	return sid
 };

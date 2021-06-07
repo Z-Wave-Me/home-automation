@@ -185,7 +185,7 @@ AutomationController.prototype.setDefaultLang = function(lang) {
 	}
 };
 
-AutomationController.prototype.saveConfig = function() {
+AutomationController.prototype.saveConfig = function(immediate) {
 
 	// do clean up of location namespaces
 	cleanupLocations = function(locations) {
@@ -207,14 +207,14 @@ AutomationController.prototype.saveConfig = function() {
 	};
 
 	try {
-		saveObject("config.json", cfgObject);
+		saveObject("config.json", cfgObject, immediate);
 	} catch (e) {
 		console.log("Error: can not write back config to storage: ", e);
 	}
 };
 
 AutomationController.prototype.saveFiles = function() {
-	saveObject("files.json", this.files);
+	saveObject("files.json", this.files, true);
 };
 
 AutomationController.prototype.start = function(reload) {
@@ -923,7 +923,7 @@ AutomationController.prototype.createInstance = function(reqObj) {
 		}
 
 		self.instances.push(instance);
-		self.saveConfig();
+		self.saveConfig(true);
 		self.emit('core.instanceCreated', instance.id);
 		result = self.instantiateModule(instance);
 
@@ -932,7 +932,7 @@ AutomationController.prototype.createInstance = function(reqObj) {
 			var currIndex = self.instances.length ? self.instances.length - 1 : 0;
 
 			self.instances.splice(currIndex, 1);
-			self.saveConfig();
+			self.saveConfig(true);
 			self.emit('core.instanceDeleted', id);
 		}
 	} else {
@@ -1036,7 +1036,7 @@ AutomationController.prototype.reconfigureInstance = function(id, instanceObject
 		this.emit('core.error', new Error(langFile.ac_err_refonfigure_instance + id));
 	}
 
-	this.saveConfig();
+	this.saveConfig(true);
 	return result;
 };
 
@@ -1052,7 +1052,7 @@ AutomationController.prototype.removeInstance = function(id) {
 		this.stopInstance(instance);
 
 		this.emit('core.instanceStopped', id);
-		this.saveConfig();
+		this.saveConfig(true);
 	}
 
 	// remove from loaded singleton list if singleton
@@ -1089,7 +1089,7 @@ AutomationController.prototype.deleteInstance = function(id) {
 		});
 	}
 
-	this.saveConfig();
+	this.saveConfig(true);
 	this.emit('core.instanceDeleted', id);
 };
 
@@ -1154,7 +1154,7 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
 				this.skins[index].active = false;
 			}
 
-			saveObject("userSkins.json", this.skins);
+			saveObject("userSkins.json", this.skins, true);
 		}
 	}
 
@@ -1199,7 +1199,7 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
 			}
 		});
 
-		saveObject("userSkins.json", this.skins);
+		saveObject("userSkins.json", this.skins, true);
 		//}
 
 	} catch (e) {
@@ -1228,7 +1228,7 @@ AutomationController.prototype.setSkinState = function(skinName, reqObj) {
 			}
 		})
 
-		saveObject("userSkins.json", this.skins);
+		saveObject("userSkins.json", this.skins, true);
 	}
 
 	return res;
@@ -1313,7 +1313,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			}
 
 			if (update) {
-				saveObject("userIcons.json", this.icons);
+				saveObject("userIcons.json", this.icons, true);
 			}
 		}
 	}
@@ -1392,7 +1392,7 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
 			return icon.file !== iconName;
 		});
 
-		saveObject("userIcons.json", this.icons);
+		saveObject("userIcons.json", this.icons, true);
 		//}
 
 	} catch (e) {
@@ -1467,13 +1467,13 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 		"order",
 		"visibility",
 		"hasHistory");
-	this.saveConfig();
+	this.saveConfig(1 * 60); // save every minute
 	return this.vdevInfo[id];
 };
 
 AutomationController.prototype.clearVdevInfo = function(id) {
 	delete this.vdevInfo[id];
-	this.saveConfig();
+	this.saveConfig(true);
 };
 
 AutomationController.prototype.loadNotifications = function() {
@@ -1482,7 +1482,7 @@ AutomationController.prototype.loadNotifications = function() {
 	this.notifications = new LimitedArray(
 		loadObject("notifications") || [],
 		function(arr) {
-			saveObject('notifications', arr);
+			saveObject('notifications', arr, 60);
 		},
 		25, // check it every 25 notifications
 		2500, // save up to 2500 notifications
@@ -1688,7 +1688,7 @@ AutomationController.prototype.addLocation = function(locProps, callback) {
 			callback(location);
 		}
 
-		this.saveConfig();
+		this.saveConfig(true);
 		this.emit('location.added', id);
 	}
 };
@@ -1711,7 +1711,7 @@ AutomationController.prototype.removeLocation = function(id, callback) {
 			return location.id !== id;
 		});
 
-		this.saveConfig();
+		this.saveConfig(true);
 		if (typeof callback === 'function') {
 			callback(true);
 		}
@@ -1749,7 +1749,7 @@ AutomationController.prototype.updateLocation = function(id, title, user_img, de
 			callback(location);
 		}
 
-		this.saveConfig();
+		this.saveConfig(true);
 		this.emit('location.updated', id);
 	} else {
 		if (typeof callback === 'function') {
@@ -1908,7 +1908,7 @@ AutomationController.prototype.createProfile = function(profile) {
 	this.updateProfileDevices(profile, [], [], profile.rooms, profile.devices);
 	this.emit('profile.added', profile);
 
-	this.saveConfig();
+	this.saveConfig(true);
 	return profile;
 };
 
@@ -1962,7 +1962,7 @@ AutomationController.prototype.updateProfile = function(object, id) {
 		this.emit('profile.updated', profile);
 	}
 	
-	this.saveConfig();
+	this.saveConfig(true);
 	return this.profiles[index];
 };
 
@@ -1985,7 +1985,7 @@ AutomationController.prototype.updateProfileAuth = function(object, id) {
 			p.login = object.login;
 		}
 
-		this.saveConfig();
+		this.saveConfig(true);
 
 		return p;
 	} else {
@@ -2001,7 +2001,7 @@ AutomationController.prototype.removeProfile = function(profileId) {
 
 	this.emit('profile.removed', profileId);
 	
-	this.saveConfig();
+	this.saveConfig(true);
 };
 
 AutomationController.prototype.removeToken = function(profile, token, skipSave) {
@@ -2017,7 +2017,7 @@ AutomationController.prototype.removeToken = function(profile, token, skipSave) 
 	
 	if (indx !== -1) {
 		profile.authTokens.splice(indx, 1);
-		if (!skipSave) this.saveConfig();
+		if (!skipSave) this.saveConfig(true);
 		return true;
 	} else {
 		return false;
@@ -2034,7 +2034,7 @@ AutomationController.prototype.permanentToken = function(profile, token) {
 	profile.authTokens.forEach(function(authToken, index) {
 		if (authToken.sid.substr(0, 6) === token.substr(0, 6)) {
 			authToken.expire = 0;
-			self.saveConfig();
+			self.saveConfig(true);
 			found = true;
 		}
 	});

@@ -71,7 +71,7 @@ ZAutomationStorageWebRequest.prototype.uploadFileFunc = function () {
 				file.type = type;
 				file.createdAt = date.toJSON();
 
-				saveObject(fileName, file);
+				saveObject(fileName, file, true);
 
 				reply = {
 					error: null,

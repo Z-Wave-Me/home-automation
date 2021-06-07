@@ -33,8 +33,8 @@ ZMEOpenWRT.prototype.init = function (config) {
 
 	var self = this;
 
-	saveObject("timezone", this.config.timezone);
-	saveObject("wan_port_access", this.config.wan_port_access);
+	saveObject("timezone", this.config.timezone, true);
+	saveObject("wan_port_access", this.config.wan_port_access, true);
 }
 
 ZMEOpenWRT.prototype.stop = function () {
