@@ -87,7 +87,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 			
 			_profile = _.find(profile.authTokens, function(authToken) {
 				// remove expired tokens
-				if (authToken.expire > 0 && authToken.expire < (new Date()).valueOf()) {
+				if (authToken.expire > 0 && authToken.expire < Date.now()) {
 					toRemove.push(authToken.sid);
 					removedExpired = true;
 				}
@@ -98,7 +98,7 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 					}
 					
 					// Update last seen and IP
-					authToken.lastSeen = (new Date()).valueOf();
+					authToken.lastSeen = Date.now();
 					authToken.ip = self.getClientIP(request);
 					
 					return true;
@@ -211,7 +211,7 @@ AuthController.prototype.checkIn = function(profile, req, permanent) {
 	}
 	
 	var TTL = 7 * 24 * 60 * 60 * 1000; // 1 week in ms
-	var d = (new Date()).valueOf();
+	var d = Date.now();
 	
 	profile.authTokens.push({
 		sid: sid,
@@ -233,7 +233,7 @@ AuthController.prototype.forgottenPwd = function(email, token) {
 		setToken = function(){
 			self.forgottenPwdCollector[token] = {
 				email: email,
-				expTime: Math.floor(new Date().getTime() / 1000) + 600 // 10 min
+				expTime: Math.floor(Date.now() / 1000) + 600 // 10 min
 			};
 		};
 
@@ -252,7 +252,7 @@ AuthController.prototype.forgottenPwd = function(email, token) {
 
 	if (!this.expireTokens) {
 		this.expireTokens = setInterval(function() {
-			var expirationTime = Math.floor(new Date().getTime() / 1000);
+			var expirationTime = Math.floor(Date.now() / 1000);
 			
 			Object.keys(self.forgottenPwdCollector).forEach(function(tkn) {
 				if (self.forgottenPwdCollector[tkn].expTime < expirationTime) {

@@ -281,7 +281,7 @@ function parseToObject(object) {
 function checkInternetConnection(host_url) {
 	var cn = false,
 		response = 'in progress',
-		d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+		d = Date.now() + 15000; // wait not more than 15 sec
 
 	// try to reach google to check for internet connection
 	http.request({
@@ -297,7 +297,7 @@ function checkInternetConnection(host_url) {
 	});
 
 	// wait for response
-	while ((new Date()).valueOf() < d && response === 'in progress') {
+	while (Date.now() < d && response === 'in progress') {
 		processPendingCallbacks();
 	}
 

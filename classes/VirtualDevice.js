@@ -175,7 +175,7 @@ _.extend(VirtualDevice.prototype, {
 	},
 	setReady: function () {
 		this.ready = true;
-		this.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
+		this.attributes.updateTime = Math.floor(Date.now() / 1000);
 	},
 	setCreationTime: function() {
 		var vDevInfo = this.collection.controller.vdevInfo[this.id];
@@ -183,14 +183,14 @@ _.extend(VirtualDevice.prototype, {
 		if (vDevInfo) {
 			// check vdevInfo for creation time
 			if (vDevInfo.creationTime) {
-				this.attributes.creationTime = vDevInfo.creationTime > 0? vDevInfo.creationTime : Math.floor(new Date().getTime() / 1000);
+				this.attributes.creationTime = vDevInfo.creationTime > 0? vDevInfo.creationTime : Math.floor(Date.now() / 1000);
 			// add new if it doesn't exist
 			} else {
-				this.attributes.creationTime = Math.floor(new Date().getTime() / 1000);
+				this.attributes.creationTime = Math.floor(Date.now() / 1000);
 			}
 		// add new if it doesn't exist
 		} else {
-			this.attributes.creationTime = Math.floor(new Date().getTime() / 1000);
+			this.attributes.creationTime = Math.floor(Date.now() / 1000);
 		}
 	},
 	get: function (param) {
@@ -319,7 +319,7 @@ _.extend(VirtualDevice.prototype, {
 
 		if (!options.silent) {
 			if (changes.length) {
-				that.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
+				that.attributes.updateTime = Math.floor(Date.now() / 1000);
 			}
 
 			changes.forEach(function (key) {

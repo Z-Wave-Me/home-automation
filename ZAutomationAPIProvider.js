@@ -346,7 +346,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 	},
 	// Devices
 	listDevices: function() {
-		var nowTS = Math.floor(new Date().getTime() / 1000),
+		var nowTS = Math.floor(Date.now() / 1000),
 			reply = {
 				error: null,
 				data: {
@@ -465,7 +465,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				data: null,
 				code: 200
 			},
-			timestamp = new Date().getTime(),
+			timestamp = Date.now(),
 			since = this.req.query.hasOwnProperty("since") ? parseInt(this.req.query.since, 10) : 0,
 			to = (this.req.query.hasOwnProperty("to") ? parseInt(this.req.query.to, 10) : 0) || timestamp,
 			profile = this.controller.profileByUser(this.req.user),
@@ -2309,9 +2309,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			]);
 
 		function waitForInstallation(allreadyInstalled, reqKey) {
-			var d = (new Date()).valueOf() + 300000; // wait not more than 5 min
+			var d = Date.now() + 300000; // wait not more than 5 min
 
-			while ((new Date()).valueOf() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
+			while (Date.now() < d && allreadyInstalled.length <= reqObj.data[reqKey].length) {
 
 				if (allreadyInstalled.length === reqObj.data[reqKey].length) {
 					break;
@@ -2594,11 +2594,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					if (typeof zway !== "undefined" && zway) {
 						// reset z-way controller
 						console.log('Reset Controller ...');
-						var d = (new Date()).valueOf() + 15000; // wait not more than 15 sec
+						var d = Date.now() + 15000; // wait not more than 15 sec
 
 						zway.controller.SetDefault();
 
-						while ((new Date()).valueOf() < d && zway.controller.data.controllerState.value === 20) {
+						while (Date.now() < d && zway.controller.data.controllerState.value === 20) {
 							processPendingCallbacks();
 						}
 
@@ -3717,7 +3717,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500,
 				data: null
 			},
-			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+			delay = Date.now() + 10000; // wait not more than 10 seconds
 
 		try {
 			// update postfix JSON
@@ -3736,7 +3736,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					success: function(res) {
 						if (res.data) {
 							data = parseToObject(res.data);
-							list.updateTime = (new Date()).getTime();
+							list.updateTime = Date.now();
 
 							for (index in data) {
 								list.zwave_devices.push(data[index]);
@@ -3755,7 +3755,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				});
 			});
 
-			while (result.length < l.length && (new Date()).valueOf() < delay) {
+			while (result.length < l.length && Date.now() < delay) {
 				processPendingCallbacks();
 			}
 
@@ -3815,7 +3815,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				code: 500,
 				data: null
 			},
-			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+			delay = Date.now() + 10000; // wait not more than 10 seconds
 
 		try {
 			// update postfix JSON
@@ -3829,7 +3829,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				async: true,
 				success: function(res) {
 					if (res.data) {
-						list.updateTime = (new Date()).getTime();
+						list.updateTime = Date.now();
 						list.zwave_vendors = parseToObject(res.data);
 
 						saveObject('zwave_vendors.json', list);
@@ -3852,7 +3852,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				}
 			});
 
-			while (result === 'in progress' && (new Date()).valueOf() < delay) {
+			while (result === 'in progress' && Date.now() < delay) {
 				processPendingCallbacks();
 			}
 

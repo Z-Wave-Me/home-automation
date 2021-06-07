@@ -90,7 +90,7 @@ Heating.prototype.init = function(config) {
     this.createHouseControl();
 
     this.pollReset = function() {
-        var now = (new Date()).getTime();
+        var now = Date.now();
 
         //self.log("self.fallbackOverTime:", self.fallbackOverTime, true);
 
@@ -674,7 +674,7 @@ Heating.prototype.initFunctions = function() {
         if (self.vDev) {
             // ignore devices listed on reset list 
             if (self.alreadyChangedThermostats.indexOf(idev.id) < 0) {
-                self.resetList[idev.id] = (new Date()).getTime() + self.waitingTime;
+                self.resetList[idev.id] = Date.now() + self.waitingTime;
                 //self.log("Set reset time:", self.resetList[idev.id]);
 
                 // remove thermostat from the module trigger array and reset reset timer if existing

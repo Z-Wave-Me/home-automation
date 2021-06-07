@@ -90,7 +90,7 @@ _.extend(BaseModel.prototype, {
 
 		if (!options.silent) {
 			if (changes.length) {
-				that.attributes.updateTime = Math.floor(new Date().getTime() / 1000);
+				that.attributes.updateTime = Math.floor(Date.now() / 1000);
 			}
 
 			changes.forEach(function (key) {

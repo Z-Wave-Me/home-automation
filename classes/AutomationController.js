@@ -448,7 +448,7 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 
 	// add creation time
 	if (!instanceModel.creationTime) {
-		instanceModel.creationTime = Math.floor(new Date().getTime() / 1000);
+		instanceModel.creationTime = Math.floor(Date.now() / 1000);
 	}
 
 	try {
@@ -659,9 +659,9 @@ AutomationController.prototype.installModule = function(moduleUrl, moduleName) {
 			}
 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && result === "in progress") {
+		while (Date.now() < d && result === "in progress") {
 			processPendingCallbacks();
 		}
 
@@ -693,9 +693,9 @@ AutomationController.prototype.uninstallModule = function(moduleId, reset) {
 				}
 			);
 
-			var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+			var d = Date.now() + 20000; // wait not more than 20 seconds
 
-			while ((new Date()).valueOf() < d && result === "in progress") {
+			while (Date.now() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
 
@@ -1112,9 +1112,9 @@ AutomationController.prototype.installSkin = function(reqObj, skinName, index) {
 			}
 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && result === "in progress") {
+		while (Date.now() < d && result === "in progress") {
 			processPendingCallbacks();
 		}
 
@@ -1177,9 +1177,9 @@ AutomationController.prototype.uninstallSkin = function(skinName) {
 			}
 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && result === "in progress") {
+		while (Date.now() < d && result === "in progress") {
 			processPendingCallbacks();
 		}
 
@@ -1282,9 +1282,9 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 			}
 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && reply.message === "in progress") {
+		while (Date.now() < d && reply.message === "in progress") {
 			processPendingCallbacks();
 		}
 
@@ -1301,7 +1301,7 @@ AutomationController.prototype.installIcon = function(option, reqObj, iconName, 
 						'source': iconName + "_" + id,
 						'name': iconName,
 						'id': id,
-						'timestamp': Math.floor(new Date().getTime() / 1000),
+						'timestamp': Math.floor(Date.now() / 1000),
 						'source_title': option === "local" ? iconName + " " + id : reqObj.title
 					};
 
@@ -1341,9 +1341,9 @@ AutomationController.prototype.listIcons = function() {
 			}
 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && result === "in progress") {
+		while (Date.now() < d && result === "in progress") {
 			processPendingCallbacks();
 		}
 
@@ -1377,9 +1377,9 @@ AutomationController.prototype.uninstallIcon = function(iconName) {
 			}
 		);
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d && result === "in progress") {
+		while (Date.now() < d && result === "in progress") {
 			processPendingCallbacks();
 		}
 
@@ -1760,10 +1760,8 @@ AutomationController.prototype.updateLocation = function(id, title, user_img, de
 };
 
 AutomationController.prototype.listNotifications = function(since, to) {
-	var now = new Date();
-
 	since = parseInt(since) || 0;
-	to = parseInt(to) || Math.floor(now.getTime() / 1000);
+	to = parseInt(to) || Math.floor(Date.now() / 1000);
 
 	return this.notifications.get().filter(function(notification) {
 		return notification.id >= since && notification.id <= to;
@@ -2969,9 +2967,9 @@ AutomationController.prototype.createBackup = function() {
 			 ret = "failed";
 		 });
 
-		var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+		var d = Date.now() + 20000; // wait not more than 20 seconds
 
-		while ((new Date()).valueOf() < d &&  ret === "in progress") {
+		while (Date.now() < d &&  ret === "in progress") {
 			processPendingCallbacks();
 		}
 

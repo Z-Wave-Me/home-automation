@@ -120,7 +120,7 @@ _.extend(DeviceHistory.prototype, {
 			5, // check it every 10 entries
 			1000, // save up to 1000 entries
 			function (devHistory){
-				var now = Math.floor((new Date()).getTime() / 1000);
+				var now = Math.floor(Date.now() / 1000);
 				return devHistory.id >= (now - 86400);
 			}
 		);
@@ -137,7 +137,7 @@ _.extend(DeviceHistory.prototype, {
 		this.storeData = function(dev) {
 			try {
 				var change = {
-						id: Math.floor((new Date()).getTime() / 1000),
+						id: Math.floor(Date.now() / 1000),
 						l: parseInt(dev.get("metrics:level"),10)
 					};
 				
@@ -284,7 +284,7 @@ _.extend(DeviceHistory.prototype, {
 				devId = q && q.hasOwnProperty('id')? q.id : null,
 				averageEntries = [],
 				entries = [],
-				now = Math.floor(new Date().getTime() / 1000),
+				now = Math.floor(Date.now() / 1000),
 				l = 0,
 				cnt = 0,
 				metric = {},
@@ -377,7 +377,7 @@ _.extend(DeviceHistory.prototype, {
 			var q = request.query || null,
 				vDevId = q && q.hasOwnProperty('id')? q.id : null,
 				body = {
-					updateTime: Math.floor(new Date().getTime() / 1000)
+					updateTime: Math.floor(Date.now() / 1000)
 				};
 
 			if (vDevId && self.history[vDevId]) {

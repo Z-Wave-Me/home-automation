@@ -71,7 +71,7 @@ BatteryPolling.prototype.init = function (config) {
 		}
 		
 		self.vDev.set("metrics:level", self.minimalBatteryValue());
-		var now = Math.round(new Date().getTime()/1000);
+		var now = Math.round(Date.now() / 1000);
 		if (vDev.get("metrics:level") <= self.config.warningLevel && (typeof self.lastTriggered[vDev.id] === 'undefined' || self.lastTriggered[vDev.id] <= (now - 12*60*60))) {
 			var value = vDev.get("metrics:title"),
 				langFile = self.loadModuleLang();

@@ -300,7 +300,7 @@ ZWave.prototype.startBinding = function() {
 		100, // check it every 100 packets
 		5000, // save up to 5000 packets
 		function(element) { // save last day only
-			return element.id > ((new Date()).getTime() - 86400 * 1000);
+			return element.id > (Date.now() - 86400 * 1000);
 		}
 	);
 
@@ -313,7 +313,7 @@ ZWave.prototype.startBinding = function() {
 		100, // check it every 100 packets
 		5000, // save up to 5000 packets
 		function(element) { // save last day only
-			return element.updateTime > ((new Date()).getTime() / 1000 - 86400);
+			return element.updateTime > (Date.now() / 1000 - 86400);
 		}
 	);
 
@@ -860,7 +860,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 			isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
 			state: 'pending',
 			nodeId: null,
-			timestamp: (new Date()).valueOf(),
+			timestamp: Date.now(),
 			ZW_QR: entry,
 			PId: '',
 			givenName: null,
@@ -2021,7 +2021,7 @@ ZWave.prototype.defineHandlers = function() {
 			self.communicationStatistics[this.nodeId.value] = [];
 		}
 		self.communicationStatistics[this.nodeId.value].push({
-			"date": (new Date()).getTime() / 1000,
+			"date": Date.now() / 1000,
 			"delivered": this.delivered.value,
 			"packetLength": this.packetLength.value,
 			"deliveryTime": this.deliveryTime.value
@@ -2101,7 +2101,7 @@ ZWave.prototype.defineHandlers = function() {
 			}
 		}
 
-		body.updateTime = Math.round((new Date()).getTime() / 1000);
+		body.updateTime = Math.round(Date.now() / 1000);
 		body.data = packets;
 
 		return {
@@ -2120,10 +2120,10 @@ ZWave.prototype.defineHandlers = function() {
 
 		// TODO(!!!) may be report only updates since last body.updateTime ?
 		body.data = _.filter(self.parsedPackets.get(), function(p) {
-			return p.id > ((new Date()).getTime() - 10000);
+			return p.id > (Date.now() - 10000);
 		});
 
-		body.updateTime = Math.round((new Date()).getTime() / 1000);
+		body.updateTime = Math.round(Date.now() / 1000);
 		body.data.reverse(); // newer on top
 
 		return {
@@ -2164,7 +2164,7 @@ ZWave.prototype.defineHandlers = function() {
 			body: {
 				"code": 200,
 				"message": "200 OK",
-				"updateTime": Math.round((new Date()).getTime() / 1000),
+				"updateTime": Math.round(Date.now() / 1000),
 				data: self.originPackets.get()
 			}
 		};
@@ -2178,7 +2178,7 @@ ZWave.prototype.defineHandlers = function() {
 			body = {
 				"code": 200,
 				"message": "200 OK",
-				"updateTime": Math.round((new Date()).getTime() / 1000),
+				"updateTime": Math.round(Date.now() / 1000),
 				"data": []
 			};
 
@@ -2266,9 +2266,9 @@ ZWave.prototype.defineHandlers = function() {
 				})(powerlevel)
 			}
 
-			var d = (new Date()).valueOf() + 10 * N * 1000; // wait not more than 10*N seconds
+			var d = Date.now() + 10 * N * 1000; // wait not more than 10*N seconds
 
-			while ((new Date()).valueOf() < d && result === "in progress") {
+			while (Date.now() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
 
@@ -2335,7 +2335,7 @@ ZWave.prototype.defineHandlers = function() {
 				var result = {
 					status: 'in progress'
 				};
-				var d = (new Date()).valueOf() + 300000; // wait no more than 5 min
+				var d = Date.now() + 300000; // wait no more than 5 min
 				// update firmware from url
 				http.request({
 					url: data.url,
@@ -2372,7 +2372,7 @@ ZWave.prototype.defineHandlers = function() {
 					}
 				});
 
-				while ((new Date()).valueOf() < d && result.status === "in progress") {
+				while (Date.now() < d && result.status === "in progress") {
 					processPendingCallbacks();
 				}
 
@@ -2415,9 +2415,9 @@ ZWave.prototype.defineHandlers = function() {
 				result = "failed";
 			});
 
-			var d = (new Date()).valueOf() + 20000; // wait not more than 20 seconds
+			var d = Date.now() + 20000; // wait not more than 20 seconds
 
-			while ((new Date()).valueOf() < d && result === "in progress") {
+			while (Date.now() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
 
@@ -2545,9 +2545,9 @@ ZWave.prototype.defineHandlers = function() {
 				result = "failed";
 			}
 
-			var d = (new Date()).valueOf() + 300 * 1000; // wait not more than 5 minutes
+			var d = Date.now() + 300 * 1000; // wait not more than 5 minutes
 
-			while ((new Date()).valueOf() < d && result === "in progress") {
+			while (Date.now() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
 
@@ -2672,9 +2672,9 @@ ZWave.prototype.defineHandlers = function() {
 				result = "failed";
 			}
 
-			var d = (new Date()).valueOf() + 60 * 1000; // wait not more than 60 seconds
+			var d = Date.now() + 60 * 1000; // wait not more than 60 seconds
 
-			while ((new Date()).valueOf() < d && result === "in progress") {
+			while (Date.now() < d && result === "in progress") {
 				processPendingCallbacks();
 			}
 
@@ -2733,7 +2733,7 @@ ZWave.prototype.defineHandlers = function() {
 
 	this.ZWaveAPI.PostfixUpdate = function(url, request) {
 		var success,
-			delay = (new Date()).valueOf() + 10000; // wait not more than 10 seconds
+			delay = Date.now() + 10000; // wait not more than 10 seconds
 
 		// update postfix JSON
 		http.request({
@@ -2761,7 +2761,7 @@ ZWave.prototype.defineHandlers = function() {
 			}
 		});
 
-		while (!success && (new Date()).valueOf() < delay) {
+		while (!success && Date.now() < delay) {
 			processPendingCallbacks();
 		}
 
@@ -2820,8 +2820,6 @@ ZWave.prototype.defineHandlers = function() {
 
 		if (request.method === "POST" && request.body) {
 
-			var date = new Date();
-
 			try {
 				var reqObj = parseToObject(request.body);
 			} catch (e) {
@@ -2838,7 +2836,7 @@ ZWave.prototype.defineHandlers = function() {
 				reqObj.id = 1;
 
 				custom_postfix = {
-					"last_update": Math.floor(date.getTime() / 1000),
+					"last_update": Math.floor(Date.now() / 1000),
 					"fixes": [reqObj]
 				};
 
@@ -2870,7 +2868,7 @@ ZWave.prototype.defineHandlers = function() {
 					custom_postfix.fixes = tempFixes;
 				}
 
-				custom_postfix.last_update = Math.floor(date.getTime() / 1000);
+				custom_postfix.last_update = Math.floor(Date.now() / 1000);
 
 			}
 
@@ -3003,7 +3001,7 @@ ZWave.prototype.defineHandlers = function() {
 			delay = req && req.delay ? req.delay : null,
 			timeout = !!delay ? parseInt(delay.toString(), 10) * 1000 : 10000,
 			timer = null,
-			now = (new Date()).valueOf();
+			now = Date.now();
 
 		try {
 			var devices = Object.keys(zway.devices);
@@ -3025,7 +3023,7 @@ ZWave.prototype.defineHandlers = function() {
 							isFLiRS: false,
 							hasBattery: false
 						},
-						start = (new Date()).valueOf(),
+						start = Date.now(),
 						pendingDelay = start + timeout;
 
 					if (zway.devices[nodeId] && nodeId != zway.controller.data.nodeId.value) {
@@ -3040,25 +3038,25 @@ ZWave.prototype.defineHandlers = function() {
 							function() {
 								request = "done";
 								entry.result = request;
-								entry.runtime = ((new Date()).valueOf() - start) / 1000;
+								entry.runtime = (Date.now() - start) / 1000;
 								entry.isFLiRS = isFLiRS;
 								entry.hasBattery = hasWakeup;
 							},
 							function() {
 								request = "failed";
 								entry.result = request;
-								entry.runtime = ((new Date()).valueOf() - start) / 1000;
+								entry.runtime = (Date.now() - start) / 1000;
 								entry.isFLiRS = isFLiRS;
 								entry.hasBattery = hasWakeup;
 							});
 
-						while (request === "in progress" && (new Date()).valueOf() < pendingDelay && !isFLiRS) {
+						while (request === "in progress" && Date.now() < pendingDelay && !isFLiRS) {
 							processPendingCallbacks();
 						}
 
 						if (request === "in progress") {
 							entry.result = hasWakeup ? "waiting for wakeup" : "failed";
-							entry.runtime = ((new Date()).valueOf() - start) / 1000;
+							entry.runtime = (Date.now() - start) / 1000;
 							entry.isFLiRS = isFLiRS;
 							entry.hasBattery = hasWakeup;
 						}
@@ -3068,8 +3066,8 @@ ZWave.prototype.defineHandlers = function() {
 				});
 			}
 
-			ret.runtime = Math.floor(((new Date()).valueOf() - now) / 1000);
-			ret.updateTime = Math.floor(((new Date()).valueOf()) / 1000);
+			ret.runtime = Math.floor((Date.now() - now) / 1000);
+			ret.updateTime = Math.floor((Date.now()) / 1000);
 
 			return {
 				status: 200,
@@ -3107,7 +3105,7 @@ ZWave.prototype.defineHandlers = function() {
 				};
 				if (supported) {
 					neighbours.forEach(function(neighbour) {
-						var start = (new Date()).valueOf();
+						var start = Date.now();
 						var item = {};
 						var powerLvl = zway.devices[nodeId].instances[0].commandClasses[115];
 
@@ -3115,7 +3113,7 @@ ZWave.prototype.defineHandlers = function() {
 						powerLvl.TestNodeSet(neighbour, 6, 20);
 
 						// wait 2 sec or more
-						while ((new Date()).valueOf() < (start + timeout)) {
+						while (Date.now() < (start + timeout)) {
 							processPendingCallbacks();
 						}
 
@@ -3130,7 +3128,7 @@ ZWave.prototype.defineHandlers = function() {
 
 					});
 
-					ret.updateTime = Math.floor(((new Date()).valueOf()) / 1000);
+					ret.updateTime = Math.floor((Date.now()) / 1000);
 
 					return {
 						status: 200,
@@ -3978,10 +3976,10 @@ ZWave.prototype.gateDevicesStart = function() {
 								// works of course only during inclusion - after restart hidden elements are visible again
 								if (!!nodeId && c.data.lastIncludedDevice.value === nodeId) {
 									var intDone = deviceCC.data.interviewDone.value;
-									intDelay = (new Date()).valueOf() + 5 * 1000; // wait not more than 5 seconds for single interview
+									intDelay = Date.now() + 5 * 1000; // wait not more than 5 seconds for single interview
 
 									// wait till interview is done
-									while ((new Date()).valueOf() < intDelay && intDone === false) {
+									while (Date.now() < intDelay && intDone === false) {
 										intDone = deviceCC.data.interviewDone.value;
 									}
 
@@ -4127,7 +4125,7 @@ ZWave.prototype.gateDevicesStart = function() {
 							// update state and nodeId
 							dskEntry.state = 'included';
 							dskEntry.nodeId = nodeId;
-							dskEntry.addedAt = (new Date()).valueOf();
+							dskEntry.addedAt = Date.now();
 
 							// grep givenName from dskEntry
 							givenName = dskEntry.givenName? dskEntry.givenName : null; // filterIndex
@@ -6120,7 +6118,7 @@ ZWave.prototype.lastRSSIData = function() {
 	}
 	
 	return {
-		"time": Math.round((new Date()).getTime() / 1000),
+		"time": Math.round(Date.now() / 1000),
 		"channel1": valueToRSSI(rssi.channel1.value),
 		"channel2": valueToRSSI(rssi.channel2.value),
 		"channel3": valueToRSSI(rssi.channel3.value)

@@ -121,7 +121,7 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
 					icon_sunset = "http://openweathermap.org/img/w/01n.png";
 				
 				if (self.vDevDayLight) {
-					var now = new Date().getTime();
+					var now = Date.now();
 					
 					if (now > sunrise && now < sunset) {
 						self.vDevDayLight.set("metrics:level", "on");

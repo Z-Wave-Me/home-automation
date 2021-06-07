@@ -49,7 +49,7 @@ SensorsPolling.prototype.init = function (config) {
 
 	this.onPoll = function () {
 
-		var currentPoll = Math.floor(new Date().getTime() / 1000),
+		var currentPoll = Math.floor(Date.now() / 1000),
 			devicesToUpdate = [],
 			batteries = [],
 			devJSON;

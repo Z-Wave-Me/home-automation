@@ -49,7 +49,7 @@ _.extend(DevicesCollection.prototype, {
 			that.add(vDev);
 			that.updateLength();
 			that.emit('created', vDev);
-			that.controller.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
+			that.controller.lastStructureChangeTime = Math.floor(Date.now() / 1000);
 		} else {
 			console.log("Error creating device");
 		}
@@ -137,7 +137,7 @@ _.extend(DevicesCollection.prototype, {
 
 		// events
 		that.emit('removed', model);
-		that.controller.lastStructureChangeTime = Math.floor(new Date().getTime() / 1000);
+		that.controller.lastStructureChangeTime = Math.floor(Date.now() / 1000);
 		return model;
 	},
 	cleanup: function (identificator) {
