@@ -5692,5 +5692,28 @@
 		"tester_last_update": "2021-04-12 17:00:00",
 		"commentary": "Removed extra widgets, rename",
 		"created": "2021-02-19 17:00:00"
+	}, {
+		"id": "366",
+		"p_id": "277.256.2560",
+		"p_sku": "GID_WINNER_ZW",
+		"product": "Gidrolock",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"renameNode,Gidrolock Winner Z-Wave",
+			"noVDev,4-113-7-2",
+			"noVDev,0-113-5-2",
+			"noVDev,0-50-0",
+			"rename,0-37,Gidrolock Valve",
+			"rename,1-113-5-2,Gidrolock Water Alarm",
+			"rename,2-50-0,Water Meter CH1",
+			"rename,3-50-0,Water Meter CH2"
+		],
+		"author_last_update": "2021-07-24 13:46:50",
+		"author": "SMR",
+		"tester": "SMR",
+		"tester_last_update": "2021-07-24 13:46:50",
+		"commentary": "Removed extra widgets",
+		"created": "2021-07-24 13:46:50"
 	}]
 }
