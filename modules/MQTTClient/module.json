@@ -1,0 +1,131 @@
+{
+    "singleton": true,
+    "dependencies": [],
+    "category": "support_external_ui",
+    "author": "Z-Wave.Me",
+    "homepage": "http://razberry.z-wave.me",
+    "icon": "icon.png",
+    "moduleName": "MQTTClient",
+    "version": "1.0",
+    "maturity": "stable",
+    "repository": {
+        "type": "git",
+        "source": "https://github.com/Z-Wave-Me/home-automation"
+    },
+    "defaults": {
+        "title": "__m_title__",
+        "description": "__m_descr__",
+        "clientId": "zway",
+        "clientIdRandomize": false,
+        "host": "localhost",
+        "port": 1883,
+        "user": "",
+        "password": "",
+        "topicPrefix": "zway",
+        "topicPostfixStatus": "status",
+        "topicPostfixData": "data",
+        "topicPostfixSet": "set",
+        "skippedDevices": []
+    },
+    "schema": {
+        "type": "object",
+        "properties": {
+            "clientId": {
+                "type": "string",
+                "required": true
+            },
+            "clientIdRandomize": {
+                "type": "boolean",
+                "required": true
+            },
+            "host": {
+                "type": "string",
+                "required": true
+            },
+            "port": {
+                "type": "integer",
+                "required": true
+            },
+            "user": {
+                "type": "string",
+                "required": false
+            },
+            "password": {
+                "type": "string",
+                "required": false
+            },
+            "topicPrefix": {
+                "type": "string",
+                "required": true
+            },
+            "topicPostfixStatus": {
+                "type": "string",
+                "required": true
+            },
+            "topicPostfixData": {
+                "type": "string",
+                "required": true
+            },
+            "topicPostfixSet": {
+                "type": "string",
+                "required": true
+            },
+            "skippedDevices": {
+                "type": "array",
+                "field": "enum",
+                "datasource": "namespaces",
+                "enum": "namespaces:devices_all:deviceId",
+                "required": false
+            }
+        },
+        "required": false
+    },
+    "options": {
+        "fields": {
+            "clientId": {
+                "label": "__client_id_label__"
+            },
+            "clientIdRandomize": {
+                "label": "__client_id_randomize_label__",
+                "helper": "__client_id_randomize_helper__"
+            },
+            "host": {
+                "label": "__host_label__"
+            },
+            "port": {
+                "label": "__port_label__"
+            },
+            "user": {
+                "label": "__user_label__",
+                "helper": "__user_helper__"
+            },
+            "password": {
+                "label": "__password_label__",
+                "helper": "__password_helper__"
+            },
+            "topicPrefix": {
+                "label": "__topic_prefix_label__"
+            },
+            "topicPostfixStatus": {
+                "label": "__topic_postfix_status_label__",
+                "helper": "__topic_postfix_status_helper__"
+            },
+            "topicPostfixData": {
+                "label": "__topic_postfix_data_label__",
+                "helper": "__topic_postfix_data_helper__"
+            },
+            "topicPostfixSet": {
+                "label": "__topic_postfix_set_label__",
+                "helper": "__topic_postfix_set_helper__"
+            },
+            "skippedDevices": {
+                "label": "__skipped_devices_label__",
+                "helper": "__skipped_devices_helper__",
+                "type": "checkbox",
+                "datasource": "namespaces",
+                "field": "optionLabels",
+                "optionLabels": "namespaces:devices_all:deviceName"
+            }
+        }
+    }
+}

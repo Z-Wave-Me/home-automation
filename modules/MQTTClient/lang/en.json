@@ -1,0 +1,22 @@
+{
+	"m_title" : "MQTT Client",
+	"m_descr" : "Publishes the devices data to a MQTT topics and receives device control commands.<br><br>Topics for publishes devices data:<ol><li>Only device status: <b>zway/status/DEVICE_ID</b></li><li>Full device data: <b>zway/data/DEVICE_ID</b></li><li>Full data for all devices: <b>zway/data/#</b></li></ol><br>To control devices publish a message with command to the topic <b>zway/set/DEVICE_ID</b>:<ol><li>'on', 'off' - relays</li><li>'open', 'close' - door locks</li><li>'on', 'off', level (25, 80, etc) - dimmers</li><li>'on', 'off', 'stop', level (25, 80, etc) - motors</li><li>level (25, 80, etc) - thermostats</li></ol><br>Topics prefix (zway) and postfix (data, status, set) can be changed in the app settings. If you don't want to publish some devices to a MQTT add <b>mqtt-skip</b> tag to that device.",
+	"client_id_label": "Client ID",
+	"client_id_randomize_label": "Add random number to the client ID",
+	"client_id_randomize_helper": "Needed for some MQTT brokers.",
+	"host_label": "Hostname or IP address",
+	"port_label": "Port",
+	"user_label": "Username",
+	"user_helper": "If empty, the username is not used.",
+	"password_label": "Password",
+	"password_helper": "If empty, the password is not used.",
+	"topic_prefix_label": "Topic prefix",
+	"topic_postfix_status_label": "Topic postfix for publish device status",
+	"topic_postfix_status_helper": "Publish only device status, like: 'on', 'off', '25.5', etc.",
+	"topic_postfix_data_label":"Topic postfix for publish device data",
+	"topic_postfix_data_helper":"Publish all device data, like: name, status, id, room, update time, etc.",
+	"topic_postfix_set_label": "Topic postfix for setting the value",
+	"topic_postfix_set_helper": "Publish a message with command to the set-topic to control device.",
+	"skipped_devices_label":"Devices that should not be published in MQTT",
+	"skipped_devices_helper":"<b>mqtt-skip</b> tag will be added to each selected device."
+}
