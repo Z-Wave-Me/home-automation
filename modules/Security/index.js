@@ -473,7 +473,7 @@ Security.prototype.makeVDevs = function() {
 				case self.performEnum.COFF.name:
 					message = self.performEnum.COFF.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevOFF.id, function() {
-						self.transition(self.canOff(), self.off, args);
+						self.transition(true /*self.canOff()*/, self.off, args);
 					});
 					break;
 				case self.performEnum.CRESET.name:
