@@ -1,3 +1,25 @@
+## 24.05.2021 v3.2.0
+New features:
+* New MQTTClient app for exporting all devices to MQTT
+* Added devices.wipedOut event
+* Added manufacturer, product and firmware fields to vDev
+* Added Appliance and Water Valve Notification types
+* Adopted to new WebServer API with WebSocket Auth handler and new ws.push parameter with list of IDs to be notified with the event
+Improvements:
+* Added lazy write in saveObject function to save SD card and improve engine speed
+* Full rework of applyPostfix to boost load process
+* HomeKit:
+  * Full rework to fix rooms mix-up on Z-Wave app restart
+  * Made PIN static acoss restarts
+  * Added manufacturer, product and firmware information
+* Security app:
+  * Disarm now works at any time, even if the sensor has triggered
+* Added listing of directory in modulemedia API
+* Improved speed with Date.now() instead of new Date().getTime() and new Date().valueOf()
+* Removed test ws.push for incomingPacket (improved engine speed)
+Fixes:
+* Fixed EasyScripting app UI slowdown
+
 ## 24.03.2021 v3.1.4
 New features:
 * New EnOcean profiles added
