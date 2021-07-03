@@ -54,7 +54,7 @@ function modulePostRender(control) {
 		];
 
 		var isFirefox = window.mozInnerScreenX != null;
-		
+
 		// The mirror div will replicate the textarea's style
 		var div = document.createElement('div');
 		div.id = 'input-textarea-caret-position-mirror-div';
@@ -87,7 +87,7 @@ function modulePostRender(control) {
 		div.textContent = element.value.substring(0, position);
 		// The second special handling for input type="text" vs textarea:
 		// spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
-		
+
 
 		var span = document.createElement('span');
 		// Wrapping must be replicated *exactly*, including when a long word gets
@@ -141,7 +141,7 @@ function modulePostRender(control) {
 				});
 			});
 	}
-	
+
 	function modalMenu(id) {
 		$('#' + id).remove();
 		return $('<ul></ul>')
@@ -149,7 +149,7 @@ function modulePostRender(control) {
 			.attr('role', 'menu')
 			.addClass('dropdown-menu');
 	}
-	
+
 	function menu(id) {
 			$('body')
 			.append(modalBackground(id + '-menu'))
@@ -167,7 +167,7 @@ function modulePostRender(control) {
 			'display': 'block'
 		});
 	}
-	
+
 	function menuAttach(el, menu_id, openon) {
 		return el
 			.attr('id', menu_id)
@@ -197,13 +197,13 @@ function modulePostRender(control) {
 					.attr('id', menu_id + '-menu-item-' + item_id)
 			);
 	}
-	
+
 	function menuClose(item) {
 		var menuName = item + '-menu';
 		if (typeof item !== "string") {
 			menuName = $(item).closest('[role="menu"]').attr('id');
 		}
-		
+
 		$('#' + menuName).css({
 			'display': 'none'
 		});
@@ -211,7 +211,7 @@ function modulePostRender(control) {
 			'display': 'none'
 		});
 	}
-	
+
 	function menuItemAddText(menu_id, text, data, textarea) {
 		$('#' + menu_id + '-menu').append(
 			$('<li></li>')
@@ -225,11 +225,11 @@ function modulePostRender(control) {
 				)
 		);
 	}
-	
+
 	function menuItemAddDelimiter(menu_id) {
 		$('#' + menu_id + '-menu').append($('<li></li>').addClass('divider'));
 	}
-	
+
 	function toolbarMenuAdd(menu_id, icon, name) {
 		$('.highlight-editor-holder .toolbar').append(
 				menuAttach(
@@ -245,9 +245,9 @@ function modulePostRender(control) {
 		);
 		menu(menu_id);
 	}
-	
+
 	// fill toolbar with menus
-	
+
 	toolbarMenuAdd('easy-scripting-devices-events', 'fa-play', '__m_events__');
 	toolbarMenuAdd('easy-scripting-devices-objects', 'fa-lightbulb', '__m_devices__');
 	toolbarMenuAdd('easy-scripting-syntax', 'fa-code', '__m_expressions__');
@@ -258,7 +258,7 @@ function modulePostRender(control) {
 			response.data.devices.sort(function(a, b) {
 				if (a.metrics.title === b.metrics.title) return (a.id < b.id) ? -1 : 1;
 				return (a.metrics.title < b.metrics.title) ? -1 : 1;
-				
+
 			}).forEach(function(dev) {
 				// events
 				menuItemAdd("easy-scripting-devices-events", dev.id, dev.metrics.title + ' (' + dev.id + ')', function() {
@@ -278,9 +278,9 @@ function modulePostRender(control) {
 	    exprVal = '\u2299',
 	    expression = '\u2026',
 	    placeHolders = [exprBool, exprVal, expression];
-	
+
 	var textArea = $(".alpaca-field.alpaca-field-textarea textarea");
-	
+
 	menu('easy-scripting-syntax');
 	menuItemAddText('easy-scripting-syntax', '__m_if__', 'if (' + exprBool + ') {\n  ' + expression + '\n}');
 	menuItemAddText('easy-scripting-syntax', '__m_for_loop__', 'for (var i = 0; i < ' + exprVal + '; i++) {\n  ' + expression + '\n}');
@@ -308,58 +308,58 @@ function modulePostRender(control) {
 	menuItemAddText('easy-scripting-device-methods', '__m_lt__', 'value() < ' + exprVal);
 	menuItemAddText('easy-scripting-device-methods', '__m_le__', 'value() <= ' + exprVal);
 	menuItemAddText('easy-scripting-device-methods', '__m_value__', 'value()');
-	
+
 	// TextArea functions
 
 	// find current ident
 	function getSpaces() {
 		var textAreaDOM = textArea.get(0),
 		    start = textAreaDOM.selectionStart;
-		
+
 		var textToPosition = textArea.val().substr(0, start),
 		    ident = '',
 		    ch,
 		    i = 1;
-		
+
 		while ((ch = textToPosition.substr(-i, 1)) === ' ' || ch === '\t') {
 			i++;
 			ident = ch + ident;
 		}
-		
+
 		return ident;
 	}
-	
+
 	function getIdent() {
 		var textAreaDOM = textArea.get(0),
 		    start = textAreaDOM.selectionStart;
-		
+
 		var lastNL = textAreaDOM.value.substr(0, start).lastIndexOf('\n') + 1;
 		// works with -1 as well
-		
+
 		var line = textAreaDOM.value.substr(lastNL, start - lastNL),
 		    ident = '',
 		    i = 0;
-		
+
 		while ((ch = line.substr(i, 1)) === ' ' || ch === '\t') {
 			i++;
 			ident += ch;
 		}
-		
+
 		if (line.substr(line.length - 1, 1) === '{') {
 			ident += '  ';
 		}
-		
+
 		return ident;
 	}
-	
+
 	// add text in textarea to cursor position or intead of selection
 	function textareaTextAt(data) {
 		var textAreaDOM = textArea.get(0),
 			start = textAreaDOM.selectionStart;
-		
+
 		// add ident to the string
 		data = data.split('\n').map(function(line, j) { return (j === 0 ? '' : getSpaces()) + line; }).join('\n');
-		
+
 		// add at position
 		if (textArea.setRangeText) {
 			// if setRangeText function is supported by current browser
@@ -368,7 +368,7 @@ function modulePostRender(control) {
 			textArea.focus();
 			document.execCommand('insertText', false, data);
 		}
-		
+
 		function indexOfPlaceholder(string) {
 			for (var i = 0; i < placeHolders.length; i++) {
 				var j = string.indexOf(placeHolders[i]);
@@ -376,26 +376,26 @@ function modulePostRender(control) {
 			}
 			return -1;
 		}
-		
+
 		// select first placeholder to fill if placeholder was in data
 		var ii = indexOfPlaceholder(data);
 		if (ii !== -1) {
 			textAreaDOM.selectionStart = ii + start;
 			textAreaDOM.selectionEnd = textAreaDOM.selectionStart + 1;
 		}
-		
+
 		// trigger event for code highlighter
 		textArea.blur();
 		textArea.focus();
 	}
-	
+
 	// add text in textarea to cursor position or intead of selection
 	function textareaTextAtTop(data) {
 		// trimEnd and addind \n is to trigger event for code highlighter
 		textArea.val(data + textArea.val().trimEnd());
 		textareaTextAt('\n');
 	}
-	
+
 	$(textArea).click(function() {
 		if (this.selectionStart === this.selectionEnd && placeHolders.indexOf(this.value.substr(this.selectionStart, 1)) !== -1) {
 			this.selectionEnd = this.selectionStart + 1;
@@ -404,7 +404,7 @@ function modulePostRender(control) {
 			this.selectionStart--;
 		}
 	});
-	
+
 	$(textArea).keypress(function(e) {
 		if (e.key === '.') {
 			// check that before is vdev("...")
@@ -413,7 +413,7 @@ function modulePostRender(control) {
 				var pos = getCaretCoordinates(this, this.selectionEnd),
 				    thisPos = this.getBoundingClientRect();
 				pos.top += thisPos.top + 10; // add small shift
-				pos.left += thisPos.left + 10; 
+				pos.left += thisPos.left + 10;
 				menuOpen('easy-scripting-device-methods', pos);
 			}
 		} else if (e.key === 'Enter') {
@@ -425,14 +425,14 @@ function modulePostRender(control) {
 			menuClose('easy-scripting-device-methods');
 		}
 	});
-	
+
 	// highlight description
-	
+
 	document.querySelectorAll('pre code').forEach(function(block) {
-		hljs.highlightBlock(block);
+		hljs.highlightElement(block);
 	});
-	
+
 	// trigger highlight
-	
+
 	textareaTextAtTop('');
 }
