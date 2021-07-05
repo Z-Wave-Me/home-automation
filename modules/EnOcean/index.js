@@ -129,6 +129,12 @@ EnOcean.prototype.startBinding = function () {
 	this.saveDataXMLTimer = setInterval(function() {
 		self.zeno.devices.SaveData();
 	}, 3600 * 1000);
+	
+	// unregister function
+	this.zeno.unregisterDevice = function(name) {
+		self.cleanupProfile(name);
+		delete self.zeno.devices[name];
+	};
 };
 
 EnOcean.prototype.stop = function () {
@@ -374,12 +380,28 @@ EnOcean.prototype.removeProfile = function (nodeId) {
 	var self = this;
 	
 	// delete devices
-	this.controller.devices.map(function (el) {
+	this.vDevByNodeId(nodeId).forEach(function(el) {
+		self.controller.devices.remove(el);
+	});
+};
+
+EnOcean.prototype.cleanupProfile = function (nodeId) {
+	var self = this;
+	
+	// delete and cleanup devices
+	this.vDevByNodeId(nodeId).forEach(function(el) {
+		self.controller.devices.remove(el);
+		self.controller.devices.cleanup(el);
+	});
+};
+
+EnOcean.prototype.vDevByNodeId = function (nodeId) {
+	var self = this;
+	
+	return this.controller.devices.map(function (el) {
 		return el.id;
 	}).filter(function(el) {
 		return el.indexOf("ZEnoVDev_" + self.config.name + "_" + nodeId + "_") === 0;
-	}).forEach(function(el) {
-		self.controller.devices.remove(el);
 	});
 };
 
@@ -517,6 +539,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			
 			if (vDevL && vDevR) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, "energyBow", function(type) {
+					if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) return;
+					
 					if (deviceData.energyBow.value) {
 						leftPressed = deviceData.value1.value < 2 || deviceData.secondAction.value && deviceData.value2.value < 2;
 						leftUp = deviceData.value1.value === 1 || deviceData.secondAction.value && deviceData.value2.value === 1;
