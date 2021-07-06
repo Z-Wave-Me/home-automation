@@ -38,8 +38,40 @@ NotificationChannelEmail.prototype.init = function (config) {
 	
 	this.collectedMessages = [];
 
-	var self = this;
+	this.subscribe(config);
 
+	var self = this;
+	
+	this.onProfileUpdate = function(profile) {
+		self.unsubscribe();
+		self.subscribe(config);
+	}
+	
+	this.controller.on('profile.updated', this.onProfileUpdate);
+};
+
+NotificationChannelEmail.prototype.stop = function () {
+	if (this.timer) {
+		clearInterval(this.timer);
+		this.timer = undefined;
+	}
+	
+	if (this.onProfileUpdate) {
+		this.controller.off('profile.updated', this.onProfileUpdate);
+	}
+	
+	this.unsubscribe();
+	
+	NotificationChannelEmail.super_.prototype.stop.call(this);
+};
+
+// ----------------------------------------------------------------------------
+// --- Module methods
+// ----------------------------------------------------------------------------
+
+NotificationChannelEmail.prototype.subscribe = function(config) {
+	var self = this;
+	
 	// Loop thru all configured mails
 	config.channels.forEach(function (channel) {
 		if (self.emailRe.test(channel.email)) {
@@ -64,36 +96,25 @@ NotificationChannelEmail.prototype.init = function (config) {
 	});
 };
 
-NotificationChannelEmail.prototype.stop = function () {
+NotificationChannelEmail.prototype.unsubscribe = function() {
 	var self = this;
 	
-	if (this.timer) {
-		clearInterval(this.timer);
-		this.timer = undefined;
-	}
-
 	// uregister all in one shot by prefix
 	Object.keys(this.controller.notificationChannels).forEach(function (id) {
 		var prefix = self.channelIDPrefix();
 		
 		if (id.lastIndexOf(prefix) === 0) {
-			this.controller.unregisterNotificationChannel(id);
+			self.controller.unregisterNotificationChannel(id);
 		}
 	});
-	
-	NotificationChannelEmail.super_.prototype.stop.call(this);
 };
 
-// ----------------------------------------------------------------------------
-// --- Module methods
-// ----------------------------------------------------------------------------
-
 NotificationChannelEmail.prototype.channelIDPrefix = function() {
-        return this.getName() + "_" + this.id + "_";
+	return this.getName() + "_" + this.id + "_";
 };
 
 NotificationChannelEmail.prototype.channelID = function(profileId, email) {
-        return this.channelIDPrefix() + profileId + "_" + email;
+	return this.channelIDPrefix() + profileId + "_" + email;
 };
 
 NotificationChannelEmail.prototype.sender = function(to, message) {
