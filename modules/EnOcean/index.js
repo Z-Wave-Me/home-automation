@@ -623,7 +623,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			}
 		}
 
-		function binarySwitch(dh, type, title) {
+		function binarySwitch(dh, type, title, valToVDev, vDevToVal) {
 			if (self.controller.devices.get(vDevIdPrefix + type)) return;
 			
 			var vDev = self.controller.devices.create({
@@ -640,7 +640,11 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				overlay: {},
 				handler: function(command) {
 					if (command === "on" || command === "off") {
-						self.zeno.devices[nodeId].data[dh].value = command === "on" ? true : false;
+						if (vDevToVal) {
+							self.zeno.devices[nodeId].data[dh].value = vDevToVal(command);
+						} else {
+							self.zeno.devices[nodeId].data[dh].value = command === "on" ? true : false;
+						}
 						vDev.set("metrics:level", command);
 					}
 				},
@@ -650,7 +654,11 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			if (vDev) {
 				self.dataBind(self.gateDataBinding, self.zeno, nodeId, dh, function(type) {
 					try {
-						vDev.set("metrics:level", this.value ? "on" : "off");
+						if (valToVDev) {
+							vDev.set("metrics:level", valToVDev(this.value));
+						} else {
+							vDev.set("metrics:level", this.value ? "on" : "off");
+						}
 					} catch (e) {}
 				}, "value");
 			}
@@ -769,6 +777,7 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 			binarySensor("preAlarmEnabled", "config1", "Pre Alarm");
 			binarySwitch("setPreAlarm", "config2", "Set Pre Alarm");
 			binarySwitch("setAlarm", "config3", "Set Alarm");
+			binarySwitch("setPIRSensitivity", "config4", "Set PIR Sensitivity", function(val) { return (val === 2) ? "off" : "on"; }, function(command) { return (command === "off") ? 2 : 1; });
 		}
 		
 		if (matchDevice(0xd2, 0x06, 0xff)) {
