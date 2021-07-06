@@ -19,6 +19,7 @@ Improvements:
 * Removed test ws.push for incomingPacket (improved engine speed)
 Fixes:
 * Fixed EasyScripting app UI slowdown
+* EnOcean devices do not re-appear with same name and in same room after being added back.
 
 ## 24.03.2021 v3.1.4
 New features:
