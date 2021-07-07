@@ -3524,8 +3524,8 @@ ZWave.prototype._dataBind = function(dataBindings, zwayName, nodeId, instanceId,
 ZWave.prototype.dataBind = function(dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type) {
 	// three prototypes:
 	//  (dataBindings, zway, nodeId, instanceId, commandClassId, path, func, type)
-	//  (dataBindings, zway, nodeId,							 path, func)
-	//  (dataBindings, zway,									 path, func) // bind to controller data
+	//  (dataBindings, zway, nodeId,                             path, func)
+	//  (dataBindings, zway,                                     path, func) // bind to controller data
 
 	var pathArr = [],
 		data = null,
