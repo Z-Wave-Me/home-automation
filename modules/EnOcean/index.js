@@ -132,7 +132,6 @@ EnOcean.prototype.startBinding = function () {
 	
 	// unregister function
 	this.zeno.unregisterDevice = function(name) {
-		self.cleanupProfile(name);
 		delete self.zeno.devices[name];
 	};
 };
@@ -266,8 +265,23 @@ EnOcean.prototype._dataBind = function(dataBindings, zenoName, nodeId, path, fun
 };
 
 EnOcean.prototype.dataBind = function(dataBindings, zeno, nodeId, path, func, type) {
+	// two prototypes:
+	//  (dataBindings, zeno, nodeId, path, func)
+	//  (dataBindings, zeno,         path, func) // bind to controller data
+	
 	var pathArr = [],
+		data = null,
+		ctrlBind = is_function(path);
+
+	if (ctrlBind) {
+		var t = path;
+		path = nodeId;
+		func = t;
+		nodeId = undefined;
+		data = zeno.controller.data;
+	} else {
 		data = zeno.devices[nodeId].data;
+	}
 
 	if (path) {
 		pathArr = path.split(".");
@@ -286,14 +300,22 @@ EnOcean.prototype.dataBind = function(dataBindings, zeno, nodeId, path, func, ty
 	}
 
 	if (data) {
-		dataBindings.push({
-			"zeno": zeno,
-			"nodeId": nodeId,
-			"path": path,
-			"func": data.bind(func, nodeId, false)
-		});
-		if (type === "value") {
-			func.call(data, this.ZWAY_DATA_CHANGE_TYPE.Updated);
+		if (ctrlBind) {
+			dataBindings.push({
+				"zeno": zeno,
+				"path": path,
+				"func": data.bind(func, false)
+			});
+		} else {
+			dataBindings.push({
+				"zeno": zeno,
+				"nodeId": nodeId,
+				"path": path,
+				"func": data.bind(func, nodeId, false)
+			});
+			if (type === "value") {
+				func.call(data, this.ZWAY_DATA_CHANGE_TYPE.Updated);
+			}
 		}
 	} else {
 	 	console.log("Can not find data path:", nodeId, path);
@@ -302,8 +324,11 @@ EnOcean.prototype.dataBind = function(dataBindings, zeno, nodeId, path, func, ty
 
 EnOcean.prototype.dataUnbind = function(dataBindings) {
 	dataBindings.forEach(function (item) {
-		if (item.zeno && item.zeno.devices[item.nodeId]) {
-			var data = item.zeno.devices[item.nodeId].data,
+		var ctrlBind = !("nodeId" in item),
+			devBind = ("nodeId" in item);
+
+		if (item.zeno && item.zeno.isRunning() && (ctrlBind || item.zeno.devices[item.nodeId])) {
+			var data = ctrlBind ? item.zeno.controller.data : item.zeno.devices[item.nodeId].data,
 				pathArr = item.path ? item.path.split(".") : [];
 
 			while (pathArr.length) {
@@ -348,6 +373,12 @@ EnOcean.prototype.gateDevicesStart = function () {
 			}, "value");
 		}
 	}, this.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceAdded"] | this.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceRemoved"] | this.ENOCEAN_DEVICE_CHANGE_TYPES["DeviceProfileChanged"] | this.ENOCEAN_DEVICE_CHANGE_TYPES["EnumerateExisting"]);
+
+	this.dataBind(this.gateDataBinding, this.zeno, "lastExcludedDevice", function(type) {
+		if (this.value) {
+			self.cleanupProfile(this.value);
+		}
+	}, "");
 };
 
 EnOcean.prototype.gateDevicesStop = function () {
@@ -398,11 +429,15 @@ EnOcean.prototype.cleanupProfile = function (nodeId) {
 EnOcean.prototype.vDevByNodeId = function (nodeId) {
 	var self = this;
 	
-	return this.controller.devices.map(function (el) {
+	return this.controller.devices.filter(function(el) {
+		return el.id.indexOf("ZEnoVDev_" + self.config.name + "_" + nodeId + '_') === 0;
+	}).map(function(el) {
 		return el.id;
-	}).filter(function(el) {
-		return el.indexOf("ZEnoVDev_" + self.config.name + "_" + nodeId + "_") === 0;
-	});
+	}).concat(
+		Object.keys(self.controller.vdevInfo).filter(function(__id) {
+			return __id.indexOf("ZEnoVDev_" + self.config.name + "_" + nodeId + '_') === 0;
+		})
+	);
 };
 
 // EnOcean Equipment Profiles (EEP)
