@@ -17,9 +17,12 @@ Improvements:
 * Added listing of directory in modulemedia API
 * Improved speed with Date.now() instead of new Date().getTime() and new Date().valueOf()
 * Removed test ws.push for incomingPacket (improved engine speed)
+* Adopted the new lastExcludedDevice DH for proper cleanup on exclusion, zeno.unregister().
+* Improved EnOcean.prototype.dataBind (like ZWave.prototype.dataBind).
 Fixes:
 * Fixed EasyScripting app UI slowdown
 * EnOcean devices do not re-appear with same name and in same room after being added back.
+* Fixed GetStatisticsData Z-Wave API and added ClearStatisticsData API.
 
 ## 24.03.2021 v3.1.4
 New features:
