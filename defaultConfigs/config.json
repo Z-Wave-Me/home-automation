@@ -1,5 +1,7 @@
 {
-	"controller": {},
+	"controller": {
+		"initial": true
+	},
 	"vdevInfo": {},
 	"locations": [{
 		"id": 0,
@@ -54,6 +56,7 @@
 		"params": {
 			"name": "zway",
 			"port": "/dev/ttyACM0",
+			"speed": 115200,
 			"enableAPI": true,
 			"publicAPI": false,
 			"createVDev": true,
@@ -80,6 +83,21 @@
 		"description": "Creates and records the presentation of events in the event list (Eventlog).\n(Added by default)"
 	}, {
 		"id": 4,
+		"moduleId": "RemoteAccess",
+		"active": true,
+		"title": "Remote Access",
+		"description": "Is necessary to configure remote access in SmartHome UI.\n(Added by default)",
+		"params": {
+			"path": "",
+			"userId": "",
+			"actStatus": true,
+			"sshStatus": false,
+			"zbwStatus": true,
+			"pass": "",
+			"lastChange": {}
+		}
+	}, {
+		"id": 5,
 		"moduleId": "InfoWidget",
 		"active": true,
 		"title": "Dear Expert User",
@@ -100,7 +118,7 @@
 			}]
 		}
 	}, {
-		"id": 5,
+		"id": 6,
 		"moduleId": "SensorsPolling",
 		"active": false,
 		"title": "Periodical Sensor Polling",
@@ -112,7 +130,7 @@
 			"period": "10"
 		}
 	}, {
-		"id": 6,
+		"id": 7,
 		"moduleId": "BatteryPolling",
 		"active": true,
 		"title": "Battery Polling",
@@ -122,7 +140,7 @@
 			"warningLevel": "20"
 		}
 	}, {
-		"id": 7,
+		"id": 8,
 		"moduleId": "SwitchControlGenerator",
 		"active": true,
 		"title": "Trap events from Remotes and Sensors",
@@ -133,56 +151,56 @@
 			"generated": []
 		}
 	}, {
-		 "id": 8,
-		 "moduleId": "CloudBackup",
-		 "active": true,
-		 "title": "CloudBackup",
-		 "description": "Gives possibility to upload and store your backups on the remote server.",
-		 "params": {
-			 "api": "/CloudBackupAPI/Backup",
-			 "user_active": false,
-			 "email": "",
-			 "email_log": "0",
-			 "remoteid": null,
-			 "days": "28",
-			 "weekDays": null,
-			 "hours": "23",
-			 "minutes": "59",
-			 "scheduler": "3"
-		 }
-	 }, {
 		"id": 9,
-		"moduleId": "InfoWidget",
+		"moduleId": "CloudBackup",
 		"active": true,
-		"title": "Cloud Backup Instructions",
-		"description": "This module creates an information widget.",
+		"title": "CloudBackup",
+		"description": "Gives possibility to upload and store your backups on the remote server.\n(Added by default)",
 		"params": {
-			"widgets": [],
-			"internationalize": true,
-			"widgetsInt": [{
-				"lang": "en",
-				"headline": "Cloud Backup Instructions",
-				"text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
-				"imgURI": "app/img/icon_cloudbackup.png"
-			}, {
-				"lang": "de",
-				"headline": "Cloud Backup Anleitung",
-				"text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong> Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
-				"imgURI": "app/img/icon_cloudbackup.png"
-			}]
+			"api": "/CloudBackupAPI/Backup",
+			"user_active": false,
+			"email": "",
+			"email_log": "0",
+			"remoteid": null,
+			"days": "28",
+			"weekDays": null,
+			"hours": "23",
+			"minutes": "59",
+			"scheduler": "3"
 		}
 	}, {
-		"id" : 10,
+		 "id": 10,
+		 "moduleId": "InfoWidget",
+		 "active": true,
+		 "title": "Cloud Backup Instructions",
+		 "description": "This module creates an information widget.\n(Added by default)",
+		 "params": {
+			 "widgets": [],
+			 "internationalize": true,
+			 "widgetsInt": [{
+				 "lang": "en",
+				 "headline": "Cloud Backup Instructions",
+				 "text": "<center>Cloud backup is conveniently saving up to 3 backup files on our server (using SSL encryption).<br>By default, an automatic backup is created every month on 28 at 23:59.<br>If you don’t like to see your backup file on our server, just deactivate this service or change the interval.</br>To change the settings, please click on<br><strong>Menu > Management > Backup & Restore.</strong><br><br>You could hide or remove this widget in<br><strong>Menu >Apps > Active Tab</strong>.</center>",
+				 "imgURI": "app/img/icon_cloudbackup.png"
+			 }, {
+				 "lang": "de",
+				 "headline": "Cloud Backup Anleitung",
+				 "text": "<center>Cloud Backup sichert bis zu 3 Kopien Ihrer Daten automatisch auf unserem Server (mittels SSL Verschlüsselung).<br>Standard mäßig wird jeden Monat am 28 um 23:59 ein automatisches Backup erstellt.<br>Sollten Sie das nicht wünschen dann ändern Sie den Interval oder deaktivieren Sie diese Funktion.<br>Zum ändern der Einstellungen klicken Sie bitte auf <br><strong>Menü > Management > Datensicherung & Wiederherstellung.</strong><br><br>Sie können dieses Element im<br><strong> Menü Anwendungen > Aktiv<strong><br> auschalten oder entfernen.</center>",
+				 "imgURI": "app/img/icon_cloudbackup.png"
+			 }]
+		 }
+	 }, {
+		"id" : 11,
 		"moduleId" : "MobileAppSupport",
 		"active" : true,
 		"title" : "Mobile App Support",
-		"description": "This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).",
+		"description": "This module is required by the mobile phone app (Android, iOS). State updates of all devices and events are send at runtime to the mobile phone. Additional notifications can be configured that will be send in background. Currently event forwarding is supported (the same logic as for pushbullet module).\n(Added by default)",
 		"params" : {
-			 "apps" : []
+			"apps" : []
 		}
 	 },
 	 {
-		"id": 11,
+		"id": 12,
 		"moduleId": "HomeKitGate",
 		"active": true,
 		"title": "Apple HomeKit Gate",
