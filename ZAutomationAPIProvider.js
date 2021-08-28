@@ -3961,11 +3961,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 	if (matched) {
 		var auth = this.controller.auth.resolve(this.req, matched.role);
 		if (!auth) {
-
 			return this.Unauthorized;
-
 		} else if (this.controller.auth.isAuthorized(auth.role, matched.role)) {
-
 			// fill user field
 			this.req.user = auth.user;
 			this.req.role = auth.role;
@@ -3986,11 +3983,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 
 			// --- Proceed to checkout =)
 			return handlerFunc;
-
 		} else {
-
 			return this.Forbidden;
-
 		}
 	} else {
 		return handlerFunc;
