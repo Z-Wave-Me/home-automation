@@ -3963,10 +3963,6 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 		if (!auth) {
 			return this.Unauthorized;
 		} else if (this.controller.auth.isAuthorized(auth.role, matched.role)) {
-			// fill user field
-			this.req.user = auth.user;
-			this.req.role = auth.role;
-
 			if (matched.params.length) {
 				validParams = _.every(matched.params),
 					function(p) {
