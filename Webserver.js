@@ -53,7 +53,6 @@ ws = new WebServer(8083, function(req) {
 	} else {
 		return auth.user;
 	}
-}, function(user, msg) {
 }, {
 	document_root: "htdocs"
 });
