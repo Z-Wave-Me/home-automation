@@ -1,3 +1,9 @@
+## 15.09.2021 v3.2.1
+Fixes:
+* Fixed missing third (immediate) parameter in saveObject
+* Fixed bug in HomeKit with wipeout
+* Fix local user devices list
+
 ## 24.05.2021 v3.2.0
 New features:
 * New MQTTClient app for exporting all devices to MQTT
