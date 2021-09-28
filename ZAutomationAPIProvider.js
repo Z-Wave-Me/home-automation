@@ -127,9 +127,6 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.get("/namespaces/:namespace_id", this.ROLE.ADMIN, this.getNamespaceFunc);
 
-		this.router.get("/history/:dev_id", this.ROLE.USER, this.getDevHist);
-		this.router.del("/history/:dev_id", this.ROLE.USER, this.getDevHist);
-
 		this.router.get("/load/modulemedia/:module_name/:file_name", this.ROLE.ANONYMOUS, this.loadModuleMedia);
 
 		this.router.get("/load/image/:img_name", this.ROLE.ANONYMOUS, this.loadImage);
