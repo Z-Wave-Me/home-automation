@@ -378,8 +378,7 @@ _.extend(VirtualDevice.prototype, {
 	},
 	addTag: function (tag) {
 		var tags = this.get('tags');
-		tags.push(tag);
-		this.set({'tags': _.uniq(tags)});
+		this.set({'tags': _.uniq(_.union(tags, [tag]))});
 	},
 	removeTag: function (tag) {
 		var tags = this.get('tags');
