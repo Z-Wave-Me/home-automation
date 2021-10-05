@@ -75,7 +75,6 @@ VirtualDevice = function (options) {
 			customIcons: customicons,
 			order: order
 		},
-		changed: {},
 		overlay: options.overlay || {},
 		defaults: options.defaults || {},
 		overlay_metrics: options.hasOwnProperty('overlay') ? options.overlay.metrics : {},
@@ -240,11 +239,11 @@ _.extend(VirtualDevice.prototype, {
 				profilesDevicesBefore = this.collection.controller.profiles.map(function(p) { return { id: p.id, devices: that.collection.controller.devicesByUser(p.id) }; });
 			}
 
+			console.logJS("000");
 			findObj = findX(this.attributes, keyName);
 			if (findObj[keyName] !== val) {
 				that.attributes[keyName] = val;
 				changes.push(keyName);
-				that.changed[keyName] = val;
 			}
 			
 			if ("location" === keyName) {
@@ -289,12 +288,8 @@ _.extend(VirtualDevice.prototype, {
 							changes.push(key);
 						} else {
 							changes.push(key);
+							console.logJS(3, changes)
 						}
-					}
-					if (!_.isEqual(prev[key], attrs[key])) {
-						that.changed[key] = attrs[key];
-					} else {
-						delete that.changed[key];
 					}
 				});
 				
