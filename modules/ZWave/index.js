@@ -467,6 +467,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			"RSSI": data.RSSI.value,
 			"hops": data.hops.value,
 			"frameType": data.frameType.value,
+			"duplicate": data.duplicate.value,
 			"value": data.value
 		});
 
