@@ -1484,6 +1484,7 @@ ZWave.prototype.externalAPIAllow = function(name) {
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PacketLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ClearPacketLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Zniffer.SetPromisc", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RSSIGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -1528,6 +1529,7 @@ ZWave.prototype.externalAPIRevoke = function(name) {
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".CommunicationHistory");
 	ws.revokeExternalAccess(_name + ".PacketLog");
+	ws.revokeExternalAccess(_name + ".ClearPacketLog");
 	ws.revokeExternalAccess(_name + ".Zniffer");
 	ws.revokeExternalAccess(_name + ".Zniffer.SetPromisc");
 	ws.revokeExternalAccess(_name + ".RSSIGet");
@@ -2183,6 +2185,22 @@ ZWave.prototype.defineHandlers = function() {
 		};
 	};
 
+	this.ZWaveAPI.ClearPacketLog = function() {
+		self.originPackets.clear()
+		
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: {
+				"code": 200,
+				"message": "200 OK",
+				"updateTime": Math.round(Date.now() / 1000),
+				data: self.originPackets.get()
+			}
+		};
+	};
 
 	this.ZWaveAPI.RSSIGet = function(url, request) {
 		var headers = {
