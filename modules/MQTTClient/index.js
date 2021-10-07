@@ -1,6 +1,6 @@
 /*** MQTT Client Z-Way HA module ****************************************************
 
-Version: 1.0
+Version: 1.1
 (c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <aivs@z-wave.me>
@@ -15,7 +15,10 @@ Description:
 
 function MQTTClient(id, controller) {
 	MQTTClient.super_.call(this, id, controller);
-}
+
+	// Create instance variables
+	this.reconnectInterval = null;
+};
 
 inherits(MQTTClient, AutomationModule);
 
@@ -30,6 +33,27 @@ MQTTClient.prototype.init = function(config) {
 	MQTTClient.super_.prototype.init.call(this, config);
 
 	var self = this;
+	var mqttConnected = false;
+	var mqttConnectionAttempts = 0;
+
+	var vDev = this.controller.devices.create({
+		deviceId: "MQTTClient" + this.id,
+		defaults: {
+			metrics: {
+				title: "MQTT Client Connection Status " + this.config.host
+			}
+		},
+		overlay: {
+			deviceType: "text",
+			metrics: {
+				text: "Not connected",
+				icon: "/ZAutomation/api/v1/load/modulemedia/MQTTClient/icon.png"
+			}
+		},
+		moduleId: this.id
+	});
+
+
 	this.updateSkippedDevicesList();
 
 	var clientId = this.config.clientId;
@@ -42,10 +66,59 @@ MQTTClient.prototype.init = function(config) {
 	else
 		this.m = new mqtt(this.config.host, this.config.port, clientId);
 
+	if (this.config.security) {
+		try {
+			this.m.tlsset();
+		} catch (e) {
+			console.log("--- MQTTClient security error:", e);
+		}
+	}
+
 	// 2 - Init MQTT handlers
 	this.m.onconnect = function () {
+		console.log("--- MQTTClient connected to", self.config.host);
+		vDev.set("metrics:text", "Connected to " + self.config.host);
+		clearInterval(self.reconnectInterval);
+		self.reconnectInterval = null;
+		mqttConnected = true;
+		mqttConnectionAttempts = 0;
 		this.subscribe(self.config.topicPrefix + "/" + self.config.topicPostfixSet + "/#");
+		self.controller.devices.on("change:metrics:level", self.onLevelChanged);
 	};
+
+	this.m.ondisconnect = function () {
+		console.log("--- MQTTClient disconnected");
+		vDev.set("metrics:text", "Disconnected. Trying to connect every 1 second");
+		mqttConnected = false;
+		mqttConnectionAttempts = 0;
+		self.controller.devices.off("change:metrics:level", self.onLevelChanged);
+	};
+
+	// 3 - Connect
+	try {
+		mqttConnectionAttempts = mqttConnectionAttempts + 1;
+		console.log("--- MQTTClient attempt to connect first time...");
+		vDev.set("metrics:text", "Attempt to connect first time...");
+		self.m.connect();
+	} catch (err) {
+		console.log("--- MQTTClient connection error", self.config.host, err, "Reconnect after 5 seconds...");
+		vDev.set("metrics:text", "--- MQTTClient connection error: " + err);
+	}
+
+	// Check connection after 5 seconds
+	self.reconnectInterval = setInterval(function() {
+		if (!mqttConnected) {
+			try {
+				mqttConnectionAttempts = mqttConnectionAttempts + 1;
+				console.log("--- MQTTClient attempts to connect " + mqttConnectionAttempts + " ...");
+				vDev.set("metrics:text", "Attempts to connect " + mqttConnectionAttempts + " ...");
+				self.m.connect();
+			} catch (err) {
+				console.log("--- MQTTClient connection error", self.config.host, err, "Reconnect after 5 seconds...");
+				vDev.set("metrics:text", "--- MQTTClient connection error: " + err);
+			}
+		}
+	}, 5000);
 
 	this.m.onmessage = function (topic, byteArrayMsg) {
 		var msg = byteArrayToString(byteArrayMsg);
@@ -71,15 +144,6 @@ MQTTClient.prototype.init = function(config) {
 			console.log("--- MQTTClient: Device " + vDevId + " Not Found");
 		}
 	};
-
-	// 3 - Connect
-	try {
-		self.m.connect();
-		console.log("--- MQTTClient connected to", self.config.host);
-	} catch (err) {
-		console.log("--- MQTTClient connect error to", self.config.host, err);
-	}
-
 
 	this.onLevelChanged = function(vDev) {
 		// if Not mqtt-skip, then publish device status and full data
@@ -108,7 +172,6 @@ MQTTClient.prototype.init = function(config) {
 	  	}
 	};
 
-	this.controller.devices.on("change:metrics:level", this.onLevelChanged);
 	this.controller.devices.on("change:tags", this.onTagsChanged);
 };
 
@@ -116,13 +179,16 @@ MQTTClient.prototype.stop = function () {
 	var self = this;
 	this.controller.devices.off("change:metrics:level", this.onLevelChanged);
 	this.controller.devices.off("change:tags", this.onTagsChanged);
+	clearInterval(this.reconnectInterval);
+	this.reconnectInterval = null;
+	this.controller.devices.remove("MQTTClient" + this.id);
 
-        try {
-                self.m.disconnect();
-                console.log("--- MQTTClient disconnected from", self.config.host);
-        } catch (err) {
-                console.log("--- MQTTClient disconnect error from", self.config.host, err);
-        }
+    try {
+            self.m.disconnect();
+            console.log("--- MQTTClient disconnected from", self.config.host);
+    } catch (err) {
+            console.log("--- MQTTClient disconnect error from", self.config.host, err);
+    }
 
 	MQTTClient.super_.prototype.stop.call(this);
 };
@@ -131,7 +197,7 @@ MQTTClient.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
-MQTTClient.prototype.updateSkippedDevicesList = function() {
+MQTTClient.prototype.updateSkippedDevicesList = function () {
 	var self = this
 
 	// Add tag "mqtt-skip" for all skipped devices from config
