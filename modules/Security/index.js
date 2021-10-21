@@ -1,9 +1,9 @@
 /*** Security Z-Way HA module *******************************************
 
- Version: 1.0.1
- (c) Z-Wave.Me, 2018
+ Version: 1.1
+ (c) Z-Wave.Me, 2021
  -----------------------------------------------------------------------------
- Author: Karsten Reichel <kar@zwave.eu>
+ Author: Karsten Reichel <kar@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
  Description: Basic Security Module
  ******************************************************************************/
 // ----------------------------------------------------------------------------
@@ -288,7 +288,7 @@ Security.prototype.init = function(config) {
 		this.inputFunctionIF();
 	};
 
-	setTimeout(function(){ 
+	this.startSecurity = function () {
 		console.log("------------------Security start"); 
 		self.makeVDevs(config);
 		self.wipeOwnVDevs();
@@ -303,7 +303,44 @@ Security.prototype.init = function(config) {
 		self.state.doEntry();
 		self.state.doMake();
 		self.vDev.performCommand(self.performEnum.COFF.name);
-	}, 30000);
+	};
+
+	var notAddedDevices = [];
+	this.onDeviceAdded = function (vDev) {
+		const index = notAddedDevices.indexOf(vDev.id);
+		if (notAddedDevices.length > 0 && index > -1) {
+			notAddedDevices.splice(index, 1);
+		}
+
+		if (notAddedDevices.length == 0) {
+			self.controller.devices.off("created", self.onDeviceAdded);
+			self.startSecurity();
+		}
+	};
+
+	// Get all devices used in this app
+	Object.keys(this.config).forEach(function (e) {
+		if (self.config[e].table) {
+			self.config[e].table.forEach(function (ee) {
+				if (!self.controller.devices.get(ee.devices)) {
+					notAddedDevices.push(ee.devices);
+				}
+			});
+		}
+	});
+
+	if (notAddedDevices.length > 0) {
+		self.controller.devices.on("created", self.onDeviceAdded);
+		// Start 2 minutes off timer
+		setTimeout(function () {
+			console.logJS("--- Security Error: Not all devices added after 2 minutes.");
+			self.controller.devices.off("created", self.onDeviceAdded);
+			self.startSecurity();
+		}, 120*1000);
+	}
+	else {
+		self.startSecurity();
+	}
 };
 
 /**
