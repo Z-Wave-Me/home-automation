@@ -1,6 +1,6 @@
 /*** MQTT Client Z-Way HA module ****************************************************
 
-Version: 1.1
+Version: 1.2
 (c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <aivs@z-wave.me>
@@ -94,32 +94,6 @@ MQTTClient.prototype.init = function(config) {
 		self.controller.devices.off("change:metrics:level", self.onLevelChanged);
 	};
 
-	// 3 - Connect
-	try {
-		mqttConnectionAttempts = mqttConnectionAttempts + 1;
-		console.log("--- MQTTClient attempt to connect first time...");
-		vDev.set("metrics:text", "Attempt to connect first time...");
-		self.m.connect();
-	} catch (err) {
-		console.log("--- MQTTClient connection error", self.config.host, err, "Reconnect after 5 seconds...");
-		vDev.set("metrics:text", "--- MQTTClient connection error: " + err);
-	}
-
-	// Check connection after 5 seconds
-	self.reconnectInterval = setInterval(function() {
-		if (!mqttConnected) {
-			try {
-				mqttConnectionAttempts = mqttConnectionAttempts + 1;
-				console.log("--- MQTTClient attempts to connect " + mqttConnectionAttempts + " ...");
-				vDev.set("metrics:text", "Attempts to connect " + mqttConnectionAttempts + " ...");
-				self.m.connect();
-			} catch (err) {
-				console.log("--- MQTTClient connection error", self.config.host, err, "Reconnect after 5 seconds...");
-				vDev.set("metrics:text", "--- MQTTClient connection error: " + err);
-			}
-		}
-	}, 5000);
-
 	this.m.onmessage = function (topic, byteArrayMsg) {
 		var msg = byteArrayToString(byteArrayMsg);
 		var channels = topic.split("/"),
@@ -131,10 +105,15 @@ MQTTClient.prototype.init = function(config) {
 				vDevFound = true;
 				var deviceType = vDev.get("deviceType");
 
-				if ((deviceType === "switchMultilevel" || deviceType === "thermostat") && 
-					msg !== "on" && msg !== "off" && msg !== "stop") {
-					vDev.performCommand("exact", {level: parseInt(msg)});
-				} else {
+				if (msg !== "on" && msg !== "off" && msg !== "stop") {
+					if (deviceType === "switchMultilevel") {
+						vDev.performCommand("exact", {level: parseInt(msg)});
+					}
+					else if (deviceType === "thermostat") {
+						vDev.performCommand("exact", {level: parseFloat(msg)});
+					}
+				}
+				else {
 					vDev.performCommand(msg);
 				}
 			}
@@ -173,6 +152,32 @@ MQTTClient.prototype.init = function(config) {
 	};
 
 	this.controller.devices.on("change:tags", this.onTagsChanged);
+
+	// 3 - Connect
+	try {
+		mqttConnectionAttempts = mqttConnectionAttempts + 1;
+		console.log("--- MQTTClient attempt to connect first time...");
+		vDev.set("metrics:text", "Attempt to connect first time...");
+		self.m.connect();
+	} catch (err) {
+		console.log("--- MQTTClient connection error", self.config.host, err, "Reconnect after 5 seconds...");
+		vDev.set("metrics:text", "--- MQTTClient connection error: " + err);
+	}
+
+	// Check connection after 5 seconds
+	self.reconnectInterval = setInterval(function() {
+		if (!mqttConnected) {
+			try {
+				mqttConnectionAttempts = mqttConnectionAttempts + 1;
+				console.log("--- MQTTClient attempts to connect " + mqttConnectionAttempts + " ...");
+				vDev.set("metrics:text", "Attempts to connect " + mqttConnectionAttempts + " ...");
+				self.m.connect();
+			} catch (err) {
+				console.log("--- MQTTClient connection error", self.config.host, err, "Reconnect after 5 seconds...");
+				vDev.set("metrics:text", "--- MQTTClient connection error: " + err);
+			}
+		}
+	}, 5000);
 };
 
 MQTTClient.prototype.stop = function () {
