@@ -174,6 +174,22 @@ AutomationController.prototype.init = function() {
 			ws.push("me.z-wave.devices.remove", id, self.profilesByDevice(id));
 		});
 
+		self.on('location.added', function(location) {
+			ws.push("me.z-wave.locations.add", location, self.profilesByLocation(location));
+		});
+		
+		self.on('location.removed', function(location) {
+			ws.push("me.z-wave.locations.remove", location, self.profilesByLocation(location));
+		});
+		
+		self.on('location.updated', function(location) {
+			ws.push("me.z-wave.locations.add", location, self.profilesByLocation(location));
+		});
+		
+		self.on('profile.updated', function(profile) {
+			ws.push("me.z-wave.profile.updated", profile.id, self.profilesByRole(self.auth.ROLE.ADMIN).concat([profile.id]));
+		});
+		
 		self.on("notifications.push", function(notice) {
 			ws.push("me.z-wave.notifications.add", notice, self.profilesByRole(self.auth.ROLE.ADMIN));
 		});
@@ -3571,6 +3587,14 @@ AutomationController.prototype.profilesByDevice = function(devId) {
 	
 	return this.profiles.filter(function(profile) {
 		return profile.role === self.auth.ROLE.ADMIN || (profile.devices && (profile.devices.indexOf(devId) !== -1));
+	}).map(function(profile) {
+		return profile.id;
+	});
+};
+
+AutomationController.prototype.profilesByLocation = function(location) {
+	return this.profiles.filter(function(profile) {
+		return profile.rooms.indexOf(location) !== -1;
 	}).map(function(profile) {
 		return profile.id;
 	});
