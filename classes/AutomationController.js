@@ -136,6 +136,11 @@ AutomationController.prototype.init = function() {
 			ws.push("me.z-wave.devices.add", device.toJSON(), self.profilesByDevice(device.id));
 			pushNamespaces(device);
 		});
+		
+		// update namespaces if structure of devices collection changed
+		self.devices.on('wipeOut', function(device) {
+			ws.push("me.z-wave.devices.wipe", device.id, self.profilesByDevice(device.id));
+		});
 
 		self.devices.on('destroy', function(device) {
 			ws.push("me.z-wave.devices.destroy", device.toJSON(), self.profilesByDevice(device.id));
@@ -166,6 +171,7 @@ AutomationController.prototype.init = function() {
 					}
 				}
 			}
+			ws.push("me.z-wave.devices.remove", id, self.profilesByDevice(id));
 		});
 
 		self.on("notifications.push", function(notice) {
