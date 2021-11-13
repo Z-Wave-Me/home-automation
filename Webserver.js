@@ -44,7 +44,8 @@ ws = new WebServer(8083, function(req) {
 	var obj = JSON.parse(msg);
 	
 	var profile = controller.getProfile(user);
-	if (obj.event === "httpEncapsulatedRequest") {
+	
+	if (profile && obj.event === "httpEncapsulatedRequest") {
 		var role = profile.role;
 		
 		// authentication data
