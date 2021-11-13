@@ -8,20 +8,14 @@
  ******************************************************************************/
 
 ws = new WebServer(8083, function(req) {
-	var q = req.url.substring(1).replace(/\//g, '.');
-	if (!q) return null;
-	
 	if (req.method === "OPTIONS") {
 		return this.addHTTPHeaders({
 			status: 200
 		});
 	}
-	
-	var found = null;
-	if (this.externalNames.some(function(ext) {
-		found = ext;
-		return (ext.name.length < q.length && q.slice(0, ext.name.length + 1) === ext.name + ".") || (ext.name === q);
-	}) && found) {
+
+	var found = ws.find(req);	
+	if (found) {
 		var auth = controller.auth.resolve(req, found.role);
 		if (!auth) {
 			return this.addHTTPHeaders({
@@ -29,14 +23,7 @@ ws = new WebServer(8083, function(req) {
 				body: "Not logged in"
 			});
 		} else if (controller.auth.isAuthorized(auth.role, found.role)) {
-			// fill user field
-			req.user = auth.user;
-			req.role = auth.role;
-			req.authToken = auth.token;
-			
-			var cache = this.evalCache || (this.evalCache = {});
-			var handler = cache[found.name] || (cache[found.name] = evalPath(found.name));
-			return this.addHTTPHeaders(handler(req.url.substring(found.name.length + 1), req));
+			return this.addHTTPHeaders(ws.execute(found.name, req, auth));
 		} else {
 			return this.addHTTPHeaders({
 				status: 403,
@@ -53,9 +40,92 @@ ws = new WebServer(8083, function(req) {
 	} else {
 		return auth.user;
 	}
+}, function(user, msg) {
+	var obj = JSON.parse(msg);
+	
+	var profile = controller.getProfile(user);
+	
+	if (profile && obj.event === "httpEncapsulatedRequest") {
+		var role = profile.role;
+		
+		// authentication data
+		var auth = { user: user, role: role, token: "....." };
+
+		// extract query string		
+		var query = {};
+		var url = obj.data.url;
+		
+		var i = url.indexOf("?");
+		if (i > -1) {
+			url.substring(i + 1).split("&").map(function(q) {
+				var qq = q.split("=");
+				query[qq[0]] = qq[1]
+			});
+			url = url.substring(0, i);
+		}
+
+		// body
+		var body = obj.data.body;
+		
+		var responseEvent = obj.responseEvent;
+		
+		var req = {
+			method: obj.data.method ? obj.data.method.toUpperCase() : "GET",
+			url: url,
+			fullUrl: obj.data.url,
+			query: query,
+			body: (typeof body === "string" || typeof body === "undefined") ? body : JSON.stringify(body),
+			peer: {
+				address: "....",
+				port: 0000
+			},
+			headers: {},
+			__authMethod: "....",
+			user: auth.user,
+			role: auth.role,
+			authToken: auth.token
+		};
+
+		var found = ws.find(req);
+		
+		var response;
+		if (found && controller.auth.isAuthorized(role, found.role)) {
+			response = ws.execute(found.name, req, auth);
+		} else {
+			response = {
+				status: 404
+			};
+		}
+		
+		return {
+			"ws-reply-type": responseEvent,
+			"ws-reply-data": response
+		};
+	}
 }, {
 	document_root: "htdocs"
 });
+
+ws.find = function(req) {
+	var q = req.url.substring(1).replace(/\//g, '.');
+	if (!q) return null;
+	
+	var found = null;
+	if (this.externalNames.some(function(ext) {
+		found = ext;
+		return (ext.name.length < q.length && q.slice(0, ext.name.length + 1) === ext.name + ".") || (ext.name === q);
+	})) {
+		return found;
+	} else {
+		return null;
+	}
+};
+
+ws.execute = function(name, req, auth) {
+	var cache = this.evalCache || (this.evalCache = {});
+	var handler = cache[name] || (cache[name] = evalPath(name));
+	return handler(req.url.substring(name.length + 1), req, auth);
+};
 
 ws.externalNames = []; // array of object {name, role}
 ws.allowExternalAccess = function(name, role) {
