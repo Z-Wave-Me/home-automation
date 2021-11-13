@@ -70,7 +70,7 @@ ws = new WebServer(8083, function(req) {
 		var responseEvent = obj.responseEvent;
 		
 		var req = {
-			method: obj.data.method,
+			method: obj.data.method ? obj.data.method.toUpperCase() : "GET",
 			url: url,
 			fullUrl: obj.data.url,
 			query: query,
