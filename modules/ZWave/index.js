@@ -285,6 +285,8 @@ ZWave.prototype.startBinding = function() {
 		this.deadDetectionStart();
 		this.gateDevicesStart();
 	}
+	
+	this.timeUpdaterStart();
 
 	// save data every hour for hot start
 	this.saveDataXMLTimer = setInterval(function() {
@@ -362,6 +364,8 @@ ZWave.prototype.stopBinding = function() {
 		this.gateDevicesStop();
 		this.deadDetectionStop();
 	}
+	
+	this.timeUpdaterStop();
 
 	if (this.fastAccess) {
 		if (this.config.enableAPI !== false) {
@@ -3688,6 +3692,39 @@ ZWave.prototype.dataUnbind = function(dataBindings) {
 	dataBindings = null;
 };
 
+// ------------- Update time every day -----
+
+ZWave.prototype.timeUpdaterStart = function() {
+	var self = this;
+	
+	this.controller.emit("cron.addTask", "ZWaveTimeUpdater.poll", {
+		minute: 0,
+		hour: 3,
+		weekDay: null,
+		day: null,
+		month: null
+	});
+
+	// add event listener
+	this.timeUpdater = function() {
+		var devices = Object.keys(self.zway.devices);
+		devices.forEach(function(nodeId) {
+			if (self.zway.devices[nodeId].TimeParameters)
+				self.zway.devices[nodeId].TimeParameters.Set();
+			if (self.zway.devices[nodeId].Clock)
+				self.zway.devices[nodeId].Clock.Set();
+		});
+	};
+
+	this.controller.on("ZWaveTimeUpdater.poll", this.timeUpdater);
+};
+
+ZWave.prototype.timeUpdaterStop = function() {
+	this.controller.emit("cron.removeTask", "ZWaveTimeUpdater.poll");
+
+	if (this.timeUpdater)
+		this.controller.off("ZWaveTimeUpdater.poll", this.timeUpdater);
+}
 
 // ------------- Dead Detection ------------
 
