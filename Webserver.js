@@ -66,6 +66,8 @@ ws = new WebServer(8083, function(req) {
 		// body
 		var body = obj.data.body;
 		
+		var responseEvent = obj.responseEvent;
+		
 		var req = {
 			method: obj.data.method,
 			url: url,
@@ -85,13 +87,19 @@ ws = new WebServer(8083, function(req) {
 
 		var found = ws.find(req);
 		
+		var response;
 		if (found && controller.auth.isAuthorized(role, found.role)) {
-			return ws.execute(found.name, req, auth);
+			response = ws.execute(found.name, req, auth);
 		} else {
-			return {
+			response = {
 				status: 404
-			}
+			};
 		}
+		
+		return {
+			"ws-reply-type": responseEvent,
+			"ws-reply-data": response
+		};
 	}
 }, {
 	document_root: "htdocs"
