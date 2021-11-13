@@ -37,11 +37,11 @@ function AutomationController() {
 	this.skins = loadObject('userSkins.json') || [{
 		name: "default",
 		title: "Default",
-		description: "Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem.",
-		version: "1.0.3",
+		description: "Default skin",
+		version: "1.0.0",
 		icon: true,
-		author: "Martin Vach",
-		homepage: "http://www.zwave.eu",
+		author: "Z-Wave.Me",
+		homepage: "https://www.z-wave.me",
 		active: true
 	}];
 
