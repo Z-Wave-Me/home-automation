@@ -1,6 +1,6 @@
 /*** MQTT Client Z-Way HA module ****************************************************
 
-Version: 1.2
+Version: 1.2.1
 (c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <aivs@z-wave.me>
@@ -105,7 +105,7 @@ MQTTClient.prototype.init = function(config) {
 				vDevFound = true;
 				var deviceType = vDev.get("deviceType");
 
-				if (msg !== "on" && msg !== "off" && msg !== "stop") {
+				if (msg !== "on" && msg !== "off" && msg !== "stop" && msg !== "open" && msg !== "close") {
 					if (deviceType === "switchMultilevel") {
 						vDev.performCommand("exact", {level: parseInt(msg)});
 					}
