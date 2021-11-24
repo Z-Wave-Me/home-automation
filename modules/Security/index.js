@@ -1,6 +1,6 @@
 /*** Security Z-Way HA module *******************************************
 
- Version: 1.1
+ Version: 2.0
  (c) Z-Wave.Me, 2021
  -----------------------------------------------------------------------------
  Author: Karsten Reichel <kar@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
@@ -79,7 +79,7 @@ function Security(id, controller) {
 
 	/**
 	 * Static Transition Datas
-	 * @type {{OFF: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, PREON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, LIVEON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, ALARMED: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, INITIAL: {value: number, name: string, code: string, vDevname: string, StateStatus: string}}}
+	 * @type {{OFF: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, LIVEON: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, ALARMED: {value: number, name: string, code: string, vDevname: string, StateStatus: string}, INITIAL: {value: number, name: string, code: string, vDevname: string, StateStatus: string}}}
 	 */
 	this.StateEnum = {
 		OFF: {
@@ -87,13 +87,6 @@ function Security(id, controller) {
 			name: "off",
 			code: "O",
 			vDevname: "Alarm_Off",
-			StateStatus: this.StateStatus.STOPPED
-		},
-		PREON: {
-			value: 1,
-			name: "preON",
-			code: "P",
-			vDevname: "Alarm_Wait",
 			StateStatus: this.StateStatus.STOPPED
 		},
 		LIVEON: {
@@ -200,24 +193,27 @@ Security.prototype.init = function(config) {
 	this.alarmtimerS2 = null;
 	this.alarmCtimer = null;
 	this.sensorsDatas = config.input.table;
+	this.armingDevicesData = config.inputArming.table;
+	this.entranceGroup = self.filterForOn(config.input.table, "sensorAtTheEntrance");
 	this.lastTriggerList = [];
 	this.ignorenamesList = [];
 	this.onDatas = self.filterFor(config.controls.table, "armCondition");
 	this.offDatas = self.filterFor(config.controls.table, "disarmCondition");
 	this.resetDatas = self.filterFor(config.controls.table, "clearCondition");
-
 	this.silentalarmDatas = config.silentAlarms.table;
 	this.alarmDatas = config.alarms.table;
 	this.confirmDatas = config.armConfirm.table;
 	this.disconfirmDatas = config.disarmConfirm.table;
+	this.armFailureDatas = config.armFailureAction.table;
+	this.entranceDetectedDatas = config.entranceDetected.table;
 	this.cleanDatas = config.clean.table;
-
 	this.silentalarmNots = config.silentAlarms.notification;
 	this.alarmNots = config.alarms.notification;
 	this.confirmNots = config.armConfirm.notification;
 	this.disconfirmNots = config.disarmConfirm.notification;
+	this.armFailureNots = config.armFailureAction.notification;
+	this.entranceDetectedNots = config.entranceDetected.notification;
 	this.cleanNots = config.clean.notification;
-
 	this.timeSchedule = config.schedules;
 	this.cronListeningCollector = [];
 	this.busDatas = new this.BusDatas(null, null, null, null);
@@ -225,14 +221,20 @@ Security.prototype.init = function(config) {
 	this.start = config.times.start;
 	this.interval = config.times.interval;
 	this.silent = config.times.silent;
+	this.delayForEntranceGroup = config.times.delaySensorAtTheEntrance;
 	this.autoDeviceTrigger = "on";
-		/**
+	this.alarmTimerEntranceGroup = null;
+	this.timerAtStartForEntranceGroup = null;
+	this.onInputList = [];
+
+	/**
 	 * function who will Connected to devices who trigger the Alarm
 	 * @param idev device
 	 */
 	this.sensorFunction = function sensorFunction(idev) {
 		var busDatas;
 		var vDevD;
+
 		this.sensorFunctionIF = function() {
 			if (busDatas) {
 				vDevD = busDatas.self.controller.devices.get(busDatas.device);
@@ -241,9 +243,35 @@ Security.prototype.init = function(config) {
 						busDatas.self.lastTrigger(busDatas.self.lastTriggerList, vDevD);
 					}
 					if (busDatas.self.vDev.get("metrics:level") === "on") {
-						busDatas.self.vDev.performCommand(self.performEnum.TRIGGER.name, {
-							device: busDatas.device.toString()
-						});
+						/* 
+						 * Check if sensor in the entranceGroup list.
+						 * Check if timer at start for entrance group stopped.
+						 * If in the list, so start timer for trigger alarm,
+						 * else run alarm immediately.
+						 * The timer resets only when disarmed.
+						 */
+						if (self.entranceGroup.indexOf(busDatas.device) !== -1) {
+							if (self.timerAtStartForEntranceGroup == null) {
+								console.log("--- Security. At the entrance detected sensor activation. Wait " + self.delayForEntranceGroup + " seconds.");
+								// Run entrance detected actions
+								self.shiftTriggerDevices(self.entranceDetectedDatas, self.entranceDetectedNots, 'disarm');
+								var bDatas = busDatas;
+								if (self.alarmTimerEntranceGroup == null) {
+									self.alarmTimerEntranceGroup = setTimeout(function () {
+										bDatas.self.vDev.performCommand(self.performEnum.TRIGGER.name, {
+											device: bDatas.device.toString()
+										});
+										self.alarmTimerEntranceGroup = null;
+
+									}, self.delayForEntranceGroup*1000);
+								}
+							}
+						}
+						else {
+							busDatas.self.vDev.performCommand(self.performEnum.TRIGGER.name, {
+								device: busDatas.device.toString()
+							});
+						}
 					}
 					if (!busDatas.self.alarmDevice) {
 						busDatas.self.alarmDevice = busDatas.device.toString();
@@ -256,7 +284,6 @@ Security.prototype.init = function(config) {
 		this.sensorFunctionIF();
 		busDatas = self.busDataMap[idev.id + '#' + "off"];
 		this.sensorFunctionIF();
-
 	};
 	/**
 	 * function who will Connected to devices who Control the Module
@@ -265,10 +292,10 @@ Security.prototype.init = function(config) {
 	this.inputFunction = function inputFunction(idev) {
 		var busDatas;
 		var vDevD;
+
 		this.inputFunctionIF = function() {
 			if (busDatas) {
 				vDevD = self.controller.devices.get(busDatas.device);
-
 				if (busDatas.condition === vDevD.get("metrics:level") || busDatas.condition === true) {
 					busDatas.self.vDev.performCommand(busDatas.performE.name, {
 						device: busDatas.device.toString()
@@ -276,13 +303,11 @@ Security.prototype.init = function(config) {
 					if (!busDatas.self.alarmDevice) {
 						busDatas.self.alarmDevice = busDatas.device.toString();
 					}
-
 				}
 			}
 		};
-		busDatas = self.busDataMap[idev.id + '#' + "on"];
-		this.inputFunctionIF();
-		busDatas = self.busDataMap[idev.id + '#' + "off"];
+
+		busDatas = self.busDataMap[idev.id + '#' + idev.get('metrics:level')];
 		this.inputFunctionIF();
 		busDatas = self.busDataMap[idev.id + '#' + true];
 		this.inputFunctionIF();
@@ -347,7 +372,6 @@ Security.prototype.init = function(config) {
  * stops module and remove all injections and destroys all vdevs
  */
 Security.prototype.stop = function() {
-
 	this.alarmCancel();
 	this.stopDevices();
 	this.endschedule();
@@ -422,17 +446,31 @@ Security.prototype.lastTrigger = function(array, trigger) {
 Security.prototype.filterFor = function(array, condition) {
 	var output = [];
 	array.forEach(function(input) {
-		if (input[condition] === "on" || input[condition] === "off") {
+		if (input[condition] !== "not_used") {
 			output.push({
 				devices: input.devices,
 				conditions: input[condition]
 			});
 		}
-
-
 	});
 	return output;
 };
+
+/**
+ * Method who filters an Array on an condition ON of its objects and Return it than
+ * @param array
+ * @param condition
+ * @returns {Array}
+ */
+Security.prototype.filterForOn = function(array, condition) {
+	var output = [];
+	array.forEach(function(input) {
+		if (input[condition] === "on")
+			output.push(input.devices);
+	});
+	return output;
+};
+
 /**
  * Method who injects the Methods for Alarmtriggering on an Device with some Condition for Triggering
  * @param device
@@ -443,9 +481,7 @@ Security.prototype.onSensor = function(device, condition) {
 	if (!self.busDataMap[device + '#' + condition]) {
 		self.busDataMap[device + '#' + condition] = new this.BusDatas(self, device, condition, null);
 	}
-	self.controller.devices.on(device, "change:metrics:level",
-		self.sensorFunction
-	);
+	self.controller.devices.on(device, "change:metrics:level", self.sensorFunction);
 };
 /**
  * looks after commands if they come from extern or from the module
@@ -508,6 +544,11 @@ Security.prototype.makeVDevs = function() {
 					returnState = self.makeReturnState(1, "test Security_" + self.id);
 					return returnState;
 				case self.performEnum.COFF.name:
+					if (self.alarmTimerEntranceGroup) {
+						// Timer is set, so we destroy it
+						clearTimeout(self.alarmTimerEntranceGroup);
+						self.alarmTimerEntranceGroup = null;
+					}
 					message = self.performEnum.COFF.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevOFF.id, function() {
 						self.transition(true /*self.canOff()*/, self.off, args);
@@ -516,13 +557,13 @@ Security.prototype.makeVDevs = function() {
 				case self.performEnum.CRESET.name:
 					message = self.performEnum.CRESET.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevRESET.id, function() {
-						self.transition(self.canReset(), self.preOn, args);
+						self.transition(self.canReset(), self.liveOn, args);
 					});
 					break;
 				case self.performEnum.CON.name:
 					message = self.performEnum.CON.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevON.id, function() {
-						self.transition(self.canOn(), self.preOn, args);
+						self.transition(self.canOn(), self.liveOn, args);
 					});
 					break;
 				case self.performEnum.TRIGGER.name:
@@ -624,18 +665,22 @@ Security.prototype.destroyVDev = function(vdevName) {
  * @param device Device
  * @param condition Condition of the Devicelevel when trigger
  */
+
 Security.prototype.onInput = function(pE, device, condition) {
 	var self = this;
-	if (!self.busDataMap[device + '#' + condition]) {
-		self.busDataMap[device + '#' + condition] = new this.BusDatas(self, device, condition, pE);
-	}
-	if (self.controller.devices.get(device)) {
+	if (self.controller.devices.get(device) && self.onInputList.indexOf(device) === -1) {
 		self.controller.devices.on(device, "change:metrics:level",
 			self.inputFunction
 		);
 	}
 
+	if (!self.busDataMap[device + '#' + condition] && condition !== "") {
+		self.busDataMap[device + '#' + condition] = new this.BusDatas(self, device, condition, pE);
+		self.onInputList.push(device);
+	}
 };
+
+
 /**
  * Inits all vdevs and Used Devices and visebility
  */
@@ -694,6 +739,10 @@ Security.prototype.stopDevices = function() {
 	if (self.resetDatas) {
 		self.offInputArray(this.performEnum.CRESET, self.resetDatas);
 	}
+	console.logJS("self.vDevON.id",self.vDevON.id);
+	console.logJS("self.vDevOFF.id",self.vDevOFF.id);
+	console.logJS("self.vDevRESET.id",self.vDevRESET.id);
+
 	self.offInput(this.performEnum.CON, self.vDevON.id, true);
 	self.offInput(this.performEnum.COFF, self.vDevOFF.id, true);
 	self.offInput(this.performEnum.CRESET, self.vDevRESET.id, true);
@@ -956,6 +1005,7 @@ Security.prototype.scheduleAnalyse = function(timeSchedule) {
  */
 Security.prototype.initStates = function() {
 	var self = this;
+
 	//--Initial-State--
 	self.initState = new this.State(this.StateStatus, this.StateEnum.INITIAL,
 		function() {},
@@ -972,29 +1022,50 @@ Security.prototype.initStates = function() {
 		self.vDev.set("metrics:Clevel", self.performEnum.COFF.name);
 		self.vDev.set("metrics:state", self.StateEnum.OFF);
 		self.endschedule();
+		// TODO нужно запускать только при переходе On->Off
 		self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
 	}, function(args) {
 		self.schedule();
 	}, function() {});
-	//--Waiting-State--
-	self.preOn = new this.State(this.StateStatus, this.StateEnum.PREON, function() {
-		self.vDev.set("metrics:state", self.StateEnum.PREON);
-		self.vDev.set("metrics:Clevel", self.performEnum.CON.name);
-		self.vDev.set("metrics:Rlevel", 'off');
-		self.vDev.set("metrics:level", 'pending');
-		self.a = null;
-	}, function(args) {
-		self.cTimer();
-
-	}, function() {
-
-	});
 	//--Online-State--
 	self.liveOn = new this.State(this.StateStatus, this.StateEnum.LIVEON, function() {
 		self.vDev.set("metrics:state", self.StateEnum.LIVEON);
-		self.vDev.set("metrics:level", 'on');
+		self.vDev.set("metrics:level", 'pending');
 	}, function(args) {
-		self.shiftTriggerDevices(self.confirmDatas, self.confirmNots, 'arm');
+		// Check if possible to start arming
+		if (self.requiredDevicesInit()) {
+			self.shiftTriggerDevices(self.confirmDatas, self.confirmNots, 'arm');
+
+			// If Entrance Group not empty, so run the timer to ignore Entrance Group at start
+			if (self.entranceGroup.length > 0) {
+				console.log("--- Security. Arming without Entrance Group. Wait ",self.delayForEntranceGroup, " seconds for full arming");
+				self.timerAtStartForEntranceGroup = setTimeout(function () {
+					console.log("--- Security. Full Arming with Entrance Group");
+					self.vDev.set("metrics:level", 'on');
+					var triggeredDevice = self.triggeredAtStart();
+					if (triggeredDevice) {
+						self.vDev.performCommand(self.performEnum.TRIGGER.name, triggeredDevice);
+					}
+					self.timerAtStartForEntranceGroup = null;
+				}, self.delayForEntranceGroup * 1000);
+			}
+			else {
+				console.log("--- Security. Full Arming with Entrance Group");
+				self.vDev.set("metrics:level", 'on');
+				var triggeredDevice = self.triggeredAtStart();
+				if (triggeredDevice) {
+					self.vDev.performCommand(self.performEnum.TRIGGER.name, triggeredDevice);
+				}
+			}
+		}
+		else {
+			console.log("--- Security. Arming Failed");
+			// Disarming
+			self.vDev.performCommand(self.performEnum.COFF.name);
+
+			// Run Failed Arming Actions
+			self.shiftTriggerDevices(self.armFailureDatas, self.armFailureNots, 'disarm');
+		}
 	}, function() {
 		//self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
 	});
@@ -1102,37 +1173,7 @@ Security.prototype.transition = function(condition, newState, args) {
 
 	}
 };
-/**
- * Timer for pending Alarm Module can get Alarmed, if some sensor has wrong state at end of pending, it gets alarmed
- */
-Security.prototype.cTimer = function() {
-	var self = this;
-	if (self.start) {
-		self.time = this.secondStandart * 1000 * self.start;
-	} else {
-		self.time = this.secondStandart * 1000;
-	}
-	if (self.alarmCtimer) {
-		clearInterval(self.alarmCtimer);
-	}
-	self.alarmCtimer = setInterval(function() {
-		if (self.vDev) {
-			if (self.allDevicesInit()) {
-				self.vDev.performCommand(self.performEnum.TIMER.name);
-			} else {
-				if (!self.alarmDevice && self.lastTriggerList) {
-					self.alarmDevice = self.lastTriggerList[0].id;
-				}
-				self.vDev.performCommand(self.performEnum.FTIMER.name, {
-					device: self.alarmDevice
-				});
 
-			}
-			clearInterval(self.alarmCtimer);
-		}
-	}, self.time);
-
-};
 /**
  * Condition for Trigger Transition
  * @returns {boolean}
@@ -1148,7 +1189,7 @@ Security.prototype.canTrigger = function() {
  */
 Security.prototype.canTimer = function() {
 	var self = this;
-	return self.state.stateEnum === this.StateEnum.PREON;
+	return self.state.stateEnum === this.StateEnum.LIVEON;
 
 };
 /**
@@ -1168,7 +1209,7 @@ Security.prototype.canOn = function() {
  */
 Security.prototype.canOff = function() {
 	var self = this;
-	return [this.StateEnum.LIVEON, this.StateEnum.PREON, this.StateEnum.INITIAL].indexOf(self.state.stateEnum) !== -1;
+	return [this.StateEnum.LIVEON, this.StateEnum.INITIAL].indexOf(self.state.stateEnum) !== -1;
 };
 /**
  * Condition for reset alarmed
@@ -1182,21 +1223,56 @@ Security.prototype.canReset = function() {
  * Looks if all Devices are on the right state that the module can get alarm ready
  * @returns {boolean}
  */
-Security.prototype.allDevicesInit = function() {
+Security.prototype.triggeredAtStart = function() {
+	var self = this;
+	var back = false;
+
+	if (self.sensorsDatas) {
+		self.sensorsDatas.forEach(
+			function(args) {
+				if (self.controller.devices.get(args.devices) && self.controller.devices.get(args.devices).get("metrics:level") === args.conditions) {
+					back = args.devices;
+					self.lastTrigger(self.lastTriggerList, self.controller.devices.get(args.devices));
+				}
+			}
+		);
+	}
+
+	return back;
+};
+
+/**
+ * Looks if Devices required for arming are on the right state that the module can get alarm ready
+ * @returns {boolean}
+ */
+Security.prototype.requiredDevicesInit = function() {
 	var self = this;
 	var back = true;
 	if (self.sensorsDatas) {
 		self.sensorsDatas.forEach(
 			function(args) {
-				if (self.controller.devices.get(args.devices) && self.controller.devices.get(args.devices).get("metrics:level") === args.conditions) {
+				if (args.armCondition == "on" && self.controller.devices.get(args.devices) && self.controller.devices.get(args.devices).get("metrics:level") === args.conditions) {
 					back = false;
 					self.lastTrigger(self.lastTriggerList, self.controller.devices.get(args.devices));
 				}
 			}
 		);
 	}
+
+	if (self.armingDevicesData) {
+		self.armingDevicesData.forEach(
+			function(args) {
+				if (self.controller.devices.get(args.devices) && self.controller.devices.get(args.devices).get("metrics:level") !== args.conditions) {
+					back = false;
+					self.lastTrigger(self.lastTriggerList, self.controller.devices.get(args.devices));
+				}
+			}
+		);
+	}
+
 	return back;
 };
+
 /**
  * making the HTML REST RETURN for an command
  * @param code
@@ -1284,6 +1360,15 @@ Security.prototype.alarmCancel = function() {
 Security.prototype.endschedule = function() {
 	var self = this;
 
+	if (this.alarmTimerEntranceGroup) {
+		clearTimeout(this.alarmTimerEntranceGroup);
+		this.alarmTimerEntranceGroup = null;
+	}
+		if (this.timerAtStartForEntranceGroup) {
+		clearTimeout(this.timerAtStartForEntranceGroup);
+		this.timerAtStartForEntranceGroup = null;
+	}
+
 	this.cronListeningCollector.forEach(function(listenerName) {
 		var condition = listenerName.split('.')[0];
 
@@ -1302,7 +1387,6 @@ Security.prototype.endschedule = function() {
  */
 Security.prototype.shiftTriggerDevices = function(datas, notification, level) {
 	var self = this;
-
 	if (datas) {
 		datas.forEach(function(args) {
 			// args([deviceID],[level],[sendAction])
