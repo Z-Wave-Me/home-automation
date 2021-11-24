@@ -68,119 +68,138 @@ AuthController.prototype.getSessionId = function(request) {
 }
 
 AuthController.prototype.resolve = function(request, requestedRole) {
-	var role, session,
+	var user, role, token, session,
 		self = this;
 
-	var defaultProfile = _.filter(this.controller.profiles, function (profile) {
-		return profile.login === 'admin' && profile.password === 'admin';
-	});
-	
-	var noAnonymous = false;
-	
-	var reqSession = self.getSessionId(request);
-	if (reqSession) {
-		noAnonymous = true;
+	if (request.user && request.role && request.authToken) {
+		user = request.user;
+		role = request.role;
+		token = request.authToken;
 		
-		var removedExpired = false;
-		session = _.find(this.controller.profiles, function(profile) {
-			var _profile, toRemove = [];
-			
-			_profile = _.find(profile.authTokens, function(authToken) {
-				// remove expired tokens
-				if (authToken.expire > 0 && authToken.expire < Date.now()) {
-					toRemove.push(authToken.sid);
-					removedExpired = true;
-				}
-				if (authToken.sid == reqSession) {
-					// make the Authorization Bearer always permanent
-					if (authToken.expire != 0 && request.__authMethod == 'Authorization Bearer') {
-						self.controller.permanentToken(profile, authToken.sid);
-					}
-					
-					// Update last seen and IP
-					authToken.lastSeen = Date.now();
-					authToken.ip = self.getClientIP(request);
-					
-					return true;
-				}
-			});
-			toRemove.forEach(function(token) {
-				self.controller.removeToken(profile, token, true); // skip save
-			});
-			
-			return _profile;
-		});
-		if (removedExpired) this.controller.saveConfig(false);
-	}
-
-	if (!session) {
-		// no session found or session expired
-
-		// try Basic auth
-		var authHeader = request.headers['Authorization'];
-		if (authHeader && authHeader.substring(0, 6) === "Basic ") {
-			authHeader = Base64.decode(authHeader.substring(6));
-			if (authHeader) {
-				noAnonymous = true;
-				
-				var authInfo = authHeader.split(':');
-				if (authInfo.length === 2 && authInfo[0].length > 0) {
-					var profile = _.find(this.controller.profiles, function (profile) {
-						return profile.login === authInfo[0];
-					});
-				
-					if (profile && (!profile.salt && profile.password === authInfo[1] || profile.salt && profile.password === hashPassword(authInfo[1], profile.salt))) {
-						// auth successful, use selected profile
-						session = profile;
-					}
-				}
-			}
+		if ((role === this.ROLE.LOCAL || role === this.ROLE.ANONYMOUS) && requestedRole === this.ROLE.USER) {
+			role = this.ROLE.USER;
 		}
-
-		if (!session && requestedRole === this.ROLE.USER) {
-			// try to find Local user account
-			if (request.peer.address === "127.0.0.1" && defaultProfile.length < 1 && !this.controller.config.firstaccess) {
-				// don't treat find.z-wave.me as local user (connection comes from local ssh server)
-				if (!(request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }))) {
-					// TODO: cache this in future
-					session = _.find(this.controller.profiles, function (profile) {
-						return profile.role === self.ROLE.LOCAL;
-					});
-				}
-			}
+	} else {
+		var defaultProfile = _.filter(this.controller.profiles, function (profile) {
+			return profile.login === 'admin' && profile.password === 'admin';
+		});
+		
+		var noAnonymous = false;
+		
+		var reqSession = self.getSessionId(request);
+		if (reqSession) {
+			noAnonymous = true;
 			
-			// try to find Anonymous user account
-			if (!session) {
-				// TODO: cache this in future
-				session = _.find(this.controller.profiles, function (profile) {
-					return profile.role === self.ROLE.ANONYMOUS;
+			var removedExpired = false;
+			session = _.find(this.controller.profiles, function(profile) {
+				var _profile, toRemove = [];
+				
+				_profile = _.find(profile.authTokens, function(authToken) {
+					// remove expired tokens
+					if (authToken.expire > 0 && authToken.expire < Date.now()) {
+						toRemove.push(authToken.sid);
+						removedExpired = true;
+					}
+					if (authToken.sid == reqSession) {
+						// make the Authorization Bearer always permanent
+						if (authToken.expire != 0 && request.__authMethod == 'Authorization Bearer') {
+							self.controller.permanentToken(profile, authToken.sid);
+						}
+						
+						// Update last seen and IP
+						authToken.lastSeen = Date.now();
+						authToken.ip = self.getClientIP(request);
+						
+						return true;
+					}
 				});
-			}
+				toRemove.forEach(function(token) {
+					self.controller.removeToken(profile, token, true); // skip save
+				});
+				
+				return _profile;
+			});
+			if (removedExpired) this.controller.saveConfig(false);
 		}
 
 		if (!session) {
-			// no session found, but requested role is anonymous - use dummy session.
-			if (requestedRole === this.ROLE.ANONYMOUS && !noAnonymous) {
-				session = {
-					id: -1, // non-existant ID
-					role: this.ROLE.ANONYMOUS
-				};
-			} else {
-				return null;
+			// no session found or session expired
+
+			// try Basic auth
+			var authHeader = request.headers['Authorization'];
+			if (authHeader && authHeader.substring(0, 6) === "Basic ") {
+				authHeader = Base64.decode(authHeader.substring(6));
+				if (authHeader) {
+					noAnonymous = true;
+					
+					var authInfo = authHeader.split(':');
+					if (authInfo.length === 2 && authInfo[0].length > 0) {
+						var profile = _.find(this.controller.profiles, function (profile) {
+							return profile.login === authInfo[0];
+						});
+					
+						if (profile && (!profile.salt && profile.password === authInfo[1] || profile.salt && profile.password === hashPassword(authInfo[1], profile.salt))) {
+							// auth successful, use selected profile
+							session = profile;
+						}
+					}
+				}
+			}
+
+			if (!session && requestedRole === this.ROLE.USER) {
+				// try to find Local user account
+				if (request.peer.address === "127.0.0.1" && defaultProfile.length < 1 && !this.controller.config.firstaccess) {
+					// don't treat find.z-wave.me as local user (connection comes from local ssh server)
+					if (!(request.headers['Cookie'] && request.headers['Cookie'].split(";").map(function(el) { return el.trim().split("="); }).filter(function(el) { return el[0] === "ZBW_SESSID" }))) {
+						// TODO: cache this in future
+						session = _.find(this.controller.profiles, function (profile) {
+							return profile.role === self.ROLE.LOCAL;
+						});
+					}
+				}
+				
+				// try to find Anonymous user account
+				if (!session) {
+					// TODO: cache this in future
+					session = _.find(this.controller.profiles, function (profile) {
+						return profile.role === self.ROLE.ANONYMOUS;
+					});
+				}
+			}
+
+			if (!session) {
+				// no session found, but requested role is anonymous - use dummy session.
+				if (requestedRole === this.ROLE.ANONYMOUS && !noAnonymous) {
+					session = {
+						id: -1, // non-existant ID
+						role: this.ROLE.ANONYMOUS
+					};
+				} else {
+					return null;
+				}
 			}
 		}
-	}
 
-	// change role type, if we found matching local/anonymous user (real user, not dummy with -1)
-	if (session.id !== -1 && (session.role === this.ROLE.LOCAL || session.role === this.ROLE.ANONYMOUS)) {
-		role = this.ROLE.USER;
-	}
+		// change role type, if we found matching local/anonymous user (real user, not dummy with -1)
+		if (session.id !== -1 && (session.role === this.ROLE.LOCAL || session.role === this.ROLE.ANONYMOUS)) {
+			role = this.ROLE.USER;
+		}
 
-	if (!role) {
-		role = session.role;
+		user = session.id;
+		
+		if (!role) {
+			role = session.role;
+		}
+		
+		token = reqSession.substr(0, 6);
 	}
 	
-	return {user: session.id, role: role, token: reqSession.substr(0, 6)};
+	// save in request fields for handling in API and to allow subsequent call of this function
+	request.user = user;
+	request.role = role;
+	request.authToken = token;
+	
+	return {user: user, role: role, token: token};
 };
 
 AuthController.prototype.checkIn = function(profile, req, permanent) {
