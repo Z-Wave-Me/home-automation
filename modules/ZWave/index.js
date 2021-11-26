@@ -5516,11 +5516,11 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									instance.ThermostatSetPoint.Set(mode, args.level);
 								}
 								if (command === "on" || command === "exact") {
-									instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
+									instance.ThermostatMode && instance.ThermostatMode.data.supported.value && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
 								}
 								if (command === "update") {
 									instance.ThermostatSetPoint.Get(mode);
-									instance.ThermostatMode && instance.ThermostatMode.Get();
+									instance.ThermostatMode && instance.ThermostatMode.data.supported.value && instance.ThermostatMode.Get();
 								}
 							},
 							moduleId: self.id
