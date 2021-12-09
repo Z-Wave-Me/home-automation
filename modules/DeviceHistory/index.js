@@ -1,26 +1,26 @@
 /*** DeviceHistory Z-Way HA module *******************************************
 
-Version: 2.0.0
-(c) Z-Wave.Me, 2015
------------------------------------------------------------------------------
-Author: Niels Roche <nir@zwave.eu>
-Description:
-	Creates a module that stores 24h data of specific devices.
-******************************************************************************/
+ Version: 2.0.0
+ (c) Z-Wave.Me, 2015
+ -----------------------------------------------------------------------------
+ Author: Niels Roche <nir@zwave.eu>
+ Description:
+ Creates a module that stores 24h data of specific devices.
+ ******************************************************************************/
 
 // ----------------------------------------------------------------------------
 // --- Class definition, inheritance and setup
 // ----------------------------------------------------------------------------
 
 function DeviceHistory (id, controller) {
-	// Call superconstructor first (AutomationModule)
+	// Call supervarructor first (AutomationModule)
 	DeviceHistory.super_.call(this, id, controller);
 
 	// define excluded device types
-	this.devTypes = ['sensorMultilevel'],
+	this.devTypes = ['sensorMultilevel'];
 	this.langFile = this.loadModuleLang();
 
-	this.history = {}
+	this.history = {};
 	this.allDevices = [];
 	this.initial = true;
 	this.registeredVDevIds = [];
@@ -61,7 +61,7 @@ _.extend(DeviceHistory.prototype, {
 		this.initializeDevices();
 
 		// try to restore old histories
-		oldHistory = loadObject('history');
+		var oldHistory = loadObject('history');
 
 		if(!!oldHistory || (_.isArray(oldHistory) && oldHistory.length > 0)) {
 			oldHistory.forEach(function(history){
@@ -81,15 +81,15 @@ _.extend(DeviceHistory.prototype, {
 		// cleanup storage content list after 30 secs
 		setTimeout(function(){
 			// run first time to setting up histories
-		self.setupHistories();
+			self.setupHistories();
 		}, 30000);
 	},
 	stop: function () {
 		var self = this;
-		
+
 		// remove eventhandlers
 		this.config.allRegisteredDevices.forEach(function(vDevId) {
-			vDev = self.controller.devices.get(vDevId);
+			var vDev = self.controller.devices.get(vDevId);
 
 			if(vDev && vDev.get("hasHistory") === true){
 				vDev.set("hasHistory", false,{ silent: true });
@@ -117,8 +117,8 @@ _.extend(DeviceHistory.prototype, {
 			function (arr) {
 				saveObject('history_' + vdevId, arr, true);
 			},
-			5, // check it every 10 entries
-			1000, // save up to 1000 entries
+			100, // check it every 100 entries
+			0, // save unlimited entries
 			function (devHistory){
 				var now = Math.floor(Date.now() / 1000);
 				return devHistory.id >= (now - 86400);
@@ -126,7 +126,7 @@ _.extend(DeviceHistory.prototype, {
 		);
 	},
 	initializeDevices: function (){
-	 	var self = this;
+		var self = this;
 
 		this.config.allRegisteredDevices = this.updateDevList();
 
@@ -137,12 +137,12 @@ _.extend(DeviceHistory.prototype, {
 		this.storeData = function(dev) {
 			try {
 				var change = {
-						id: Math.floor(Date.now() / 1000),
-						l: parseInt(dev.get("metrics:level"),10)
-					};
-				
+					id: Math.floor(Date.now() / 1000),
+					l: parseInt(dev.get("metrics:level"),10)
+				};
+
 				self.history[dev.id].push(change);
-			
+
 			} catch(e) {
 				self.addNotification('error', self.langFile.err_store_history + dev.get('metrics:title') + " ERROR: " + e.toString(), 'module');
 			}
@@ -150,8 +150,8 @@ _.extend(DeviceHistory.prototype, {
 
 		_.forEach(this.config.allRegisteredDevices, function(vdevId){
 			var vDev = self.controller.devices.get(vdevId);
-			
-			// create new LimitedArray for 
+
+			// create new LimitedArray for
 			self.setHistory(vdevId);
 
 			// set hasHistory true
@@ -175,12 +175,12 @@ _.extend(DeviceHistory.prototype, {
 
 				// add to registered vDev list
 				self.config.allRegisteredDevices.push(vDev.id);
-				
+
 				//save into config
 				self.saveConfig();
 
 				// set LimitedArray for history
-				self.setHistory(vDev.id); 
+				self.setHistory(vDev.id);
 
 				self.addNotification('info', self.langFile.info_add_history + vDev.get('metrics:title'), 'module');
 
@@ -230,9 +230,9 @@ _.extend(DeviceHistory.prototype, {
 
 		return this.controller.devices.filter(function(dev){
 			return  dev.get('permanently_hidden') === false &&			  						// only none permanently_hidden devices
-					_.unique(self.config.devices).indexOf(dev.id) === -1 &&	  					// in module excluded devices
-					self.devTypes.indexOf(dev.get('deviceType')) > -1 &&						// allowed device types
-					self.exclSensors.indexOf(dev.id) === -1;									// excluded sensors
+				_.unique(self.config.devices).indexOf(dev.id) === -1 &&	  					// in module excluded devices
+				self.devTypes.indexOf(dev.get('deviceType')) > -1 &&						// allowed device types
+				self.exclSensors.indexOf(dev.id) === -1;									// excluded sensors
 		}).map(function(vdev) {
 			return vdev.id;
 		});
@@ -241,7 +241,7 @@ _.extend(DeviceHistory.prototype, {
 	setupHistories: function(){
 		var self = this,
 			storedDevHistories = [];
-		
+
 		// cleanup first after all virtual devices are created
 		if(__storageContent) {
 
@@ -277,80 +277,63 @@ _.extend(DeviceHistory.prototype, {
 			return { status: 400, body: "Bad HistoryAPI request " };
 		};
 
-		this.HistoryAPI.Get = function(url, request) {
+		this.HistoryAPI.Get = function (url, request) {
 			var q = request.query || null,
 				since = parseInt(url.substring(1), 10) || 0,
-				items = q && q.hasOwnProperty('show')? parseInt(q.show,10) : 0,
-				devId = q && q.hasOwnProperty('id')? q.id : null,
-				averageEntries = [],
-				entries = [],
+				items = q && q.hasOwnProperty('show') ? parseInt(q.show, 10) : 0,
+				devId = q && q.hasOwnProperty('id') ? q.id : null,
 				now = Math.floor(Date.now() / 1000),
-				l = 0,
-				cnt = 0,
-				metric = {},
-				sec = 0,
 				body = {
 					updateTime: now
 				};
+			var sec = 0;
+			var entries = [];
+			var averageEntries = [];
 
 			if (devId && self.history[devId]) {
-				hist = self.history[devId].get();
+				var hist = self.history[devId].get();
 
 				// create output with n (= show) values - 1440, 288, 96, 48, 24, 12, 6
-				if(items > 0 && items <= 1440){
+				if (items > 0 && items <= 1440) {
 					sec = 86400 / items; // calculate seconds of range
-					
+
 					// calculate averaged value of all meta values between 'sec' range
-					for (i = 0; i < items; i++){
-						from = Math.floor(now - sec*(items - i));
-						to = Math.floor(now - sec*(items - (i+1)));
+					for (var i = 0; i < items; i++) {
+						var from = Math.floor(now - sec * (items - i));
+						var to = Math.floor(now - sec * (items - (i + 1)));
 
 						// filter values between from and to
-						range = hist.filter(function (metric){
+						var range = hist.filter(function (metric) {
 							return metric.id >= from && metric.id <= to;
 						});
 
-						cnt = range.length;
-						
+						var l = null;
 						// calculate level
-						if(cnt > 0){
-
-							for(j=0; j < cnt; j++){
-								l += parseInt(range[j]['l'],10);
+						if (range.length > 0) {
+							l = range.reduce(function (acc, cur) {
+								return acc + parseInt(cur.l, 10);
+							}, 0) / range.length;
+							if (l === +l && l !== (l | 0)) { // round to one position after '.'
+								l = +l.toFixed(1);
 							}
-
-							l = l /cnt;
-									
-							if(l === +l && l !== (l|0)) { // round to one position after '.'
-								l = l.toFixed(1);
-							}
-						} else {
-							l = null;
-						}			
-
-						// push new averaged entry to
-						metric = {
-							id: to,
-							l: parseFloat(l)
 						}
 
-						averageEntries.push(metric);
-						
-						// cleanup variables
-						l = 0;
-						metric = {};
-					}
+						// push new averaged entry to
 
+						averageEntries.push({
+							id: to,
+							l: l
+						});
+					}
 					entries = averageEntries;
 				} else {
 					entries = hist;
 				}
 
 				// filter meta entries by since
-				body.history = since > 0? entries.filter(function (metric) {
+				body.history = since > 0 ? entries.filter(function (metric) {
 					return metric.id >= since;
 				}) : entries;
-
 				body.code = 200;
 
 			} else if (devId && !self.history[devId]) {
@@ -360,18 +343,15 @@ _.extend(DeviceHistory.prototype, {
 			} else {
 				body.histories = {};
 				body.code = 200;
-
-				self.config.allRegisteredDevices.forEach(function(vDevId){
-					body.histories[vDevId] = _.filter(self.history[vDevId].get(), function(entry){
+				self.config.allRegisteredDevices.forEach(function (vDevId) {
+					body.histories[vDevId] = _.filter(self.history[vDevId].get(), function (entry) {
 						return entry.id >= since;
 					});
 				});
 			}
 
-			result = self.prepareHTTPResponse(body);
-
-			return result;
-		}
+			return self.prepareHTTPResponse(body);
+		};
 
 		this.HistoryAPI.Delete = function(url, request) {
 			var q = request.query || null,
@@ -383,7 +363,7 @@ _.extend(DeviceHistory.prototype, {
 			if (vDevId && self.history[vDevId]) {
 				self.history[vDevId].set([]);
 
-				vdev = self.controller.devices.get(vDevId);
+				var vdev = self.controller.devices.get(vDevId);
 
 				self.addNotification('info', self.langFile.info_clear_id_history + vdev? vdev.get('metrics:title') : vDevId, 'module');
 
@@ -406,9 +386,7 @@ _.extend(DeviceHistory.prototype, {
 				body.code = 201;
 			}
 
-			result = self.prepareHTTPResponse(body)
-
-			return result;
-		}
+			return self.prepareHTTPResponse(body);
+		};
 	}
 });
