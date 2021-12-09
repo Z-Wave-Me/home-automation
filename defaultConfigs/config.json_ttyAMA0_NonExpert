@@ -17,13 +17,16 @@
 		"lang": "en",
 		"dashboard": [],
 		"interval": 2000,
+		"devices": [],
 		"rooms": [0],
-		"expert_view": false,
+		"expert_view": true,
 		"hide_all_device_events": false,
 		"hide_system_events": false,
 		"hide_single_device_events": [],
-		"skin": "default",
-		"night_mode": false
+		"email": "",
+		"skin": "",
+		"night_mode": false,
+		"beta": false
 	}, {
 		"id": 2,
 		"role": 3,
@@ -33,13 +36,17 @@
 		"lang": "en",
 		"dashboard": [],
 		"interval": 2000,
+		"devices": [],
 		"rooms": [0],
-		"expert_view": false,
+		"expert_view": true,
 		"hide_all_device_events": false,
 		"hide_system_events": false,
 		"hide_single_device_events": [],
 		"skin": "default",
-		"night_mode": false
+		"email": "",
+		"skin": "",
+		"night_mode": false,
+		"beta": false
 	}],
 	"instances": [{
 		"id": 1,

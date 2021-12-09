@@ -30,30 +30,38 @@ GoogleHome.prototype.init = function(config) {
     this.deferredVDevReport = [];
     this.deferredVDevReportTimer = null;
 
-    this.controller.devices.on('change:metrics:level', function(dev) {
+    this.delayedRequestSyncDevicesHandler = function(dev) {
+      self.delayedRequestSyncDevices(dev);
+    };
+    
+    this.delayedReportStateDevicesHandler = function(dev) {
       if (!dev.get('permanently_hidden')) {
         self.delayedReportStateDevices(dev);
       }
-    });
-    this.controller.devices.on('change:metrics:title', function(dev) {
-      self.delayedRequestSyncDevices(dev);
-    });
-    this.controller.devices.on('change:location', function(dev) {
-      self.delayedRequestSyncDevices(dev);
-    });
-    this.controller.devices.on('created', function(dev) {
-      self.delayedRequestSyncDevices(dev);
-    });
-    this.controller.on('profile.updated', function(profile) {
+    };
+    
+    this.requestSyncProfilesHandler = function(profile) {
       self.requestSyncProfiles(self.getActiveAgentUsers().filter(function(agentUser) {
         return agentUser.name === profile.login;
       }).map(function(agentUser) {
         return agentUser.agentId;
       }));
-    });
+    };
+    
+    this.controller.devices.on('change:metrics:level', this.delayedReportStateDevicesHandler);
+    this.controller.devices.on('change:metrics:title', this.delayedRequestSyncDevicesHandler);
+    this.controller.devices.on('change:location', this.delayedRequestSyncDevicesHandler);
+    this.controller.devices.on('created', this.delayedRequestSyncDevicesHandler);
+    this.controller.on('profile.updated', this.requestSyncProfilesHandler);
 };
 
 GoogleHome.prototype.stop = function() {
+    this.controller.devices.off('change:metrics:level', this.delayedReportStateDevicesHandler);
+    this.controller.devices.off('change:metrics:title', this.delayedRequestSyncDevicesHandler);
+    this.controller.devices.off('change:location', this.delayedRequestSyncDevicesHandler);
+    this.controller.devices.off('created', this.delayedRequestSyncDevicesHandler);
+    this.controller.off('profile.updated', this.requestSyncProfilesHandler);
+
     GoogleHome.super_.prototype.stop.call(this);
 };
 

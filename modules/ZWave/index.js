@@ -794,6 +794,16 @@ ZWave.prototype.CommunicationLogger = function() {
 ZWave.prototype.refreshStatisticsPeriodically = function() {
 	var self = this;
 
+	this.clearNetStats = function() {
+		self.zway.ClearNetworkStats();
+
+		Object.keys(self.statistics).map(function(key) {
+			self.statistics[key].value = 0;
+		});
+
+		self.updateNetStats();
+	};
+
 	this.updateNetStats = function() {
 		try {
 			var stats = ['RFTxFrames', 'RFTxLBTBackOffs', 'RFRxFrames', 'RFRxLRCErrors', 'RFRxCRC16Errors', 'RFRxForeignHomeID'],
@@ -1494,6 +1504,7 @@ ZWave.prototype.externalAPIAllow = function(name) {
 	ws.allowExternalAccess(_name + ".NetworkReorganization", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetReorganizationLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ClearStatisticsData", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetDSKProvisioningList", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".AddDSKProvisioningEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".GetDSKCollection", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -1537,6 +1548,7 @@ ZWave.prototype.externalAPIRevoke = function(name) {
 	ws.revokeExternalAccess(_name + ".NetworkReorganization");
 	ws.revokeExternalAccess(_name + ".GetReorganizationLog");
 	ws.revokeExternalAccess(_name + ".GetStatisticsData");
+	ws.revokeExternalAccess(_name + ".ClearStatisticsData");
 	ws.revokeExternalAccess(_name + ".GetDSKProvisioningList");
 	ws.revokeExternalAccess(_name + ".AddDSKProvisioningEntry");
 	ws.revokeExternalAccess(_name + ".GetDSKCollection");
@@ -3192,6 +3204,18 @@ ZWave.prototype.defineHandlers = function() {
 	}
 
 	this.ZWaveAPI.GetStatisticsData = function() {
+		self.updateNetStats();
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: statistics
+		};
+	};
+
+	this.ZWaveAPI.ClearStatisticsData = function() {
+		self.clearNetStats();
 		return {
 			status: 200,
 			headers: {

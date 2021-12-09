@@ -29,7 +29,6 @@ ws = new WebServer(8083, function(req) {
 				body: "Not logged in"
 			});
 		} else if (controller.auth.isAuthorized(auth.role, found.role)) {
-
 			// fill user field
 			req.user = auth.user;
 			req.role = auth.role;
@@ -38,14 +37,11 @@ ws = new WebServer(8083, function(req) {
 			var cache = this.evalCache || (this.evalCache = {});
 			var handler = cache[found.name] || (cache[found.name] = evalPath(found.name));
 			return this.addHTTPHeaders(handler(req.url.substring(found.name.length + 1), req));
-
 		} else {
-
 			return this.addHTTPHeaders({
 				status: 403,
 				body: 'Permission denied'
 			});
-			
 		}
 	}
 	

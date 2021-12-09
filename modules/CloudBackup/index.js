@@ -73,7 +73,7 @@ CloudBackup.prototype.init = function(config) {
 						value: JSON.stringify(data)
 					}];
 
-				res = formRequest.send(formElements, "POST", self.backupcreate_url);
+				var res = formRequest.send(formElements, "POST", self.backupcreate_url);
 
 				if(res.status === -1) { //error e.g. no connection to server
 					self.addNotification("error", res.statusText, "module");

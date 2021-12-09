@@ -78,7 +78,7 @@ DummyDevice.prototype.init = function (config) {
 				}
 
 				this.set("metrics:level", level);
-				saveObject(this.id + "_level" , level);
+				saveObject(this.id + "_level" , level); // not critical, allow lazy save
 			}
 		},
 		moduleId: this.id

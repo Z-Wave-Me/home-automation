@@ -316,15 +316,15 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			self = this,
 			session;
 
+		reply.headers = {
+			"Set-Cookie": "ZWAYSession=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
+		};
+
+		reply.code = 200;
+			
 		var sessionId = this.controller.auth.getSessionId(this.req);
 
 		if (sessionId) {
-			reply.headers = {
-				"Set-Cookie": "ZWAYSession=deleted; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT" // clean cookie
-			};
-
-			reply.code = 200;
-			
 			var session = {};
 			var sessionProfile = _.find(this.controller.profiles, function(profile) {
 				var sess = _.find(profile.authTokens, function(authToken) {
@@ -337,11 +337,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				// do not logout from permanent tokens - they should be deleted explicitelly via remoteToken API call
 				this.controller.removeToken(sessionProfile, session.sid);
 			}
-		} else {
-			reply.code = 404;
-			reply.error = 'Could not logout. No session found.';
 		}
-
+		
 		return reply;
 	},
 	// Devices
@@ -785,7 +782,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						reply.error = "Location image " + user_img + " doesn't exist or already deleted.";
 					} else {
 						// delete custom room image
-						saveObject(user_img, null);
+						saveObject(user_img, null, true);
 						if (location.user_img == user_img && location.img_type == 'user') {
 							location.user_img = '';
 							location.img_type = '';
@@ -1194,7 +1191,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			};
 
 		if (getTokens() === null) {
-			saveObject('moduleTokens.json', tokenObj);
+			saveObject('moduleTokens.json', tokenObj, true);
 		}
 
 		if (!!getTokens()) {
@@ -1216,7 +1213,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			tokenObj = loadObject('moduleTokens.json');
 
 		if (tokenObj === null) {
-			saveObject('moduleTokens.json', tokenObj);
+			saveObject('moduleTokens.json', tokenObj, true);
 
 			// try to load it again
 			tokenObj = loadObject('moduleTokens.json');
@@ -1228,7 +1225,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				tokenObj.tokens.push(reqObj.token);
 
 				// save tokens
-				saveObject('moduleTokens.json', tokenObj);
+				saveObject('moduleTokens.json', tokenObj, true);
 
 				reply.data = tokenObj;
 				reply.code = 201;
@@ -1259,7 +1256,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				});
 
 				// save tokens
-				saveObject('moduleTokens.json', tokenObj);
+				saveObject('moduleTokens.json', tokenObj, true);
 
 				reply.data = tokenObj;
 				reply.code = 200;
@@ -2248,11 +2245,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					});
 
 					if (!!csv) {
-						saveObject(file.name, csv);
+						saveObject(file.name, csv, true);
 					}
 				} else {
 					// Create Base64 Object
-					saveObject(file.name, Base64.encode(file.content));
+					saveObject(file.name, Base64.encode(file.content), true);
 				}
 
 				reply.code = 200;
@@ -2372,7 +2369,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			for (var obj in reqObj.data) {
 
 				if (dontSave.indexOf(obj) === -1) {
-					saveObject(obj, reqObj.data[obj]);
+					saveObject(obj, reqObj.data[obj], true);
 					console.log('Restore', obj, '... done');
 				}
 			}
@@ -2589,7 +2586,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 					console.log('Backup config ...');
 					// make backup of current config.json
-					saveObject('backupConfig' + ts, loadObject('config.json'));
+					saveObject('backupConfig' + ts, loadObject('config.json'), true);
 
 					// remove all active instances of moduleId
 					this.controller.instances.forEach(function(instance) {
@@ -2662,7 +2659,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					// clean up storage
 					for (var ind in storageContentList) {
 						if (storageContentList[ind].indexOf('backupConfig') < 0 && !!storageContentList[ind]) {
-							saveObject(storageContentList[ind], null);
+							saveObject(storageContentList[ind], null, true);
 						}
 					}
 
@@ -2673,8 +2670,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					}
 
 					// set back to default config
-					saveObject('config.json', defaultConfig);
-					saveObject('userSkins.json', defaultSkins);
+					saveObject('config.json', defaultConfig, true);
+					saveObject('userSkins.json', defaultSkins, true);
 
 					// start controller with reload flag to apply config.json
 					this.controller.start(true);
@@ -2878,7 +2875,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				skin.active = skin.name === 'default' ? true : false;
 			})
 
-			saveObject("userSkins.json", this.controller.skins);
+			saveObject("userSkins.json", this.controller.skins, true);
 
 			reply.data = "Skin reset was successfull. You'll be logged out in 3, 2, 1 ...";
 			reply.code = 200;
@@ -2907,7 +2904,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				skinTokens: []
 			};
 
-			saveObject('skinTokens.json', tokenObj);
+			saveObject('skinTokens.json', tokenObj, true);
 		}
 
 		if (!!tokenObj) {
@@ -2937,7 +2934,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				}
 
 				// save tokens
-				saveObject('skinTokens.json', tokenObj);
+				saveObject('skinTokens.json', tokenObj, true);
 
 				reply.data = tokenObj;
 				reply.code = 201;
@@ -2949,7 +2946,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 					tokenObj.skinTokens.push(reqObj.token);
 
 					// save tokens
-					saveObject('skinTokens.json', tokenObj);
+					saveObject('skinTokens.json', tokenObj, true);
 
 					reply.data = tokenObj;
 					reply.code = 201;
@@ -2981,7 +2978,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				});
 
 				// save tokens
-				saveObject('skinTokens.json', tokenObj);
+				saveObject('skinTokens.json', tokenObj, true);
 
 				reply.data = tokenObj;
 				reply.code = 200;
@@ -3213,7 +3210,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		};
 
 		// Set access for 10 seconds
-		saveObject('8084AccessTimeout', 10);
+		saveObject('8084AccessTimeout', 10, true);
 		
 		var res = http.request(req);
 		
@@ -3254,7 +3251,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			}
 		}
 
-		saveObject('8084AccessTimeout', null);
+		saveObject('8084AccessTimeout', null, true);
 
 		return reply;
 	},
@@ -3317,13 +3314,13 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		timeout = this.req.query.hasOwnProperty("timeout") ? parseInt(this.req.query.timeout, 10) : timeout;
 
 		if (allowAcc === 1 && timeout > 0 && timeout <= 1200) {
-			saveObject('8084AccessTimeout', timeout);
+			saveObject('8084AccessTimeout', timeout, true);
 			reply.code = 200;
 			reply.data = {
 				timeout: timeout
 			};
 		} else if (allowAcc === 0) {
-			saveObject('8084AccessTimeout', null);
+			saveObject('8084AccessTimeout', null, true);
 			reply.code = 200;
 			reply.data = {
 				timeout: null
@@ -3749,7 +3746,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 								list.zwave_devices.push(data[index]);
 							}
 
-							saveObject(lang + '.devices.json', list);
+							saveObject(lang + '.devices.json', list, true);
 							obj[lang] = true;
 						}
 
@@ -3839,7 +3836,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						list.updateTime = Date.now();
 						list.zwave_vendors = parseToObject(res.data);
 
-						saveObject('zwave_vendors.json', list);
+						saveObject('zwave_vendors.json', list, true);
 
 						result = 'done';
 
@@ -3964,11 +3961,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 	if (matched) {
 		var auth = this.controller.auth.resolve(this.req, matched.role);
 		if (!auth) {
-
 			return this.Unauthorized;
-
 		} else if (this.controller.auth.isAuthorized(auth.role, matched.role)) {
-
 			// fill user field
 			this.req.user = auth.user;
 			this.req.role = auth.role;
@@ -3989,11 +3983,8 @@ ZAutomationAPIWebRequest.prototype.dispatchRequest = function(method, url) {
 
 			// --- Proceed to checkout =)
 			return handlerFunc;
-
 		} else {
-
 			return this.Forbidden;
-
 		}
 	} else {
 		return handlerFunc;

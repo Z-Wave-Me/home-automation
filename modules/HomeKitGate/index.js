@@ -197,7 +197,7 @@ HomeKitGate.prototype.init = function (config) {
 
 			service.addCharacteristic(HomeKit.Characteristics.Name, "string", vDevT.title);
 
-			self.onDeviceWipedOut(brightnessDev);
+			self.onDeviceWipedOut(brightnessDevId);
 
 			m.level = service.addCharacteristic(HomeKit.Characteristics.On, "bool", {
 				get: function() { var d = controller.devices.get(brightnessDevId); return (!!d && d.get("metrics:level")) ? true : false; },
@@ -240,7 +240,7 @@ HomeKitGate.prototype.init = function (config) {
 			var match = thermostats.filter(function(el) { return el === deviceID; })[0];
 			
 			if (match) {
-				self.onDeviceWipedOut(controller.devices.get(vDevT.id));
+				self.onDeviceWipedOut(vDevT.id);
 				return;
 			}
 			
@@ -580,7 +580,7 @@ HomeKitGate.prototype.init = function (config) {
 		if (vDev.get("tags").indexOf("homekit-skip") !== -1 && self.config.skippedDevices.indexOf(vDev.id) === -1) {
 			self.config.skippedDevices.push(vDev.id);
 			self.saveConfig();
-			self.onDeviceWipedOut(vDev);
+			self.onDeviceWipedOut(vDev.id);
 	  	}
 
 	  	// Remove tag "homekit-skip" from skipped Devices list in config and add device to Homekit
