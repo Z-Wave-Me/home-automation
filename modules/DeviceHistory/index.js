@@ -137,8 +137,8 @@ _.extend(DeviceHistory.prototype, {
 		this.storeData = function(dev) {
 			try {
 				var change = {
-					id: Math.floor(Date.now() / 1000),
-					l: parseInt(dev.get("metrics:level"),10)
+					id: Math.round(Date.now() / 1000),
+					l: +dev.get("metrics:level")
 				};
 
 				self.history[dev.id].push(change);
@@ -311,10 +311,10 @@ _.extend(DeviceHistory.prototype, {
 						// calculate level
 						if (range.length > 0) {
 							l = range.reduce(function (acc, cur) {
-								return acc + parseInt(cur.l, 10);
+								return +cur.l + acc;
 							}, 0) / range.length;
 							if (l === +l && l !== (l | 0)) { // round to one position after '.'
-								l = +l.toFixed(1);
+								l = +l.toPrecision(3);
 							}
 						}
 
@@ -335,7 +335,6 @@ _.extend(DeviceHistory.prototype, {
 					return metric.id >= since;
 				}) : entries;
 				body.code = 200;
-
 			} else if (devId && !self.history[devId]) {
 				body.code = 404;
 				body.message = 'Not Found.';
