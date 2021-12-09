@@ -1016,14 +1016,15 @@ Security.prototype.initStates = function() {
 		function() {});
 	//--OFF-State--
 	self.off = new this.State(this.StateStatus, this.StateEnum.OFF, function() {
+		if (self.vDev.get("metrics:level") !== "off") {
+			self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
+		}
 		self.vDev.set("metrics:state", self.StateEnum.OFF);
 		self.vDev.set("metrics:level", 'off');
 		self.vDev.set("metrics:Rlevel", 'off');
 		self.vDev.set("metrics:Clevel", self.performEnum.COFF.name);
 		self.vDev.set("metrics:state", self.StateEnum.OFF);
 		self.endschedule();
-		// TODO нужно запускать только при переходе On->Off
-		self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
 	}, function(args) {
 		self.schedule();
 	}, function() {});
@@ -1166,7 +1167,7 @@ Security.prototype.transition = function(condition, newState, args) {
 	var self = this;
 	if (condition) {
 		self.state.doExit();
-		newState.doEntry();
+		//newState.doEntry();
 		self.state = newState;
 		self.state.doEntry();
 		self.state.doMake(args);
