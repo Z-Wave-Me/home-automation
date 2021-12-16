@@ -224,6 +224,34 @@
 						console.log("Removing module " + el.moduleId);
 						toDelete.push(indx)
 					}
+					// Transform Security module from version 1.1 to 2.0. Add new objects
+					else if (el.moduleId && el.moduleId === "Security") {
+						console.log("Transform Security module from version 1.1 to 2.0");
+						if (!config.instances[indx].params.inputArming) {
+							config.instances[indx].params.inputArming = {};
+							config.instances[indx].params.inputArming.table = [];
+							config.instances[indx].params.inputArming.notification = {};
+						}
+						if (!config.instances[indx].params.armFailureAction) {
+							config.instances[indx].params.armFailureAction = {};
+							config.instances[indx].params.armFailureAction.table = [];
+							config.instances[indx].params.armFailureAction.notification = {};
+						}
+						if (!config.instances[indx].params.entranceDetected) {
+							config.instances[indx].params.entranceDetected = {};
+							config.instances[indx].params.entranceDetected.table = [];
+							config.instances[indx].params.entranceDetected.notification = {};
+						}
+						if (config.instances[indx].params.input && config.instances[indx].params.input.table) {
+							config.instances[indx].params.input.table.forEach(function(item, index) {
+								if (!item.armCondition) {
+									config.instances[indx].params.input.table[index].armCondition = "on";
+									config.instances[indx].params.input.table[index].sensorAtTheEntrance = "off";
+								}
+							});
+						}
+					}
+
 				});
 
 				toDelete.reverse().forEach(function(el) {
@@ -576,7 +604,7 @@
 					},
 				});
 			}
-				
+
 			saveObject('config.json', config);
 		}
 	} else {

@@ -8,7 +8,7 @@
   "homepage": "http://razberry.z-wave.me",
   "icon": "icon.png",
   "moduleName": "Security",
-  "version": "1.0.1",
+  "version": "2.0",
   "maturity": "stable",
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
   "defaults": {
     "title": "__m_title__",
     "description": "__m_descr__",
+    "inputArming": {},
     "input": {},
     "alarms": {},
     "silentAlarms": {},
@@ -25,7 +26,9 @@
     "armConfirm": {},
     "disarmConfirm": {},
     "times": {},
-    "schedules": {}
+    "schedules": {},
+    "armFailureAction": {},
+    "entranceDetected": {}
   },
   "schema": {},
   "options": {}

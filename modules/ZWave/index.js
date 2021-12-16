@@ -285,6 +285,8 @@ ZWave.prototype.startBinding = function() {
 		this.deadDetectionStart();
 		this.gateDevicesStart();
 	}
+	
+	this.timeUpdaterStart();
 
 	// save data every hour for hot start
 	this.saveDataXMLTimer = setInterval(function() {
@@ -362,6 +364,8 @@ ZWave.prototype.stopBinding = function() {
 		this.gateDevicesStop();
 		this.deadDetectionStop();
 	}
+	
+	this.timeUpdaterStop();
 
 	if (this.fastAccess) {
 		if (this.config.enableAPI !== false) {
@@ -467,6 +471,7 @@ ZWave.prototype.CommunicationLogger = function() {
 			"RSSI": data.RSSI.value,
 			"hops": data.hops.value,
 			"frameType": data.frameType.value,
+			"duplicate": data.duplicate.value,
 			"value": data.value
 		});
 
@@ -1483,6 +1488,7 @@ ZWave.prototype.externalAPIAllow = function(name) {
 	ws.allowExternalAccess(_name + ".CommunicationStatistics", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".CommunicationHistory", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".PacketLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".ClearPacketLog", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Zniffer", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Zniffer.SetPromisc", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".RSSIGet", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -1527,6 +1533,7 @@ ZWave.prototype.externalAPIRevoke = function(name) {
 	ws.revokeExternalAccess(_name + ".CommunicationStatistics");
 	ws.revokeExternalAccess(_name + ".CommunicationHistory");
 	ws.revokeExternalAccess(_name + ".PacketLog");
+	ws.revokeExternalAccess(_name + ".ClearPacketLog");
 	ws.revokeExternalAccess(_name + ".Zniffer");
 	ws.revokeExternalAccess(_name + ".Zniffer.SetPromisc");
 	ws.revokeExternalAccess(_name + ".RSSIGet");
@@ -2182,6 +2189,22 @@ ZWave.prototype.defineHandlers = function() {
 		};
 	};
 
+	this.ZWaveAPI.ClearPacketLog = function() {
+		self.originPackets.clear()
+		
+		return {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: {
+				"code": 200,
+				"message": "200 OK",
+				"updateTime": Math.round(Date.now() / 1000),
+				data: self.originPackets.get()
+			}
+		};
+	};
 
 	this.ZWaveAPI.RSSIGet = function(url, request) {
 		var headers = {
@@ -3669,6 +3692,39 @@ ZWave.prototype.dataUnbind = function(dataBindings) {
 	dataBindings = null;
 };
 
+// ------------- Update time every day -----
+
+ZWave.prototype.timeUpdaterStart = function() {
+	var self = this;
+	
+	this.controller.emit("cron.addTask", "ZWaveTimeUpdater.poll", {
+		minute: 0,
+		hour: 3,
+		weekDay: null,
+		day: null,
+		month: null
+	});
+
+	// add event listener
+	this.timeUpdater = function() {
+		var devices = Object.keys(self.zway.devices);
+		devices.forEach(function(nodeId) {
+			if (self.zway.devices[nodeId].TimeParameters)
+				self.zway.devices[nodeId].TimeParameters.Set();
+			if (self.zway.devices[nodeId].Clock)
+				self.zway.devices[nodeId].Clock.Set();
+		});
+	};
+
+	this.controller.on("ZWaveTimeUpdater.poll", this.timeUpdater);
+};
+
+ZWave.prototype.timeUpdaterStop = function() {
+	this.controller.emit("cron.removeTask", "ZWaveTimeUpdater.poll");
+
+	if (this.timeUpdater)
+		this.controller.off("ZWaveTimeUpdater.poll", this.timeUpdater);
+}
 
 // ------------- Dead Detection ------------
 
@@ -5460,11 +5516,11 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									instance.ThermostatSetPoint.Set(mode, args.level);
 								}
 								if (command === "on" || command === "exact") {
-									instance.ThermostatMode && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
+									instance.ThermostatMode && instance.ThermostatMode.data.supported.value && instance.ThermostatMode.Set(mode == MODE_HEAT ? MODE_HEAT : MODE_COOL); // modes are not always same in ThermostatSetPoint and in ThermostatMode, but here they are same
 								}
 								if (command === "update") {
 									instance.ThermostatSetPoint.Get(mode);
-									instance.ThermostatMode && instance.ThermostatMode.Get();
+									instance.ThermostatMode && instance.ThermostatMode.data.supported.value && instance.ThermostatMode.Get();
 								}
 							},
 							moduleId: self.id

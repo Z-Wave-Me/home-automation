@@ -62,15 +62,19 @@ saveObject = function(name, object, immediate) {
 	
 	if (__saveObjectTimer[name].timer) {
 		clearTimeout(__saveObjectTimer[name].timer);
+		__saveObjectTimer[name].timer = null;
 	}
 	
 	deferTime -= Date.now() - __saveObjectTimer[name].lastSave;
 	if (deferTime > 0) {
 		// restart the time with the new object and remaining time
-		__saveObjectTimer[name].timer = setTimeout(function() {
-			saveObject(name, object);
+		__saveObjectTimer[name].object = object;
+		__saveObjectTimer[name].saver = function() {
+			saveObject(name, __saveObjectTimer[name].object);
 			__saveObjectTimer[name].timer = null;
-		}, deferTime);
+			__saveObjectTimer[name].saver = null;
+		};
+		__saveObjectTimer[name].timer = setTimeout(__saveObjectTimer[name].saver, deferTime);
 		
 		return; // defer save
 	}
@@ -92,6 +96,18 @@ saveObject = function(name, object, immediate) {
 
 	__saveObject(name, object);
 };
+
+function __saveObjectsNow() {
+	for (var name in __saveObjectTimer) {
+		if (__saveObjectTimer[name].timer != null && __saveObjectTimer[name].saver != null)
+		{
+			clearTimeout(__saveObjectTimer[name].timer);
+			__saveObjectTimer[name].timer = null;
+			__saveObjectTimer[name].saver();
+			__saveObjectTimer[name].saver = null;
+		}
+	}
+}
 
 //--- Load configuration
 var config, files, templates, schemas, modules, namespaces;
@@ -154,6 +170,7 @@ if (!config && config === null) {
 	});
 
 	controller.on('core.stop', function () {
+		__saveObjectsNow()
 		console.log('ZWay Automation stopped');
 	});
 

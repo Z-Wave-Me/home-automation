@@ -1,3 +1,24 @@
+## 29.11.2021 v3.2.2
+New features:
+* Websocket API improved. Now requires same token as for HTTP API
+* Full rework of Security module
+  * Added Entrance group to allow delay for some sensors on armin and disarming
+  * Added support for scenes and buttons for arm/disarm/clear by button
+  * Added Arm condition and Arm failure action to allow checks for sensor state before arming
+* Added ClearPacketLog ZWaveAPI
+* Added duplicate field in packet log
+Improvements:
+* MQTTClient
+  * Added door lock support
+  * Added automatic re-connection
+  * Thermostats are now float, not integer
+* Added Clock.Set() and TimeParameter.Set() daily at night to keep device at home synchronized
+Fixes:
+* Save defered saveObjects on Automation stop
+* Fixed homekit-skip being ignored after restart
+* Fixed bug with addTags not notifying subscribers
+* Fixed Secure thermostat and Vitrum switches support
+
 ## 15.09.2021 v3.2.1
 Fixes:
 * Fixed missing third (immediate) parameter in saveObject

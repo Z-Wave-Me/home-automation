@@ -6,6 +6,7 @@
 	"client_id_randomize_helper": "Needed for some MQTT brokers.",
 	"host_label": "Hostname or IP address",
 	"port_label": "Port",
+	"security": "Security",
 	"user_label": "Username",
 	"user_helper": "If empty, the username is not used.",
 	"password_label": "Password",

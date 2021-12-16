@@ -503,11 +503,13 @@ HomeKitGate.prototype.init = function (config) {
 	function updateSkippedDevicesList() {
 		// Add tag "homekit-skip" for all skipped devices from config
 		self.config.skippedDevices.forEach(function(vDevId) {
+			delete self.config.hkDevices[vDevId];
 			var vDev = self.controller.devices.get(vDevId);
 	  		if (vDev !== null && vDev.get("tags").indexOf("homekit-skip") === -1 ) {
 	  			vDev.addTag("homekit-skip");
 	  		}
 		});
+		self.saveConfig();
 
 		// Remove tag "homekit-skip" if device not in skipped list
 		self.controller.devices.forEach(function(vDev) {
@@ -579,6 +581,7 @@ HomeKitGate.prototype.init = function (config) {
 		// Add tag "homekit-skip" to skipped Devices list in config and remove device from Homekit
 		if (vDev.get("tags").indexOf("homekit-skip") !== -1 && self.config.skippedDevices.indexOf(vDev.id) === -1) {
 			self.config.skippedDevices.push(vDev.id);
+			delete self.config.hkDevices[vDev.id];
 			self.saveConfig();
 			self.onDeviceWipedOut(vDev.id);
 	  	}
