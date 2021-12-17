@@ -247,9 +247,14 @@ HomeKitGate.prototype.init = function (config) {
 			thermostats.push(deviceID);
 
 			// Get all thermostat modes
-			var thermostatModes = [1]; // for danfoss lc without ThermostatMode
-			if (zway.devices[deviceID].ThermostatMode)
+			var thermostatModes = [];
+			if (zway.devices[deviceID].ThermostatMode) {
 				thermostatModes = Object.keys(zway.devices[deviceID].ThermostatMode.data).filter(function(mode) {return !isNaN(parseInt(mode))});
+			}
+
+			if (thermostatModes.length == 0) {
+				thermostatModes = [1]; // for danfoss LC and Secure without ThermostatMode CC
+			}
 			
 			// Use in HK only Off, Cool, Heat, Auto
 			var supportedHKModes = [0,1,2,3];
