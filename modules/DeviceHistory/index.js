@@ -117,7 +117,7 @@ _.extend(DeviceHistory.prototype, {
 			function (arr) {
 				saveObject('history_' + vdevId, arr, true);
 			},
-			5, // check it every 10 entries
+			100, // check it every 100 entries
 			1000, // save up to 1000 entries
 			function (devHistory){
 				var now = Math.floor(Date.now() / 1000);
