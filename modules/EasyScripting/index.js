@@ -1,6 +1,6 @@
 /*** EasyScripting Z-Way HA module *******************************************
 
-(c) Z-Wave.Me, 2019
+(c) Z-Wave.Me, 2021
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Yurkin Vitaliy <aivs@z-wave.me>
 Description:
@@ -139,6 +139,42 @@ EasyScripting.prototype.setHelpers = function() {
 		return this.dev.get("metrics:level");
 	};
 	
+	vDevWrapper.prototype.open = function() {
+		this.dev.performCommand("open");
+	};
+
+	vDevWrapper.prototype.close = function() {
+		this.dev.performCommand("close");
+	};
+
+	vDevWrapper.prototype.up = function() {
+		this.dev.performCommand("up");
+	};
+
+	vDevWrapper.prototype.down = function() {
+		this.dev.performCommand("down");
+	};
+
+	vDevWrapper.prototype.max = function() {
+		this.dev.performCommand("max");
+	};
+
+	vDevWrapper.prototype.min = function() {
+		this.dev.performCommand("min");
+	};
+
+	vDevWrapper.prototype.stop = function() {
+		this.dev.performCommand("stop");
+	};
+
+	vDevWrapper.prototype.startUp = function() {
+		this.dev.performCommand("startUp");
+	};
+
+	vDevWrapper.prototype.startDown = function() {
+		this.dev.performCommand("startDown");
+	};
+
 	// export to local instance
 	this.vDevHelper = function(vDevId) {
 		return new vDevWrapper(vDevId);

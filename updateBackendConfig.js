@@ -242,6 +242,14 @@
 							config.instances[indx].params.entranceDetected.table = [];
 							config.instances[indx].params.entranceDetected.notification = {};
 						}
+						if (config.instances[indx].params.input && config.instances[indx].params.input.table) {
+							config.instances[indx].params.input.table.forEach(function(item, index) {
+								if (!item.armCondition) {
+									config.instances[indx].params.input.table[index].armCondition = "on";
+									config.instances[indx].params.input.table[index].sensorAtTheEntrance = "off";
+								}
+							});
+						}
 					}
 
 				});
