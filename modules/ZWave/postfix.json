@@ -5666,7 +5666,7 @@
 		"tester_last_update": "2021-02-19 17:00:00",
 		"commentary": "Removed extra widgets, rename",
 		"created": "2021-02-19 17:00:00"
-	 },{
+	 }, {
 		"id": "365",
 		"p_id": "277.256.2320",
 		"p_sku": "ZME_TION4S",
@@ -5692,5 +5692,22 @@
 		"tester_last_update": "2021-04-12 17:00:00",
 		"commentary": "Removed extra widgets, rename",
 		"created": "2021-02-19 17:00:00"
+	}, {
+		"id": "366",
+		"p_id": "265.8223.7952",
+		"p_sku": "ZD2201",
+		"product": "Vision ZD2201",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": ["renameNode,Zipato VS-ZD2201",
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1);}"
+
+		],
+		"author_last_update": "2021-12-21 12:00:00",
+		"author": "SMR",
+		"tester": "SMR",
+		"tester_last_update": "2022-01-12 11:00:00",
+		"commentary": "Add singlechannel Association to Zipato VS-ZD2201",
+		"created": "2021-12-21 12:00:00"
 	}]
 }
