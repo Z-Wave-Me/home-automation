@@ -5684,7 +5684,8 @@
 			"rename,2-37,Tion Recycling/Input Ventilation",
 			"rename,3-38,Tion Fan Speed",
 			"rename,4-49-1,Tion Inflow Temperature",
-			"rename,5-49-1,Tion Out Temperature"
+			"rename,5-49-1,Tion Out Temperature",
+			"if (zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value == false) {zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value = true}"
 		],
 		"author_last_update": "2021-04-12 17:00:00",
 		"author": "SMR",
