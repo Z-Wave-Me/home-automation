@@ -5685,7 +5685,7 @@
 			"rename,3-38,Tion Fan Speed",
 			"rename,4-49-1,Tion Inflow Temperature",
 			"rename,5-49-1,Tion Out Temperature",
-			"if (zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value == false) {zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value = true}"
+			"if (self.zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value == false) {self.zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value = true}"
 		],
 		"author_last_update": "2021-04-12 17:00:00",
 		"author": "SMR",
@@ -5693,5 +5693,23 @@
 		"tester_last_update": "2021-04-12 17:00:00",
 		"commentary": "Removed extra widgets, rename",
 		"created": "2021-02-19 17:00:00"
-	}]
+	},{
+                "id": "367",
+                "p_id": "316.2.123",
+                "p_sku": "PAT13",
+                "product": "Philio PAT13",
+                "apply_postfix": "1",
+                "preInterview": [],
+                "postInterview": [
+                        "renameNode,Philio PAT13 Temperature Sensor",
+                        "emulateOff,0-113-7-3,10000",
+                        "if (self.zway.devices[nodeId].Alarm.data[7].status.value == null) {self.zway.devices[nodeId].Alarm.Set(7,255);}"
+                ],
+                "author_last_update": "2022-01-14 18:46:50",
+                "author": "AIVS",
+                "tester": "AIVS",
+                "tester_last_update": "2022-01-14 18:46:50",
+                "commentary": "AutoOff on the Alarm button, set Alarm On",
+                "created": "2022-01-14 18:46:50"
+        }]
 }
