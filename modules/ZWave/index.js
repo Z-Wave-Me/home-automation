@@ -3709,6 +3709,8 @@ ZWave.prototype.timeUpdaterStart = function() {
 	this.timeUpdater = function() {
 		var devices = Object.keys(self.zway.devices);
 		devices.forEach(function(nodeId) {
+			if (nodeId == self.zway.controller.data.nodeId.value) return; // not a strict === since nodeId is a string index, but number in DH
+			
 			if (self.zway.devices[nodeId].TimeParameters)
 				self.zway.devices[nodeId].TimeParameters.Set();
 			if (self.zway.devices[nodeId].Clock)
