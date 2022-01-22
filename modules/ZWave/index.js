@@ -4371,7 +4371,7 @@ ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceI
 		if (changeObj.icon)
 			defaultObj.metrics.icon = changeObj.icon;
 		if (changeObj.rename)
-			defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, changeObj.rename, undefined, false);
+			defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, smartStartEntryPreset, changeObj.rename, undefined, false);
 		defaultObj.visibility = changeObj.hide ? false : true;
 		defaultObj.permanently_hidden = changeObj.deactivate ? true : false;
 	
