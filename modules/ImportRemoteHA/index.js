@@ -1,7 +1,7 @@
 /*** ImportRemoteHA Z-Way HA module *******************************************
 
-Version: 2.0.3
-(c) Z-Wave.Me, 2014
+Version: 2.0.4
+(c) Z-Wave.Me, 2022
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
@@ -188,7 +188,7 @@ ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
 	var argsFlat = "";
 	if (args) {
 		for (var key in args) {
-			argsFlat = (argsFlat ? "&" : "?") + key.toString() + "=" + args[key].toString();
+			argsFlat = argsFlat + (argsFlat ? "&" : "?") + key.toString() + "=" + args[key].toString();
 		}
 	}
 	
