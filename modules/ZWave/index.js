@@ -4665,16 +4665,15 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
-						} else {
+						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							var color = {
 								r: cc.data[COLOR_RED].level.value,
 								g: cc.data[COLOR_GREEN].level.value,
 								b: cc.data[COLOR_BLUE].level.value
 							};
 							vDev_rgb.set("metrics:color", color);
+							vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 						}
-
-						vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 					} catch (e) {}
 				}
 
