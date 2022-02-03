@@ -187,7 +187,7 @@ AutomationController.prototype.init = function() {
 		});
 		
 		self.on('profile.updated', function(profile) {
-			ws.push("me.z-wave.profile.updated", profile.id, self.profilesByRole(self.auth.ROLE.ADMIN).concat([profile.id]));
+			ws.push("me.z-wave.profile.updated", self.safeProfile(profile), self.profilesByRole(self.auth.ROLE.ADMIN).concat([profile.id]));
 		});
 		
 		self.on("notifications.push", function(notice) {
