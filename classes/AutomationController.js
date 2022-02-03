@@ -183,7 +183,7 @@ AutomationController.prototype.init = function() {
 		});
 		
 		self.on('location.updated', function(location) {
-			ws.push("me.z-wave.locations.add", location, self.profilesByLocation(location));
+			ws.push("me.z-wave.locations.updated", location, self.profilesByLocation(location));
 		});
 		
 		self.on('profile.updated', function(profile) {
@@ -1711,7 +1711,7 @@ AutomationController.prototype.addLocation = function(locProps, callback) {
 		}
 
 		this.saveConfig(true);
-		this.emit('location.added', id);
+		this.emit('location.added', location);
 	}
 };
 
@@ -1753,7 +1753,7 @@ AutomationController.prototype.updateLocation = function(id, title, user_img, de
 		});
 
 	if (locations.length > 0) {
-		location = this.locations[this.locations.indexOf(locations[0])];
+		var location = this.locations[this.locations.indexOf(locations[0])];
 
 		location.title = title;
 		location.show_background = show_background;
@@ -1772,7 +1772,7 @@ AutomationController.prototype.updateLocation = function(id, title, user_img, de
 		}
 
 		this.saveConfig(true);
-		this.emit('location.updated', id);
+		this.emit('location.updated', location);
 	} else {
 		if (typeof callback === 'function') {
 			callback(false);
