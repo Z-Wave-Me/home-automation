@@ -4478,7 +4478,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					} else if ("off" === command) {
 						cc.Set(false);
 					} else if ("update" === command) {
-						cc.Get(vDevId);
+						cc.Get();
 					}
 				},
 				moduleId: self.id
@@ -4575,7 +4575,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						cc.StartLevelChange(1);
 						return;
 					} else if ("update" === command) {
-						cc.Get(vDevId);
+						cc.Get();
 						return;
 					}
 
