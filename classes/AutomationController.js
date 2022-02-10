@@ -2077,6 +2077,29 @@ AutomationController.prototype.getIPAddress = function() {
 	return ip;
 }
 
+AutomationController.prototype.getMACAddress = function() {
+	var ip = "";
+	try {
+		if (checkBoxtype('zme_hub')) {
+			mac = system("cat /sys/class/net/eth0/address")[1].replace(/[\s\n]/g, '');
+		} else {
+			mac = system("cat /sys/class/net/eth0/address")[1].replace(/[\s\n]/g, '');
+		}
+	} catch (e) {
+		console.log(e);
+	}
+
+	return mac;
+}
+
+AutomationController.prototype.getUUID = function() {
+	return this.config.uuid;
+}
+
+AutomationController.prototype.getSerial = function() {
+	return this.config.serial;
+}
+
 AutomationController.prototype.getQRCodeData = function(profile, password) {
 	var data = {
 			id: "",

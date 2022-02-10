@@ -163,6 +163,10 @@ if (!config && config === null) {
 		config.controller.first_start_up = !config.controller.first_start_up? now : config.controller.first_start_up;
 		// count server restarts
 		config.controller.count_of_reconnects = config.controller.count_of_reconnects? parseInt(config.controller.count_of_reconnects, 10) + 1 : 1;
+		
+		// generate the uuid
+		if (!config.controller.uuid) config.controller.uuid = crypto.guid();
+		if (!config.controller.serial) config.controller.serial = config.controller.uuid;
 	});
 
 	controller.on('core.start', function () {
