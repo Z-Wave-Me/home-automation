@@ -4302,7 +4302,11 @@ ZWave.prototype.gateDevicesStop = function() {
 	}).filter(function(el) {
 		return el.indexOf("ZWayVDev_" + self.config.name + "_") === 0;
 	}).forEach(function(el) {
-		self.controller.devices.remove(el);
+		try {
+			self.controller.devices.remove(el);
+		} catch (e) {
+			// do nothing - this is to prevent Stop abort to make sure we release zway context in C
+		}
 	});
 
 	// releasing bindings
