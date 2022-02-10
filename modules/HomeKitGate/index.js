@@ -37,6 +37,13 @@ HomeKitGate.prototype.init = function (config) {
 		this.config.hkDevices = {};
 	}
 
+	// If hkDevicesArray doesn't contain an vDevId, then remove it from the hkDevices
+	Object.keys(this.config.hkDevices).forEach(function(vDevId) {
+		if (self.config.hkDevicesArray.indexOf(vDevId) == -1) {
+			delete self.config.hkDevices[vDevId];
+		}
+	});
+	this.saveConfig();
 	updateSkippedDevicesList();
 
 	// define functions and helpers
@@ -505,6 +512,7 @@ HomeKitGate.prototype.init = function (config) {
 		// Add tag "homekit-skip" for all skipped devices from config
 		self.config.skippedDevices.forEach(function(vDevId) {
 			delete self.config.hkDevices[vDevId];
+			removeFromHkDevicesArray(vDevId);
 			var vDev = self.controller.devices.get(vDevId);
 	  		if (vDev !== null && vDev.get("tags").indexOf("homekit-skip") === -1 ) {
 	  			vDev.addTag("homekit-skip");
@@ -520,6 +528,13 @@ HomeKitGate.prototype.init = function (config) {
 	  				vDev.removeTag("homekit-skip");
 	  		}
 		});
+	}
+
+	function removeFromHkDevicesArray(vDevid) {
+		var index = self.config.hkDevicesArray.indexOf(vDevid);
+		if  (index !== -1) {
+			self.config.hkDevicesArray.splice(index, 1);
+		}
 	}
 
 	this.hkDeviceRemove = function (vDevId) {
@@ -552,7 +567,6 @@ HomeKitGate.prototype.init = function (config) {
 		}
 	}
 	
-	
 	this.onDeviceWipedOut = function (vDevId) {
 		console.log("HK: wipe out", vDevId);
 		
@@ -583,6 +597,7 @@ HomeKitGate.prototype.init = function (config) {
 		if (vDev.get("tags").indexOf("homekit-skip") !== -1 && self.config.skippedDevices.indexOf(vDev.id) === -1) {
 			self.config.skippedDevices.push(vDev.id);
 			delete self.config.hkDevices[vDev.id];
+			removeFromHkDevicesArray(vDevId);
 			self.saveConfig();
 			self.onDeviceWipedOut(vDev.id);
 	  	}
@@ -725,6 +740,7 @@ HomeKitGate.prototype.addDevice = function(vDevT) {
 	if (!_.isEqual(_.omit(this.config.hkDevices[vDevT.id], "aid"), _.omit(vDevT, "aid"))) {
 		var aid = (this.config.hkDevices[vDevT.id] && this.config.hkDevices[vDevT.id].aid) || (1 + Math.max(0, Math.max.apply(null, Object.keys(this.config.hkDevices).map(function(k) { return self.config.hkDevices[k].aid; }))));
 		this.config.hkDevices[vDevT.id] = vDevT;
+		this.config.hkDevicesArray.push(vDevT.id);
 		this.config.hkDevices[vDevT.id].aid = aid;
 		this.saveConfig();
 	}
