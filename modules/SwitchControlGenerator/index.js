@@ -131,7 +131,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 			insts = zway.devices[ctrlNodeId].instances;
 		for (var i in insts) {
 			(function(n) {
-				var dataB = insts[n].Basic.data,
+				var dataB = insts[n].Basic && insts[n].Basic.data,
 				    dataSB = insts[n].SwitchBinary && insts[n].SwitchBinary.data,
 				    dataSML = insts[n].SwitchMultilevel && insts[n].SwitchMultilevel.data,
 				    dataSc = insts[n].SceneActivation && insts[n].SceneActivation.data,

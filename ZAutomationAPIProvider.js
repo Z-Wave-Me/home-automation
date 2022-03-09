@@ -3351,6 +3351,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			} else {
 				reply.data.firstaccess = false;
 			}
+			reply.data.uuid = this.controller.getUUID();
+			reply.data.serial = this.controller.getSerial();
+			reply.data.mac = this.controller.getMACAddress();
 			reply.data.remote_id = this.controller.getRemoteId();
 			reply.data.ip_address = this.controller.getIPAddress();
 			reply.code = 200;
@@ -3380,6 +3383,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				current_firmware: version,
 				current_firmware_majurity: majurity,
 				remote_id: this.controller.getRemoteId(),
+				uuid: this.controller.getUUID(),
+				serial: this.controller.getSerial(),
+				mac: this.controller.getMACAddress(),
 				firstaccess: this.controller.config.hasOwnProperty('firstaccess') ? this.controller.config.firstaccess : true
 			};
 

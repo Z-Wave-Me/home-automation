@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName": "HomeKitGate",
-    "version": "2.2.1",
+    "version": "2.2.2",
     "maturity": "stable",
     "repository": {
         "type": "git",
@@ -17,6 +17,7 @@
         "description": "__m_descr__",
         "name": "RaZberry",
         "pin": "",
+        "hkDevicesArray": [],
         "skippedDevices": []
     },
     "schema": {
@@ -36,6 +37,13 @@
                 "datasource": "namespaces",
                 "enum": "namespaces:devices_all:deviceId",
                 "required": false
+            },
+            "hkDevicesArray" : {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "required": false
+                }
             }
         },
         "required": false
@@ -55,6 +63,15 @@
                 "datasource": "namespaces",
                 "field": "optionLabels",
                 "optionLabels": "namespaces:devices_all:deviceName"
+            },
+            "hkDevicesArray": {
+                "label": "__l_hkDevicesArray__",
+                "fields": {
+                    "item": {
+                        "type": "text",
+                        "readonly": true
+                    }
+                }
             }
         }
     },

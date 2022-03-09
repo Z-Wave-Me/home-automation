@@ -118,7 +118,7 @@ _.extend(DeviceHistory.prototype, {
 				saveObject('history_' + vdevId, arr, true);
 			},
 			100, // check it every 100 entries
-			0, // save unlimited entries
+			0, // save unlimited entries, since anyway it is clead based on time limit
 			function (devHistory){
 				var now = Math.floor(Date.now() / 1000);
 				return devHistory.id >= (now - 86400);

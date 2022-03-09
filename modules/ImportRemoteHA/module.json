@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 		"moduleName": "ImportRemoteHA",
-	"version": "2.0.3",
+	"version": "2.0.4",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",

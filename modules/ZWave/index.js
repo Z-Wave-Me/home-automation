@@ -3709,6 +3709,8 @@ ZWave.prototype.timeUpdaterStart = function() {
 	this.timeUpdater = function() {
 		var devices = Object.keys(self.zway.devices);
 		devices.forEach(function(nodeId) {
+			if (nodeId == self.zway.controller.data.nodeId.value) return; // not a strict === since nodeId is a string index, but number in DH
+			
 			if (self.zway.devices[nodeId].TimeParameters)
 				self.zway.devices[nodeId].TimeParameters.Set();
 			if (self.zway.devices[nodeId].Clock)
@@ -4300,7 +4302,11 @@ ZWave.prototype.gateDevicesStop = function() {
 	}).filter(function(el) {
 		return el.indexOf("ZWayVDev_" + self.config.name + "_") === 0;
 	}).forEach(function(el) {
-		self.controller.devices.remove(el);
+		try {
+			self.controller.devices.remove(el);
+		} catch (e) {
+			// do nothing - this is to prevent Stop abort to make sure we release zway context in C
+		}
 	});
 
 	// releasing bindings
@@ -4369,7 +4375,7 @@ ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceI
 		if (changeObj.icon)
 			defaultObj.metrics.icon = changeObj.icon;
 		if (changeObj.rename)
-			defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, changeObj.rename, undefined, false);
+			defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, smartStartEntryPreset, changeObj.rename, undefined, false);
 		defaultObj.visibility = changeObj.hide ? false : true;
 		defaultObj.permanently_hidden = changeObj.deactivate ? true : false;
 	
@@ -4476,7 +4482,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					} else if ("off" === command) {
 						cc.Set(false);
 					} else if ("update" === command) {
-						cc.Get(vDevId);
+						cc.Get();
 					}
 				},
 				moduleId: self.id
@@ -4573,7 +4579,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						cc.StartLevelChange(1);
 						return;
 					} else if ("update" === command) {
-						cc.Get(vDevId);
+						cc.Get();
 						return;
 					}
 
@@ -4663,16 +4669,15 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
-						} else {
+						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							var color = {
 								r: cc.data[COLOR_RED].level.value,
 								g: cc.data[COLOR_GREEN].level.value,
 								b: cc.data[COLOR_BLUE].level.value
 							};
 							vDev_rgb.set("metrics:color", color);
+							vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 						}
-
-						vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 					} catch (e) {}
 				}
 
