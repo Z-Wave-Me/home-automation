@@ -1,8 +1,9 @@
 cat /etc/z-way/box_type
 reboot
 cat /etc/timezone
-sh /opt/z-way-server/automation/lib/configAP.sh
-sh /opt/z-way-server/automation/lib/fetchLog.sh
+sh automation/lib/configAP.sh
+sh automation/lib/fetchLog.sh
+sh automation/lib/timezone.sh
 tail -1000 /var/log/z-way-server.log | tac
 ip a s dev eth0 | sed -n 's/.*inet \([0-9.]*\)\/.*/\1/p' | head -n 1
 cat /sys/class/net/eth0/address
