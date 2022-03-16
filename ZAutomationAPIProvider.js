@@ -3164,8 +3164,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			sys.forEach(function(i) {
 				if (typeof i === 'string') {
 					tz = i.replace(/\n/g, '');
-					return;
-				};
+				}
 			});
 		} catch (e) {}
 
@@ -3175,7 +3174,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				localTimeUT: Math.round((now.getTime() + (now.getTimezoneOffset() * -60000)) / 1000), // generate timestamp with correct timezone offset
 				localTimeString: now.toLocaleString(),
 				localTimeZoneOffset: now.getTimezoneOffset() / 60,
-				localTimeZone: tz
+				localTimeZone: tz,
+				localGMT: now.toString().match(/([-\+][0-9]+)\s/)[1]
 			};
 		} else {
 			reply.error = 'Cannot get current date and time.';
