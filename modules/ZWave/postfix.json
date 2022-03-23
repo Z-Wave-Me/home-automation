@@ -1758,8 +1758,6 @@
 		"preInterview": [],
 		"postInterview": ["noVDev,2-113",
 			"noVDev,0-113",
-			"noVDev,2-48",
-			"noVDev,0-48",
 			"rename,0-37,Switch all on/off",
 			"renameNode,Qubino Flush 1D Relay",
 			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(1,1,0);}"
