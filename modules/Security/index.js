@@ -739,9 +739,6 @@ Security.prototype.stopDevices = function() {
 	if (self.resetDatas) {
 		self.offInputArray(this.performEnum.CRESET, self.resetDatas);
 	}
-	console.logJS("self.vDevON.id",self.vDevON.id);
-	console.logJS("self.vDevOFF.id",self.vDevOFF.id);
-	console.logJS("self.vDevRESET.id",self.vDevRESET.id);
 
 	self.offInput(this.performEnum.CON, self.vDevON.id, true);
 	self.offInput(this.performEnum.COFF, self.vDevOFF.id, true);
@@ -1391,30 +1388,33 @@ Security.prototype.shiftTriggerDevices = function(datas, notification, level) {
 	if (datas) {
 		datas.forEach(function(args) {
 			// args([deviceID],[level],[sendAction])
-			var vDev = self.controller.devices.get(args.devices),
-				type = vDev.get('deviceType') || null,
-				level = vDev.get('metrics:level'),
-				set = args.sendAction ? args.level !== vDev.get('metrics:level') : true;
+			var vDev = self.controller.devices.get(args.devices);
 
-			if (vDev && set) {
-				switch (type) {
-					case 'switchMultilevel':
-						_.contains(['on', 'off'], args.level) ? vDev.performCommand(args.level) : vDev.performCommand("exact", {
-							level: args.level
-						});
-						break;
-					case 'switchRGBW':
-						_.contains(['on', 'off'], new_level) ? vDev.performCommand(args.level) : vDev.performCommand("exact", {
-							red: args.level.r,
-							green: args.level.g,
-							blue: args.level.b
-						});
-						break;
-					case 'toggleButton':
-						vDev.performCommand('on');
-						break;
-					default:
-						vDev.performCommand(args.level);
+			if (vDev) {
+				var type = vDev.get('deviceType') || null,
+					level = vDev.get('metrics:level'),
+					set = args.sendAction ? args.level !== vDev.get('metrics:level') : true;
+				
+				if (set) {
+					switch (type) {
+						case 'switchMultilevel':
+							_.contains(['on', 'off'], args.level) ? vDev.performCommand(args.level) : vDev.performCommand("exact", {
+								level: args.level
+							});
+							break;
+						case 'switchRGBW':
+							_.contains(['on', 'off'], new_level) ? vDev.performCommand(args.level) : vDev.performCommand("exact", {
+								red: args.level.r,
+								green: args.level.g,
+								blue: args.level.b
+							});
+							break;
+						case 'toggleButton':
+							vDev.performCommand('on');
+							break;
+						default:
+							vDev.performCommand(args.level);
+					}
 				}
 			}
 		});
