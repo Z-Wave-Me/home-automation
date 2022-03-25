@@ -21,6 +21,7 @@
 		"enableAPI": true,
 		"publicAPI": false,
 		"createVDev": true,
+		"enablePacketLog": true,
 		"config": "config",
 		"translations": "translations",
 		"ZDDX": "ZDDX"
@@ -51,6 +52,10 @@
 				"default": true
 			},
 			"createVDev": {
+				"type": "boolean",
+				"default": true
+			},
+			"enablePacketLog": {
 				"type": "boolean",
 				"default": true
 			},
@@ -98,6 +103,11 @@
 				"type": "checkbox",
 				"rightLabel": "__rl_createVDev__",
 				"helper": "__h_createVDev__"
+			},
+			"enablePacketLog": {
+				"type": "checkbox",
+				"rightLabel": "__rl_enablePacketLog__",
+				"helper": "__h_enablePacketLog__"
 			},
 			"config": {
 				"hidden": true,

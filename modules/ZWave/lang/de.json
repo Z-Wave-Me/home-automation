@@ -11,6 +11,8 @@
 	"h_publicAPI":"Keine authentifiziereung zur Z-Wave API notwendig.",
 	"rl_createVDev":"Erzeuge virtuelle Geräte in der Home Automation Engine",
 	"h_createVDev":"Wenn diese Einstellung nicht aktiv ist, sind Z-Wave Geräte nur in der Expert UI und über die Z-Wave API sicht- bzw. benutzbar.",
+	"rl_enablePacketLog":"Enable packet log",
+	"h_enablePacketLog":"Save packet log in a file for future analysis. Can hang the server for up to 30 seconds on slow hardware.",
 	"l_config":"Pfad zum Ordner /config",
 	"l_translations":"Pfad zum Ordner /dictionaries",
 	"l_zddx":"Pfad zur ZDDX Datenbank",
