@@ -295,7 +295,9 @@ ZWave.prototype.startBinding = function() {
 	this.parsedPackets = new LimitedArray(
 		self.loadObject("parsedPackets.json"),
 		function(arr) {
-			self.saveObject("parsedPackets.json", arr);
+			if (self.config.enablePacketLog !== false) {
+				self.saveObject("parsedPackets.json", arr);
+			}
 		},
 		100, // check it every 100 packets
 		5000, // save up to 5000 packets
@@ -308,7 +310,9 @@ ZWave.prototype.startBinding = function() {
 	this.originPackets = new LimitedArray(
 		self.loadObject("originPackets.json"),
 		function(arr) {
-			self.saveObject("originPackets.json", arr);
+			if (self.config.enablePacketLog !== false) {
+				self.saveObject("originPackets.json", arr);
+			}
 		},
 		100, // check it every 100 packets
 		5000, // save up to 5000 packets
