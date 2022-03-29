@@ -218,14 +218,15 @@ Security.prototype.init = function(config) {
 	this.cronListeningCollector = [];
 	this.busDatas = new this.BusDatas(null, null, null, null);
 	this.busDataMap = {};
-	this.start = config.times.start;
 	this.interval = config.times.interval;
 	this.silent = config.times.silent;
 	this.delayForEntranceGroup = config.times.delaySensorAtTheEntrance;
 	this.autoDeviceTrigger = "on";
-	this.alarmTimerEntranceGroup = null;
-	this.timerAtStartForEntranceGroup = null;
+	this.timerEntranceGroupAlarm = null;
+	this.timerEntranceGroupAtStart = null;
+	this.timerWaitDevicesAtStart = null;
 	this.onInputList = [];
+	this.langFile = this.loadModuleLang();
 
 	/**
 	 * function who will Connected to devices who trigger the Alarm
@@ -251,17 +252,17 @@ Security.prototype.init = function(config) {
 						 * The timer resets only when disarmed.
 						 */
 						if (self.entranceGroup.indexOf(busDatas.device) !== -1) {
-							if (self.timerAtStartForEntranceGroup == null) {
-								console.log("--- Security. At the entrance detected sensor activation. Wait " + self.delayForEntranceGroup + " seconds.");
+							if (self.timerEntranceGroupAtStart == null) {
+								console.log("--- Security: At the entrance detected sensor activation. Wait " + self.delayForEntranceGroup + " seconds.");
 								// Run entrance detected actions
 								self.shiftTriggerDevices(self.entranceDetectedDatas, self.entranceDetectedNots, 'disarm');
 								var bDatas = busDatas;
-								if (self.alarmTimerEntranceGroup == null) {
-									self.alarmTimerEntranceGroup = setTimeout(function () {
+								if (self.timerEntranceGroupAlarm == null) {
+									self.timerEntranceGroupAlarm = setTimeout(function () {
 										bDatas.self.vDev.performCommand(self.performEnum.TRIGGER.name, {
 											device: bDatas.device.toString()
 										});
-										self.alarmTimerEntranceGroup = null;
+										self.timerEntranceGroupAlarm = null;
 
 									}, self.delayForEntranceGroup*1000);
 								}
@@ -356,9 +357,11 @@ Security.prototype.init = function(config) {
 
 	if (notAddedDevices.length > 0) {
 		self.controller.devices.on("created", self.onDeviceAdded);
+		console.log("--- Security running, but not all devices are available: " + notAddedDevices.toString() + ". We are waiting 2 minutes before restarting.");
+
 		// Start 2 minutes off timer
-		setTimeout(function () {
-			console.logJS("--- Security Error: Not all devices added after 2 minutes.");
+		self.timerWaitDevicesAtStart = setTimeout(function () {
+			self.log("warning", notAddedDevices.toString() + self.langFile.device_used_in_settings, false);
 			self.controller.devices.off("created", self.onDeviceAdded);
 			self.startSecurity();
 		}, 120*1000);
@@ -410,7 +413,6 @@ Security.prototype.wipeOwnVDevsFromArray = function(array) {
 	self.ignorenamesList.forEach(function(input) {
 		array.forEach(function(aInput, index) {
 			if (input.devices === aInput.devices) {
-				//self.log("error","hit",true);
 				array.splice(index, 1);
 			}
 		});
@@ -526,7 +528,6 @@ Security.prototype.makeVDevs = function() {
 				Alevel: 'off',
 				Rlevel: 'off',
 				Clevel: this.performEnum.COFF.name,
-				start: self.start,
 				interval: self.interval,
 				lastTriggerList: []
 			}
@@ -537,31 +538,27 @@ Security.prototype.makeVDevs = function() {
 				'code': 2,
 				'runningState': "undefined"
 			};
-			var message = command;
 			switch (command) {
 				case "test":
 					self.test();
 					returnState = self.makeReturnState(1, "test Security_" + self.id);
 					return returnState;
 				case self.performEnum.COFF.name:
-					if (self.alarmTimerEntranceGroup) {
+					if (self.timerEntranceGroupAlarm) {
 						// Timer is set, so we destroy it
-						clearTimeout(self.alarmTimerEntranceGroup);
-						self.alarmTimerEntranceGroup = null;
+						clearTimeout(self.timerEntranceGroupAlarm);
+						self.timerEntranceGroupAlarm = null;
 					}
-					message = self.performEnum.COFF.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevOFF.id, function() {
 						self.transition(true /*self.canOff()*/, self.off, args);
 					});
 					break;
 				case self.performEnum.CRESET.name:
-					message = self.performEnum.CRESET.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevRESET.id, function() {
 						self.transition(self.canReset(), self.liveOn, args);
 					});
 					break;
 				case self.performEnum.CON.name:
-					message = self.performEnum.CON.name;
 					self.commandHandlingWithBidirektionalScene(args, self.vDevON.id, function() {
 						self.transition(self.canOn(), self.liveOn, args);
 					});
@@ -595,7 +592,7 @@ Security.prototype.makeVDevs = function() {
 
 					break;
 				default:
-					self.log("warning", "Security_" + self.id + " unknown command " + command, false);
+					self.log("warning", "unknown command " + command, false);
 					returnState = self.makeReturnState(2, command + 'is not available command');
 					return returnState;
 			}
@@ -682,7 +679,7 @@ Security.prototype.onInput = function(pE, device, condition) {
 
 
 /**
- * Inits all vdevs and Used Devices and visebility
+ * Inits all vdevs and Used Devices and visibility
  */
 Security.prototype.initDevices = function() {
 	var self = this;
@@ -730,43 +727,46 @@ Security.prototype.stopDevices = function() {
 	if (self.sensorsDatas) {
 		self.offSensorsAndConditionArray(self.sensorsDatas);
 	}
-	if (self.offDatas) {
-		self.offInputArray(this.performEnum.COFF, self.offDatas);
-	}
 	if (self.onDatas) {
 		self.offInputArray(this.performEnum.CON, self.onDatas);
+	}
+	if (self.offDatas) {
+		self.offInputArray(this.performEnum.COFF, self.offDatas);
 	}
 	if (self.resetDatas) {
 		self.offInputArray(this.performEnum.CRESET, self.resetDatas);
 	}
 
-	self.offInput(this.performEnum.CON, self.vDevON.id, true);
-	self.offInput(this.performEnum.COFF, self.vDevOFF.id, true);
-	self.offInput(this.performEnum.CRESET, self.vDevRESET.id, true);
-	self.offInput(this.performEnum.TRIGGER, self.vDevTRIGGER.id, true);
-	self.offInput(this.performEnum.AUTOTOGGLE, self.vDevTimeSchedule.id, true);
-
 	if (self.vDevON) {
+		self.offInput(this.performEnum.CON, self.vDevON.id, true);
 		self.controller.devices.remove(self.vDevON.id);
 		self.vDevON = null;
 	}
 	if (self.vDevOFF) {
+		self.offInput(this.performEnum.COFF, self.vDevOFF.id, true);
 		self.controller.devices.remove(self.vDevOFF.id);
 		self.vDevOFF = null;
 	}
 	if (self.vDevRESET) {
+		self.offInput(this.performEnum.CRESET, self.vDevRESET.id, true);
 		self.controller.devices.remove(self.vDevRESET.id);
 		self.vDevRESET = null;
 	}
 	if (self.vDevTRIGGER) {
+		self.offInput(this.performEnum.TRIGGER, self.vDevTRIGGER.id, true);
 		self.controller.devices.remove(self.vDevTRIGGER.id);
 		self.vDevTRIGGER = null;
+	}
+	if (self.vDevTimeSchedule) {
+		self.offInput(this.performEnum.AUTOTOGGLE, self.vDevTimeSchedule.id, true);
+		self.controller.devices.remove(self.vDevTimeSchedule.id);
+		self.vDevTimeSchedule = null;
 	}
 	if (self.vDevALARM) {
 		self.controller.devices.remove(self.vDevALARM.id);
 		self.vDevALARM = null;
 	}
-	self.log("warning", "Security_" + self.id + " Stopped", false);
+	self.log("warning", self.langFile.disabled, false);
 
 };
 /**
@@ -1020,7 +1020,6 @@ Security.prototype.initStates = function() {
 		self.vDev.set("metrics:level", 'off');
 		self.vDev.set("metrics:Rlevel", 'off');
 		self.vDev.set("metrics:Clevel", self.performEnum.COFF.name);
-		self.vDev.set("metrics:state", self.StateEnum.OFF);
 		self.endschedule();
 	}, function(args) {
 		self.schedule();
@@ -1037,14 +1036,14 @@ Security.prototype.initStates = function() {
 			// If Entrance Group not empty, so run the timer to ignore Entrance Group at start
 			if (self.entranceGroup.length > 0) {
 				console.log("--- Security. Arming without Entrance Group. Wait ",self.delayForEntranceGroup, " seconds for full arming");
-				self.timerAtStartForEntranceGroup = setTimeout(function () {
+				self.timerEntranceGroupAtStart = setTimeout(function () {
 					console.log("--- Security. Full Arming with Entrance Group");
 					self.vDev.set("metrics:level", 'on');
 					var triggeredDevice = self.triggeredAtStart();
 					if (triggeredDevice) {
 						self.vDev.performCommand(self.performEnum.TRIGGER.name, triggeredDevice);
 					}
-					self.timerAtStartForEntranceGroup = null;
+					self.timerEntranceGroupAtStart = null;
 				}, self.delayForEntranceGroup * 1000);
 			}
 			else {
@@ -1057,12 +1056,14 @@ Security.prototype.initStates = function() {
 			}
 		}
 		else {
-			console.log("--- Security. Arming Failed");
-			// Disarming
-			self.vDev.performCommand(self.performEnum.COFF.name);
-
+			var armFailureDevice = self.armFailureDatas.map(function(i) { return i.devices + " = " + i.level});
 			// Run Failed Arming Actions
 			self.shiftTriggerDevices(self.armFailureDatas, self.armFailureNots, 'disarm');
+			self.log("warning", self.langFile.arm_fail + armFailureDevice.toString() , false);
+
+			// Disarming TEST
+			self.vDev.set("metrics:level", 'off');
+			self.vDev.performCommand(self.performEnum.COFF.name);
 		}
 	}, function() {
 		//self.shiftTriggerDevices(self.disconfirmDatas, self.disconfirmNots, 'disarm');
@@ -1139,8 +1140,7 @@ Security.prototype.alarmTriggering = function(alarmMsg) {
  * @param alarmMsg
  */
 Security.prototype.silenttriggerFunction = function(alarmMsg) {
-	this.log("error", "ALARM silent " + "Security_" + this.id + " " + alarmMsg, false);
-
+	this.log("warning", this.langFile.alarm + alarmMsg, false);
 	this.shiftTriggerDevices(this.silentalarmDatas, this.silentalarmNots, 'arm');
 };
 /**
@@ -1148,7 +1148,7 @@ Security.prototype.silenttriggerFunction = function(alarmMsg) {
  * @param alarmMsg
  */
 Security.prototype.triggerFunction = function(alarmMsg) {
-	this.log("error", "ALARM " + "Security_" + this.id + " " + alarmMsg, false);
+	this.log("warning", this.langFile.alarm_with_delay + alarmMsg, false);
 	this.controller.emit("alarm", this);
 	this.vDevALARM.performCommand("on");
 
@@ -1295,12 +1295,13 @@ Security.prototype.makeReturnState = function(code, message) {
  */
 Security.prototype.log = function(level, message, stringify) {
 	var self = this;
+	var prefix = this.langFile.security;
 	if (stringify) {
-		self.controller.addNotification(level, JSON.stringify(message, null, 4), "module", "Security");
-		//console.log(JSON.stringify(message, null, 4));
+		self.controller.addNotification(level, prefix + JSON.stringify(message, null, 4), "module", "Security");
+		//console.log(prefix + JSON.stringify(message, null, 4));
 	} else {
-		self.controller.addNotification(level, message, "module", "Security");
-		//console.log(message);
+		self.controller.addNotification(level, prefix + message, "module", "Security");
+		//console.log(prefix + message);
 	}
 };
 
@@ -1341,7 +1342,6 @@ Security.prototype.alarmCancel = function() {
 	this.alarmSilenttimerS2 = null;
 	this.alarmtimerS2 = null;
 	this.doOnDeviceArray(this.alarmDatas, "off");
-	this.log("warning", "Security_" + "ALARM-END", false);
 	if (this.vDevALARM) {
 		this.vDevALARM.performCommand("on");
 	}
@@ -1358,13 +1358,18 @@ Security.prototype.alarmCancel = function() {
 Security.prototype.endschedule = function() {
 	var self = this;
 
-	if (this.alarmTimerEntranceGroup) {
-		clearTimeout(this.alarmTimerEntranceGroup);
-		this.alarmTimerEntranceGroup = null;
+	if (this.timerEntranceGroupAlarm) {
+		clearTimeout(this.timerEntranceGroupAlarm);
+		this.timerEntranceGroupAlarm = null;
 	}
-		if (this.timerAtStartForEntranceGroup) {
-		clearTimeout(this.timerAtStartForEntranceGroup);
-		this.timerAtStartForEntranceGroup = null;
+	if (this.timerEntranceGroupAtStart) {
+		clearTimeout(this.timerEntranceGroupAtStart);
+		this.timerEntranceGroupAtStart = null;
+	}
+
+	if (this.timerWaitDevicesAtStart) {
+		clearTimeout(this.timerWaitDevicesAtStart);
+		this.timerWaitDevicesAtStart = null;
 	}
 
 	this.cronListeningCollector.forEach(function(listenerName) {
