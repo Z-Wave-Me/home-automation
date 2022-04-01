@@ -20,7 +20,7 @@
 		"enableAPI": true,
 		"publicAPI": false,
 		"createVDev": true,
-		"enablePacketLog": true,
+		"enablePacketLog": "enable",
 		"config": "config",
 		"translations": "translations",
 		"ZDDX": "ZDDX"
@@ -49,8 +49,10 @@
 				"default": true
 			},
 			"enablePacketLog": {
-				"type": "boolean",
-				"default": true
+				"type": "string",
+				"required": true,
+				"enum": [ "enable", "runtime", "disable" ],
+				"default": "enable"
 			},
 			"config": {
 				"type": "string",
@@ -92,8 +94,9 @@
 				"helper": "__h_createVDev__"
 			},
 			"enablePacketLog": {
-				"type": "checkbox",
-				"rightLabel": "__rl_enablePacketLog__",
+				"label": "__l_enablePacketLog__",
+				"type": "select",
+				"optionLabels": [ "Enable and save in file", "Enable, but don't save", "Disable" ],
 				"helper": "__h_enablePacketLog__"
 			},
 			"config": {

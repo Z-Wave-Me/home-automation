@@ -57,7 +57,7 @@
 			"enableAPI": true,
 			"publicAPI": false,
 			"createVDev": true,
-			"enablePacketLog": false,
+			"enablePacketLog": "disable",
 			"config": "configs/config",
 			"translations": "translations",
 			"ZDDX": "ZDDX"

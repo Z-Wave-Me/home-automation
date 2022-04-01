@@ -295,7 +295,7 @@ ZWave.prototype.startBinding = function() {
 	this.parsedPackets = new LimitedArray(
 		self.loadObject("parsedPackets.json"),
 		function(arr) {
-			if (self.config.enablePacketLog !== false) {
+			if (self.config.enablePacketLog !== "runtime" && self.config.enablePacketLog !== "disable") {
 				self.saveObject("parsedPackets.json", arr);
 			}
 		},
@@ -310,7 +310,7 @@ ZWave.prototype.startBinding = function() {
 	this.originPackets = new LimitedArray(
 		self.loadObject("originPackets.json"),
 		function(arr) {
-			if (self.config.enablePacketLog !== false) {
+			if (self.config.enablePacketLog !== "runtime" && self.config.enablePacketLog !== "disable") {
 				self.saveObject("originPackets.json", arr);
 			}
 		},
@@ -494,11 +494,13 @@ ZWave.prototype.CommunicationLogger = function() {
 		self.parsedPackets.push(data);
 	};
 
-	// process incoming packages
-	this.zway.controller.data.incomingPacket.bind(inH);
-	// process outgoing packages
-	this.zway.controller.data.outgoingPacket.bind(outH);
-
+	if (this.config.enablePacketLog !== "disable") {
+		// process incoming packages
+		this.zway.controller.data.incomingPacket.bind(inH);
+		// process outgoing packages
+		this.zway.controller.data.outgoingPacket.bind(outH);
+	}
+	
 	// check if controller supports background rssi
 	if (this.zway.controller.data.capabilities.value.indexOf(59) > -1) {
 		// set timer that will request RSSI stats every 30 s
