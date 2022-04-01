@@ -1,3 +1,29 @@
+## 02.04.2022 v3.2.3
+New features:
+* API for local token generation
+* Allow disable packet log for slow systems or big networks
+* Added uuid, serial and mac fields to /system/info and /system/first-access API calls
+* HomeKitGate setting to allow remove phantom devices
+Improvements:
+* HomeKitGate 2.2.2
+* More commands available in EasyScripting
+* localGMT for getTime API
+* More events on Websoket API (profile and room changes/remove)
+Fixes:
+* Error on logout for local user
+* Security app fixes
+* Fixed default .syscommands on Linux
+* EasyScripting description fix
+* SwithcControlGenerator problem with Basic
+* Z-Wave binding stop abort on exception inside controller.device.remove
+* RGB color set
+* Remote Z-Way (ImportHA) RGBW control
+* Don't set Time to itself
+* Fixed DeviceHistory app
+* Postfixes:
+  * Philio PAT13 Temperature Sensor postfix AutoOff on the Alarm button, set Alarm On
+  * Tion 4S SwitchMultilevel.data.interviewDone
+
 ## 29.11.2021 v3.2.2
 New features:
 * Websocket API improved. Now requires same token as for HTTP API
