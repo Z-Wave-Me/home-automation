@@ -2027,7 +2027,7 @@ AutomationController.prototype.removeProfile = function(profileId) {
 AutomationController.prototype.removeToken = function(profile, token, skipSave) {
 	var indx = -1;
 	
-	if (!profile.authTokens) return false;
+	if (!profile || !profile.authTokens) return false;
 	
 	profile.authTokens.forEach(function(authToken, index) {
 		if (authToken.sid.substr(0, 6) === token.substr(0, 6)) {
