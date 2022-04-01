@@ -90,7 +90,11 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.post("/profiles/qrcode/:profile_id", this.ROLE.USER, this.getQRCodeString, [parseInt]);
 		this.router.del("/profiles/:profile_id/token/:token", this.ROLE.USER, this.removeToken, [parseInt, undefined]);
+
 		this.router.put("/profiles/:profile_id/token/:token", this.ROLE.USER, this.permanentToken, [parseInt, undefined]);
+
+		this.router.get("/profiles/token/local/:profile_id", this.ROLE.ADMIN, this.generateLocalAccessToken, [parseInt]);
+
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
 		this.router.get("/profiles/:profile_id", this.ROLE.USER, this.listProfiles, [parseInt]);
@@ -183,6 +187,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.post("/redirect", this.ROLE.ANONYMOUS, this.redirectURL);
 		
 		this.router.get("/demultiplex/:paths", this.ROLE.ANONYMOUS, this.demultiplex);
+
+		this.router.get('/expert/deviceDescription/:deviceId', this.ROLE.ADMIN, this.getDeviceDescription, [parseInt])
 	},
 
 	// Used by the android app to request server status
@@ -1989,6 +1995,30 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			reply.error = "Profile not found";
 		}
 
+		return reply;
+	},
+	/* Generating a local access token for the user. */
+	generateLocalAccessToken: function (profileId) {
+		var reply = {
+			error: null,
+			data: null,
+			code: 500
+		};
+		var profile = _.find(this.controller.profiles, function (_profile) {
+			return _profile.id === profileId;
+		});
+		if (profile) {
+			var sid = this.controller.auth.checkIn(profile, this.req, true);
+			var remoteId = this.controller.getRemoteId();
+			reply.code = 200;
+			reply.data =  {
+				token: sid,
+				remoteId: remoteId
+			}
+		} else {
+			reply.code = 404;
+			reply.error = "Profile not found";
+		}
 		return reply;
 	},
 	notificationFilteringGet: function() {
@@ -4001,7 +4031,7 @@ ZAutomationAPIWebRequest.prototype.reorderDevices = function() {
 	var reqObj = typeof this.req.body !== 'object' ? JSON.parse(this.req.body) : this.req.body;
 
 	var data = reqObj.data, // ordered list of devices
-		action = reqObj.action; // Dasboard, Elelements, Room(location)
+		action = reqObj.action; // Dashboard, Elements, Room(location)
 
 	if (self.controller.reoderDevices(data, action)) {
 		reply.error = "";
