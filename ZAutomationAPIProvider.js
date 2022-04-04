@@ -3228,7 +3228,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		reqObj = parseToObject(this.req.body);
 
-		data.tz = reqObj.time_zone;
+		data.tz = reqObj.timeZone;
 
 		var req = {
 			url: "http://localhost:8084/cgi-bin/main.cgi",
@@ -3258,7 +3258,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		} else {
 			// try another way
 			try {
-				if (system("sh automation/lib/timezone.sh setTZ " + reqObj.time_zone)[0] !== 0) {
+				if (system("sh automation/lib/timezone.sh setTZ " + reqObj.timeZone)[0] !== 0) {
 					throw "Failed to set timezone";
 				} else {
 					reply.code = 200;
