@@ -4849,6 +4849,13 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										}
 									} catch (e) {}
 								}, "value");
+								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "tonesNumber", function(type) {
+									try {
+										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+											self.controller.devices.remove(vDevId + separ + "0");
+										}
+									} catch (e) {}
+								}, "value");
 							}
 						}
 					})(toneId);
