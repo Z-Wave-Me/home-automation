@@ -3230,55 +3230,25 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		data.tz = reqObj.timeZone;
 
-		var req = {
-			url: "http://localhost:8084/cgi-bin/main.cgi",
-			method: "POST",
-			data: data
-		};
+		try {
+			if (system("sh automation/lib/timezone.sh setTZ " + reqObj.timeZone)[0] !== 0) {
+				throw "Failed to set timezone";
+			} else {
+				reply.code = 200;
 
-		// Set access for 10 seconds
-		saveObject('8084AccessTimeout', 10, true);
-		
-		var res = http.request(req);
-		
-		if (res.status === 200 || res.status === 303) {
-			reply.code = 200;
-			reply.data = res.statusText;
-
-			// reboot after 5 seconds
-			setTimeout(function() {
-				try {
-					console.log("Rebooting system ...");
-					system("reboot"); // reboot the box
-				} catch (e) {
-					self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "SetTimezone");
-				}
-			}, 5000);
-
-		} else {
-			// try another way
-			try {
-				if (system("sh automation/lib/timezone.sh setTZ " + reqObj.timeZone)[0] !== 0) {
-					throw "Failed to set timezone";
-				} else {
-					reply.code = 200;
-					
-					// reboot after 5 seconds
-					setTimeout(function() {
-						try {
-							console.log("Rebooting system ...");
-							system("reboot"); // reboot the box
-						} catch (e) {
-							self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "SetTimezone");
-						}
-					}, 5000);
-				}
-			} catch (e) {
-				reply.error = res.statusText + "; " + e.toString();
+				// reboot after 5 seconds
+				setTimeout(function() {
+					try {
+						console.log("Rebooting system ...");
+						system("reboot"); // reboot the box
+					} catch (e) {
+						self.controller.addNotification("error", langfile.zaap_err_reboot, "core", "SetTimezone");
+					}
+				}, 5000);
 			}
+		} catch (e) {
+			reply.error = res.statusText + "; " + e.toString();
 		}
-
-		saveObject('8084AccessTimeout', null, true);
 
 		return reply;
 	},
