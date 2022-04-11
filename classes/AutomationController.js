@@ -10,6 +10,9 @@
 function AutomationController() {
 	AutomationController.super_.call(this);
 
+
+	this.savePeriod = 60; // save objects and notifications period (in seconds): increase for slow SD cards
+	
 	this.config = config.controller || {};
 	this.debug = false;
 	this.availableLang = ['en', 'ru', 'de', 'sk', 'cz', 'se', 'fr', 'es']; // will be updated by correct ISO language codes in future
@@ -1462,7 +1465,7 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 		"order",
 		"visibility",
 		"hasHistory");
-	this.saveConfig(1 * 60); // save every minute
+	this.saveConfig(this.savePeriod);
 	return this.vdevInfo[id];
 };
 
@@ -1472,12 +1475,12 @@ AutomationController.prototype.clearVdevInfo = function(id) {
 };
 
 AutomationController.prototype.loadNotifications = function() {
-	//this.notifications = loadObject("notifications") || [];
-
+	var self = this;
+	
 	this.notifications = new LimitedArray(
 		loadObject("notifications") || [],
 		function(arr) {
-			saveObject('notifications', arr, 60);
+			saveObject('notifications', arr, self.savePeriod);
 		},
 		25, // check it every 25 notifications
 		2500, // save up to 2500 notifications
