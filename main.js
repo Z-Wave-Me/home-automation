@@ -70,9 +70,9 @@ saveObject = function(name, object, immediate) {
 		// restart the time with the new object and remaining time
 		__saveObjectTimer[name].object = object;
 		__saveObjectTimer[name].saver = function() {
-			saveObject(name, __saveObjectTimer[name].object);
 			__saveObjectTimer[name].timer = null;
 			__saveObjectTimer[name].saver = null;
+			saveObject(name, __saveObjectTimer[name].object, true); // call itself
 		};
 		__saveObjectTimer[name].timer = setTimeout(__saveObjectTimer[name].saver, deferTime);
 		
