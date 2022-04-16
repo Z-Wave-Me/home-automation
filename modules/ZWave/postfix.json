@@ -1998,7 +1998,7 @@
 		"author": "RS",
 		"tester": "RS",
 		"tester_last_update": "2017-03-16 16:17:49",
-		"commentary": "RS: sceneSupport, discreteStateEAN: 0696859123726",
+		"commentary": "RS: scenesSupport, discreteState, EAN: 0696859123726",
 		"created": "2017-03-16 16:17:49"
 	}, {
 		"id": "160",
@@ -2029,7 +2029,7 @@
 		"author": "RS",
 		"tester": "RS",
 		"tester_last_update": "2017-03-16 16:29:50",
-		"commentary": "NIR: add scene support; RS: discreteStateEAN: 0019962009303",
+		"commentary": "NIR: add scene support; RS: discreteState, EAN: 0019962009303",
 		"created": "2017-03-16 16:29:50"
 	}, {
 		"id": "161",
@@ -2195,7 +2195,7 @@
 		"author": "SP",
 		"tester": "SP",
 		"tester_last_update": "2017-05-09 11:09:56",
-		"commentary": "NIR: add scene support; RS: discreteStateEAN: 0019962008504",
+		"commentary": "NIR: add scene support; RS: discreteState, EAN: 0019962008504",
 		"created": "2017-05-09 11:09:56"
 	}, {
 		"id": "170",

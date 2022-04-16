@@ -4101,7 +4101,6 @@ ZWave.prototype.gateDevicesStart = function() {
 												devICC = instanceId + '-' + commandClassId;
 
 											if (splittedEntry.length > 0) {
-
 												switch (splittedEntry[0]) {
 													case 'rename':
 													case 'hide':
