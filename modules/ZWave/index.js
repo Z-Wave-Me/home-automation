@@ -3817,9 +3817,10 @@ ZWave.prototype.gateDevicesStart = function() {
 					// add SwitchController support by entering (runs once after inclusion):
 					// instId ... instance ID
 					// commandClass ... Command Class ID
-					// maxBtnNr ... maximum number of widgets that should / could be rendered
+					// minBtnNr ... starting button number
+					// maxBtnNr ... maximum button number
 					// type ... 'S' for 'scene' and 'B' for 'button' or 'switchControl'
-					function sceneSupport(instId, commandClass, maxBtnNr, type) {
+					function scenesSupport(instId, commandClass, minBtnNr, maxBtnNr, type) {
 						var trapArray = [],
 							commandClass = commandClass || null;
 
@@ -3827,11 +3828,12 @@ ZWave.prototype.gateDevicesStart = function() {
 							return instance.moduleId === 'SwitchControlGenerator';
 						});
 						if (instId === instanceId && commandClassId === commandClass && deviceCC && c.data.lastIncludedDevice.value === nodeId) {
-							maxBtnNr = (deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr ? deviceCC.data.maxScenes.value : maxBtnNr) || 0
+							maxBtnNr = (deviceCC.data.maxScenes && deviceCC.data.maxScenes.value && deviceCC.data.maxScenes.value <= maxBtnNr ? deviceCC.data.maxScenes.value : maxBtnNr) || 0
 
 							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
-								for (i = 1; i <= maxBtnNr; i++) {
+								for (i = minBtnNr; i <= maxBtnNr; i++) {
 									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
+									console.logJS(i, minBtnNr, maxBtnNr);
 
 									// console output
 									console.log('#######################', 'ADD SWITCHCONTROLGENERATOR SUPPORT TO #' + nodeId, '###############################');
