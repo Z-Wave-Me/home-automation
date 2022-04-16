@@ -1976,7 +1976,6 @@ ZWave.prototype.defineHandlers = function() {
 		};
 
 		if (d.instances[0].Association) {
-			console.logJS(zddx.root.children);
 			zddx.root.insertChild({
 				"name": "assocGroups",
 				"children": (function(data) {
@@ -2002,7 +2001,6 @@ ZWave.prototype.defineHandlers = function() {
 					return Assocs;
 				})(d.instances[0].Association.data)
 			});
-			console.logJS(zddx.root.children);
 		}
 
 		return {
@@ -4134,18 +4132,13 @@ ZWave.prototype.gateDevicesStart = function() {
 																action: splittedEntry[4] ? splittedEntry[4] : undefined,
 																type: splittedEntry[5] ? splittedEntry[5] : undefined
 															};
-															//console.log('discreteState',splittedEntry[3]);
-															//console.log('changeVDev',JSON.stringify(changeVDev, null, 4));
 														}
 
 														break;
 													case 'noVDev':
-
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
-
 															var nId = nodeId + '-' + splittedEntry[1];
 
-															//add devId
 															//add devId
 															if (!changeVDev[nId]) {
 																changeVDev[nId] = {};
