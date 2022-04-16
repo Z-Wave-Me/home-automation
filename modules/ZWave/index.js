@@ -58,6 +58,7 @@ function ZWave(id, controller) {
 		"Battery": 0x80,
 		"DeviceResetLocally": 0x5a,
 		"BarrierOperator": 0x66,
+		"Configuration": 0x70,
 		"Wakeup": 0x84
 	};
 
@@ -1981,7 +1982,6 @@ ZWave.prototype.defineHandlers = function() {
 		};
 
 		if (d.instances[0].Association) {
-			console.logJS(zddx.root.children);
 			zddx.root.insertChild({
 				"name": "assocGroups",
 				"children": (function(data) {
@@ -2007,7 +2007,6 @@ ZWave.prototype.defineHandlers = function() {
 					return Assocs;
 				})(d.instances[0].Association.data)
 			});
-			console.logJS(zddx.root.children);
 		}
 
 		return {
@@ -4139,18 +4138,13 @@ ZWave.prototype.gateDevicesStart = function() {
 																action: splittedEntry[4] ? splittedEntry[4] : undefined,
 																type: splittedEntry[5] ? splittedEntry[5] : undefined
 															};
-															//console.log('discreteState',splittedEntry[3]);
-															//console.log('changeVDev',JSON.stringify(changeVDev, null, 4));
 														}
 
 														break;
 													case 'noVDev':
-
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
-
 															var nId = nodeId + '-' + splittedEntry[1];
 
-															//add devId
 															//add devId
 															if (!changeVDev[nId]) {
 																changeVDev[nId] = {};
@@ -4176,6 +4170,27 @@ ZWave.prototype.gateDevicesStart = function() {
 															}
 
 															changeVDev[nId].emulateOff = splittedEntry[2];
+														}
+
+														break;
+													case 'configVDev':
+														// configVDev, i, cfg#, type, func1, func2
+														if (splittedEntry[1] && splittedEntry[2] && splittedEntry[3] && splittedEntry[4] && splittedEntry[5]) {
+															var nId = nodeId + '-' + splittedEntry[1] + '-112';
+
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
+															}
+
+															if (!changeVDev[nId]['configVDev']) {
+																changeVDev[nId]['configVDev'] = {};
+															}
+
+															changeVDev[nId]['configVDev'][splittedEntry[2]] = {
+																type: splittedEntry[3],
+																p2v: splittedEntry[4],
+																v2p: splittedEntry[5]
+															};
 														}
 
 														break;
@@ -6157,6 +6172,75 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					} catch (e) {}
 				}, "value");
 			}
+		} else if (this.CC["Configuration"] === commandClassId) {
+			if (changeVDev[changeDevId]) {
+				Object.keys(changeVDev[changeDevId]['configVDev']).forEach(function(param) {
+					var vDevIdParam = vDevId + '-' + param,
+					    vDevConfig = changeVDev[changeDevId]['configVDev'][param];
+					
+					if (!self.controller.devices.get(vDevIdParam)) {
+						var icon, probeType;
+						
+						if (vDevConfig.type == "switchBinary") {
+							defaults = {
+								title: "Config #" + param,
+								deviceType: "switchBinary",
+								probeType: "switch",
+								metrics: {
+									icon: "switch",
+									isFailed: false
+								}
+							};
+						} else if (vDevConfig.type == "switchMultilevel") {
+							defaults = {
+								title: "Config #" + param,
+								deviceType: "switchMultilevel",
+								probeType: "multilevel",
+								metrics: {
+									icon: "multilevel",
+									isFailed: false
+								}
+							};
+						} else {
+							self.addNotification("error", "Unknown vDev type for config parameter " + param, "module");
+							return;
+						}
+						
+						eval('vDevConfig.v2p_script = function(command, args, vdev) { "use strict";' + vDevConfig.v2p + '};');
+						eval('vDevConfig.p2v_script = function(value) { "use strict";' + vDevConfig.p2v + '};');
+						
+						var vDev = self.controller.devices.create({
+							deviceId: vDevIdParam,
+							defaults: defaults,
+							overlay: {},
+							handler: function(command, args) {
+								if ("update" === command) {
+									cc.Get(param);
+								} else {
+									var val = vDevConfig.v2p_script(command, args, vDev);
+									if (val !== null && val !== undefined) {
+										cc.Set(param, val);
+									}
+								}
+							},
+							moduleId: self.id
+						});
+						
+						if (vDev) {
+							vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+							self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, param + ".val", function(type) {
+								try {
+									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+										self.controller.devices.remove(vDevIdParam);
+									} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+										vDev.set("metrics:level", vDevConfig.p2v_script(this.value));
+									}
+								} catch (e) {}
+							}, "value");
+						}
+					}
+				});
+			}
 		} else if (this.CC["DeviceResetLocally"] === commandClassId) {
 			self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "reset", function(type) {
 				if (this.value) {
@@ -6170,7 +6254,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 
 		this.addNotification("error", langFile.err_dev_create + values, "core");
-		console.log(e.toString());
+		console.log(e.stack);
 	}
 };
 
