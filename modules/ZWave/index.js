@@ -6241,7 +6241,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			values = nodeId + "-" + instanceId + "-" + commandClassId + ": " + e.toString();
 
 		this.addNotification("error", langFile.err_dev_create + values, "core");
-		console.log(e.toString());
+		console.log(e.stack);
 	}
 };
 
