@@ -5616,7 +5616,7 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": [
-			"setDeviceData('acceptSetSecurityLevel', 'value', 0)",
+			"scenesSupport(0,148,2,3,'S')",
 			"emulateOff,0-113-10-3,10000"
 		],
 		"author_last_update": "2020-11-08 18:46:50",
