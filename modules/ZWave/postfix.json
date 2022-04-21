@@ -5616,6 +5616,7 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": [
+			"setDeviceData('acceptSetSecurityLevel', 'value', 0x80)",
 			"scenesSupport(0,148,2,3,'S')",
 			"emulateOff,0-113-10-3,10000"
 		],
