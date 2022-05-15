@@ -44,7 +44,7 @@ EasyScripting.prototype.init = function (config) {
 		return;
 	}
 	
-	this.onEvent = function() {
+	this.onEvent = function(trigger) {
 		if (self.running) {
 			self.addNotification("error", "Loop detected", "module");
 			return;
@@ -52,6 +52,7 @@ EasyScripting.prototype.init = function (config) {
 		
 		try {
 			self.running = true;
+			self.trigger = trigger;
 			
 			// make sure to hide outer scope variables and global variables
 			var _script = self.script;
@@ -63,9 +64,17 @@ EasyScripting.prototype.init = function (config) {
 		}
 	};
 
+	// event handlers for each vDevId
+	self.eventHandlers = [];
+
 	this.events.forEach(function(vDevId) {
 		try {
-			self.controller.devices.on(vDevId, "change:metrics:level", self.onEvent);
+			var onEvent = self.eventHandlers[vDevId];
+			if (!onEvent) {
+				onEvent = function() { self.onEvent(vDevId); };
+				self.eventHandlers[vDevId] = onEvent;
+			}
+			self.controller.devices.on(vDevId, "change:metrics:level", onEvent);
 		} catch(e) {
 			self.addNotification("error", e.toString(), "module");
 		}
@@ -79,7 +88,9 @@ EasyScripting.prototype.stop = function () {
 	
 	this.events.forEach(function(vDevId) {
 		try {
-			self.controller.devices.off(vDevId, "change:metrics:level", self.onEvent);
+			var onEvent = self.eventHandlers[vDevId];
+			if (onEvent)
+				self.controller.devices.off(vDevId, "change:metrics:level", onEvent);
 		} catch(e) {
 		}
 	});
