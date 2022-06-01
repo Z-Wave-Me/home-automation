@@ -1,7 +1,7 @@
 /*** Security Z-Way HA module *******************************************
 
- Version: 2.0
- (c) Z-Wave.Me, 2021
+ Version: 2.1
+ (c) Z-Wave.Me, 2022
  -----------------------------------------------------------------------------
  Author: Karsten Reichel <kar@zwave.eu>, Yurkin Vitaliy <aivs@z-wave.me>
  Description: Basic Security Module
@@ -1039,6 +1039,7 @@ Security.prototype.initStates = function() {
 				self.timerEntranceGroupAtStart = setTimeout(function () {
 					console.log("--- Security. Full Arming with Entrance Group");
 					self.vDev.set("metrics:level", 'on');
+					self.vDev.set("metrics:Clevel", self.performEnum.CON.name);
 					var triggeredDevice = self.triggeredAtStart();
 					if (triggeredDevice) {
 						self.vDev.performCommand(self.performEnum.TRIGGER.name, triggeredDevice);
@@ -1049,6 +1050,7 @@ Security.prototype.initStates = function() {
 			else {
 				console.log("--- Security. Full Arming with Entrance Group");
 				self.vDev.set("metrics:level", 'on');
+				self.vDev.set("metrics:Clevel", self.performEnum.CON.name);
 				var triggeredDevice = self.triggeredAtStart();
 				if (triggeredDevice) {
 					self.vDev.performCommand(self.performEnum.TRIGGER.name, triggeredDevice);
