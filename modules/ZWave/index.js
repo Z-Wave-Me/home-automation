@@ -5983,7 +5983,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						eventMaskArray.forEach(function(eventTypeId) {
 
 							eventTypeId = parseInt(eventTypeId, 10);
-
+							
+							if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1) && (eventTypeId === DOOR_OPEN || eventTypeId === DOOR_CLOSE)) return; // it was handled above                         
+							if (notificationTypeId === 0x08 && (eventMaskArray.indexOf(AC_DISCONNECTED) !== -1 && eventMaskArray.indexOf(AC_RECONNECTED) !== -1) && (eventTypeId === AC_DISCONNECTED || eventTypeId === AC_RECONNECTED)) return; // it was handled above
+							
 							var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
 
 							if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
