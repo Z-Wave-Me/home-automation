@@ -5887,7 +5887,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 															(
 																this.event.value === eventTypeId
 																||
-																this.event.value === 0
+																this.event.value === 0 && (this.eventParameters.value === null || this.eventParameters.value.length === 0 || this.eventParameters.value[0] === eventTypeId) // react on idle w/o params or on idle w/ our param only
 															)
 															&&
 															(
@@ -5964,7 +5964,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 												(
 													this.event.value === eventTypeId
 													||
-													this.event.value === 0
+													this.event.value === 0 && (this.eventParameters.value === null || this.eventParameters.value.length === 0 || this.eventParameters.value[0] === eventTypeId) // react on idle w/o params or on idle w/ our param only
 												)
 												&&
 												(
