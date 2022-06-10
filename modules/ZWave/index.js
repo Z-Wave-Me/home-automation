@@ -4276,7 +4276,7 @@ ZWave.prototype.addVDevInfo = function(info, nodeId, smartStartEntryPreset) {
 	_.extend(info, {
 		technology: "Z-Wave",
 		manufacturer: this.zway.devices[nodeId].data.vendorString.value || "",
-		product: this.zway.devices[nodeId].data.productString.value || "",
+		product: "",
 		firmware: (this.zway.devices[nodeId].data.applicationMajor.value + "." + this.zway.devices[nodeId].data.applicationMinor.value) || "",
 		location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location) ? smartStartEntryPreset.location : 0,
 	});

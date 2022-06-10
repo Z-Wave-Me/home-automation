@@ -23,7 +23,7 @@ VirtualDevice = function (options) {
                 technology: "Virtual",
                 manufacturer: "Z-Wave.Me",
                 product: "Virtual device",
-                firmware: zwayVersion.release
+                firmware: ""
 	});
 	
 	_.extend(this, options, {
