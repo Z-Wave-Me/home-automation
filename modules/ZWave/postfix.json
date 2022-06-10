@@ -5617,14 +5617,14 @@
 		"preInterview": [],
 		"postInterview": [
 			"setDeviceData('acceptSetSecurityLevel', 'value', 0x80)",
-			"scenesSupport(0,148,2,3,'S')",
+			"scenesSupport(0,133,2,3,'S')",
 			"emulateOff,0-113-10-3,10000"
 		],
 		"author_last_update": "2020-11-08 18:46:50",
 		"author": "PS",
 		"tester": "PS",
 		"tester_last_update": "2020-11-08 18:46:50",
-		"commentary": "AutoOff on the Alarm button and Allow less secure Set",
+		"commentary": "AutoOff on the Alarm button and Allow less secure Set, create the button on Association completion",
 		"created": "2020-11-08 18:46:50"
 	}, {
 		"id": "363",
