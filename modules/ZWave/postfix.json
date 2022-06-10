@@ -5644,5 +5644,93 @@
 		"tester_last_update": "2020-11-08 18:46:50",
 		"commentary": "Removed extra widgets",
 		"created": "2020-11-08 18:46:50"
+	}, {
+		"id": "364",
+		"p_id": "277.256.2304",
+		"p_sku": "ZME_TION3S",
+		"product": "Tion 3S",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"renameNode,Tion 3S",
+			"noVDev,0-37",
+			"rename,0-49-1,Tion Temperature",
+			"rename,0-64,Tion Heat operation",
+			"rename,0-67-1,Tion Thermostat Heat",
+			"rename,0-38,Tion Fan Speed",
+			"rename,1-37,Tion On/Off",
+			"rename,2-37,Tion Recycling/Input Ventilation"
+		],
+		"author_last_update": "2021-02-19 17:00:00",
+		"author": "SMR",
+		"tester": "SMR",
+		"tester_last_update": "2021-02-19 17:00:00",
+		"commentary": "Removed extra widgets, rename",
+		"created": "2021-02-19 17:00:00"
+	 },{
+		"id": "365",
+		"p_id": "277.256.2320",
+		"p_sku": "ZME_TION4S",
+		"product": "Tion 4S",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"renameNode,Tion 4S",
+			"noVDev,0-37",
+			"noVDev,0-38",
+			"noVDev,0-49-1",
+			"rename,0-64,Tion Heat operation",
+			"rename,0-67-1,Tion Heat",
+			"rename,1-37,Tion On/Off",
+			"rename,2-37,Tion Recycling/Input Ventilation",
+			"rename,3-38,Tion Fan Speed",
+			"rename,4-49-1,Tion Inflow Temperature",
+			"rename,5-49-1,Tion Out Temperature",
+			"if (self.zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value == false) {self.zway.devices[nodeId].SwitchMultilevel.data.interviewDone.value = true}"
+		],
+		"author_last_update": "2021-04-12 17:00:00",
+		"author": "SMR",
+		"tester": "SMR",
+		"tester_last_update": "2021-04-12 17:00:00",
+		"commentary": "Removed extra widgets, rename",
+		"created": "2021-02-19 17:00:00"
+	},{
+                "id": "367",
+                "p_id": "316.2.123",
+                "p_sku": "PAT13",
+                "product": "Philio PAT13",
+                "apply_postfix": "1",
+                "preInterview": [],
+                "postInterview": [
+                        "renameNode,Philio PAT13 Temperature Sensor",
+                        "emulateOff,0-113-7-3,10000",
+                        "if (self.zway.devices[nodeId].Alarm.data[7].status.value == null) {self.zway.devices[nodeId].Alarm.Set(7,255);}"
+                ],
+                "author_last_update": "2022-01-14 18:46:50",
+                "author": "AIVS",
+                "tester": "AIVS",
+                "tester_last_update": "2022-01-14 18:46:50",
+                "commentary": "AutoOff on the Alarm button, set Alarm On",
+                "created": "2022-01-14 18:46:50"
+	}, {
+		"id": "368",
+		"p_id": "1043.4.3",
+		"p_sku": "RehauSmartGuad",
+		"product": "Rehau Smart Guard",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"tilt,0-113-6",
+			"notificationStatus,0-113-7",
+			"configVDev,0,3,switchBinary,return value?'on':'off',return command=='on'?1:0,PIR High Sensitivity",
+			"configVDev,0,6,switchBinary,return value?'on':'off',return command=='on'?1:0,Pre Alarm Activated",
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Wakeup){self.zway.devices[nodeId].Wakeup.Set(self.zway.controller.data.nodeId.value,120);}"
+		],
+		"author_last_update": "2022-06-10 18:46:50",
+		"author": "PS",
+		"tester": "PS",
+		"tester_last_update": "2022-06-10 18:46:50",
+		"commentary": "Tilt, Config #6 VDev",
+		"created": "2022-06-10 18:46:50"
 	}]
 }
