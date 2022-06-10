@@ -4175,7 +4175,7 @@ ZWave.prototype.gateDevicesStart = function() {
 
 														break;
 													case 'configVDev':
-														// configVDev, i, cfg#, type, func1, func2
+														// configVDev, i, cfg#, type, func1, func2, title
 														if (splittedEntry[1] && splittedEntry[2] && splittedEntry[3] && splittedEntry[4] && splittedEntry[5]) {
 															var nId = nodeId + '-' + splittedEntry[1] + '-112';
 
@@ -4190,7 +4190,8 @@ ZWave.prototype.gateDevicesStart = function() {
 															changeVDev[nId]['configVDev'][splittedEntry[2]] = {
 																type: splittedEntry[3],
 																p2v: splittedEntry[4],
-																v2p: splittedEntry[5]
+																v2p: splittedEntry[5],
+																title: splittedEntry[6] || ('Config #' + splittedEntry[2])
 															};
 														}
 
@@ -6186,20 +6187,20 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						
 						if (vDevConfig.type == "switchBinary") {
 							defaults = {
-								title: "Config #" + param,
 								deviceType: "switchBinary",
 								probeType: "switch",
 								metrics: {
+									title: vDevConfig.title,
 									icon: "switch",
 									isFailed: false
 								}
 							};
 						} else if (vDevConfig.type == "switchMultilevel") {
 							defaults = {
-								title: "Config #" + param,
 								deviceType: "switchMultilevel",
 								probeType: "multilevel",
 								metrics: {
+									title: vDevConfig.title,
 									icon: "multilevel",
 									isFailed: false
 								}
