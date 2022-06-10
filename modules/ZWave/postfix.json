@@ -5722,7 +5722,7 @@
 		"postInterview": [
 			"tilt,0-113-6",
 			"notificationStatus,0-113-7",
-			"configVDev,0,3,switchBinary,return value?'on':'off',return command=='on'?1:0,PIR High Sensitivity",
+			"configVDev,0,3,switchBinary,return value?'off':'on',return command=='on'?0:1,PIR High Sensitivity",
 			"configVDev,0,6,switchBinary,return value?'on':'off',return command=='on'?1:0,Pre Alarm Activated",
 			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Wakeup){self.zway.devices[nodeId].Wakeup.Set(self.zway.controller.data.nodeId.value,120);}"
 		],
