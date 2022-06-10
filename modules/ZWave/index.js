@@ -6288,6 +6288,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						eval('vDevConfig.v2p_script = function(command, args, vdev) { "use strict";' + vDevConfig.v2p + '};');
 						eval('vDevConfig.p2v_script = function(value) { "use strict";' + vDevConfig.p2v + '};');
 						
+						if (!cc.data[param] || !cc.data[param].size.value) { // make sure the size of the parameter is known, so Set works
+							cc.Get(param);
+						}
+
 						var vDev = self.controller.devices.create({
 							deviceId: vDevIdParam,
 							defaults: defaults,
