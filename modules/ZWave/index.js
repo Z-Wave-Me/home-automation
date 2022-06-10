@@ -5879,7 +5879,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
 											} else if (
-												(this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE) &&
+												(this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE)
+												&&
 												!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
 											) {
 												
@@ -5907,7 +5908,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						}
 
 						var AC_DISCONNECTED = 0x02,
-							AC_RECONNECTED = 0x03;
+						    AC_RECONNECTED = 0x03;
 						if (notificationTypeId === 0x08 && (eventMaskArray.indexOf(AC_DISCONNECTED) !== -1 && eventMaskArray.indexOf(AC_RECONNECTED) !== -1)) { // Very special case of AC Disconnected
 							setProbeTypeAndIcon(a_defaults, notificationTypeId, AC_DISCONNECTED);
 							
