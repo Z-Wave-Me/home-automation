@@ -6218,7 +6218,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							defaults: defaults,
 							overlay: {},
 							handler: function(command, args) {
-								if ("update" === command) {
+								if ("update" === command || !cc.data[param] || !cc.data[param].size.value) { // make sure the size of the parameter is known, so Set works
 									cc.Get(param);
 								} else {
 									var val = vDevConfig.v2p_script(command, args, vDev);
