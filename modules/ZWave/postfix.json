@@ -5616,14 +5616,15 @@
 		"apply_postfix": "1",
 		"preInterview": [],
 		"postInterview": [
-			"scenesSupport(0,148,2,3,'S')",
+			"setDeviceData('acceptSetSecurityLevel', 'value', 0x80)",
+			"scenesSupport(0,133,2,3,'S')",
 			"emulateOff,0-113-10-3,10000"
 		],
 		"author_last_update": "2020-11-08 18:46:50",
 		"author": "PS",
 		"tester": "PS",
 		"tester_last_update": "2020-11-08 18:46:50",
-		"commentary": "AutoOff on the Alarm button and Allow less secure Set",
+		"commentary": "AutoOff on the Alarm button and Allow less secure Set, create the button on Association completion",
 		"created": "2020-11-08 18:46:50"
 	}, {
 		"id": "363",
@@ -5711,5 +5712,25 @@
                 "tester_last_update": "2022-01-14 18:46:50",
                 "commentary": "AutoOff on the Alarm button, set Alarm On",
                 "created": "2022-01-14 18:46:50"
-        }]
+	}, {
+		"id": "368",
+		"p_id": "1043.4.3",
+		"p_sku": "RehauSmartGuad",
+		"product": "Rehau Smart Guard",
+		"apply_postfix": "1",
+		"preInterview": [],
+		"postInterview": [
+			"tilt,0-113-6",
+			"notificationStatus,0-113-7",
+			"configVDev,0,3,switchBinary,return value?'on':'off',return command=='on'?1:0,PIR High Sensitivity",
+			"configVDev,0,6,switchBinary,return value?'on':'off',return command=='on'?1:0,Pre Alarm Activated",
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Wakeup){self.zway.devices[nodeId].Wakeup.Set(self.zway.controller.data.nodeId.value,120);}"
+		],
+		"author_last_update": "2022-06-10 18:46:50",
+		"author": "PS",
+		"tester": "PS",
+		"tester_last_update": "2022-06-10 18:46:50",
+		"commentary": "Tilt, Config #6 VDev",
+		"created": "2022-06-10 18:46:50"
+	}]
 }

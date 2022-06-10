@@ -8,7 +8,7 @@
   "homepage": "http://razberry.z-wave.me",
   "icon": "icon.png",
   "moduleName": "Security",
-  "version": "2.0",
+  "version": "2.1",
   "maturity": "stable",
   "repository": {
     "type": "git",
