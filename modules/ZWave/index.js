@@ -5666,7 +5666,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								case 0x07: // Home Security (Burglar)
 									a_defaults.metrics.icon = 'alarm_burglar';
 									a_defaults.probeType = a_defaults.metrics.icon;
-									console.log("!!!! setProbeTypeAndIcon", notificationTypeId, eventTypeId);
 									switch (eventTypeId) {
 										case 0x07:
 										case 0x08:
