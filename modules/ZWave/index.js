@@ -5936,8 +5936,11 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 											try {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Power' + separ + "A");
-												} else if (this.event.value === AC_DISCONNECTED || this.event.value === AC_RECONNECTED &&
-													(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+												} else if (
+													(this.event.value === AC_DISCONNECTED || this.event.value === AC_RECONNECTED)
+													&&
+													(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))
+												) {
 													a_vDev.set("metrics:level", (this.event.value == AC_DISCONNECTED) ? "on" : "off");
 												}
 											} catch (e) {}
@@ -5988,10 +5991,18 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 													try {
 														if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 															self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
-														} else if (this.event.value === eventTypeId || this.event.value === 0 &&
-															(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+														} else if (
+															(
+																this.event.value === eventTypeId
+																||
+																this.event.value === 0
+															)
+															&&
+															(
+																!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
+															)
+														) {
 															if (a_vDev.__emulateOff_timeout) {
-															l1
 																if (this.event.value) {
 																	if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
 																		a_vDev.set("metrics:level", "on");
@@ -6057,8 +6068,17 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										try {
 											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
-											} else if (this.event.value === eventTypeId || this.event.value === 0 &&
-												(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+											} else if (
+												(
+													this.event.value === eventTypeId
+													||
+													this.event.value === 0
+												)
+												&&
+												(
+													!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
+												)
+											) {
 												if (a_vDev.__emulateOff_timeout) {
 													if (this.event.value) {
 														if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
