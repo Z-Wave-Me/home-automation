@@ -4100,6 +4100,19 @@ ZWave.prototype.gateDevicesStart = function() {
 														}
 
 														break;
+													case 'tilt':
+														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
+															var nId = nodeId + '-' + splittedEntry[1];
+															
+															//add devId
+															if (!changeVDev[nId]) {
+																changeVDev[nId] = {};
+															}
+														
+															changeVDev[nId].tilt = true;
+														}
+														
+														break;
 													default:
 														eval(entry);
 												}
@@ -5624,6 +5637,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								a_defaults.probeType = 'alarm_door';
 
 								if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								var postfix_tilt_requested = changeVDev[cVDId] && changeVDev[cVDId].tilt;
 
 								var a_vDev = self.controller.devices.create({
 									deviceId: a_id,
@@ -5659,7 +5673,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										moduleId: self.id
 									});
 								}
-								if (Object.keys(self.controller.getVdevInfo(a_id_tilt)).length) {
+								if (Object.keys(self.controller.getVdevInfo(a_id_tilt)).length || postfix_tilt_requested) {
 									// add Tilt vDev if it was previously created and saved
 									a_vDev_tilt = createTiltVDev(a_id_tilt);
 								}
