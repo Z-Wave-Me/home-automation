@@ -5724,7 +5724,7 @@
 			"notificationStatus,0-113-7",
 			"configVDev,0,3,switchBinary,return value?'off':'on',return command=='on'?0:1,PIR High Sensitivity",
 			"configVDev,0,6,switchBinary,return value?'on':'off',return command=='on'?1:0,Pre Alarm Activated",
-			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Wakeup){self.zway.devices[nodeId].Wakeup.Set(self.zway.controller.data.nodeId.value,120);}"
+			"if(commandClassId==0x84 && self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Wakeup){self.zway.devices[nodeId].Wakeup.Set(120,self.zway.controller.data.nodeId.value);}"
 		],
 		"author_last_update": "2022-06-10 18:46:50",
 		"author": "PS",
