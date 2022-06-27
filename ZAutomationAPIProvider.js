@@ -93,7 +93,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.put("/profiles/:profile_id/token/:token", this.ROLE.USER, this.permanentToken, [parseInt, undefined]);
 
-		this.router.get("/profiles/token/local/:profile_id", this.ROLE.ADMIN, this.generateLocalAccessToken, [parseInt]);
+		this.router.get("/profiles/token/local/:profile_id", this.ROLE.USER, this.generateLocalAccessToken, [parseInt]);
 
 		this.router.del("/profiles/:profile_id", this.ROLE.ADMIN, this.removeProfile, [parseInt]);
 		this.router.put("/profiles/:profile_id", this.ROLE.USER, this.updateProfile, [parseInt]);
