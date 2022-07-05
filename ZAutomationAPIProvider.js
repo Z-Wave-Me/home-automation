@@ -1523,7 +1523,8 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 				hide_all_device_events: false,
 				hide_system_events: false,
 				hide_single_device_events: [],
-				skin: ''
+				skin: '',
+				night_mode: false,
 			});
 
 			// skip OAuth2 and other metadata

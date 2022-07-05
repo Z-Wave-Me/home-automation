@@ -528,6 +528,7 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 			console.log(e.stack);
 			return null; // not loaded
 		}
+		self.registerInstance(instance);
 	}
 
 	// add module to loaded modules if at least one instance exists
@@ -535,7 +536,6 @@ AutomationController.prototype.instantiateModule = function(instanceModel) {
 		this.loadedModules.push(module);
 	}
 
-	self.registerInstance(instance);
 	return instance;
 };
 
