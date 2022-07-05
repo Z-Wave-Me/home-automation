@@ -342,8 +342,27 @@ ZWave.prototype.startBinding = function() {
 		}
 		
 	}
-	
 	this.zway.controller.data.hardware.uartSpeed.bind(uartSpeed);
+	
+	var firmwareFaultNotify = function() {
+		if (this.value != 0) {
+			http.request({
+				url: "https://service.z-wave.me/expertui/firmware-faults/",
+				async: true,
+				method: 'POST',
+				data: {
+					uuid: self.zway.controller.data.uuid.value,
+					build: this.build.value,
+					code: this.value,
+					scb: this.scb.value.map(function(v) { return v.toString(16); }).join(""),
+					reg: this.reg.value.map(function(v) { return v.toString(16); }).join(""),
+					stack: this.stack.value.map(function(v) { return v.toString(16); }).join(""),
+					zway: self.zway.controller.data.softwareRevisionVersion.value
+				}
+			});
+		}
+	};
+	this.zway.controller.data.firmware.fault.bind(firmwareFaultNotify);
 };
 
 ZWave.prototype.stop = function() {
