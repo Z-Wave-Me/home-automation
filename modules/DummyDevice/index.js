@@ -1,7 +1,7 @@
 /*** DummyDevice Z-Way HA module *******************************************
 
-Version: 1.1.1
-(c) Z-Wave.Me, 2017
+Version: 1.2.0
+(c) Z-Wave.Me, 2022
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Ray Glendenning <ray.glendenning@gmail.com>
 Description:
@@ -31,17 +31,47 @@ DummyDevice.prototype.init = function (config) {
 	var lastLevel = loadObject("DummyDevice_" + this.id + "_level");
 
 	var self = this,
-		icon = "",
-		level = "",
-		deviceType = this.config.deviceType;
+		deviceType,
+		probeType,
+		icon,
+		level,
+		configType = this.config.deviceType;
 		
-	switch(deviceType) {
+	switch(configType) {
 		case "switchBinary":
+			deviceType = "switchBinary";
+			probeType = "switch";
 			icon = "switch";
 			level = lastLevel || "off";
 			break;
+		case "switchBinarySiren":
+			deviceType = "switchBinary";
+			probeType = "siren"
+			icon = "siren";
+			level = lastLevel || "off";
+			break;
+		case "switchBinaryValve":
+			deviceType = "switchBinary";
+			probeType = "valve"
+			icon = "valve";
+			level = lastLevel || "off";
+			break;
+		case "doorlock":
+			deviceType = "doorlock";
+			probeType = "";
+			icon = "door";
+			level = lastLevel || "close";
+			break;
 		case "switchMultilevel":
+			deviceType = "switchMultilevel";
+			probeType = "";
 			icon = "multilevel";
+			level = lastLevel || 0;
+			break;
+		case "switchMultilevelMotor":
+			deviceType = "switchMultilevel"
+			probeType = "motor"
+			icon = "blinds";
 			level = lastLevel || 0;
 			break;
 	}
@@ -55,7 +85,8 @@ DummyDevice.prototype.init = function (config) {
 	};
  
 	var overlay = {
-			deviceType: deviceType // here to allow changing type
+			deviceType: deviceType, // here to allow changing type
+			probeType: probeType
 	};
 
 	this.vDev = this.controller.devices.create({

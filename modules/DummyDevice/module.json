@@ -5,8 +5,8 @@
 	"author": "Z-Wave.Me",
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
-		"moduleName": "DummyDevice",
-	"version": "1.1.0",
+	"moduleName": "DummyDevice",
+	"version": "1.2.0",
 	"maturity": "stable",
 	"repository": {
 		"type": "git",
@@ -22,7 +22,7 @@
 		"properties" : {
 			"deviceType" : {
 				"type" : "string",
-				"enum" : ["switchBinary", "switchMultilevel"],
+				"enum" : ["switchBinary", "switchMultilevel", "doorlock", "switchMultilevelMotor", "switchBinarySiren", "switchBinaryValve"],
 				"default" : "switchBinary",
 				"required" : true
 			}
@@ -33,7 +33,7 @@
 			"deviceType" : {
 				"label" : "__l_options__",
 				"type" : "select",
-				"optionLabels" : ["Binary switch", "Multilevel switch"]
+				"optionLabels" : ["Binary switch", "Multilevel switch", "Door lock", "Blinds", "Siren", "Water valve"]
 			}
 		}
 	}
