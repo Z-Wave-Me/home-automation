@@ -4027,20 +4027,3 @@ ZAutomationAPIWebRequest.prototype.reorderDevices = function() {
 	return reply;
 
 }
-ZAutomationAPIWebRequest.prototype.encryptionKeys = function () {
-	var reply = {
-		data: {
-			keys: [zway.devices[zway.controller.data.nodeId.value].data.networkKey.value],
-			id: this.controller.getRemoteId()
-		},
-	};
-	var keys = zway.devices[zway.controller.data.nodeId.value].data.networkKeys;
-	if (keys) {
-		reply.data.keys.push(keys.S2Unauthenticated.value, keys.S2Authenticated.value, keys.S2Access.value);
-	}
-	if (keys.S2AuthenticatedLR) {
-		reply.data.keys.push(keys.S2AuthenticatedLR.value, keys.S2AccessLR.value)
-	}
-
-	return reply;
-}

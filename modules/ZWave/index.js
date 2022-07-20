@@ -7,6 +7,24 @@ Copyright: (c) Z-Wave.Me, 2020
 
 ******************************************************************************/
 
+if (!String.prototype.padStart) {
+	String.prototype.padStart = function padStart(targetLength,padString) {
+		targetLength = targetLength>>0; //floor if number or convert non-number to 0;
+		padString = String(padString || ' ');
+		if (this.length > targetLength) {
+			return String(this);
+		}
+		else {
+			targetLength = targetLength-this.length;
+			if (targetLength > padString.length) {
+				padString += padString.repeat(targetLength/padString.length); //append to original to ensure we are longer than needed
+			}
+			return padString.slice(0,targetLength) + String(this);
+		}
+	};
+}
+
+
 function ZWave(id, controller) {
 
 	// if called without "new", return list of loaded Z-Way instances
@@ -1524,6 +1542,7 @@ ZWave.prototype.externalAPIAllow = function(name) {
 	ws.allowExternalAccess(_name + ".RemoveDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".AddDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".UpdateDSKEntry", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	ws.allowExternalAccess(_name + ".EncryptionKeys", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	// -- see below -- // ws.allowExternalAccess(_name + ".JSONtoXML", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 };
 
@@ -1569,6 +1588,7 @@ ZWave.prototype.externalAPIRevoke = function(name) {
 	ws.revokeExternalAccess(_name + ".RemoveDSKEntry");
 	ws.revokeExternalAccess(_name + ".AddDSKEntry");
 	ws.revokeExternalAccess(_name + ".UpdateDSKEntry");
+	ws.revokeExternalAccess(_name + ".EncryptionKeys");
 	// -- see below -- // ws.revokeExternalAccess(_name + ".JSONtoXML");
 };
 
@@ -3489,6 +3509,34 @@ ZWave.prototype.defineHandlers = function() {
 
 		return reply;
 	};
+
+	this.ZWaveAPI.EncryptionKeys = function () {
+		var reply = {
+			status: 200,
+			headers: {
+				"Content-Type": "text/plain", // application/x-download octet-stream
+				"Content-Disposition": "attachment; filename=" + (-zway.controller.data.homeId.value).toString(16).toUpperCase() + ".txt",
+			},
+			body: null,
+			error: null,
+			message: null
+		};
+		var networkKeys = [zway.devices[zway.controller.data.nodeId.value].data.networkKey.value];
+		var keys = zway.devices[zway.controller.data.nodeId.value].data.networkKeys;
+		if (keys) {
+			networkKeys.push(keys.S2Unauthenticated.value, keys.S2Authenticated.value, keys.S2Access.value);
+		}
+		if (keys.S2AuthenticatedLR) {
+			networkKeys.push(keys.S2AuthenticatedLR.value, keys.S2AccessLR.value)
+		}
+
+		reply.body = networkKeys.map(function (key, index) {
+			return (index ? '9F' : '98') + ';' + (key ? key : new Array(16).fill(0))
+				.map(function (e) {return (+e).toString(16).padStart(2, '0').toUpperCase()}).join('') + ';1';
+		}).join('\n\r');
+
+		return reply;
+	}
 	/*
 	// -- not used -- //
 	this.ZWaveAPI.JSONtoXML = function(url, request) {
