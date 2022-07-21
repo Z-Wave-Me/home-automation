@@ -3511,11 +3511,12 @@ ZWave.prototype.defineHandlers = function() {
 	};
 
 	this.ZWaveAPI.EncryptionKeys = function () {
+		var filename = ('00000000' + (zway.controller.data.homeId.value + (zway.controller.data.homeId.value < 0 ? 0x100000000 : 0)).toString(16)).slice(-8)
 		var reply = {
 			status: 200,
 			headers: {
 				"Content-Type": "text/plain", // application/x-download octet-stream
-				"Content-Disposition": "attachment; filename=" + (-zway.controller.data.homeId.value).toString(16).toUpperCase() + ".txt",
+				"Content-Disposition": "attachment; filename=" + filename.toUpperCase() + ".txt",
 			},
 			body: null,
 			error: null,
