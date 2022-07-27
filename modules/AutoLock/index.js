@@ -38,6 +38,7 @@ AutoLock.prototype.init = function (config) {
 		// Clear delay if door opened
 		if (nowSensorStatus === "on") {
 			clearTimeout(self.timer);
+			self.timer = null;
 		}
 		
 		// Close lock if sensor false
