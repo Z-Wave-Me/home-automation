@@ -188,7 +188,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		
 		this.router.get("/demultiplex/:paths", this.ROLE.ANONYMOUS, this.demultiplex);
 
-		this.router.get('/expert/deviceDescription/:deviceId', this.ROLE.ADMIN, this.getDeviceDescription, [parseInt])
+		this.router.get('/expert/deviceDescription/:deviceId', this.ROLE.ADMIN, this.getDeviceDescription, [parseInt]);
+
+		this.router.get('/encryptionKeys', this.ROLE.ADMIN, this.encryptionKeys)
 	},
 
 	// Used by the android app to request server status
