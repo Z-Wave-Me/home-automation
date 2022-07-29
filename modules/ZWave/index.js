@@ -3553,7 +3553,7 @@ ZWave.prototype.defineHandlers = function() {
 		reply.body = networkKeys.map(function (key, index) {
 			return (index ? '9F' : '98') + ';' + (key ? key : new Array(16).fill(0))
 				.map(function (e) {return (+e).toString(16).padStart(2, '0').toUpperCase()}).join('') + ';1';
-		}).join('\n\r');
+		}).join('\r\n');
 
 		return reply;
 	}
