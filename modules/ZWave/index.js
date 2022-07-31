@@ -370,7 +370,7 @@ ZWave.prototype.startBinding = function() {
 				method: 'POST',
 				data: {
 					uuid: self.zway.controller.data.uuid.value,
-					build: this.build.value,
+					build: self.zway.controller.data.firmware.build.value,
 					code: this.value,
 					scb: this.scb.value.map(function(v) { return v.toString(16); }).join(""),
 					reg: this.reg.value.map(function(v) { return v.toString(16); }).join(""),
