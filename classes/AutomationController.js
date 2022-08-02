@@ -3610,7 +3610,7 @@ AutomationController.prototype.profilesByRole = function(role) {
 
 AutomationController.prototype.profilesByDevice = function(devId) {
 	var self = this;
-	var room = controller.devices.get(devId).get("location");
+	var room = this.devices.get(devId).get("location");
 	
 	return this.profiles.filter(function(profile) {
 		return profile.role === self.auth.ROLE.ADMIN || (profile.devices && (profile.devices.indexOf(devId) !== -1)) || (profile.rooms && (profile.rooms.indexOf(room) !== -1));
