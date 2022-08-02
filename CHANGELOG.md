@@ -1,3 +1,34 @@
+## 30.07.2022 v4.0.0
+New features:
+* Dummy device:
+  * Added Door lock, Blinds, Siren and Water valve to Dummy device
+* User can generate access tokens now (for easy API integrations)
+* Postfix handling:
+  * vDev creation based on Configuration parameter with configVDev keyword
+  * vDev based on Notification Status
+  * Window Tilt pre-creation
+* Added uuid, serial and mac fields to /system/info and /system/first-access API calls
+Improvements:
+* New API /encryptionKeys for S0/S2 key extraction (for Zniffer and PC Controller)
+* Notification: improved icons
+* Notification: Added support of eventParameter for Idle
+* Allow disable packet log for slow systems: allow track & save, track only, disable (for slow hardware)
+* HomeKitGate 2.2.2
+Fixes:
+* AutoLock: minor
+* Security app: many minor fixes
+* Don't start paused instances after restore
+* New users can set night_mode correctly
+* Fixed profilesByDevice to also list devices in allows room
+* Fix duplicates of Door and AC Alarms
+* Fixed defered save (produced crashes on slow hardware)
+* Set timezone
+* Remove SoundSwitch Mute vDev on device deletion
+* Fix error on logout for local user
+* Fixed default .syscommands on Linux
+* Fix RGB color set
+* Fixed DeviceHistory check period
+
 ## 02.04.2022 v3.2.3
 New features:
 * API for local token generation
