@@ -2486,9 +2486,17 @@ ZWave.prototype.defineHandlers = function() {
 			}
 
 			var result = "in progress";
-			zway.ZMECapabilities(data.license.split(",").map(function(i) {
-				return parseInt(i, 10);
-			}), function() {
+			
+			var func, lic;
+			if (parseFloat(zway.controller.data.SDK.value.substr(0, 4)) >= 7.12) {
+				func = zway.ZMELicenseSet;
+				lic = data.license.match(/.{2}/g).map(function(i, v) { return parseInt(i, 16); });
+			} else {
+				func = zway.ZMECapabilities;
+				lic = data.license.split(",").map(function(i) { return parseInt(i, 10); });
+			}
+			
+			func.call(zway, lic, function() {
 				result = "done";
 			}, function() {
 				result = "failed";
