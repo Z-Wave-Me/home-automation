@@ -3610,10 +3610,11 @@ AutomationController.prototype.profilesByRole = function(role) {
 
 AutomationController.prototype.profilesByDevice = function(devId) {
 	var self = this;
-	var room = this.devices.get(devId).get("location");
+	var vDev = this.devices.get(devId);
+	var room = vDev ? vDev.get("location") : null;
 	
 	return this.profiles.filter(function(profile) {
-		return profile.role === self.auth.ROLE.ADMIN || (profile.devices && (profile.devices.indexOf(devId) !== -1)) || (profile.rooms && (profile.rooms.indexOf(room) !== -1));
+		return profile.role === self.auth.ROLE.ADMIN || (profile.devices && (profile.devices.indexOf(devId) !== -1)) || (room !== null && profile.rooms && (profile.rooms.indexOf(room) !== -1));
 	}).map(function(profile) {
 		return profile.id;
 	});
