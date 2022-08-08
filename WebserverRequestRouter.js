@@ -62,7 +62,7 @@ ZAutomationWebRequest.prototype.initResponse = function (response) {
 			500: "500 Internal server error"
 		};
 
-	response.data = response.data || null;
+	response.data = response.data === undefined ? null : response.data;
 	response.error = response.error || null;
 	response.code = response.code || 200;
 	response.contentType = response.contentType || "application/json; charset=utf-8";
