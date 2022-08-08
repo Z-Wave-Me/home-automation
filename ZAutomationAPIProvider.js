@@ -76,6 +76,9 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		this.router.get("/devices/:v_dev_id/command/:command_id", this.ROLE.USER, this.performVDevCommandFunc);
 		this.router.get("/devices/:v_dev_id/referenced", this.ROLE.ADMIN, this.getDeviceReference);
 
+		this.router.get('/devices/:dev_id/:param/:innerParam', this.ROLE.USER, this.getVDevParam);
+		this.router.get('/devices/:dev_id/:param', this.ROLE.USER, this.getVDevParam);
+
 		this.router.get("/locations/:location_id/namespaces/:namespace_id", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 		this.router.get("/locations/:location_id/namespaces", this.ROLE.ADMIN, this.getLocationNamespacesFunc);
 
@@ -112,6 +115,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 
 		this.router.put("/devices/:dev_id", this.ROLE.USER, this.setVDevFunc);
 		this.router.get("/devices/:dev_id", this.ROLE.USER, this.getVDevFunc);
+
 
 		this.router.get("/instances/:instance_id", this.ROLE.ADMIN, this.getInstanceFunc);
 		this.router.put("/instances/:instance_id", this.ROLE.ADMIN, this.reconfigureInstanceFunc, [parseInt]);
@@ -381,6 +385,40 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 		if (device) {
 			reply.code = 200;
 			reply.data = device.toJSON();
+		} else {
+			reply.code = 404;
+			reply.error = "Device " + vDevId + " doesn't exist";
+		}
+		return reply;
+	},
+	getVDevParam: function (vDevId, param, innerParam) {
+		var reply = {
+				error: null,
+				data: null
+			},
+			device = _.find(this.controller.devicesByUser(this.req.user), function(device) {
+				return device.id === vDevId;
+			});
+		if (device) {
+			device = device.toJSON();
+			if (device.hasOwnProperty(param)) {
+				var field = device[param];
+				if (innerParam) {
+					if (field.hasOwnProperty(innerParam)) {
+						reply.code = 200;
+						reply.data = field[innerParam];
+					} else {
+						reply.code = 404;
+						reply.error = 'Parameter ' + param + '.' + innerParam +' in device ' + vDevId + ' doesn\'t exist';
+					}
+				} else {
+					reply.code = 200;
+					reply.data = field;
+				}
+			} else {
+				reply.code = 404;
+				reply.error = 'Parameter ' + param + ' in device ' + vDevId + ' doesn\'t exist';
+			}
 		} else {
 			reply.code = 404;
 			reply.error = "Device " + vDevId + " doesn't exist";
