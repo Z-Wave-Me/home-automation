@@ -3,6 +3,7 @@ New features:
 * Dummy device:
   * Added Door lock, Blinds, Siren and Water valve to Dummy device
 * User can generate access tokens now (for easy API integrations)
+* Added HTTP API /ZAutomation/api/v1/devices/%dev%/%property% and /ZAutomation/api/v1/devices/%dev%/metrics/%property% to cimplify integration with third part APIs
 * Postfix handling:
   * vDev creation based on Configuration parameter with configVDev keyword
   * vDev based on Notification Status
@@ -15,6 +16,8 @@ Improvements:
 * Allow disable packet log for slow systems: allow track & save, track only, disable (for slow hardware)
 * HomeKitGate 2.2.2
 Fixes:
+* HTTP API response for 0 and false fixed (before was null)
+* Firmware Upgrade for target > 0 with target 0 not upgradeable
 * AutoLock: minor
 * Security app: many minor fixes
 * Don't start paused instances after restore
