@@ -2391,7 +2391,7 @@ ZWave.prototype.defineHandlers = function() {
 				throw "Either manufacturer or firmware id is not present";
 			}
 
-			if (!fwUpdate.data.upgradeable.value) {
+			if (targetId === 0 && !fwUpdate.data.upgradeable.value) {
 				throw "Firmware is not upgradeable";
 			}
 
