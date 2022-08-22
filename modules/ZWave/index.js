@@ -5479,7 +5479,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
-					icon: 'door',
+					icon: 'lock',
 					isFailed: false
 
 				}
@@ -5516,7 +5516,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
-					icon: 'door',
+					icon: 'lock',
 					isFailed: false
 				}
 			};
