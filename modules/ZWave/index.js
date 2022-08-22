@@ -6201,33 +6201,33 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							};
 							
 							if (!self.controller.devices.get(e_id) && changeVDev[cVDId] && changeVDev[cVDId].notificationStatus) {
-									if (!self.applyPostfix(e_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
-									
-									var a_vDev = self.controller.devices.create({
-										deviceId: e_id,
-										defaults: e_defaults,
-										overlay: {},
-										handler: function(command) {
-											if (command === "on" || command === "off") {
-												cc.Set(notificationTypeId, command === "on" ? true : false);
+								if (!self.applyPostfix(e_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								
+								var a_vDev = self.controller.devices.create({
+									deviceId: e_id,
+									defaults: e_defaults,
+									overlay: {},
+									handler: function(command) {
+										if (command === "on" || command === "off") {
+											cc.Set(notificationTypeId, command === "on" ? true : false);
+										}
+										if (command === "update") {
+											cc.Get(notificationTypeId, 0);
+										}
+									},
+									moduleId: self.id
+								});
+								
+								if (a_vDev) {
+									a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+										try {
+											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+												self.controller.devices.remove(e_id);
+											} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+												a_vDev.set("metrics:level", this.status.value ? "on" : "off");
 											}
-											if (command === "update") {
-												cc.Get(notificationTypeId, 0);
-											}
-										},
-										moduleId: self.id
-									});
-									
-									if (a_vDev) {
-										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
-										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-											try {
-												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-													self.controller.devices.remove(e_id);
-												} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-													a_vDev.set("metrics:level", this.status.value ? "on" : "off");
-												}
-											} catch (e) {}
+										} catch (e) {}
 									}, "value");
 								}
 							}
