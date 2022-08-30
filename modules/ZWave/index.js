@@ -2049,15 +2049,15 @@ ZWave.prototype.defineHandlers = function() {
 								default: param.default.value,
 							},
 							children: [
-								tagLangs('name', {en: param.title.value, ru: ''}),
-								tagLangs('description', {en: param.description.value, ru: ''}),
+								tagLangs('name', {en: param.title.value}),
+								tagLangs('description', {en: param.description.value}),
 								{
 									name: 'value',
 									attributes: {
 										from: intToHexStr(param.min.value, param.size.value),
 										to: intToHexStr(param.max.value, param.size.value)
 									},
-									children: [tagLangs('description', {en: '', ru: ''}),]
+									children: [tagLangs('description', {en: ''}),]
 								}
 							]
 						})
