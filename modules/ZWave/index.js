@@ -1864,6 +1864,9 @@ ZWave.prototype.defineHandlers = function() {
 			return ("00" + parseInt(n, 10).toString(16)).slice(-2);
 		}
 
+		function intToHexStr(value, size) {
+			return ('00000000' + parseInt(value, 10).toString(16)).slice(-size);
+		}
 		function hexWordToStr(n) {
 			return ("0000" + parseInt(n, 10).toString(16)).slice(-4);
 		}
@@ -2014,7 +2017,6 @@ ZWave.prototype.defineHandlers = function() {
 							arr.push(tagCC(ccId, 1, false, false, d.data.nodeInfoFrame.value));
 						}
 					}
-
 					return arr;
 				})()
 			}]
@@ -2042,12 +2044,47 @@ ZWave.prototype.defineHandlers = function() {
 							]
 						});
 					}
-
 					return Assocs;
 				})(d.instances[0].Association.data)
 			});
 		}
 
+		if(d.instances[0].commandClasses
+			&& d.instances[0].commandClasses[112]
+			&& d.instances[0].commandClasses[112].data.version.value >= 3 ) {
+			zddx.root.insertChild({
+				name: 'configParams',
+				children: (function (data) {
+					var result = [];
+					for (var key in data) {
+						if (isNaN(+key)) continue;
+						var param = data[key];
+						result.push({
+							name: 'configParam',
+							attributes: {
+								number: key,
+								size: param.size.value,
+								type: 'rangemapped',
+								default: param.default.value,
+							},
+							children: [
+								tagLangs('name', {en: param.title.value}),
+								tagLangs('description', {en: param.description.value}),
+								{
+									name: 'value',
+									attributes: {
+										from: intToHexStr(param.min.value, param.size.value),
+										to: intToHexStr(param.max.value, param.size.value)
+									},
+									children: [tagLangs('description', {en: ''}),]
+								}
+							]
+						})
+					}
+					return  result;
+				})(d.instances[0].commandClasses[112].data)
+			})
+		}
 		return {
 			"status": 200,
 			"body": zddx.toString(),
