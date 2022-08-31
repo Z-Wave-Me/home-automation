@@ -4777,7 +4777,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 			if (haveRGB && !self.controller.devices.get(vDevId + separ + "rgb")) {
 
-				var defaults = {
+				defaults = {
 					deviceType: "switchRGBW",
 					probeType: 'switchColor_rgb',
 					metrics: {
@@ -5667,7 +5667,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 					if (!self.controller.devices.get(_vDevId)) {
 
-						var defaults = {
+						defaults = {
 							deviceType: "thermostat",
 							probeType: 'thermostat_set_point',
 							metrics: {
@@ -5719,7 +5719,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				});
 			}
 		} else if (this.CC["AlarmSensor"] === commandClassId) {
-			a_defaults = {
+			defaults = {
 				deviceType: 'sensorBinary',
 				probeType: '',
 				metrics: {
@@ -5742,50 +5742,50 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 						switch (sensorTypeId) {
 							case 0:
-								a_defaults.probeType = 'alarmSensor_general_purpose';
+								defaults.probeType = 'alarmSensor_general_purpose';
 								break;
 							case 1:
-								a_defaults.probeType = 'alarmSensor_smoke';
+								defaults.probeType = 'alarmSensor_smoke';
 								break;
 							case 2:
-								a_defaults.probeType = 'alarmSensor_co';
+								defaults.probeType = 'alarmSensor_co';
 								break;
 							case 3:
-								a_defaults.probeType = 'alarmSensor_coo';
+								defaults.probeType = 'alarmSensor_coo';
 								break;
 							case 4:
-								a_defaults.probeType = 'alarmSensor_heat';
+								defaults.probeType = 'alarmSensor_heat';
 								break;
 							case 5:
-								a_defaults.probeType = 'alarmSensor_flood';
+								defaults.probeType = 'alarmSensor_flood';
 								break;
 							case 6:
-								a_defaults.probeType = 'alarmSensor_door';
+								defaults.probeType = 'alarmSensor_door';
 								break;
 							case 7:
-								a_defaults.probeType = 'alarmSensor_burglar';
+								defaults.probeType = 'alarmSensor_burglar';
 								break;
 							case 8:
-								a_defaults.probeType = 'alarmSensor_power';
+								defaults.probeType = 'alarmSensor_power';
 								break;
 							case 9:
-								a_defaults.probeType = 'alarmSensor_system';
+								defaults.probeType = 'alarmSensor_system';
 								break;
 							case 10:
-								a_defaults.probeType = 'alarmSensor_emergency';
+								defaults.probeType = 'alarmSensor_emergency';
 								break;
 							case 11:
-								a_defaults.probeType = 'alarmSensor_clock';
+								defaults.probeType = 'alarmSensor_clock';
 								break;
 							default:
 								break;
 						}
 						
-						if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[sensorTypeId].typeString.value)) return;
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[sensorTypeId].typeString.value)) return;
 						
 						var a_vDev = self.controller.devices.create({
 							deviceId: a_id,
-							defaults: a_defaults,
+							defaults: defaults,
 							overlay: {},
 							handler: function(command) {
 								if (command === "update") {
@@ -5820,7 +5820,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 		} else if (this.CC["Alarm"] === commandClassId) {
 			if (cc.data.version.value < 3) return; // We skip old Alarm CC implementations handling only v3 (Notification)
 
-			a_defaults = {
+			defaults = {
 				deviceType: 'sensorBinary',
 				probeType: '',
 				metrics: {
@@ -5857,74 +5857,74 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							return types;
 						};
 						
-						function setProbeTypeAndIcon(a_defaults, notificationTypeId, eventTypeId) {
+						function setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId) {
 							// we handle only few Notification Types
 							switch (notificationTypeId) {
 								case 0x01: // Smoke
-									a_defaults.metrics.icon = 'alarm_smoke';
-									a_defaults.probeType = a_defaults.metrics.icon;
+									defaults.metrics.icon = 'alarm_smoke';
+									defaults.probeType = defaults.metrics.icon;
 									break;
 								case 0x02: // CO
-									a_defaults.metrics.icon = 'alarm_co';
-									a_defaults.probeType = a_defaults.metrics.icon;
+									defaults.metrics.icon = 'alarm_co';
+									defaults.probeType = defaults.metrics.icon;
 									break;
 								case 0x03: // CO2
-									a_defaults.metrics.icon = 'alarm_coo';
-									a_defaults.probeType = a_defaults.metrics.icon;
+									defaults.metrics.icon = 'alarm_coo';
+									defaults.probeType = defaults.metrics.icon;
 									break;
 								case 0x04: // Heat
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'alarm_heat';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'alarm_heat';
 									break;
 								case 0x05: // Water
-									a_defaults.metrics.icon = 'alarm_flood';
-									a_defaults.probeType = a_defaults.metrics.icon;
+									defaults.metrics.icon = 'alarm_flood';
+									defaults.probeType = defaults.metrics.icon;
 									break;
 								case 0x06: // Door
-									a_defaults.metrics.icon = 'door';
-									a_defaults.probeType = 'alarm_door';
+									defaults.metrics.icon = 'door';
+									defaults.probeType = 'alarm_door';
 									break;
 								case 0x07: // Home Security (Burglar)
-									a_defaults.metrics.icon = 'alarm_burglar';
-									a_defaults.probeType = a_defaults.metrics.icon;
+									defaults.metrics.icon = 'alarm_burglar';
+									defaults.probeType = defaults.metrics.icon;
 									switch (eventTypeId) {
 										case 0x07:
 										case 0x08:
-											a_defaults.metrics.icon = 'motion';
+											defaults.metrics.icon = 'motion';
 											break;
 									}
 									break;
 								case 0x08: // Power
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'alarm_power';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'alarm_power';
 									break;
 								case 0x09: // System
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'alarm_system';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'alarm_system';
 									break;
 								case 0x0a: // Emergency
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'alarm_emergency';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'alarm_emergency';
 									break;
 								case 0x0b: // Clock
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'alarm_clock';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'alarm_clock';
 									break;
 								case 0x0c: // Appliance
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'general_purpose';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'general_purpose';
 									break;
 								case 0x0e: // Siren
-									a_defaults.metrics.icon = 'alarm';
-									a_defaults.probeType = 'siren';
+									defaults.metrics.icon = 'alarm';
+									defaults.probeType = 'siren';
 									break;
 								case 0x0f: // Water Valve
-									a_defaults.metrics.icon = 'valve';
-									a_defaults.probeType = 'general_purpose';
+									defaults.metrics.icon = 'valve';
+									defaults.probeType = 'general_purpose';
 									break;
 								case 0x12: // Gas Alarm (V7)
-									a_defaults.metrics.icon = 'gas';
-									a_defaults.probeType = 'gas';
+									defaults.metrics.icon = 'gas';
+									defaults.probeType = 'gas';
 									break;
 								default:
 									return; // skip this type
@@ -5937,17 +5937,17 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						    DOOR_CLOSE = 0x17,
 						    PARAM_TILT = 0x01;
 						if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1)) { // Very special case of Door
-							setProbeTypeAndIcon(a_defaults, notificationTypeId, DOOR_OPEN);
+							setProbeTypeAndIcon(defaults, notificationTypeId, DOOR_OPEN);
 
 							var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-								if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
 								var postfix_tilt_requested = changeVDev[cVDId] && changeVDev[cVDId].tilt;
 
 								var a_vDev = self.controller.devices.create({
 									deviceId: a_id,
-									defaults: a_defaults,
+									defaults: defaults,
 									overlay: {},
 									handler: function(command) {
 										if (command === "update") {
@@ -5961,14 +5961,14 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								var a_id_tilt = vDevId + separ + notificationTypeId + separ + 'Tilt' + separ + "A";									
 								var a_vDev_tilt = null;
 								function createTiltVDev(a_id) {
-									a_defaults.metrics.icon = 'window_tilt';
-									a_defaults.probeType = 'window_tilt';
+									defaults.metrics.icon = 'window_tilt';
+									defaults.probeType = 'window_tilt';
 
-									if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Window Tilt')) return undefined;
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Window Tilt')) return undefined;
 									
 									return self.controller.devices.create({
 										deviceId: a_id,
-										defaults: a_defaults,
+										defaults: defaults,
 										overlay: {},
 										handler: function(command) {
 											if (command === "update") {
@@ -6022,16 +6022,16 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						var AC_DISCONNECTED = 0x02,
 						    AC_RECONNECTED = 0x03;
 						if (notificationTypeId === 0x08 && (eventMaskArray.indexOf(AC_DISCONNECTED) !== -1 && eventMaskArray.indexOf(AC_RECONNECTED) !== -1)) { // Very special case of AC Disconnected
-							setProbeTypeAndIcon(a_defaults, notificationTypeId, AC_DISCONNECTED);
+							setProbeTypeAndIcon(defaults, notificationTypeId, AC_DISCONNECTED);
 							
 							var a_id = vDevId + separ + notificationTypeId + separ + 'AC' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-									if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
 									
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
-										defaults: a_defaults,
+										defaults: defaults,
 										overlay: {},
 										handler: function(command) {
 											if (command === "update") {
@@ -6077,13 +6077,13 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
 
 										if (!self.controller.devices.get(a_id)) {
-											setProbeTypeAndIcon(a_defaults, notificationTypeId, eventTypeId);
+											setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId);
 											
-											if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+											if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
 
 											var a_vDev = self.controller.devices.create({
 												deviceId: a_id,
-												defaults: a_defaults,
+												defaults: defaults,
 												overlay: {},
 												handler: function(command) {
 													if (command === "update") {
@@ -6157,13 +6157,13 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
 								var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
 								
-								setProbeTypeAndIcon(a_defaults, notificationTypeId, eventTypeId);
+								setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId);
 								
-								if (!self.applyPostfix(a_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
 
 								var a_vDev = self.controller.devices.create({
 									deviceId: a_id,
-									defaults: a_defaults,
+									defaults: defaults,
 									overlay: {},
 									handler: function(command) {
 										if (command === "update") {
