@@ -5839,24 +5839,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					if (!isNaN(notificationTypeId)) {
 						var cVDId = changeDevId + separ + notificationTypeId;
 
-						function maskArrayToTypes(bitmaskArray) {
-							var types = [],
-								n = 0;
-
-							bitmaskArray.forEach(function(bitmask, i) {
-								n = i * 8;
-								while (bitmask) {
-									if (bitmask & 0x01) {
-										types.push(n);
-									}
-									n++;
-									bitmask >>= 1;
-								}
-							});
-
-							return types;
-						};
-						
 						function setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId) {
 							// we handle only few Notification Types
 							switch (notificationTypeId) {
@@ -5931,18 +5913,16 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							}
 						}
 						
-						var eventMaskArray = maskArrayToTypes(cc.data[notificationTypeId].eventMask.value);
-
 						var DOOR_OPEN = 0x16,
 						    DOOR_CLOSE = 0x17,
 						    PARAM_TILT = 0x01;
-						if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1)) { // Very special case of Door
+						if (notificationTypeId === 0x06 && cc.data[notificationTypeId][DOOR_OPEN]) { // To handle tilt and for backward compatibility due to the special name
 							setProbeTypeAndIcon(defaults, notificationTypeId, DOOR_OPEN);
 
 							var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][DOOR_OPEN].eventString.value)) return;
 								var postfix_tilt_requested = changeVDev[cVDId] && changeVDev[cVDId].tilt;
 
 								var a_vDev = self.controller.devices.create({
@@ -5986,18 +5966,14 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 								if (a_vDev) {
 									a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
-									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + "." + DOOR_OPEN.toString(10), function(type) {
 										try {
 											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A");
-											} else if (
-												(this.event.value === DOOR_OPEN || this.event.value === DOOR_CLOSE)
-												&&
-												!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
-											) {
-												
-												if (this.event.value === DOOR_OPEN) {
-													if (this.eventParameters.value[0] == PARAM_TILT) {
+												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Tilt' + separ + "A");
+											} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+												if (this.status.value) {
+													if (this.parameters.value[0] == PARAM_TILT) {
 														if (!a_vDev_tilt) {
 															// create the Tilt vDev on the fly
 															a_vDev_tilt = createTiltVDev(a_id_tilt);
@@ -6021,13 +5997,13 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 						var AC_DISCONNECTED = 0x02,
 						    AC_RECONNECTED = 0x03;
-						if (notificationTypeId === 0x08 && (eventMaskArray.indexOf(AC_DISCONNECTED) !== -1 && eventMaskArray.indexOf(AC_RECONNECTED) !== -1)) { // Very special case of AC Disconnected
+						if (notificationTypeId === 0x08 && cc[notificationTypeId][AC_DISCONNECTED]) { // For backward compatibility due to the special name
 							setProbeTypeAndIcon(defaults, notificationTypeId, AC_DISCONNECTED);
 							
 							var a_id = vDevId + separ + notificationTypeId + separ + 'AC' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][AC_DISCONNECTED].eventString.value)) return;
 									
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
@@ -6044,16 +6020,12 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 									if (a_vDev) {
 										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
-										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
+										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + "." + AC_DISCONNECTED.toString(10), function(type) {
 											try {
 												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + 'Power' + separ + "A");
-												} else if (
-													(this.event.value === AC_DISCONNECTED || this.event.value === AC_RECONNECTED)
-													&&
-													(!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))
-												) {
-													a_vDev.set("metrics:level", (this.event.value == AC_DISCONNECTED) ? "on" : "off");
+												} else if ((!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"]))) {
+													a_vDev.set("metrics:level", this.status.value? "on" : "off");
 												}
 											} catch (e) {}
 									}, "value");
@@ -6061,161 +6033,75 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							}
 						}
 
-						// handle 0xFE unknown
-						// special case by Sigma for Unknown event - not listed in eventMask
-						// the vDev for this event will be created on the fly
-						{
-							if (!self.ccAlarmUnknownEventBinded) {
-								self.ccAlarmUnknownEventBinded = [];
-							}
-							var a_id = vDevId + separ + notificationTypeId + separ + 0xFE + separ + "A";
-							if (!self.ccAlarmUnknownEventBinded[a_id]) {
-								self.ccAlarmUnknownEventBinded[a_id] = true;
-								self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + ".event", function(type) {
-									var eventTypeId = parseInt(this.value, 10);
-									if (eventTypeId === 0xFE) {
-										var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
-
-										if (!self.controller.devices.get(a_id)) {
-											setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId);
-											
-											if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
-
-											var a_vDev = self.controller.devices.create({
-												deviceId: a_id,
-												defaults: defaults,
-												overlay: {},
-												handler: function(command) {
-													if (command === "update") {
-														cc.Get(0, notificationTypeId, eventTypeId);
-													}
-												},
-												moduleId: self.id
-											});
-
-											if (a_vDev) {
-												if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
-													a_vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
-												}
-
-												a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
-												self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-													try {
-														if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-															self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
-														} else if (
-															(
-																this.event.value === eventTypeId
-																||
-																this.event.value === 0 && (this.eventParameters.value === null || this.eventParameters.value.length === 0 || this.eventParameters.value[0] === eventTypeId) // react on idle w/o params or on idle w/ our param only
-															)
-															&&
-															(
-																!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
-															)
-														) {
-															if (a_vDev.__emulateOff_timeout) {
-																if (this.event.value) {
-																	if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
-																		a_vDev.set("metrics:level", "on");
-																	}
-																	a_vDev.__emulateOff_timer && clearTimeout(a_vDev.__emulateOff_timer);
-																	a_vDev.__emulateOff_timer = setTimeout(function() {
-																		a_vDev.set("metrics:level", "off");
-																		a_vDev.__emulateOff_timer = 0;
-																	}, a_vDev.__emulateOff_timeout);
-																} // off from the sensor is ignored
-															} else {
-																a_vDev.set("metrics:level", this.event.value ? "on" : "off");
-															}
-														}
-													} catch (e) {}
-												}, "value");
-												
-												if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
-													// on start we need to set it to off
-													if (a_vDev.get("metrics:level") === "on") {
-														a_vDev.set("metrics:level", "off");
-													}
-												}
-											}
-										}
-									}
-								});
-							}
-						}
-
-						eventMaskArray.forEach(function(eventTypeId) {
-
+						Object.keys(cc.data[notificationTypeId]).forEach(function(eventTypeId) {
 							eventTypeId = parseInt(eventTypeId, 10);
-							
-							if (notificationTypeId === 0x06 && (eventMaskArray.indexOf(DOOR_OPEN) !== -1 && eventMaskArray.indexOf(DOOR_CLOSE) !== -1) && (eventTypeId === DOOR_OPEN || eventTypeId === DOOR_CLOSE)) return; // it was handled above                         
-							if (notificationTypeId === 0x08 && (eventMaskArray.indexOf(AC_DISCONNECTED) !== -1 && eventMaskArray.indexOf(AC_RECONNECTED) !== -1) && (eventTypeId === AC_DISCONNECTED || eventTypeId === AC_RECONNECTED)) return; // it was handled above
-							
-							var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
-
-							if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
-								var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
+		                                        if (!isNaN(eventTypeId)) {
+								if (notificationTypeId === 0x06 && eventTypeId === DOOR_OPEN) return; // it was handled above                         
+								if (notificationTypeId === 0x08 && eventTypeId === AC_DISCONNECTED) return; // it was handled above
 								
-								setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId);
-								
-								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								var a_id = vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A";
 
-								var a_vDev = self.controller.devices.create({
-									deviceId: a_id,
-									defaults: defaults,
-									overlay: {},
-									handler: function(command) {
-										if (command === "update") {
-											cc.Get(0, notificationTypeId, eventTypeId);
-										}
-									},
-									moduleId: self.id
-								});
-
-								if (a_vDev) {
-									if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
-										a_vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
-									}
-
-									a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
-									self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10), function(type) {
-										try {
-											if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-												self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
-											} else if (
-												(
-													this.event.value === eventTypeId
-													||
-													this.event.value === 0 && (this.eventParameters.value === null || this.eventParameters.value.length === 0 || this.eventParameters.value[0] === eventTypeId) // react on idle w/o params or on idle w/ our param only
-												)
-												&&
-												(
-													!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])
-												)
-											) {
-												if (a_vDev.__emulateOff_timeout) {
-													if (this.event.value) {
-														if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
-															a_vDev.set("metrics:level", "on");
-														}
-														a_vDev.__emulateOff_timer && clearTimeout(a_vDev.__emulateOff_timer);
-														a_vDev.__emulateOff_timer = setTimeout(function() {
-															a_vDev.set("metrics:level", "off");
-															a_vDev.__emulateOff_timer = 0;
-														}, a_vDev.__emulateOff_timeout);
-													} // off from the sensor is ignored
-												} else {
-													a_vDev.set("metrics:level", this.event.value ? "on" : "off");
-												}
-											}
-										} catch (e) {}
-									}, "value");
+								if (!isNaN(eventTypeId) && !self.controller.devices.get(a_id)) {
+									var cVDId = changeDevId + separ + notificationTypeId + separ + eventTypeId;
 									
-									if (changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
-										// on start we need to set it to off
-										if (a_vDev.get("metrics:level") === "on") {
-											a_vDev.set("metrics:level", "off");
+									setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId);
+									
+									var isState = true; // default to support older behaviour
+									console.logJS(notificationTypeId, eventTypeId);
+									if (cc.data[notificationTypeId][eventTypeId].isState) {
+										isState = cc.data[notificationTypeId][eventTypeId].isState.value;
+									}
+									
+									defaults.deviceType = isState ? "sensorBinary" : "toggleButton";
+									
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][eventTypeId].eventString.value)) return;
+
+									var a_vDev = self.controller.devices.create({
+										deviceId: a_id,
+										defaults: defaults,
+										overlay: {},
+										handler: function(command) {
+											if (command === "update") {
+												cc.Get(0, notificationTypeId, eventTypeId);
+											}
+										},
+										moduleId: self.id
+									});
+
+									if (a_vDev) {
+										if (isState && changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+											a_vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
+										}
+
+										a_vDev.set('metrics:isFailed', self.zway.devices[nodeId].data.isFailed.value);
+										self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, notificationTypeId.toString(10) + "." + eventTypeId.toString(10), function(type) {
+											try {
+												if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+													self.controller.devices.remove(vDevId + separ + notificationTypeId + separ + eventTypeId + separ + "A");
+												} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+													if (a_vDev.__emulateOff_timeout) {
+														if (this.status.value) {
+															if (a_vDev.get("metrics:level") !== "on" || !a_vDev.__emulateOff_timer) {
+																a_vDev.set("metrics:level", "on");
+															}
+															a_vDev.__emulateOff_timer && clearTimeout(a_vDev.__emulateOff_timer);
+															a_vDev.__emulateOff_timer = setTimeout(function() {
+																a_vDev.set("metrics:level", "off");
+																a_vDev.__emulateOff_timer = 0;
+															}, a_vDev.__emulateOff_timeout);
+														} // off from the sensor is ignored
+													} else {
+														a_vDev.set("metrics:level", this.status.value ? "on" : "off");
+													}
+												}
+											} catch (e) {}
+										}, "value");
+										
+										if (isState && changeVDev[cVDId] && changeVDev[cVDId].emulateOff) {
+											// on start we need to set it to off
+											if (a_vDev.get("metrics:level") === "on") {
+												a_vDev.set("metrics:level", "off");
+											}
 										}
 									}
 								}
