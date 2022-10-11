@@ -597,7 +597,7 @@ HomeKitGate.prototype.init = function (config) {
 		if (vDev.get("tags").indexOf("homekit-skip") !== -1 && self.config.skippedDevices.indexOf(vDev.id) === -1) {
 			self.config.skippedDevices.push(vDev.id);
 			delete self.config.hkDevices[vDev.id];
-			removeFromHkDevicesArray(vDevId);
+			removeFromHkDevicesArray(vDev.id);
 			self.saveConfig();
 			self.onDeviceWipedOut(vDev.id);
 	  	}
@@ -609,6 +609,23 @@ HomeKitGate.prototype.init = function (config) {
 			self.saveConfig();
 			self.onDeviceAdded(vDev);
 	  	}
+	}
+
+	this.onPermanentlyHiddenChanged = function (vDev) {
+		// Remove device from Homekit
+		if (vDev.get("permanently_hidden") === true) {
+			delete self.config.hkDevices[vDev.id];
+			removeFromHkDevicesArray(vDev.id);
+			self.saveConfig();
+			self.onDeviceWipedOut(vDev.id);
+		}
+
+		// Add device to Homekit
+		if (vDev.get("permanently_hidden") === false) {
+			self.saveConfig();
+			self.onDeviceAdded(vDev);
+		}
+
 	}
 
 	var rgbDevices = [];
@@ -697,6 +714,7 @@ HomeKitGate.prototype.init = function (config) {
 	this.controller.devices.on("change:metrics:level", this.onLevelChanged);
 	this.controller.devices.on("change:metrics:isFailed", this.onLevelChanged);
 	this.controller.devices.on("change:tags", this.onTagsChanged);
+	this.controller.devices.on("change:permanently_hidden", this.onPermanentlyHiddenChanged);
 	
 	// update device tree
 	this.hk.update();
@@ -715,6 +733,7 @@ HomeKitGate.prototype.stop = function () {
 	this.controller.devices.off("change:metrics:level", this.onLevelChanged);
 	this.controller.devices.off("change:metrics:isFailed", this.onLevelChanged);
 	this.controller.devices.off("change:tags", this.onTagsChanged);
+	this.controller.devices.off("change:permanently_hidden", this.onPermanentlyHiddenChanged);
 
 
 	if (this.hk) {
@@ -726,6 +745,8 @@ HomeKitGate.prototype.stop = function () {
 	delete this.onDeviceRemoved;
 	delete this.onDeviceWipedOut;
 	delete this.onLevelChanged;
+	delete this.onTagsChanged;
+	delete this.onPermanentlyHiddenChanged;
 };
 
 
