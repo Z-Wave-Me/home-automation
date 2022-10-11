@@ -1,6 +1,6 @@
 /* Mobile App Support
  *
- * Z-Wave.Me, 2019
+ * Z-Wave.Me, 2022
  * Version 3.0.0
  *
  * Author: Poltorak Serguei
@@ -25,7 +25,6 @@ function MobileAppSupport(id, controller) {
 	MobileAppSupport.super_.call(this, id, controller);
 
 	this.PNS = "https://pns.z-wave.me:5010/v1.0/push";
-	this.ZWayTitle = "Z-Way Notification";
 	this.URL = "/smarthome/#/events"; // TODO make URL specific to the event
 }
 
@@ -190,7 +189,7 @@ MobileAppSupport.prototype.sendNotification = function(token, app_profile, notif
 			os: app.os,
 			profileId: app.app_profile,
 			url: this.URL,
-			title: this.ZWayTitle + (app.profileName ? " (" + app.profileName + ")" : ""),
+			title: (app.profileName ? app.profileName : "Smart Home") + " " + this.controller.getRemoteId(),
 			body: notification
 		};
 		

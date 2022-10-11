@@ -32,7 +32,6 @@ NotificationChannelEmail.prototype.init = function (config) {
 	NotificationChannelEmail.super_.prototype.init.call(this, config);
 
 	this.remote_id = this.controller.getRemoteId();
-	this.subject = config.subject;
 
 	this.disabled = false;
 	
@@ -153,8 +152,8 @@ NotificationChannelEmail.prototype.sendSendMessageWithDelay = function () {
 				data: {
 					remote_id: self.remote_id,
 					mail_to: mailObject.mail_to,
-					subject: self.subject,
-					message: mailObject.message,
+					subject: mailObject.message,
+					message: mailObject.message + "<br>" + (new Date()),
 					language: self.controller.defaultLang
 				},
 				headers: {
