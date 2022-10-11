@@ -1,7 +1,7 @@
 /*** HomeKitGate Z-Way HA module *******************************************
  
-Version: 2.2.2
-(c) Z-Wave.Me, 2021
+Version: 2.3
+(c) Z-Wave.Me, 2022
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Yurkin Vitaliy <aivs@z-wave.me>
 Description:
