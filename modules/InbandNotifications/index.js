@@ -92,9 +92,6 @@ InbandNotifications.prototype.init = function (config) {
 					msgType = 'device-status';
 					break;
 				case 'sensorMultilevel':
-					if (devProbeType.indexOf('meterElectric_') !== -1) return;
-					// skip electric meters
-					// for others continue with no break
 				case 'sensorMultiline':
 				case 'thermostat':
 					msg.l += (scaleUnit ? ' ' + scaleUnit : '');
