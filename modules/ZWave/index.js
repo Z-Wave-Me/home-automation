@@ -3921,15 +3921,16 @@ ZWave.prototype.deadDetectionAttach = function(nodeId) {
 
 ZWave.prototype.deadDetectionCheckDevice = function(nodeId) {
 	var langFile = this.loadModuleLang();
+	var devName = this.zway.devices[nodeId].data.givenName.value;
 
 	if (this.zway.devices[nodeId].data.isFailed.value) {
 		if (this.zway.devices[nodeId].data.failureCount.value === 2) {
 			this.controller.vDevFailedDetection(nodeId, true);
-			this.addNotification("error", langFile.err_connct + nodeId.toString(10), "connection");
+			this.addNotification("error", langFile.err_connct + devName + " (" + nodeId.toString(10) + ")", "connection");
 		}
 	} else {
 		this.controller.vDevFailedDetection(nodeId, false);
-		this.addNotification("notification", langFile.dev_btl + nodeId.toString(10), "connection");
+		this.addNotification("notification", langFile.dev_btl + devName + " (" + nodeId.toString(10) + ")", "connection");
 	}
 };
 
