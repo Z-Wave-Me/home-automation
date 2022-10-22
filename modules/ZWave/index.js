@@ -5998,7 +5998,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 						var AC_DISCONNECTED = 0x02,
 						    AC_RECONNECTED = 0x03;
-						if (notificationTypeId === 0x08 && cc[notificationTypeId][AC_DISCONNECTED]) { // For backward compatibility due to the special name
+						if (notificationTypeId === 0x08 && cc.data[notificationTypeId][AC_DISCONNECTED]) { // For backward compatibility due to the special name
 							setProbeTypeAndIcon(defaults, notificationTypeId, AC_DISCONNECTED);
 							
 							var a_id = vDevId + separ + notificationTypeId + separ + 'AC' + separ + "A";
