@@ -6054,7 +6054,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									}
 									
 									defaults.deviceType = isState ? "sensorBinary" : "toggleButton";
-									defaults.visibility = isState ? "true" : "false";
+									defaults.visibility = isState ? true : false;
 									
 									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][eventTypeId].eventString.value)) return;
 
