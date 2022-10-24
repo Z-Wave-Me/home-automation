@@ -6048,7 +6048,6 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									setProbeTypeAndIcon(defaults, notificationTypeId, eventTypeId);
 									
 									var isState = true; // default to support older behaviour
-									console.logJS(notificationTypeId, eventTypeId);
 									if (cc.data[notificationTypeId][eventTypeId].isState) {
 										isState = cc.data[notificationTypeId][eventTypeId].isState.value;
 									}
