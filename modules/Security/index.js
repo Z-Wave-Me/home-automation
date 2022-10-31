@@ -343,7 +343,14 @@ Security.prototype.init = function(config) {
 			self.startSecurity();
 		}
 	};
+	
+	this.pollArm = function() {
+		self.vDev.performCommand(self.performEnum.CON.name);
+	};
 
+	this.pollDisarm = function() {
+		self.vDev.performCommand(self.performEnum.COFF.name);
+	}
 	// Get all devices used in this app
 	Object.keys(this.config).forEach(function (e) {
 		if (self.config[e].table) {
@@ -870,14 +877,6 @@ Security.prototype.schedule = function() {
 		}
 
 	}, this.minuteStandart * 500);*/
-	
-	self.pollArm = function() {
-		self.vDev.performCommand(self.performEnum.CON.name);
-	};
-
-	self.pollDisarm = function() {
-		self.vDev.performCommand(self.performEnum.COFF.name);
-	}
 	console.log('### timeSchedule:', JSON.stringify(this.timeSchedule));
 	console.log('### this.scheduleActive():', this.scheduleActive());
 
@@ -1369,15 +1368,7 @@ Security.prototype.endschedule = function() {
 		clearTimeout(this.timerWaitDevicesAtStart);
 		this.timerWaitDevicesAtStart = null;
 	}
-	
-	self.pollArm = function() {
-		self.vDev.performCommand(self.performEnum.CON.name);
-	};
 
-	self.pollDisarm = function() {
-		self.vDev.performCommand(self.performEnum.COFF.name);
-	}
-	
 	this.cronListeningCollector.forEach(function(listenerName) {
 		var condition = listenerName.split('.')[0];
 
