@@ -870,6 +870,14 @@ Security.prototype.schedule = function() {
 		}
 
 	}, this.minuteStandart * 500);*/
+	
+	self.pollArm = function() {
+		self.vDev.performCommand(self.performEnum.CON.name);
+	};
+
+	self.pollDisarm = function() {
+		self.vDev.performCommand(self.performEnum.COFF.name);
+	}
 	console.log('### timeSchedule:', JSON.stringify(this.timeSchedule));
 	console.log('### this.scheduleActive():', this.scheduleActive());
 
@@ -925,18 +933,6 @@ Security.prototype.schedule = function() {
 	}
 
 	console.log('### this.cronListeningCollector:', JSON.stringify(this.cronListeningCollector));
-};
-
-Security.prototype.pollArm = function() {
-	if (this.vDev) {
-		this.vDev.performCommand(self.performEnum.CON.name);
-	}
-};
-
-Security.prototype.pollDisarm = function() {
-	if (this.vDev) {
-		this.vDev.performCommand(self.performEnum.COFF.name);
-	}
 };
 
 /**
@@ -1373,7 +1369,15 @@ Security.prototype.endschedule = function() {
 		clearTimeout(this.timerWaitDevicesAtStart);
 		this.timerWaitDevicesAtStart = null;
 	}
+	
+	self.pollArm = function() {
+		self.vDev.performCommand(self.performEnum.CON.name);
+	};
 
+	self.pollDisarm = function() {
+		self.vDev.performCommand(self.performEnum.COFF.name);
+	}
+	
 	this.cronListeningCollector.forEach(function(listenerName) {
 		var condition = listenerName.split('.')[0];
 
