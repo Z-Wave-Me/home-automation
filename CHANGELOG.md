@@ -1,5 +1,6 @@
-## 30.07.2022 v4.0.0
+## 01.11.2022 v4.0.0
 New features:
+* Full rework of Notification (Alarm) CC widgets: state events produces widgets, stateless produce hidden toggleButton
 * Dummy device:
   * Added Door lock, Blinds, Siren and Water valve to Dummy device
 * User can generate access tokens now (for easy API integrations)
@@ -14,12 +15,17 @@ Improvements:
 * Notification: improved icons
 * Notification: Added support of eventParameter for Idle
 * Allow disable packet log for slow systems: allow track & save, track only, disable (for slow hardware)
+* Home name and Remote ID added to push messages
+* Better e-mail description on device trigger
 * HomeKitGate 2.2.2
+  * automaticaly add/remove Permanently Hidden devices
+  * minor fixes
+* Added self.trigger in Easy Scripting
 Fixes:
 * HTTP API response for 0 and false fixed (before was null)
 * Firmware Upgrade for target > 0 with target 0 not upgradeable
 * AutoLock: minor
-* Security app: many minor fixes
+* Security app: arming/disarming schedule and many minor fixes
 * Don't start paused instances after restore
 * New users can set night_mode correctly
 * Fixed profilesByDevice to also list devices in allows room
@@ -31,6 +37,7 @@ Fixes:
 * Fixed default .syscommands on Linux
 * Fix RGB color set
 * Fixed DeviceHistory check period
+* Added meter events in notifications
 
 ## 02.04.2022 v3.2.3
 New features:
