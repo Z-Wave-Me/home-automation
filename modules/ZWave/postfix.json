@@ -1493,7 +1493,7 @@
 		"created": "2017-09-27 14:27:06"
 	}, {
     		"id": "135",
-    		"p_id": "271.258.4096",
+    		"p_id": "271.258.16384",
    		"p_sku": "FIBEFGD-212",
     		"product": "Fibaro Dimmer 2",
     		"apply_postfix": "1",
@@ -3031,37 +3031,6 @@
 		"tester_last_update": "2018-01-25 13:58:08",
 		"commentary": "rename Node",
 		"created": "2017-09-27 10:08:08"
-	}, {
-		"id": "221",
-		"p_id": "271.258.16384",
-		"p_sku": "FIBEFGD-212 RU",
-		"product": "Fibaro Dimmer 2",
-		"apply_postfix": "1",
-		"preInterview": [],
-		"postInterview": ["renameNode,Fibaro Dimmer 2",
-			"noVDev,1-50-2",
-			"noVDev,0-38",
-			"noVDev,0-49",
-			"noVDev,0-50",
-			"noVDev,0-113",
-			"noVDev,2-113",
-			"hide,2-38",
-			"hide,1-113-9-1",
-			"hide,1-113-8-9",
-			"hide,1-113-8-8",
-			"hide,1-113-8-6",
-			"hide,1-113-8-5",
-			"hide,1-113-8-4",
-			"hide,1-113-4-2",
-			"rename,1-49-4,Current consumption",
-			"rename,1-50-0,Total consumption"
-		],
-		"author_last_update": "2017-09-28 11:34:51",
-		"author": "NIR,AIVS",
-		"tester": "AIVS",
-		"tester_last_update": "0000-00-00 00:00:00",
-		"commentary": "deactivate instance one and two, rename Energy Meters, rename Nodes",
-		"created": "0000-00-00 00:00:00"
 	}, {
 		"id": "222",
 		"p_id": "100.4096.9",
