@@ -1,3 +1,7 @@
+## 24.11.2022 v4.0.1
+Improvements:
+* Update postfix.json
+
 ## 01.11.2022 v4.0.0
 New features:
 * Full rework of Notification (Alarm) CC widgets: state events produces widgets, stateless produce hidden toggleButton
