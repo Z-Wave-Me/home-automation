@@ -1501,10 +1501,7 @@
     		"postInterview": [
       		"renameNode,Fibaro Dimmer 2",
           		"noVDev,1-49-4",
-          		"noVDev,1-38",
-          		"noVDev,2-38",
           		"noVDev,1-50-0",
-      			"noVDev,2-38",
      			"hide,1-113-9-1",
       			"hide,1-113-8-9",
       			"hide,1-113-8-8",
