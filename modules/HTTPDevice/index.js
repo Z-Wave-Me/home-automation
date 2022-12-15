@@ -220,7 +220,7 @@ HTTPDevice.prototype.act = function (vDev, action, subst, selfValue) {
 			method: this.config.method,
 			async: true,
 			error: function(response) {
-				self.addNotification("error", langFile.err_req + response.statusText, "module");
+				self.addNotification("error", langFile.err_req + response.statusText + " (" + url + ")", "module");
 			}
 		};
 
