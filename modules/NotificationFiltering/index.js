@@ -67,6 +67,18 @@ NotificationFiltering.prototype.stop = function () {
 // --- Module methods
 // ----------------------------------------------------------------------------
 
+NotificationFiltering.prototype.prepareMessage = function(message, devId) {
+	var regex = /<([^:<> ]*):([^<> ]*)>/; // match <devId:metrics:level> or <:metrics:level>
+	while ((search = regex.exec(message))) {
+		var vDev = this.controller.devices.get(search[1] ? search[1] : devId);
+		if (vDev) {
+			message = message.replace(search[0], vDev.get(search[2]) || "")
+		}
+	}
+	return message;
+}
+
+
 NotificationFiltering.prototype.onNotificationHandler = function (notice) {
 	var self = this;
 
@@ -74,6 +86,8 @@ NotificationFiltering.prototype.onNotificationHandler = function (notice) {
 	
 	var sendTo = [];
 	var defaultMessage = typeof notice.message === 'string' ? notice.message : (notice.message.dev + " : " + notice.message.l);
+	
+	defaultMessage = this.prepareMessage(defaultMessage, notice.source);
 	
 	Object.keys(self.logLevels).forEach(function (level) {
 		if (
@@ -113,7 +127,7 @@ NotificationFiltering.prototype.onNotificationHandler = function (notice) {
 					type: device.type,
 					user: device.user,
 					channel: device.channel,
-					message: device.message ? device.message : defaultMessage
+					message: device.message ? self.prepareMessage(device.message, device.id) : defaultMessage
 				});
 			}
 		}
