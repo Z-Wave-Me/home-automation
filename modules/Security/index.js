@@ -318,17 +318,18 @@ Security.prototype.init = function(config) {
 		console.log("------------------Security start"); 
 		self.makeVDevs(config);
 		self.wipeOwnVDevs();
-		if (config.times.aktive) {
-			self.setAutomation('on');
-		} else {
-			self.setAutomation('off');
-		}
 		self.initStates();
 		self.state = self.initState;
 		self.initDevices();
 		self.state.doEntry();
 		self.state.doMake();
+
+		var activeStatusAtStart = config.times.active;
 		self.vDev.performCommand(self.performEnum.COFF.name);
+
+		if (activeStatusAtStart) {
+			self.vDev.performCommand(self.performEnum.CON.name);
+		}
 	};
 
 	var notAddedDevices = [];
@@ -551,6 +552,8 @@ Security.prototype.makeVDevs = function() {
 					returnState = self.makeReturnState(1, "test Security_" + self.id);
 					return returnState;
 				case self.performEnum.COFF.name:
+					self.config.times.active = false;
+					self.saveConfig();
 					if (self.timerEntranceGroupAlarm) {
 						// Timer is set, so we destroy it
 						clearTimeout(self.timerEntranceGroupAlarm);
@@ -566,6 +569,8 @@ Security.prototype.makeVDevs = function() {
 					});
 					break;
 				case self.performEnum.CON.name:
+					self.config.times.active = true;
+					self.saveConfig();
 					self.commandHandlingWithBidirektionalScene(args, self.vDevON.id, function() {
 						self.transition(self.canOn(), self.liveOn, args);
 					});
