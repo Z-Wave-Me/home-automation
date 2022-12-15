@@ -27,8 +27,6 @@ _module = NotificationFiltering;
 NotificationFiltering.prototype.init = function (config) {
 	NotificationFiltering.super_.prototype.init.call(this, config);
 
-	this.handler = this.onNotificationHandler();
-	
 	var self = this;
 
 	this.normalizeConfig();
