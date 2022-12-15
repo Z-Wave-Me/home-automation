@@ -21,7 +21,7 @@
   "l_devices": "Devices specific notifications",
   "h_devices": "Select devices that will generate notifications.",
   "l_dev_message" : "Device specific message",
-  "h_dev_message" : "Enter a message that should be sent instead of the default notification. Empty to keep the default.",
+  "h_dev_message" : "Enter a message that should be sent instead of the default notification. Empty to keep the default. Use &lt;devId:property&gt; to refer to a property of a specific device. For example, &lt;DummyDevice_44:metrics:level&gt; or &lt;ZWayVDev_zway5_7-0-38:metrics:title&gt; (see API structure below). If devId is empty, the device on which the event has fired is used. For example, &laquo;&lt;:metrics:title&gt; is &lt;:metrics:level&gt;, while &lt;DummyDevice_44:metrics:title&gt; is &lt;DummyDevice_44:metrics:level&gt;&raquo; will produce &laquo;Light is on, while Door sensor is off&raquo;",
   "l_dev_matchValue": "Condition",
   "h_dev_matchValue": "Send the message only if the device reports the following state.",
   "l_dev_matchValueOperation": "Operator",
