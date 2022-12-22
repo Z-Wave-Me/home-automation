@@ -1,3 +1,11 @@
+## 22.12.2022 v4.0.2
+New features:
+* Allow <deviceId:metrics:xxxx> in Notification Filtering
+Improvements:
+* Add URL to the HTTP error message
+Fixes:
+* Security restore mode
+
 ## 24.11.2022 v4.0.1
 Improvements:
 * Update postfix.json
