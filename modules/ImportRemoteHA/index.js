@@ -70,9 +70,10 @@ ImportRemoteHA.prototype.requestUpdate = function () {
 	
 	this.lastRequest = Date.now();
 
+	var url = this.urlPrefix + "?since=" + this.timestamp.toString();
 	try {	
 		http.request({
-			url: this.urlPrefix + "?since=" + this.timestamp.toString(),
+			url: url,
 			method: "GET",
 			async: true,
 			auth: {
@@ -83,7 +84,7 @@ ImportRemoteHA.prototype.requestUpdate = function () {
 				self.parseResponse(response);
 			},
 			error: function(response) {
-				console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
+				console.log("Can not make request: " + response.statusText + " " + url); // don't add it to notifications, since it will fill all the notifcations on error
 			},
 			complete: function() {
 				var dt = self.lastRequest + self.dT - Date.now();
@@ -194,8 +195,10 @@ ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
 	
 	var remoteId = vDev.id.slice(("RemoteHA_" + this.id + "_").length);
 	
+	var url = this.urlPrefix + "/" + remoteId + "/command/" + command + argsFlat;
+	
 	http.request({
-		url: this.urlPrefix + "/" + remoteId + "/command/" + command + argsFlat,
+		url: url,
 		method: "GET",
 		async: true,
 		auth: {
@@ -203,7 +206,7 @@ ImportRemoteHA.prototype.handleCommand = function(vDev, command, args) {
 			password: self.config.password
 		},
 		error: function(response) {
-			console.log("Can not make request: " + response.statusText); // don't add it to notifications, since it will fill all the notifcations on error
+			console.log("Can not make request: " + response.statusText + " " + url); // don't add it to notifications, since it will fill all the notifcations on error
 		}
 	});
 };
