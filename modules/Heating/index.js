@@ -167,12 +167,12 @@ Heating.prototype.init = function(config) {
                 });
                 // If schedule is not found set energySave
                 if (scheduleFound == false) {
-                    self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId].energySaveTemp);
+                    if (self.config.roomSettings[roomId].energySaveTemp !== undefined) self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId].energySaveTemp);
                 }
             }
             else {
                 // Set temperature from state frostProtection/energySave/comfort
-                self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName]);
+                if (self.config.roomSettings[roomId][stateName] !== undefined) self.performChangesOnThermostats(vdev, self.config.roomSettings[roomId][stateName]);
             }
 
 
