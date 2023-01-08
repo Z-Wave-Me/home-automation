@@ -2058,7 +2058,7 @@ AutomationController.prototype.getIPAddress = function() {
 }
 
 AutomationController.prototype.getMACAddress = function() {
-	var ip = "";
+	var mac = "";
 	try {
 		if (checkBoxtype('zme_hub')) {
 			mac = system("cat /sys/class/net/eth0/address")[1].replace(/[\s\n]/g, '');
