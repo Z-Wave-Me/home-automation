@@ -1,0 +1,119 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "basic_gateway_modules",
+	"author": "Z-Wave.Me",
+	"homepage": "http://z-wave.me",
+	"icon": "icon.png",
+	"moduleName":"Zigbee",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"name": "zbee",
+		"port": "/dev/ttyUSB0",
+		"speed": 115200,
+		"enableAPI": true,
+		"publicAPI": false,
+		"createVDev": true,
+		"config": "config",
+		"translations": "translations",
+		"ZDDX": "ZDDX"
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"port": {
+				"type": "string",
+				"required": true
+			},
+			"speed": {
+				"type": "number",
+				"required": true,
+				"enum": [ 1200, 2400, 1800, 4800, 7200, 9600, 14400, 19200, 28800, 38400, 57600, 115200, 230400, 460800, 921600 ],
+				"default": 115200
+			},
+			"name": {
+				"type": "string",
+				"required": true
+			},
+			"enableAPI": {
+				"type": "boolean",
+				"default": true
+			},
+			"publicAPI": {
+				"type": "boolean",
+				"default": true
+			},
+			"createVDev": {
+				"type": "boolean",
+				"default": true
+			},
+			"config": {
+				"type": "string",
+				"required": true
+			},
+			"translations": {
+				"type": "string",
+				"required": true
+			},
+			"ZDDX": {
+				"type": "string",
+				"required": true
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"port": {
+				"label": "__l_port__"
+			},
+			"speed": {
+				"label": "__l_speed__",
+				"type": "select",
+				"optionLabels": [ "1200 bits/s", "2400 bits/s", "1800 bits/s", "4800 bits/s", "7200 bits/s", "9600 bits/s", "14400 bits/s", "19200 bits/s", "28800 bits/s", "38400 bits/s", "57600 bits/s", "115200 bits/s", "230400 bits/s", "460800 bits/s", "921600 bits/s" ],
+				"sort": false
+			},
+			"name": {
+				"label": "__l_name__",
+				"helper": "__h_name__"
+			},
+			"enableAPI": {
+				"type": "checkbox",
+				"rightLabel": "__rl_enableAPI__",
+				"helper": "__h_enableAPI__"
+			},
+			"publicAPI": {
+				"type": "checkbox",
+				"rightLabel": "__rl_publicAPI__",
+				"helper": "__h_publicAPI__"
+			},
+			"createVDev": {
+				"type": "checkbox",
+				"rightLabel": "__rl_createVDev__",
+				"helper": "__h_createVDev__"
+			},
+			"config": {
+				"hidden": true,
+				"label": "__l_config__",
+				"helper": "__h_change_sth__"
+			},
+			"translations": {
+				"hidden": true,
+				"label": "__l_translations__",
+				"helper": "__h_change_sth__"
+			},
+			"ZDDX": {
+				"hidden": true,
+				"label": "__l_zddx__",
+				"helper": "__h_change_sth__"
+			}
+		}
+	}
+}
