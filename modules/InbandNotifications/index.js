@@ -72,7 +72,7 @@ InbandNotifications.prototype.init = function (config) {
 			};
 			var msgType = "";
 			
-			if (lastEvent.l === level && ["sensorBinary", "sensorDiscrete", "toggleButton", "switchControl"].indexOf(devType) === - 1)  return; // emit only for new values (not same as previous) or sensorBinary/sensorDiscrete/toggleButton/switchControl events
+			if (lastEvent.l === level && ["battery", "sensorBinary", "sensorDiscrete", "toggleButton", "switchControl"].indexOf(devType) === - 1)  return; // emit only for new values (not same as previous) or sensorBinary/sensorDiscrete/toggleButton/switchControl events
 
 			// depending on device type choose the correct notification
 			switch(devType) {
@@ -91,6 +91,7 @@ InbandNotifications.prototype.init = function (config) {
 				case 'sensorDiscrete':
 					msgType = 'device-status';
 					break;
+				case 'battery':
 				case 'sensorMultilevel':
 				case 'sensorMultiline':
 				case 'thermostat':
