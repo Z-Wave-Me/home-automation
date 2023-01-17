@@ -3119,7 +3119,7 @@ AutomationController.prototype.updateNotificationChannelNamespace = function() {
 
 AutomationController.prototype.registerNotificationChannel = function(id, user, name, handler) {
 	console.log("Registering notification channel: " + name + ", user: " + user);
-	this.notificationChannels[id] = {user: user, name: name, handler: handler};
+	this.notificationChannels[id] = {user: parseInt(user), name: name, handler: handler};
 	this.updateNotificationChannelNamespace();
 };
 
