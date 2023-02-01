@@ -56,7 +56,7 @@ function Zigbee(id, controller) {
 	};
 
 	this.CC = {
-		"OnOff": 0x0002,
+		"OnOff": 0x0006,
 	};
 }
 
@@ -1094,19 +1094,18 @@ Zigbee.prototype.gateDevicesStart = function() {
 						deviceEndPoints = self.zbee.devices[nodeId].endpoints,
 						deviceCC = deviceEndPoints[endpointId].clusters[clusterId],
 						c = self.zbee.controller,
-						mId = deviceData.manufacturerId.value ? deviceData.manufacturerId.value : null,
-						mPT = deviceData.manufacturerProductType.value ? deviceData.manufacturerProductType.value : null,
-						mPId = deviceData.manufacturerProductId.value ? deviceData.manufacturerProductId.value : null,
-						appMajor = deviceData.applicationMajor.value ? deviceData.applicationMajor.value : null,
-						appMinor = deviceData.applicationMinor.value ? deviceData.applicationMinor.value : null,
+						mC = deviceData.manufacturerCode.value ? deviceData.manufacturerCode.value : null,
+						//appMajor = deviceData.applicationMajor.value ? deviceData.applicationMajor.value : null,
+						//appMinor = deviceData.applicationMinor.value ? deviceData.applicationMinor.value : null,
 						givenName = null,
 						devId,
-						appMajorId,
-						appMajorMinorId,
-						postFix,
-						fixes = self.postfix.fixes ? self.postfix.fixes : self.postfix;
+						//appMajorId,
+						//appMajorMinorId,
+						postFix;
+						//fixes = self.postfix.fixes ? self.postfix.fixes : self.postfix;
 
 					// try to get fix by manufacturerProductId and application Version
+					/* TODO - commented since mC and appMajor are to be implemented in the future
 					if (!!mId && !!mPT && !!mPId && !!self.postfix) {
 
 						devId = mId + '.' + mPT + '.' + mPId;
@@ -1119,6 +1118,7 @@ Zigbee.prototype.gateDevicesStart = function() {
 								fix.p_id === appMajorMinorId; //search by applicationMajor and applicationMinor
 						});
 					}
+					*/
 
 					// ----------------------------------------------------------------------------
 					// --- postfix functions
@@ -1451,7 +1451,7 @@ Zigbee.prototype.gateDevicesStart = function() {
 					var ccId = nodeId + '-' + endpointId + '-' + clusterId;
 
 					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
-						self.parseAddClusterClass(nodeId, endpointId, clusterId, false, changeVDev, smartStartEntryPreset);
+						self.parseAddClusterClass(nodeId, endpointId, clusterId, false, changeVDev);
 					} else if (changeVDev[ccId] && changeVDev[ccId].noVDev) {
 						var devId = "ZBeeVDev_" + self.config.name + "_" + nodeId + '-' + ccId;
 						// console output
@@ -1491,28 +1491,6 @@ Zigbee.prototype.gateDevicesStart = function() {
 			self.controller.devices.remove(name);
 			self.controller.devices.cleanup(name);
 		});
-
-		// update state of DSK entry if node is smart start device
-		if (_id) {
-			var dskEntryIndex = _.findIndex(self.dskCollection, function(entry) {
-				return entry.nodeId === _id;
-			});
-			var dskEntry = self.dskCollection[dskEntryIndex];
-
-			if (dskEntry) {
-
-				// update state and nodeId
-				dskEntry.state = 'pending';
-				dskEntry.nodeId = null;
-				dskEntry.addedAt = null;
-
-				// replace old DSK entry
-				self.dskCollection[dskEntryIndex] = dskEntry;
-
-				// save dsk collection
-				self.saveObject("dskCollection", self.dskCollection, true);
-			}
-		}
 	}, "");
 };
 
@@ -1638,10 +1616,12 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			return; // do not handle unsupported Cluster Classes
 		}
 
-		if (this.CC["SwitchBinary"] === clusterId && !self.controller.devices.get(vDevId)) {
+		if (this.CC["OnOff"] === clusterId && !self.controller.devices.get(vDevId)) {
 			var icon = "switch";
 			var probeType = "switch";
 
+			//TODO How to guess the icon type?
+			/*
 			switch (this.zbee.devices[nodeId].data.specificType.value) {
 				case 0x01:
 					probeType = "power_switch_binary";
@@ -1664,7 +1644,8 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					probeType = "switch";
 					break;
 			};
-
+			*/
+			
 			defaults = {
 				deviceType: "switchBinary",
 				probeType: probeType,
@@ -1674,7 +1655,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Switch')) return;
+			// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Switch')) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -1693,8 +1674,8 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				vDev.set('metrics:isFailed', this.zbee.devices[nodeId].data.isFailed.value);
-				this.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "level", function(type) {
+				//TODO isFailed // vDev.set('metrics:isFailed', this.zbee.devices[nodeId].data.isFailed.value);
+				this.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "onOff", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
 							vDev.set("metrics:level", this.value ? "on" : "off");
@@ -1702,7 +1683,8 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					} catch (e) {}
 				}, "value");
 			}
-		} /*
+		}
+		/*
 		else if (this.CC["SwitchMultilevel"] === clusterId && !self.controller.devices.get(vDevId)) {
 			var icon;
 			var title;
@@ -3315,7 +3297,7 @@ Zigbee.prototype.nodeNameByType = function (nodeId, nodeData) {
 	    node = nodeData;
 
 	if (node){
-		var isSleepy = node.isSleepy.value;
+		var isSleepy = false; // TODO wait for isSleepy to be moved on device // node.isSleepy.value;
 
 		if (isSleepy) {
 			type = 'Battery';
