@@ -17,7 +17,7 @@
         "description": "__m_descr__",
         "clientId": "zway",
         "clientIdRandomize": false,
-        "host": "localhost",
+        "host": "127.0.0.1",
         "port": 1883,
         "security": false,
         "user": "",
