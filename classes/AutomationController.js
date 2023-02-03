@@ -141,12 +141,8 @@ AutomationController.prototype.init = function() {
 		});
 		
 		// update namespaces if structure of devices collection changed
-		self.devices.on('wipeOut', function(device) {
-			ws.push("me.z-wave.devices.wipe", device.id, self.profilesByDevice(device.id));
-		});
-
-		self.devices.on('destroy', function(device) {
-			ws.push("me.z-wave.devices.destroy", device.toJSON(), self.profilesByDevice(device.id));
+		self.devices.on('wipedOut', function(device_id) {
+			ws.push("me.z-wave.devices.wipe", device_id, self.profilesByDevice(device_id));
 		});
 
 		self.devices.on('removed', function(device) {
@@ -1095,7 +1091,11 @@ AutomationController.prototype.deleteInstance = function(id) {
 		self = this;
 
 	// get all devices created by instance
-	instDevices = this.devices.filterByCreatorId(id);
+	instDevices = this.devices.filterByCreatorId(id).concat(
+        	Object.keys(self.vdevInfo).filter(function(__id, __vdev) {
+        		return __vdev.creatorId === id;
+		})
+	);
 
 	this.removeInstance(id);
 
@@ -1107,10 +1107,8 @@ AutomationController.prototype.deleteInstance = function(id) {
 	if (instDevices.length > 0) {
 		instDevices.forEach(function(vDev) {
 			// check for vDevInfo entry
-			if (self.vdevInfo[vDev.id]) {
-				self.devices.remove(vDev.id);
-				self.devices.cleanup(vDev.id);
-			}
+			self.devices.remove(vDev.id);
+			self.devices.cleanup(vDev.id);
 		});
 	}
 
@@ -1488,6 +1486,7 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 		"tags",
 		"permanently_hidden",
 		"creationTime",
+		"creatorId",
 		"customIcons",
 		"order",
 		"visibility",

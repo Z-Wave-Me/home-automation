@@ -54,6 +54,8 @@ _.extend(DevicesCollection.prototype, {
 			console.log("Error creating device");
 		}
 
+		vDev.save();
+		
 		return vDev;
 	},
 	add: function (model) {
