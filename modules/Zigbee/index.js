@@ -57,6 +57,8 @@ function Zigbee(id, controller) {
 
 	this.CC = {
 		"OnOff": 0x0006,
+		"LevelControl": 0x0008,
+		"ColorControl": 0x0300,
 	};
 }
 
@@ -1683,12 +1685,11 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					} catch (e) {}
 				}, "value");
 			}
-		}
-		/*
-		else if (this.CC["SwitchMultilevel"] === clusterId && !self.controller.devices.get(vDevId)) {
+		} else if (this.CC["LevelControl"] === clusterId && !self.controller.devices.get(vDevId)) {
 			var icon;
 			var title;
 			var probeType = 'multilevel';
+			/* TODO how to detect it in Zigbee?
 			if (this.zbee.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zbee.devices[nodeId].data.specificType.value)) {
 				icon = 'blinds'; // or alternatively window
 				probeType = 'motor';
@@ -1696,7 +1697,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			} else if (this.zbee.devices[nodeId].data.genericType.value === 0x11 && this.zbee.devices[nodeId].data.specificType.value == 0x08) {
 				icon = 'fan';
 				title = 'Fan';
-			} else {
+			} else */ {
 				icon = 'multilevel';
 				title = 'Dimmer';
 			}
@@ -1709,7 +1710,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
+			// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -1725,45 +1726,28 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					} else if ("min" === command) {
 						newVal = 10;
 					} else if ("max" === command || "upMax" === command) {
-						newVal = 99;
-					} else if ("increase" === command) {
-						newVal = newVal + 10;
-						if (0 !== newVal % 10) {
-							newVal = Math.round(newVal / 10) * 10;
-						}
-						if (newVal > 99) {
-							newVal = 99;
-						}
-
-					} else if ("decrease" === command) {
-						newVal = newVal - 10;
-						if (newVal < 0) {
-							newVal = 0;
-						}
-						if (0 !== newVal % 10) {
-							newVal = Math.round(newVal / 10) * 10;
-						}
+						newVal = 255;
 					} else if ("exact" === command || "exactSmooth" === command) {
-						newVal = parseInt(args.level, 10);
+						newVal = Math.round(parseInt(args.level, 10) * 255 / 99, 10);
 						if (newVal < 0) {
 							newVal = 0;
-						} else if (newVal === 255) {
+						} else if (newVal > 255) {
 							newVal = 255;
-						} else if (newVal > 99) {
-							if (newVal === 100) {
-								newVal = 99;
-							} else {
-								newVal = null;
-							}
 						}
-					} else if ("stop" === command) { // Clusters for Blinds
-						cc.StopLevelChange();
+					} else if ("increase" === command) {
+						cc.StepOnOff(0, 10);
+						return;
+					} else if ("decrease" === command) {
+						cc.StepOnOff(1, 10);
+						return;
+					} else if ("stop" === command) { // Commands for Blinds
+						cc.StopOnOff();
 						return;
 					} else if ("startUp" === command) {
-						cc.StartLevelChange(0);
+						cc.MoveOnOff(0);
 						return;
 					} else if ("startDown" === command) {
-						cc.StartLevelChange(1);
+						cc.MoveOnOff(1);
 						return;
 					} else if ("update" === command) {
 						cc.Get();
@@ -1772,9 +1756,9 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 
 					if (0 === newVal || !!newVal) {
 						if ("exactSmooth" === command)
-							cc.Set(newVal, args.duration);
+							cc.MoveToLevelOnOff(newVal, args.duration);
 						else
-							cc.Set(newVal);
+							cc.MoveToLevelOnOff(newVal);
 					}
 				},
 				moduleId: self.id
@@ -1782,43 +1766,44 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 
 			if (vDev) {
 				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "level", function(type) {
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentLevel", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value);
+							vDev.set("metrics:level", Math.round(this.value * 99 / 255, 10));
 						}
 					} catch (e) {}
 				}, "value");
 			}
-		} else if (this.CC["SwitchColor"] === clusterId && !self.controller.devices.get(vDevId)) {
+		} else if (this.CC["ColorControl"] === clusterId && !self.controller.devices.get(vDevId)) {
 			var
-				COLOR_SOFT_WHITE = 0,
-				COLOR_COLD_WHITE = 1,
+				// TODO COLOR_SOFT_WHITE = 0,
+				// TODO COLOR_COLD_WHITE = 1,
 				COLOR_RED = 2,
 				COLOR_GREEN = 3,
 				COLOR_BLUE = 4;
 
-			var haveRGB = cc.data && cc.data[COLOR_RED] && cc.data[COLOR_GREEN] && cc.data[COLOR_BLUE] && true;
+			var ccLevelControl = endpoint.clusters[this.CC["LevelControl"]];
+			if (!ccLevelControl) return;
 
-			if (haveRGB && !self.controller.devices.get(vDevId + separ + "rgb")) {
+			if (!self.controller.devices.get(vDevId + separ + "rgb")) {
 
 				defaults = {
 					deviceType: "switchRGBW",
 					probeType: 'switchColor_rgb',
 					metrics: {
 						icon: 'multilevel',
-						color: {
-							r: cc.data[COLOR_RED].level.value,
-							g: cc.data[COLOR_GREEN].level.value,
-							b: cc.data[COLOR_BLUE].level.value
-						},
+						color: HSVtoRGB(
+							cc.data.currentHue.value,
+							cc.data.currentSaturation.value,
+							ccLevelControl.data.currentLevel.value
+						),
 						level: 'off',
 						oldColor: {},
 						isFailed: false
 					}
 				}
 				
-				if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Color')) return;
+				// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Color')) return;
 
 				var vDev_rgb = this.controller.devices.create({
 					deviceId: vDevId + separ + "rgb",
@@ -1845,23 +1830,74 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 							color.b = parseInt(args.blue, 10);
 							vDev_rgb.set("metrics:oldColor", color);
 						}
-						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
+						
+						var hsv = RGBtoHSV(color.r, color.g, color.b);
+						
+						console.logJS(hsv);
+						cc.MoveToHueAndSaturation(hsv.h, hsv.s, 0);
+						ccLevelControl.MoveToLevel(hsv.v);
 					},
 					moduleId: this.id
 				});
 
+				function HSVtoRGB(h, s, v) {
+					var r, g, b, i, f, p, q, t;
+					
+					i = Math.floor(h * 6);
+					f = h * 6 - i;
+					p = v * (1 - s);
+					q = v * (1 - f * s);
+					t = v * (1 - (1 - f) * s);
+					
+					switch (i % 6) {
+						case 0: r = v, g = t, b = p; break;
+						case 1: r = q, g = v, b = p; break;
+						case 2: r = p, g = v, b = t; break;
+						case 3: r = p, g = q, b = v; break;
+						case 4: r = t, g = p, b = v; break;
+						case 5: r = v, g = p, b = q; break;
+					}
+					
+					return {
+						r: Math.round(r * 255),
+						g: Math.round(g * 255),
+						b: Math.round(b * 255)
+					};
+				}
+				
+				function RGBtoHSV(r, g, b) {
+					var max = Math.max(r, g, b), min = Math.min(r, g, b),
+						d = max - min,
+						h,
+						s = (max === 0 ? 0 : d / max),
+						v = max / 255;
+					
+					switch (max) {
+						case min: h = 0; break;
+						case r: h = (g - b) + d * (g < b ? 6: 0); h /= 6 * d; break;
+						case g: h = (b - r) + d * 2; h /= 6 * d; break;
+						case b: h = (r - g) + d * 4; h /= 6 * d; break;
+					}
+					
+					return {
+						h: Math.round(h * 255),
+						s: Math.round(s * 255),
+						v: Math.round(v * 255)
+					};
+				}
+				
 				function handleColor(type, arg) {
 					try {
-						var isOn = cc.data && (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value);
+						var isOn = cc.data.currentLevel.value > 0;
 
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId + separ + 'rgb');
 						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							var color = {
-								r: cc.data[COLOR_RED].level.value,
-								g: cc.data[COLOR_GREEN].level.value,
-								b: cc.data[COLOR_BLUE].level.value
-							};
+							var color = HSVtoRGB(
+								cc.data.currentHue.value,
+								cc.data.currentSaturation.value,
+								ccLevelControl.data.currentLevel.value
+							);
 							vDev_rgb.set("metrics:color", color);
 							vDev_rgb.set("metrics:level", isOn ? "on" : "off");
 						}
@@ -1870,128 +1906,12 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 
 				if (vDev_rgb) {
 					vDev_rgb.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, COLOR_RED + ".level", handleColor, "value");
-					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, COLOR_GREEN + ".level", handleColor, "value");
-					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, COLOR_BLUE + ".level", handleColor, "value");
+					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentHue", handleColor, "value");
+					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentSaturation", handleColor, "value");
+					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, this.CC["LevelControl"], "currentLevel", handleColor, "value");
 				}
 			}
-
-			if (cc.data) {
-				Object.keys(cc.data).forEach(function(colorId) {
-
-					colorId = parseInt(colorId, 10);
-					if (!isNaN(colorId) && !self.controller.devices.get(vDevId + separ + colorId) && (!haveRGB || (colorId !== COLOR_RED && colorId !== COLOR_GREEN && colorId !== COLOR_BLUE))) {
-						var cVDId = changeDevId + separ + colorId;
-
-						defaults = {
-							deviceType: "switchMultilevel",
-							probeType: '',
-							metrics: {
-								icon: 'multilevel',
-								level: 'off',
-								oldLevel: 0,
-								isFailed: false
-							}
-						}
-						
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, endpointId, cc.data[colorId].capabilityString.value)) return;
-
-						switch (colorId) {
-							case 0:
-								defaults.probeType = 'switchColor_soft_white';
-								break;
-							case 1:
-								defaults.probeType = 'switchColor_cold_white';
-								break;
-							case 2:
-								defaults.probeType = 'switchColor_red';
-								break;
-							case 3:
-								defaults.probeType = 'switchColor_green';
-								break;
-							case 4:
-								defaults.probeType = 'switchColor_blue';
-								break;
-						}
-
-						var vDev = self.controller.devices.create({
-							deviceId: vDevId + separ + colorId,
-							defaults: defaults,
-							overlay: {},
-							handler: function(command, args) {
-								var newVal,
-									level = this.get('metrics:level'),
-									oldLevel = this.get('metrics:oldLevel');
-
-								if ("on" === command) {
-									if (!_.isEmpty(oldLevel)) {
-										newVal = oldLevel;
-									} else {
-										newVal = 255;
-									}
-								} else if ("off" === command) {
-									newVal = 0;
-								} else if ("min" === command) {
-									newVal = 10;
-								} else if ("max" === command) {
-									newVal = 255;
-								} else if ("increase" === command) {
-									newVal = Math.ceil(level * 255 / 99) + 10;
-									if (0 !== newVal % 10) {
-										newVal = Math.round(newVal / 10) * 10;
-									}
-									if (newVal > 255) {
-										newVal = 255;
-									}
-
-								} else if ("decrease" === command) {
-									newVal = Math.ceil(level * 255 / 99) - 10;
-									if (newVal < 0) {
-										newVal = 0;
-									}
-									if (0 !== newVal % 10) {
-										newVal = Math.round(newVal / 10) * 10;
-									}
-								} else if ("exact" === command || "exactSmooth" === command) {
-									newVal = Math.ceil(parseInt(args.level, 10) * 255 / 99);
-									if (newVal < 0) {
-										newVal = 0;
-									} else if (newVal > 255) {
-										newVal = 255;
-									}
-								}
-
-								if (0 === newVal || !!newVal) {
-									if ("exactSmooth" === command) {
-										cc.Set(colorId, newVal, args.duration);
-									} else {
-										cc.Set(colorId, newVal);
-									}
-								}
-							},
-							moduleId: self.id
-						});
-
-						if (vDev) {
-							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, colorId + ".level", function(type) {
-								try {
-									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-										self.controller.devices.remove(vDevId + separ + colorId);
-									} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-										var value = Math.ceil(this.value * 99 / 255);
-										vDev.set("metrics:level", value);
-										if (this.value > 0) {
-											vDev.set("metrics:oldLevel", value);
-										}
-									}
-								} catch (e) {}
-							}, "value");
-						}
-					}
-				});
-			}
-		} else if (this.CC["SoundSwitch"] === clusterId) {
+		} /* else if (this.CC["SoundSwitch"] === clusterId) {
 			if (cc.data) {
 				// tones
 				defaults = {
