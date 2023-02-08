@@ -2710,7 +2710,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					defaults.metrics.icon = 'burglar';
 					defaults.probeType = 'burglar';
 					break;
-				case 0x002c
+				case 0x002c:
 				case 0x0225:
 					defaults.metrics.icon = 'alarm';
 					defaults.probeType = 'emergency';
