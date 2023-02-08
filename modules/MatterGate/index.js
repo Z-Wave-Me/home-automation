@@ -74,7 +74,31 @@ MatterGate.prototype.init = function (config) {
 			if (vDevT.id.slice(-2) === "64") return;
 			
 			self.matter.addEndPointSwitchBinary(ep);
-			self.endpoints[ep] = self.mapEndpoint(vDevT.id, self.binarySwitchGet, self.binarySwitchSet);
+			self.addEndpoint(ep, vDevT.id, self.binarySwitchGet, self.binarySwitchSet);
+		}
+		else if (vDevT.deviceType === "switchMultilevel" && (vDevT.probeType !== "motor") ) {
+			self.matter.addEndPointSwitchMultiLevel(ep);
+			self.addEndpoint(ep, vDevT.id, self.multilevelSwitchGet, self.multilevelSwitchSet);
+		}
+		else if (vDevT.deviceType === "sensorMultilevel") {
+			if (vDevT.probeType === "temperature" && (vDevT.scaleTitle === "°C" || vDevT.scaleTitle === "°F")) {
+				self.matter.addEndPointSensorTemperature(ep, -99*100, 99*100);
+				self.addEndpoint(ep, vDevT.id, self.multilevelSensor100Get);
+			}
+			else if (vDevT.probeType === "humidity" && vDevT.scaleTitle === "%") {
+				self.matter.addEndPointSensorHumidity(ep, 0*100, 100*100);
+				self.addEndpoint(ep, vDevT.id, self.multilevelSensor100Get);
+			}
+			else if (vDevT.probeType === "luminosity") {
+				self.matter.addEndPointSensorLight(ep, 1, 10000);
+				self.addEndpoint(ep, vDevT.id, self.multilevelSensorGet);
+			}
+		}
+		else if (vDevT.deviceType === "sensorBinary") {
+			if (vDevT.probeType === "door-window") {
+				self.matter.addEndPointSensorContact(ep);
+				self.addEndpoint(ep, vDevT.id, self.binarySensorGet, undefined, self.binarySensorPush);
+			}
 		}
 	};
 
@@ -135,10 +159,7 @@ MatterGate.prototype.init = function (config) {
 	this.onLevelChanged = function (vDev) {
 		console.log("Matter: updated", vDev.id);
 		
-		var dev = self.config.matterDevices[vDev.id];
-		if (!dev) {
-			// TODO self.matter.update(dev.ep);
-		}
+		self.devicePush(vDev.id);
 	}
 
 	this.onTagsChanged = function (vDev) {
@@ -253,8 +274,6 @@ MatterGate.prototype.addDevice = function(vDevT) {
 	
 	if (!_.isEqual(_.omit(this.config.matterDevices[vDevT.id], "ep"), _.omit(vDevT, "ep"))) {
 		var ep = (this.config.matterDevices[vDevT.id] && this.config.matterDevices[vDevT.id].ep) || (1 + Math.max(2, Math.max.apply(null, Object.keys(this.config.matterDevices).map(function(k) { return self.config.matterDevices[k].ep; }))));
-		console.logJS(ep);
-		console.logJS(this.config.matterDevices);
 		this.config.matterDevices[vDevT.id] = vDevT;
 		if (this.config.matterDevicesArray.indexOf(vDevT.id) == -1)
 			this.config.matterDevicesArray.push(vDevT.id);
@@ -293,26 +312,96 @@ MatterGate.prototype.vDevToTemplate = function(vDev) {
 	};
 };
 
-MatterGate.prototype.mapEndpoint = function(id, getter, setter) {
-	return {
+MatterGate.prototype.addEndpoint = function(ep, id, getter, setter, pusher) {
+	this.endpoints[ep] = {
 		id: id,
 		getter: getter,
-		setter: setter
+		setter: setter,
+		pusher: pusher
 	};
+};
+
+MatterGate.prototype.epById = function(id) {
+	for (var ep in this.endpoints) {
+		if (this.endpoints[ep].id === id) {
+			return parseInt(ep, 10);
+		}
+	};
+	
+	return null;
+};
+
+MatterGate.prototype.devicePush = function(id) {
+	var ep = this.epById(id);
+	if (!ep) return;
+	
+	var pusher = this.endpoints[ep].pusher;
+	if (!pusher) return;
+	
+	pusher.call(this, id, ep);
 };
 
 // Getters and setters
 
 MatterGate.prototype.binarySwitchGet = function(id) {
 	var dev = this.controller.devices.get(id);
-	return !!dev && dev.get("metrics:level") === "on" ? 0xFF : 0x00
+	if (!dev) return false;
+	
+	return dev.get("metrics:level") === "on" ? 0xFF : 0x00;
 };
 
 MatterGate.prototype.binarySwitchSet = function(id, value) {
         var dev = this.controller.devices.get(id);
-        if (!!dev) {
-        	dev.performCommand(value ? "on" : "off");
-        	return true;
-	}
-	return false;
+        if (!dev) return false;
+
+       	dev.performCommand(value ? "on" : "off");
+       	return true;
+};
+
+MatterGate.prototype.multilevelSwitchGet = function(id) {
+	var dev = this.controller.devices.get(id);
+	if (!dev) return false;
+	
+	var level = dev.get("metrics:level") ;
+	if (level === "on") level === 99;
+	if (level === "off") level = 0;
+	if (level < 0) level = 0;
+	if (level >= 99) level = 100;
+	return level;
+};
+
+MatterGate.prototype.multilevelSwitchSet = function(id, value) {
+        var dev = this.controller.devices.get(id);
+        if (!dev) return false;
+
+       	dev.performCommand("exact", { level: value });
+       	return true;
+};
+
+MatterGate.prototype.multilevelSensorGet = function(id) {
+        var dev = this.controller.devices.get(id);
+        if (!dev) return false;
+
+        return Math.round(dev.get("metrics:level"));
+};
+
+MatterGate.prototype.multilevelSensor100Get = function(id) {
+        var dev = this.controller.devices.get(id);
+        if (!dev) return false;
+
+        return Math.round(dev.get("metrics:level") * 100);
+};
+
+MatterGate.prototype.binarySensorGet = function(id) {
+        var dev = this.controller.devices.get(id);
+        if (!dev) return false;
+
+        return dev.get("metrics:level") === "on" ? 0x01 : 0x00;
+};
+
+MatterGate.prototype.binarySensorPush = function(id, ep) {
+        var dev = this.controller.devices.get(id);
+        if (!dev) return;
+
+        this.matter.setEndPointSensorContactState(ep, dev.get("metrics:level") === "on" ? 0x01 : 0x00);
 };
