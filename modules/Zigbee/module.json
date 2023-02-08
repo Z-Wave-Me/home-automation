@@ -1,7 +1,7 @@
 {
 	"dependencies": [],
 	"singleton": false,
-	"category": "basic_gateway_modules",
+	"category": "peripherals",
 	"author": "Z-Wave.Me",
 	"homepage": "http://z-wave.me",
 	"icon": "icon.png",
