@@ -197,7 +197,7 @@ Zigbee.prototype.startBinding = function() {
 	if (this.config.createVDev !== false) {
 		this.gateDevicesStart();
 	}
-	
+
 	this.timeUpdaterStart();
 
 	// save data every hour for hot start
@@ -215,7 +215,7 @@ Zigbee.prototype.startBinding = function() {
 			self.zbee.stop();
 			self.tryRestartLater();
 		}
-		
+
 	}
 	//TODO//this.zbee.controller.data.hardware.uartSpeed.bind(uartSpeed);
 };
@@ -238,11 +238,11 @@ Zigbee.prototype.stopBinding = function() {
 	this.controller.emit("Zigbee.unregister", this.config.name);
 
 	this.networkReorganization = null;
-	
+
 	if (this.config.createVDev !== false) {
 		this.gateDevicesStop();
 	}
-	
+
 	this.timeUpdaterStop();
 
 	if (this.fastAccess) {
@@ -656,8 +656,8 @@ Zigbee.prototype.defineHandlers = function() {
 			}
 
 			var L = 32,
-			    addr,
-			    skip1800;
+				addr,
+				skip1800;
 
 			if (parseFloat(zbee.controller.data.SDK.value.substr(0, 4)) >= 7.12) {
 				// ZGM130S/ZG14
@@ -1410,7 +1410,7 @@ Zigbee.prototype.gateDevicesStart = function() {
 													case 'tilt':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
 															var nId = nodeId + '-' + splittedEntry[1];
-															
+
 															//add devId
 															if (!changeVDev[nId]) {
 																changeVDev[nId] = {};
@@ -1418,12 +1418,12 @@ Zigbee.prototype.gateDevicesStart = function() {
 														
 															changeVDev[nId].tilt = true;
 														}
-														
+
 														break;
 													case 'notificationStatus':
 														if (splittedEntry[1] && splittedEntry[1].indexOf(devICC) > -1) {
 															var nId = nodeId + '-' + splittedEntry[1];
-															
+
 															//add devId
 															if (!changeVDev[nId]) {
 																changeVDev[nId] = {};
@@ -1431,7 +1431,7 @@ Zigbee.prototype.gateDevicesStart = function() {
 														
 															changeVDev[nId].notificationStatus = true;
 														}
-														
+
 														break;														
 													default:
 														eval(entry);
@@ -1549,7 +1549,7 @@ Zigbee.prototype.compileTitle = function(nodeId, endpointId, title, type, addVen
 	}
 
 	sortArgs.push(title);
-	
+
 	// add probeType
 	if (type) {
 		sortArgs.push(type);
@@ -1614,8 +1614,8 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 		if (!cc) {
 			return; // do not handle destroyed Cluster Classes
 		}
-		
-		if (!cc.data.supported.value) {
+
+		if (!cc.data.inDirection.value) {
 			return; // do not handle unsupported Cluster Classes
 		}
 
@@ -1648,7 +1648,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					break;
 			};
 			*/
-			
+
 			defaults = {
 				deviceType: "switchBinary",
 				probeType: probeType,
@@ -1657,7 +1657,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					isFailed: false
 				}
 			};
-			
+
 			// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Switch')) return;
 
 			var vDev = this.controller.devices.create({
@@ -1710,7 +1710,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					isFailed: false
 				}
 			};
-			
+
 			// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
 
 			var vDev = this.controller.devices.create({
@@ -2737,7 +2737,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			
 			if (vDev) {
 				//TODO isFailed a_vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "zoneState", function(type) {
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "zoneStatus", function(type) {
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId);
@@ -2753,7 +2753,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			if (changeVDev[changeDevId]) {
 				Object.keys(changeVDev[changeDevId]['configVDev']).forEach(function(param) {
 					var vDevIdParam = vDevId + '-' + param,
-					    vDevConfig = changeVDev[changeDevId]['configVDev'][param];
+					vDevConfig = changeVDev[changeDevId]['configVDev'][param];
 					
 					if (!self.controller.devices.get(vDevIdParam)) {
 						var icon, probeType;
@@ -2851,8 +2851,8 @@ Zigbee.prototype.parseDelClusterClass = function(nodeId, endpointId, clusterId) 
 Zigbee.prototype.nodeNameByType = function (nodeId, nodeData) {
 
 	var name = 'Device ' + '_' + nodeId,
-	    type = '',
-	    node = nodeData;
+		type = '',
+		node = nodeData;
 
 	if (node){
 		var isSleepy = false; // TODO wait for isSleepy to be moved on device // node.isSleepy.value;
