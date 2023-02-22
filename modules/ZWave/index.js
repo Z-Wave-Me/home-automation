@@ -372,9 +372,9 @@ ZWave.prototype.startBinding = function() {
 					uuid: self.zway.controller.data.uuid.value,
 					build: self.zway.controller.data.firmware.build.value,
 					code: this.value,
-					scb: this.scb.value.map(function(v) { return v.toString(16); }).join(""),
-					reg: this.reg.value.map(function(v) { return v.toString(16); }).join(""),
-					stack: this.stack.value.map(function(v) { return v.toString(16); }).join(""),
+					scb: this.scb.value.map(function(v) { return ("00" + v.toString(16)).slice(-2); }).join(""),
+					reg: this.reg.value.map(function(v) { return ("00" + v.toString(16)).slice(-2); }).join(""),
+					stack: this.stack.value.map(function(v) { return ("00" + v.toString(16)).slice(-2); }).join(""),
 					zway: self.zway.controller.data.softwareRevisionVersion.value
 				}
 			});
