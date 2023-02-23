@@ -1,6 +1,6 @@
 {
 	"m_title":"Apple HomeKit Gate",
-	"m_descr":"The apple HomeKit protocol allows controlling HomeKit compatible devices from Apple iOS devices (iPhone, iPad). Activating this option your Z-Way gateway will be recognized as a HomeKit Bridge. All Z-Wave switches, dimmer etc. are mapped into the HomeKit world and can be controlled using third party HomeKit apps on the given platforms as well as in the native iOS Home app.<br><br>If you don't want to export some device in HomeKit, add <i>homekit-skip</i> tag to that device. Make a switch look like a bulb: add tag <i>type-light</i>, for fun: <i>type-fun</i>.<br><br>NB! Works only with Z-Way v3.0.0 and upper.",
+	"m_descr":"The Apple HomeKit protocol allows controlling HomeKit compatible devices from Apple iOS devices (iPhone, iPad). Activating this option your Z-Way gateway will be recognized as a HomeKit Bridge. All Z-Wave switches, dimmer etc. are mapped into the HomeKit world and can be controlled using third party HomeKit apps on the given platforms as well as in the native iOS Home app.<br><br>If you don't want to export some device in HomeKit, add <i>homekit-skip</i> tag to that device. Make a switch look like a bulb: add tag <i>type-light</i>, for fun: <i>type-fun</i>.<br><br>NB! Works only with Z-Way v3.0.0 and upper.",
 	"l_options":"Name as it appears in iOS devices",
 	"l_pin":"Apple Homekit Pin",
 	"l_skipped_devices":"Devices that don't need to be displayed in HomeKit",
