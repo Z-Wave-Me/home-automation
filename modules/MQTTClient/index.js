@@ -1,7 +1,7 @@
 /*** MQTT Client Z-Way HA module ****************************************************
 
-Version: 1.2.1
-(c) Z-Wave.Me, 2021
+Version: 1.3
+(c) Z-Wave.Me, 2023
 -----------------------------------------------------------------------------
 Author: Yurkin Vitaliy <aivs@z-wave.me>
 Description:
@@ -104,16 +104,18 @@ MQTTClient.prototype.init = function(config) {
 			if (vDev.id === vDevId) {
 				vDevFound = true;
 				var deviceType = vDev.get("deviceType");
-
-				if (msg !== "on" && msg !== "off" && msg !== "stop" && msg !== "open" && msg !== "close") {
-					if (deviceType === "switchMultilevel") {
-						vDev.performCommand("exact", {level: parseInt(msg)});
-					}
-					else if (deviceType === "thermostat") {
-						vDev.performCommand("exact", {level: parseFloat(msg)});
-					}
+				if (deviceType === "switchMultilevel") {
+					vDev.performCommand("exact", {level: parseInt(msg)});
+				}
+				else if (deviceType === "thermostat") {
+					vDev.performCommand("exact", {level: parseFloat(msg)});
+				}
+				else if (deviceType === "switchRGBW") {
+					rgb = msg.split(",")
+					vDev.performCommand("exact", {red: rgb[0], green: rgb[1], blue: rgb[2]});
 				}
 				else {
+					// on, off, stop, open, close and custom command
 					vDev.performCommand(msg);
 				}
 			}
