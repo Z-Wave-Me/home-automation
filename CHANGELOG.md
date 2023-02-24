@@ -1,3 +1,15 @@
+## 24.02.2023 v4.0.3
+Improvements:
+* MQTT: switchRGBW support
+* Add Battery notifications to inbound notification
+Fixes:
+* Fixed firmware-fault report
+* Fixed wipeOut handler
+* registerNotificationChannel parseInt(user)
+* Typo in getMACAddress
+* Be more verbose in ImportHA
+* Heating App: Don't set the temperature if it is not defined
+
 ## 22.12.2022 v4.0.2
 New features:
 * Allow <deviceId:metrics:xxxx> in Notification Filtering
