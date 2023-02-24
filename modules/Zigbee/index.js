@@ -1561,7 +1561,7 @@ Zigbee.prototype.compileTitle = function(nodeId, endpointId, title, type, addVen
 	return sortArgs.join(' ');
 };
 
-ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceId, title, type, addVendor) {
+Zigbee.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceId, title, type, addVendor) {
 	this.addVDevInfo(defaultObj, nodeId);
 	
 	defaultObj.metrics.title = this.compileTitle(nodeId, endpointId, title, type, addVendor);
