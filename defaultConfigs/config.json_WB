@@ -55,7 +55,7 @@
 		"moduleId": "ZWave",
 		"params": {
 			"name": "zway",
-			"port": "/dev/ttyMOD3",
+			"port": "/dev/ttyMOD4",
 			"speed": 115200,
 			"enableAPI": true,
 			"publicAPI": false,
