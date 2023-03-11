@@ -31,14 +31,14 @@ NotificationPushsafer.prototype.init = function (config) {
 
     this.vDev = this.controller.devices.create({
         deviceId: "NotificationPushsafer_" + this.id,
-		defaults: {
-            deviceType: "toggleButton",
-            //deviceType: "switchBinary",
-			// in case you want to use if<>then you may want to switch devicetype "switchBinary" to handle events
-			metrics: {
-                level: 'on', // it is always on, but usefull to allow bind
-                icon: '',
-                title: 'NotificationPushsafer ' + this.id
+	defaults: {
+        deviceType: "toggleButton",
+        //deviceType: "switchBinary",
+	// in case you want to use if<>then you may want to switch devicetype "switchBinary" to handle events
+	    metrics: {
+               level: 'on', // it is always on, but usefull to allow bind
+               icon: '',
+               title: 'NotificationPushsafer ' + this.id
             }
         },
         overlay: {},
