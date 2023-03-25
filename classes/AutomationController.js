@@ -2042,18 +2042,25 @@ AutomationController.prototype.permanentToken = function(profile, token) {
 };
 
 AutomationController.prototype.getIPAddress = function() {
-	var ip = "";
+	try {
+		var ip = fs.loadJSON("localIP.json");
+		if (typeof ip === "string") {
+			return ip;
+		}
+	} catch (e) {
+	}
+	
 	try {
 		if (checkBoxtype('zme_hub')) {
-			ip = system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
+			return system(". /lib/functions/network.sh; network_get_ipaddr ip wan; echo $ip")[1].replace(/[\s\n]/g, '');
 		} else {
-			ip = system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
+			return system("ip a s dev eth0 | sed -n 's/.*inet \\([0-9.]*\\)\\/.*/\\1/p' | head -n 1")[1].replace(/[\s\n]/g, '');
 		}
 	} catch (e) {
 		console.log(e);
 	}
 
-	return ip;
+	return "";
 }
 
 AutomationController.prototype.getMACAddress = function() {
