@@ -129,24 +129,24 @@
 			"generated": []
 		}
 	}, {
-		 "id": 8,
-		 "moduleId": "CloudBackup",
-		 "active": true,
-		 "title": "CloudBackup",
-		 "description": "Gives possibility to upload and store your backups on the remote server.",
-		 "params": {
-			 "api": "/CloudBackupAPI/Backup",
-			 "user_active": false,
-			 "email": "",
-			 "email_log": "0",
-			 "remoteid": null,
-			 "days": "28",
-			 "weekDays": null,
-			 "hours": "23",
-			 "minutes": "59",
-			 "scheduler": "3"
-		 }
-	 }, {
+		"id": 8,
+		"moduleId": "CloudBackup",
+		"active": true,
+		"title": "CloudBackup",
+		"description": "Gives possibility to upload and store your backups on the remote server.",
+		"params": {
+			"api": "/CloudBackupAPI/Backup",
+			"user_active": false,
+			"email": "",
+			"email_log": "0",
+			"remoteid": null,
+			"days": "28",
+			"weekDays": null,
+			"hours": "23",
+			"minutes": "59",
+			"scheduler": "3"
+		}
+	}, {
 		"id": 9,
 		"moduleId": "InfoWidget",
 		"active": true,
@@ -176,17 +176,39 @@
 		"params" : {
 			"apps" : []
 		}
-	 },
-	 {
+	}, {
 		"id": 11,
 		"moduleId": "HomeKitGate",
 		"active": true,
 		"title": "Apple HomeKit Gate",
 		"params": {
 			"name": "Z-Wave.Me",
-			"pin": "000-11-222",
 			"skippedDevices": [],
 			"idMapping": {}
+		}
+	}, {
+		"id": 12,
+		"moduleId": "NotificationFiltering",
+		"active": true,
+		"title": "Notification Filtering",
+		"params": {
+			"rules": [{
+				"recipient_type": "user",
+				"user": 1,
+				"logLevel": "errors,warnings",
+				"devices": []
+			}],
+			"autogenOnDeviceListUpdate": true,
+			"normalizeRules": true
+		}
+	}, {
+		"id": 13,
+		"moduleId": "NotificationChannelEmail",
+		"active": true,
+		"title": "Notifications by E-mail",
+		"params": {
+			"subject": "Z-Way Notification",
+			"channels": []
 		}
 	}]
 }

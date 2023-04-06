@@ -156,24 +156,24 @@
 			"timeout": 30
 		}
 	}, {
-		 "id": 11,
-		 "moduleId": "CloudBackup",
-		 "active": true,
-		 "title": "CloudBackup",
-		 "description": "Gives possibility to upload and store your backups on the remote server.",
-		 "params": {
-			 "api": "/CloudBackupAPI/Backup",
-			 "user_active": false,
-			 "email": "",
-			 "email_log": "0",
-			 "remoteid": null,
-			 "days": "28",
-			 "weekDays": null,
-			 "hours": "23",
-			 "minutes": "59",
-			 "scheduler": "3"
-		 }
-	 }, {
+		"id": 11,
+		"moduleId": "CloudBackup",
+		"active": true,
+		"title": "CloudBackup",
+		"description": "Gives possibility to upload and store your backups on the remote server.",
+		"params": {
+			"api": "/CloudBackupAPI/Backup",
+			"user_active": false,
+			"email": "",
+			"email_log": "0",
+			"remoteid": null,
+			"days": "28",
+			"weekDays": null,
+			"hours": "23",
+			"minutes": "59",
+			"scheduler": "3"
+		}
+	}, {
 		"id": 12,
 		"moduleId": "InfoWidget",
 		"active": true,
