@@ -132,7 +132,8 @@ if (!config && config === null) {
 
 	//--- Load 3d-party dependencies
 	executeFile(config.libPath + "/eventemitter2.js");
-	executeFile(config.libPath + "/underscore.js");
+	// executeFile(config.libPath + "/underscore.js");
+	executeFile(config.libPath + "/underscore-umd-min.js");
 	executeFile(config.libPath + "/papaparse.min.js");
 	executeFile(config.libPath + "/zlib_and_gzip.min.js"); // TODO Test!
 	executeFile(config.libPath + "/BAOS_API_2011_01_29_001.js");

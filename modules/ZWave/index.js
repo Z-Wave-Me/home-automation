@@ -28,8 +28,9 @@ if (!String.prototype.padStart) {
 function ZWave(id, controller) {
 
 	// if called without "new", return list of loaded Z-Way instances
-	if (!(this instanceof ZWave))
+	if (!(this instanceof ZWave)) {
 		return ZWave.list();
+	}
 
 	ZWave.super_.call(this, id, controller);
 
@@ -909,267 +910,207 @@ ZWave.prototype.refreshStatisticsPeriodically = function() {
  * DSKs of new entries will also be added automatically to the provisioning list
  */
 ZWave.prototype.addDSKEntry = function(entry) {
-	var successful = 200,
-	    tlvString = '';
+	function safeInt(string, defaultValue) {
+		var digit = +string;
+		defaultValue = defaultValue || 0;
+		if (!isNaN(digit)) {
+			return digit;
+		}
 
-	if (entry && !!entry) {
-		// setup basic values for each QR code entry
-		transformedEntry = {
-			id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
-			isSmartStart: entry.substring(0, 2) === '90' && entry.substring(2, 4) === '01' && entry.split('-').length === 1,
-			state: 'pending',
-			nodeId: null,
-			timestamp: Date.now(),
-			ZW_QR: entry,
-			PId: '',
-			givenName: null,
-			location: 0,
-			addedAt: null
-		},
-		// array with length values of the first 5 leading static QR code values
-		pos = [2, 2, 5, 3, 40],
-		// length values of generic TLV parts
-		tlv = [2, 2, null],
-		// keys of the first 5 leading static QR code values
-		keys = [
-			'Leadin',
-			'Version',
-			'Chksum',
-			'S2ReqKeys',
-			'DSK'
-		],
-		// type array with all known types and their special value subdivisions
-		// all unknown types will be handled generic, see further below
-		// TLV types
-		types = {
-			'00': { // ProductType [0x00]
-			  'DeviceType': 5,
-			  'InstallerIconType': 5,
-			},
-			'02': { // ProductID [0x01]
-			  'ManufacturerId': 5,
-			  'ProductType': 5,
-			  'ProductId': 5,
-			  'ApplicationVersion': 5
-			},
-			'04': { // MaxInclusion RequestInterval [0x02]
-			  'RequestInterval': 2 // 5 - 99 * 128 (640 - 12672)
-			},
-			'06': { // UUID16 [0x03]
-			  'UUIDPresFormat': 2,
-			  'UUIDData': 40
-			}
-		},
-		currPos = 0,
-		valLength = 0,
-		// function that will generate entries for known types
-		setTypeEntries = function(type, value) {
-			var length = 0;
-
-			if (types[type]) {
-				Object.keys(types[type]).forEach(function(key, index) {
-					// grep the value from the current string
-					var appV = dToHex(value.substring(length, (length + types[type][key])));
-
-					if (key === 'ApplicationVersion') {
-						transformedEntry[key + 'Major'] = parseInt(appV.substring(0,2), 10);
-						transformedEntry[key + 'Minor'] = parseInt(appV.substring(2), 10);
-					} else if (key === 'DeviceType') {
-						transformedEntry[key + 'GenericDeviceClass'] = '0x' + appV.substring(0,2);
-						transformedEntry[key + 'SpecificDeviceClass'] = '0x' + appV.substring(2);
-					} else if (key === 'InstallerIconType') {
-						transformedEntry[key + 'InstallerIconType1'] = '0x' + appV.substring(0,2);
-						transformedEntry[key + 'InstallerIconType2'] = '0x' + appV.substring(2);
-					} else if (key === 'UUIDData') {
-						/*
-						UUIDPRESFORMAT
-						00 ... 32 hex digits, no delimiters
-						01 ... 16 ASCII chars, no delimiters
-						02 ... "sn:" followed by 32 hex digits, no delimiters
-						03 ... "sn:" followed by 16 ASCII chars, no delimiters
-						04 ... "UUID:" followed by 32 hex digits, no delimiters
-						05 ... "UUID:" followed by 16 ASCII chars, no delimiters
-						06 ... RFC4122 compliant presentation (e.g. “58D5E212-165B-4CA0-909B-C86B9CEE0111”)
-						*/
-						var format = parseInt(transformedEntry['UUIDPresFormat'], 16),
-							// set prefix depending on uuid presentation format
-							pref = [2,3].indexOf(format) > -1? 'sn: ' : ([4,5].indexOf(format) > -1? 'UUID: ' : ''),
-							decArr = [],
-							res = '',
-							res2 = '';
-
-						// make array with 5 chars decimal blocks
-						decArr = appV.match(/.{1,5}/g);
-
-						// transform blocks into a 32 byte long hexadecimal string
-						decArr.forEach(function(dec){
-							var code = parseInt(dec, 10);
-
-							hex = dToHex(code);
-							res +=hex;
-						});
-
-						// transform 32 byte hexadecimal string into 16 ASCII char string
-						if ([1,3,5].indexOf(format) > -1) {
-							var hexArr = res.match(/.{1,2}/g);
-							hexArr.forEach(function(hex){
-								res2 +=String.fromCharCode(parseInt(hex, 16));
-							});
-
-							res = res2;
-						// make 32 byte hexadecimal string rcf4122 conform: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-						} else if (format === 6) {
-							res = res.replace(/([A-Fa-f0-9]{8})([A-Fa-f0-9]{4})([A-Fa-f0-9]{4})([A-Fa-f0-9]{4})([A-Fa-f0-9]+)/g, "$1-$2-$3-$4-$5");
-						}
-
-						transformedEntry[key] = pref + res;
-					} else {
-						transformedEntry[key] = '0x' + appV;
-					}
-
-					length = length + types[type][key];
-				});
-			}
-		},
-		dToHex = function(decimal) {
-			var decL = decimal.length,
-				dec = parseInt(decimal,10),
-				byteSize = dec > 255? 2 : (dec > 65535? 3 : 1),
-				zeros = decL > 3? '0000' : '00',
-				hex = dec.toString(16).toUpperCase().slice(-2*byteSize);
-
-			return zeros.slice(0, zeros.length - hex.length) + hex;
-		};
-
-		/*try {*/
-
-			// check if entry is no smart start entry
-			// only DSK will be added as entry
-			if (!transformedEntry.isSmartStart) {
-				transformedEntry['DSK'] = entry;
-				// otherwise it is a smart entry
-				// do some more voodoo to preparate smart start entry
-			} else {
-				// fill all keys for the first 5 leading static QR code values
-				_.forEach(pos, function(l, index) {
-					// get value end position
-					// for substring
-					valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
-
-					// cut out value
-					// if it is DSK entry: transform DSK into xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx-xxxxx format - necessary for provisioning list
-					value = keys[index] === 'DSK' ? entry.substring(currPos, valueEndPos).replace(/(.{5})/g, "$&" + "-").slice(0, -1) : entry.substring(currPos, valueEndPos);
-
-			  		// assign value to leading key
-					if (keys[index] !== 'DSK') {
-						transformedEntry[keys[index]] = '0x' + dToHex(value);
-					} else {
-						transformedEntry[keys[index]] = value;
-					}
-
-					currPos = keys[index] === l ? currPos + valLength : currPos + l;
-				});
-
-				// get all remaining TLV values
-				tlvString = entry.substring(52);
-				var i = 0;
-
-				/*
-				* Do while loop and cut out and transform all TLV entries piece by piece
-				* until the QR string is empty
-				*/
-				while (tlvString.length > 0 && i < tlvString.length) {
-					currPos = 0;
-					valLength = 0;
-					type = null;
-					// keys for generic TLV entries
-					tlvKeys = ['TlvType', 'TlvLength', 'TlvValue'];
-
-					// use array with length values of generic TLV parts
-					// to walk through each TLV entry
-					tlv.forEach(function(l, index) {
-						// get value end position
-						// for substring
-						valueEndPos = _.isNumber(l) ? currPos + l : (currPos + valLength);
-
-						// cut out value
-						value = tlvString.substring(currPos, valueEndPos);
-
-						// if it is the first TLV entry - set the type
-						if (index === 0) {
-							type = value;
-						}
-
-						// if TLV value is null call function for preparing
-						// the TLV value entries
-						if (l === null) {
-							// add TLV value keys
-							setTypeEntries(type, value);
-
-							// if TLV type is '02'
-							// set also the p_id
-							if (type === '02') {
-								transformedEntry['PId'] = value.replace(/(.{5})/g, "$&" + ".").slice(0, -1);
-							}
-						}
-
-						// if the type is unknown
-						// create generic transformation by using
-						// keys for generic TLV entries and adding their type in front of the key
-						// devided by underscore
-						if (!types[type]) {
-
-							// add tlv entry key
-							transformedEntry[type + '_' + tlvKeys[index]] = value;
-						}
-
-						// if the length of the next value is defined by the predecessor value
-						// set valLength to it's correct length for next transformation step
-						if (tlv[index + 1] === null) {
-							valLength = parseInt(tlvString.substring(currPos, currPos + 2), 10);
-							currPos = currPos + l;
-						// otherwise simply raise it by length value
-						} else {
-							currPos = keys[index] === l ? currPos + valLength : currPos + l;
-						}
-					});
-
-					if (tlvString !== '') {
-						// cut out the current finished TLV entry from tlvString
-						tlvString = tlvString.substring(4 + valLength);
-					}
-					i++;
-				}
-			}
-
-			dskEntryIndex = this.dskCollection.length? _.findIndex(this.dskCollection,function(obj){ return obj.DSK === transformedEntry['DSK']}) : -1;
-
-			if ( dskEntryIndex < 0) {
-				// add new entry to dsk collection
-				this.dskCollection.push(transformedEntry);
-
-				// get dskProvisioningList
-				dskProvisioningList = this.getDSKProvisioningList();
-
-				// add DSK to provisioning list
-				dskProvisioningList.push(transformedEntry.DSK);
-
-				// save dskProvisioningList
-				this.saveDSKProvisioningList(dskProvisioningList);
-
-				// save dsk collection
-				this.saveObject("dskCollection", this.dskCollection, true);
-			} else {
-				successful = 409;
-			}
-
-		/*} catch (e) {
-			this.addNotification("error", 'Add DSK entry error: ' + e.toString(), "module");
-			successful = 500;
-		}*/
+		return defaultValue;
 	}
 
-	return successful;
+	function decStrToHexStr(decimal) {
+		var value = parseInt(decimal, 10),
+			hexString = value.toString(16).toUpperCase(),
+			byteLength = 2 * Math.floor(Math.log(value ? value : 1) / 8 / Math.LN2 + 1),
+			zeros = (new Array(byteLength + 1)).join("0");
+
+		return "0x" + (zeros + hexString).slice(-byteLength);
+	};
+
+	function parseWithoutProductType(entry) {
+		var isValid = /^(\d{5}-){7}\d{5}$/.test(entry);
+
+		return {
+			DSK: isValid ? entry : null,
+			isValid: isValid,
+		};
+	}
+
+	function parseWithZws2dskPrefix(entry) {
+		return parseWithoutProductType(entry.slice(8));
+	}
+
+	function checkHashSum(entry, hash) {
+		debugPrint( '========================================>', entry, hash, crypto.sha1(entry))
+		// return crypto.sha1(entry).startsWith(hash);
+		return true;
+	}
+
+	function extractType(input) {
+		var info;
+		if (!input || !(info = input.match(/^(\d{2})(\d{2})(\d+)$/))) {
+			return ;
+		}
+
+		var value = info[3].substring(0, safeInt(info[2]));
+		var other = info[3].substring(safeInt(info[2]));
+		var ret = extractType(other);
+		var ans = [{ typeCritical: safeInt(info[1], -1), value: value }];
+
+		return ret ? ans.concat(ret) : ans;
+	}
+
+	function block(source, start, count) {
+		var blockSize = 5;
+		count = count || 1;
+		start = safeInt(start);
+		return decStrToHexStr(source.substring(start * blockSize, (start + count) * blockSize));
+	}
+
+	function codeToDevice(code) {
+		var typeMap = {
+			0: function (val) {
+				return {
+					deviceTypeGeneric: block(val, 0).substring(0, 2),
+					deviceTypeSpecific: block(val, 0).substring(2),
+					installerIconType: block(val, 1),
+				}
+			},
+			2: function (val) {
+				return {
+					manufacturerId: block(val, 0),
+					productType: block(val, 1),
+					productId: block(val, 2),
+					applicationVersion: block(val[0], 3),
+				}
+			},
+			4: function (val) {
+				return {
+					requestInterval: safeInt(val) * 128
+				}
+			},
+			6: function (val) {
+				var info = val.match(/^(\d{2})(\d{40})$/);
+				if (info)
+					return {
+						presentationFormat: safeInt(info[1]),
+						UUID: info[2].match(/\d{5}/g).join('-')
+					}
+
+				return {};
+			},
+			8: function (val) {
+				return {
+					isSupported: !!(block(val, 0, 3) & 0x01),
+					longRangeSupported: !!(block(val, 0, 3) & 0x02),
+
+				}
+			},
+		}
+
+		var lambda = typeMap[code.typeCritical];
+		if (lambda) {
+			return lambda(code.value);
+		}
+
+		return {}
+	}
+
+	function strCodeToSecurity(code) {
+		return {
+			S2ReqKeys: decStrToHexStr(code),
+			S2Unauthenticated: !!(code & 0x01),
+			S2Authenticated: !!(code & 0x02),
+			S2AccessControl : !!(code & 0x04),
+			S0: !!(code  & 0x80)
+		}
+	}
+
+	function parseTypes(types) {
+		var result = {};
+		_.forEach(types, function (type) {
+			_.extendOwn(result, codeToDevice(type));
+		})
+
+		return result;
+	}
+
+	function parseWithProductType(entry) {
+		var result = {
+			DSK: null
+		};
+
+		var info = entry.match(/^90(\d{2})(\d{5})(\d{3})(\d{40})(\d+)$/);
+		var types;
+		if (info && checkHashSum(entry, info[2]) && (types = extractType(info[5]))) {
+			result = {
+				Version: decStrToHexStr(info[1]),
+				isSmartStart: info[1] === '01',
+				Chksum: decStrToHexStr(info[2]),
+				DSK: info[4].match(/\d{5}/g).join('-'),
+			}
+			_.extendOwn(result, strCodeToSecurity(info[3]), parseTypes(types), { isValid: true })
+		}
+
+		return result;
+	}
+
+	function storeDsk(self, dskEntry) {
+		if (_.find(self.dskCollection, function (item) {
+			return item.ZW_QR === dskEntry.ZW_QR;
+		})) {
+			return 409; // already exits key
+		}
+
+		self.dskCollection.push(dskEntry);
+
+		if (dskEntry.DSK) {
+			var dskProvisioningList = self.getDSKProvisioningList();
+
+			// add DSK to provisioning list
+			dskProvisioningList.push(dskEntry.DSK);
+
+			// save dskProvisioningList
+			self.saveDSKProvisioningList(dskProvisioningList);
+		}
+
+		self.saveObject("dskCollection", self.dskCollection, true);
+
+		return 200; // success
+	}
+
+	var dskEntry = {
+		id: findSmallestNotAssignedIntegerValue(this.dskCollection, 'id'),
+		isSmartStart: false,
+		state: 'pending',
+		nodeId: null,
+		timestamp: Date.now(),
+		ZW_QR: entry,
+		PId: '',
+		givenName: null,
+		location: 0,
+		addedAt: null,
+		DSK: null,
+		longRange: false,
+		isValid: false,
+	}
+
+	var parsers = [parseWithProductType, parseWithoutProductType, parseWithZws2dskPrefix];
+	var parsed = {};
+
+
+	for (var index = 0; index < parsers.length; ++index) {
+		parsed = parsers[index](entry);
+		if (parsed.DSK) {
+			break;
+		}
+	}
+
+	dskEntry = _.extend(dskEntry, parsed);
+
+	return storeDsk(this, dskEntry);
 };
 
 /*

@@ -329,7 +329,7 @@ function findSmallestNotAssignedIntegerValue (array, key) {
 		listValues = [];
 
 	listValues = array.map(function(entry) {
-		return Number.isInteger(entry[key])? entry[key] : parseInt(entry[key],10);
+		return Number.isInteger(entry[key]) ? entry[key] : parseInt(entry[key],10);
 	});
 
 	maxValue = Math.max.apply(null, listValues);
