@@ -149,7 +149,6 @@ Zigbee.prototype.startBinding = function() {
 		} catch (e1) {
 			this.zbee.stop();
 			console.log(e1.toString());
-			this.tryRestartLater(e1);
 			return;
 		}
 	} catch (e) {
