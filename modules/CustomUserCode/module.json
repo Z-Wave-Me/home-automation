@@ -9,8 +9,8 @@
 	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
-			"type": "git",
-			"source": "https://github.com/Z-Wave-Me/home-automation"
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
 		"title": "__m_title__",

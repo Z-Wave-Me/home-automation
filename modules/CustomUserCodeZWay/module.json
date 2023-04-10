@@ -9,8 +9,8 @@
 	"version": "1.0.0",
 	"maturity": "stable",
 	"repository": {
-			"type": "git",
-			"source": "https://github.com/Z-Wave-Me/home-automation"
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
 	},
 	"defaults": {
 		"title": "__m_title__",
@@ -42,7 +42,7 @@
 		"fields": {
 			"zway": {
 				"type": "select",
-		"label": "__l_choose_zway__",
+				"label": "__l_choose_zway__",
 				"datasource": "namespaces",
 				"field": "optionLabels",
 				"optionLabels": "namespaces:zways:zwayName"
@@ -50,12 +50,12 @@
 			"customCodeOnLoad": {
 				"type": "textarea",
 				"label": "__l_customCodeOnLoad__",
-			"cols": 40
+				"cols": 40
 			},
 			"customCodeOnUnload": {
 				"type": "textarea",
 				"label": "__l_customCodeOnUnload__",
-			"cols": 40
+				"cols": 40
 			}
 		}
 	}
