@@ -943,9 +943,9 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	}
 
 	function checkHashSum(entry, hash) {
-		debugPrint( '========================================>', entry, hash, crypto.sha1(entry))
-		// return crypto.sha1(entry).startsWith(hash);
-		return true;
+		var data = crypto.sha1(entry.substring(5));
+
+		return hash ===  ("00000" + ((data[0] << 8) + data[1]).toString(10)).slice(-5);
 	}
 
 	function extractType(input) {
@@ -966,6 +966,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 		var blockSize = 5;
 		count = count || 1;
 		start = safeInt(start);
+
 		return decStrToHexStr(source.substring(start * blockSize, (start + count) * blockSize));
 	}
 
@@ -1003,9 +1004,8 @@ ZWave.prototype.addDSKEntry = function(entry) {
 			},
 			8: function (val) {
 				return {
-					isSupported: !!(block(val, 0, 3) & 0x01),
+					ClassicalIsSupported: !!(block(val, 0, 3) & 0x01),
 					longRangeSupported: !!(block(val, 0, 3) & 0x02),
-
 				}
 			},
 		}
