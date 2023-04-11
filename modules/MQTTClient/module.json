@@ -6,7 +6,7 @@
     "homepage": "http://razberry.z-wave.me",
     "icon": "icon.png",
     "moduleName": "MQTTClient",
-    "version": "1.2.1",
+    "version": "1.3",
     "maturity": "stable",
     "repository": {
         "type": "git",
@@ -17,7 +17,7 @@
         "description": "__m_descr__",
         "clientId": "zway",
         "clientIdRandomize": false,
-        "host": "localhost",
+        "host": "127.0.0.1",
         "port": 1883,
         "security": false,
         "user": "",
