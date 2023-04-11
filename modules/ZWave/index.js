@@ -4793,7 +4793,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					}
 				}
 				
-				if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Color')) return;
+				if (!this.applyPostfix(defaults, changeVDev[changeDevId + separ + "rgb"], nodeId, instanceId, smartStartEntryPreset, 'Color')) return;
 
 				var vDev_rgb = this.controller.devices.create({
 					deviceId: vDevId + separ + "rgb",
@@ -5614,7 +5614,8 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						}
 					};
 					
-					if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Thermostat operation')) return;
+					var cVDId = vDevIdNI + separ + this.CC["ThermostatMode"];
+					if (!this.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Thermostat operation')) return;
 
 					var m_vDev = this.controller.devices.create({
 						deviceId: deviceNamePrefix + this.CC["ThermostatMode"],
@@ -5660,10 +5661,10 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 				var t_vDev = [];
 				modes.forEach(function(mode) {
-					var cVDId = changeDevId + separ + mode;
+					var cVDId = vDevIdNI + separ + this.CC["ThermostatSetPoint"] + separ + mode;
 					
 					var DH = instance.ThermostatSetPoint.data[mode],
-						_vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + "-" + mode;
+						_vDevId = deviceNamePrefix + self.CC["ThermostatSetPoint"] + separ + mode;
 
 					if (!self.controller.devices.get(_vDevId)) {
 
