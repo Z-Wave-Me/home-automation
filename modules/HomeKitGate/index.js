@@ -1,7 +1,7 @@
 /*** HomeKitGate Z-Way HA module *******************************************
  
-Version: 2.3
-(c) Z-Wave.Me, 2022
+Version: 2.4
+(c) Z-Wave.Me, 2023
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Yurkin Vitaliy <aivs@z-wave.me>
 Description:
@@ -32,6 +32,9 @@ HomeKitGate.prototype.init = function (config) {
 	HomeKitGate.super_.prototype.init.call(this, config);
 
 	var self = this;
+	var rgbDevices = [];
+	var thermostats = [];
+	var lastSupportedThermostatMode = 1; // Default Heat
 	
 	if (!this.config.hkDevices) {
 		this.config.hkDevices = {};
@@ -47,7 +50,6 @@ HomeKitGate.prototype.init = function (config) {
 	updateSkippedDevicesList();
 
 	// define functions and helpers
-	
 	function onDeviceAddedCore(vDevT) {
 		var controller = this.controller;
 		
@@ -89,11 +91,8 @@ HomeKitGate.prototype.init = function (config) {
 		}
 		else if (vDevT.deviceType === "switchMultilevel" && (vDevT.probeType !== "motor") ) {
 			// skip if related to switchRGB
-			var rgbDevId;
-			if (vDevT.id.slice(-2) === "38"){
-				rgbDevId = vDevT.id.substring(0, vDevT.id.indexOf("-",vDevT.id.indexOf("-")+1)+1) + "51-rgb";
-			}
-			var match = rgbDevices.filter(function(el) { return el.id === rgbDevId; })[0];
+			var nodeId = self.controller.devices.get(vDevT.id).get("nodeId")
+			var match = rgbDevices.filter(function(el) { return el.id === nodeId; })[0];
 			if (match) return;
 
 			var service = accessory.addService(HomeKit.Services.Lightbulb, "Multilevel Switch");
@@ -171,7 +170,6 @@ HomeKitGate.prototype.init = function (config) {
 		}
 		else if (vDevT.deviceType === "doorlock") {
 			var service = accessory.addService(HomeKit.Services.LockMechanism, "Door Lock");
-
 			service.addCharacteristic(HomeKit.Characteristics.Name, "string", vDevT.title);
 			m.StateLevel = service.addCharacteristic(HomeKit.Characteristics.LockCurrentState, "uint8", {
 				get: function() { var d = controller.devices.get(vDevT.id); return (!!d && d.get("metrics:level") === "close") ? 1 : 0; }
@@ -241,22 +239,22 @@ HomeKitGate.prototype.init = function (config) {
 		else if (vDevT.deviceType === "thermostat") {
 			var service = accessory.addService(HomeKit.Services.Thermostat, "Thermostat");
 			service.addCharacteristic(HomeKit.Characteristics.Name, "string", vDevT.title);
-			var deviceID = vDevT.id.substring(vDevT.id.lastIndexOf("_")+1,vDevT.id.indexOf("-"));
 
+			var nodeId = self.controller.devices.get(vDevT.id).get("nodeId")
 			// If HK thermostat already generated, exit.
-			var match = thermostats.filter(function(el) { return el === deviceID; })[0];
+			var match = thermostats.filter(function(el) { return el === nodeId; })[0];
 			
 			if (match) {
 				self.onDeviceWipedOut(vDevT.id);
 				return;
 			}
 			
-			thermostats.push(deviceID);
+			thermostats.push(nodeId);
 
 			// Get all thermostat modes
 			var thermostatModes = [1]; // For danfoss LC and Secure without ThermostatMode CC
-			if (zway.devices[deviceID].ThermostatMode && zway.devices[deviceID].ThermostatMode.data.supported.value) {
-				thermostatModes = Object.keys(zway.devices[deviceID].ThermostatMode.data).filter(function(mode) {return !isNaN(parseInt(mode))});
+			if (zway.devices[nodeId].ThermostatMode && zway.devices[nodeId].ThermostatMode.data.supported.value) {
+				thermostatModes = Object.keys(zway.devices[nodeId].ThermostatMode.data).filter(function(mode) {return !isNaN(parseInt(mode))});
 			}
 
 			// Use in HK only Off, Cool, Heat, Auto
@@ -281,29 +279,29 @@ HomeKitGate.prototype.init = function (config) {
 			var targetMinMode = Math.min.apply(null, modes);
 
 			m.currentThermostatMode = service.addCharacteristic(HomeKit.Characteristics.CurrentHeatingCoolingState, "uint8",  {
-				get: function() { return modesWithOutAuto.length > 1 ? getCurrentMode(deviceID) : modesWithOutAuto[0]; }},
+				get: function() { return modesWithOutAuto.length > 1 ? getCurrentMode(nodeId) : modesWithOutAuto[0]; }},
 				undefined, {"valid-values": modesWithOutAuto, "maxValue": currentMaxMode, "minValue": currentMinMode}
 			);
 
 			m.targetThermostatMode = service.addCharacteristic(HomeKit.Characteristics.TargetHeatingCoolingState, "uint8", {
-				get: function() { return modesWithOutAuto.length > 1 ? getTargetMode(deviceID) : modesWithOutAuto[0];; },
-				set: function(mode) { zway.devices[deviceID].ThermostatMode.Set(mode == 3 ? 10 : mode); }},
+				get: function() { return modesWithOutAuto.length > 1 ? getTargetMode(nodeId) : modesWithOutAuto[0];; },
+				set: function(mode) { zway.devices[nodeId].ThermostatMode.Set(mode == 3 ? 10 : mode); }},
 				undefined, {"valid-values": modes, "maxValue":targetMaxMode, "minValue":targetMinMode}
 			);
 
 			m.currentTemperature = service.addCharacteristic(HomeKit.Characteristics.CurrentTemperature, "float",  {
-				get: function() { return getCurrentTemperature(deviceID); }},
-				undefined, {"unit":"celsius", "maxValue":999, "minValue":-999, "minStep":0.1}
+				get: function() { return getCurrentTemperature(nodeId); }},
+				undefined, {"unit":"celsius", "maxValue":100, "minValue":0, "minStep":0.1}
 			);
 
 			m.targetTemperature = service.addCharacteristic(HomeKit.Characteristics.TargetTemperature, "float", {
-				get: function() { return getTargetTemperature(deviceID); },
+				get: function() { return getTargetTemperature(nodeId); },
 				set: function(temperature) {
 					if (modesWithOutAuto.length > 1)
-						zway.devices[deviceID].ThermostatMode.Set(lastSupportedThermostatMode == 3 ? 10 : lastSupportedThermostatMode);
+						zway.devices[nodeId].ThermostatMode.Set(lastSupportedThermostatMode == 3 ? 10 : lastSupportedThermostatMode);
 					else 
 						lastSupportedThermostatMode = modesWithOutAuto[0];
-					zway.devices[deviceID].ThermostatSetPoint.Set(lastSupportedThermostatMode, temperature);
+					zway.devices[nodeId].ThermostatSetPoint.Set(lastSupportedThermostatMode, temperature);
 				}},
 				undefined, {"unit":"celsius", "maxValue":40, "minValue":5, "minStep":0.5}
 			);
@@ -330,20 +328,45 @@ HomeKitGate.prototype.init = function (config) {
 				get: function() { return 2; /* Stoped */ }},
 				undefined, {"valid-values":[0, 1, 2], "maxValue":2, "minValue":0}
 			);
+
+		}
+
+		// Battery Service add to all widgets If device is a battery powered
+		var nodeId = self.controller.devices.get(vDevT.id).get("nodeId")
+		var	technology = self.controller.devices.get(vDevT.id).get("technology")
+
+		if (technology === "Z-Wave" && zway.devices[nodeId].data.isListening.value === false) {
+			var batteryDeviceId = vDevT.id.substring(0, vDevT.id.lastIndexOf("_")+1) + nodeId + "-0-128";
+			var batteryService = accessory.addService(HomeKit.Services.Battery, "Battery");
+			m.batteryLevel = batteryService.addCharacteristic(HomeKit.Characteristics.BatteryLevel, "uint8",  {
+				get: function() { var d = controller.devices.get(batteryDeviceId); return !!d && parseInt(d.get("metrics:level")) || 0; }}, 
+				undefined, {"maxValue":100, "minValue":0, "minStep":1}
+				);
+			m.chargingState = batteryService.addCharacteristic(HomeKit.Characteristics.ChargingState, "uint8",  {
+				get: function() { return 0; }},
+				undefined, {"maxValue":2, "minValue":0, "minStep":1}
+				);
+			m.statusLowBattery = batteryService.addCharacteristic(HomeKit.Characteristics.StatusLowBattery, "uint8",  {
+				get: function() { var d = controller.devices.get(batteryDeviceId); return !!d && parseInt(d.get("metrics:level")) > 50 ? 0 : 1 || 0; }},
+				undefined, {"maxValue":1, "minValue":0, "minStep":1}
+			);
 		}
 	};
 
 	/***************** THERMOSTAT HELPERS *****************/
-	function getCurrentTemperature(deviceID) {
-		var ccSensorMultilevel = zway.devices[deviceID].SensorMultilevel;
+	function getCurrentTemperature(nodeId) {
+		// Find first CC SensorMultilevel in all instances
+		var ccSensorMultilevel;
+		var insts_keys = Object.keys(zway.devices[nodeId].instances);
+		for (var i = 0; i < insts_keys.length; i++) {
+			if (zway.devices[nodeId].instances[parseInt(insts_keys[i])].SensorMultilevel) {
+				ccSensorMultilevel = zway.devices[nodeId].instances[parseInt(insts_keys[i])].SensorMultilevel;
+				break;
+			}
+		}
+
 		if  (ccSensorMultilevel && ccSensorMultilevel.data[1] && ccSensorMultilevel.data[1].val && ccSensorMultilevel.data[1].val.value) {
-			var temperature = ccSensorMultilevel.data[1].val.value;
-			if (temperature >= -999 && temperature <= 999) {
-				return temperature;
-			}
-			else {
-				return 0;
-			}
+			return ccSensorMultilevel.data[1].val.value;
 		}
 		else {
 			if (lastSupportedThermostatMode == 3){
@@ -352,23 +375,23 @@ HomeKitGate.prototype.init = function (config) {
 			else if (lastSupportedThermostatMode == 0) {
 				lastSupportedThermostatMode = 1;
 			}
-			return zway.devices[deviceID].ThermostatSetPoint.data[lastSupportedThermostatMode].val.value;
+			return zway.devices[nodeId].ThermostatSetPoint.data[lastSupportedThermostatMode].val.value;
 		}
 	};
 
-	function getTargetTemperature(deviceID) {
+	function getTargetTemperature(nodeId) {
 		var targetTemperature;
-		if (zway.devices[deviceID].ThermostatMode) {
-			var mode = zway.devices[deviceID].ThermostatMode.data.mode.value;
+		if (zway.devices[nodeId].ThermostatMode) {
+			var mode = zway.devices[nodeId].ThermostatMode.data.mode.value;
 			if (mode == 1 || mode == 2 || mode == 3) {
-				targetTemperature = zway.devices[deviceID].ThermostatSetPoint.data[mode].val.value;
+				targetTemperature = zway.devices[nodeId].ThermostatSetPoint.data[mode].val.value;
 			}
 			else {
 				if (lastSupportedThermostatMode == 0) {
 					targetTemperature = 10;
 				}
 				else {
-					targetTemperature = zway.devices[deviceID].ThermostatSetPoint.data[lastSupportedThermostatMode == 3 ? 10 : lastSupportedThermostatMode].val.value;
+					targetTemperature = zway.devices[nodeId].ThermostatSetPoint.data[lastSupportedThermostatMode == 3 ? 10 : lastSupportedThermostatMode].val.value;
 				}
 			}
 
@@ -378,22 +401,22 @@ HomeKitGate.prototype.init = function (config) {
 				targetTemperature = 40;
 		}
 		else {
-			targetTemperature = zway.devices[deviceID].ThermostatSetPoint.data[1].val.value; // Danfoss LC
+			targetTemperature = zway.devices[nodeId].ThermostatSetPoint.data[1].val.value; // Danfoss LC
 		}
 
 		return targetTemperature;
 	};
 
-	function getTargetMode(deviceID) {
-		var mode = zway.devices[deviceID].ThermostatMode.data.mode.value;
+	function getTargetMode(nodeId) {
+		var mode = zway.devices[nodeId].ThermostatMode.data.mode.value;
 		if (mode == 0 || mode == 1 || mode == 2 || mode == 3 || mode == 10) {
 			lastSupportedThermostatMode = mode == 10 ? 3 : mode; // Transform ZW Auto(10) mode to HK Auto(3) mode
 		}
 		return lastSupportedThermostatMode;
 	}
 
-	function getCurrentMode(deviceID) {
-		var mode = zway.devices[deviceID].ThermostatMode.data.mode.value;
+	function getCurrentMode(nodeId) {
+		var mode = zway.devices[nodeId].ThermostatMode.data.mode.value;
 		if (mode == 0 || mode == 1 || mode == 2 || mode == 3 || mode == 10) {
 			if (mode == 3 || mode == 10){
 				lastSupportedThermostatMode = 1; // CurrentHeatingCoolingState not support Auto(10) mode, change it to Heat(1)
@@ -627,10 +650,6 @@ HomeKitGate.prototype.init = function (config) {
 		}
 
 	}
-
-	var rgbDevices = [];
-	var thermostats = [];
-	var lastSupportedThermostatMode = 1; // Default Heat
 
 	var pin = this.config.pin; // if undefined or empty, will be autogenerated
 	
