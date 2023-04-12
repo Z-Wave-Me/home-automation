@@ -4228,160 +4228,169 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 		}
 
 		if (this.CC["SwitchBinary"] === commandClassId && !self.controller.devices.get(vDevId)) {
-
-			defaults = {
-				deviceType: "switchBinary",
-				metrics: {
-					icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
-					title: compileTitle('Switch', vDevIdNI),
-					isFailed: false
-				}
-			};
-
-			// apply postfix if available
-			if (changeVDev[changeDevId]) {
-				defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
-			}
-
-			var vDev = self.controller.devices.create({
-				deviceId: vDevId,
-				defaults: defaults,
-				overlay: {},
-				handler: function (command) {
-					if ("on" === command) {
-						cc.Set(true);
-					} else if ("off" === command) {
-						cc.Set(false);
-					} else if ("update" === command) {
-						cc.Get(vDevId);
+			var cVDId = changeDevId;
+			
+			// check if it should be created
+			if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+				defaults = {
+					deviceType: "switchBinary",
+					metrics: {
+						icon: this.zway.devices[nodeId].data.specificType.value == 0x05 ? 'siren':'switch',
+						title: compileTitle('Switch', vDevIdNI),
+						isFailed: false
 					}
-				},
-				moduleId: self.id
-			});
+				};
 
-			if (vDev) {
-				// set failed status
-				vDev.set('metrics:isFailed',isFailed);
+				// apply postfix if available
+				if (changeVDev[changeDevId]) {
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
+				}
 
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function (type) {
-					try {
-						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value ? "on" : "off");
+				var vDev = self.controller.devices.create({
+					deviceId: vDevId,
+					defaults: defaults,
+					overlay: {},
+					handler: function (command) {
+						if ("on" === command) {
+							cc.Set(true);
+						} else if ("off" === command) {
+							cc.Set(false);
+						} else if ("update" === command) {
+							cc.Get(vDevId);
 						}
-					} catch (e) {}
-				}, "value");
+					},
+					moduleId: self.id
+				});
+
+				if (vDev) {
+					// set failed status
+					vDev.set('metrics:isFailed',isFailed);
+
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function (type) {
+						try {
+							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+								vDev.set("metrics:level", this.value ? "on" : "off");
+							}
+						} catch (e) {}
+					}, "value");
+				}
 			}
 		} else if (this.CC["SwitchMultilevel"] === commandClassId && !self.controller.devices.get(vDevId)) {
-			var icon;
-			var title;
-			var probeType = 'multilevel';
-			if (this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value)) {
-				icon = 'blinds'; // or alternatively window
-				probeType = 'motor';
-				title = compileTitle('Blind', vDevIdNI);
-			} else if (this.zway.devices[nodeId].data.genericType.value === 0x11 && this.zway.devices[nodeId].data.specificType.value == 0x08) {
-				icon = 'fan';
-				title = compileTitle('Fan', vDevIdNI);
-			} else {
-				icon = 'multilevel';
-				title = compileTitle('Dimmer', vDevIdNI);
-			}
-			defaults = {
-				deviceType: "switchMultilevel",
-				probeType: probeType,
-				metrics: {
-					icon: icon,
-					title: title,
-					isFailed: false
+			var cVDId = changeDevId;
+			
+			// check if it should be created
+			if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+				var icon;
+				var title;
+				var probeType = 'multilevel';
+				if (this.zway.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zway.devices[nodeId].data.specificType.value)) {
+					icon = 'blinds'; // or alternatively window
+					probeType = 'motor';
+					title = compileTitle('Blind', vDevIdNI);
+				} else if (this.zway.devices[nodeId].data.genericType.value === 0x11 && this.zway.devices[nodeId].data.specificType.value == 0x08) {
+					icon = 'fan';
+					title = compileTitle('Fan', vDevIdNI);
+				} else {
+					icon = 'multilevel';
+					title = compileTitle('Dimmer', vDevIdNI);
 				}
-			};
+				defaults = {
+					deviceType: "switchMultilevel",
+					probeType: probeType,
+					metrics: {
+						icon: icon,
+						title: title,
+						isFailed: false
+					}
+				};
 
-			// apply postfix if available
-			if (changeVDev[changeDevId]) {
-				defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
-			}
+				// apply postfix if available
+				if (changeVDev[changeDevId]) {
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
+				}
 
 
-			var vDev = self.controller.devices.create({
-				deviceId: vDevId,
-				defaults: defaults,
-				overlay: {},
-				handler: function(command, args) {
-					var newVal = this.get('metrics:level');
-					// up, down for Blinds
-					if ("on" === command || "up" === command) {
-						newVal = 255;
-					} else if ("off" === command || "down" === command) {
-						newVal = 0;
-					} else if ("min" === command) {
-						newVal = 10;
-					} else if ("max" === command || "upMax" === command) {
-						newVal = 99;
-					} else if ("increase" === command) {
-						newVal = newVal + 10;
-						if (0 !== newVal % 10) {
-							newVal = Math.round(newVal / 10) * 10;
-						}
-						if (newVal > 99) {
-							newVal = 99;
-						}
-
-					} else if ("decrease" === command) {
-						newVal = newVal - 10;
-						if (newVal < 0) {
-							newVal = 0;
-						}
-						if (0 !== newVal % 10) {
-							newVal = Math.round(newVal / 10) * 10;
-						}
-					} else if ("exact" === command || "exactSmooth" === command) {
-						newVal = parseInt(args.level, 10);
-						if (newVal < 0) {
-							newVal = 0;
-						} else if (newVal === 255) {
+				var vDev = self.controller.devices.create({
+					deviceId: vDevId,
+					defaults: defaults,
+					overlay: {},
+					handler: function(command, args) {
+						var newVal = this.get('metrics:level');
+						// up, down for Blinds
+						if ("on" === command || "up" === command) {
 							newVal = 255;
-						} else if (newVal > 99) {
-							if (newVal === 100) {
-								newVal = 99;
-							} else {
-								newVal = null;
+						} else if ("off" === command || "down" === command) {
+							newVal = 0;
+						} else if ("min" === command) {
+							newVal = 10;
+						} else if ("max" === command || "upMax" === command) {
+							newVal = 99;
+						} else if ("increase" === command) {
+							newVal = newVal + 10;
+							if (0 !== newVal % 10) {
+								newVal = Math.round(newVal / 10) * 10;
 							}
+							if (newVal > 99) {
+								newVal = 99;
+							}
+
+						} else if ("decrease" === command) {
+							newVal = newVal - 10;
+							if (newVal < 0) {
+								newVal = 0;
+							}
+							if (0 !== newVal % 10) {
+								newVal = Math.round(newVal / 10) * 10;
+							}
+						} else if ("exact" === command || "exactSmooth" === command) {
+							newVal = parseInt(args.level, 10);
+							if (newVal < 0) {
+								newVal = 0;
+							} else if (newVal === 255) {
+								newVal = 255;
+							} else if (newVal > 99) {
+								if (newVal === 100) {
+									newVal = 99;
+								} else {
+									newVal = null;
+								}
+							}
+						} else if ("stop" === command) { // Commands for Blinds
+							cc.StopLevelChange();
+							return;
+						} else if ("startUp" === command) {
+							cc.StartLevelChange(0);
+							return;
+						} else if ("startDown" === command) {
+							cc.StartLevelChange(1);
+							return;
+						} else if ("update" === command) {
+							cc.Get(vDevId);
+							return;
 						}
-					} else if ("stop" === command) { // Commands for Blinds
-						cc.StopLevelChange();
-						return;
-					} else if ("startUp" === command) {
-						cc.StartLevelChange(0);
-						return;
-					} else if ("startDown" === command) {
-						cc.StartLevelChange(1);
-						return;
-					} else if ("update" === command) {
-						cc.Get(vDevId);
-						return;
-					}
 
-					if (0 === newVal || !!newVal) {
-						if ("exactSmooth" === command)
-							cc.Set(newVal, args.duration);
-						else
-							cc.Set(newVal);
-					}
-				},
-				moduleId: self.id
-			});
-
-			if (vDev) {
-				// set failed status
-				vDev.set('metrics:isFailed',isFailed);
-
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
-					try {
-						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value);
+						if (0 === newVal || !!newVal) {
+							if ("exactSmooth" === command)
+								cc.Set(newVal, args.duration);
+							else
+								cc.Set(newVal);
 						}
-					} catch (e) {}
-				}, "value");
+					},
+					moduleId: self.id
+				});
+
+				if (vDev) {
+					// set failed status
+					vDev.set('metrics:isFailed',isFailed);
+
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "level", function(type) {
+						try {
+							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+								vDev.set("metrics:level", this.value);
+							}
+						} catch (e) {}
+					}, "value");
+				}
 			}
 		} else if (this.CC["SwitchColor"] === commandClassId && !self.controller.devices.get(vDevId)) {
 			var
@@ -4394,70 +4403,74 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 			var haveRGB = cc.data && cc.data[COLOR_RED] && cc.data[COLOR_GREEN] && cc.data[COLOR_BLUE] && true;
 			
 			if (haveRGB && !self.controller.devices.get(vDevId + separ + "rgb")) {
-
-				var defaults =  {
-					deviceType: "switchRGBW",
-					probeType: 'switchColor_rgb',
-					metrics: {
-						icon: 'multilevel',
-						title: compileTitle('Color', vDevIdNI),
-						color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
-						level: 'off',
-						oldColor: {},
-						isFailed: false
-					}
-				}
-
-				// apply postfix if available
-				if (changeVDev[changeDevId]) {
-					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI);
-				}
-
-				var vDev_rgb = this.controller.devices.create({
-					deviceId: vDevId + separ + "rgb",
-					defaults: defaults,
-					overlay: {},
-					handler:  function (command, args) {
-						var color = {r: 0, g: 0, b: 0},
-							oldColor = vDev_rgb.get('metrics:oldColor');
-						if (command === "on") {
-							if(!_.isEmpty(oldColor)) {
-								color = oldColor;
-							} else {
-								color.r = color.g = color.b = 255;
-							}
-						} else if (command === "off") {
-							color.r = color.g = color.b = 0;
-						} else if (command === "exact") {
-							color.r = parseInt(args.red, 10);
-							color.g = parseInt(args.green, 10);
-							color.b = parseInt(args.blue, 10);
-							vDev_rgb.set('metrics:oldColor', color);
+				var cVDId = changeDevId + separ + "rgb";
+				
+				// check if it should be created
+				if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+					var defaults =  {
+						deviceType: "switchRGBW",
+						probeType: 'switchColor_rgb',
+						metrics: {
+							icon: 'multilevel',
+							title: compileTitle('Color', vDevIdNI),
+							color: {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value},
+							level: 'off',
+							oldColor: {},
+							isFailed: false
 						}
-						cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
-					},
-					moduleId: this.id
-				});
-
-				function handleColor(type, arg) {
-					if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.controller.devices.remove(vDevId + separ + 'rgb');
-					} else {
-						vDev_rgb.set("metrics:color", {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value});
 					}
-					
-					if (cc.data) {
-						vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
-					}
-				}
-					
-				if (vDev_rgb) {
-					// set failed status
-					vDev_rgb.set('metrics:isFailed',isFailed);
 
-					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
-					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
-					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_BLUE + ".level", handleColor, "value");
+					// apply postfix if available
+					if (changeVDev[changeDevId]) {
+						defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId + separ + "rgb", vDevIdNI);
+					}
+
+					var vDev_rgb = this.controller.devices.create({
+						deviceId: vDevId + separ + "rgb",
+						defaults: defaults,
+						overlay: {},
+						handler:  function (command, args) {
+							var color = {r: 0, g: 0, b: 0},
+								oldColor = vDev_rgb.get('metrics:oldColor');
+							if (command === "on") {
+								if(!_.isEmpty(oldColor)) {
+									color = oldColor;
+								} else {
+									color.r = color.g = color.b = 255;
+								}
+							} else if (command === "off") {
+								color.r = color.g = color.b = 0;
+							} else if (command === "exact") {
+								color.r = parseInt(args.red, 10);
+								color.g = parseInt(args.green, 10);
+								color.b = parseInt(args.blue, 10);
+								vDev_rgb.set('metrics:oldColor', color);
+							}
+							cc.SetMultiple([COLOR_RED, COLOR_GREEN, COLOR_BLUE], [color.r, color.g, color.b]);
+						},
+						moduleId: this.id
+					});
+
+					function handleColor(type, arg) {
+						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+							self.controller.devices.remove(vDevId + separ + 'rgb');
+						} else {
+							vDev_rgb.set("metrics:color", {r: cc.data[COLOR_RED].level.value, g: cc.data[COLOR_GREEN].level.value, b: cc.data[COLOR_BLUE].level.value});
+						}
+						
+						if (cc.data) {
+							vDev_rgb.set("metrics:level", (cc.data[COLOR_RED].level.value || cc.data[COLOR_GREEN].level.value || cc.data[COLOR_BLUE].level.value) ? "on" : "off");
+						}
+					}
+						
+					if (vDev_rgb) {
+						// set failed status
+						vDev_rgb.set('metrics:isFailed',isFailed);
+
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_RED + ".level", handleColor, "value");
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_GREEN + ".level", handleColor, "value");
+						self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, COLOR_BLUE + ".level", handleColor, "value");
+					}
 				}
 			}
 
@@ -5005,89 +5018,97 @@ ZWave.prototype.parseAddCommandClass = function (nodeId, instanceId, commandClas
 				}
 			}
 		} else if (this.CC["Battery"] === commandClassId && !self.controller.devices.get(vDevId)) {
-
-			defaults = {
-				deviceType: 'battery',
-				metrics: {
-					probeTitle: 'Battery',
-					scaleTitle: '%',
-					level: '',
-					icon: 'battery',
-					title: compileTitle('Battery', vDevIdNI),
-					isFailed: false
-				}
-			};
-
-			// apply postfix if available
-			if (changeVDev[changeDevId]) {
-				defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
-			}
-
-			var vDev = self.controller.devices.create({
-				deviceId: vDevId,
-				defaults: defaults,
-				overlay: {},
-				handler: function(command) {
-					if (command === "update") {
-						cc.Get();
+			var cVDId = changeDevId;
+			
+			// check if it should be created
+			if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+				defaults = {
+					deviceType: 'battery',
+					metrics: {
+						probeTitle: 'Battery',
+						scaleTitle: '%',
+						level: '',
+						icon: 'battery',
+						title: compileTitle('Battery', vDevIdNI),
+						isFailed: false
 					}
-				},
-				moduleId: self.id
-			});
+				};
 
-			if (vDev) {
-				// set failed status
-				vDev.set('metrics:isFailed',isFailed);
-				
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function(type) {
-					try {
-						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
+				// apply postfix if available
+				if (changeVDev[changeDevId]) {
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
+				}
+
+				var vDev = self.controller.devices.create({
+					deviceId: vDevId,
+					defaults: defaults,
+					overlay: {},
+					handler: function(command) {
+						if (command === "update") {
+							cc.Get();
 						}
-					} catch (e) {}
-				}, "value");
+					},
+					moduleId: self.id
+				});
+
+				if (vDev) {
+					// set failed status
+					vDev.set('metrics:isFailed',isFailed);
+					
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "last", function(type) {
+						try {
+							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+								vDev.set("metrics:level", this.value === 255 ? 0 : this.value);
+							}
+						} catch (e) {}
+					}, "value");
+				}
 			}
 		} else if (this.CC["DoorLock"] === commandClassId && !self.controller.devices.get(vDevId)) {
+			var cVDId = changeDevId;
+			
+			// check if it should be created
+			if (!changeVDev[cVDId] || changeVDev[cVDId] && !changeVDev[cVDId].noVDev) {
+				defaults = {
+					deviceType: 'doorlock',
+					metrics: {
+						level: '',
+						icon: 'door',
+						title: compileTitle('Door Lock', vDevIdNI),
+						isFailed: false
 
-			defaults = {
-				deviceType: 'doorlock',
-				metrics: {
-					level: '',
-					icon: 'door',
-					title: compileTitle('Door Lock', vDevIdNI),
-					isFailed: false
-
-				}
-			};
-
-			// apply postfix if available
-			if (changeVDev[changeDevId]) {
-				defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
-			}
-
-			var vDev = self.controller.devices.create({
-				deviceId: vDevId,
-				defaults: defaults,
-				overlay: {},
-				handler: function(command) {
-					if ("open" === command) {
-						cc.Set(0);
-					} else if ("close" === command) {
-						cc.Set(255);
 					}
-				},
-				moduleId: self.id
-			});
-			if (vDev) {
-				// set failed status
-				vDev.set('metrics:isFailed',isFailed);
-				self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function(type) {
-					try {
-						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+				};
+
+				// apply postfix if available
+				if (changeVDev[changeDevId]) {
+					defaults = applyPostfix(defaults, changeVDev[changeDevId], vDevId, vDevIdNI);
+				}
+
+				var vDev = self.controller.devices.create({
+					deviceId: vDevId,
+					defaults: defaults,
+					overlay: {},
+					handler: function(command) {
+						if ("open" === command) {
+							cc.Set(0);
+						} else if ("close" === command) {
+							cc.Set(255);
 						}
-					} catch (e) {}
-				}, "value");
+					},
+					moduleId: self.id
+				});
+				if (vDev) {
+					// set failed status
+					vDev.set('metrics:isFailed',isFailed);
+					self.dataBind(self.gateDataBinding, self.zway, nodeId, instanceId, commandClassId, "mode", function(type) {
+						try {
+							if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+								vDev.set("metrics:level", this.value === 255 ? "close" : "open");
+							}
+						} catch (e) {}
+					}, "value");
+				}
 			}
 		} else if (this.CC["BarrierOperator"] === commandClassId && !self.controller.devices.get(vDevId)) {
 
