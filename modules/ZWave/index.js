@@ -943,7 +943,8 @@ ZWave.prototype.addDSKEntry = function(entry) {
 	}
 
 	function checkHashSum(entry, hash) {
-		var data = crypto.sha1(entry.substring(5));
+		var data = crypto.sha1(entry.substring(9));
+		data = new Uint8Array(data);
 
 		return hash ===  ("00000" + ((data[0] << 8) + data[1]).toString(10)).slice(-5);
 	}
@@ -1004,7 +1005,7 @@ ZWave.prototype.addDSKEntry = function(entry) {
 			},
 			8: function (val) {
 				return {
-					ClassicalIsSupported: !!(block(val, 0, 3) & 0x01),
+					classicalSupported: !!(block(val, 0, 3) & 0x01),
 					longRangeSupported: !!(block(val, 0, 3) & 0x02),
 				}
 			},
@@ -1093,8 +1094,9 @@ ZWave.prototype.addDSKEntry = function(entry) {
 		location: 0,
 		addedAt: null,
 		DSK: null,
-		longRange: false,
 		isValid: false,
+		classicalSupported: true,
+		longRangeSupported: false,
 	}
 
 	var parsers = [parseWithProductType, parseWithoutProductType, parseWithZws2dskPrefix];
@@ -3348,17 +3350,45 @@ ZWave.prototype.defineHandlers = function() {
 	 * this.dskCollection list is used
 	 */
 	this.ZWaveAPI.GetDSKCollection = function(url, request) {
+		function setIncluded(DSKCollection) {
+			var changed = false;
+			_.forEach(zway.devices, function (device) {
+				if (device && device.instances && device.instances[0] && device.instances[0].commandClasses['159']) {
+					var dsk = device.instances[0].commandClasses['159'].publicKeyVerified && device.instances[0].commandClasses['159'].publicKeyVerified.value;
+					if (dsk) {
+						var dskString = dsk.map(function (bit) {
+							return ('00' + (+bit).toString(16)).slice(-2);
+						}).join('');
+						var dskEntry = _.findWhere(DSKCollection, {DSK: dskString});
+						if (dskEntry && dskEntry.state !== 'included') {
+							dskEntry.state = 'included';
+							changed = true;
+						}
+					}
+				}
+			})
+
+			if (changed) {
+				self.saveObject("dskCollection", DSKCollection, true);
+			}
+		}
+
 		var req = request && request.query ? parseToObject(request.query) : undefined,
-			id = req && req.id ? req.id : false,
-			reply = {
-				status: 200,
-				headers: {
-					"Content-Type": "application/json"
-				},
-				body: self.getDSKCollection(id),
-				error: null,
-				message: null
-			};
+			id = req && req.id ? req.id : false;
+		var DSKCollection = self.getDSKCollection(id);
+		if (id === false) {
+			setIncluded(DSKCollection);
+		}
+
+		var reply = {
+			status: 200,
+			headers: {
+				"Content-Type": "application/json"
+			},
+			body: DSKCollection,
+			error: null,
+			message: null
+		};
 
 		return reply;
 	};
