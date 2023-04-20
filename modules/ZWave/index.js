@@ -3354,12 +3354,10 @@ ZWave.prototype.defineHandlers = function() {
 			var changed = false;
 			_.forEach(zway.devices, function (device) {
 				if (device && device.instances && device.instances[0] && device.instances[0].commandClasses['159']) {
-					var dsk = device.instances[0].commandClasses['159'].publicKeyVerified && device.instances[0].commandClasses['159'].publicKeyVerified.value;
-					if (dsk) {
-						var dskString = dsk.map(function (bit) {
-							return ('00' + (+bit).toString(16)).slice(-2);
-						}).join('');
-						var dskEntry = _.findWhere(DSKCollection, {DSK: dskString});
+					var publicKeyVerified = device.instances[0].commandClasses['159'].publicKeyVerified && device.instances[0].commandClasses['159'].publicKeyVerified.value;
+					if (publicKeyVerified) {
+						var dks = transformPublicKeyToDSK(publicKeyVerified);
+						var dskEntry = _.findWhere(DSKCollection, {DSK: dks});
 						if (dskEntry && dskEntry.state !== 'included') {
 							dskEntry.state = 'included';
 							changed = true;
