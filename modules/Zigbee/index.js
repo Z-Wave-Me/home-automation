@@ -320,8 +320,8 @@ Zigbee.prototype.externalAPIAllow = function(name) {
 	ws.allowExternalAccess(_name, this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Run", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Data", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
-	/*
 	ws.allowExternalAccess(_name + ".InspectQueue", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
+	/*
 	ws.allowExternalAccess(_name + ".Backup", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".Restore", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
 	ws.allowExternalAccess(_name + ".FirmwareUpdate", this.config.publicAPI ? this.controller.auth.ROLE.ANONYMOUS : this.controller.auth.ROLE.ADMIN);
@@ -339,8 +339,8 @@ Zigbee.prototype.externalAPIRevoke = function(name) {
 	ws.revokeExternalAccess(_name);
 	ws.revokeExternalAccess(_name + ".Run");
 	ws.revokeExternalAccess(_name + ".Data");
-	/*
 	ws.revokeExternalAccess(_name + ".InspectQueue");
+	/*
 	ws.revokeExternalAccess(_name + ".Backup");
 	ws.revokeExternalAccess(_name + ".Restore");
 	ws.revokeExternalAccess(_name + ".FirmwareUpdate");
@@ -404,7 +404,6 @@ Zigbee.prototype.defineHandlers = function() {
 		};
 	};
 
-	/*
 	this.ZigbeeAPI.InspectQueue = function(url) {
 		return {
 			status: 200,
@@ -415,6 +414,7 @@ Zigbee.prototype.defineHandlers = function() {
 		};
 	};
 
+	/*
 	this.ZigbeeAPI.Backup = function(url, request) {
 		var now = new Date();
 
