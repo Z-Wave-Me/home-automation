@@ -1527,11 +1527,18 @@ Zigbee.prototype.gateDevicesStop = function() {
 };
 
 Zigbee.prototype.addVDevInfo = function(info, nodeId) {
+	var manufacturerName = "", modelIdentifier = "", swBuildId = "";
+	if (this.zbee.devices[nodeId].endpoints[1] && this.zbee.devices[nodeId].endpoints[1].Basic) {
+		var basicData = this.zbee.devices[nodeId].endpoints[1].Basic.data;
+		manufacturerName = basicData.manufacturerName.value;
+		modelIdentifier = basicData.modelIdentifier.value;
+		swBuildId = basicData.swBuildId.value;
+	}
 	_.extend(info, {
 		technology: "Zigbee",
-		manufacturer: this.zbee.devices[nodeId].data.vendorString.value || "",
-		product: this.zbee.devices[nodeId].data.productString.value || "",
-		firmware: (this.zbee.devices[nodeId].data.applicationMajor.value + "." + this.zbee.devices[nodeId].data.applicationMinor.value) || "",
+		manufacturer: manufacturerName,
+		product: modelIdentifier,
+		firmware: swBuildId,
 		location: 0,
 	});
 }
@@ -1541,10 +1548,12 @@ Zigbee.prototype.compileTitle = function(nodeId, endpointId, title, type, addVen
 
 	// add vendor name
 	if (addVendor === undefined || addVendor === true) {
-		var vendorName = this.zbee.devices[nodeId].data.vendorString.value;
-		if (vendorName) {
-			sortArgs.push(vendorName);
-		};
+		if (this.zbee.devices[nodeId].endpoints[1] && this.zbee.devices[nodeId].endpoints[1].Basic) {
+			var vendorName = this.zbee.devices[nodeId].endpoints[1].Basic.data.manufacturerName.value || "";
+			if (vendorName) {
+				sortArgs.push(vendorName);
+			}
+		}
 	}
 
 	sortArgs.push(title);
@@ -1560,7 +1569,7 @@ Zigbee.prototype.compileTitle = function(nodeId, endpointId, title, type, addVen
 	return sortArgs.join(' ');
 };
 
-Zigbee.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceId, title, type, addVendor) {
+Zigbee.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, endpointId, title, type, addVendor) {
 	this.addVDevInfo(defaultObj, nodeId);
 	
 	defaultObj.metrics.title = this.compileTitle(nodeId, endpointId, title, type, addVendor);
@@ -1657,7 +1666,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				}
 			};
 
-			// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Switch')) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Switch')) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -1710,7 +1719,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				}
 			};
 
-			// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -1803,7 +1812,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					}
 				}
 				
-				// TODO if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Color')) return;
+				if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Color')) return;
 
 				var vDev_rgb = this.controller.devices.create({
 					deviceId: vDevId + separ + "rgb",
@@ -2684,49 +2693,60 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			
 			var zoneType = cc.data.zoneType.value;
 			var zoneStatus = cc.data.zoneStatus.value;
+			var title = "";
 			
 			switch (zoneType) {
 				case 0x0000:
 					defaults.metrics.icon = 'alarm';
 					defaults.probeType = 'general_purpose';
+					title = "";
 					break;
 				case 0x000d:
 					defaults.metrics.icon = 'motion';
 					defaults.probeType = 'motion';
+					title = "Motion";
 					break;
 				case 0x0028:
 					defaults.metrics.icon = 'smoke';
 					defaults.probeType = 'smoke';
+					title = "Smoke";
 					break;
 				case 0x002b:
 					defaults.metrics.icon = 'co';
 					defaults.probeType = 'co';
+					title = "CO";
 					break;
 				case 0x002a:
 					defaults.metrics.icon = 'flood';
 					defaults.probeType = 'flood';
+					title = "Flood";
 					break;
 				case 0x0015:
 					defaults.metrics.icon = 'door';
 					defaults.probeType = 'door';
+					title = "Door";
 					break;
 				case 0x002d:
 				case 0x0226:
 					defaults.metrics.icon = 'burglar';
 					defaults.probeType = 'burglar';
+					title = "Burglar";
 					break;
 				case 0x002c:
 				case 0x0225:
 					defaults.metrics.icon = 'alarm';
 					defaults.probeType = 'emergency';
+					title = "Emergency";
 					break;
 				default:
 					defaults.metrics.icon = 'alarm';
 					defaults.probeType = 'general_purpose';
+					title = "";
 					break;
 			}
 			
-			// TODO if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, endpointId, 'Alarm', cc.data[sensorTypeId].typeString.value)) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Alarm', title)) return;
+
 			
 			var vDev = self.controller.devices.create({
 				deviceId: vDevId,
@@ -2855,7 +2875,7 @@ Zigbee.prototype.parseDelClusterClass = function(nodeId, endpointId, clusterId) 
 
 Zigbee.prototype.nodeNameByType = function (nodeId, nodeData) {
 
-	var name = 'Device ' + '_' + nodeId,
+	var name = 'Device ' + nodeId,
 		type = '',
 		node = nodeData;
 
