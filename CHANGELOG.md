@@ -1,14 +1,19 @@
-## 24.02.2023 v4.0.3
+## 02.05.2023 v4.1.0
+New features:
+* Zigbee support added wit Z-Wave.Me hardware
 Improvements:
 * MQTT: switchRGBW support
 * Add Battery notifications to inbound notification
+* Allow custom IP reported from localIP.json file
 Fixes:
+* Fixed double restart on zway.discover() exception
 * Fixed firmware-fault report
 * Fixed wipeOut handler
 * registerNotificationChannel parseInt(user)
 * Typo in getMACAddress
 * Be more verbose in ImportHA
 * Heating App: Don't set the temperature if it is not defined
+* Postfix for Thermostat fixed
 
 ## 22.12.2022 v4.0.2
 New features:
