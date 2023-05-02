@@ -1530,9 +1530,9 @@ Zigbee.prototype.addVDevInfo = function(info, nodeId) {
 	var manufacturerName = "", modelIdentifier = "", swBuildId = "";
 	if (this.zbee.devices[nodeId].endpoints[1] && this.zbee.devices[nodeId].endpoints[1].Basic) {
 		var basicData = this.zbee.devices[nodeId].endpoints[1].Basic.data;
-		manufacturerName = basicData.manufacturerName.value;
-		modelIdentifier = basicData.modelIdentifier.value;
-		swBuildId = basicData.swBuildId.value;
+		manufacturerName = basicData.manufacturerName ? basicData.manufacturerName.value : "";
+		modelIdentifier = basicData.modelIdentifier ? basicData.modelIdentifier.value : "";
+		swBuildId = basicData.swBuildId ? basicData.swBuildId.value : "";
 	}
 	_.extend(info, {
 		technology: "Zigbee",
@@ -1549,7 +1549,7 @@ Zigbee.prototype.compileTitle = function(nodeId, endpointId, title, type, addVen
 	// add vendor name
 	if (addVendor === undefined || addVendor === true) {
 		if (this.zbee.devices[nodeId].endpoints[1] && this.zbee.devices[nodeId].endpoints[1].Basic) {
-			var vendorName = this.zbee.devices[nodeId].endpoints[1].Basic.data.manufacturerName.value || "";
+			var vendorName = this.zbee.devices[nodeId].endpoints[1].Basic.data.manufacturerName ? this.zbee.devices[nodeId].endpoints[1].Basic.data.manufacturerName.value : "";
 			if (vendorName) {
 				sortArgs.push(vendorName);
 			}

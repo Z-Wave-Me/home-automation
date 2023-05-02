@@ -1,6 +1,6 @@
 ## 02.05.2023 v4.1.0
 New features:
-* Zigbee support added wit Z-Wave.Me hardware
+* Zigbee support added with Z-Wave.Me hardware
 Improvements:
 * MQTT: switchRGBW support
 * Add Battery notifications to inbound notification
