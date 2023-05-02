@@ -6397,7 +6397,7 @@ ZWave.prototype.saveDSKProvisioningList = function(dskProvisioningList) {
 
 ZWave.prototype.nodeNameByType = function (nodeId, nodeData) {
 
-	var name = 'Device ' + '_' + nodeId,
+	var name = 'Device ' + nodeId,
 	    type = '',
 	    node = nodeData;
 
