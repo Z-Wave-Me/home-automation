@@ -3684,6 +3684,10 @@ AutomationController.prototype.findModulesReferencingDeviceId = function(device)
 		for (var indx in controller.instances) {
 			var instance = controller.instances[indx];
 			var moduleId = instance.moduleId;
+			if (!controller.modules[moduleId]) {
+				console.log("Module " + moduleId + " (" + instance.id + ") is not installed");
+				continue;
+			}
 			var schema = controller.modules[moduleId].meta.schema;
 			var config = instance.params;
 			
