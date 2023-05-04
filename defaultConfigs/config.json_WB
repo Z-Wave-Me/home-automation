@@ -250,9 +250,9 @@
 		}
 	}, {
 		"id": 16,
-		"moduleId": "WBMQTT",
+		"moduleId": "WBMQTTNative",
 		"active": true,
-		"title": "Wiren Board MQTT Integration",
+		"title": "Wiren Board MQTT Integration Native",
 		"params": {
 			"clientId": "wbzway",
 			"host": "localhost",
