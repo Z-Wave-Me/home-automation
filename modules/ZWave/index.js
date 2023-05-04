@@ -3976,6 +3976,7 @@ ZWave.prototype.gateDevicesStart = function() {
 						appMinor = deviceData.applicationMinor.value ? deviceData.applicationMinor.value : null,
 						hasS2 = deviceInstances[instanceId].commandClasses[159],
 						givenName = null,
+						smartStartEntryPreset = null,
 						devId,
 						appMajorId,
 						appMajorMinorId,
@@ -4326,8 +4327,42 @@ ZWave.prototype.gateDevicesStart = function() {
 
 					var ccId = nodeId + '-' + instanceId + '-' + commandClassId;
 
+
+					if (hasS2 && hasS2.data.publicKey && c.data.lastIncludedDevice.value === nodeId) {
+						// console.log('########################################################################################');
+						var dsk = transformPublicKeyToDSK(hasS2.data.publicKey.value);
+						var dskEntryIndex = _.findIndex(self.dskCollection, function(entry) {
+							return entry['DSK'] === dsk;
+						});
+						var dskEntry = self.dskCollection[dskEntryIndex] || null;
+
+						if (dskEntry && dskEntry.state !== 'included') {
+
+							// update state and nodeId
+							dskEntry.state = 'included';
+							dskEntry.nodeId = nodeId;
+							dskEntry.addedAt = Date.now();
+
+							// grep givenName from dskEntry
+							givenName = dskEntry.givenName? dskEntry.givenName : null; // filterIndex
+
+							// replace old DSK entry
+							self.dskCollection[dskEntryIndex] = dskEntry;
+							smartStartEntryPreset = dskEntry;
+
+							// save dsk collection
+							self.saveObject("dskCollection", self.dskCollection, true);
+
+							// console.log('###');
+							// console.log('########################################################################################');
+
+						} else {
+							smartStartEntryPreset = dskEntry || null;
+						}
+					}
+
 					if (!changeVDev[ccId] || (changeVDev[ccId] && !changeVDev[ccId].noVDev)) {
-						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev);
+						self.parseAddCommandClass(nodeId, instanceId, commandClassId, false, changeVDev, smartStartEntryPreset);
 					} else if (changeVDev[ccId] && changeVDev[ccId].noVDev) {
 						var devId = "ZWayVDev_" + self.config.name + "_" + nodeId + '-' + ccId;
 						// console output
@@ -4422,18 +4457,24 @@ ZWave.prototype.gateDevicesStop = function() {
 	}
 };
 
-ZWave.prototype.addVDevInfo = function(info, nodeId) {
+ZWave.prototype.addVDevInfo = function(info, nodeId, smartStartEntryPreset) {
 	_.extend(info, {
 		technology: "Z-Wave",
 		manufacturer: this.zway.devices[nodeId].data.vendorString.value || "",
 		product: this.zway.devices[nodeId].data.productString.value || "",
 		firmware: (this.zway.devices[nodeId].data.applicationMajor.value + "." + this.zway.devices[nodeId].data.applicationMinor.value) || "",
+		location: smartStartEntryPreset && _.isNumber(smartStartEntryPreset.location) ? smartStartEntryPreset.location : 0,
 	});
 }
 
-ZWave.prototype.compileTitle = function(nodeId, instanceId, title, type, addVendor) { // accepts more arguments, see code
+ZWave.prototype.compileTitle = function(nodeId, instanceId, smartStartEntryPreset, title, type, addVendor) { // accepts more arguments, see code
 	var sortArgs = [];
 
+	// if there is a given name preset, use it first
+	if (smartStartEntryPreset && smartStartEntryPreset.givenName) {
+		sortArgs.push(smartStartEntryPreset.givenName);
+	}
+	
 	// add vendor name
 	if (addVendor === undefined || addVendor === true) {
 		var vendorName = this.zway.devices[nodeId].data.vendorString.value;
@@ -4455,10 +4496,10 @@ ZWave.prototype.compileTitle = function(nodeId, instanceId, title, type, addVend
 	return sortArgs.join(' ');
 };
 
-ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceId, title, type, addVendor) {
-	this.addVDevInfo(defaultObj, nodeId);
+ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceId, smartStartEntryPreset, title, type, addVendor) {
+	this.addVDevInfo(defaultObj, nodeId, smartStartEntryPreset);
 	
-	defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, title, type, addVendor);
+	defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, smartStartEntryPreset, title, type, addVendor);
 	
 	if (changeObj) {
 		if (changeObj.noVDev) return false;
@@ -4468,7 +4509,7 @@ ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceI
 		if (changeObj.icon)
 			defaultObj.metrics.icon = changeObj.icon;
 		if (changeObj.rename)
-			defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, changeObj.rename, undefined, false);
+			defaultObj.metrics.title = this.compileTitle(nodeId, instanceId, smartStartEntryPreset, changeObj.rename, undefined, false);
 		defaultObj.visibility = changeObj.hide ? false : true;
 		defaultObj.permanently_hidden = changeObj.deactivate ? true : false;
 	
@@ -4479,7 +4520,7 @@ ZWave.prototype.applyPostfix = function(defaultObj, changeObj, nodeId, instanceI
 	return true;
 };
 
-ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClassId, scaleAdded, changeVDev) {
+ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClassId, scaleAdded, changeVDev, smartStartEntryPreset) {
 	nodeId = parseInt(nodeId, 10);
 	instanceId = parseInt(instanceId, 10);
 	commandClassId = parseInt(commandClassId, 10);
@@ -4563,7 +4604,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Switch')) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Switch')) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -4615,7 +4656,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, title)) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, title)) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -4724,7 +4765,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					}
 				}
 				
-				if (!this.applyPostfix(defaults, changeVDev[changeDevId + separ + "rgb"], nodeId, instanceId, 'Color')) return;
+				if (!this.applyPostfix(defaults, changeVDev[changeDevId + separ + "rgb"], nodeId, instanceId, smartStartEntryPreset, 'Color')) return;
 
 				var vDev_rgb = this.controller.devices.create({
 					deviceId: vDevId + separ + "rgb",
@@ -4800,7 +4841,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							}
 						}
 						
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, cc.data[colorId].capabilityString.value)) return;
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, cc.data[colorId].capabilityString.value)) return;
 
 						switch (colorId) {
 							case 0:
@@ -4915,7 +4956,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						if ((toneId == 0 || cc.data[toneId]) && !self.controller.devices.get(vDevId + separ + toneId)) {
 							var cVDId = changeDevId + separ + toneId;
 
-							if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, toneId ? cc.data[toneId].toneName.value : 'Mute')) return;
+							if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, toneId ? cc.data[toneId].toneName.value : 'Mute')) return;
 							
 							var vDev = self.controller.devices.create({
 								deviceId: vDevId + separ + toneId,
@@ -4961,7 +5002,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						}
 					};
 					
-					if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Volume')) return;
+					if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Volume')) return;
 
 					var vDev = self.controller.devices.create({
 						deviceId: vDevId,
@@ -5079,7 +5120,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							defaults.probeType = defaults.metrics.icon;
 						}
 
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Sensor', defaults.metrics.probeTitle)) return;
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Sensor', defaults.metrics.probeTitle)) return;
 
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + sensorTypeId,
@@ -5196,7 +5237,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 
 						defaults.probeType = defaults.metrics.icon;
 
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Sensor', defaults.metrics.probeTitle)) return;
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Sensor', defaults.metrics.probeTitle)) return;
 
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + sensorTypeId,
@@ -5325,7 +5366,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								break;
 						}
 
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Meter', defaults.metrics.probeTitle)) return;
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Meter', defaults.metrics.probeTitle)) return;
 
 						var vDev = self.controller.devices.create({
 							deviceId: vDevId + separ + scaleId,
@@ -5377,7 +5418,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 			if (!this.controller.devices.get(vDevId)) {
 				var cVDId = changeDevId;
 				
-				if (!this.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Meter Pulse')) return;
+				if (!this.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Meter Pulse')) return;
 
 				var vDev = this.controller.devices.create({
 					deviceId: vDevId,
@@ -5417,7 +5458,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Battery')) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Battery')) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -5453,7 +5494,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Door Lock')) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Door Lock')) return;
 
 			var vDev = this.controller.devices.create({
 				deviceId: vDevId,
@@ -5489,7 +5530,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Garage Door')) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Garage Door')) return;
 
 			var vDev = self.controller.devices.create({
 				deviceId: vDevId,
@@ -5535,7 +5576,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 					}
 				};
 				
-				if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Thermostat operation')) return;
+				if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Thermostat operation')) return;
 
 				var m_vDev = this.controller.devices.create({
 					deviceId: vDevId,
@@ -5604,7 +5645,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 						}
 					}
 					
-					if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, "Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"))) return;
+					if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, "Thermostat " + (mode === MODE_HEAT ? "Heat" : "Cool"))) return;
 
 					t_vDev[mode] = self.controller.devices.create({
 						deviceId: _vDevId,
@@ -5704,7 +5745,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 								break;
 						}
 						
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Alarm', cc.data[sensorTypeId].typeString.value)) return;
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[sensorTypeId].typeString.value)) return;
 						
 						var a_vDev = self.controller.devices.create({
 							deviceId: a_id,
@@ -5845,7 +5886,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							var a_id = vDevId + separ + notificationTypeId + separ + 'Door' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Alarm', cc.data[notificationTypeId][DOOR_OPEN].eventString.value)) return;
+								if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][DOOR_OPEN].eventString.value)) return;
 								var postfix_tilt_requested = changeVDev[cVDId] && changeVDev[cVDId].tilt;
 
 								var a_vDev = self.controller.devices.create({
@@ -5867,7 +5908,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									defaults.metrics.icon = 'window_tilt';
 									defaults.probeType = 'window_tilt';
 
-									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Window Tilt')) return undefined;
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Window Tilt')) return undefined;
 									
 									return self.controller.devices.create({
 										deviceId: a_id,
@@ -5926,7 +5967,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							var a_id = vDevId + separ + notificationTypeId + separ + 'AC' + separ + "A";
 
 							if (!self.controller.devices.get(a_id)) {
-									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Alarm', cc.data[notificationTypeId][AC_DISCONNECTED].eventString.value)) return;
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][AC_DISCONNECTED].eventString.value)) return;
 									
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
@@ -5977,7 +6018,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 									defaults.deviceType = isState ? "sensorBinary" : "toggleButton";
 									defaults.visibility = isState ? true : false;
 									
-									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, 'Alarm', cc.data[notificationTypeId][eventTypeId].eventString.value)) return;
+									if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId][eventTypeId].eventString.value)) return;
 
 									var a_vDev = self.controller.devices.create({
 										deviceId: a_id,
@@ -6047,7 +6088,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							};
 							
 							if (!self.controller.devices.get(e_id) && changeVDev[cVDId] && changeVDev[cVDId].notificationStatus) {
-								if (!self.applyPostfix(e_defaults, changeVDev[cVDId], nodeId, instanceId, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
+								if (!self.applyPostfix(e_defaults, changeVDev[cVDId], nodeId, instanceId, smartStartEntryPreset, 'Alarm', cc.data[notificationTypeId].typeString.value)) return;
 								
 								var a_vDev = self.controller.devices.create({
 									deviceId: e_id,
@@ -6120,7 +6161,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, 'Control')) return;
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, instanceId, smartStartEntryPreset, 'Control')) return;
 
 			var vDev = self.controller.devices.create({
 				deviceId: devId,
