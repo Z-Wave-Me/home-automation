@@ -3923,14 +3923,13 @@ ZWave.prototype.deadDetectionCheckBatteryDevice = function(nodeId) {
 	if (wakeupData && devData.basicType.value !== 1) {
 		// handle only sleeping nodes with Wakeup CC excluding Portable Controllers
 		var wakeupInterval = wakeupData.interval.value,
-			lastSleepTimedOut = wakeupData.lastSleep.value && (wakeupData.lastSleep.value + 3 * wakeupData.interval.value < now),
-			lastWakeupTimedOut = wakeupData.lastWakeup.value && (wakeupData.lastWakeup.value + 3 * wakeupData.interval.value < now);
-
+			lastReceive = parseInt(devData.lastReceived.updateTime, 10) || 0,
+			lastSend = parseInt(devData.lastSend.updateTime, 10) || 0,
+			lastCommunication = (lastSend > lastReceive) ? lastSend : lastReceive;
 		if (
 			wakeupData.interval.value > 0 && // Wakeup Interval is not zero
 			this.zway.controller.data.nodeId.value === wakeupData.nodeId.value && // controller is the destination for Wakeup Notification
-			lastWakeupTimedOut && // wakeup happens within the last three Wakeup Intervals
-			lastSleepTimedOut // sleep happens within the last three Wakeup Intervals
+			lastCommunication + 3 * wakeupData.interval.value < now // communication not happens within the last three Wakeup Intervals
 		) {
 			this.controller.vDevFailedDetection(nodeId, true);
 		} else {
