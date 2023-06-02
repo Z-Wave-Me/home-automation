@@ -104,7 +104,7 @@ DummyDevice.prototype.init = function (config) {
 					} else if (command === "off") {
 						level = 0;
 					} else {
-						level = args.level;
+						level = parseInt(args.level, 10);
 					}
 				}
 
