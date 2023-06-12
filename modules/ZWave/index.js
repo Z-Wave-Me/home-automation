@@ -5836,6 +5836,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 										case 0x07:
 										case 0x08:
 											defaults.metrics.icon = 'motion';
+											defaults.probeType = 'motion';
 											break;
 									}
 									break;
