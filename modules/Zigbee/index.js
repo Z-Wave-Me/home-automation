@@ -2868,7 +2868,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					title = "CO";
 					break;
 				case 0x002a:
-					defaults.metrics.icon = 'flood';
+					defaults.metrics.icon = 'alarm_flood';
 					defaults.probeType = 'flood';
 					title = "Flood";
 					break;

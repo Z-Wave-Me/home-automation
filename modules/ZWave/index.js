@@ -5103,7 +5103,7 @@ ZWave.prototype.parseAddCommandClass = function(nodeId, instanceId, commandClass
 							defaults.metrics.icon = "co";
 							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 6) {
-							defaults.metrics.icon = "flood";
+							defaults.metrics.icon = "alarm_flood";
 							defaults.probeType = defaults.metrics.icon;
 						} else if (sensorTypeId === 7) {
 							defaults.metrics.icon = "cooling";
