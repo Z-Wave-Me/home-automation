@@ -58,6 +58,7 @@ function Zigbee(id, controller) {
 	this.CC = {
 		"OnOff": 0x0006,
 		"LevelControl": 0x0008,
+		"DoorLock": 0x0101,
 		"ColorControl": 0x0300,
 		"IasZone": 0x0500,
 	};
@@ -2470,44 +2471,194 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					} catch (e) {}
 				}, "value");
 			}
-		} else if (this.CC["DoorLock"] === clusterId && !self.controller.devices.get(vDevId)) {
-
-			defaults = {
+		}*/ else if (this.CC["DoorLock"] === clusterId) {
+			defaults_lock = {
 				deviceType: 'doorlock',
 				metrics: {
 					level: '',
 					icon: 'lock',
+					title: '',
 					isFailed: false
-
 				}
 			};
 			
-			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Door Lock')) return;
+			defaults_door = {
+				deviceType: 'doorlock',
+				metrics: {
+					level: '',
+					icon: 'lock',
+					title: 'Door State',
+					isFailed: false
+				}
+			};
 
-			var vDev = this.controller.devices.create({
-				deviceId: vDevId,
-				defaults: defaults,
-				overlay: {},
-				handler: function(command) {
-					if ("open" === command) {
-						cc.Set(0);
-					} else if ("close" === command) {
-						cc.Set(255);
-					}
-				},
-				moduleId: self.id
-			});
-			if (vDev) {
-				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "mode", function(type) {
-					try {
-						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value === 255 ? "close" : "open");
-						}
-					} catch (e) {}
-				}, "value");
+			var lockType = cc.data.lockType.value;
+
+			switch (lockType) {
+				case 0x00:
+					title = "Dead bolt";
+					break;
+				case 0x01:
+					title = "Magnetic";
+					break;
+				case 0x02:
+					title = "Other";
+					break;
+				case 0x03:
+					title = "Mortise";
+					break;
+				case 0x04:
+					title = "Rim";
+					break;
+				case 0x05:
+					title = "Latch Bolt";
+					break;
+				case 0x06:
+					title = "Cylindrical Lock";
+					break;
+				case 0x07:
+					title = "Tubular Lock";
+					break;
+				case 0x08:
+					title = "Interconnected";
+					break;
+				case 0x09:
+					title = "Dead Latch";
+					break;
+				case 0x0A:
+					title = "Door Furniture";
+					break;
+				default:
+					title = "Door Lock"
+					break;
 			}
-		} else if (this.CC["BarrierOperator"] === clusterId && !self.controller.devices.get(vDevId)) {
+
+			if (!this.applyPostfix(defaults_lock, changeVDev[changeDevId], nodeId, endpointId, 'Door Lock', title)) return;
+			if (!this.applyPostfix(defaults_door, changeVDev[changeDevId], nodeId, endpointId, 'Door Lock')) return;
+
+			if (cc.data.lockState) {
+				var vDev_lock = this.controller.devices.create({
+					deviceId: vDevId + separ + "lock",
+					defaults: defaults_lock,
+					overlay: {},
+					handler: function(command) {
+						if ("open" === command) {
+							cc.LockDoor("");
+						} else if ("close" === command) {
+							cc.UnlockDoor("");
+						}
+					},
+					moduleId: self.id
+				});
+				
+				if (cc.data.doorState) {
+					var vDev_door = this.controller.devices.create({
+						deviceId: vDevId + separ + "door",
+						defaults: defaults_door,
+						overlay: {},
+						handler: function(command) {
+							if ("open" === command) {
+								cc.LockDoor("");
+							} else if ("close" === command) {
+								cc.UnlockDoor("");
+							}
+						},
+						moduleId: self.id
+					});
+
+					if (vDev_door && vDev_lock) {
+						vDev_door.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+						self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "doorState", function(type) {
+							try {
+								if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+									self.controller.devices.remove(vDevId);
+								} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+									switch (this.value) {
+										case 0x00:
+											vDev_door.set("metrics:level", "open");
+											vDev_lock.set("metrics:level", "open");
+											break;
+										case 0x01:
+											vDev_door.set("metrics:level", "close");
+											vDev_lock.set("metrics:level", "close");
+											break;
+										case 0x02:
+											// TODO(Notifing  ERROR JAMMED)
+											//vDev.set("metrics:level", "close");
+											break;
+										case 0x03:
+											// TODO(Notifing  ERROR FORCED OPENED)
+											vDev_door.set("metrics:level", "open");
+											vDev_lock.set("metrics:level", "close");
+											break;
+										case 0x04:
+											// TODO(Notifing  ERROR UNSPECIFIED)
+											//vDev.set("metrics:level", "open");
+											break;
+										case 0xFF:
+											// TODO(Notifing  UNDEFINED)
+											//vDev.set("metrics:level", "open");
+											break;
+										default:
+											break;
+									}
+								}
+							} catch (e) {}
+						}, "value");
+
+						
+						self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "lockState", function(type) {
+							try {
+								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+									switch (this.value) {
+										case 0x00:
+											//TODO self.addNotification("error", "Not fully locked", "module");
+											break;
+										case 0x01:
+											vDev_lock.set("metrics:level", "open");
+											break;
+										case 0x02:
+											vDev_lock.set("metrics:level", "close");
+										case 0xFF:
+											//TODO self.addNotification("error", "Undefined lock state", "module");
+											break;
+										default:
+											// TODO self.addNotification("error", "Unknown lock state", "module");
+											break;
+									}
+								}
+							} catch (e) {}
+						}, "value");
+					}
+				}
+				else {
+					if (vDev_lock) {
+						self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "lockState", function(type) {
+							try {
+								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+									switch (this.value) {
+										case 0x00:
+											//TODO self.addNotification("error", "Not fully locked", "module");
+											break;
+										case 0x01:
+											vDev_lock.set("metrics:level", "open");
+											break;
+										case 0x02:
+											vDev_lock.set("metrics:level", "close");
+										case 0xFF:
+											//TODO self.addNotification("error", "Undefined lock state", "module");
+											break;
+										default:
+											// TODO self.addNotification("error", "Unknown lock state", "module");
+											break;
+									}
+								}
+							} catch (e) {}
+						}, "value");
+					}
+				}
+			}
+		} /*else if (this.CC["BarrierOperator"] === clusterId && !self.controller.devices.get(vDevId)) {
 
 			defaults = {
 				deviceType: 'doorlock',
@@ -2717,7 +2868,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					title = "CO";
 					break;
 				case 0x002a:
-					defaults.metrics.icon = 'flood';
+					defaults.metrics.icon = 'alarm_flood';
 					defaults.probeType = 'flood';
 					title = "Flood";
 					break;

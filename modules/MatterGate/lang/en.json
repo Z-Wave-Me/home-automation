@@ -1,6 +1,6 @@
 {
 	"m_title":"Matter Bridge",
-	"m_descr":"The Matter protocol allows to control Z-Way from Apple Home, Google Home, Amazon and many other MAtter-compatible controllers",
+	"m_descr":"The Matter protocol allows to control Z-Way from Apple Home, Google Home, Amazon Alexa and many other Matter-compatible controllers",
 	"l_options":"Name the bridge will appears with in Matter",
 	"l_pin":"Pin code",
 	"l_skipped_devices":"Devices that don't need to be displayed in Matter",

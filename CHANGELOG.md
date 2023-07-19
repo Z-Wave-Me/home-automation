@@ -1,3 +1,20 @@
+## 19.07.2023 v4.1.1
+New features:
+* Zigbee DoorLock support
+Improvements:
+* Rework of SmartStart UI
+* HomeKit: Added Battery Service
+Fixes:
+* Fix missing flood sensor icon
+* Fix probeType for motion
+* Update postfix.json for FGS-213
+* Fixed firmware update of Nth chip
+* DummyDevice parseInt fix
+* Set device isFailed based on lastCommunication value
+* Correct logging of Notification channel not assigned to a user
+* Fixed WB config to use Native module
+* Fixed thermostat getCurrentTemperature
+
 ## 02.05.2023 v4.1.0
 New features:
 * Zigbee support added with Z-Wave.Me hardware
