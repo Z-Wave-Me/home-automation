@@ -239,7 +239,7 @@
 		"title": "Zigbee Network Access",
 		"params":{
 			"name": "zbee",
-			"port": "/dev/ttyMOD2",
+			"port": "/dev/ttyMOD3",
 			"speed": 115200,
 			"enableAPI": true,
 			"publicAPI": false,
