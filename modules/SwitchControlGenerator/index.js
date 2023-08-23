@@ -36,7 +36,6 @@ SwitchControlGenerator.prototype.init = function (config) {
 		"SwitchMultilevel": 0x26,
 		"SceneActivation": 0x2b,
 		"SimpleAVControl": 0x94,
-		"CentralScene": 0x5b
 	};
 
 	this.ZWAY_DEVICE_CHANGE_TYPES = {
@@ -46,8 +45,6 @@ SwitchControlGenerator.prototype.init = function (config) {
 		"InstanceRemoved": 0x08,
 		"CommandAdded": 0x10,
 		"CommandRemoved": 0x20,
-		"ZDDXSaved": 0x100,
-		"EnumerateExisting": 0x200
 	};
 
 	this.ZWAY_DATA_CHANGE_TYPE = {
@@ -77,17 +74,18 @@ SwitchControlGenerator.prototype.init = function (config) {
 			if (self.config.banned.indexOf(name) === -1) {
 
 				var vendor = "",
+					isFailed = false,
 					ids = [],
 					idString = "";
 				try {
 					ids = name.split('_').pop().split('-').slice(0, -1);
 					idString = ids && ids.length > 0? " (" + ids.join(".") + ") " : idString;
 
-					var v = zway.devices[ids[0]].data.vendorString.value,
-						isFailed = zway.devices[ids[0]].data.isFailed.value;
+					var v = zway.devices[ids[0]].data.vendorString.value;
 					vendor = !!v? v : vendor;
-				} catch (e) {
-				}
+					
+					isFailed = zway.devices[ids[0]].data.isFailed.value;
+				} catch (e) {}
 
 				self.controller.devices.create({
 					deviceId: name,
@@ -135,7 +133,6 @@ SwitchControlGenerator.prototype.init = function (config) {
 				    dataSB = insts[n].SwitchBinary && insts[n].SwitchBinary.data,
 				    dataSML = insts[n].SwitchMultilevel && insts[n].SwitchMultilevel.data,
 				    dataSc = insts[n].SceneActivation && insts[n].SceneActivation.data,
-				    // see below // dataCSc = insts[n].CentralScene && insts[n].CentralScene.data,
 				    dataSAV = insts[n].SimpleAVControl && insts[n].SimpleAVControl.data;
 			   
 				if (dataB) {
@@ -205,7 +202,7 @@ SwitchControlGenerator.prototype.init = function (config) {
 				if (dataSc) {
 					self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SceneActivation"], "currentScene", function(type) {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-							self.remove(zwayName, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, "S"]);
+							self.remove(zwayName, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value, "S"]);
 						} else {
 							self.handler(zwayName, "on", {}, [dataSc.srcNodeId.value, dataSc.srcInstanceId.value, n, this.value, "S"]);
 						}
@@ -215,25 +212,12 @@ SwitchControlGenerator.prototype.init = function (config) {
 				if (dataSAV) {
 					self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["SimpleAVControl"], "key", function(type) {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-							self.remove(zwayName, [dataSAV.srcNodeId.value, dataSAV.srcInstanceId.value, n, "S"]);
+							self.remove(zwayName, [dataSAV.srcNodeId.value, dataSAV.srcInstanceId.value, n, this.value, "S"]);
 						} else {
 							self.handler(zwayName, "on", {}, [dataSAV.srcNodeId.value, dataSAV.srcInstanceId.value, n, this.value, "S"]);
 						}
 					}, "");
 				}
-				
-				/*
-				CentralScene do not require SwitchControlGenerator as this CC is handled correctly in Z-Wave binding
-				if (dataCSc) {
-					self.controller.emit("ZWave.dataBind", self.bindings[zwayName], zwayName, ctrlNodeId, n, self.CC["CentralScene"], "currentScene", function(type) {
-						if (type === self.ZWAY_DATA_CHANGE_TYPE["Deleted"]) {
-							self.remove(zwayName, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, "S"]);
-						} else {
-							self.handler(zwayName, "on", {}, [dataCSc.srcNodeId.value, dataCSc.srcInstanceId.value, n, this.value, "S"]);
-						}
-					}, "");
-				}
-				*/
 			})(i);
 		}
 	};
@@ -324,13 +308,16 @@ SwitchControlGenerator.prototype.handler = function(zwayName, cmd, par, ids) {
 		}
 
 		var vendor = "";
-		try {
-			var v = global.ZWave[zwayName].zway.devices[ids[0]].data.vendorString.value,
-				isFailed = global.ZWave[zwayName].zway.devices[ids[0]].data.isFailed.value;
+		var isFailed = false;
 
+		try {
+			var v = global.ZWave[zName].zway.devices[ids[0]].data.vendorString.value;
 			vendor = !!v? v : vendor;
-		} catch (e) {
-		}
+		} catch (e) {}
+		
+		try {
+			isFailed = global.ZWave[zName].zway.devices[ids[0]].data.isFailed.value;
+		} catch (e) {}
 		
 		this.controller.devices.create({
 			deviceId: name,
