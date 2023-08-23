@@ -4018,7 +4018,7 @@ ZWave.prototype.gateDevicesStart = function() {
 
 							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
 								for (i = minBtnNr; i <= maxBtnNr; i++) {
-									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
+									this.controller.emit('SwitchControlGenerator.register', 'ZWay', self.config.name, nodeId, instanceId, '0', i, type);
 									console.logJS(i, minBtnNr, maxBtnNr);
 
 									// console output
