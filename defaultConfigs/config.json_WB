@@ -262,6 +262,7 @@
 			"topicPrefix": "/devices/zway",
 			"topicPostfixSet": "on",
 			"precision": 0.01,
+			"groupByDevices": true,
 			"debug": false
 		}
 	}, {
