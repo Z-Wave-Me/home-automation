@@ -1537,6 +1537,8 @@ Zigbee.prototype.addVDevInfo = function(info, nodeId) {
 	}
 	_.extend(info, {
 		technology: "Zigbee",
+		bindingName: this.config.name,
+		nodeId: nodeId,
 		manufacturer: manufacturerName,
 		product: modelIdentifier,
 		firmware: swBuildId,

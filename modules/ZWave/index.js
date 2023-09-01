@@ -4459,6 +4459,8 @@ ZWave.prototype.gateDevicesStop = function() {
 ZWave.prototype.addVDevInfo = function(info, nodeId, smartStartEntryPreset) {
 	_.extend(info, {
 		technology: "Z-Wave",
+		bindingName: this.config.name,
+		nodeId: nodeId,
 		manufacturer: this.zway.devices[nodeId].data.vendorString.value || "",
 		product: this.zway.devices[nodeId].data.productString.value || "",
 		firmware: (this.zway.devices[nodeId].data.applicationMajor.value + "." + this.zway.devices[nodeId].data.applicationMinor.value) || "",

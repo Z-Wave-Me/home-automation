@@ -109,6 +109,9 @@ SwitchControlGenerator.prototype.init = function (config) {
 					deviceId: name,
 					defaults: {
 						deviceType: name[name.length-1] === "S" ? "toggleButton" : "switchControl",
+						technology: "Z-Wave",
+						bindingName: zwayName,
+						nodeId: ids[0],
 						metrics: {
 							title: vendor + idString + "Button", // this is always not the initial creation, so the default title is already filled 
 							change: "",
@@ -299,6 +302,9 @@ SwitchControlGenerator.prototype.init = function (config) {
 					deviceId: name,
 					defaults: {
 						deviceType: name[name.length-1] === "S" ? "toggleButton" : "switchControl",
+						technology: "Zigbee",
+						bindingName: zbeeName,
+						nodeId: ids[0],
 						metrics: {
 							title: vendor + idString + "Button", // this is always not the initial creation, so the default title is already filled 
 							change: "",

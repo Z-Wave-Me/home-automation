@@ -44,11 +44,12 @@ VirtualDevice = function (options) {
 			'creationTime',
 			'probeType',
 			'customIcons',
-			'technology',
 			'manufacturer',
 			'product',
 			'firmware',
 			'order',
+			'technology',
+			'bindingName',
 			'nodeId'
 		],
 		collection: options.controller.devices,
@@ -94,15 +95,6 @@ VirtualDevice = function (options) {
 		this.attributes.creatorId = options.moduleId;
 	}
 
-	if (this.attributes.id.indexOf('ZWayVDev') > -1) {
-		var shifting = this.attributes.id.indexOf('RemoteHA') > -1? 4 : 2;
-		var idArr = this.attributes.id.split('_');
-		var nodeId = idArr[shifting].split('-').shift();
-
-		this.attributes.nodeId = shifting === 4 && nodeId? 'R-'+ idArr[1] +'_'+ idArr[3] +'_'+ nodeId : (nodeId? parseInt(nodeId, 10) : undefined); // Remote is flagged by R-[moduleID]_[zwayName]_[nodeId]
-	} else {
-		delete this.attributes.nodeId;
-	}
 
 	this.initialize.apply(this, arguments);
 	return this;
