@@ -2971,7 +2971,8 @@
 			"noVDev,3-37",
 			"noVDev,0-37",
 			"setConfig(0,31,2,1)",
-			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1); self.zway.devices[nodeId].Association.Set(3,1);}"
+			"if(self.zway.controller.data.lastIncludedDevice.value === nodeId && self.zway.devices[nodeId].Association.data.groups.value){self.zway.devices[nodeId].Association.Set(2,1); self.zway.devices[nodeId].Association.Set(3,1);}",
+			"self.zway.InjectPacket([nodeId],[0x60,0x08,0x40,0x03])"
 		],
 		"author_last_update": "2018-01-04 12:26:13",
 		"author": "SP",
