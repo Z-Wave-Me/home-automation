@@ -463,6 +463,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: 'sensorBinary',
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						probeTitle: type,
 						scaleTitle: '',
@@ -503,6 +505,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "sensorMultilevel",
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						probeTitle: type,
 						scaleTitle: scale,
@@ -533,6 +537,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "switchControl",
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						level: '',
 						icon: '',
@@ -550,6 +556,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "switchControl",
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						level: '',
 						icon: '',
@@ -633,6 +641,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: "thermostat",
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						scaleTitle: scale, // TODO!!! Check if F scale is defined in EnOcean
 						level: '',
@@ -666,6 +676,8 @@ EnOcean.prototype.parseProfile = function (nodeId) {
 				defaults: {
 					deviceType: 'switchBinary',
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						icon: 'switch',
 						level: '',
@@ -863,6 +875,8 @@ EnOcean.prototype.parseGenericProfile = function (nodeId) {
 				defaults: {
 					deviceType: 'sensorBinary',
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						probeTitle: type,
 						scaleTitle: '',
@@ -893,6 +907,8 @@ EnOcean.prototype.parseGenericProfile = function (nodeId) {
 				defaults: {
 					deviceType: 'switchBinary',
 					technology: "EnOcean",
+					bindingName: self.config.name,
+					nodeId: nodeId,
 					metrics: {
 						icon: 'switch',
 						level: '',

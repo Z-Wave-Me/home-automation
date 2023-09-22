@@ -4018,7 +4018,7 @@ ZWave.prototype.gateDevicesStart = function() {
 
 							if (trapArray[0].params.generated.indexOf('ZWayVDev_zway_Remote_' + nodeId + '-' + instanceId + '-0-1') === -1) {
 								for (i = minBtnNr; i <= maxBtnNr; i++) {
-									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, instanceId, '0', i, type);
+									this.controller.emit('SwitchControlGenerator.register', 'ZWay', self.config.name, nodeId, instanceId, '0', i, type);
 									console.logJS(i, minBtnNr, maxBtnNr);
 
 									// console output
@@ -4459,6 +4459,8 @@ ZWave.prototype.gateDevicesStop = function() {
 ZWave.prototype.addVDevInfo = function(info, nodeId, smartStartEntryPreset) {
 	_.extend(info, {
 		technology: "Z-Wave",
+		bindingName: this.config.name,
+		nodeId: nodeId,
 		manufacturer: this.zway.devices[nodeId].data.vendorString.value || "",
 		product: this.zway.devices[nodeId].data.productString.value || "",
 		firmware: (this.zway.devices[nodeId].data.applicationMajor.value + "." + this.zway.devices[nodeId].data.applicationMinor.value) || "",

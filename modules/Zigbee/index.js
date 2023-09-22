@@ -1146,7 +1146,7 @@ Zigbee.prototype.gateDevicesStart = function() {
 
 							if (trapArray[0].params.generated.indexOf('ZBeeVDev_zbee_Remote_' + nodeId + '-' + endpointId + '-0-1') === -1) {
 								for (i = minBtnNr; i <= maxBtnNr; i++) {
-									this.controller.emit('SwitchControlGenerator.register', self.config.name, nodeId, endpointId, '0', i, type);
+									this.controller.emit('SwitchControlGenerator.register', 'ZBee', self.config.name, nodeId, endpointId, '0', i, type);
 									console.logJS(i, minBtnNr, maxBtnNr);
 
 									// console output
@@ -1538,6 +1538,8 @@ Zigbee.prototype.addVDevInfo = function(info, nodeId) {
 	}
 	_.extend(info, {
 		technology: "Zigbee",
+		bindingName: this.config.name,
+		nodeId: nodeId,
 		manufacturer: manufacturerName,
 		product: modelIdentifier,
 		firmware: swBuildId,
