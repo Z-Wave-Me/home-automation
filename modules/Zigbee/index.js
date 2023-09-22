@@ -2961,7 +2961,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId);
 						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value ? "on" : "off");
+							vDev.set("metrics:level", (this.value & 0x01) ? "on" : "off");
 						}
 					} catch (e) {}
 				}, "value");
