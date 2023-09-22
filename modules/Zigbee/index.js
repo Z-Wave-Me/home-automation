@@ -60,6 +60,7 @@ function Zigbee(id, controller) {
 		"LevelControl": 0x0008,
 		"DoorLock": 0x0101,
 		"ColorControl": 0x0300,
+		"OccupancySensing": 0x0406,
 		"IasZone": 0x0500,
 	};
 }
@@ -2831,6 +2832,48 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			}
 		}
 		*/
+
+		else if (this.CC["OccupancySensing"] === clusterId) {
+			defaults = {
+				deviceType: 'sensorBinary',
+				probeType: '',
+				metrics: {
+					level: 'off',
+					title: '',
+					isFailed: false
+				}
+			};
+		
+			var title = "Occupancy";
+			
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Alarm', title)) return;
+
+			
+			var vDev = self.controller.devices.create({
+				deviceId: vDevId,
+				defaults: defaults,
+				overlay: {},
+				handler: function(command) {
+					if (command === "update") {
+						cc.Get();
+					}
+				},
+				moduleId: self.id
+			});
+			
+			if (vDev) {
+				//TODO isFailed a_vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "zoneStatus", function(type) {
+					try {
+						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+							self.controller.devices.remove(vDevId);
+						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value ? "on" : "off");
+						}
+					} catch (e) {}
+				}, "value");
+			}
+		}
 		else if (this.CC["IasZone"] === clusterId) {
 			defaults = {
 				deviceType: 'sensorBinary',
