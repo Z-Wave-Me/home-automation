@@ -60,7 +60,7 @@
 			"publicAPI": false,
 			"createVDev": true,
 			"enablePacketLog": "enable",
-			"config": "config",
+			"config": "configs/config",
 			"translations": "translations",
 			"ZDDX": "ZDDX"
 		},
@@ -239,12 +239,12 @@
 		"title": "Zigbee Network Access",
 		"params":{
 			"name": "zbee",
-			"port": "/dev/ttyMOD2",
+			"port": "/dev/ttyMOD3",
 			"speed": 115200,
 			"enableAPI": true,
 			"publicAPI": false,
 			"createVDev": true,
-			"config": "config",
+			"config": "configs/config",
 			"translations": "translations",
 			"ZDDX": "ZDDX"
 		}
@@ -262,6 +262,20 @@
 			"topicPrefix": "/devices/zway",
 			"topicPostfixSet": "on",
 			"precision": 0.01,
+			"groupByDevices": true,
+			"debug": false
+		}
+	}, {
+		"id": 17,
+		"moduleId": "WBMQTTImport",
+		"active": true,
+		"title": "Wiren Board MQTT connector for Z-Way",
+		"params": {
+			"clientId": "zwaywb",
+			"host": "localhost",
+			"port": "1883",
+			"user": "none",
+			"password": "none",
 			"debug": false
 		}
 	}]

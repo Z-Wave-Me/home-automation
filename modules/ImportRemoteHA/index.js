@@ -135,6 +135,9 @@ ImportRemoteHA.prototype.parseResponse = function (response) {
 				var dev = {
 					deviceId: localId,
 					defaults: {
+						nodeId: item.nodeId === undefined ? undefined : ('R-' + self.id + (item.bindingName === undefined ? "" : ("_" + item.bindingName)) + "_" + item.nodeId),
+						bindingName: item.bindingName === undefined ? undefined : ('R-' + item.bindingName),
+						technology: item.technology,
 						deviceType: item.deviceType,
 						probeType: item.probeType,
 						metrics: item.metrics,
