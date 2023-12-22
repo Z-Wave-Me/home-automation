@@ -211,7 +211,7 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
 		lang = self.controller.defaultLang;
 	
 	http.request({
-		url: "http://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(self.config.city) + "," + encodeURIComponent(self.config.country) +"&lang=" + lang + "&appid=" + encodeURIComponent(self.config.api),
+		url: "https://api.openweathermap.org/data/2.5/weather?q=" + encodeURIComponent(self.config.city) + "," + encodeURIComponent(self.config.country) +"&lang=" + lang + "&appid=" + encodeURIComponent(self.config.api),
 		async: true,
 		success: function(res) {
 			try {
@@ -229,9 +229,9 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
 					icon = "https://openweathermap.org/img/w/" + weather[0].icon + ".png",
 					flag = "https://openweathermap.org/images/flags/" + country.toLowerCase() + ".png",
 					sunrise = Math.round(res.data.sys.sunrise) * 1000,
-					icon_sunrise = "http://openweathermap.org/img/w/01d.png",
+					icon_sunrise = "https://openweathermap.org/img/w/01d.png",
 					sunset = Math.round(res.data.sys.sunset) * 1000,
-					icon_sunset = "http://openweathermap.org/img/w/01n.png";
+					icon_sunset = "https://openweathermap.org/img/w/01n.png";
 				
 				if (self.config.units_wind === "km/h") {
 					windspeed = Math.round(windspeed * 3.6);

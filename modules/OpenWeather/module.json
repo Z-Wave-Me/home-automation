@@ -3,7 +3,7 @@
 	"singleton": false,
 	"category": "support_external_dev",
 	"author": "Z-Wave.Me",
-	"homepage": "http://razberry.z-wave.me",
+	"homepage": "https://z-wave.me/z-way",
 	"icon": "icon.png",
 	"moduleName":"OpenWeather",
 	"version": "1.3.0",
