@@ -236,8 +236,7 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
 				if(self.config.units_wind === "km/h") {
 					windspeed = Math.round(windspeed * 3.6);
 					windgust = Math.round(windgust * 3.6);
-				}	
-				if(self.config.units_wind === "mph")  {
+				} else if (self.config.units_wind === "mph")  {
 					windspeed = Math.round(windspeed * 2.237);
 					windgust = Math.round(windgust * 2.237);
 				}	
