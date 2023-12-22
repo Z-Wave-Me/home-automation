@@ -12,4 +12,11 @@
 	"h_api":"Gehen Sie auf die URL: https://openweathermap.org/appid#get und folgen Sie den Anweisungen, um ein OpenWeather-Token zu erstellen.",
 	"rl_show_daylight":"Tageslichtsensor anzeigen",
 	"h_show_daylight":"Erzeugt einen binären Sensor, der sich je nach Sonnenauf- oder Sonnenuntergangszeit ein- (Tageslicht ein) oder ausschaltet (Tageslicht aus)."
+	"rl_show_temp_hum": "Temperatur- und Feuchtigkeitssensor anzeigen",
+	"h_show_temp_hum": "Erzeugt Temperatur- und Feuchtigkeitssensor.",
+	"rl_show_wind": "Wind Sensoren anzeigen",
+	"h_show_wind": "Erzeugt Wind Geschwindigkeits- und Richtungssensor.",
+	"l_refresh_rate": "Refresh Rate:",
+	"h_refresh_rate": "Bitte beachten Sie die max. Anzahl der Abfragen Ihres Accounts!"
+
 }
