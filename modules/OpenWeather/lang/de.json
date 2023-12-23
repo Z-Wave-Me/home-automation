@@ -16,7 +16,7 @@
 	"h_show_temp_hum": "Erzeugt Temperatur- und Feuchtigkeitssensor.",
 	"rl_show_wind": "Wind Sensoren anzeigen",
 	"h_show_wind": "Erzeugt Wind Geschwindigkeits- und Richtungssensor.",
-	"l_refresh_rate": "Refresh Rate:",
+	"l_refresh_rate": "Refresh Rate (Minuten):",
 	"h_refresh_rate": "Bitte beachten Sie die max. Anzahl der Abfragen Ihres Accounts!"
 
 }
