@@ -6,7 +6,7 @@
 	"homepage": "http://razberry.z-wave.me",
 	"icon": "icon.png",
 	"moduleName":"OpenWeather",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"maturity": "stable",
 	"repository": {
 			"type": "git",
@@ -16,9 +16,13 @@
 		"title": "__m_title__",
 		"description": "__m_descr__",
 		"units": "celsius",
+		"units_wind": "km/h",
+		"refresh_rate": "20",
 		"city": "",
 		"country": "",
-		"show_daylight": false
+		"show_daylight": false,
+		"show_temp_hum": false,
+		"show_wind": false
 	},
 	"schema": {
 		"type": "object",
@@ -32,15 +36,33 @@
 				"required": true
 			},
 			"units": {
-				"type": "select",
+				"type": "string",
 				"enum": ["celsius", "fahrenheit"],
+				"required": true
+			},
+			"units_wind": {
+				"type": "string",
+				"enum": ["km/h","m/s","mph"],
 				"required": true
 			},
 			 "api": {
 				"type": "string",
 				"required": true
 			},
+			"refresh_rate": {
+				"type": "string",
+				"enum": ["05","10","20","30","40","50","60"],
+				"required": true
+			},
 			"show_daylight": {
+				"type": "boolean",
+				"required": false
+			},
+			"show_temp_hum": {
+				"type": "boolean",
+				"required": false
+			},
+			"show_wind": {
 				"type": "boolean",
 				"required": false
 			}
@@ -59,17 +81,35 @@
 			},
 			"units": {
 				"label": "__l_units__",
-				"optionLabels": ["°C", "°F"]
+				"type": "select"
+			},
+			"units_wind": {
+				"type": "select"
 			},
 			"api": {
 				"label": "API-Key",
 				"placeholder": "API-Key",
 				"helper":"__h_api__"
 			},
+			"refresh_rate": {
+				"label": "__l_refresh_rate__",
+				"type": "select",
+				"helper": "__h_refresh_rate__"
+			},
 			"show_daylight": {
 				"type": "checkbox",
 				"rightLabel":"__rl_show_daylight__",
 				"helper":"__h_show_daylight__"
+			},
+			"show_temp_hum": {
+				"type": "checkbox",
+				"rightLabel":"__rl_show_temp_hum__",
+				"helper":"__h_show_temp_hum__"
+			},
+			"show_wind": {
+				"type": "checkbox",
+				"rightLabel":"__rl_show_wind__",
+				"helper":"__h_show_wind__"
 			}
 		}
 	}

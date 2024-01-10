@@ -1,3 +1,22 @@
+## 18.10.2023 v4.1.2
+New features:
+* Support for Zigbee clusters OnOff, LevelControl, ColorControl, IasZone and OccupancySensing
+* Added Zigbee support to SwitchControlGenerator
+* Allow custom IP reported from localIP.json file
+Improvements:
+* Reworked technology/bindingName/nodeId attributes of vDevs in Z-Wave/Zigbee/EnOcean/ImportRemoteHA/SwitchControlGenerator
+* defaultConfigs updated, NotificationFiltering and NotificationEmail added
+* Add Battery notifications to inbound notification
+* Be more verbose in ImportHA
+Fixes:
+* Fixed double restart on zway.discover() exception
+* Fixes in Zigbee app
+* Fixed ZWave.prototype.applyPostfix error
+* Fixed firmware-fault report
+* Fixed wipeOut handler
+* Typo in getMACAddress
+* Update postfix.json
+
 ## 19.07.2023 v4.1.1
 New features:
 * Zigbee DoorLock support
