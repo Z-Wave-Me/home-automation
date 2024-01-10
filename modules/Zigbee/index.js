@@ -60,6 +60,9 @@ function Zigbee(id, controller) {
 		"LevelControl": 0x0008,
 		"DoorLock": 0x0101,
 		"ColorControl": 0x0300,
+		"TemperatureMeasurement": 0x0402,
+		"PressureMeasurement": 0x0403,
+		"RelativeHumidityMeasurement": 0x0405,
 		"OccupancySensing": 0x0406,
 		"IasZone": 0x0500,
 	};
@@ -2834,7 +2837,130 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			}
 		}
 		*/
+		else if (this.CC["TemperatureMeasurement"] === clusterId) {
+			defaults = {
+				deviceType: "sensorMultilevel",
+				probeType: '',
+				metrics: {
+					probeTitle: "temperature",
+					scaleTitle: 'C',
+					level: '',
+					icon: "temperature",
+					title: 'Temperature',
+					isFailed: false
+				}
+			};
+			
+			if (!self.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Sensor', defaults.metrics.probeTitle)) return;
 
+			var vDev = self.controller.devices.create({
+				deviceId: vDevId,
+				defaults: defaults,
+				overlay: {},
+				handler: function(command) {
+					if (command === "update") {
+						cc.Get(sensorTypeId);
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "measuredValue", function(type) {
+					try {
+						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+							self.controller.devices.remove(vDevId);
+						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value / 100);
+						}
+					} catch (e) {}
+				}, "value");
+			}
+			
+		}
+		else if (this.CC["PressureMeasurement"] === clusterId) {
+			defaults = {
+				deviceType: "sensorMultilevel",
+				probeType: '',
+				metrics: {
+					probeTitle: "barometer",
+					scaleTitle: 'kPa',
+					level: '',
+					icon: "barometer",
+					title: 'Barometer',
+					isFailed: false
+				}
+			};
+			
+			if (!self.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Sensor', defaults.metrics.probeTitle)) return;
+
+			var vDev = self.controller.devices.create({
+				deviceId: vDevId,
+				defaults: defaults,
+				overlay: {},
+				handler: function(command) {
+					if (command === "update") {
+						cc.Get(sensorTypeId);
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "measuredValue", function(type) {
+					try {
+						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+							self.controller.devices.remove(vDevId);
+						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value / 10);
+						}
+					} catch (e) {}
+				}, "value");
+			}
+		}
+		else if (this.CC["RelativeHumidityMeasurement"] === clusterId) {
+			defaults = {
+				deviceType: "sensorMultilevel",
+				probeType: '',
+				metrics: {
+					probeTitle: "humidity",
+					scaleTitle: '%',
+					level: '',
+					icon: "humidity",
+					title: 'Relative Humidity',
+					isFailed: false
+				}
+			};
+			
+			if (!self.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, 'Sensor', defaults.metrics.probeTitle)) return;
+
+			var vDev = self.controller.devices.create({
+				deviceId: vDevId,
+				defaults: defaults,
+				overlay: {},
+				handler: function(command) {
+					if (command === "update") {
+						cc.Get(sensorTypeId);
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "measuredValue", function(type) {
+					try {
+						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+							self.controller.devices.remove(vDevId);
+						} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level",  this.value / 100);
+						}
+					} catch (e) {}
+				}, "value");
+			}
+		}
 		else if (this.CC["OccupancySensing"] === clusterId) {
 			defaults = {
 				deviceType: 'sensorBinary',
