@@ -233,6 +233,7 @@ OpenWeather.prototype.fetchExtendedWeather = function(instance) {
 					sunset = Math.round(res.data.sys.sunset) * 1000,
 					icon_sunset = "https://openweathermap.org/img/w/01n.png";
 				
+				if (typeof windgust === 'undefined') windgust = windspeed;
 				if (self.config.units_wind === "km/h") {
 					windspeed = Math.round(windspeed * 3.6);
 					windgust = Math.round(windgust * 3.6);

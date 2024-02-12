@@ -16,6 +16,6 @@
 	"h_show_temp_hum": "Generates temperature and humidity sensor.",
 	"rl_show_wind": "Show wind sensors",
 	"h_show_wind": "Generates a wind speed and direction sensor.",
-	"l_refresh_rate": "Refresh rate:",
+	"l_refresh_rate": "Refresh rate (minutes):",
 	"h_refresh_rate": "Please remember about maximum allowed requests for your OpenWeatherMap account!"
 }
