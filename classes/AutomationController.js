@@ -3016,7 +3016,7 @@ AutomationController.prototype.createBackup = function() {
 		 }
 		*/
 
-		// save Z-Way and EnOcean objects
+		// save Z-Way, Zigbee and EnOcean objects
 		if (!!global.ZWave) {
 			backupJSON["__ZWay"] = {};
 			global.ZWave.list().forEach(function(zwayName) {
@@ -3030,6 +3030,22 @@ AutomationController.prototype.createBackup = function() {
 				backupJSON["__ZWay"][zwayName] = bcp;
 			});
 		}
+		
+		/* TODO
+		if (!!global.Zigbee) {
+			backupJSON["__ZBee"] = {};
+			global.Zigbee.list().forEach(function(zbeeName) {
+				var bcp = "",
+					data = new Uint8Array(global.Zigbee[zbeeName].zbee.controller.Backup());
+
+				for (var i = 0; i < data.length; i++) {
+					bcp += String.fromCharCode(data[i]);
+				}
+
+				backupJSON["__ZBee"][zbeeName] = bcp;
+			});
+		}
+		*/
 
 		/* TODO
 		 if (!!global.EnOcean) {

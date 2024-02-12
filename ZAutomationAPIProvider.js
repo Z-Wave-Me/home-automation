@@ -2375,6 +2375,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			langfile = this.controller.loadMainLang(),
 			dontSave = this.controller.getIgnoredStorageFiles([
 				"__ZWay",
+				"__ZBee",
 				"__EnOcean",
 				"__userModules",
 				"__userSkins"
@@ -2445,11 +2446,18 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 			// start controller with reload flag to apply config.json
 			this.controller.start(true);
 
-			// restore Z-Wave and EnOcean
+			// restore Z-Wave, Zigbee and EnOcean
 			!!reqObj.data["__ZWay"] && Object.keys(reqObj.data["__ZWay"]).forEach(function(zwayName) {
 				var zwayData = utf8Decode(reqObj.data["__ZWay"][zwayName]);
 				global.ZWave[zwayName] && global.ZWave[zwayName].zway.controller.Restore(zwayData, allowTopoRestore);
 			});
+
+			/* TODO
+			!!reqObj.data["__ZBee"] && Object.keys(reqObj.data["__ZBee"]).forEach(function(zbeeName) {
+				var zbeeData = utf8Decode(reqObj.data["__ZBee"][zbeeName]);
+				global.Zigbee[zbeeName] && global.Zigbee[zbeeName].zbee.controller.Restore(zbeeData, allowTopoRestore);
+			});
+			*/
 
 			/* TODO
 			!!reqObj.data["__EnOcean"] && reqObj.data["__EnOcean"].forEach(function(zenoName) {
