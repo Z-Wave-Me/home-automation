@@ -267,7 +267,7 @@ MobileAppSupport.prototype.defineHandlers = function () {
 				reqObj &&
 				reqObj.hasOwnProperty('os') && reqObj.os != '' &&
 				reqObj.hasOwnProperty('profileId') && reqObj.profileId != '' &&
-				reqObj.hasOwnProperty('token') && reqObj.token != ''&&
+				reqObj.hasOwnProperty('token') && reqObj.token != '' &&
 				reqObj.hasOwnProperty('title') && reqObj.title != ''
 			) {
 				if (self.registerApp(reqObj.token, reqObj.title, reqObj.profileName, reqObj.os, reqObj.profileId, request.user, request.authToken)) {

@@ -422,8 +422,8 @@
 					profile.dashboard = profile.positions;
 					profile.interval = 2000;
 					profile.rooms = [0];
-					expert_view: false,
-						profile.hide_all_device_events = false;
+					profile.expert_view = false;
+					profile.hide_all_device_events = false;
 					profile.hide_system_events = false;
 					profile.hide_single_device_events = [];
 
