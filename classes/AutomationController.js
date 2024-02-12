@@ -1497,6 +1497,14 @@ AutomationController.prototype.setVdevInfo = function(id, device) {
 
 AutomationController.prototype.clearVdevInfo = function(id) {
 	delete this.vdevInfo[id];
+	this.profiles.forEach(function(p) {
+		p.hide_single_device_events = p.hide_single_device_events.filter(function(item) {
+			return item !== id;
+		}); 
+		p.devices = p.devices.filter(function(item) {
+			return item !== id;
+		});
+	});
 	this.saveConfig(true);
 };
 

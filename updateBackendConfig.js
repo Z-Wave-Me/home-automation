@@ -525,6 +525,14 @@
 				profile.password = hashPassword(profile.password, profile.salt);
 			});
 
+			// Add hide_single_device_events and devies to each profile
+			config.profiles.forEach(function(profile) {
+				if (!profile.hide_single_device_events)
+					profile.hide_single_device_events = [];
+				if (!profile.devices)
+					profile.devices = [];
+			});
+
 			// Save changes
 
 			if (oldConfigJSON !== JSON.stringify(config)) { // do we need to update the config?
