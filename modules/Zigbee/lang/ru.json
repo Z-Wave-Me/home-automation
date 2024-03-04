@@ -2,6 +2,7 @@
 	"m_title":"Zigbee движок",
 	"m_descr":"Активация Zigbee движка.",
 	"l_port":"Порт для Zigbee платы/стика",
+	"h_port":"Пример: /dev/ttyUSB1 или /dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_012082E1-if01-port0",
 	"l_speed":"Скорость порта в бит/сек (автоматически обновляется при смене скорости)",
 	"l_name":"Внутреннее имя",
 	"h_name":"Должно быть допустимой JS строкой. Не изменяйте, если не знаете, что делаете",

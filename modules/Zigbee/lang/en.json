@@ -2,6 +2,7 @@
 	"m_title":"Zigbee Network Access",
 	"m_descr":"Z-Way controls one Zigbee network with up to 232 devices. This app will combine multiple Z-Way entities into one User Interface. Essentially the app is mapping the data of another Z-Way powered Gateway into your gateway. The elements are displayed and can be used like the local ones. Please note that the function of the second gateway remains untouched. This means that this second gateway will not see the elements for your first gateway but can control and access their own elements without and further restrictions: <br><br> Settings: <br><ul><li>You need to set the IP address of the Remote Box including the port number. </li><li>You need to define the polling interval. Once second in a quite good choice.</li> <li>You need to manage the remove device to be included into you UI.</li></ul>",
 	"l_port":"Serial port to Zigbee dongle",
+	"h_port":"Example: /dev/ttyUSB1 or /dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_012082E1-if01-port0",
 	"l_speed":"Serial port speed in bits/s (automatically updated on speed change)",
 	"l_name":"Internal name",
 	"h_name":"Should be a valid JS key string. Don't change unless you know what you are doing",

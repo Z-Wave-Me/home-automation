@@ -2,6 +2,7 @@
 	"m_title":"Zigbee Netzwerksteuerung",
 	"m_descr":"Diese App bildet die Information zu Ihrem Zigbee Netzwerk in Ihrer UI ab. Infolgedessen muss dieses während der ganzen Zeit aktiviert sein, in welcher Sie mit dem Zigbee Geräte arbeiten wollen. In der Verwendung mit diesem Modul kann sehr viel falsch gemacht werden, daher lassen Sie es unberührt, solange es nicht wirklich benötigt wird.",
 	"l_port":"Serieller Port der verwendet werden soll:",
+	"h_port":"Example: /dev/ttyUSB1 or /dev/serial/by-id/usb-Silicon_Labs_CP2105_Dual_USB_to_UART_Bridge_Controller_012082E1-if01-port0",
 	"l_speed":"Serial Port speed in bits/s (automatically updated on speed change)",
 	"l_name":"Interner Name",
 	"h_name":"Dies sollte ein valider JS key String sein. Achtung! Nur ändern, wenn Sie wissen was Sie tun.",
