@@ -72,7 +72,8 @@
 	"options": {
 		"fields": {
 			"port": {
-				"label": "__l_port__"
+				"label": "__l_port__",
+				"helper": "__h_port__"
 			},
 			"speed": {
 				"label": "__l_speed__",
