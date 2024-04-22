@@ -1,6 +1,6 @@
 ## 22.04.2024 v4.1.3
 New features:
-* Zigbee: add support for CC Temperature-, Pressure-, RelativeHumidity- Measurement
+* Zigbee: add support for CC Temperature-, Pressure-, RelativeHumidity- Measurement, OccupancySensor
 Improvements:
 * Cleanup vDevs in the profile
 * OpenWeather app
