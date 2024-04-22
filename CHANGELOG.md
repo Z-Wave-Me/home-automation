@@ -1,3 +1,22 @@
+## 22.04.2024 v4.1.3
+New features:
+* Zigbee: add support for CC Temperature-, Pressure-, RelativeHumidity- Measurement
+Improvements:
+* Cleanup vDevs in the profile
+* OpenWeather app
+  * if wingust will not be reported the value will be set to windspeed to avoid an empty value
+  * added "minutes" to label of refresh rate
+  * app descriptions and https
+  * added devices for using in automation
+  * changed options to pulldown
+  * added option for wind speed units
+  * added option for refresh selection
+  * added option for create temp/hum devices
+  * added option for create wind devices
+Fixes:
+* Ignore ZBee in backup/restore
+* Update postfix.json (Philio PAN04, PAN06)
+
 ## 18.10.2023 v4.1.2
 New features:
 * Support for Zigbee clusters OnOff, LevelControl, ColorControl, IasZone and OccupancySensing
