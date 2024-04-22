@@ -2991,7 +2991,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			
 			if (vDev) {
 				//TODO isFailed a_vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "zoneStatus", function(type) {
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "occupancy", function(type) {
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
 							self.controller.devices.remove(vDevId);
