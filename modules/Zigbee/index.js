@@ -59,6 +59,7 @@ function Zigbee(id, controller) {
 		"OnOff": 0x0006,
 		"LevelControl": 0x0008,
 		"DoorLock": 0x0101,
+		"WindowCovering": 0x0102,
 		"ColorControl": 0x0300,
 		"TemperatureMeasurement": 0x0402,
 		"PressureMeasurement": 0x0403,
@@ -1932,6 +1933,181 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentSaturation", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, this.CC["LevelControl"], "currentLevel", handleColor, "value");
 				}
+			}
+		} else if (this.CC["WindowCovering"] === clusterId && !self.controller.devices.get(vDevId)) {
+			// Lift
+			
+			var icon = 'blinds';
+			var title = 'Blind';
+			probeType = 'motor';
+			defaults = {
+				deviceType: "switchMultilevel",
+				probeType: probeType,
+				metrics: {
+					icon: icon,
+					isFailed: false
+				}
+			};
+
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
+
+			var vDev = this.controller.devices.create({
+				deviceId: vDevId,
+				defaults: defaults,
+				overlay: {},
+				handler: function(command, args) {
+					var newVal = this.get('metrics:level');
+					// up, down for Blinds
+					if ("on" === command || "up" === command) {
+						newVal = 100;
+					} else if ("off" === command || "down" === command) {
+						newVal = 0;
+					} else if ("min" === command) {
+						newVal = 10;
+					} else if ("max" === command || "upMax" === command) {
+						newVal = 100;
+					} else if ("exact" === command || "exactSmooth" === command) {
+						newVal = parseInt(args.level, 10);
+						if (newVal < 0) {
+							newVal = 0;
+						} else if (newVal > 100) {
+							newVal = 100;
+						}
+					} else if ("increase" === command) {
+						newVal = newVal + 10;
+						if (0 !== newVal % 10) {
+							newVal = Math.round(newVal / 10) * 10;
+						}
+						if (newVal > 100) {
+							newVal = 100;
+						}
+					} else if ("decrease" === command) {
+						newVal = newVal - 10;
+						if (newVal < 0) {
+							newVal = 0;
+						}
+						if (0 !== newVal % 10) {
+							newVal = Math.round(newVal / 10) * 10;
+						}
+					} else if ("stop" === command) { // Commands for Blinds
+						cc.Stop();
+						return;
+					} else if ("startUp" === command) {
+						cc.UpOpen();
+						return;
+					} else if ("startDown" === command) {
+						cc.DownClose();
+						return;
+					} else if ("update" === command) {
+						cc.Get();
+						return;
+					}
+
+					if (0 === newVal || !!newVal) {
+						if ("exactSmooth" === command)
+							cc.GoToLiftPercentage(newVal); // no exactSmooth for WindowCovering
+						else
+							cc.GoToLiftPercentage(newVal);
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentPositionLiftPercentage", function(type) {
+					try {
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value);
+						}
+					} catch (e) {}
+				}, "value");
+			}
+			
+			// Tilt
+			
+			var icon = 'blinds';
+			var title = 'Tilt';
+			probeType = 'motor';
+			defaults = {
+				deviceType: "switchMultilevel",
+				probeType: probeType,
+				metrics: {
+					icon: icon,
+					isFailed: false
+				}
+			};
+
+			if (!this.applyPostfix(defaults, changeVDev[changeDevId + separ + "tilt"], nodeId, endpointId, title)) return;
+
+			var vDev = this.controller.devices.create({
+				deviceId: vDevId + separ + "tilt",
+				defaults: defaults,
+				overlay: {},
+				handler: function(command, args) {
+					var newVal = this.get('metrics:level');
+					// up, down for Tilt
+					if ("on" === command || "up" === command) {
+						newVal = 100;
+					} else if ("off" === command || "down" === command) {
+						newVal = 0;
+					} else if ("min" === command) {
+						newVal = 10;
+					} else if ("max" === command || "upMax" === command) {
+						newVal = 100;
+					} else if ("exact" === command || "exactSmooth" === command) {
+						newVal = parseInt(args.level, 10);
+						if (newVal < 0) {
+							newVal = 0;
+						} else if (newVal > 100) {
+							newVal = 100;
+						}
+					} else if ("increase" === command) {
+						newVal = newVal + 10;
+						if (0 !== newVal % 10) {
+							newVal = Math.round(newVal / 10) * 10;
+						}
+						if (newVal > 100) {
+							newVal = 100;
+						}
+					} else if ("decrease" === command) {
+						newVal = newVal - 10;
+						if (newVal < 0) {
+							newVal = 0;
+						}
+						if (0 !== newVal % 10) {
+							newVal = Math.round(newVal / 10) * 10;
+						}
+					} else if ("stop" === command) { // Ignore Blind Commands for Tilt
+						return;
+					} else if ("startUp" === command) {
+						return;
+					} else if ("startDown" === command) {
+						return;
+					} else if ("update" === command) {
+						cc.Get();
+						return;
+					}
+
+					if (0 === newVal || !!newVal) {
+						if ("exactSmooth" === command)
+							cc.GoToTiltPercentage(newVal); // no exactSmooth for WindowCovering
+						else
+							cc.GoToTiltPercentage(newVal);
+					}
+				},
+				moduleId: self.id
+			});
+
+			if (vDev) {
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentPositionTiltPercentage", function(type) {
+					try {
+						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+							vDev.set("metrics:level", this.value);
+						}
+					} catch (e) {}
+				}, "value");
 			}
 		} /* else if (this.CC["SoundSwitch"] === clusterId) {
 			if (cc.data) {
