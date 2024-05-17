@@ -1692,7 +1692,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', this.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', this.zbee.devices[nodeId].data.isFailed.value);
 				this.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "onOff", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -1781,7 +1781,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentLevel", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -1927,7 +1927,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				}
 
 				if (vDev_rgb) {
-					//TODO isFailed // vDev_rgb.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+					vDev_rgb.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentHue", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentSaturation", handleColor, "value");
 					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, this.CC["LevelControl"], "currentLevel", handleColor, "value");
@@ -1966,7 +1966,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 							});
 							
 							if (vDev) {
-								//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+								vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 								self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, toneId + ".toneName", function(type) {
 									try {
 										if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2055,7 +2055,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					});
 
 					if (vDev) {
-						//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+						vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 						self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "defaultVolume", function(type) {
 							try {
 								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -2134,7 +2134,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 								vDev.__emulateOff_timeout = parseInt(changeVDev[cVDId].emulateOff, 10);
 							}
 
-							//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, sensorTypeId + ".level", function(type) {
 								try {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2247,7 +2247,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 						});
 
 						if (vDev) {
-							//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, sensorTypeId + ".val", function(type) {
 								try {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2376,7 +2376,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 						});
 
 						if (vDev) {
-							//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, scaleId + ".val", function(type) {
 								try {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2428,7 +2428,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				});
 
 				if (vDev) {
-					//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+					vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 					self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "val", function(type) {
 						try {
 							if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2468,7 +2468,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "last", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -2691,7 +2691,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				moduleId: self.id
 			});
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "state", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -2754,7 +2754,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					});
 
 					if (m_vDev) {
-						//TODO isFailed // m_vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+						m_vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 						self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, this.CC["ThermostatMode"], "mode", function(type) {
 							try {
 								if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
@@ -2820,7 +2820,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 						});
 
 						if (t_vDev[mode]) {
-							//TODO isFailed // t_vDev[mode].set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+							t_vDev[mode].set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, self.CC["ThermostatSetPoint"], mode + ".setVal", function(type) {
 								try {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2866,7 +2866,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "measuredValue", function(type) {
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2908,7 +2908,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "measuredValue", function(type) {
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -2949,7 +2949,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 			});
 
 			if (vDev) {
-				//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "measuredValue", function(type) {
 					try {
 						if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
@@ -3155,7 +3155,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 						});
 						
 						if (vDev) {
-							//TODO isFailed // vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, param + ".val", function(type) {
 								try {
 									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
