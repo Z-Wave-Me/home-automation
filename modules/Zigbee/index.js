@@ -1703,21 +1703,9 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				}, "value");
 			}
 		} else if (this.CC["LevelControl"] === clusterId && !self.controller.devices.get(vDevId)) {
-			var icon;
-			var title;
+			var icon = 'multilevel';
+			var title = 'Dimmer';
 			var probeType = 'multilevel';
-			/* TODO how to detect it in Zigbee?
-			if (this.zbee.devices[nodeId].data.genericType.value === 0x11 && _.contains([0x03, 0x05, 0x06, 0x07], this.zbee.devices[nodeId].data.specificType.value)) {
-				icon = 'blinds'; // or alternatively window
-				probeType = 'motor';
-				title = 'Blind';
-			} else if (this.zbee.devices[nodeId].data.genericType.value === 0x11 && this.zbee.devices[nodeId].data.specificType.value == 0x08) {
-				icon = 'fan';
-				title = 'Fan';
-			} else */ {
-				icon = 'multilevel';
-				title = 'Dimmer';
-			}
 			defaults = {
 				deviceType: "switchMultilevel",
 				probeType: probeType,
