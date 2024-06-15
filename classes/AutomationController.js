@@ -1028,7 +1028,7 @@ AutomationController.prototype.reconfigureInstance = function(id, instanceObject
 		_.extend(this.instances[index], {
 			title: instanceObject.hasOwnProperty('title') ? instanceObject.title : instance.title,
 			description: instanceObject.hasOwnProperty('description') ? instanceObject.description : instance.description,
-			active: instanceObject.hasOwnProperty('active') ? instanceObject.active : instance.active,
+			active: instanceObject.hasOwnProperty('active') ? !!instanceObject.active : instance.active,
 			params: config !== {} ? config : instance.params
 		});
 
