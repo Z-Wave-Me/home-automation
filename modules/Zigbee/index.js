@@ -1940,7 +1940,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 
 			if (!this.applyPostfix(defaults, changeVDev[changeDevId], nodeId, endpointId, title)) return;
 
-			var vDev = this.controller.devices.create({
+			var vDevLift = this.controller.devices.create({
 				deviceId: vDevId,
 				defaults: defaults,
 				overlay: {},
@@ -2002,12 +2002,12 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				moduleId: self.id
 			});
 
-			if (vDev) {
-				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+			if (vDevLift) {
+				vDevLift.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentPositionLiftPercentage", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value);
+							vDevLift.set("metrics:level", this.value);
 						}
 					} catch (e) {}
 				}, "value");
@@ -2029,7 +2029,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 
 			if (!this.applyPostfix(defaults, changeVDev[changeDevId + separ + "tilt"], nodeId, endpointId, title)) return;
 
-			var vDev = this.controller.devices.create({
+			var vDevTilt = this.controller.devices.create({
 				deviceId: vDevId + separ + "tilt",
 				defaults: defaults,
 				overlay: {},
@@ -2088,12 +2088,12 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				moduleId: self.id
 			});
 
-			if (vDev) {
-				vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+			if (vDevTilt) {
+				vDevTilt.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
 				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "currentPositionTiltPercentage", function(type) {
 					try {
 						if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-							vDev.set("metrics:level", this.value);
+							vDevTilt.set("metrics:level", this.value);
 						}
 					} catch (e) {}
 				}, "value");
