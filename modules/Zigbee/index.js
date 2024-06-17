@@ -66,6 +66,7 @@ function Zigbee(id, controller) {
 		"RelativeHumidityMeasurement": 0x0405,
 		"OccupancySensing": 0x0406,
 		"IasZone": 0x0500,
+		"Metering": 0x0702,
 	};
 }
 
@@ -2097,6 +2098,84 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					} catch (e) {}
 				}, "value");
 			}
+		} else if (this.CC["Metering"] === clusterId) {
+			defaults = {
+				deviceType: 'sensorMultilevel',
+				probeType: '',
+				metrics: {
+					probeTitle: '',
+					scaleTitle: '',
+					level: '',
+					icon: 'meter',
+					title: '',
+					isFailed: false
+				}
+			};
+			
+			if (cc.data) {
+				["instantaneousDemand", "metric"].forEach(function(dhName) {
+
+					if (cc.data[dhName] && !self.controller.devices.get(vDevId + separ + dhName)) {
+						var cVDId = changeDevId + separ + dhName;
+						
+						switch (dhName) {
+							case "instantaneousDemand":
+								defaults.probeType = 'meterElectric_kilowatt_hour';
+								defaults.metrics.probeTitle = "Meter";
+								defaults.metrics.scaleTitle = "W";
+								break;
+							case "metric":
+								defaults.probeType = 'meterElectric_watt';
+								defaults.metrics.probeTitle = "Meter";
+								defaults.metrics.scaleTitle = "kWh";
+								break;
+								/*
+								defaults.probeType = 'meterElectric_kilovolt_ampere_hour';
+								defaults.probeType = 'meterElectric_pulse_count';
+								defaults.probeType = 'meterElectric_voltage';
+								defaults.probeType = 'meterElectric_ampere';
+								defaults.probeType = 'meterElectric_power_factor';
+								*/
+							default:
+								break;
+						}
+
+						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, endpointId, 'Meter', defaults.metrics.probeTitle)) return;
+
+						var vDev = self.controller.devices.create({
+							deviceId: vDevId + separ + dhName,
+							defaults: defaults,
+							overlay: {},
+							handler: function(command) {
+								if (command === "update") {
+									cc.Get();
+								}
+							},
+							moduleId: self.id
+						});
+
+						if (vDev) {
+							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
+							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, dhName, function(type) {
+								try {
+									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+										self.controller.devices.remove(vDevId + separ + dhName);
+									} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
+										vDev.set("metrics:level", this.value);
+									}
+								} catch (e) {}
+							}, "value");
+						}
+					}
+				});
+			}
+			if (!scaleAdded) {
+				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "", function(type) {
+					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
+						self.parseAddClusterClass(nodeId, endpointId, clusterId, true, changeVDev);
+					}
+				}, "child");
+			}
 		} /* else if (this.CC["SoundSwitch"] === clusterId) {
 			if (cc.data) {
 				// tones
@@ -2432,136 +2511,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 					}
 				}, "child");
 			}
-		} else if (this.CC["Meter"] === clusterId) {
-			defaults = {
-				deviceType: 'sensorMultilevel',
-				probeType: '',
-				metrics: {
-					probeTitle: '',
-					scaleTitle: '',
-					level: '',
-					icon: 'meter',
-					title: '',
-					isFailed: false
-				}
-			};
-			
-			if (cc.data) {
-				Object.keys(cc.data).forEach(function(scaleId) {
-
-					scaleId = parseInt(scaleId, 10);
-					if (!isNaN(scaleId) && !self.controller.devices.get(vDevId + separ + scaleId)) {
-						var cVDId = changeDevId + separ + scaleId;
-						
-						defaults.metrics.probeTitle = cc.data[scaleId].sensorTypeString.value;
-						defaults.metrics.scaleTitle = cc.data[scaleId].scaleString.value;
-
-						// Check sensor type, can be: Electric, Gas, Water
-						switch (cc.data[scaleId].sensorType.value) {
-							// Electric meter
-							case 1:
-								switch (scaleId) {
-									case 0:
-										defaults.probeType = 'meterElectric_kilowatt_hour';
-										break;
-									case 1:
-										defaults.probeType = 'meterElectric_kilovolt_ampere_hour';
-										break;
-									case 2:
-										defaults.probeType = 'meterElectric_watt';
-										break;
-									case 3:
-										defaults.probeType = 'meterElectric_pulse_count';
-										break;
-									case 4:
-										defaults.probeType = 'meterElectric_voltage';
-										break;
-									case 5:
-										defaults.probeType = 'meterElectric_ampere';
-										break;
-									case 6:
-										defaults.probeType = 'meterElectric_power_factor';
-										break;
-									default:
-										break;
-								}
-								break;
-								// Gas meter
-							case 2:
-								switch (scaleId) {
-									case 0:
-										defaults.probeType = 'meterGas_cubic_meters';
-										break;
-									case 1:
-										defaults.probeType = 'meterGas_cubic_feet';
-										break;
-									case 3:
-										defaults.probeType = 'meterGas_pulse_count';
-										break;
-									default:
-										break;
-								}
-								break;
-								// Water meter
-							case 3:
-								switch (scaleId) {
-									case 0:
-										defaults.probeType = 'meterWater_cubic_meters';
-										break;
-									case 1:
-										defaults.probeType = 'meterWater_cubic_feet';
-										break;
-									case 2:
-										defaults.probeType = 'meterWater_us_gallons';
-										break;
-									case 3:
-										defaults.probeType = 'meterWater_pulse_count';
-										break;
-									default:
-										break;
-								}
-								break;
-							default:
-								break;
-						}
-
-						if (!self.applyPostfix(defaults, changeVDev[cVDId], nodeId, endpointId, 'Meter', defaults.metrics.probeTitle)) return;
-
-						var vDev = self.controller.devices.create({
-							deviceId: vDevId + separ + scaleId,
-							defaults: defaults,
-							overlay: {},
-							handler: function(command) {
-								if (command === "update") {
-									cc.Get(scaleId);
-								}
-							},
-							moduleId: self.id
-						});
-
-						if (vDev) {
-							vDev.set('metrics:isFailed', self.zbee.devices[nodeId].data.isFailed.value);
-							self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, scaleId + ".val", function(type) {
-								try {
-									if (type === self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-										self.controller.devices.remove(vDevId + separ + scaleId);
-									} else if (!(type & self.ZWAY_DATA_CHANGE_TYPE["Invalidated"])) {
-										vDev.set("metrics:level", this.value);
-									}
-								} catch (e) {}
-							}, "value");
-						}
-					}
-				});
-			}
-			if (!scaleAdded) {
-				self.dataBind(self.gateDataBinding, self.zbee, nodeId, endpointId, clusterId, "", function(type) {
-					if (type !== self.ZWAY_DATA_CHANGE_TYPE.Deleted) {
-						self.parseAddClusterClass(nodeId, endpointId, clusterId, true, changeVDev);
-					}
-				}, "child");
-			}
-		} else if (this.CC["MeterPulse"] === clusterId) {
+		 else if (this.CC["MeterPulse"] === clusterId) {
 			defaults = {
 				deviceType: 'sensorMultilevel',
 				probeType: '',
