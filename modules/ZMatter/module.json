@@ -1,0 +1,144 @@
+{
+	"dependencies": [],
+	"singleton": false,
+	"category": "peripherals",
+	"author": "Z-Wave.Me",
+	"homepage": "http://z-wave.me",
+	"icon": "icon.svg",
+	"moduleName":"ZMatter",
+	"version": "1.0.0",
+	"maturity": "stable",
+	"repository": {
+		"type": "git",
+		"source": "https://github.com/Z-Wave-Me/home-automation"
+	},
+	"defaults": {
+		"title": "__m_title__",
+		"description": "__m_descr__",
+		"name": "zmatter",
+		"port": "SR:/dev/ttyUSB1",
+		"wifiEssid": "",
+		"wifiPassword": "",
+		"threadCredential": "",
+		"enableAPI": true,
+		"publicAPI": false,
+		"createVDev": true,
+		"config": "config",
+		"bleOverDHorWS": true,
+		"paaFolder": "config/paa-root-certs",
+		"cdFolder": null
+	},
+	"schema": {
+		"type": "object",
+		"properties": {
+			"port": {
+				"type": "string",
+				"required": true
+			},
+			"name": {
+				"type": "string",
+				"required": true
+			},
+			"wifiEssid": {
+				"type": "string",
+				"default": ""
+			},
+			"wifiPassword": {
+				"type": "string",
+				"default": ""
+			},
+			"threadCredential": {
+				"type": "string",
+				"default": ""
+			},
+			"enableAPI": {
+				"type": "boolean",
+				"default": true
+			},
+			"publicAPI": {
+				"type": "boolean",
+				"default": true
+			},
+			"createVDev": {
+				"type": "boolean",
+				"default": true
+			},
+			"config": {
+				"type": "string",
+				"required": true
+			},
+			"bleOverDHorWS": {
+				"type": "boolean",
+				"default": true
+			},
+			"paaFolder": {
+				"type": "string",
+				"required": true
+			},
+			"cdFolder": {
+				"type": "string",
+				"required": true
+			}
+		},
+		"required": false
+	},
+	"options": {
+		"fields": {
+			"port": {
+				"label": "__l_port__",
+				"helper": "__h_port__"
+			},
+			"name": {
+				"label": "__l_name__",
+				"helper": "__h_name__"
+			},
+			"wifiEssid": {
+				"label": "__l_wifiEssid__",
+				"helper": "__h_wifiEssid__"
+			},
+			"wifiPassword": {
+				"label": "__l_wifiPassword__",
+				"helper": "__h_wifiPassword__"
+			},
+			"threadCredential": {
+				"label": "__l_threadCredential__",
+				"helper": "__h_threadCredential__"
+			},
+			"enableAPI": {
+				"type": "checkbox",
+				"rightLabel": "__rl_enableAPI__",
+				"helper": "__h_enableAPI__"
+			},
+			"publicAPI": {
+				"type": "checkbox",
+				"rightLabel": "__rl_publicAPI__",
+				"helper": "__h_publicAPI__"
+			},
+			"createVDev": {
+				"type": "checkbox",
+				"rightLabel": "__rl_createVDev__",
+				"helper": "__h_createVDev__"
+			},
+			"config": {
+				"hidden": true,
+				"label": "__l_config__",
+				"helper": "__h_config__"
+			},
+			"bleOverDHorWS": {
+				"hidden": true,
+				"label": "__l_bleOverDHorWS__",
+				"helper": "__h_bleOverDHorWS__"
+			},
+			"paaFolder": {
+				"hidden": true,
+				"label": "__l_paa_folder__",
+				"helper": "__h_change_sth__"
+			},
+			"cdFolder": {
+				"hidden": true,
+				"label": "__l_cd_folder__",
+				"helper": "__h_change_sth__"
+			}
+		}
+	}
+}
