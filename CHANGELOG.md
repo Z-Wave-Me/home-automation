@@ -1,3 +1,13 @@
+## 22.07.2024 v5.0.0
+New features:
+Improvements:
+* Matter support added
+* Zigbee: Meter cluster added (instanteneous and summation values)
+* Zigbee: WindowCovering added
+* Zigbee: isFailed added
+Fixes:
+* Fixed apps active state save problem
+
 ## 22.04.2024 v4.1.3
 New features:
 * Zigbee: add support for CC Temperature-, Pressure-, RelativeHumidity- Measurement, OccupancySensor
