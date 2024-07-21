@@ -73,6 +73,14 @@ function byteArrayToString(data) {
 	return output;
 }
 
+function byteArrayToHexString(data) {
+	var output = "";
+	for (var i = 0; i < data.byteLength; i++) {
+		output += ('0' + data[i].toString(16)).slice(-2);
+	}
+	return output;
+}
+
 function generateSalt() {
 	return Base64.encode(byteArrayToString(crypto.random(64)));
 }
