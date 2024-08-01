@@ -185,10 +185,10 @@ ZMatter.prototype.startBinding = function() {
 	{
 		this.zmatter.controller.SetWiFiConfig(this.config.wifiEssid, this.config.wifiPassword);
 	}
-	
-	if (this.config.threadCredentials)
+
+	if (this.config.threadCredential)
 	{
-		this.zmatter.controller.SetThreadConfig(this.config.credentials);
+		this.zmatter.controller.SetThreadConfig(this.config.threadCredential);
 	}
 	
 	this.stopped = false;
