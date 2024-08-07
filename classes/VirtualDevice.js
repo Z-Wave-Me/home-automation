@@ -231,7 +231,6 @@ _.extend(VirtualDevice.prototype, {
 				profilesDevicesBefore = this.collection.controller.profiles.map(function(p) { return { id: p.id, devices: that.collection.controller.devicesByUser(p.id) }; });
 			}
 
-			console.logJS("000");
 			findObj = findX(this.attributes, keyName);
 			if (findObj[keyName] !== val) {
 				that.attributes[keyName] = val;
