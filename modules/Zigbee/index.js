@@ -3081,6 +3081,7 @@ Zigbee.prototype.parseAddClusterClass = function(nodeId, endpointId, clusterId, 
 				probeType: '',
 				metrics: {
 					level: 'off',
+					icon: 'motion',
 					title: '',
 					isFailed: false
 				}
