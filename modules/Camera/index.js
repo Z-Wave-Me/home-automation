@@ -76,7 +76,8 @@ _.extend(Camera.prototype, {
 					hasUp: !!config.upUrl,
 					hasDown: !!config.downUrl,
 					hasOpen: !!config.openUrl || !!(config.doorDevices && config.doorDevices.length),
-					hasClose: !!config.closeUrl || !!(config.doorDevices && config.doorDevices.length)
+					hasClose: !!config.closeUrl || !!(config.doorDevices && config.doorDevices.length),
+					externalUrl: config.externalUrl
 				}
 			},
 			handler: function(command) {
