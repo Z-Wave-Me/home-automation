@@ -48,8 +48,10 @@ _.extend(Camera.prototype, {
 			});
 		};
 
-		this.screen_url = "/" + vDevId + "/screen";
-		ws.proxify(this.screen_url, config.screenUrl, config.user, config.password);
+		if (config.screenUrl) {
+			this.screen_url = "/" + vDevId + "/screen";
+			ws.proxify(this.screen_url, config.screenUrl, config.user, config.password);
+		}
 
 		this.proxy_url = "/" + vDevId + "/stream";
 		ws.proxify(this.proxy_url, config.url, config.user, config.password);
@@ -118,6 +120,9 @@ _.extend(Camera.prototype, {
 		Camera.super_.prototype.stop.call(this);
 
 		ws.proxify(this.proxy_url, null);
+		if (this.screen_url) {
+			ws.proxify(this.screen_url, null);
+		}
 		
 		if (this.vDev) {
 			this.controller.devices.remove(this.vDev.id);
