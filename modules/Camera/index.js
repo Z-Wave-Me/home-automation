@@ -42,7 +42,7 @@ _.extend(Camera.prototype, {
 					if (type === "switchBinary" || type === "switchMultilevel") {
 						vDev.performCommand(command == "open" ? "on" : "off");
 					} else if (type === "doorlock") {
-							vDev.performCommand(command);
+						vDev.performCommand(command);
 					}
 				}
 			});
