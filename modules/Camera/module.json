@@ -25,6 +25,7 @@
 	"downUrl": "",
 	"openUrl": "",
 	"closeUrl": "",
+	"externalUrl": "",
 	"user": "",
 	"password": "",
 	"doorDevices": []
@@ -69,6 +70,10 @@
 				"required": false
 			},
 			"closeUrl": {
+				"format": "uri",
+				"required": false
+			},
+			"externalUrl": {
 				"format": "uri",
 				"required": false
 			},
@@ -149,6 +154,12 @@
 			},
 			"closeUrl": {
 				"label": "__l_close__",
+				"type": "url",
+				"allowIntranet": true,
+				"required": false
+			},
+			"externalUrl": {
+				"label": "__l_external_url__",
 				"type": "url",
 				"allowIntranet": true,
 				"required": false

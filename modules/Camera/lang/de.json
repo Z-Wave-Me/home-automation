@@ -11,6 +11,7 @@
   "l_down": "URL - Drehung nach unten",
   "l_open": "URL - Öffen",
   "l_close": "URL - Schließen",
+  "l_external_url": "URL to open on External URL click",
   "l_user": "Benutzername für HTTP Authentifizierung",
   "h_http_auth": "Lassen Sie das Feld frei, wenn die Kamera nicht mit einem Passwort geschütztt ist.",
   "l_pw":"Passwort für HTTP Authentifiziereung.",
