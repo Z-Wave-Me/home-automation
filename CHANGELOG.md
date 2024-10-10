@@ -1,3 +1,11 @@
+## 10.10.2024 5.0.1
+New features:
+* Added externalUrl property in Camera app
+Fixes:
+* Fixed screenUrl property in Camera app
+* Fixed bug in Camera app with open/close
+* ZMatter Binding: Thread credentials fixed
+
 ## 22.07.2024 v5.0.0
 New features:
 Improvements:
