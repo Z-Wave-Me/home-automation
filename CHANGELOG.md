@@ -1,4 +1,4 @@
-## 10.10.2024 5.0.1
+## 10.10.2024 v5.0.1
 New features:
 * Added externalUrl property in Camera app
 Fixes:
