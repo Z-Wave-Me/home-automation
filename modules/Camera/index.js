@@ -39,7 +39,7 @@ _.extend(Camera.prototype, {
 				
 				if (vDev) {
 					var type = vDev.get("deviceType");
-					if (type === "switchBinary" || "switchMultilevel") {
+					if (type === "switchBinary" || type === "switchMultilevel") {
 						vDev.performCommand(command == "open" ? "on" : "off");
 					} else if (type === "doorlock") {
 							vDev.performCommand(command);
@@ -73,8 +73,8 @@ _.extend(Camera.prototype, {
 					hasRight: !!config.rightUrl,
 					hasUp: !!config.upUrl,
 					hasDown: !!config.downUrl,
-					hasOpen: !!config.openUrl || (config.doorDevices && config.doorDevices.length),
-					hasClose: !!config.closeUrl || (config.doorDevices && config.doorDevices.length)
+					hasOpen: !!config.openUrl || !!(config.doorDevices && config.doorDevices.length),
+					hasClose: !!config.closeUrl || !!(config.doorDevices && config.doorDevices.length)
 				}
 			},
 			handler: function(command) {
