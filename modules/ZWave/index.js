@@ -3351,22 +3351,38 @@ ZWave.prototype.defineHandlers = function() {
 	this.ZWaveAPI.GetDSKCollection = function(url, request) {
 		function setIncluded(DSKCollection) {
 			var changed = false;
-			_.forEach(zway.devices, function (device) {
-				if (device && device.instances && device.instances[0] && device.instances[0].commandClasses['159']) {
-					var publicKeyVerified = device.instances[0].commandClasses['159'].publicKeyVerified && device.instances[0].commandClasses['159'].publicKeyVerified.value;
-					if (publicKeyVerified) {
-						var dsk = transformPublicKeyToDSK(publicKeyVerified);
-						var dskEntry = DSKCollection.find(function (item) {
-							return item.DSK === dsk;
-						});
-
-						if (dskEntry && dskEntry.state !== 'included') {
-							dskEntry.state = 'included';
-							changed = true;
+			
+			DSKCollection.forEach(function(dskEntry) {
+				var id = undefined;
+				
+				for (nodeId in zway.devices) {
+					var device = zway.devices[nodeId];
+					if (device && device.instances && device.instances[0] && device.instances[0].commandClasses['159']) {
+						var publicKeyVerified = device.instances[0].commandClasses['159'].data.publicKeyVerified && device.instances[0].commandClasses['159'].data.publicKeyVerified.value;
+						if (publicKeyVerified) {
+							var dsk = transformPublicKeyToDSK(publicKeyVerified);
+							
+							if (dskEntry.DSK === dsk) {
+								id = nodeId;
+								break;
+							}
 						}
 					}
 				}
-			})
+				
+				if (id && dskEntry.state !== 'included') {
+					dskEntry.state = 'included';
+					dskEntry.nodeId = id;
+					changed = true;
+				}
+
+				if (!id && dskEntry.state === 'included') {
+					dskEntry.state = 'pending';
+					dskEntry.nodeId = null;
+					changed = true;
+				}
+			
+			});
 
 			if (changed) {
 				self.saveObject("dskCollection", DSKCollection, true);
