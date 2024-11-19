@@ -1698,6 +1698,7 @@ _.extend(ZAutomationAPIWebRequest.prototype, {
 						profile.devices = reqObj.devices || [];
 						profile.expert_view = reqObj.expert_view;
 						profile.beta = reqObj.beta;
+						profile.authorized_ip = reqObj.authorized_ip;
 					}
 					// could be changed by user role
 					profile.name = reqObj.name; // profile name

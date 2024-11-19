@@ -146,6 +146,17 @@ AuthController.prototype.resolve = function(request, requestedRole) {
 				}
 			}
 
+			if (!session) {
+				// try to find user by source IP
+				var profile = _.find(this.controller.profiles, function (profile) {
+					return profile.authorized_ip === request.peer.address;
+				});
+				
+				if (profile) {
+					session = profile;
+				}
+			}
+
 			if (!session && requestedRole === this.ROLE.USER) {
 				// try to find Local user account
 				if (request.peer.address === "127.0.0.1" && defaultProfile.length < 1 && !this.controller.config.firstaccess) {

@@ -99,6 +99,11 @@
 				if (!profile.hasOwnProperty('uuid')) {
 					profile.uuid = crypto.guid();
 				}
+				
+				// add authorized_ip to old profiles
+				if (!profile.hasOwnProperty('authorized_ip')) {
+					profile.authorized_ip = "";
+				}
 			});
 
 		} else {
