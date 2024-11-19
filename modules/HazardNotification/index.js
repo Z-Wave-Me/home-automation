@@ -267,8 +267,7 @@ HazardNotification.prototype.init = function(config) {
 		self.controller.devices.on(dev.id, 'change:[object Object]', self.updateAttributes);
 	});
 
-	var metr = self.controller.vdevInfo["HazardNotification_" + self.id] && self.controller.vdevInfo["HazardNotification_" + self.id].metrics ? self.controller.vdevInfo["HazardNotification_" + self.id].metrics : null,
-		icon = config.hazardType == "fire" ? "fire_ok.png" : "leakage_ok.png";
+	var icon = config.hazardType == "fire" ? "fire_ok.png" : "leakage_ok.png";
 
 	// create vDev
 	self.vDev = self.controller.devices.create({
@@ -279,8 +278,8 @@ HazardNotification.prototype.init = function(config) {
 				multilineType: 'protection',
 				title: self.getInstanceTitle(),
 				icon: '/ZAutomation/api/v1/load/modulemedia/HazardNotification/' + icon,
-				level: !!metr && metr.level ? metr.level : 'OK',
-				state: !!metr && metr.state ? metr.state : 'disarmed'
+				level: 'OK',
+				state: 'disarmed'
 			}
 		},
 		overlay: {
