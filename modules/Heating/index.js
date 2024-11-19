@@ -248,8 +248,7 @@ Heating.prototype.stop = function() {
 Heating.prototype.createHouseControl = function() {
 
     // use vdevinfo if it exists
-    var self = this,
-        vdevEntry = this.controller.vdevInfo["Heating_" + this.id] && this.controller.vdevInfo["Heating_" + this.id].metrics ? this.controller.vdevInfo["Heating_" + this.id].metrics : undefined;
+    var self = this;
 
     this.pollByStart = function(filter) {
         var pollIdentifier = this.event || filter,
@@ -470,6 +469,7 @@ Heating.prototype.createHouseControl = function() {
             metrics: {
                 multilineType: "climateControl",
                 icon: "climatecontrol",
+                state: "energySave",
                 rooms: self.newRooms
             }
         },
@@ -478,7 +478,6 @@ Heating.prototype.createHouseControl = function() {
                 multilineType: "climateControl",
                 title: self.getInstanceTitle(),
                 icon: "climatecontrol",
-                state: vdevEntry && vdevEntry.state ? vdevEntry.state : 'energySave',
                 rooms: self.newRooms
             }
         },
@@ -612,7 +611,7 @@ Heating.prototype.createHouseControl = function() {
         // check for the stored state
         room.state = self.config.roomSettings[roomId].state;
         room.energySave = parseFloat(room.energySave);
-        room.targetTemp = vdevEntry && vdevEntry.rooms[i] && vdevEntry.rooms[i].targetTemp ? parseFloat(vdevEntry.rooms[i].targetTemp) : parseFloat(room.comfort);
+        room.targetTemp = self.vDev.metrics.rooms[i] && self.vDev.metrics.rooms[i].targetTemp ? parseFloat(self.vDev.metrics.rooms[i].targetTemp) : parseFloat(room.comfort);
 
         // activate schedule if exists
         if (self.schedule) {
