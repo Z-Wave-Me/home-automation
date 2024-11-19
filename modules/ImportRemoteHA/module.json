@@ -49,6 +49,10 @@
 				"type": "string",
 				"required": true
 			},
+			"token": {
+				"type": "string",
+				"required": true
+			},
 			"dT": {
 				"type": "number",
 				"required": true

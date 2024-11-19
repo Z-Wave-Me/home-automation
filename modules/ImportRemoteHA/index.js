@@ -1,7 +1,7 @@
 /*** ImportRemoteHA Z-Way HA module *******************************************
 
-Version: 2.0.4
-(c) Z-Wave.Me, 2022
+Version: 3.0.0
+(c) Z-Wave.Me, 2023
 -----------------------------------------------------------------------------
 Author: Poltorak Serguei <ps@z-wave.me>, Niels Roche <nir@zwave.eu>
 Description:
@@ -30,17 +30,29 @@ ImportRemoteHA.prototype.init = function (config) {
 
 	var self = this;
 
-	var config_url = this.config.url.indexOf('http://') > -1? this.config.url : 'http://' + this.config.url + ':8083';
-
-	console.log('config_url',config_url);
+	this.uri = "/ZAutomation/api/v1/devices";
+	this.responseEventDevices = "ImportRemoteHA-devices";
 	
-	this.urlPrefix = config_url + "/ZAutomation/api/v1/devices";
-	this.dT = Math.max(this.config.dT, 500); // 500 ms minimal delay between requests
-	this.timestamp = 0;
-	this.lastRequest = 0;
-	this.timer = null;
+	var is_ws = this.config.url.indexOf('ws://') !== -1 || this.config.url.indexOf('wss://') !== -1
+	
+	// for backward compatibility with very old systems
+	if (!is_ws && this.config.url.indexOf('http://') === -1 && this.config.url.indexOf('https://') === -1) {
+		this.config.url = 'http://' + this.config.url + ':8083';
+	}
 
-	this.requestUpdate();
+	if (is_ws) {
+		// WebSockets
+		this.ws_connect();
+		this.reconnect_interval = 10;
+	} else {
+		// HTTP
+		this.urlPrefix = this.config.url + this.uri;
+		this.dT = Math.max(this.config.dT, 500); // 500 ms minimal delay between requests
+		this.timestamp = 0;
+		this.lastRequest = 0;
+		this.timer = null;
+		this.requestUpdate();
+	}
 };
 
 ImportRemoteHA.prototype.stop = function () {
@@ -48,6 +60,10 @@ ImportRemoteHA.prototype.stop = function () {
 
 	if (this.timer) {
 		clearTimeout(this.timer);
+	}
+	
+	if (this.ws) {
+		this.ws.close();
 	}
 	
 	this.controller.devices.filter(function(xDev) {
@@ -64,6 +80,51 @@ ImportRemoteHA.prototype.stop = function () {
 // ----------------------------------------------------------------------------
 // --- Module methods
 // ----------------------------------------------------------------------------
+
+// WebSockets
+
+ImportRemoteHA.prototype.ws_connect = function () {
+	var self = this;
+	
+	this.ws = new sockets.websocket(this.config.url, undefined, undefined, undefined, undefined, {"Authorization": "Bearer " + this.config.token);
+		
+	this.ws.onopen = function () {
+		console.log("Connected to Remote Z-Way " + this.config.url);
+		
+		// Request devices
+		this.send(JSON.stringify({
+			event: "httpEncapsulatedRequest",
+			responseEvent: self.responseEventDevices,
+			data: {
+				url: self.uri
+			}
+		}));
+                return {
+                        "ws-reply-type": responseEvent,
+                        "ws-reply-data": response
+                };
+	}
+	
+	ws.onmessage = function(ev) {
+		if (ev["ws-reply-type"] == self.responseEventDevices) {
+			self.parseResponse(ev["ws-reply-data"])
+		}
+	}
+	
+	var reconnect = function(ev) {
+		console.log("Lost connection to Remote Z-Way: " + (!ev ? "closed by remote side" : (ev.data ? ev.data : "unknown error")) + " " + this.config.url);
+		this.close();
+		self.timer = setInterval(function() {
+			self.ws_connect();
+		}, self.reconnect_interval * 1000);
+		self.ws = undefined;
+	}
+	
+	ws.onclose = reconnect;
+	ws.onerror = reconnect;
+};
+
+// HTTP
 
 ImportRemoteHA.prototype.requestUpdate = function () {
 	var self = this;
@@ -107,6 +168,8 @@ ImportRemoteHA.prototype.requestUpdate = function () {
 		}, self.dT);
 	}
 };
+
+// Common
 
 ImportRemoteHA.prototype.parseResponse = function (response) {
 	var self = this;
