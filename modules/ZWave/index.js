@@ -4490,10 +4490,23 @@ ZWave.prototype.compileTitle = function(nodeId, instanceId, smartStartEntryPrese
 	// if there is a given name preset, use it first
 	if (smartStartEntryPreset && smartStartEntryPreset.givenName) {
 		sortArgs.push(smartStartEntryPreset.givenName);
+	} else {
+		// Fall back to the given name already set on the node itself (e.g. via the Configuration page / Expert UI "rename device" dialog).
+		// This matters for virtual devices that are commonly (re-)created *after* the node has already been named - 
+		// most notably Battery, which is often instantiated post-inclusion once the first battery report arrives.
+		// Without this, such vDevs are stuck with a generic "<Vendor> <Title> (<nodeId>)" title (e.g. "Danfoss Battery (14)")
+		// even though the user already gave the node a proper name.
+		try {
+			var liveGivenName = this.zway.devices[nodeId].data.givenName.value;
+			if (liveGivenName) {
+			sortArgs.push(liveGivenName);
+			}
+		} catch (e) {}
 	}
 	
-	// add vendor name
-	if (addVendor === undefined || addVendor === true) {
+	// add vendor name (skip when we already picked up the node's live given name above - it's redundant once the node has a real human-readable name;
+	// SmartStart preset names keep their previous behavior unchanged)
+	if ((addVendor === undefined || addVendor === true) && !liveGivenName) {
 		var vendorName = this.zway.devices[nodeId].data.vendorString.value;
 		if (vendorName) {
 			sortArgs.push(vendorName);
